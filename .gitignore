@@ -1,0 +1,10 @@
+*.googleKey
+AzureCloud/Azure.env
+.vscode/
+.idea/
+data/
+env/
+venv/
+__pycache__/
+*.pem
+.DS_Store
