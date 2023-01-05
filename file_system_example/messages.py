@@ -1,3 +1,5 @@
+import logging
+
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predicate
 from perplexity.utilities import sentence_force
@@ -91,3 +93,6 @@ def generate_message(mrs, error_term):
         arg1 = error_arguments[1]
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], mrs)
         return f"I can't {arg1} {arg2}"
+
+
+pipeline_logger = logging.getLogger('Pipeline')

@@ -8,6 +8,9 @@ import copy
 # "class" declares an object-oriented class in Python
 # The parenthesis after the "State" class name surround
 # the object the class derives from (object)
+import logging
+
+
 class State(object):
 
     # All class methods are indented under the
@@ -87,3 +90,6 @@ class State(object):
 
     def get_operations(self):
         return copy.deepcopy(self.operations)
+
+
+pipeline_logger = logging.getLogger('Pipeline')

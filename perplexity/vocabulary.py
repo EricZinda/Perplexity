@@ -1,3 +1,6 @@
+import logging
+
+
 def Predication(vocabulary, name=None):
     # Gets called when the function is first created
     # function_to_decorate is the function definition
@@ -24,3 +27,6 @@ class Vocabulary(object):
 
     def predication(self, delphin_name):
         return self.all.get(delphin_name, None)
+
+
+pipeline_logger = logging.getLogger('Pipeline')

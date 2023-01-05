@@ -1,3 +1,5 @@
+import logging
+
 from perplexity.tree import walk_tree_until
 from perplexity.utilities import parse_predication_name
 
@@ -32,7 +34,8 @@ def english_for_delphin_variable(failure_index, variable, mrs):
     # This function will be called for every predication in the MRS
     # as we walk it in execution order
     def record_predications_until_failure_index(predication):
-        # print(f"error: {current_predication_index[0]}: {predication[0]}")
+        logger.debug(f"error predication index {current_predication_index[0]}: {predication[0]}")
+
         # Once we have hit the index where the failure happened, stop
         if current_predication_index[0] == failure_index:
             return False
@@ -141,3 +144,7 @@ def convert_to_english(nlg_data):
         phrase += "thing"
 
     return phrase
+
+
+logger = logging.getLogger('Generation')
+pipeline_logger = logging.getLogger('Pipeline')

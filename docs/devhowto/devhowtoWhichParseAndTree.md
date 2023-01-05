@@ -145,4 +145,4 @@ def generate_message(mrs, error_term):
     ...
 ~~~
 
-With this, we now have a fully functioning interactive natural language system!
+With this, we now have a (simple) fully functioning interactive natural language system!

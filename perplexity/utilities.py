@@ -6,6 +6,10 @@
 #     "PredicateRaw":
 #     "Sense": "dir"...
 # }
+import logging
+import sys
+
+
 def parse_predication_name(name):
     result = {"PredicateRaw": name}
 
@@ -46,3 +50,15 @@ def parse_predication_name(name):
 def sentence_force(mrs):
     index_variable = mrs["Index"]
     return mrs["Variables"][index_variable]["SF"]
+
+
+def ShowLogging(name, level=logging.DEBUG):
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    formatter = logging.Formatter('%(name)s %(asctime)s: %(message)s')
+    file_handler = logging.StreamHandler(sys.stdout)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+
+pipeline_logger = logging.getLogger('Pipeline')

@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 
 
@@ -197,3 +198,6 @@ def find_predicate(term, predication_name):
     # a way to filter through the tree to find
     # predication_name
     return walk_tree_until(term, match_predication_name)
+
+
+pipeline_logger = logging.getLogger('Pipeline')

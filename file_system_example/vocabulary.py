@@ -1,3 +1,5 @@
+import logging
+
 from file_system_example.objects import File, DeleteOperation, Folder, Actor
 from perplexity.execution import ExecutionContext, call, report_error
 from perplexity.vocabulary import Vocabulary, Predication
@@ -62,8 +64,14 @@ def a_q(state, x_variable, h_rstr, h_body):
 
 @Predication(vocabulary, name="pron")
 def pron(state, x_who):
-    person = state.get_variable("tree")["Variables"][x_who]["PERS"]
-    for item in state.all_individuals():
+    x_who_value = state.get_variable(x_who)
+    if x_who_value is None:
+        iterator = state.all_individuals()
+    else:
+        iterator = [x_who_value]
+
+    person = int(state.get_variable("tree")["Variables"][x_who]["PERS"])
+    for item in iterator:
         if isinstance(item, Actor) and item.person == person:
             yield state.set_x(x_who, item)
             break
@@ -180,3 +188,5 @@ def folder_n_of(state, x, i):
         else:
             report_error(["xIsNotY", x, "folder"])
 
+
+pipeline_logger = logging.getLogger('Pipeline')

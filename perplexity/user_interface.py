@@ -35,10 +35,13 @@ class UserInterface(object):
 
                 solutions = []
                 for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
+                    pipeline_logger.debug(f"solution: {item}")
                     solutions.append(item)
 
                 # Determine the response to it
-                message = response_function(tree_info, solutions, self.execution_context.error())
+                error = self.execution_context.error()
+                pipeline_logger.debug(f"{len(solutions)} solutions, error: {error}")
+                message = response_function(tree_info, solutions, error)
                 if len(solutions) > 0:
                     # This worked, apply the results to the current world state if it was a command
                     if sentence_force(tree_info) == "comm":
@@ -64,7 +67,7 @@ class UserInterface(object):
         # Now apply all the operations to the original state object and
         # print it to prove it happened
         self.state = self.state.apply_operations(all_operations)
-        print(self.state.objects)
+        logger.debug(f"Final state: {self.state.objects}")
 
     def mrss_from_phrase(self, phrase):
         # Don't print errors to the screen
@@ -75,10 +78,11 @@ class UserInterface(object):
             ace_response = parser.interact(phrase)
             pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
 
-        for parse_result in ace_response.results():
+        for parse_index in range(0, len(ace_response.results())):
             # Keep track of the original phrase on the object
-            mrs = parse_result.mrs()
+            mrs = ace_response.result(parse_index).mrs()
             mrs.surface = phrase
+            pipeline_logger.debug(f"Parse {parse_index}: {mrs}")
             yield mrs
 
     def trees_from_mrs(self, mrs):
@@ -95,6 +99,7 @@ class UserInterface(object):
                 # Now we have the assignments of labels to holes, but we need
                 # to actually build the *tree* using that information
                 well_formed_tree = tree_from_assignments(mrs.top, holes_assignments, mrs_predication_dict, mrs)
+                pipeline_logger.debug(f"Tree: {well_formed_tree}")
                 yield well_formed_tree
 
     def erg_file(self):
@@ -119,4 +124,5 @@ class UserInterface(object):
         return ergFile
 
 
+logger = logging.getLogger('UserInterface')
 pipeline_logger = logging.getLogger('Pipeline')

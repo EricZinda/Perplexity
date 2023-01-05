@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 
@@ -56,3 +57,6 @@ class DeleteOperation(object):
             if state.objects[index].unique_id == self.object_to_delete.unique_id:
                 state.objects.pop(index)
                 break
+
+
+pipeline_logger = logging.getLogger('Pipeline')

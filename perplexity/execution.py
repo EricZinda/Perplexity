@@ -1,4 +1,5 @@
 import contextvars
+import logging
 import sys
 
 
@@ -19,16 +20,11 @@ class ExecutionContext(object):
         with self:
             self._error = None
             self._error_predication_index = -1
-            self._predication_index = -1
+            self._predication_index = 0
 
             yield from self.call(state.set_x("tree", mrs), mrs["Tree"])
 
     def call(self, state, term):
-        # Keep track of how deep in the tree this
-        # predication is
-        last_predication_index = self._predication_index
-        self._predication_index += 1
-
         # If "term" is an empty list, we have solved all
         # predications in the conjunction, return the final answer.
         # "len()" is a built-in Python function that returns the
@@ -50,14 +46,19 @@ class ExecutionContext(object):
                     yield from self.call(nextState, term[1:])
 
             else:
+                # Keep track of how deep in the tree this
+                # predication is
+                last_predication_index = self._predication_index
+                self._predication_index += 1
+
                 # The first thing in the list was not a list
                 # so we assume it is just a term like
                 # ["_large_a_1", "e1", "x1"]
                 # evaluate it using CallPredication
                 yield from self._call_predication(state, term)
 
-        # Restore it since we are recursing
-        self._predication_index = last_predication_index
+                # Restore it since we are recursing
+                self._predication_index = last_predication_index
 
     # Do not use directly.
     # Use Call() instead so that the predication index is set properly
@@ -66,7 +67,7 @@ class ExecutionContext(object):
     #   The first item is the predication name
     #   The rest of the items are the arguments
     def _call_predication(self, state, predication):
-        # print(f"{self._predication_index}: {predication[0]}")
+        logger.debug(f"call {self._predication_index}: {predication[0]}")
 
         # The [0] syntax returns the first item in a list
         predication_name = predication[0]
@@ -143,3 +144,7 @@ def call(*args, **kwargs):
 
 def report_error(error, force=False):
     execution_context().report_error(error, force)
+
+
+logger = logging.getLogger('Execution')
+pipeline_logger = logging.getLogger('Pipeline')
