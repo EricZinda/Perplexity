@@ -165,13 +165,12 @@ Yes, that is true.
 ? which file is large?
 File(name=file1.txt, size=2000000)
 
-
 ? which folder is large?
 a folder is not large
 
 ? delete a folder
 Done!
 
-? delete me
-There isn't I in the system
+? delete him
+There isn't 'he/she' in the system
 ~~~

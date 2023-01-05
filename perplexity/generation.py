@@ -55,6 +55,7 @@ def english_for_delphin_variable(failure_index, variable, mrs):
     walk_tree_until(mrs["Tree"], record_predications_until_failure_index)
 
     # Take the data we gathered and convert to English
+    logger.debug(f"NLG data for {variable}: {nlg_data}")
     return convert_to_english(nlg_data)
 
 

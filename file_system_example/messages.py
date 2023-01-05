@@ -79,7 +79,7 @@ def generate_message(mrs, error_term):
 
     elif error_constant == "doesntExist":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], mrs)
-        return f"There isn't {arg1} in the system"
+        return f"There isn't '{arg1}' in the system"
 
     elif error_constant == "dontKnowPronoun":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], mrs)
