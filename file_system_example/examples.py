@@ -296,7 +296,8 @@ def Example15():
 def Example16():
     state = State([Actor(name="Computer", person=2),
                    Folder(name="Desktop"),
-                   Folder(name="Documents")])
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000)])
 
     user_interface = UserInterface(state, vocabulary)
 
@@ -316,31 +317,31 @@ def Example17():
 
 
 if __name__ == '__main__':
-    ShowLogging("Execution")
-    ShowLogging("Generation")
-    ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
-    with ExecutionContext(vocabulary):
-        Example1()
-        Example2()
-        Example3()
-        Example4()
-        Example5()
-        Example5_1()
-        Example5_2()
-        Example6()
-        Example7()
-        Example8()
-        Example9()
-        Example10()
-        Example11()
-        Example12()
-        Example13()
-        Example14()
-        Example15()
+    # with ExecutionContext(vocabulary):
+    #     Example1()
+    #     Example2()
+    #     Example3()
+    #     Example4()
+    #     Example5()
+    #     Example5_1()
+    #     Example5_2()
+    #     Example6()
+    #     Example7()
+    #     Example8()
+    #     Example9()
+    #     Example10()
+    #     Example11()
+    #     Example12()
+    #     Example13()
+    #     Example14()
+    #     Example15()
 
     Example16()
     # Example17()

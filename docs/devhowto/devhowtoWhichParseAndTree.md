@@ -1,9 +1,7 @@
 ## Determining the Right Parse and Tree
 As discussed in the [MRS topic](devhowtoMRS) and the [Well-Formed Trees topic](devhowtoWellFormedTree), a single phrase like "Look under the table" produces `m` MRS documents, and each of those produces `n` well-formed trees, thus generating `m x n` potential interpretations of a phrase. How do you determine which one is the one the user *meant*?
 
-The short answer is that, just like when you are talking to a human, you never *really* know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: 
-
-First, [ACE](http://sweaglesw.org/linguistics/ace/) uses a machine-learning-based algorithm to sort the MRS documents and returns "most common" ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the well-formed trees. So, at best we have a "partial" ordering of the `m x n` trees in terms of "most commonly meant". 
+The short answer is that, just like when you are talking to a human, you never *really* know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: First, [ACE](http://sweaglesw.org/linguistics/ace/) uses a machine-learning-based algorithm to sort the MRS documents and returns "most common" ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the well-formed trees. So, at best we have a "partial" ordering of the `m x n` trees in terms of "most commonly meant". 
 
 With that in mind, a simple approach to choosing the "right" interpretation works surprisingly well in practice: 
 
@@ -145,4 +143,35 @@ def generate_message(mrs, error_term):
     ...
 ~~~
 
-With this, we now have a (simple) fully functioning interactive natural language system!
+With this, we now have a (simple) fully functioning interactive natural language system! Here's a simple example that runs it in a loop, and an interactive session using some phrases we've used throughout the tutorial to test it:
+
+~~~
+def Example16():
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
+                   Folder(name="Documents")])
+
+    user_interface = UserInterface(state, vocabulary)
+
+    while True:
+        user_interface.interact_once(respond_to_mrs_tree)
+        print()
+        
+# Example15 session:
+
+? a file is large
+Yes, that is true.
+
+? which file is large?
+File(name=file1.txt, size=2000000)
+
+
+? which folder is large?
+a folder is not large
+
+? delete a folder
+Done!
+
+? delete me
+There isn't I in the system
+~~~
