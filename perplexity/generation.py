@@ -106,7 +106,7 @@ pronouns = {1: {"sg": "I",
 def pronoun_from_variable(mrs, variable):
     mrs_variable = mrs["Variables"][variable]
     if "PERS" in mrs_variable:
-        person = mrs_variable["PERS"]
+        person = int(mrs_variable["PERS"])
     else:
         person = 1
 

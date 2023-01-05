@@ -23,25 +23,25 @@ class UserInterface(object):
         user_input = str(input("? "))
         best_failure = None
 
-        # Loop through each MRS, and each tree that can be
+        # Loop through each MRS and each tree that can be
         # generated from it...
         for mrs in self.mrss_from_phrase(user_input):
             for tree in self.trees_from_mrs(mrs):
                 # Collect all the solutions for this tree against the
                 # current world state
-                mrs = {"Index": mrs.index,
-                       "Variables": mrs.variables,
-                       "Tree": tree}
+                tree_info = {"Index": mrs.index,
+                             "Variables": mrs.variables,
+                             "Tree": tree}
 
                 solutions = []
-                for item in self.execution_context.solve_mrs_tree(self.state, mrs):
+                for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
                     solutions.append(item)
 
                 # Determine the response to it
-                message = response_function(mrs, solutions, self.execution_context.error())
+                message = response_function(tree_info, solutions, self.execution_context.error())
                 if len(solutions) > 0:
                     # This worked, apply the results to the current world state if it was a command
-                    if sentence_force(mrs) == "comm":
+                    if sentence_force(tree_info) == "comm":
                         self.apply_solutions_to_state(solutions)
 
                     print(message)

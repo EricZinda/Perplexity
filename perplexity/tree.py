@@ -1,34 +1,37 @@
 from collections import defaultdict
 
 
-def tree_from_assignments(labelName, assignments, predication_dict, mrs):
-    if labelName in assignments.keys():
-        predication_list = predication_dict[assignments[labelName]]
+def tree_from_assignments(hole_label, assignments, predication_dict, mrs):
+    # Get the list of predications that should fill in the hole
+    # represented by labelName
+    if hole_label in assignments.keys():
+        predication_list = predication_dict[assignments[hole_label]]
     else:
-        predication_list = predication_dict[labelName]
+        predication_list = predication_dict[hole_label]
 
-    # predication_dict has a list for every key because multiple items might
-    # have the same key and should be put in conjunction (i.e. and'd together)
+    # predication_list is a list because multiple items might
+    # have the same key and should be put in conjunction (i.e. be and'd together)
     conjunction_list = []
     for predication in predication_list:
         tree_node = [predication.predicate]
 
         # Recurse through this predication's arguments
+        # and look for any scopal arguments to recursively convert
         for arg_name in predication.args.keys():
             original_value = predication.args[arg_name]
 
             # CARG arguments contain strings that are never
             # variables, they are constants
             if arg_name in ["CARG"]:
-                arg_value = original_value
+                new_value = original_value
             else:
                 argType = original_value[0]
                 if argType == "h":
-                    arg_value = tree_from_assignments(original_value, assignments, predication_dict, mrs)
+                    new_value = tree_from_assignments(original_value, assignments, predication_dict, mrs)
                 else:
-                    arg_value = original_value
+                    new_value = original_value
 
-            tree_node.append(arg_value)
+            tree_node.append(new_value)
 
         conjunction_list.append(tree_node)
 

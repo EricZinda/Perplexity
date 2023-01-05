@@ -295,8 +295,12 @@ def Example15():
 def Example16():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents")])
+
     user_interface = UserInterface(state, vocabulary)
-    user_interface.interact_once(respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once(respond_to_mrs_tree)
+        print()
 
 
 def Example17():
@@ -330,6 +334,6 @@ if __name__ == '__main__':
     #     Example13()
     #     Example14()
     #     Example15()
-    #
-    # Example16()
-    Example17()
+
+    Example16()
+    # Example17()
