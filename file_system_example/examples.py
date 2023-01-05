@@ -297,28 +297,39 @@ def Example16():
                    Folder(name="Documents")])
     user_interface = UserInterface(state, vocabulary)
     user_interface.interact_once(respond_to_mrs_tree)
-    
+
+
+def Example17():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents")])
+    user_interface = UserInterface(state, vocabulary)
+
+    for mrs in user_interface.mrss_from_phrase("every book is in a cave"):
+        for tree in user_interface.trees_from_mrs(mrs):
+            print(tree)
+
 
 if __name__ == '__main__':
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
-    with ExecutionContext(vocabulary):
-        Example1()
-        Example2()
-        Example3()
-        Example4()
-        Example5()
-        Example5_1()
-        Example5_2()
-        Example6()
-        Example7()
-        Example8()
-        Example9()
-        Example10()
-        Example11()
-        Example12()
-        Example13()
-        Example14()
-        Example15()
-
-    Example16()
+    # with ExecutionContext(vocabulary):
+    #     Example1()
+    #     Example2()
+    #     Example3()
+    #     Example4()
+    #     Example5()
+    #     Example5_1()
+    #     Example5_2()
+    #     Example6()
+    #     Example7()
+    #     Example8()
+    #     Example9()
+    #     Example10()
+    #     Example11()
+    #     Example12()
+    #     Example13()
+    #     Example14()
+    #     Example15()
+    #
+    # Example16()
+    Example17()

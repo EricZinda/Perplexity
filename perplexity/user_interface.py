@@ -16,12 +16,15 @@ class UserInterface(object):
         self.state = state
         self.execution_context = ExecutionContext(vocabulary)
 
-    # response_function gets passed: response_function(mrs, solutions, error) and
-    # must return a string to say to the user
+    # response_function gets passed three arguments:
+    #   response_function(mrs, solutions, error)
+    # It must use them to return a string to say to the user
     def interact_once(self, response_function):
         user_input = str(input("? "))
+        best_failure = None
 
-        best_message = None
+        # Loop through each MRS, and each tree that can be
+        # generated from it...
         for mrs in self.mrss_from_phrase(user_input):
             for tree in self.trees_from_mrs(mrs):
                 # Collect all the solutions for this tree against the
@@ -44,13 +47,13 @@ class UserInterface(object):
                     print(message)
                     return
                 else:
-                    # This failed, remember it if it is the "best"
-                    # failure
-                    if best_message is None:
-                        best_message = message
+                    # This failed, remember it if it is the "best" failure
+                    # which we currently define as the first one
+                    if best_failure is None:
+                        best_failure = message
 
         # If we got here, nothing worked: print out the best failure
-        print(best_message)
+        print(best_failure)
 
     def apply_solutions_to_state(self, solutions):
         # Collect all of the operations that were done
@@ -89,6 +92,8 @@ class UserInterface(object):
         # Iteratively return well-formed trees from the MRS
         for holes_assignments in valid_hole_assignments(mrs, self.max_holes):
             if holes_assignments is not None:
+                # Now we have the assignments of labels to holes, but we need
+                # to actually build the *tree* using that information
                 well_formed_tree = tree_from_assignments(mrs.top, holes_assignments, mrs_predication_dict, mrs)
                 yield well_formed_tree
 

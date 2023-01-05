@@ -17,8 +17,8 @@ def tree_from_assignments(labelName, assignments, predication_dict, mrs):
         for arg_name in predication.args.keys():
             original_value = predication.args[arg_name]
 
-            # Certain Arguments names only ever contain a type that is not a scope
-            # skip those
+            # CARG arguments contain strings that are never
+            # variables, they are constants
             if arg_name in ["CARG"]:
                 arg_value = original_value
             else:
