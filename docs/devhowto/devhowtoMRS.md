@@ -130,7 +130,7 @@ These labels are used to turn the flat list of predications into the set of well
 The name of a predication, for example, `_table_n_1`, encodes important information about it:
 - The "lemma" or root word (this is the first word you see): "table"
 - Whether it was actually seen in the text (starts with `_`) or added abstractly by the system (no initial `_`)
-- Its part of speech. The `_n_` in `_table_n_1` means "table" is a "noun". The `_q` in `_the_q` means "the" is a "quantifier" (quantifiers are [described below](quantifier-predications))
+- Its part of speech. The `_n_` in `_table_n_1` means "table" is a "noun". The `_q` in `_the_q` means "the" is a "quantifier" (quantifiers are [described below](#quantifier-predications))
 - It may have extras at the end like `_1` to indicate which "variant" or synonym of the word it represents
 
 There is some documentation for what the predications *mean*, which can be found by doing a search of the documentation. Otherwise, their meaning can often be determined by looking at the MRS and intuiting what they are trying to do using your knowledge of the language. If all else fails, you can [post on the message boards](https://delphinqa.ling.washington.edu/).  
@@ -224,7 +224,7 @@ HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 
 The other variables in the MRS are there to help build up the tree (`h` variables, described previously) or allow predications to refer to each other (`e` variables, described next).  `x` variables are the most concrete type of variable that maps most obviously to what is being said in the phrase.
 
-Note that instance variables are always *scoped* by a quantifier when a well-formed tree is built. Quantifiers are described later, but for now think of them as a predication named with `_q` and with the argument structure: (`x`, `h`, `h`). The first argument of the quantifier, `x`, is the variable being "scoped", and the two branches in its scopal arguments are the only branches allowed to use that particular `x` variable.  That's what "scoped by a quantifier" means. This is important to know when creating [well-formed trees](devhowtoWellFormedTree) but also helps explain some of the uses of [other variable types](other-variables-types-i-u-p) later in this section.
+Note that instance variables are always *scoped* by a quantifier when a well-formed tree is built. Quantifiers are described later, but for now think of them as a predication named with `_q` and with the argument structure: (`x`, `h`, `h`). The first argument of the quantifier, `x`, is the variable being "scoped", and the two branches in its scopal arguments are the only branches allowed to use that particular `x` variable.  That's what "scoped by a quantifier" means. This is important to know when creating [well-formed trees](devhowtoWellFormedTree) but also helps explain some of the uses of [other variable types](#other-variables-types-i-u-p) later in this section.
 
 
 #### E (Event) Variables
@@ -280,13 +280,13 @@ Recall that the variable types in DELPH-IN form a hierarchy. So far we've discus
 e   x   h
 ~~~
 
-The other three types of variables represent a type that is "in-between" or "underspecified" between the other "concrete" types (`e`, `x`, `h`).  In general, these appear when the ERG can't decide the type of something since it falls somewhere between the types (i.e. is "underspecified").  From the [ERG documentation](ErgSemantics_Basics):
+The other three types of variables represent a type that is "in-between" or "underspecified" between the other "concrete" types (`e`, `x`, `h`).  In general, these appear when the ERG can't decide the type of something since it falls somewhere between the types (i.e. is "underspecified").  From the [ERG documentation](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_Basics/):
 
 > "i (for individual) is a generalization over eventualities and instances; p (the half-way mark in the alphabet between h and x) is a generalization over labels and instances; and u (for unspecific or maybe unbound) generalizes over all of the above. Note that Copestake et al. (2001) use individual for what is called instance here."
 
 In practice, they appear in two pretty specific scenarios:
 
-**Unquantified `x` variables**: Some predications in the ERG have an argument that is conceptually an individual (`x`) type, but does not require quantification. Since the rules require that all `x` variables are [scoped by a quantifier](x-instance-variables), the most appropriate of the three "in-between" types will be used instead as a "work-around". This is usually `i` since these are most often of type `x`, and `i` is the most specific of the options that includes `x`. As with all non-`x` variables, this will be "existentially quantified" (globally defined) -- that is the whole point of using them here.
+**Unquantified `x` variables**: Some predications in the ERG have an argument that is conceptually an individual (`x`) type, but does not require quantification. Since the rules require that all `x` variables are [scoped by a quantifier](#x-instance-variables), the most appropriate of the three "in-between" types will be used instead as a "work-around". This is usually `i` since these are most often of type `x`, and `i` is the most specific of the options that includes `x`. As with all non-`x` variables, this will be "existentially quantified" (globally defined) -- that is the whole point of using them here.
 
 **Dropped arguments**: Sometimes the predication that would introduce a variable is missing. For example, take "I left" vs. "I left Oregon". In the latter, "Oregon" becomes a predication that introduces a variable that "left" uses, but in the former, this predication doesn't exist, so the variable is not introduced. In this case, the missing (or "dropped") variable uses an `i`, `p` or `u` type in place of the original type. Variables typed like this should be treated like the act of passing `None` in Python or `Null` in SQL to a function. The easiest way to detect when one of these three variable types means "dropped or ignored argument" is by checking if any other predication is also using it (as in the previous case). If not, it is probably dropped/ignored.
     - `i` means dropped `e` or `x`
@@ -371,7 +371,7 @@ A `qeq` constraint always relates an `h` argument of one predication, called a "
 
 > A qeq constraint of "X qeq Y" says that the direct path from X to Y must only contain quantifiers (except for the final predication Y).
 
-As we work through [fully resolving the MRS into a tree](ResolvingTheMRSTree), we'll see more description and examples of how the `HCONS` section is used.
+As we work through [fully resolving the MRS into a tree](devhowtoWellFormedTree), we'll see more description and examples of how the `HCONS` section is used.
 
 
 ## Index
