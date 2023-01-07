@@ -1,4 +1,4 @@
-### Reporting the Right Failure 
+### Reporting the Right Failure
 Before we go any further, we need to step back and work through how to deal with and report on failures in the system. The way things are currently built:
 - If the user says, "There is a large file" with no large files (or no files at all) in the system, they will get the response: "No, that isn't correct"
 - If the user says "I delete a file" or "Bill deletes a file" they will get the response: "Couldn't do that"
@@ -165,3 +165,5 @@ def ReportError(error):
 ~~~
 
 The system will now remember which is the right ("deepest") error to report. The [next section](devhowtoReportingAFailure) will describe what they should say. This is not as obvious as it might seem. 
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

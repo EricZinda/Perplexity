@@ -2,11 +2,15 @@ import logging
 
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predicate
-from perplexity.utilities import sentence_force
+from perplexity.utilities import sentence_force, parse_predication_name
 
 
 # Implements the response for a given tree
 def respond_to_mrs_tree(tree, solutions, error):
+    if tree is None:
+        message = generate_message(None, error)
+        return message
+
     sentence_force_type = sentence_force(tree)
     if sentence_force_type == "prop":
         # This was a proposition, so the user only expects
@@ -93,6 +97,16 @@ def generate_message(mrs, error_term):
         arg1 = error_arguments[1]
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], mrs)
         return f"I can't {arg1} {arg2}"
+
+    elif error_constant == "unknownWords":
+        lemmas = []
+        for predicate in error_arguments[1]:
+            parsed_predicate = parse_predication_name(predicate)
+            lemmas.append(parsed_predicate["Lemma"])
+        return f"I don't know the words: {', '.join(lemmas)}"
+
+    else:
+        return error_term
 
 
 pipeline_logger = logging.getLogger('Pipeline')

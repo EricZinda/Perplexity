@@ -107,3 +107,5 @@ def Example3():
 ~~~
 
 Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](devhowtoScopalArguments), we'll be able to handle full well-formed trees.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
