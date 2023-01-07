@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 from delphin import ace
+from file_system_example.messages import generate_message
 from perplexity.execution import ExecutionContext
 from perplexity.tree import find_predicate, tree_from_assignments
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
@@ -25,13 +26,6 @@ class UserInterface(object):
         # Loop through each MRS and each tree that can be
         # generated from it...
         for mrs in self.mrss_from_phrase(user_input):
-            unknown_words = self.unknown_words(mrs)
-            if len(unknown_words) > 0:
-                if best_failure is None:
-                    best_failure = response_function(None, [], [0, ["unknownWords", unknown_words]])
-
-                continue
-
             for tree in self.trees_from_mrs(mrs):
                 # Collect all the solutions for this tree against the
                 # current world state
@@ -63,15 +57,6 @@ class UserInterface(object):
 
         # If we got here, nothing worked: print out the best failure
         print(best_failure)
-
-    def unknown_words(self, mrs):
-        unknown_words = []
-        for predication in mrs.predications:
-            if self.execution_context.vocabulary.predication(predication.predicate) is None:
-                # This predication is not implemented (even as a synonym)
-                unknown_words.append(predication.predicate)
-
-        return unknown_words
 
     def apply_solutions_to_state(self, solutions):
         # Collect all of the operations that were done

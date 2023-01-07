@@ -405,5 +405,3 @@ def RefineNLGWithPredication(mrs, variable, predication, nlg_data):
 There isn't a file in the system
 ~~~
 Very nice!
-
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
