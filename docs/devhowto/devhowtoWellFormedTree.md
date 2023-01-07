@@ -229,3 +229,5 @@ def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, node
     # At this point we tried all the floaters in this hole
     return
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

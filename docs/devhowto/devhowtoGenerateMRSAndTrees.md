@@ -118,3 +118,5 @@ def Example17():
 [['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_a_q', 'x10', [['_cave_n_1', 'x10']], [['_in_p_state', 'e9', 'e2', 'x10'], ['ellipsis_ref', 'e2', 'x3']]]]]]
 ~~~
 The [next topic](devhowtoWhichParseAndTree) will describe a heuristic for determining which of those trees is the one the user meant.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

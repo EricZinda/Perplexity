@@ -68,3 +68,5 @@ At this point we have a fully functional evaluator, but there are a few things s
 - Reporting errors
 
 The [next topics](devhowtoEvents) will tackle these issues.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

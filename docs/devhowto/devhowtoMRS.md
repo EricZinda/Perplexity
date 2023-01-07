@@ -412,3 +412,5 @@ _the_q(x3,RSTR,BODY)
 More information on `INDEX` is described in the section on [sentence force](devhowtoSentenceForce).
 
 The [next topic](devhowtoWellFormedTree) walks through the rules of creating "well-formed MRS trees", and is the last big chunk of conceptual background needed before we start building the system.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

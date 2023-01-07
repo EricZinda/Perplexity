@@ -35,3 +35,5 @@ def Predication(vocabulary, name=None):
 
     return PredicationDecorator
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

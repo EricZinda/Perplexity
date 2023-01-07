@@ -17,3 +17,5 @@ In this case, `in_p_loc` is being treated as instructions for `put_v_1` to descr
 "directional" prepositions have more potential options we may need that really should just be generated "from the inside".
 
 What happens with "put the file in every folder?"
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

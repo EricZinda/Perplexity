@@ -117,3 +117,4 @@ No, that isn't correct: a thing is not a file
 
 That one isn't good. The [next section](devhowtoQuantifierErrors) will analyze why, and how to fix it.
 
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

@@ -266,3 +266,5 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
         if isinstance(x_what_value, (File, Folder)):
             yield state.ApplyOperations([DeleteOperation(x_what_value)])
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

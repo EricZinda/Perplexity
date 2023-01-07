@@ -197,3 +197,5 @@ def Example6():
 File(name=file1.txt, size=2000000)
 ~~~
 Note that we have a subtle bug in our implementation of `default_quantifier`: we are not yet paying attention to `NUM: sg`.  If there were two large files, they would both get returned in this implementation. Really, they should return a failure since the premise of "which file" is wrong (since there are multiple of them). We'll address that once we get to the section on how to handle plurals.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

@@ -60,3 +60,5 @@ A better approach all around is to add an earlier stage to our processing pipeli
 
 
 Sometimes terms are the same with different arguments
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

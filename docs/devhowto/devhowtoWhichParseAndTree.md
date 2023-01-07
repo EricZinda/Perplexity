@@ -174,3 +174,5 @@ Done!
 ? delete him
 There isn't 'he/she' in the system
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

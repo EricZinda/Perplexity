@@ -100,3 +100,5 @@ Yes, that is true.
 ~~~
 
 In the [next section](devhowtoSimpleQuestions), we'll respond to questions.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

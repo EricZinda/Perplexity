@@ -48,3 +48,5 @@ def ParsePredicationName(name):
 
     return result
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
