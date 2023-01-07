@@ -87,3 +87,5 @@ Now it properly responds with "There isn't a *large* file in the system". Great!
 > New: "There isn't a he/she in the system"
 
 Great! It clearly says *why* the system couldn't do it now.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
