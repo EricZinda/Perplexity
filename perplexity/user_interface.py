@@ -19,6 +19,8 @@ class UserInterface(object):
     #   response_function(mrs, solutions, error)
     # It must use them to return a string to say to the user
     def interact_once(self, response_function):
+        # input() pauses the program and waits for the user to
+        # type input and hit enter, and then returns it
         user_input = str(input("? "))
         best_failure = None
 
@@ -101,7 +103,10 @@ class UserInterface(object):
             yield mrs
 
     def trees_from_mrs(self, mrs):
-        # Create a dict of predications using labels as the key for easy access when building trees
+        # Create a dict of predications using their labels as each key
+        # for easy access when building trees
+        # Note that a single label could represent multiple predications
+        # in conjunction so we need a list for each label
         mrs_predication_dict = {}
         for predication in mrs.predications:
             if predication.label not in mrs_predication_dict.keys():
@@ -110,10 +115,15 @@ class UserInterface(object):
 
         # Iteratively return well-formed trees from the MRS
         for holes_assignments in valid_hole_assignments(mrs, self.max_holes):
+            # valid_hole_assignments can return None if the grammar returns something
+            # that doesn't have the same number of holes and floaters (which is a grammar bug)
             if holes_assignments is not None:
                 # Now we have the assignments of labels to holes, but we need
                 # to actually build the *tree* using that information
-                well_formed_tree = tree_from_assignments(mrs.top, holes_assignments, mrs_predication_dict, mrs)
+                well_formed_tree = tree_from_assignments(mrs.top,
+                                                         holes_assignments,
+                                                         mrs_predication_dict,
+                                                         mrs)
                 pipeline_logger.debug(f"Tree: {well_formed_tree}")
                 yield well_formed_tree
 
