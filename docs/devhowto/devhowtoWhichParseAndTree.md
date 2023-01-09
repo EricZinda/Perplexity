@@ -36,13 +36,6 @@ class UserInterface(object):
         # Loop through each MRS and each tree that can be
         # generated from it...
         for mrs in self.mrss_from_phrase(user_input):
-            unknown_words = self.unknown_words(mrs)
-            if len(unknown_words) > 0:
-                if best_failure is None:
-                    best_failure = response_function(None, [], [0, ["unknownWords", unknown_words]])
-
-                continue
-
             for tree in self.trees_from_mrs(mrs):
                 # Collect all the solutions for this tree against the
                 # current world state

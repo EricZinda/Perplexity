@@ -8,7 +8,7 @@ vocabulary = Vocabulary()
 
 
 # TODO: delete_v_1 doesn't actually meet the contract since it doesn't allow free variables
-@Predication(vocabulary, name="_delete_v_1")
+@Predication(vocabulary, name="_delete_v_1", synonyms=["_erase_v_1"])
 def delete_v_1(state, e_introduced, x_actor, x_what):
     # We only know how to delete things from the
     # computer's perspective
