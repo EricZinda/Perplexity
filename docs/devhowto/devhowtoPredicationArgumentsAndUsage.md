@@ -1,19 +1,19 @@
 # Different Predication Signatures and Usage
-In a grammar for a language in DELPH-IN, the same predication name might get called with different sets of arguments depending on how it is used. For example, the verb "delete" (`_delete_v_1`) can be called with these signatures:
+In DELPH-IN, the same predication name might get called with different sets of arguments depending on how it is used. For example, the English verb "delete" (`_delete_v_1`) can be called with these signatures:
 
-- "Delete a file" (includes an implied "actor" ("you") as the first `x` argument): `_delete_v_1(e, x, x)`
-- "a file is deleted" (no implied actor, so the first `x` argument is [dropped](devhowtoMRS#other-variables-types-i-u-p) and becomes an `i`): `_delete_v_1(e, i, x)`
+- "Delete a file" includes an implied "actor" ("you") as the first `x` argument: `_delete_v_1(e, x, x)`
+- "a file is deleted" has no implied actor, so the first `x` argument is [dropped](devhowtoMRS#other-variables-types-i-u-p) and becomes an `i`: `_delete_v_1(e, i, x)`
 
-Furthermore, if you imagine the implementation of `delete_v_1` for each of those sentences, they are very different. The first needs to actually delete a file and the second should (perhaps) look through the trash to see if a file has been deleted. It seems like we should be smarter in our vocabulary to allow "overloading" and enable different functions to be written for the different cases.
+Furthermore, the implementation of `delete_v_1` for each of those phrases will be very different. The first needs to actually delete a file and the second should (perhaps) look through the trash to see if a file has been deleted. The `Vocabulary` class needs to remember the arguments used with a predication implementation i addition to the name and it needs to allow different functions to be written for the different cases.
 
 Let's make two other changes to vocabulary tracking while we're there: 
-1. Instead of just listing one `name`, we will allow a list of `names` so that synonyms can be easily implemented by just listing them
-2. Support having alternative meanings for words that get tried automatically instead of having a big switch statement in a single function. We'll do this by allowing more than one implementation of a predication and keeping them in an ordered list. When evaluating a `call()`, we'll try each one and stop after one succeeds.
+1. Instead of just listing one `name`, we will allow a list of `names` so that synonyms can be added
+2. Support alternative meanings for words by keeping multiple implementations of a predication in an ordered list. When evaluating a `call()`, try each one and stop after one succeeds.
 
-We'll do all this by recording both the argument signature (`exx` or `eix` in the example) and sentence force (`prop`, `ques`, or `comm`) in addition to the predication name for every vocabulary implementation. We'll set it up so that all the information can be in the `Predication()` decoration *or* the user can just name things following a convention and we'll derive it:
-- `names`: If not specified, the name of the function, minus any phrase_type specifiers (e.g. `_comm`) is used
-- `arguments`: If not specified, the `e_`, `x_`, etc. on the argument names is used 
-- `phrase_types`: If not specified, any number of `_` separated types at the end is used. (e.g. `_comm` or `_comm_ques`)
+So, for every vocabulary implementation, we'll begin recording the argument signature (`exx` or `eix` in the example) and the target sentence force (`prop`, `ques`, or `comm`) in addition to the predication name. All the information can be in the `Predication()` declaration *or* the user can just name things following a convention and we'll derive them:
+- `names`: If not specified, use the name of the function minus any phrase_type specifiers (e.g. `_comm`)
+- `arguments`: If not specified, use the `e_`, `x_`, etc. on the argument names
+- `phrase_types`: If not specified, use any number of `_` separated types at the end (e.g. `_comm` or `_comm_ques`)
 
 ~~~
 # Fully specified version
@@ -32,7 +32,7 @@ def _delete_v_1_comm(state, e_introduced, x_actor, x_what):
 
 As [before](devhowtoMRSToPython), it isn't important to understand how the `Predication()` decorator works, but if you're interested: the final code is [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/vocabulary.py).
 
-With this, we can now try the same example and get a better error (well, better than crashing, at least):
+With this, we can now try the same example and get a better error (better than crashing, at least):
 
 ~~~
 ? a file is deleted
@@ -65,7 +65,7 @@ class Vocabulary(object):
 
 ~~~
 
-Then, in the `unknown_words()` function that checks that we know all the words in a phrase, we can use `version_exists()` to record if we know other forms of the word:
+Then, in the `unknown_words()` function (the function that checks that we know all the words in a phrase), we can use `version_exists()` to record if we know other forms of the word:
 
 ~~~
     def unknown_words(self, mrs):
@@ -115,6 +115,7 @@ def generate_message(mrs, error_term):
 ~~~
 
 And now running `Example16()` gives a much better result:
+
 ~~~
 def Example16():
     ShowLogging("Pipeline")
