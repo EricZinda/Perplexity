@@ -161,6 +161,21 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
 Done!  
 ~~~
 
+Great! But what if the user types something like "a file is deleted"?
+~~~
+? a file is deleted
+Traceback (most recent call last):
+  File "/Users/ericzinda/Enlistments/Perplexity/file_system_example/examples.py", line 348, in <module>
+    Example16()
+  File "/Users/ericzinda/Enlistments/Perplexity/file_system_example/examples.py", line 307, in Example16
+    user_interface.interact_once(respond_to_mrs_tree)
+  File "/Users/ericzinda/Enlistments/Perplexity/perplexity/user_interface.py", line 45, in interact_once
+    for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
+    
+    ...
+    
+~~~
 
+The [next section](devhowtoPredicationArgumentsAndUsage) will explore what is going on here and how we can fix it.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
