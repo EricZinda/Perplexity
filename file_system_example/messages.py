@@ -2,7 +2,7 @@ import logging
 
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predicate
-from perplexity.utilities import sentence_force, parse_predication_name
+from perplexity.utilities import parse_predication_name, sentence_force_from_tree_info
 
 
 # Implements the response for a given tree
@@ -11,7 +11,7 @@ def respond_to_mrs_tree(tree, solutions, error):
         message = generate_message(None, error)
         return message
 
-    sentence_force_type = sentence_force(tree)
+    sentence_force_type = sentence_force_from_tree_info(tree)
     if sentence_force_type == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
@@ -99,11 +99,23 @@ def generate_message(mrs, error_term):
         return f"I can't {arg1} {arg2}"
 
     elif error_constant == "unknownWords":
-        lemmas = []
-        for predicate in error_arguments[1]:
-            parsed_predicate = parse_predication_name(predicate)
-            lemmas.append(parsed_predicate["Lemma"])
-        return f"I don't know the words: {', '.join(lemmas)}"
+        lemmas_unknown = []
+        lemmas_form_known = []
+        for unknown_predication in error_arguments[1]:
+            parsed_predicate = parse_predication_name(unknown_predication[0])
+            if unknown_predication[3]:
+                lemmas_form_known.append(parsed_predicate["Lemma"])
+            else:
+                lemmas_unknown.append(parsed_predicate["Lemma"])
+
+        answers = []
+        if len(lemmas_unknown) > 0:
+            answers.append(f"I don't know the words: {', '.join(lemmas_unknown)}")
+
+        if len(lemmas_form_known) > 0:
+            answers.append(f"I don't know the way you used: {', '.join(lemmas_form_known)}")
+
+        return " and ".join(answers)
 
     else:
         return error_term

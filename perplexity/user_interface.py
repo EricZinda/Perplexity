@@ -68,11 +68,20 @@ class UserInterface(object):
 
     def unknown_words(self, mrs):
         unknown_words = []
+        phrase_type = sentence_force(mrs.index, mrs.variables)
         for predication in mrs.predications:
-            if self.execution_context.vocabulary.predication(predication.predicate) is None:
-                # This predication is not implemented (even as a synonym)
-                unknown_words.append(predication.predicate)
+            argument_types = [argument[1][0] for argument in predication.args.items()]
+            predications = list(self.execution_context.vocabulary.predications(predication.predicate, argument_types, phrase_type))
+            if len(predications) == 0:
+                # This predication is not implemented
+                unknown_words.append((predication.predicate,
+                                      argument_types,
+                                      phrase_type,
+                                      # Record if at least one form is understood for
+                                      # better error messages
+                                      self.execution_context.vocabulary.version_exists(predication.predicate)))
 
+        pipeline_logger.debug(f"Unknown predications: {unknown_words}")
         return unknown_words
 
     def apply_solutions_to_state(self, solutions):

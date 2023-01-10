@@ -21,6 +21,7 @@ def solve_and_respond(state, mrs):
 
 
 def call_predication(*args, **kwargs):
+    # default to proposition for early documentation
     yield from execution_context()._call_predication(*args, **kwargs)
 
 
@@ -125,7 +126,7 @@ def Example5_1():
     # Set the "Tree" key to the scope-resolved MRS tree, using our format
     mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # Evaluate the proposition: "a file is large" when there isn't a large one
@@ -144,7 +145,7 @@ def Example5_2():
     # Set the "Tree" key to the scope-resolved MRS tree, using our format
     mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # Evaluate the proposition: "which file is large?"
@@ -160,7 +161,7 @@ def Example6():
                         "e1": {"SF": "ques"}}
     mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # Delete a large file when there are some
@@ -176,7 +177,7 @@ def Example7():
                         "e2": {"SF": "comm"}}
     mrs["Tree"] = [["pronoun_q", "x3", ["pron", "x3"], ["_a_q", "x8", [["_large_a_1", "e1", "x8"], ["_file_n_of", "x8", "i1"]], ["_delete_v_1", "e2", "x3", "x8"]]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # delete you
@@ -194,7 +195,7 @@ def Example8():
                         "e2": {"SF": "comm"}}
     mrs["Tree"] = [["pronoun_q", "x3", ["pron", "x3"], ["pronoun_q", "x8", ["pron", "x8"], ["_delete_v_1", "e2", "x3", "x8"]]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # Delete a large file when there are no large files
@@ -211,7 +212,7 @@ def Example9():
                         "e2": {"SF": "comm"}}
     mrs["Tree"] = [["pronoun_q", "x3", ["pron", "x3"], ["_a_q", "x8", [["_large_a_1", "e1", "x8"], ["_file_n_of", "x8"]], ["_delete_v_1", "e2", "x3", "x8"]]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # Evaluate the proposition: "a file is large" when there are no *large* files
@@ -226,7 +227,7 @@ def Example10():
                         "e1": {"SF": "prop"}}
     mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # Evaluate the proposition: "a file is large" when there are no files, period
@@ -239,7 +240,7 @@ def Example11():
                         "e1": {"SF": "prop"}}
     mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 def Example12():
@@ -264,7 +265,7 @@ def Example13():
                     ["_a_q", "x8", [["_large_a_1", "e1", "x8"], ["_file_n_of", "x8", "i1"]],
                      ["_delete_v_1", "e2", "x3", "x8"]]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
     
 # Evaluate the proposition: "which file is large?" if there are no files
@@ -277,7 +278,7 @@ def Example14():
                         "e1": {"SF": "ques"}}
     mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
 
 # "A file is large" when there isn't a file in the system
@@ -290,7 +291,7 @@ def Example15():
                         "e1": {"SF": "prop"}}
     mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    solve_and_respond(state, mrs)
+    print(solve_and_respond(state, mrs))
 
     
 def Example16():
@@ -327,6 +328,7 @@ if __name__ == '__main__':
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
     # with ExecutionContext(vocabulary):
+    #     execution_context()._phrase_type = "prop"
     #     Example1()
     #     Example2()
     #     Example3()

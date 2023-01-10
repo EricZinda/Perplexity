@@ -2,6 +2,8 @@ import contextvars
 import logging
 import sys
 
+from perplexity.utilities import sentence_force, sentence_force_from_tree_info
+
 
 class ExecutionContext(object):
     def __init__(self, vocabulary):
@@ -9,6 +11,7 @@ class ExecutionContext(object):
         self._error = None
         self._error_predication_index = -1
         self._predication_index = -1
+        self._phrase_type = None
 
     def __enter__(self):
         self.old_context_token = set_execution_context(self)
@@ -16,13 +19,13 @@ class ExecutionContext(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         reset_execution_context(self.old_context_token)
 
-    def solve_mrs_tree(self, state, mrs):
+    def solve_mrs_tree(self, state, tree_info):
         with self:
             self._error = None
             self._error_predication_index = -1
             self._predication_index = 0
-
-            yield from self.call(state.set_x("tree", mrs), mrs["Tree"])
+            self._phrase_type = sentence_force_from_tree_info(tree_info)
+            yield from self.call(state.set_x("tree", tree_info), tree_info["Tree"])
 
     def call(self, state, term):
         # If "term" is an empty list, we have solved all
@@ -67,7 +70,7 @@ class ExecutionContext(object):
     #   The first item is the predication name
     #   The rest of the items are the arguments
     def _call_predication(self, state, predication):
-        logger.debug(f"call {self._predication_index}: {predication[0]}")
+        logger.debug(f"call {self._predication_index}: {predication[0]} [{self._phrase_type}]")
 
         # The [0] syntax returns the first item in a list
         predication_name = predication[0]
@@ -76,33 +79,53 @@ class ExecutionContext(object):
         # the first item and goes until the end of the list
         predication_args = predication[1:]
 
-        # Look up the actual Python module and
-        # function name given a string like "folder_n_of".
-        # "vocabulary.Predication" returns a two-item list,
-        # where item[0] is the module and item[1] is the function
-        module_function = self.vocabulary.predication(predication_name)
-
-        # sys.modules[] is a built-in Python list that allows you
-        # to access actual Python Modules given a string name
-        module = sys.modules[module_function[0]]
-
-        # Functions are modeled as properties of modules in Python
-        # and getattr() allows you to retrieve a property.
-        # So: this is how we get the "function pointer" to the
-        # predication function we wrote in Python
-        function = getattr(module, module_function[1])
-
         # [list] + [list] will return a new, combined list
         # in Python. This is how we add the state object
         # onto the front of the argument list
         function_args = [state] + predication_args
 
-        # You call a function "pointer" and pass it arguments
-        # that are a list by using "function(*function_args)"
-        # So: this is actually calling our function (which
-        # returns an iterator and thus we can iterate over it)
-        for next_state in function(*function_args):
-            yield next_state
+        # Look up the actual Python module and
+        # function name given a string like "folder_n_of".
+        # "vocabulary.Predication" returns a two-item list,
+        # where item[0] is the module and item[1] is the function
+        predication_argument_names = self.arg_types_from_call(predication_args)
+        for module_function in self.vocabulary.predications(predication_name,
+                                                            predication_argument_names,
+                                                            self._phrase_type):
+            # sys.modules[] is a built-in Python list that allows you
+            # to access actual Python Modules given a string name
+            module = sys.modules[module_function[0]]
+
+            # Functions are modeled as properties of modules in Python
+            # and getattr() allows you to retrieve a property.
+            # So: this is how we get the "function pointer" to the
+            # predication function we wrote in Python
+            function = getattr(module, module_function[1])
+
+            # You call a function "pointer" and pass it arguments
+            # that are a list by using "function(*function_args)"
+            # So: this is actually calling our function (which
+            # returns an iterator and thus we can iterate over it)
+            success = False
+            for next_state in function(*function_args):
+                success = True
+                yield next_state
+
+            # If an implementation works, don't call any others
+            if success:
+                break
+
+    # Replace scopal arguments with an "h" and simply
+    # return the others
+    def arg_types_from_call(self, predication_args):
+        arg_types = []
+        for arg in predication_args:
+            if isinstance(arg, list):
+                arg_types.append("h")
+            else:
+                arg_types.append(arg[0])
+
+        return arg_types
 
     def report_error(self, error, force=False):
         if force or self._error_predication_index < self._predication_index:

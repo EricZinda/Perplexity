@@ -8,8 +8,8 @@ vocabulary = Vocabulary()
 
 
 # TODO: delete_v_1 doesn't actually meet the contract since it doesn't allow free variables
-@Predication(vocabulary, name="_delete_v_1", synonyms=["_erase_v_1"])
-def delete_v_1(state, e_introduced, x_actor, x_what):
+@Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
+def delete_v_1_comm(state, e_introduced, x_actor, x_what):
     # We only know how to delete things from the
     # computer's perspective
     if state.get_variable(x_actor).name == "Computer":
@@ -39,7 +39,7 @@ def degree_multiplier_from_event(state, e_introduced):
     return degree_multiplier
 
 
-@Predication(vocabulary, name="_a_q")
+@Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable, h_rstr, h_body):
     # Run the RSTR which should fill in the variable with an item
     rstr_found = False
@@ -62,7 +62,7 @@ def a_q(state, x_variable, h_rstr, h_body):
         report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
 
 
-@Predication(vocabulary, name="pron")
+@Predication(vocabulary, names=["pron"])
 def pron(state, x_who):
     x_who_value = state.get_variable(x_who)
     if x_who_value is None:
@@ -79,20 +79,9 @@ def pron(state, x_who):
             report_error(["dontKnowPronoun", x_who])
 
 
-# This is just used as a way to provide a scope for a
-# pronoun, so it only needs the default behavior
-@Predication(vocabulary, name="pronoun_q")
-def pronoun_q(state, x, h_rstr, h_body):
-    yield from default_quantifier(state, x, h_rstr, h_body)
-
-
-@Predication(vocabulary, name="_which_q")
-def which_q(state, x_variable, h_rstr, h_body):
-    yield from default_quantifier(state, x_variable, h_rstr, h_body)
-
-
 # Many quantifiers are simply markers and should use this as
 # the default behavior
+@Predication(vocabulary, names=["_which_q", "pronoun_q"])
 def default_quantifier(state, x_variable, h_rstr, h_body):
     # Find every solution to RSTR
     rstr_found = False
@@ -108,7 +97,7 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
         report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
 
 
-@Predication(vocabulary, "_very_x_deg")
+@Predication(vocabulary, names=["_very_x_deg"])
 def very_x_deg(state, e_introduced, e_target):
     # First see if we have been "very'd"!
     initial_degree_multiplier = degree_multiplier_from_event(state, e_introduced)
@@ -117,7 +106,7 @@ def very_x_deg(state, e_introduced, e_target):
     yield state.add_to_e(e_target, "DegreeMultiplier", initial_degree_multiplier * 10)
 
 
-@Predication(vocabulary, name="_large_a_1")
+@Predication(vocabulary, names=["_large_a_1"])
 def large_a_1(state, e_introduced, x_target):
     x_target_value = state.get_variable(x_target)
 
@@ -143,7 +132,7 @@ def large_a_1(state, e_introduced, x_target):
             report_error(["adjectiveDoesntApply", "large", x_target])
 
 
-@Predication(vocabulary, name="_file_n_of")
+@Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x, i):
     x_value = state.get_variable(x)
     if x_value is None:
@@ -159,7 +148,7 @@ def file_n_of(state, x, i):
             report_error(["xIsNotY", x, "file"])
 
 
-@Predication(vocabulary, name="_folder_n_of")
+@Predication(vocabulary, names=["_folder_n_of"])
 def folder_n_of(state, x, i):
     x_value = state.get_variable(x)
     if x_value is None:
