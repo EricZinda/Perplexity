@@ -1,4 +1,4 @@
-# 
+# Developer Predication Tutorial Overview
 The [Developer How-To section](../devhowto/devhowtoOverview) is a tutorial that introduces developers to the DELPH-IN technologies by building a Python framework called ["Perplexity"](https://github.com/EricZinda/Perplexity) that evaluates DELPH-IN predications written in Python. In this section, we will show how to *use it* by implementing the vocabulary for a file system using the Perplexity framework. When finished, we'll have a working interactive natural language interface that allows users to browse their file system.
 
 This section assumes a working knowledge of [The Minimal Recursion Semantics (MRS) Format](../devhowto/devhowtoMRS) and [Building Well-Formed MRS Trees](../devhowto/devhowtoWellFormedTree) as well as a [basic understanding of Python](../devhowto/devhowtoPythonBasics/). Having read through the [Developer Tutorial](../devhowto/devhowtoOverview/) would also be very helpful, but shouldn't be required. We'll link to the relevant sections as we discuss them.
@@ -6,7 +6,7 @@ This section assumes a working knowledge of [The Minimal Recursion Semantics (MR
 Let's start with a review of the Perplexity framework. 
 
 ### Predications
-First, all of the terms used in particular application are written as Python functions that implement ["The Predication Contract"](../devhowto/devhowtoPredicationContract) and are decorated with the [`@Predication()` decorator](../devhowto/devhowtoMRSToPython) like this implementation of the DELPH-IN predication for "file" (`_file_n_of`):
+First, all the terms used in particular application are written as Python functions that implement ["The Predication Contract"](../devhowto/devhowtoPredicationContract) and are decorated with the [`@Predication()` decorator](../devhowto/devhowtoMRSToPython) like this implementation of the DELPH-IN predication for "file" (`_file_n_of`):
 
 ~~~
 vocabulary = Vocabulary()
