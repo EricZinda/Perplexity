@@ -6,7 +6,7 @@ In DELPH-IN, the same predication name might get called with different sets of a
 
 Furthermore, the implementation of `delete_v_1` for each of those phrases will be very different. The first needs to actually delete a file and the second should (perhaps) look through the trash to see if a file has been deleted. The `Vocabulary` class needs to remember the arguments used with a predication implementation and also allow different functions to cover different sentence force scenarios.
 
-Let's make two other changes to vocabulary tracking while we're there: 
+While we're listing out changes to Vocabulary that would be helpful, let's tackle a couple more: 
 1. Instead of just listing one `name`, we will allow a list of `names` so that synonyms can be added
 2. Support alternative meanings for words by keeping multiple implementations of a predication in an ordered list. When evaluating a `call()`, try each one and stop after one succeeds.
 
@@ -65,7 +65,7 @@ class Vocabulary(object):
 
 ~~~
 
-Then, in the `unknown_words()` function (the function that checks that we know all the words in a phrase), we can use `version_exists()` to record if we know other forms of the word:
+Then, in the `unknown_words()` function (the function that checks if we know all the words in a phrase), we can use `version_exists()` to record if we know other forms of the word:
 
 ~~~
     def unknown_words(self, mrs):
