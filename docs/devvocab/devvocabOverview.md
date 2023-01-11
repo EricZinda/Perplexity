@@ -1,12 +1,12 @@
 # 
-The [Developer How-To section](../devhowto/devhowtoOverview) is a tutorial that introduces developers to the DELPH-IN technologies by building a Python framework called ["Perplexity"](https://github.com/EricZinda/Perplexity) that allows Python functions to implement and evaluate DELPH-IN predications. In this section, we will show how to *use it* by implementing the vocabulary for a file system using the Perplexity framework. When finished, we'll have a working interactive natural language interface that allows users to browse their file system.
+The [Developer How-To section](../devhowto/devhowtoOverview) is a tutorial that introduces developers to the DELPH-IN technologies by building a Python framework called ["Perplexity"](https://github.com/EricZinda/Perplexity) that evaluates DELPH-IN predications written in Python. In this section, we will show how to *use it* by implementing the vocabulary for a file system using the Perplexity framework. When finished, we'll have a working interactive natural language interface that allows users to browse their file system.
 
-This section assumes a working knowledge of [The Minimal Recursion Semantics (MRS) Format](devhowtoMRS) and [Building Well-Formed MRS Trees](devhowtoWellFormedTree) as well as a [basic understanding of Python](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoPythonBasics/). Having read through the [Developer Tutorial](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoOverview/) would also be very helpful, but shouldn't be required. We'll link to the relevant sections as we discuss them.
+This section assumes a working knowledge of [The Minimal Recursion Semantics (MRS) Format](../devhowto/devhowtoMRS) and [Building Well-Formed MRS Trees](../devhowto/devhowtoWellFormedTree) as well as a [basic understanding of Python](../devhowto/devhowtoPythonBasics/). Having read through the [Developer Tutorial](../devhowto/devhowtoOverview/) would also be very helpful, but shouldn't be required. We'll link to the relevant sections as we discuss them.
  
 Let's start with a review of the Perplexity framework. 
 
 ### Predications
-First, the vocabulary for a particular application is written as Python functions that implement ["The Predication Contract"](../devhowto/devhowtoPredicationContract) and are decorated with the [Predication decorator](../devhowto/devhowtoMRSToPython) like this implementation of the DELPH-IN predication for "file" (which is `_file_n_of`):
+First, all of the terms used in particular application are written as Python functions that implement ["The Predication Contract"](../devhowto/devhowtoPredicationContract) and are decorated with the [`@Predication()` decorator](../devhowto/devhowtoMRSToPython) like this implementation of the DELPH-IN predication for "file" (`_file_n_of`):
 
 ~~~
 vocabulary = Vocabulary()
@@ -27,12 +27,12 @@ def file_n_of(state, x, i):
             report_error(["xIsNotY", x, "file"])
 ~~~
 
-Note that predications are recorded in whatever `Vocabulary` instance is passed to the `@Predication()` decorator. This `Vocabulary` instance is used to identify all the predications being used by the application.
+Note that predications are recorded in whatever `Vocabulary` instance is passed to the `@Predication()` decorator. This `Vocabulary` instance will then represent all the terms understood by the application.
 
 ### State 
-State is represented by an object that can be built however works best for the application. Predications (like `file_n_of` above) are always passed the state object as their first argument and use whatever contract it implements to do whatever they need to do. The only parts of the application that care what methods the state object implement are the predications -- the Perplexity framework doesn't care. 
+State is represented by an object that can be completely tailored to the application. Predications (like `file_n_of` above) are always passed the state object as their first argument and use whatever methods it implements to do whatever they need to do. Only the predications care what methods the state object implements -- the Perplexity framework doesn't care. 
 
-The `State` object we will be using is described in [a previous section](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoPythonBasics). The important methods are:
+The `State` object we'll be using is described in [a previous section](../devhowto/devhowtoPythonBasics). The important methods are:
 
 ~~~
 class State(object):
@@ -49,7 +49,7 @@ class State(object):
     def set_x(self, variable_name, item):
 ~~~
 
-As described in [that section](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoPythonBasics):
+As described in [that section](../devhowto/devhowtoPythonBasics):
 
 > Note that the set_x() method does not actually “set” a value in the State object, it creates a copy of the current State object and sets the value in that. This ensures that variables set for a given State object are never changed (they are immutable).
 
@@ -73,7 +73,7 @@ def file_n_of(state, x, i):
 ~~~
 
 ### Objects
-As described in [a previous section](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoPythonBasics), our file system example will be representing objects as simple Python objects derived from `UniqueObject`, like this:
+As described in [a previous section](../devhowto/devhowtoPythonBasics), our file system example will be representing objects as simple Python objects derived from `UniqueObject`, like this:
 
 ~~~
 # Base class that objects derive from so that
@@ -113,7 +113,13 @@ class File(UniqueObject):
 Again, the Perplexity framework doesn't care how the objects are represented -- they could be simple JSON files, database objects, whatever. As long as the predications understand what to expect.
 
 ### User Interaction
-The `UserInterface` class takes user commands like: "What files are in this folder?" and parses them into an MRS document (using the ACE parser), converts them into Python function calls, and ["solves"](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoPredicationContract/) them.  All this happens inside the [`UserInterface.interact_once()`](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoWhichParseAndTree/) method which gets passed the `State` to operate against and the `Vocabulary` to use, like this:
+The `UserInterface` class takes user commands like: "What files are in this folder?" and:
+
+1. Parses them into an MRS document (using the [ACE parser](http://sweaglesw.org/linguistics/ace/))
+2. Converts them into Python function calls
+3. ["Solves"](../devhowto/devhowtoPredicationContract/) them.
+
+All this happens inside the [`UserInterface.interact_once()`](../devhowto/devhowtoWhichParseAndTree/) method which gets passed the `State` to operate against and the `Vocabulary` to use, like this:
 
 ~~~
 def Example16():
@@ -145,7 +151,7 @@ Done!
 The responses given to the user are generated by the function passed to `interact_once()`, in this case: `respond_to_mrs_tree()`, described next.
 
 ### User Responses
-After a user's phrase is parsed into MRS by ACE, converted into Python and solved, the tree, solutions generated, and ['best error'](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoChoosingWhichFailure/) get passed to whatever function was supplied to `interact_once()`, in this case: `respond_to_mrs_tree()`. `respond_to_mrs_tree()` decides how to respond by looking at [sentence force](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoSentenceForce/). In our example, it uses a helper function called [`generate_message(tree_info, error_term)`](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoRobustFailure/) (also shown below) to convert errors into text
+After a user's phrase has been converted into Python and solved, the tree, solutions generated, and ['best error'](../devhowto/devhowtoChoosingWhichFailure/) get passed to whatever function was supplied to `interact_once()` (in this case: `respond_to_mrs_tree()`). It then decides how to respond by looking at [sentence force](../devhowto/devhowtoSentenceForce/), whether there was a solution and, if not, the error returned. In our example, it uses a helper function called [`generate_message(tree_info, error_term)`](../devhowto/devhowtoRobustFailure/) (also shown below) to convert errors into text:
 
 ~~~
 # Implements the response for a given tree
