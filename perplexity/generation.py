@@ -1,5 +1,4 @@
 import logging
-
 from perplexity.tree import walk_tree_until, index_of_predication
 from perplexity.utilities import parse_predication_name
 

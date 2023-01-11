@@ -7,6 +7,8 @@ from perplexity.utilities import parse_predication_name, sentence_force_from_tre
 
 # Implements the response for a given tree
 def respond_to_mrs_tree(tree, solutions, error):
+    # Tree can be None if we didn't have one of the
+    # words in the vocabulary
     if tree is None:
         message = generate_message(None, error)
         return message

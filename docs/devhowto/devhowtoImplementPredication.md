@@ -1,5 +1,5 @@
 ## Implementing a Predication
-With that [Python background and the creation of the `State` object](devhowtoPyhonBasics), we can now implement the predication contract for `_folder_n_of` in Python.  We will be passing an instance of the `State` object as the first argument to every predication so that it can access its arguments *and* the world state. The variables will be passed in as strings like `"x1"` or `"e12"`. To get their values, the code will look them up in the `State` object as shown below:
+With that [Python background and the creation of the `State` object](devhowtoPythonBasics), we can now implement the predication contract for `_folder_n_of` in Python.  We will be passing an instance of the `State` object as the first argument to every predication so that it can access its arguments *and* the world state. The variables will be passed in as strings like `"x1"` or `"e12"`. To get their values, the code will look them up in the `State` object as shown below:
 ~~~
 def folder_n_of(state, x):
     x_value = state.GetVariable(x)
