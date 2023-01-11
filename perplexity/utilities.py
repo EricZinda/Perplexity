@@ -26,8 +26,20 @@ def parse_predication_name(name):
     for item in params:
         if not got_pos:
             # some words like "a" look like a POS so don't get tricked
-            # if we don't have a lemma yet
-            if "Lemma" in result and item in ["q", "p", "n", "v", "j", "a", "r"]:
+            # From wiki entry: RmrsPos
+            # Label	Explanation	Example	Comment
+            # n := u	noun	banana_n_1	WordNet n
+            # v := u	verb	bark_v_1	WordNet v
+            # a := u	adjective or adverb (i.e. supertype of j and r)	fast_a_1
+            # j := a	adjective	 	WordNet a
+            # r := a	adverb	 	WordNet r
+            # s := n, s:= v	verbal noun (used in Japanese and Korean)	benkyou_s_1
+            # c := u	conjunction	and_c_1
+            # p := u	adposition (preposition, postposition)	from_p_1, kara_p_1 (から_p_1)
+            # q := u	quantifier (needs to be distinguished for scoping code)	this_q_1
+            # x := u	other closed class	ahem_x_1
+            # u	unknown
+            if "Lemma" in result and item in ["n", "v", "a", "j", "r", "s", "c", "p", "q", "x", "u"]:
                 result["Pos"] = item
                 got_pos = True
             else:

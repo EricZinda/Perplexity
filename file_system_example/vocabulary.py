@@ -1,8 +1,8 @@
 import logging
 
 from file_system_example.objects import File, DeleteOperation, Folder, Actor
-from perplexity.execution import ExecutionContext, call, report_error
-from perplexity.vocabulary import Vocabulary, Predication
+from perplexity.execution import ExecutionContext, call, report_error, execution_context
+from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 vocabulary = Vocabulary()
 
@@ -34,7 +34,7 @@ def degree_multiplier_from_event(state, e_introduced):
     if e_introduced_value is None or "DegreeMultiplier" not in e_introduced_value:
         degree_multiplier = 1
     else:
-        degree_multiplier = e_introduced_value["DegreeMultiplier"]
+        degree_multiplier = e_introduced_value["DegreeMultiplier"]["Value"]
 
     return degree_multiplier
 
@@ -103,10 +103,10 @@ def very_x_deg(state, e_introduced, e_target):
     initial_degree_multiplier = degree_multiplier_from_event(state, e_introduced)
 
     # We'll interpret "very" as meaning "one order of magnitude larger"
-    yield state.add_to_e(e_target, "DegreeMultiplier", initial_degree_multiplier * 10)
+    yield state.add_to_e(e_target, "DegreeMultiplier", {"Value": initial_degree_multiplier * 10, "Originator": execution_context().current_predication_index()})
 
 
-@Predication(vocabulary, names=["_large_a_1"])
+@Predication(vocabulary, names=["_large_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
 def large_a_1(state, e_introduced, x_target):
     x_target_value = state.get_variable(x_target)
 
@@ -130,6 +130,26 @@ def large_a_1(state, e_introduced, x_target):
             yield new_state
         else:
             report_error(["adjectiveDoesntApply", "large", x_target])
+
+
+@Predication(vocabulary, names=["_small_a_1"])
+def small_a_1(state, e_introduced, x_target):
+    x_target_value = state.get_variable(x_target)
+
+    if x_target_value is None:
+        iterator = state.all_individuals()
+    else:
+        iterator = [x_target_value]
+
+    for item in iterator:
+        # Arbitrarily decide that "small" means a size <= 1,000,000
+        # Remember that "hasattr()" checks if an object has
+        # a property
+        if hasattr(item, 'size') and item.size <= 1000000:
+            new_state = state.set_x(x_target, item)
+            yield new_state
+        else:
+            report_error(["adjectiveDoesntApply", "small", x_target])
 
 
 @Predication(vocabulary, names=["_file_n_of"])

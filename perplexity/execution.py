@@ -135,6 +135,9 @@ class ExecutionContext(object):
     def error(self):
         return [self._error_predication_index, self._error]
 
+    def current_predication_index(self):
+        return self._predication_index
+
 
 # ContextVars is a thread-safe way to set the execution context
 # used by the predications

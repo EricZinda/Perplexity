@@ -1,22 +1,7 @@
 import logging
 
-from perplexity.tree import walk_tree_until
+from perplexity.tree import walk_tree_until, index_of_predication
 from perplexity.utilities import parse_predication_name
-
-
-# Returns the index of a predication in an MRS
-def index_of_predication(tree, stop_predication):
-    current_predication_index = [1]
-
-    def stop_at_branch(predication):
-        if predication == stop_predication:
-            # This is the predication we are looking for
-            # Return the index of it
-            return current_predication_index[0]
-        else:
-            current_predication_index[0] = current_predication_index[0] + 1
-
-    return walk_tree_until(tree["Tree"], stop_at_branch)
 
 
 # Given the index where an error happened and a variable,
@@ -50,7 +35,7 @@ def english_for_delphin_variable(failure_index, variable, mrs):
     nlg_data = {}
 
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
-    # the function RecordPredicationsUntilFailureIndex(), until hits the
+    # the function record_predications_until_failure_index(), until hits the
     # failure_index position
     walk_tree_until(mrs["Tree"], record_predications_until_failure_index)
 

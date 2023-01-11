@@ -1,7 +1,7 @@
 import logging
 
 from perplexity.generation import english_for_delphin_variable
-from perplexity.tree import find_predicate
+from perplexity.tree import find_predicate, predication_from_index
 from perplexity.utilities import parse_predication_name, sentence_force_from_tree_info
 
 
@@ -66,36 +66,36 @@ def respond_to_mrs_tree(tree, solutions, error):
 # error_term is of the form: [index, error] where "error" is another
 # list like: ["name", arg1, arg2, ...]. The first item is the error
 # constant (i.e. its name). What the args mean depends on the error
-def generate_message(mrs, error_term):
+def generate_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0]
 
     if error_constant == "xIsNotY":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], mrs)
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         arg2 = error_arguments[2]
         return f"{arg1} is not {arg2}"
 
     elif error_constant == "adjectiveDoesntApply":
         arg1 = error_arguments[1]
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], mrs)
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"{arg2} is not {arg1}"
 
     elif error_constant == "doesntExist":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], mrs)
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         return f"There isn't '{arg1}' in the system"
 
     elif error_constant == "dontKnowPronoun":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], mrs)
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         return f"I don't know who '{arg1}' is"
 
     elif error_constant == "dontKnowActor":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], mrs)
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         return f"I don't know who '{arg1}' is"
 
     elif error_constant == "cantDo":
         arg1 = error_arguments[1]
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], mrs)
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"I can't {arg1} {arg2}"
 
     elif error_constant == "unknownWords":
@@ -116,6 +116,21 @@ def generate_message(mrs, error_term):
             answers.append(f"I don't know the way you used: {', '.join(lemmas_form_known)}")
 
         return " and ".join(answers)
+
+    elif error_constant == "formNotUnderstood":
+        predication = predication_from_index(tree_info, error_predicate_index)
+        parsed_predicate = parse_predication_name(predication[0])
+
+        if error_arguments[1] == "notHandled":
+            # The event had something that the predication didn't know how to handle
+            # See if there is information about where it came from
+            if "Originator" in error_arguments[2][1]:
+                originator_index = error_arguments[2][1]["Originator"]
+                originator_predication = predication_from_index(tree_info, originator_index)
+                parsed_originator = parse_predication_name(originator_predication[0])
+                return f"I don't understand the way you are using '{parsed_originator['Lemma']}' with '{parsed_predicate['Lemma']}'"
+
+        return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
     else:
         return error_term

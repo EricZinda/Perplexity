@@ -164,6 +164,38 @@ def Example6():
     print(solve_and_respond(state, mrs))
 
 
+# Evaluate the proposition: "which file is very small?"
+def Example6a():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=20000000),
+                   File(name="file2.txt", size=1000000)])
+
+    mrs = {}
+    mrs["Index"] = "e1"
+    mrs["Variables"] = {"x1": {"NUM": "sg"},
+                        "e1": {"SF": "ques"}}
+    mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], [["_very_x_deg", "e2", "e1"], ["_small_a_1", "e1", "x1"]]]]
+
+    print(solve_and_respond(state, mrs))
+
+
+# Evaluate the proposition: "which file is very large?"
+def Example6b():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=20000000),
+                   File(name="file2.txt", size=1000000)])
+
+    mrs = {}
+    mrs["Index"] = "e1"
+    mrs["Variables"] = {"x1": {"NUM": "sg"},
+                        "e1": {"SF": "ques"}}
+    mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], [["_very_x_deg", "e2", "e1"], ["_large_a_1", "e1", "x1"]]]]
+
+    print(solve_and_respond(state, mrs))
+
+
 # Delete a large file when there are some
 def Example7():
     state = State([Actor(name="Computer", person=2),
@@ -320,10 +352,10 @@ def Example17():
 
 
 if __name__ == '__main__':
-    # ShowLogging("Execution")
-    # ShowLogging("Generation")
-    # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Execution")
+    ShowLogging("Generation")
+    ShowLogging("UserInterface")
+    ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -337,6 +369,8 @@ if __name__ == '__main__':
     #     Example5_1()
     #     Example5_2()
     #     Example6()
+    Example6a()
+    # Example6b()
     #     Example7()
     #     Example8()
     #     Example9()
@@ -347,5 +381,5 @@ if __name__ == '__main__':
     #     Example14()
     #     Example15()
 
-    Example16()
+    # Example16()
     # Example17()

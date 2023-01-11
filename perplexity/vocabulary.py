@@ -1,11 +1,44 @@
+import enum
 import inspect
 import logging
 
+from perplexity.execution import report_error
 from perplexity.utilities import parse_predication_name
 
 
-def Predication(vocabulary, names=None, arguments=None, phrase_types=None):
-    def ArgumentsFromFunction(function):
+class EventOption(enum.Enum):
+    optional = 1
+    required = 2
+
+
+def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[]):
+    # handles = [(Name, EventOption), ...]
+    # returns True or False, if False sets an error using report_error
+    def ensure_handles_event(state, handles, event):
+        if event[0] == "e":
+            eventState = state.get_variable(event)
+            # Look at everything in event and make sure it is handled
+            if eventState is not None:
+                foundItem = False
+                for item in eventState.items():
+                    for handledItem in handles:
+                        if item[0] == handledItem[0]:
+                            foundItem = True
+                            break
+
+                    if not foundItem:
+                        report_error(["formNotUnderstood", "notHandled", item])
+                        return False
+
+            # Look at everything it handles and make sure the required things are there
+            for item in handles:
+                if item[1] == EventOption.required and (eventState is None or item[0] not in eventState):
+                    report_error(["formNotUnderstood", "missing", item])
+                    return False
+
+        return True
+
+    def arguments_from_function(function):
         arg_spec = inspect.getfullargspec(function)
 
         # Skip the first arg since it should always be "state"
@@ -24,7 +57,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None):
 
         return arg_list
 
-    def PhraseTypesFromFunction(function):
+    def phrase_types_from_function(function):
         segments = function.__name__.split("_")
         index_types = []
         for index_type in segments:
@@ -36,14 +69,17 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None):
     # Gets called when the function is first created
     # function_to_decorate is the function definition
     def PredicationDecorator(function_to_decorate):
+        # wrapper_function() actually wraps the predication function
+        # and is the real function called at runtime
         def wrapper_function(*args, **kwargs):
-            # For now just iterate from the predication,
-            # later we'll do more here
-            yield from function_to_decorate(*args, **kwargs)
+            # Make sure the event has a structure that will be properly
+            # handled by the predication
+            if ensure_handles_event(args[0], handles, args[1]):
+                yield from function_to_decorate(*args, **kwargs)
 
         predication_names = names if names is not None else [function_to_decorate.__name__]
-        final_arguments = arguments if arguments is not None else ArgumentsFromFunction(function_to_decorate)
-        final_phrase_types = phrase_types if phrase_types is not None else PhraseTypesFromFunction(function_to_decorate)
+        final_arguments = arguments if arguments is not None else arguments_from_function(function_to_decorate)
+        final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
         vocabulary.add_predication(function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arguments, final_phrase_types)
 
         return wrapper_function
