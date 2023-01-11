@@ -1,4 +1,4 @@
-# Handling Event Information
+## Handling Event Information
 Once you have a predication like `_very_x_deg` that modifies event variables introduced by other predications, you need to decide how to handle predications that *aren't* paying attention to decorations on their introduced event.
 
 For example, let's implement the word "small" to cover the space that "large" doesn't. Namely: files <= 1,000,000 bytes in size:
@@ -47,7 +47,7 @@ Notice that, even though we said "*very* small" in `Example6a()` the system blit
 
 We want a way to declare the event decorations a predication requires or optionally handles. Then, we can modify our `Predication()` decorator so that it automatically fails if something is on an introduced event that the introducer isn't prepared to handle. To see why this works, recall that a predication [*introduces* a variable that represents it](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoMRS/#predication-arguments-and-variables). Thus, any decorations on this event are meant to be understood by the predication that introduced it. If the predication doesn't know what to do with them then we want to return an error to the user. This proves we're not just ignoring terms we don't understand and builds trust in the interface.
 
-The logic will be in a function called `ensure_handles_event()`. Its job is to look up the event passed in `event` using the `state` object and compare the decorations on that event to the list of handled decorations passed in the `handles` argument. If they don't match, it sets an error. This function is called in the guts of the `Predication()` decorator: 
+The logic will be in a function called `ensure_handles_event()`. Its job is to look up the event passed in `event` using the `state` object and compare the decorations on that event to a list of "handled" decorations. If they don't match, it sets an error. This function is called in the guts of the `Predication()` decorator: 
 
 ~~~
     class EventOption(enum.Enum):
