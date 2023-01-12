@@ -195,3 +195,7 @@ def generate_message(tree_info, error_term):
         
     ...
 ~~~
+
+The first thing we need to do is [determine the phrases and vocabulary](devvocabPhrasesAndVocab) we need to implement.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
