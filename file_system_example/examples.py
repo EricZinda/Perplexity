@@ -327,7 +327,7 @@ def Example15():
 
     
 def Example16():
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
 
     state = State([Actor(name="Computer", person=2),
                    Folder(name="Desktop"),
@@ -352,10 +352,10 @@ def Example17():
 
 
 if __name__ == '__main__':
-    ShowLogging("Execution")
-    ShowLogging("Generation")
-    ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -369,7 +369,7 @@ if __name__ == '__main__':
     #     Example5_1()
     #     Example5_2()
     #     Example6()
-    Example6a()
+    # Example6a()
     # Example6b()
     #     Example7()
     #     Example8()
@@ -381,5 +381,5 @@ if __name__ == '__main__':
     #     Example14()
     #     Example15()
 
-    # Example16()
+    Example16()
     # Example17()

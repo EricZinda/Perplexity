@@ -33,6 +33,10 @@ class State(object):
         # Remember all the operations applied to the state object
         self.operations = []
 
+    # Defines what the default printed output of a state object is
+    def __repr__(self):
+        return ", ".join([variable_item[0] + " = " + str(variable_item[1]) for variable_item in self.variables.items() if variable_item[0] != 'tree'])
+
     # A standard "class method" is just a function definition,
     # indented properly, with "self" as the first argument
 

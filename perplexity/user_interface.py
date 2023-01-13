@@ -3,10 +3,13 @@ import os
 import platform
 import sys
 from delphin import ace
+from delphin.codecs import simplemrs
+
 from perplexity.execution import ExecutionContext
+from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.tree import find_predicate, tree_from_assignments
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force
+from perplexity.utilities import sentence_force, sentence_force_from_tree_info
 
 
 class UserInterface(object):
@@ -14,57 +17,160 @@ class UserInterface(object):
         self.max_holes = 13
         self.state = state
         self.execution_context = ExecutionContext(vocabulary)
+        self.interaction_record = None
 
     # response_function gets passed three arguments:
     #   response_function(mrs, solutions, error)
     # It must use them to return a string to say to the user
+    # Builds up a record of what happened so diagnostics
+    # can be printed later
     def interact_once(self, response_function):
         # input() pauses the program and waits for the user to
         # type input and hit enter, and then returns it
         user_input = str(input("? "))
-        best_failure = None
+
+        # If this was a system command, do whatever it does
+        # and then wait for the next one
+        if self.handle_command(user_input):
+            return
+
+        self.interaction_record = {"UserInput": user_input,
+                                   "Mrss": [],
+                                   "ChosenMrsIndex": None,
+                                   "ChosenTree": None,
+                                   "ChosenResponse": None}
 
         # Loop through each MRS and each tree that can be
         # generated from it...
         for mrs in self.mrss_from_phrase(user_input):
-            unknown_words = self.unknown_words(mrs)
-            if len(unknown_words) > 0:
-                if best_failure is None:
-                    best_failure = response_function(None, [], [0, ["unknownWords", unknown_words]])
+            mrs_record = {"Mrs": mrs,
+                          "UnknownWords": self.unknown_words(mrs),
+                          "Trees": []}
+            self.interaction_record["Mrss"].append(mrs_record)
+            if len(mrs_record["UnknownWords"]) > 0:
+                if self.interaction_record["ChosenResponse"] is None:
+                    self.interaction_record["ChosenResponse"] = response_function(None, [], [0, ["unknownWords", mrs_record["UnknownWords"]]])
+                    self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
+                    self.interaction_record["ChosenTree"] = len(mrs_record["Trees"]) - 1
 
                 continue
 
             for tree in self.trees_from_mrs(mrs):
+                tree_record = {"Tree": tree,
+                               "Solutions": [],
+                               "Error": None,
+                               "ResponseMessage": None}
+                mrs_record["Trees"].append(tree_record)
+
                 # Collect all the solutions for this tree against the
                 # current world state
                 tree_info = {"Index": mrs.index,
                              "Variables": mrs.variables,
                              "Tree": tree}
 
-                solutions = []
                 for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
                     pipeline_logger.debug(f"solution: {item}")
-                    solutions.append(item)
+                    tree_record["Solutions"].append(item)
 
                 # Determine the response to it
-                error = self.execution_context.error()
-                pipeline_logger.debug(f"{len(solutions)} solutions, error: {error}")
-                message = response_function(tree_info, solutions, error)
-                if len(solutions) > 0:
-                    # This worked, apply the results to the current world state if it was a command
-                    if sentence_force(tree_info) == "comm":
-                        self.apply_solutions_to_state(solutions)
+                tree_record["Error"] = self.execution_context.error()
+                pipeline_logger.debug(f"{len(tree_record['Solutions'])} solutions, error: {tree_record['Error']}")
+                tree_record["ResponseMessage"] = response_function(tree_info, tree_record["Solutions"], tree_record["Error"])
+                if len(tree_record["Solutions"]) > 0:
+                    self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
+                    self.interaction_record["ChosenTree"] = len(mrs_record["Trees"]) - 1
 
-                    print(message)
+                    # This worked, apply the results to the current world state if it was a command
+                    if sentence_force_from_tree_info(tree_info) == "comm":
+                        self.apply_solutions_to_state(tree_record["Solutions"])
+
+                    print(tree_record["ResponseMessage"])
                     return
+
                 else:
                     # This failed, remember it if it is the "best" failure
                     # which we currently define as the first one
-                    if best_failure is None:
-                        best_failure = message
+                    if self.interaction_record["ChosenResponse"] is None:
+                        self.interaction_record["ChosenResponse"] = tree_record["ResponseMessage"]
+                        self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
+                        self.interaction_record["ChosenTree"] = len(mrs_record["Trees"]) - 1
 
         # If we got here, nothing worked: print out the best failure
-        print(best_failure)
+        print(self.interaction_record["ChosenResponse"])
+
+    # Commands always start with "/", followed by a string of characters and then
+    # a space. Any arguments are after the space and their format is command specific.
+    # For example:
+    #   /show all
+    def handle_command(self, value):
+        cleaned_value = value.strip()
+        if len(cleaned_value) > 0 and cleaned_value[0] == "/":
+            parts = cleaned_value[1:].split(" ")
+            if len(parts) > 1:
+                all = parts[1].lower() == "all"
+            else:
+                all = False
+
+            if parts[0].lower() == "show":
+                self.print_diagnostics(all)
+
+            else:
+                print(f"unknown command '{parts[0]}'")
+
+            return True
+
+        else:
+            return False
+
+    def print_diagnostics(self, all):
+        if self.interaction_record is not None:
+            print(f"User Input: {self.interaction_record['UserInput']}")
+            print(f"{len(self.interaction_record['Mrss'])} Parses")
+
+            for mrs_index in range(0, len(self.interaction_record["Mrss"])):
+                if all or mrs_index == self.interaction_record["ChosenMrsIndex"]:
+                    extra = "CHOSEN " if mrs_index == self.interaction_record["ChosenMrsIndex"] else ""
+                    print(f"\n***** {extra}Parse #{mrs_index}:")
+                    mrs_record = self.interaction_record["Mrss"][mrs_index]
+                    print(simplemrs.encode(mrs_record["Mrs"], indent=True))
+                    print(f"\nUnknown words: {mrs_record['UnknownWords']}")
+                    if all:
+                        chosen_tree = None
+                    else:
+                        chosen_tree = self.interaction_record["ChosenTree"]
+
+                    self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record)
+
+    def print_diagnostics_trees(self, all, parse_number, chosen_tree, mrs_record):
+        if len(mrs_record["Trees"]) == 0:
+            # The trees aren't generated if we don't know terms for performance
+            # reasons (since we won't be evaluating anything)
+            tree_generator = [{"Tree": tree,
+                               "Solutions": [],
+                               "Error": None,
+                               "ResponseMessage": None} for tree in self.trees_from_mrs(mrs_record["Mrs"])]
+        else:
+            tree_generator = mrs_record["Trees"]
+
+        tree_index = 0
+        for tree in tree_generator:
+            if all or chosen_tree == tree_index:
+                extra = "CHOSEN " if chosen_tree == tree_index else ""
+                print(f"\n-- {extra}Parse #{parse_number}, {extra}Tree #{tree_index}: \n")
+                draw_tree = create_draw_tree(mrs_record["Mrs"], tree["Tree"])
+                renderer = TreeRenderer()
+                renderer.print_tree(draw_tree)
+                print(f"\n{tree['Tree']}")
+                if len(tree['Solutions']) > 0:
+                    for solution in tree['Solutions']:
+                        print(f"Solution: {str(solution)}")
+
+                else:
+                    print(f"Error: {tree['Error']}")
+
+                print(f"Response: {tree['ResponseMessage']}")
+
+            tree_index += 1
 
     def unknown_words(self, mrs):
         unknown_words = []

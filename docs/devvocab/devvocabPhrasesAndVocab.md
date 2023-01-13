@@ -1,5 +1,5 @@
 ## Phrases and Vocabulary
-When implementing a natural language system using DELPH-IN, you need to start by analyzing the phrases you want to support and the predications they generate that you will need to implement. We can interact with the system we [ended the previous section with](../devhowto/devhowtoPredicationArgumentsAndUsage) and turn tracing on in order to see the predications for the phrases we type.  
+When implementing a natural language system using DELPH-IN, start by analyzing the phrases you want to support and the predications they generate. The predications are what you'll need to implement. We can interact with the system we [ended the previous section with](../devhowto/devhowtoPredicationArgumentsAndUsage) and turn tracing on in order to see the predications for the phrases we type.  
 
 Here's the code we'll use:
 

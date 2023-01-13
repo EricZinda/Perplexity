@@ -81,7 +81,7 @@ def pron(state, x_who):
 
 # Many quantifiers are simply markers and should use this as
 # the default behavior
-@Predication(vocabulary, names=["_which_q", "pronoun_q"])
+@Predication(vocabulary, names=["which_q", "_which_q", "pronoun_q"])
 def default_quantifier(state, x_variable, h_rstr, h_body):
     # Find every solution to RSTR
     rstr_found = False
