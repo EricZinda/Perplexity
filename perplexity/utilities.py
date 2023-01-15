@@ -6,6 +6,8 @@
 #     "PredicateRaw":
 #     "Sense": "dir"...
 # }
+import importlib
+import inspect
 import logging
 import sys
 
@@ -74,6 +76,34 @@ def ShowLogging(name, level=logging.DEBUG):
     file_handler = logging.StreamHandler(sys.stdout)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
+
+# Get the actual module name even if it is the
+# initial python file run, which gets the module
+# name "__main__"
+def module_name(obj):
+    name = obj.__module__
+
+    if "__main__" in name:
+        # get parent modules of object
+        mod_obj = inspect.getmodule(obj)  # type: module
+
+        # from the filename of the module, get its name'
+        mod_suffix = inspect.getmodulename(inspect.getmodule(obj).__file__)
+
+        # join parent to child with a .
+        name = '.'.join([mod_obj.__package__, mod_suffix]) if (mod_obj.__package__ != "" and mod_obj.__package__ is not None) else mod_suffix
+
+    return name
+
+
+# Takes a pair of module and function names as strings and
+# imports the module and returns the function
+def import_function_from_names(module_name, function_name):
+    importlib.import_module(module_name)
+    module = sys.modules[module_name]
+    function = getattr(module, function_name)
+    return function
 
 
 pipeline_logger = logging.getLogger('Pipeline')

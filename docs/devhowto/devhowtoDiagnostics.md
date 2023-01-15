@@ -26,7 +26,7 @@ class UserInterface(object):
         self.interaction_record = {"UserInput": user_input,
                                    "Mrss": [],
                                    "ChosenMrsIndex": None,
-                                   "ChosenTree": None,
+                                   "ChosenTreeIndex": None,
                                    "ChosenResponse": None}
 
         # Loop through each MRS and each tree that can be

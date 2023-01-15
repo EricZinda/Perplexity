@@ -1,3 +1,4 @@
+import importlib
 import logging
 import os
 import platform
@@ -7,38 +8,62 @@ from delphin.codecs import simplemrs
 
 from perplexity.execution import ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
+from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predicate, tree_from_assignments
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, sentence_force_from_tree_info
+from perplexity.utilities import sentence_force, sentence_force_from_tree_info, module_name, import_function_from_names
 
 
 class UserInterface(object):
-    def __init__(self, state, vocabulary):
+    def __init__(self, reset, vocabulary, response_function):
         self.max_holes = 13
-        self.state = state
+        self.reset = reset
+        self.state = reset()
         self.execution_context = ExecutionContext(vocabulary)
+        self.response_function = response_function
         self.interaction_record = None
+        self.records = None
+        self.test_manager = TestManager()
 
     # response_function gets passed three arguments:
     #   response_function(mrs, solutions, error)
     # It must use them to return a string to say to the user
     # Builds up a record of what happened so diagnostics
     # can be printed later
-    def interact_once(self, response_function):
-        # input() pauses the program and waits for the user to
-        # type input and hit enter, and then returns it
-        user_input = str(input("? "))
+    def interact_once(self, force_input=None):
+        if force_input is None:
+            # input() pauses the program and waits for the user to
+            # type input and hit enter, and then returns it
+            user_input = str(input("? "))
+        else:
+            user_input = force_input
 
-        # If this was a system command, do whatever it does
-        # and then wait for the next one
-        if self.handle_command(user_input):
+        command_result = self.handle_command(user_input)
+        if command_result is True:
             return
 
-        self.interaction_record = {"UserInput": user_input,
-                                   "Mrss": [],
-                                   "ChosenMrsIndex": None,
-                                   "ChosenTree": None,
-                                   "ChosenResponse": None}
+        elif command_result is not None:
+            print(command_result)
+            self.interaction_record = {"UserInput": user_input,
+                                       "Mrss": [],
+                                       "ChosenMrsIndex": None,
+                                       "ChosenTreeIndex": None,
+                                       "ChosenResponse": command_result}
+
+        else:
+            self.interaction_record = {"UserInput": user_input,
+                                       "Mrss": [],
+                                       "ChosenMrsIndex": None,
+                                       "ChosenTreeIndex": None,
+                                       "ChosenResponse": None}
+
+        # self.records is a list if we are recording commands
+        if isinstance(self.records, list):
+            self.records.append(self.interaction_record)
+            print(f"Recorded ({len(self.records)} items).")
+
+        if command_result is not None:
+            return
 
         # Loop through each MRS and each tree that can be
         # generated from it...
@@ -49,9 +74,9 @@ class UserInterface(object):
             self.interaction_record["Mrss"].append(mrs_record)
             if len(mrs_record["UnknownWords"]) > 0:
                 if self.interaction_record["ChosenResponse"] is None:
-                    self.interaction_record["ChosenResponse"] = response_function(None, [], [0, ["unknownWords", mrs_record["UnknownWords"]]])
+                    self.interaction_record["ChosenResponse"] = self.response_function(None, [], [0, ["unknownWords", mrs_record["UnknownWords"]]])
                     self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
-                    self.interaction_record["ChosenTree"] = len(mrs_record["Trees"]) - 1
+                    self.interaction_record["ChosenTreeIndex"] = len(mrs_record["Trees"]) - 1
 
                 continue
 
@@ -75,10 +100,11 @@ class UserInterface(object):
                 # Determine the response to it
                 tree_record["Error"] = self.execution_context.error()
                 pipeline_logger.debug(f"{len(tree_record['Solutions'])} solutions, error: {tree_record['Error']}")
-                tree_record["ResponseMessage"] = response_function(tree_info, tree_record["Solutions"], tree_record["Error"])
+                tree_record["ResponseMessage"] = self.response_function(tree_info, tree_record["Solutions"], tree_record["Error"])
                 if len(tree_record["Solutions"]) > 0:
                     self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
-                    self.interaction_record["ChosenTree"] = len(mrs_record["Trees"]) - 1
+                    self.interaction_record["ChosenTreeIndex"] = len(mrs_record["Trees"]) - 1
+                    self.interaction_record["ChosenResponse"] = tree_record["ResponseMessage"]
 
                     # This worked, apply the results to the current world state if it was a command
                     if sentence_force_from_tree_info(tree_info) == "comm":
@@ -93,7 +119,7 @@ class UserInterface(object):
                     if self.interaction_record["ChosenResponse"] is None:
                         self.interaction_record["ChosenResponse"] = tree_record["ResponseMessage"]
                         self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
-                        self.interaction_record["ChosenTree"] = len(mrs_record["Trees"]) - 1
+                        self.interaction_record["ChosenTreeIndex"] = len(mrs_record["Trees"]) - 1
 
         # If we got here, nothing worked: print out the best failure
         print(self.interaction_record["ChosenResponse"])
@@ -102,25 +128,32 @@ class UserInterface(object):
     # a space. Any arguments are after the space and their format is command specific.
     # For example:
     #   /show all
-    def handle_command(self, value):
-        cleaned_value = value.strip()
-        if len(cleaned_value) > 0 and cleaned_value[0] == "/":
-            parts = cleaned_value[1:].split(" ")
-            if len(parts) > 1:
-                all = parts[1].lower() == "all"
-            else:
-                all = False
+    # If it returns:
+    # True: Command was handled and should not be recorded
+    # None: Was not a command
+    # Str: The string that should be recorded for the command
+    def handle_command(self, text):
+        try:
+            text = text.strip()
+            if len(text) > 0:
+                if text[0] == "/":
+                    text = text[1:]
+                    items = text.split()
+                    if len(items) > 0:
+                        command = items[0].strip().lower()
+                        command_info = command_data.get(command, None)
+                        if command_info is not None:
+                            return command_info["Function"](self, " ".join(text.split()[1:]))
 
-            if parts[0].lower() == "show":
-                self.print_diagnostics(all)
+                        else:
+                            print("Don't know that command ...")
+                            return True
 
-            else:
-                print(f"unknown command '{parts[0]}'")
-
+        except Exception as error:
+            print(str(error))
             return True
 
-        else:
-            return False
+        return None
 
     def print_diagnostics(self, all):
         if self.interaction_record is not None:
@@ -137,7 +170,7 @@ class UserInterface(object):
                     if all:
                         chosen_tree = None
                     else:
-                        chosen_tree = self.interaction_record["ChosenTree"]
+                        chosen_tree = self.interaction_record["ChosenTreeIndex"]
 
                     self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record)
 
@@ -264,5 +297,127 @@ class UserInterface(object):
         return ergFile
 
 
+def command_show(ui, arg):
+    all = arg.lower() == "all"
+    ui.print_diagnostics(all)
+    return True
+
+
+def command_record_test(ui, arg):
+    turn_on = bool(arg) if len(arg) > 0 else True
+    ui.records = [] if turn_on else None
+    print(f"Recording is now {turn_on}")
+    return True
+
+
+def command_create_test(ui, arg):
+    if len(arg) == 0:
+        print(f"Please supply a test name.")
+
+    else:
+        ui.test_manager.create_test(ui.reset, arg, ui.records)
+        ui.records = None
+        print(f"Recording is now off")
+
+    return True
+
+
+def command_append_test(ui, arg):
+    if len(arg) == 0:
+        print(f"Please supply a test name.")
+
+    else:
+        ui.test_manager.append_test(arg, ui.records)
+        ui.records = None
+        print(f"Recording is now off")
+
+    return True
+
+
+def command_run_test(ui, arg):
+    if len(arg) == 0:
+        print(f"Please supply a test name.")
+
+    else:
+        test_iterator = TestIterator(ui.test_manager.full_test_path(arg + ".tst"))
+
+        # Set the state to the state function the test requires
+        # and reset it
+        ui.reset = import_function_from_names(test_iterator.test["ResetModule"], test_iterator.test["ResetFunction"])
+        print(command_reset(ui, arg))
+
+        # Now run the tests in that state
+        ui.test_manager.run_tests(test_iterator, ui)
+
+    return True
+
+
+def command_run_folder(ui, arg):
+    if len(arg) == 0:
+        print(f"Please supply a folder name.")
+
+    else:
+        test_iterator = TestFolderIterator(ui.test_manager.full_test_path(arg))
+        ui.test_manager.run_tests(test_iterator, ui)
+
+    return True
+
+
+def command_reset(ui, arg):
+    ui.state = ui.reset()
+    return f"State reset using {module_name(ui.reset)}.{ui.reset.__name__}()."
+
+
+def command_new(ui, arg):
+    arg_parts = arg.split(".")
+    if len(arg_parts) != 2:
+        print("reset function must be in the form: module_name.function_name")
+        return True
+
+    ui.reset = import_function_from_names(arg_parts[0], arg_parts[1])
+    return command_reset(ui, arg)
+
+
+def command_help(ui, arg):
+    helpText = "\nCommands start with /:\n"
+
+    category = None
+    for descKey in command_data.keys():
+        if command_data[descKey]["Category"] != category:
+            category = command_data[descKey]["Category"]
+            helpText += f"\n****** {category} ******\n"
+
+        helpText += "/" + descKey + " " + command_data[descKey]["Description"] + " -> e.g. " + command_data[descKey]["Example"] + "\n"
+    print(helpText)
+    return True
+
+
 logger = logging.getLogger('UserInterface')
 pipeline_logger = logging.getLogger('Pipeline')
+command_data = {
+    "help": {"Function": command_help, "Category": "General",
+             "Description": "Get list of commands", "Example": "/help"},
+    "new": {"Function": command_new, "Category": "General",
+            "Description": "Calls the passed function to get the new state to use",
+            "Example": "/new examples.Example18_reset"},
+    "reset": {"Function": command_reset, "Category": "General",
+              "Description": "Resets to the initial state",
+              "Example": "/reset"},
+    "show": {"Function": command_show, "Category": "Parsing",
+             "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
+             "Example": "/show or /show all"},
+    "recordtest": {"Function": command_record_test, "Category": "Testing",
+                   "Description": "Starts recording a test. Finish with /createtest or /appendtest", "Example": "/record"},
+    "createtest": {"Function": command_create_test, "Category": "Testing",
+                   "Description": "Creates a test using name you specify based on the interactions recorded by /record",
+                   "Example": "/createtest Foo"},
+    "appendtest": {"Function": command_append_test, "Category": "Testing",
+                   "Description": "Appends the interactions recorded by /record to an existing test",
+                   "Example": "/appendtest Foo"},
+    "runtest": {"Function": command_run_test, "Category": "Testing",
+                "Description": "Runs a test",
+                "Example": "/runtest subdirectory/foo"},
+    "runfolder": {"Function": command_run_folder, "Category": "Testing", "WebSafe": False,
+                  "Description": "Runs all tests in a directory",
+                  "Example": "/runfolder foldername"}
+}

@@ -5,7 +5,6 @@ from file_system_example.vocabulary import folder_n_of, vocabulary
 from perplexity.execution import ExecutionContext, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 
-
 ##########################
 # Helpers that allow the examples to use
 # old interfaces in the early parts of the docs
@@ -325,30 +324,58 @@ def Example15():
 
     print(solve_and_respond(state, mrs))
 
-    
+
+def Example16_reset():
+    return State([Actor(name="Computer", person=2),
+                  Folder(name="Desktop"),
+                  Folder(name="Documents"),
+                  File(name="file1.txt", size=2000000)])
+
+
 def Example16():
     # ShowLogging("Pipeline")
-
-    state = State([Actor(name="Computer", person=2),
-                   Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt", size=2000000)])
-
-    user_interface = UserInterface(state, vocabulary)
+    user_interface = UserInterface(Example16_reset, vocabulary, respond_to_mrs_tree)
 
     while True:
-        user_interface.interact_once(respond_to_mrs_tree)
+        user_interface.interact_once()
         print()
 
 
 def Example17():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents")])
-    user_interface = UserInterface(state, vocabulary)
+    def reset():
+        return State([Folder(name="Desktop"),
+                      Folder(name="Documents")])
+
+    user_interface = UserInterface(reset, vocabulary, None)
 
     for mrs in user_interface.mrss_from_phrase("every book is in a cave"):
         for tree in user_interface.trees_from_mrs(mrs):
             print(tree)
+
+
+def Example18_reset():
+    return State([Actor(name="Computer", person=2),
+                  Folder(name="Desktop"),
+                  Folder(name="Documents"),
+                  File(name="file1.txt", size=1000000)
+                  ])
+
+
+def Example18a_reset():
+    return State([Actor(name="Computer", person=2),
+                  Folder(name="Desktop"),
+                  Folder(name="Documents"),
+                  File(name="file1.txt", size=20000000),
+                  File(name="file2.txt", size=1000000)])
+
+
+def Example18():
+    # ShowLogging("Pipeline")
+    user_interface = UserInterface(Example18_reset, vocabulary, respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once()
+        print()
 
 
 if __name__ == '__main__':
@@ -381,5 +408,6 @@ if __name__ == '__main__':
     #     Example14()
     #     Example15()
 
-    Example16()
+    # Example16()
     # Example17()
+    Example18()

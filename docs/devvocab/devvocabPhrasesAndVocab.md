@@ -1,5 +1,5 @@
 ## Phrases and Vocabulary
-When implementing a natural language system using DELPH-IN, start by analyzing the phrases you want to support and the predications they generate. The predications are what you'll need to implement. We can interact with the system we [ended the previous section with](../devhowto/devhowtoPredicationArgumentsAndUsage) and turn tracing on in order to see the predications for the phrases we type.  
+When implementing a natural language system using DELPH-IN, start by analyzing the phrases you want to support and the predications they generate. The predications are what you'll need to implement. We can interact with the system we [ended the previous section with](../devhowto/devhowtoPredicationArgumentsAndUsage) and use the diagnostics features (i.e. `/show`) to see the predications for the phrases we type.  
 
 Here's the code we'll use:
 
@@ -28,10 +28,24 @@ We should support "where am i?" by having a notion of the "current" directory an
 ~~~
 # Running Example16() gives:
 ? where am i
-Pipeline 2023-01-11 13:58:27,286: 1 parse options for where am i
-Pipeline 2023-01-11 13:58:27,294: Parse 0: <MRS object (loc_nonsp place_n which_q pron pronoun_q) at 140561813576608>
-Pipeline 2023-01-11 13:58:27,294: Unknown predications: [('loc_nonsp', ['e', 'x', 'x'], 'ques', False), ('place_n', ['x'], 'ques', False)]
 I don't know the words: loc_nonsp, place
+
+? /show
+User Input: where am i
+1 Parses
+
+***** CHOSEN Parse #0:
+[ "where am i"
+  TOP: h0
+  INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ]
+  RELS: < [ loc_nonsp<0:5> LBL: h1 ARG0: e2 ARG1: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ARG2: x4 [ x PERS: 3 NUM: sg ] ]
+          [ place_n<0:5> LBL: h5 ARG0: x4 ]
+          [ which_q<0:5> LBL: h6 ARG0: x4 RSTR: h7 BODY: h8 ]
+          [ pron<9:10> LBL: h9 ARG0: x3 ]
+          [ pronoun_q<9:10> LBL: h10 ARG0: x3 RSTR: h11 BODY: h12 ] >
+  HCONS: < h0 qeq h1 h7 qeq h5 h11 qeq h9 > ]
+
+Unknown words: [('loc_nonsp', ['e', 'x', 'x'], 'ques', False), ('place_n', ['x'], 'ques', False)]
 ~~~
 
 

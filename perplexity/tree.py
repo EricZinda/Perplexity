@@ -155,12 +155,12 @@ class Cormen2001(object):
 # it calls func(found_predication)
 # If func returns anything besides "None", it quits and
 # returns that value
-def walk_tree_until(term, func):
+def walk_tree_predications_until(term, func):
     if isinstance(term[0], list):
         # This is a conjunction, recurse through the
         # items in it
         for item in term:
-            result = walk_tree_until(item, func)
+            result = walk_tree_predications_until(item, func)
             if result is not None:
                 return result
 
@@ -174,7 +174,40 @@ def walk_tree_until(term, func):
         # i.e. are predications themselves
         for arg in term[1:]:
             if not isinstance(arg, str):
-                result = walk_tree_until(arg, func)
+                result = walk_tree_predications_until(arg, func)
+                if result is not None:
+                    return result
+
+    return None
+
+
+# Calls predication_func(predication) for every predication encountered
+# Calls arg_func(predication, arg) with the raw value of every scopal argument
+# If either returns anything besides None, stops recursing and returns that value
+def walk_tree_args_until(term, predication_func, arg_func):
+    if isinstance(term[0], list):
+        # This is a conjunction, recurse through the
+        # items in it
+        for item in term:
+            result = walk_tree_args_until(item, predication_func, arg_func)
+            if result is not None:
+                return result
+
+    else:
+        # This is a single term, call func with it
+        result = predication_func(term)
+        if result is not None:
+            return result
+
+        # If func didn't say to quit, see if any of its terms are scopal
+        # i.e. are predications themselves
+        for arg in term[1:]:
+            if not isinstance(arg, str):
+                result = arg_func(term, arg)
+                if result is not None:
+                    return result
+
+                result = walk_tree_args_until(arg, predication_func, arg_func)
                 if result is not None:
                     return result
 
@@ -197,7 +230,7 @@ def find_predicate(term, predication_name):
     # Pass our private function to WalkTreeUntil as
     # a way to filter through the tree to find
     # predication_name
-    return walk_tree_until(term, match_predication_name)
+    return walk_tree_predications_until(term, match_predication_name)
 
 
 # Inverse of predication_from_index:
@@ -205,15 +238,16 @@ def find_predicate(term, predication_name):
 def index_of_predication(tree_info, stop_predication):
     current_predication_index = [1]
 
-    def stop_at_branch(predication):
+    def stop_at_arg(_, predication):
         if predication == stop_predication:
             # This is the predication we are looking for
             # Return the index of it
             return current_predication_index[0]
-        else:
-            current_predication_index[0] = current_predication_index[0] + 1
 
-    return walk_tree_until(tree_info["Tree"], stop_at_branch)
+    def call_per_predication(predication):
+        current_predication_index[0] = current_predication_index[0] + 1
+
+    return walk_tree_args_until(tree_info["Tree"], call_per_predication, stop_at_arg)
 
 
 # Inverse of index_of_predication:
@@ -236,7 +270,7 @@ def predication_from_index(tree_info, index):
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
     # the function record_predications_until_failure_index(), until hits the
     # failure_index position
-    walk_tree_until(tree_info["Tree"], stop_at_index)
+    walk_tree_predications_until(tree_info["Tree"], stop_at_index)
 
     return index_predication
 

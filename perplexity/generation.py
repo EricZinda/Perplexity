@@ -1,5 +1,5 @@
 import logging
-from perplexity.tree import walk_tree_until, index_of_predication
+from perplexity.tree import walk_tree_predications_until, index_of_predication
 from perplexity.utilities import parse_predication_name
 
 
@@ -9,6 +9,7 @@ def english_for_delphin_variable(failure_index, variable, mrs):
     if isinstance(variable, list):
         if variable[0] == "AtPredication":
             failure_index = index_of_predication(mrs, variable[1])
+            logger.debug(f"error predication index is: {failure_index}")
             variable = variable[2]
 
     # Integers can't be passed by reference in Python, so we need to pass
@@ -18,12 +19,14 @@ def english_for_delphin_variable(failure_index, variable, mrs):
     # This function will be called for every predication in the MRS
     # as we walk it in execution order
     def record_predications_until_failure_index(predication):
-        logger.debug(f"error predication index {current_predication_index[0]}: {predication[0]}")
 
         # Once we have hit the index where the failure happened, stop
         if current_predication_index[0] == failure_index:
+            logger.debug(f"(stop and ignore) error predication index {current_predication_index[0]}: {predication[0]}")
             return False
         else:
+            logger.debug(f"(refine NLG) error predication index {current_predication_index[0]}: {predication[0]}")
+
             # See if this predication can contribute anything to the
             # description of the variable we are describing. If so,
             # collect it in nlg_data
@@ -36,7 +39,7 @@ def english_for_delphin_variable(failure_index, variable, mrs):
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
     # the function record_predications_until_failure_index(), until hits the
     # failure_index position
-    walk_tree_until(mrs["Tree"], record_predications_until_failure_index)
+    walk_tree_predications_until(mrs["Tree"], record_predications_until_failure_index)
 
     # Take the data we gathered and convert to English
     logger.debug(f"NLG data for {variable}: {nlg_data}")
