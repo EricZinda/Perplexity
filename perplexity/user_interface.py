@@ -165,7 +165,9 @@ class UserInterface(object):
                     extra = "CHOSEN " if mrs_index == self.interaction_record["ChosenMrsIndex"] else ""
                     print(f"\n***** {extra}Parse #{mrs_index}:")
                     mrs_record = self.interaction_record["Mrss"][mrs_index]
-                    print(simplemrs.encode(mrs_record["Mrs"], indent=True))
+                    mrs = mrs_record['Mrs']
+                    print(f"Sentence Force: {sentence_force(mrs.index, mrs.variables)}")
+                    print(simplemrs.encode(mrs, indent=True))
                     print(f"\nUnknown words: {mrs_record['UnknownWords']}")
                     if all:
                         chosen_tree = None
