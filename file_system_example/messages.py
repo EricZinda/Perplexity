@@ -1,5 +1,4 @@
 import logging
-
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predicate, predication_from_index
 from perplexity.utilities import parse_predication_name, sentence_force_from_tree_info
@@ -27,6 +26,9 @@ def respond_to_mrs_tree(tree, solutions, error):
     elif sentence_force_type == "ques":
         # See if this is a "WH" type question
         wh_predication = find_predicate(tree["Tree"], "_which_q")
+        if wh_predication is None:
+            wh_predication = find_predicate(tree["Tree"], "which_q")
+
         if wh_predication is None:
             # This was a simple question, so the user only expects
             # a yes or no.

@@ -4,6 +4,8 @@
 import copy
 import json
 import os
+import sys
+import traceback
 import uuid
 from perplexity.utilities import module_name
 
@@ -87,7 +89,14 @@ class TestManager(object):
         print("\n**** Begin Testing...\n")
         for test_item in test_iterator:
             print(f"\nTest: {test_item['Command']}")
-            ui.interact_once(test_item["Command"])
+            try:
+                ui.interact_once(test_item["Command"])
+
+            except Exception as error:
+                print(f"**** HALTING: Exception in test run: {error}")
+                traceback.print_tb(error.__traceback__, file=sys.stdout)
+                break
+
             if not self.check_result(test_iterator, test_item, ui.interaction_record):
                 print("**** Cancel test run")
                 break

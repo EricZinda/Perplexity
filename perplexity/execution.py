@@ -70,7 +70,7 @@ class ExecutionContext(object):
     #   The first item is the predication name
     #   The rest of the items are the arguments
     def _call_predication(self, state, predication):
-        logger.debug(f"call {self._predication_index}: {predication[0]} [{self._phrase_type}]")
+        logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
 
         # The [0] syntax returns the first item in a list
         predication_name = predication[0]

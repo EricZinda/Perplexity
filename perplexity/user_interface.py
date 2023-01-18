@@ -168,7 +168,9 @@ class UserInterface(object):
                     mrs = mrs_record['Mrs']
                     print(f"Sentence Force: {sentence_force(mrs.index, mrs.variables)}")
                     print(simplemrs.encode(mrs, indent=True))
-                    print(f"\nUnknown words: {mrs_record['UnknownWords']}")
+                    if len(mrs_record['UnknownWords']) > 0:
+                        print(f"\nUnknown words: {mrs_record['UnknownWords']}")
+
                     if all:
                         chosen_tree = None
                     else:
@@ -203,7 +205,7 @@ class UserInterface(object):
                 else:
                     print(f"Error: {tree['Error']}")
 
-                print(f"Response: {tree['ResponseMessage']}")
+                print(f"Response:\n {tree['ResponseMessage']}")
 
             tree_index += 1
 
@@ -222,7 +224,9 @@ class UserInterface(object):
                                       # better error messages
                                       self.execution_context.vocabulary.version_exists(predication.predicate)))
 
-        pipeline_logger.debug(f"Unknown predications: {unknown_words}")
+        if len(unknown_words) > 0:
+            pipeline_logger.debug(f"Unknown predications: {unknown_words}")
+
         return unknown_words
 
     def apply_solutions_to_state(self, solutions):

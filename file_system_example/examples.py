@@ -1,6 +1,6 @@
 from file_system_example.messages import respond_to_mrs_tree
-from file_system_example.objects import Folder, File, Actor
-from file_system_example.state import State
+from file_system_example.objects import Folder, File, Actor, FileSystemMock
+from file_system_example.state import State, FileSystemState
 from file_system_example.vocabulary import folder_n_of, vocabulary
 from perplexity.execution import ExecutionContext, call, execution_context
 from perplexity.generation import english_for_delphin_variable
@@ -378,8 +378,40 @@ def Example18():
         print()
 
 
+def Example19_reset():
+    return State([Actor(name="User", person=1),
+                  Actor(name="Computer", person=2),
+                  Folder(name="Desktop"),
+                  Folder(name="Documents", contained_items=[File(name="file1.txt", size=1000000)]),
+                  File(name="file1.txt", size=1000000)
+                  ])
+
+
+def Example19():
+    # ShowLogging("Pipeline")
+    user_interface = UserInterface(Example19_reset, vocabulary, respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
+def Example20_reset():
+    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt"),
+                                           (False, "/Desktop")],
+                                          "/Desktop"))
+
+
+def Example20():
+    user_interface = UserInterface(Example20_reset, vocabulary, respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
-    # ShowLogging("Execution")
+    ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     # ShowLogging("Pipeline")
@@ -410,4 +442,6 @@ if __name__ == '__main__':
 
     # Example16()
     # Example17()
-    Example18()
+    # Example18()
+    Example19()
+    # Example20()

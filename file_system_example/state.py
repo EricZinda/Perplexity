@@ -1,4 +1,6 @@
 import copy
+import logging
+from file_system_example.objects import Actor
 
 
 # The state representation used by the file system example
@@ -8,11 +10,7 @@ import copy
 # "class" declares an object-oriented class in Python
 # The parenthesis after the "State" class name surround
 # the object the class derives from (object)
-import logging
-
-
 class State(object):
-
     # All class methods are indented under the
     # class and take "self" as their first argument.
     # "self" represents the class instance.
@@ -94,6 +92,19 @@ class State(object):
 
     def get_operations(self):
         return copy.deepcopy(self.operations)
+
+
+# Optimized for the file system example
+class FileSystemState(State):
+    def __init__(self, file_system):
+        super().__init__([])
+        self.file_system = file_system
+        self.actors = [Actor(name="User", person=1, file_system=file_system),
+                       Actor(name="Computer", person=2, file_system=file_system)]
+
+    def all_individuals(self):
+        yield from self.file_system.all_individuals()
+        yield from self.actors
 
 
 pipeline_logger = logging.getLogger('Pipeline')

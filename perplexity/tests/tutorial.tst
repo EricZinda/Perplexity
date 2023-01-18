@@ -1,14 +1,7 @@
 {
     "ResetModule": "examples",
-    "ResetFunction": "Example18_reset",
+    "ResetFunction": "Example19_reset",
     "TestItems": [
-        {
-            "Command": "/new examples.Example18_reset",
-            "Expected": "State reset using examples.Example18_reset().",
-            "Tree": null,
-            "Enabled": true,
-            "ID": "9d1434ed-a7ca-40e2-a3e8-e155278550a6"
-        },
         {
             "Command": "a file is large",
             "Expected": "a file is not large",
@@ -53,7 +46,7 @@
         },
         {
             "Command": "/reset",
-            "Expected": "State reset using examples.Example18_reset().",
+            "Expected": "State reset using examples.Example19_reset().",
             "Tree": null,
             "Enabled": true,
             "ID": "f1f577f2-ddfb-4f7b-9ea2-e58ce52277ff"
@@ -95,10 +88,24 @@
         },
         {
             "Command": "he deletes a file",
-            "Expected": "unexpected: I don't know the way you used: delete",
+            "Expected": "I don't know the way you used: delete",
             "Tree": null,
             "Enabled": true,
             "ID": "141f6357-7d42-48f1-aa83-d7c0811b35c1"
+        },
+        {
+            "Command": "/new examples.Example20_reset",
+            "Expected": "State reset using examples.Example20_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "5eb557b0-97c5-483a-9498-e2772547caa1"
+        },
+        {
+            "Command": "where am i",
+            "Expected": "Folder(name=/, size=0)\nFolder(name=/Desktop, size=0)\n",
+            "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
+            "Enabled": true,
+            "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
         }
     ]
 }

@@ -1,6 +1,5 @@
 import logging
-
-from file_system_example.objects import File, DeleteOperation, Folder, Actor
+from file_system_example.objects import File, DeleteOperation, Folder, Actor, Container
 from perplexity.execution import ExecutionContext, call, report_error, execution_context
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
@@ -81,7 +80,7 @@ def pron(state, x_who):
 
 # Many quantifiers are simply markers and should use this as
 # the default behavior
-@Predication(vocabulary, names=["which_q", "_which_q", "pronoun_q"])
+@Predication(vocabulary, names=["pronoun_q"])
 def default_quantifier(state, x_variable, h_rstr, h_body):
     # Find every solution to RSTR
     rstr_found = False
@@ -95,6 +94,18 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
     if not rstr_found:
         # Ignore whatever error the RSTR produced, this is a better one
         report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
+
+
+def rstr_reorderable(rstr):
+    return len(rstr) == 1 and rstr[0][0] in ["place_n"]
+
+
+@Predication(vocabulary, names=["which_q", "_which_q"])
+def which_q(state, x_variable, h_rstr, h_body):
+    # if rstr_reorderable(h_rstr):
+    #     yield from default_quantifier(state, x_variable, h_body, h_rstr)
+    # else:
+    yield from default_quantifier(state, x_variable, h_rstr, h_body)
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
@@ -150,6 +161,49 @@ def small_a_1(state, e_introduced, x_target):
             yield new_state
         else:
             report_error(["adjectiveDoesntApply", "small", x_target])
+
+
+@Predication(vocabulary)
+def place_n(state, x):
+    x_value = state.get_variable(x)
+
+    if x_value is None:
+        iterator = state.all_individuals()
+    else:
+        iterator = [x_value]
+
+    for item in iterator:
+        # Any object is a "place" as long as it can
+        # contain things
+        if isinstance(item, Container):
+            yield state.set_x(x, item)
+
+
+@Predication(vocabulary)
+def loc_nonsp(state, e_introduced, x_actor, x_location):
+    x_actor_value = state.get_variable(x_actor)
+    x_location_value = state.get_variable(x_location)
+
+    if x_actor_value is not None:
+        if hasattr(x_actor_value, "all_locations"):
+            if x_location_value is None:
+                # This is a "where is X?" type query since no location specified
+                for location in x_actor_value.all_locations():
+                    yield state.set_x(x_location, location)
+            else:
+                # The system is asking if a location of x_actor is x_location,
+                # so check the list exhaustively until we find a match, then stop
+                for location in x_actor_value.all_locations():
+                    if location == x_location_value:
+                        # Variables are already set,
+                        # no need to set them again, just return the state
+                        yield state
+                        break
+    else:
+        # For now, return errors for cases where x_actor is unbound
+        pass
+
+    report_error(["thingHasNoLocation", x_actor, x_location])
 
 
 @Predication(vocabulary, names=["_file_n_of"])
