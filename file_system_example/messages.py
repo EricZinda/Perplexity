@@ -1,6 +1,7 @@
 import logging
 from perplexity.generation import english_for_delphin_variable
-from perplexity.tree import find_predicate, predication_from_index
+from perplexity.tree import find_predicate, predication_from_index, \
+    find_predicate_from_introduced
 from perplexity.utilities import parse_predication_name, sentence_force_from_tree_info
 
 
@@ -39,17 +40,21 @@ def respond_to_mrs_tree(tree, solutions, error):
                 message = generate_message(tree, error)
                 return message
         else:
-            # This was a "WH" question
-            # return the values of the variable asked about
-            # from the solution
+            # This was a "WH" question. Return the values of the variable
+            # asked about from the solution
             # The phrase was "true" if there was at least one answer
             if len(solutions) > 0:
+                # Build an error term that we can use to call generate_message
+                # to get the response
+                index_predication = find_predicate_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication[1]
-                message = ""
+                answer_items = []
                 for solution in solutions:
-                    message += str(solution.get_variable(wh_variable)) + "\n"
+                    answer_items.append(solution.get_variable(wh_variable))
 
+                message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
                 return message
+
             else:
                 message = generate_message(tree, error)
                 return message
@@ -135,6 +140,32 @@ def generate_message(tree_info, error_term):
                 return f"I don't understand the way you are using '{parsed_originator['Lemma']}' with '{parsed_predicate['Lemma']}'"
 
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
+
+    elif error_constant == "answerWithList":
+        answer_predication = error_arguments[1]
+        answer_items = error_arguments[2]
+
+        if len(answer_items) > 0:
+            message = ""
+
+            if answer_predication[0] == "loc_nonsp":
+                # if "loc_nonsp" is the "verb", it means the phrase was
+                # "Where is YYY?", so only return the "best" answer, which
+                # is the most specific one
+                best_answer = ""
+                for answer_item in answer_items:
+                    current_answer = str(answer_item.name)
+                    if len(current_answer) > len(best_answer):
+                        best_answer = current_answer
+                message = f"in {best_answer}"
+
+            else:
+                for answer_item in answer_items:
+                    message += str(answer_item) + "\n"
+
+            return message
+        else:
+            return ""
 
     else:
         return error_term

@@ -397,8 +397,8 @@ def Example19():
 
 
 def Example20_reset():
-    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt"),
-                                           (False, "/Desktop")],
+    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
+                                           (False, "/Desktop", {})],
                                           "/Desktop"))
 
 
@@ -411,7 +411,7 @@ def Example20():
 
 
 if __name__ == '__main__':
-    ShowLogging("Execution")
+    # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     # ShowLogging("Pipeline")
@@ -443,5 +443,5 @@ if __name__ == '__main__':
     # Example16()
     # Example17()
     # Example18()
-    Example19()
-    # Example20()
+    # Example19()
+    Example20()

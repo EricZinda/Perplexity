@@ -271,9 +271,9 @@ Folder(name=/, size=0)
 Folder(name=/Desktop, size=0)
 ~~~
 
-The system responded with all the locations where the user "is", namely the `/` folder and the `/Desktop` folder. There are a few things we need to improve here: 
+The system responded with all the locations where the user "is", namely the `/` folder and the `/Desktop` folder. There are two things we need to improve here: 
 
-First, It would be nicer to respond to "Where am I?" with something like "In the "/" and "/Desktop" folders"
+First, It would be nicer to respond to "Where am I?" with something like "in /Desktop", since exhaustively listing all the folders probably isn't what the user wants.  
 
 Even more importantly: It isn't obvious from the output, but the query literally finds every `place` in the world (i.e. *every* file and folder) and calls `loc_nonsp` with each one. If we turn on tracing and run it again, you can see `call 5: ['loc_nonsp', ...` being called with `x4` (i.e. `x_location`) being set to every file and folder in our test data before the solution is returned: 
 

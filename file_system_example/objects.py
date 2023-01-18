@@ -116,7 +116,7 @@ class FileSystemMock(FileSystem):
     # current = the user's current directory as a string
     #
     # file_list must be in the form:
-    # [(True, "/dir1/dir2/filename.txt" # Set to True for a file
+    # [(True, "/dir1/dir2/filename.txt", {"size": 1000} # Set to True for a file
     #  (False, "/dir3/dir4" # Set to False for a directory
     # ]
     # Adds the entire path of each directory as individual directories
@@ -129,16 +129,30 @@ class FileSystemMock(FileSystem):
         for item in file_list:
             if item[0]:
                 # This is a file
-                self.files[item[1]] = {}
+                new_file = File(name=item[1])
+                self.set_properties(new_file, item[2])
+                self.files[item[1]] = new_file
                 root_path = os.path.dirname(item[1])
+
             else:
                 # This is a directory
                 root_path = item[1]
+                new_folder = Folder(root_path)
+                self.set_properties(new_folder, item[2])
+                self.directories[root_path] = new_folder
 
             # Add all of the parent directories from the item
-            self.directories[root_path] = {}
+            # But only if they haven't been added yet so we don't
+            # erase any properties that have been specifically set
+            # on them
             for new_path in Path(root_path).parents:
-                self.directories[new_path] = {}
+                if new_path not in self.directories:
+                    self.directories[new_path] = Folder(new_path)
+
+    def set_properties(self, obj, props):
+        for prop in props.items():
+            if hasattr(obj, prop[0]):
+                setattr(obj, prop[0], prop[1])
 
     def current_directory(self):
         return Folder(self.current)
@@ -148,7 +162,7 @@ class FileSystemMock(FileSystem):
             yield Folder(name=item[0])
 
         for item in self.files.items():
-            yield File(name=item[0])
+            yield item[1]
 
 
 pipeline_logger = logging.getLogger('Pipeline')

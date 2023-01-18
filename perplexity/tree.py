@@ -214,6 +214,16 @@ def walk_tree_args_until(term, predication_func, arg_func):
     return None
 
 
+def find_predicate_from_introduced(term, introduced_variable):
+    def match_introduced_variable(predication):
+        if predication[1] == introduced_variable:
+            return predication
+        else:
+            return None
+
+    return walk_tree_predications_until(term, match_introduced_variable)
+
+
 # Walk the tree represented by "term" and
 # return the predication that matches
 # "predicate_name" or "None" if none is found

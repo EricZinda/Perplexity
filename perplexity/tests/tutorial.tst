@@ -102,7 +102,7 @@
         },
         {
             "Command": "where am i",
-            "Expected": "Folder(name=/, size=0)\nFolder(name=/Desktop, size=0)\n",
+            "Expected": "in /Desktop",
             "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
             "Enabled": true,
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
