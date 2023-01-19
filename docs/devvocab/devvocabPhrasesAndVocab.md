@@ -24,8 +24,8 @@ Note that the previous section already implemented an initial set of predication
 
 To determine the next set, let's feed phrases we want to support into `Example18()` and see what predications are missing.
 
-### Where am i?
-We should support "where am i?" by having a notion of the "current" directory and printing it:
+### "Where am i?": `loc_nonsp` and `place_n`
+"Where am I?" generates the following MRS:
 ~~~
 # Running Example18() gives:
 ? where am i
@@ -49,11 +49,43 @@ User Input: where am i
 Unknown words: [('loc_nonsp', ['e', 'x', 'x'], 'ques', False), ('place_n', ['x'], 'ques', False)]
 ~~~
 
-what files are there?
-what is in this directory?
-Where is X?
-Find all the files that X
-copy foo.txt to the folder named desktop
+We'll need to [implement the `loc_nonsp` and `place_n` predications](devvocabLoc_nonspAndPlace) to make it work. In that topic we'll also implement a notion of the "current" directory to support it.
+
+### "What is in this directory?": `thing`, _`in_p_loc`, _`this_q_dem`
+"What is in this directory?" introduces 3 new predications:
+
+~~~
+? what is in this directory?
+I don't know the words: thing, in, this, directory
+
+? /show
+User Input: what is in this directory?
+7 Parses
+
+***** CHOSEN Parse #0:
+Sentence Force: ques
+[ "what is in this directory?"
+  TOP: h0
+  INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ]
+  RELS: < [ thing<0:4> LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg ] ]
+          [ which_q<0:4> LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ]
+          [ _in_p_loc<8:10> LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: sg IND: + ] ]
+          [ _this_q_dem<11:15> LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ]
+          [ _directory_n_1<16:25> LBL: h12 ARG0: x8 ] >
+  HCONS: < h0 qeq h1 h6 qeq h4 h10 qeq h12 > ]
+
+Unknown words: [('thing', ['x'], 'ques', False), ('_in_p_loc', ['e', 'x', 'x'], 'ques', False), ('_this_q_dem', ['x', 'h', 'h'], 'ques', False), ('_directory_n_1', ['x'], 'ques', False)]
+~~~
+
+We'll need to implement `thing`, `in_p_loc`, `this_q_dem` to make it work.
+
+### TBD
+
+- what files are there?
+- what is in this directory?
+- Where is X?
+- Find all the files that X
+- copy foo.txt to the folder named desktop
 
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

@@ -8,6 +8,8 @@ from pathlib import Path
 # Base class that objects derive from so that
 # objects have a unique ID that is preserved even
 # when they are copied
+
+
 class UniqueObject(object):
     def __init__(self):
         self.unique_id = uuid.uuid4()
@@ -17,27 +19,31 @@ class Container(UniqueObject):
     def __init__(self):
         super().__init__()
 
+    def contained_items(self):
+        pass
+
 
 # Derive from UniqueObject and call
 # its __init__ method from this __init__
 # method so we get the unique ID created
 class Folder(Container):
-    def __init__(self, name, size=0, contained_items=[]):
+    def __init__(self, name, size=0, file_system=None):
         super().__init__()
         self.name = name
         self.size = size
-        self.contained_items = contained_items
+        self.file_system = file_system
 
     def __repr__(self):
         return f"Folder(name={self.name}, size={self.size})"
 
-    def contains(self, item):
-        return item in self.contained_items
+    def contained_items(self):
+        for item in self.file_system.contained_items(self):
+            yield item
 
     def all_locations(self):
         path = Path(self.name)
-        for item in path.parents:
-            yield Folder(item)
+        for parent_path in path.parents:
+            yield self.file_system.item_from_path(parent_path)
 
     def __eq__(self, obj):
         return isinstance(obj, Folder) and self.name == obj.name
@@ -47,16 +53,23 @@ class Folder(Container):
 
 
 class File(Container):
-    def __init__(self, name, size=None):
+    def __init__(self, name, size=None, file_system=None):
         super().__init__()
         self.name = name
         self.size = size
+        self.file_system = file_system
 
     def __repr__(self):
         return f"File(name={self.name}, size={self.size})"
 
+    def __eq__(self, obj):
+        return isinstance(obj, File) and self.name == obj.name
+
+    def __ne__(self, obj):
+        return not self == obj
+
     def all_locations(self):
-        folder = Folder(pathlib.Path(self.name))
+        folder = self.file_system.item_from_path(pathlib.Path(self.name))
         yield folder
         yield from folder.all_locations()
 
@@ -82,20 +95,6 @@ class Actor(UniqueObject):
             yield from self.current_directory.all_locations()
 
 
-# Delete any object in the system
-class DeleteOperation(object):
-    def __init__(self, object_to_delete):
-        self.object_to_delete = object_to_delete
-
-    def apply_to(self, state):
-        for index in range(0, len(state.objects)):
-            # Use the `unique_id` property to compare objects since they
-            # may have come from different `State` objects and will thus be copies
-            if state.objects[index].unique_id == self.object_to_delete.unique_id:
-                state.objects.pop(index)
-                break
-
-
 class FileSystem(object):
     def __init__(self, file_list, current):
         pass
@@ -107,6 +106,15 @@ class FileSystem(object):
     # Return all directories and files
     # in the whole system
     def all_individuals(self):
+        pass
+
+    def contained_items(self, folder):
+        pass
+
+    def item_from_path(self, path):
+        pass
+
+    def delete_item(self, path):
         pass
 
 
@@ -122,32 +130,32 @@ class FileSystemMock(FileSystem):
     # Adds the entire path of each directory as individual directories
     # in the file system
     def __init__(self, file_list, current):
-        self.current = current
-        self.directories = {}
-        self.files = {}
+        self.items = {}
 
         for item in file_list:
             if item[0]:
                 # This is a file
-                new_file = File(name=item[1])
+                new_file = File(name=item[1], file_system=self)
                 self.set_properties(new_file, item[2])
-                self.files[item[1]] = new_file
+                self.items[item[1]] = new_file
                 root_path = os.path.dirname(item[1])
 
             else:
                 # This is a directory
                 root_path = item[1]
-                new_folder = Folder(root_path)
+                new_folder = Folder(root_path, file_system=self)
                 self.set_properties(new_folder, item[2])
-                self.directories[root_path] = new_folder
+                self.items[root_path] = new_folder
 
             # Add all of the parent directories from the item
             # But only if they haven't been added yet so we don't
             # erase any properties that have been specifically set
             # on them
-            for new_path in Path(root_path).parents:
-                if new_path not in self.directories:
-                    self.directories[new_path] = Folder(new_path)
+            for new_path in [root_path] + list(Path(root_path).parents):
+                if new_path not in self.items:
+                    self.items[new_path] = Folder(new_path, file_system=self)
+
+        self.current = self.item_from_path(current)
 
     def set_properties(self, obj, props):
         for prop in props.items():
@@ -155,14 +163,23 @@ class FileSystemMock(FileSystem):
                 setattr(obj, prop[0], prop[1])
 
     def current_directory(self):
-        return Folder(self.current)
+        return self.current
+
+    def contained_items(self, folder):
+        for item in self.items.items():
+            if os.path.dirname(item[0]) == folder.name:
+                yield item[1]
+
+    def item_from_path(self, path):
+        if path in self.items:
+            return self.items[path]
 
     def all_individuals(self):
-        for item in self.directories.items():
-            yield Folder(name=item[0])
-
-        for item in self.files.items():
+        for item in self.items.items():
             yield item[1]
+
+    def delete_item(self, delete_item):
+        self.items.pop(delete_item.name)
 
 
 pipeline_logger = logging.getLogger('Pipeline')

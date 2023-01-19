@@ -18,7 +18,7 @@
         },
         {
             "Command": "which files are small?",
-            "Expected": "File(name=file1.txt, size=1000000)\n",
+            "Expected": "File(name=/documents/file1.txt, size=1000000)\n",
             "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_small_a_1', 'e2', 'x3']]]]",
             "Enabled": true,
             "ID": "ff2e71f2-ee1b-48eb-94f7-01272a7af8fa"
@@ -106,6 +106,34 @@
             "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
             "Enabled": true,
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
+        },
+        {
+            "Command": "/new examples.Example21_reset",
+            "Expected": "State reset using examples.Example21_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "81ba878f-56f5-41e6-820a-9fe181d25bc3"
+        },
+        {
+            "Command": "where am i",
+            "Expected": "in /Desktop",
+            "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
+            "Enabled": true,
+            "ID": "44fe6fc2-2d63-4893-a2ac-e59ca7c9fb85"
+        },
+        {
+            "Command": "where is this folder",
+            "Expected": "in /",
+            "Tree": "[['which_q', 'x4', [['place_n', 'x4']], [['_this_q_dem', 'x3', [['_folder_n_of', 'x3', 'i13']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
+            "Enabled": true,
+            "ID": "954a3dcf-10f9-42a0-943b-61364cc71c7e"
+        },
+        {
+            "Command": "this folder is large",
+            "Expected": "this folder is not large",
+            "Tree": "[['_this_q_dem', 'x3', [['_folder_n_of', 'x3', 'i8']], [['_large_a_1', 'e2', 'x3']]]]",
+            "Enabled": true,
+            "ID": "e820409b-70ce-4331-80a2-6701fab73378"
         }
     ]
 }

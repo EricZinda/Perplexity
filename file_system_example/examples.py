@@ -379,12 +379,9 @@ def Example18():
 
 
 def Example19_reset():
-    return State([Actor(name="User", person=1),
-                  Actor(name="Computer", person=2),
-                  Folder(name="Desktop"),
-                  Folder(name="Documents", contained_items=[File(name="file1.txt", size=1000000)]),
-                  File(name="file1.txt", size=1000000)
-                  ])
+    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000000}),
+                                           (False, "/Desktop", {})],
+                                          "/documents"))
 
 
 def Example19():
@@ -410,11 +407,27 @@ def Example20():
         print()
 
 
+def Example21_reset():
+    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
+                                           (False, "/Desktop", {}),
+                                           (True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file3.txt", {"size": 1000})],
+                                          "/Desktop"))
+
+
+def Example21():
+    user_interface = UserInterface(Example21_reset, vocabulary, respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
-    # ShowLogging("Execution")
-    # ShowLogging("Generation")
-    # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Execution")
+    ShowLogging("Generation")
+    ShowLogging("UserInterface")
+    ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -444,4 +457,5 @@ if __name__ == '__main__':
     # Example17()
     # Example18()
     # Example19()
-    Example20()
+    # Example20()
+    Example21()

@@ -1,5 +1,6 @@
 import logging
-from file_system_example.objects import File, DeleteOperation, Folder, Actor, Container
+from file_system_example.objects import File, Folder, Actor, Container
+from file_system_example.state import DeleteOperation
 from perplexity.execution import ExecutionContext, call, report_error, execution_context
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
@@ -36,6 +37,43 @@ def degree_multiplier_from_event(state, e_introduced):
         degree_multiplier = e_introduced_value["DegreeMultiplier"]["Value"]
 
     return degree_multiplier
+
+
+def in_scope(state, obj):
+    # If it is the folder the user is in
+    user = state.user()
+    if user.current_directory == obj:
+        return True
+
+    # If it is a file in the directory the user is in
+    for file in user.current_directory.contained_items():
+        if file == obj:
+            return True
+
+
+@Predication(vocabulary, names=["_this_q_dem"])
+def this_q_dem(state, x_variable, h_rstr, h_body):
+    # Run the RSTR which should fill in the variable with an item
+    rstr_single_solution = None
+    for solution in call(state, h_rstr):
+        if in_scope(solution, solution.get_variable(x_variable)):
+            if rstr_single_solution is None:
+                rstr_single_solution = solution
+            else:
+                # Make sure there is only one since "this" shouldn't be ambiguous
+                report_error(["moreThanOneInScope", ["AtPredication", h_body, x_variable]], force=True)
+                return
+
+    if rstr_single_solution is not None:
+        # Now see if that solution works in the BODY
+        body_found = False
+        for body_solution in call(rstr_single_solution, h_body):
+            yield body_solution
+
+    else:
+        # Ignore whatever error the RSTR produced, this is a better one
+        # Report the variable's English representation as it would be in the BODY
+        report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
 
 
 @Predication(vocabulary, names=["_a_q"])

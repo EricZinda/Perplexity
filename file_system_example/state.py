@@ -99,12 +99,34 @@ class FileSystemState(State):
     def __init__(self, file_system):
         super().__init__([])
         self.file_system = file_system
-        self.actors = [Actor(name="User", person=1, file_system=file_system),
+        self.current_user = Actor(name="User", person=1, file_system=file_system)
+        self.actors = [self.current_user,
                        Actor(name="Computer", person=2, file_system=file_system)]
 
     def all_individuals(self):
         yield from self.file_system.all_individuals()
         yield from self.actors
+
+    def user(self):
+        return self.current_user
+
+
+# Delete any object in the system
+class DeleteOperation(object):
+    def __init__(self, object_to_delete):
+        self.object_to_delete = object_to_delete
+
+    def apply_to(self, state):
+        if isinstance(state, FileSystemState):
+            state.file_system.delete_item(self.object_to_delete)
+
+        else:
+            for index in range(0, len(state.objects)):
+                # Use the `unique_id` property to compare objects since they
+                # may have come from different `State` objects and will thus be copies
+                if state.objects[index].unique_id == self.object_to_delete.unique_id:
+                    state.objects.pop(index)
+                    break
 
 
 pipeline_logger = logging.getLogger('Pipeline')

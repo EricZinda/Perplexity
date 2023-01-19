@@ -141,6 +141,10 @@ def generate_message(tree_info, error_term):
 
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
+    elif error_constant == "moreThanOneInScope":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        return f"There is more than one '{arg1}' where you are"
+
     elif error_constant == "answerWithList":
         answer_predication = error_arguments[1]
         answer_items = error_arguments[2]
