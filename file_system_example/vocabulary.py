@@ -102,10 +102,10 @@ def rstr_reorderable(rstr):
 
 @Predication(vocabulary, names=["which_q", "_which_q"])
 def which_q(state, x_variable, h_rstr, h_body):
-    # if rstr_reorderable(h_rstr):
-    #     yield from default_quantifier(state, x_variable, h_body, h_rstr)
-    # else:
-    yield from default_quantifier(state, x_variable, h_rstr, h_body)
+    if rstr_reorderable(h_rstr):
+        yield from default_quantifier(state, x_variable, h_body, h_rstr)
+    else:
+        yield from default_quantifier(state, x_variable, h_rstr, h_body)
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
