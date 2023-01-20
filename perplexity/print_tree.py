@@ -23,10 +23,7 @@ def create_draw_tree(mrs, tree_node, parent=None, hole=None):
     if isinstance(tree_node, list):
         if len(tree_node) > 1:
             # Need to treat as a single fake "and" node
-            and_node = ["and"]
-            for and_arg in tree_node:
-                and_node.append([and_arg])
-            predication = and_node
+            predication = TreePredication(-1, "and", tree_node)
         else:
             predication = tree_node[0]
 
