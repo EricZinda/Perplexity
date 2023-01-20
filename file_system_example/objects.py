@@ -45,6 +45,9 @@ class Folder(Container):
         for parent_path in path.parents:
             yield self.file_system.item_from_path(parent_path)
 
+    def containers(self):
+        yield from self.all_locations()
+
     def __eq__(self, obj):
         return isinstance(obj, Folder) and self.name == obj.name
 
@@ -73,6 +76,9 @@ class File(Container):
         yield folder
         yield from folder.all_locations()
 
+    def containers(self):
+        yield from self.all_locations()
+
 
 # Represents something that can "do" things, like a computer
 # or a human (or a dog, etc)
@@ -93,6 +99,9 @@ class Actor(UniqueObject):
             # Return the locations for the user "me"
             yield self.current_directory
             yield from self.current_directory.all_locations()
+
+    def containers(self):
+        yield from self.all_locations()
 
 
 class FileSystem(object):

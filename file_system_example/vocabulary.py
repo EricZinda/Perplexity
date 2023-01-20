@@ -234,6 +234,35 @@ def place_n(state, x):
             yield state.set_x(x, item)
 
 
+@Predication(vocabulary, names=["_in_p_loc"])
+def in_p_loc(state, e_introduced, x_actor, x_location):
+    x_actor_value = state.get_variable(x_actor)
+    x_location_value = state.get_variable(x_location)
+
+    if x_actor_value is not None:
+        if x_location_value is not None:
+            # x_actor is "in" x_location if x_location contains it
+            for item in x_location_value.contained_items():
+                if x_actor_value == item:
+                    # Variables are already set,
+                    # no need to set them again, just return the state
+                    yield state
+        else:
+            # Need to find all the things that x_actor is "in"
+            if hasattr(x_actor_value, "containers"):
+                for item in x_actor_value.containers():
+                    yield state.set_x(x_location, item)
+
+    else:
+        # Actor is unbound, this means "What is in X?" type of question
+        # Whatever x_location "contains" is "in" it
+        if hasattr(x_location_value, "contained_items"):
+            for location in x_location_value.contained_items():
+                yield state.set_x(x_actor, location)
+
+    report_error(["thingHasNoLocation", x_actor, x_location])
+
+
 @Predication(vocabulary)
 def loc_nonsp(state, e_introduced, x_actor, x_location):
     x_actor_value = state.get_variable(x_actor)

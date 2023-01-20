@@ -145,6 +145,11 @@ def generate_message(tree_info, error_term):
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         return f"There is more than one '{arg1}' where you are"
 
+    elif error_constant == "thingHasNoLocation":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+        return f"{arg1} is not in {arg2}"
+
     elif error_constant == "answerWithList":
         answer_predication = error_arguments[1]
         answer_items = error_arguments[2]

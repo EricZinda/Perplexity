@@ -162,6 +162,48 @@
             "Tree": "which_q(x3,thing(x3),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "8422a7fa-a85e-48fa-902e-6c85667c01c9"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "State reset using examples.Example22_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "a333c133-2cde-4f90-a71c-f60589853b2a"
+        },
+        {
+            "Command": "what is in this folder?",
+            "Expected": "File(name=/Desktop/file2.txt, size=10000000)\nFile(name=/Desktop/file3.txt, size=1000)\n",
+            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "2c28ec90-c629-4430-b549-867f0ec569a0"
+        },
+        {
+            "Command": "what am i in?",
+            "Expected": "Folder(name=/Desktop, size=10000000)\nFolder(name=/, size=0)\n",
+            "Tree": "pronoun_q(x3,pron(x3),which_q(x5,thing(x5),_in_p_loc(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "25e8d164-7899-4861-beaa-075a3b479bcb"
+        },
+        {
+            "Command": "is a file in this folder",
+            "Expected": "Yes.",
+            "Tree": "_this_q_dem(x9,_folder_n_of(x9,i14),_a_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "8b5f2598-1eaa-4a1b-a879-3019aa14417c"
+        },
+        {
+            "Command": "is a folder in this folder",
+            "Expected": "a folder is not in this folder",
+            "Tree": "_this_q_dem(x9,_folder_n_of(x9,i14),_a_q(x3,_folder_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "52d8d2cd-d7dd-4a1f-8cd0-4dc2e41d8707"
+        },
+        {
+            "Command": "which files are in this folder?",
+            "Expected": "File(name=/Desktop/file2.txt, size=10000000)\nFile(name=/Desktop/file3.txt, size=1000)\n",
+            "Tree": "_this_q_dem(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "ecfb6513-af04-4b08-9ab0-de6f27873473"
         }
     ]
 }
