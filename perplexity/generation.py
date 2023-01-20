@@ -1,37 +1,31 @@
 import logging
-from perplexity.tree import walk_tree_predications_until, index_of_predication
+from perplexity.tree import walk_tree_predications_until
 from perplexity.utilities import parse_predication_name
 
 
 # Given the index where an error happened and a variable,
 # return what that variable "is" up to that point, in English
-def english_for_delphin_variable(failure_index, variable, mrs):
+def english_for_delphin_variable(failure_index, variable, tree_info):
     if isinstance(variable, list):
         if variable[0] == "AtPredication":
-            failure_index = index_of_predication(mrs, variable[1])
+            failure_index = variable[1].index
             logger.debug(f"error predication index is: {failure_index}")
             variable = variable[2]
-
-    # Integers can't be passed by reference in Python, so we need to pass
-    # the current index in a list so it can be changed as we iterate
-    current_predication_index = [1]
 
     # This function will be called for every predication in the MRS
     # as we walk it in execution order
     def record_predications_until_failure_index(predication):
-
         # Once we have hit the index where the failure happened, stop
-        if current_predication_index[0] == failure_index:
-            logger.debug(f"(stop and ignore) error predication index {current_predication_index[0]}: {predication[0]}")
+        if predication.index == failure_index:
+            logger.debug(f"(stop and ignore) error predication index {predication.index}: {predication.name}")
             return False
         else:
-            logger.debug(f"(refine NLG) error predication index {current_predication_index[0]}: {predication[0]}")
+            logger.debug(f"(refine NLG) error predication index {predication.index}: {predication.name}")
 
             # See if this predication can contribute anything to the
             # description of the variable we are describing. If so,
             # collect it in nlg_data
-            refine_nlg_with_predication(mrs, variable, predication, nlg_data)
-            current_predication_index[0] = current_predication_index[0] + 1
+            refine_nlg_with_predication(tree_info, variable, predication, nlg_data)
             return None
 
     nlg_data = {}
@@ -39,7 +33,7 @@ def english_for_delphin_variable(failure_index, variable, mrs):
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
     # the function record_predications_until_failure_index(), until hits the
     # failure_index position
-    walk_tree_predications_until(mrs["Tree"], record_predications_until_failure_index)
+    walk_tree_predications_until(tree_info["Tree"], record_predications_until_failure_index)
 
     # Take the data we gathered and convert to English
     logger.debug(f"NLG data for {variable}: {nlg_data}")
@@ -48,15 +42,15 @@ def english_for_delphin_variable(failure_index, variable, mrs):
 
 # See if this predication in any way contributes words to
 # the variable specified. Put whatever it contributes in nlg_data
-def refine_nlg_with_predication(mrs, variable, predication, nlg_data):
+def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
     # Parse the name of the predication to find out its
     # part of speech (POS) which could be a noun ("n"),
     # quantifier ("q"), etc.
-    parsed_predication = parse_predication_name(predication[0])
+    parsed_predication = parse_predication_name(predication.name)
 
     # If the predication has this variable as its first argument,
     # it either *introduces* it, or is quantifying it
-    if predication[1] == variable:
+    if predication.introduced_variable() == variable:
         if parsed_predication["Pos"] == "q":
             if parsed_predication["Surface"] is True:
                 if parsed_predication["Lemma"] not in ["which"]:
@@ -74,11 +68,11 @@ def refine_nlg_with_predication(mrs, variable, predication, nlg_data):
                 # Some abstract predications *should* contribute to the
                 # English description of a variable
                 if parsed_predication["Lemma"] == "pron":
-                    nlg_data["Topic"] = pronoun_from_variable(mrs, variable)
+                    nlg_data["Topic"] = pronoun_from_variable(tree_info, variable)
 
     # Assume that adjectives that take the variable as their first argument
     # are adding an adjective modifier to the phrase
-    elif parsed_predication["Pos"] == "a" and predication[2] == variable:
+    elif parsed_predication["Pos"] == "a" and predication.args[1] == variable:
         if "Modifiers" not in nlg_data:
             nlg_data["Modifiers"] = []
 
@@ -94,8 +88,8 @@ pronouns = {1: {"sg": "I",
             }
 
 
-def pronoun_from_variable(mrs, variable):
-    mrs_variable = mrs["Variables"][variable]
+def pronoun_from_variable(tree_info, variable):
+    mrs_variable = tree_info["Variables"][variable]
     if "PERS" in mrs_variable:
         person = int(mrs_variable["PERS"])
     else:

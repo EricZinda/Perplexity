@@ -1,7 +1,6 @@
 import contextvars
 import logging
 import sys
-
 from perplexity.utilities import sentence_force, sentence_force_from_tree_info
 
 
@@ -28,17 +27,17 @@ class ExecutionContext(object):
             yield from self.call(state.set_x("tree", tree_info), tree_info["Tree"])
 
     def call(self, state, term):
-        # If "term" is an empty list, we have solved all
-        # predications in the conjunction, return the final answer.
-        # "len()" is a built-in Python function that returns the
-        # length of a list
-        if len(term) == 0:
-            yield state
-        else:
-            # See if the first thing in the list is actually a list
-            # like [["_large_a_1", "e1", "x1"], ["_file_n_of", "x1"]]
-            # If so, we have a conjunction
-            if isinstance(term[0], list):
+        # See if the term is actually a list
+        # If so, we have a conjunction
+        if isinstance(term, list):
+            # If "term" is an empty list, we have solved all
+            # predications in the conjunction, return the final answer.
+            # "len()" is a built-in Python function that returns the
+            # length of a list
+            if len(term) == 0:
+                yield state
+
+            else:
                 # This is a list of predications, so they should
                 # treated as a conjunction.
                 # Call each one and pass the state it returns
@@ -48,20 +47,20 @@ class ExecutionContext(object):
                     # of everything but the first item"
                     yield from self.call(nextState, term[1:])
 
-            else:
-                # Keep track of how deep in the tree this
-                # predication is
-                last_predication_index = self._predication_index
-                self._predication_index += 1
+        else:
+            # Keep track of how deep in the tree this
+            # predication is
+            last_predication_index = self._predication_index
+            self._predication_index = term.index
 
-                # The first thing in the list was not a list
-                # so we assume it is just a term like
-                # ["_large_a_1", "e1", "x1"]
-                # evaluate it using CallPredication
-                yield from self._call_predication(state, term)
+            # The first thing in the list was not a list
+            # so we assume it is just a term like
+            # ["_large_a_1", "e1", "x1"]
+            # evaluate it using CallPredication
+            yield from self._call_predication(state, term)
 
-                # Restore it since we are recursing
-                self._predication_index = last_predication_index
+            # Restore it since we are recursing
+            self._predication_index = last_predication_index
 
     # Do not use directly.
     # Use Call() instead so that the predication index is set properly
@@ -72,24 +71,17 @@ class ExecutionContext(object):
     def _call_predication(self, state, predication):
         logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
 
-        # The [0] syntax returns the first item in a list
-        predication_name = predication[0]
-
-        # The [1:] syntax returns a new list that starts from
-        # the first item and goes until the end of the list
-        predication_args = predication[1:]
-
         # [list] + [list] will return a new, combined list
         # in Python. This is how we add the state object
         # onto the front of the argument list
-        function_args = [state] + predication_args
+        function_args = [state] + predication.args
 
         # Look up the actual Python module and
         # function name given a string like "folder_n_of".
         # "vocabulary.Predication" returns a two-item list,
         # where item[0] is the module and item[1] is the function
-        predication_argument_names = self.arg_types_from_call(predication_args)
-        for module_function in self.vocabulary.predications(predication_name,
+        predication_argument_names = self.arg_types_from_call(predication.args)
+        for module_function in self.vocabulary.predications(predication.name,
                                                             predication_argument_names,
                                                             self._phrase_type):
             # sys.modules[] is a built-in Python list that allows you
@@ -120,10 +112,10 @@ class ExecutionContext(object):
     def arg_types_from_call(self, predication_args):
         arg_types = []
         for arg in predication_args:
-            if isinstance(arg, list):
-                arg_types.append("h")
-            else:
+            if isinstance(arg, str):
                 arg_types.append(arg[0])
+            else:
+                arg_types.append("h")
 
         return arg_types
 

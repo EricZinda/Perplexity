@@ -2,20 +2,20 @@
 The word "this" as in "this folder" means something along the lines of "the one right here" or "the one most obviously in focus". We can cover a lot of cases by implementing a notion of "scope" that we will use to implement many predications.  One way to think about "in scope" is to think through what the user would expect when they say "this" with respect to the objects in the system:
 
 - "this folder": Most likely means "the current folder", which is ["the one I am in"](devvocabLoc_nonspAndPlace)
-- "this file": This is ambiguous since the user is never "in" a file (although we might allow that to allow searching around a file at some point!).  It *might* mean "the one file that is in the directory", in which case it would be equivalent to "*the* file"
-- "this machine": Means the entire computer if we implement the notion of "machine/computer/device". As in "what large files are on this machine?"
+- "this file": This is ambiguous since the user is never "in" a file (although we might allow it when searching around a file at some point!).  It *might* mean "the one file that is in this directory", in which case it would be equivalent to "*the* file"
+- "this machine": Means the entire computer we are working on if we implement the notion of "machine/computer/device". As in "what large files are on this machine?"
 
-Let's start with the first case and implement "this folder". If we just type in "this folder", the following tree is produced. Since the ERG doesn't know what to do with "this folder", it produces a predication called `unknown` which effectively means "the user didn't say something that was expected" (more information is [here](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_Fragments/)):
+Let's start with the first case and implement "this folder". If we type in "this folder is small", the following tree is produced:
 
 ~~~
-                 ┌────── _folder_n_of(x4,i9)
-_this_q_dem(x4,RSTR,BODY)
-                      └─ unknown(e2,x4)
+                 ┌────── _folder_n_of(x3,i8)
+_this_q_dem(x3,RSTR,BODY)
+                      └─ _small_a_1(e2,x3)
 ~~~
 
-`_this_q_dem` is a *quantifier* because it has the type `_q_` and it has the standard quantifier arguments `RSTR` and `BODY`.  As described in the topic on [MRS](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoMRS/#quantifier-predications), the job of a quantifier is to say "how much of" the `RSTR` should be applied to the `BODY`.  In the case of `_this_q_dem`, "how much of" really means "which", as in: *which* `RSTR` should be applied to the body. The variable being quantified is passed in its first argument (`x4` in the example above).
+`_this_q_dem` is a *quantifier* because it has the type `_q_` and it has the standard quantifier arguments `RSTR` and `BODY`.  As described in the topic on [MRS](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoMRS/#quantifier-predications), the job of a quantifier is to say "how much of" the `RSTR` should be applied to the `BODY`.  In the case of `_this_q_dem`, "how much of" really means "which", as in: *which* `RSTR` should be applied to the body. The variable being quantified is passed in its first argument (`x3` in the example above). So, the job here is to pick which of the `x3` assignments returned by  `_folder_n_of` is what the user meant by "this".
 
-We'll start by implementing this "which" semantic by copying [the code we implemented for `a_q`](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoQuantifierErrors/). But, where `a_q` just returns "a single arbitrary" item, `_this_q_dem` will only return an item that is "in scope" as determined by a new `in_scope()` function:
+We'll start by implementing the "which" semantic by copying [the code we implemented for `a_q`](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoQuantifierErrors/). But, where `a_q` just returns "a single arbitrary" item, `_this_q_dem` will only return an item that is "in scope" as determined by a new `in_scope()` function:
 
 ~~~
 def in_scope(state, obj):

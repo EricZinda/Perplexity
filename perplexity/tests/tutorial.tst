@@ -73,7 +73,21 @@
             "ID": "797a346f-d98a-4642-b933-f93e1d7d2323"
         },
         {
-            "Command": "which file is very large?",
+            "Command": "a file is deleted",
+            "Expected": "I don't know the way you used: delete",
+            "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
+            "Enabled": true,
+            "ID": "7f29b13c-aa0c-4d11-bc8d-ec9dcf598cac"
+        },
+        {
+            "Command": "which file is very small?",
+            "Expected": "File(name=file1.txt, size=20000000)\n",
+            "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
+            "Enabled": true,
+            "ID": "7f29b13c-aa0c-4d11-bc8d-ec9dcf598cac"
+        },
+        {
+            "Command": "a file is deleted",
             "Expected": "File(name=file1.txt, size=20000000)\n",
             "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
             "Enabled": true,

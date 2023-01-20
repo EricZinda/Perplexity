@@ -2,7 +2,23 @@ import logging
 from collections import defaultdict
 
 
-def tree_from_assignments(hole_label, assignments, predication_dict, mrs):
+class TreePredication(object):
+    def __init__(self, index, name, args):
+        self.index = index
+        self.name = name
+        self.args = args
+
+    def introduced_variable(self):
+        return self.args[0]
+
+    def __repr__(self):
+        return f"{self.name}({','.join([str(arg) for arg in self.args])})"
+
+
+def tree_from_assignments(hole_label, assignments, predication_dict, mrs, current_index=None):
+    if current_index is None:
+        current_index = [0]
+
     # Get the list of predications that should fill in the hole
     # represented by labelName
     if hole_label in assignments.keys():
@@ -14,7 +30,8 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs):
     # have the same key and should be put in conjunction (i.e. be and'd together)
     conjunction_list = []
     for predication in predication_list:
-        tree_node = [predication.predicate]
+        tree_node = TreePredication(current_index[0], predication.predicate, [])
+        current_index[0] += 1
 
         # Recurse through this predication's arguments
         # and look for any scopal arguments to recursively convert
@@ -28,18 +45,21 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs):
             else:
                 argType = original_value[0]
                 if argType == "h":
-                    new_value = tree_from_assignments(original_value, assignments, predication_dict, mrs)
+                    new_value = tree_from_assignments(original_value, assignments, predication_dict, mrs, current_index)
                 else:
                     new_value = original_value
 
-            tree_node.append(new_value)
+            tree_node.args.append(new_value)
 
         conjunction_list.append(tree_node)
 
-    # Since these are "and" they can be in any order
-    # Sort them into an order which ensures event variable
-    #   usage comes before introduction (i.e. ARG0)
-    return sort_conjunctions(conjunction_list)
+    if len(conjunction_list) == 1:
+        return conjunction_list[0]
+    else:
+        # Since these are "and" they can be in any order
+        # Sort them into an order which ensures event variable
+        #   usage comes before introduction (i.e. ARG0)
+        return sort_conjunctions(conjunction_list)
 
 
 # Make sure a list of predications (like for a conjunction/"logical and")
@@ -50,14 +70,14 @@ def sort_conjunctions(predication_list):
     #   index of the predication that introduced them
     introduced_dict = {}
     for predication_index in range(0, len(predication_list)):
-        introduced_arg = predication_list[predication_index][1]
+        introduced_arg = predication_list[predication_index].introduced_variable()
         if introduced_arg[0] == "e":
             introduced_dict[introduced_arg] = predication_index
 
     # Build the graph that represents the dependencies
     topological_sort = Cormen2001(len(predication_list))
     for predication_index in range(0, len(predication_list)):
-        for arg_value in predication_list[predication_index][1:]:
+        for arg_value in predication_list[predication_index].args:
             if isinstance(arg_value, str) and arg_value in introduced_dict:
                 if predication_index != introduced_dict[arg_value]:
                     # This argument uses the ARG0 event of another predication in the list
@@ -156,7 +176,7 @@ class Cormen2001(object):
 # If func returns anything besides "None", it quits and
 # returns that value
 def walk_tree_predications_until(term, func):
-    if isinstance(term[0], list):
+    if isinstance(term, list):
         # This is a conjunction, recurse through the
         # items in it
         for item in term:
@@ -172,7 +192,7 @@ def walk_tree_predications_until(term, func):
 
         # If func didn't say to quit, see if any of its terms are scopal
         # i.e. are predications themselves
-        for arg in term[1:]:
+        for arg in term.args:
             if not isinstance(arg, str):
                 result = walk_tree_predications_until(arg, func)
                 if result is not None:
@@ -185,7 +205,7 @@ def walk_tree_predications_until(term, func):
 # Calls arg_func(predication, arg) with the raw value of every scopal argument
 # If either returns anything besides None, stops recursing and returns that value
 def walk_tree_args_until(term, predication_func, arg_func):
-    if isinstance(term[0], list):
+    if isinstance(term, list):
         # This is a conjunction, recurse through the
         # items in it
         for item in term:
@@ -201,7 +221,7 @@ def walk_tree_args_until(term, predication_func, arg_func):
 
         # If func didn't say to quit, see if any of its terms are scopal
         # i.e. are predications themselves
-        for arg in term[1:]:
+        for arg in term.args:
             if not isinstance(arg, str):
                 result = arg_func(term, arg)
                 if result is not None:
@@ -216,7 +236,7 @@ def walk_tree_args_until(term, predication_func, arg_func):
 
 def find_predicate_from_introduced(term, introduced_variable):
     def match_introduced_variable(predication):
-        if predication[1] == introduced_variable:
+        if predication.introduced_variable() == introduced_variable:
             return predication
         else:
             return None
@@ -232,7 +252,7 @@ def find_predicate(term, predication_name):
     # in the tree. It is a private function since it is
     # only used here
     def match_predication_name(predication):
-        if predication[0] == predication_name:
+        if predication.name == predication_name:
             return predication
         else:
             return None
@@ -243,39 +263,17 @@ def find_predicate(term, predication_name):
     return walk_tree_predications_until(term, match_predication_name)
 
 
-# Inverse of predication_from_index:
-# Returns the index of a predication in an MRS
-def index_of_predication(tree_info, stop_predication):
-    current_predication_index = [1]
-
-    def stop_at_arg(_, predication):
-        if predication == stop_predication:
-            # This is the predication we are looking for
-            # Return the index of it
-            return current_predication_index[0]
-
-    def call_per_predication(predication):
-        current_predication_index[0] = current_predication_index[0] + 1
-
-    return walk_tree_args_until(tree_info["Tree"], call_per_predication, stop_at_arg)
-
-
-# Inverse of index_of_predication:
 # Return the predication at a particular index
 def predication_from_index(tree_info, index):
     def stop_at_index(predication):
         nonlocal index_predication
 
         # Once we have hit the index where the failure happened, stop
-        if current_predication_index[0] == index:
+        if predication.index == index:
             index_predication = predication
             return False
-        else:
-            current_predication_index[0] = current_predication_index[0] + 1
-            return None
 
     index_predication = None
-    current_predication_index = [1]
 
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
     # the function record_predications_until_failure_index(), until hits the

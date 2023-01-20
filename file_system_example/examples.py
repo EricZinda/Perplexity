@@ -9,6 +9,7 @@ from perplexity.generation import english_for_delphin_variable
 # Helpers that allow the examples to use
 # old interfaces in the early parts of the docs
 ##########################
+from perplexity.tree import TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
 
@@ -48,7 +49,8 @@ def Example2():
                    File(name="file2.txt")])
 
     for item in call_predication(state,
-                                 ["_folder_n_of", "x1", "i1"]):
+                                 TreePredication(0, "_folder_n_of", ["x1", "i1"])
+                                 ):
         print(item.variables)
 
 
@@ -59,9 +61,10 @@ def Example3():
                    File(name="file1.txt", size=100),
                    File(name="file2.txt", size=2000000)])
     
-    mrs = [["_large_a_1", "e1", "x1"], ["_file_n_of", "x1", "i1"]]
+    tree = [TreePredication(0, "_large_a_1", ["e1", "x1"]),
+            TreePredication(1, "_file_n_of", ["x1", "i1"])]
     
-    for item in call(state, mrs):
+    for item in call(state, tree):
         print(item.variables)
 
 
@@ -73,9 +76,11 @@ def Example4():
                    File(name="file1.txt", size=2000000),
                    File(name="file2.txt", size=2000000)])
 
-    mrs = ["_a_q", "x3", ["_file_n_of", "x3", "i1"], ["_large_a_1", "e2", "x3"]]
+    tree = TreePredication(0, "_a_q", ["x3",
+                                       TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                       TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
-    for item in call(state, mrs):
+    for item in call(state, tree):
         print(item.variables)
 
 
@@ -87,21 +92,23 @@ def Example5():
                    File(name="file2.txt", size=2000000)])
     
     # Start with an empty dictionary
-    mrs = {}
+    tree_info = {}
 
     # Set its "index" key to the value "e1"
-    mrs["Index"] = "e1"
+    tree_info["Index"] = "e1"
 
     # Set its "Variables" key to *another* dictionary with
     # two keys: "x1" and "e1". Each of those has a "value" of
     # yet another dictionary that holds the properties of the variables
-    mrs["Variables"] = {"x1": {"NUM": "pl"},
-                        "e1": {"SF": "prop"}}
+    tree_info["Variables"] = {"x1": {"NUM": "pl"},
+                              "e1": {"SF": "prop"}}
 
     # Set the "Tree" key to the scope-resolved MRS tree, using our format
-    mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
+    tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
+                                                    TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                    TreePredication(2, "_large_a_1", ["e1", "x1"])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # Evaluate the proposition: "a file is large" when there isn't a large one
@@ -111,40 +118,44 @@ def Example5_1():
                    File(name="file1.txt", size=200),
                    File(name="file2.txt", size=200)])
     # Start with an empty dictionary
-    mrs = {}
+    tree_info = {}
 
     # Set its "index" key to the value "e1"
-    mrs["Index"] = "e1"
+    tree_info["Index"] = "e1"
 
     # Set its "Variables" key to *another* dictionary with
     # two keys: "x1" and "e1". Each of those has a "value" of
     # yet another dictionary that holds the properties of the variables
-    mrs["Variables"] = {"x1": {"NUM": "pl"},
+    tree_info["Variables"] = {"x1": {"NUM": "pl"},
                         "e1": {"SF": "prop"}}
 
     # Set the "Tree" key to the scope-resolved MRS tree, using our format
-    mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
+    tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
+                                                    TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                    TreePredication(2, "_large_a_1", ["e1", "x1"])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
-# Evaluate the proposition: "a file is large" when there isn't a large one
+# Evaluate the proposition: "a file is large" when there isn't any files
 def Example5_2():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents")])
     # Start with an empty dictionary
-    mrs = {}
+    tree_info = {}
     # Set its "index" key to the value "e1"
-    mrs["Index"] = "e1"
+    tree_info["Index"] = "e1"
     # Set its "Variables" key to *another* dictionary with
     # two keys: "x1" and "e1". Each of those has a "value" of
     # yet another dictionary that holds the properties of the variables
-    mrs["Variables"] = {"x1": {"NUM": "pl"},
+    tree_info["Variables"] = {"x1": {"NUM": "pl"},
                         "e1": {"SF": "prop"}}
     # Set the "Tree" key to the scope-resolved MRS tree, using our format
-    mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
+    tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
+                                                    TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                    TreePredication(2, "_large_a_1", ["e1", "x1"])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # Evaluate the proposition: "which file is large?"
@@ -154,13 +165,15 @@ def Example6():
                    File(name="file1.txt", size=2000000),
                    File(name="file2.txt", size=1000000)])
 
-    mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "sg"},
+    tree_info = {}
+    tree_info["Index"] = "e1"
+    tree_info["Variables"] = {"x1": {"NUM": "sg"},
                         "e1": {"SF": "ques"}}
-    mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
+    tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
+                                                        TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                        TreePredication(2, "_large_a_1", ["e1", "x1"])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # Evaluate the proposition: "which file is very small?"
@@ -170,13 +183,16 @@ def Example6a():
                    File(name="file1.txt", size=20000000),
                    File(name="file2.txt", size=1000000)])
 
-    mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "sg"},
+    tree_info = {}
+    tree_info["Index"] = "e1"
+    tree_info["Variables"] = {"x1": {"NUM": "sg"},
                         "e1": {"SF": "ques"}}
-    mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], [["_very_x_deg", "e2", "e1"], ["_small_a_1", "e1", "x1"]]]]
+    tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
+                                                        TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                        [TreePredication(2, "_very_x_deg", ["e2", "e1"]),
+                                                         TreePredication(3, "_small_a_1", ["e1", "x1"])]])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # Evaluate the proposition: "which file is very large?"
@@ -186,13 +202,16 @@ def Example6b():
                    File(name="file1.txt", size=20000000),
                    File(name="file2.txt", size=1000000)])
 
-    mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "sg"},
+    tree_info = {}
+    tree_info["Index"] = "e1"
+    tree_info["Variables"] = {"x1": {"NUM": "sg"},
                         "e1": {"SF": "ques"}}
-    mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], [["_very_x_deg", "e2", "e1"], ["_large_a_1", "e1", "x1"]]]]
+    tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
+                                                        TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                        [TreePredication(2, "_very_x_deg", ["e2", "e1"]),
+                                                         TreePredication(3, "_large_a_1", ["e1", "x1"])]])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # Delete a large file when there are some
@@ -202,13 +221,18 @@ def Example7():
                    Folder(name="Documents"),
                    File(name="file1.txt", size=2000000),
                    File(name="file2.txt", size=1000000)])
-    mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 2},
-                        "e2": {"SF": "comm"}}
-    mrs["Tree"] = [["pronoun_q", "x3", ["pron", "x3"], ["_a_q", "x8", [["_large_a_1", "e1", "x8"], ["_file_n_of", "x8", "i1"]], ["_delete_v_1", "e2", "x3", "x8"]]]]
+    tree_info = {}
+    tree_info["Index"] = "e2"
+    tree_info["Variables"] = {"x3": {"PERS": 2},
+                              "e2": {"SF": "comm"}}
+    tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
+                                                         TreePredication(1, "pron", ["x3"]),
+                                                         TreePredication(2, "_a_q", ["x8",
+                                                                                     [TreePredication(3, "_large_a_1", ["e1", "x1"]),
+                                                                                      TreePredication(4, "_file_n_of", ["x1", "i1"])],
+                                                                                      TreePredication(5, "_delete_v_1", ["e2", "x3", "x1"])])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # delete you
@@ -219,14 +243,18 @@ def Example8():
                    File(name="file1.txt", size=2000000),
                    File(name="file2.txt", size=1000000)])
 
-    mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 2},
-                        "x8": {"PERS": 2},
-                        "e2": {"SF": "comm"}}
-    mrs["Tree"] = [["pronoun_q", "x3", ["pron", "x3"], ["pronoun_q", "x8", ["pron", "x8"], ["_delete_v_1", "e2", "x3", "x8"]]]]
+    tree_info = {}
+    tree_info["Index"] = "e2"
+    tree_info["Variables"] = {"x3": {"PERS": 2},
+                              "x8": {"PERS": 2},
+                              "e2": {"SF": "comm"}}
+    tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
+                                                         TreePredication(1, "pron", ["x3"]),
+                                                         TreePredication(2, "pronoun_q", ["x8",
+                                                                                          TreePredication(3, "pron", ["x8"]),
+                                                                                          TreePredication(4, "_delete_v_1",["e2", "x3", "x8"])])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # Delete a large file when there are no large files
@@ -237,13 +265,18 @@ def Example9():
                    File(name="file1.txt", size=10),
                    File(name="file2.txt", size=10)])
 
-    mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 2},
-                        "e2": {"SF": "comm"}}
-    mrs["Tree"] = [["pronoun_q", "x3", ["pron", "x3"], ["_a_q", "x8", [["_large_a_1", "e1", "x8"], ["_file_n_of", "x8"]], ["_delete_v_1", "e2", "x3", "x8"]]]]
+    tree_info = {}
+    tree_info["Index"] = "e2"
+    tree_info["Variables"] = {"x3": {"PERS": 2},
+                              "e2": {"SF": "comm"}}
+    tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
+                                                         TreePredication(1, "pron", ["x3"]),
+                                                         TreePredication(2, "_a_q", ["x1",
+                                                                                     [TreePredication(3, "_large_a_1", ["e1", "x1"]),
+                                                                                      TreePredication(4, "_file_n_of", ["x1", "i1"])],
+                                                                                     TreePredication(5, "_delete_v_1", ["e2", "x3", "x1"])])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # Evaluate the proposition: "a file is large" when there are no *large* files
@@ -252,33 +285,42 @@ def Example10():
                    Folder(name="Documents"),
                    File(name="file1.txt", size=1000000),
                    File(name="file2.txt", size=1000000)])
-    mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "pl"},
+    tree_info = {}
+    tree_info["Index"] = "e1"
+    tree_info["Variables"] = {"x1": {"NUM": "pl"},
                         "e1": {"SF": "prop"}}
-    mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
 
-    print(solve_and_respond(state, mrs))
+    tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
+                                                    TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                    TreePredication(2, "_large_a_1", ["e1", "x1"])])
+
+    print(solve_and_respond(state, tree_info))
 
 
 # Evaluate the proposition: "a file is large" when there are no files, period
 def Example11():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents")])
-    mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "pl"},
+    tree_info = {}
+    tree_info["Index"] = "e1"
+    tree_info["Variables"] = {"x1": {"NUM": "pl"},
                         "e1": {"SF": "prop"}}
-    mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
+    tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
+                                                    TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                    TreePredication(2, "_large_a_1", ["e1", "x1"])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 def Example12():
-    mrs = {"Tree": [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]}
-    print(english_for_delphin_variable(1, "x1", mrs))
-    print(english_for_delphin_variable(2, "x1", mrs))
-    print(english_for_delphin_variable(3, "x1", mrs))
+    tree_info = {}
+    tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
+                                                    TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                    TreePredication(2, "_large_a_1", ["e1", "x1"])])
+
+    print(english_for_delphin_variable(0, "x1", tree_info))
+    print(english_for_delphin_variable(1, "x1", tree_info))
+    print(english_for_delphin_variable(2, "x1", tree_info))
     
     
 # "he/she" deletes a large file
@@ -288,41 +330,49 @@ def Example13():
                    Folder(name="Documents"),
                    File(name="file1.txt", size=2000000),
                    File(name="file2.txt", size=1000000)])
-    mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 3},
-                        "e2": {"SF": "prop"}}
-    mrs["Tree"] = [["pronoun_q", "x3", ["pron", "x3"],
-                    ["_a_q", "x8", [["_large_a_1", "e1", "x8"], ["_file_n_of", "x8", "i1"]],
-                     ["_delete_v_1", "e2", "x3", "x8"]]]]
+    tree_info = {}
+    tree_info["Index"] = "e2"
+    tree_info["Variables"] = {"x3": {"PERS": 3},
+                              "e2": {"SF": "prop"}}
 
-    print(solve_and_respond(state, mrs))
+    tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
+                                                         TreePredication(1, "pron", ["x3"]),
+                                                         TreePredication(2, "_a_q", ["x1",
+                                                                                     [TreePredication(3, "_large_a_1", ["e1", "x1"]),
+                                                                                      TreePredication(4, "_file_n_of", ["x1", "i1"])],
+                                                                                     TreePredication(5, "_delete_v_1", ["e2", "x3", "x1"])])])
+
+    print(solve_and_respond(state, tree_info))
 
     
 # Evaluate the proposition: "which file is large?" if there are no files
 def Example14():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents")])
-    mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "sg"},
-                        "e1": {"SF": "ques"}}
-    mrs["Tree"] = [["_which_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
+    tree_info = {}
+    tree_info["Index"] = "e1"
+    tree_info["Variables"] = {"x1": {"NUM": "sg"},
+                              "e1": {"SF": "ques"}}
+    tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
+                                                        TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                        TreePredication(2, "_large_a_1", ["e1", "x1"])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 # "A file is large" when there isn't a file in the system
 def Example15():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents")])
-    mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "pl"},
+    tree_info = {}
+    tree_info["Index"] = "e1"
+    tree_info["Variables"] = {"x1": {"NUM": "pl"},
                         "e1": {"SF": "prop"}}
-    mrs["Tree"] = [["_a_q", "x1", ["_file_n_of", "x1", "i1"], ["_large_a_1", "e1", "x1"]]]
+    tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
+                                                    TreePredication(1, "_file_n_of", ["x1", "i1"]),
+                                                    TreePredication(2, "_large_a_1", ["e1", "x1"])])
 
-    print(solve_and_respond(state, mrs))
+    print(solve_and_respond(state, tree_info))
 
 
 def Example16_reset():
@@ -431,16 +481,16 @@ if __name__ == '__main__':
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
-    # with ExecutionContext(vocabulary):
-    #     execution_context()._phrase_type = "prop"
-    #     Example1()
-    #     Example2()
-    #     Example3()
-    #     Example4()
-    #     Example5()
-    #     Example5_1()
-    #     Example5_2()
-    #     Example6()
+    with ExecutionContext(vocabulary):
+        execution_context()._phrase_type = "prop"
+        # Example1()
+        # Example2()
+        # Example3()
+        # Example4()
+        # Example5()
+        # Example5_1()
+        # Example5_2()
+        # Example6()
     # Example6a()
     # Example6b()
     #     Example7()

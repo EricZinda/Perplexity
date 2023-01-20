@@ -1,6 +1,7 @@
 # Code to draw a nice text tree inspired by and parts copied from:
 # https://stackoverflow.com/questions/13128750/what-are-the-step-to-the-reingold-tilford-algorithm-and-how-might-i-program-it
 # https://rachel53461.wordpress.com/2014/04/20/algorithm-for-drawing-trees/
+from perplexity.tree import TreePredication
 from perplexity.utilities import parse_predication_name
 
 
@@ -16,11 +17,11 @@ def arg_names_from_mrs(mrs, predication_name, arg_count):
     return [str(item) for item in range(0, arg_count)]
 
 
-# Convert Perplexity text tree format to a set
+# Convert Perplexity tree format to a set
 # of printable nodes
 def create_draw_tree(mrs, tree_node, parent=None, hole=None):
     if isinstance(tree_node, list):
-        if isinstance(tree_node[0], list) and len(tree_node) > 1:
+        if len(tree_node) > 1:
             # Need to treat as a single fake "and" node
             and_node = ["and"]
             for and_arg in tree_node:
@@ -29,20 +30,27 @@ def create_draw_tree(mrs, tree_node, parent=None, hole=None):
         else:
             predication = tree_node[0]
 
-        new_node = DrawNode(parent, predication[0], hole)
-        arg_names = arg_names_from_mrs(mrs, predication[0], len(predication) - 1)
+    elif isinstance(tree_node, TreePredication):
+        predication = tree_node
 
-        for arg_index in range(0, len(arg_names)):
-            arg = predication[arg_index + 1]
-            arg_name = arg_names[arg_index]
-            child = create_draw_tree(mrs, arg, new_node, arg_name)
-            if child is None:
-                new_node.args.append(arg)
-            else:
-                new_node.args.append(arg_name)
-                new_node.children.append(child)
+    else:
+        return
 
-        return new_node
+    new_node = DrawNode(parent, predication.name, hole)
+    arg_names = arg_names_from_mrs(mrs, predication.name, len(predication.args))
+
+    for arg_index in range(0, len(arg_names)):
+        arg = predication.args[arg_index]
+        arg_name = arg_names[arg_index]
+        child = create_draw_tree(mrs, arg, new_node, arg_name)
+        if child is None:
+            new_node.args.append(arg)
+
+        else:
+            new_node.args.append(arg_name)
+            new_node.children.append(child)
+
+    return new_node
 
 
 # nodes are represented as a function with args like:

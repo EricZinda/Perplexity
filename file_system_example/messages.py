@@ -47,7 +47,7 @@ def respond_to_mrs_tree(tree, solutions, error):
                 # Build an error term that we can use to call generate_message
                 # to get the response
                 index_predication = find_predicate_from_introduced(tree["Tree"], tree["Index"])
-                wh_variable = wh_predication[1]
+                wh_variable = wh_predication.introduced_variable()
                 answer_items = []
                 for solution in solutions:
                     answer_items.append(solution.get_variable(wh_variable))
@@ -128,7 +128,7 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "formNotUnderstood":
         predication = predication_from_index(tree_info, error_predicate_index)
-        parsed_predicate = parse_predication_name(predication[0])
+        parsed_predicate = parse_predication_name(predication.name)
 
         if error_arguments[1] == "notHandled":
             # The event had something that the predication didn't know how to handle
@@ -136,7 +136,7 @@ def generate_message(tree_info, error_term):
             if "Originator" in error_arguments[2][1]:
                 originator_index = error_arguments[2][1]["Originator"]
                 originator_predication = predication_from_index(tree_info, originator_index)
-                parsed_originator = parse_predication_name(originator_predication[0])
+                parsed_originator = parse_predication_name(originator_predication.name)
                 return f"I don't understand the way you are using '{parsed_originator['Lemma']}' with '{parsed_predicate['Lemma']}'"
 
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
@@ -152,7 +152,7 @@ def generate_message(tree_info, error_term):
         if len(answer_items) > 0:
             message = ""
 
-            if answer_predication[0] == "loc_nonsp":
+            if answer_predication.name == "loc_nonsp":
                 # if "loc_nonsp" is the "verb", it means the phrase was
                 # "Where is YYY?", so only return the "best" answer, which
                 # is the most specific one

@@ -2,6 +2,7 @@ import logging
 from file_system_example.objects import File, Folder, Actor, Container
 from file_system_example.state import DeleteOperation
 from perplexity.execution import ExecutionContext, call, report_error, execution_context
+from perplexity.tree import TreePredication
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 vocabulary = Vocabulary()
@@ -18,6 +19,7 @@ def delete_v_1_comm(state, e_introduced, x_actor, x_what):
         # Only allow deleting files and folders
         if isinstance(x_what_value, (File, Folder)):
             yield state.apply_operations([DeleteOperation(x_what_value)])
+
         else:
             report_error(["cantDo", "delete", x_what])
 
@@ -33,6 +35,7 @@ def degree_multiplier_from_event(state, e_introduced):
     e_introduced_value = state.get_variable(e_introduced)
     if e_introduced_value is None or "DegreeMultiplier" not in e_introduced_value:
         degree_multiplier = 1
+
     else:
         degree_multiplier = e_introduced_value["DegreeMultiplier"]["Value"]
 
@@ -59,6 +62,7 @@ def this_q_dem(state, x_variable, h_rstr, h_body):
         if in_scope(solution, solution.get_variable(x_variable)):
             if rstr_single_solution is None:
                 rstr_single_solution = solution
+
             else:
                 # Make sure there is only one since "this" shouldn't be ambiguous
                 report_error(["moreThanOneInScope", ["AtPredication", h_body, x_variable]], force=True)
@@ -135,7 +139,7 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
 
 
 def rstr_reorderable(rstr):
-    return len(rstr) == 1 and rstr[0][0] in ["place_n"]
+    return isinstance(rstr, TreePredication) and rstr.name in ["place_n"]
 
 
 @Predication(vocabulary, names=["which_q", "_which_q"])
@@ -268,6 +272,7 @@ def folder_n_of(state, x, i):
         # iterate over all individuals in the world
         # using the iterator returned by state.all_individuals()
         iterator = state.all_individuals()
+
     else:
         # Variable is bound: create an iterator that will iterate
         # over just that one by creating a list and adding it as
@@ -286,6 +291,7 @@ def folder_n_of(state, x, i):
             # variable set to a new value
             new_state = state.set_x(x, item)
             yield new_state
+
         else:
             report_error(["xIsNotY", x, "folder"])
 
