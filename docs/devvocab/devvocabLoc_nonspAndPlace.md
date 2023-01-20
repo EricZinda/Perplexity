@@ -292,3 +292,5 @@ Folder(name=/Desktop, size=0)
 ~~~
 
 Works OK with our small data set but clearly not going to work with a real file system.  We'll address this [in two topics](devvocabReorderingQuantifierArguments).
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

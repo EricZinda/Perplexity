@@ -133,3 +133,5 @@ There is more than one 'this file' where you are
 ~~~
 
 Much better!
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

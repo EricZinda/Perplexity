@@ -89,3 +89,5 @@ in /Desktop
 ? which file is small
 File(name=/documents/file1.txt, size=1000)
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

@@ -139,7 +139,7 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
 
 
 def rstr_reorderable(rstr):
-    return isinstance(rstr, TreePredication) and rstr.name in ["place_n"]
+    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing"]
 
 
 @Predication(vocabulary, names=["which_q", "_which_q"])
@@ -203,6 +203,19 @@ def small_a_1(state, e_introduced, x_target):
             yield new_state
         else:
             report_error(["adjectiveDoesntApply", "small", x_target])
+
+
+@Predication(vocabulary)
+def thing(state, x):
+    x_value = state.get_variable(x)
+
+    if x_value is None:
+        iterator = state.all_individuals()
+    else:
+        iterator = [x_value]
+
+    for item in iterator:
+        yield state.set_x(x, item)
 
 
 @Predication(vocabulary)

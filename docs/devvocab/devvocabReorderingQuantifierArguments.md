@@ -105,4 +105,6 @@ in /Desktop
 
 Much more efficient.
 
-We'll use this same trick later, when we encounter the `thing` predication which is even worse since it returns literally every object in the system!
+We'll use this same trick later, when we encounter the [`thing` predication](devvocabThing) which is even worse since it returns literally every object in the system!
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

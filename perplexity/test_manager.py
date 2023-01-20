@@ -33,6 +33,19 @@ class TestIterator(object):
         self.test_path_and_file = test_path_and_file
         with open(test_path_and_file, "r") as file:
             self.test = json.loads(file.read())
+
+        # Make sure all IDs are unique!
+        ids = {}
+        for test_item in self.test["TestItems"]:
+            if test_item["ID"] in ids:
+                test_item["ID"] = str(uuid.uuid4())
+            else:
+                ids[test_item["ID"]] = True
+
+        if len(ids) != len(self.test["TestItems"]):
+            with open(self.test_path_and_file, "w") as file:
+                file.write(json.dumps(self.test, indent=4))
+
         self.index = 0
 
     def __iter__(self):

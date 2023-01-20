@@ -77,7 +77,7 @@ Sentence Force: ques
 Unknown words: [('thing', ['x'], 'ques', False), ('_in_p_loc', ['e', 'x', 'x'], 'ques', False), ('_this_q_dem', ['x', 'h', 'h'], 'ques', False), ('_directory_n_1', ['x'], 'ques', False)]
 ~~~
 
-We'll need to implement `thing`, `in_p_loc`, `this_q_dem` to make it work.
+We'll need to implement `thing`, `in_p_loc`, [`this_q_dem`](devvocabThis_q_dem) to make it work.
 
 ### TBD
 

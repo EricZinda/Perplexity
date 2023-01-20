@@ -81,17 +81,17 @@
         },
         {
             "Command": "which file is very small?",
-            "Expected": "File(name=file1.txt, size=20000000)\n",
+            "Expected": "I don't understand the way you are using 'very' with 'small'",
             "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
             "Enabled": true,
-            "ID": "7f29b13c-aa0c-4d11-bc8d-ec9dcf598cac"
+            "ID": "ce5adad4-4e72-4e1e-b42e-e2d03ab87a86"
         },
         {
             "Command": "a file is deleted",
-            "Expected": "File(name=file1.txt, size=20000000)\n",
+            "Expected": "I don't know the way you used: delete",
             "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
             "Enabled": true,
-            "ID": "7f29b13c-aa0c-4d11-bc8d-ec9dcf598cac"
+            "ID": "5df6d756-ed91-4d18-b435-30110dcd8dba"
         },
         {
             "Command": "delete you",
@@ -148,6 +148,20 @@
             "Tree": "[['_this_q_dem', 'x3', [['_folder_n_of', 'x3', 'i8']], [['_large_a_1', 'e2', 'x3']]]]",
             "Enabled": true,
             "ID": "e820409b-70ce-4331-80a2-6701fab73378"
+        },
+        {
+            "Command": "/new examples.Example22_reset",
+            "Expected": "State reset using examples.Example22_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "04bb3c68-2f72-4d68-9eab-969482c530a3"
+        },
+        {
+            "Command": "what is large?",
+            "Expected": "Folder(name=/Desktop, size=10000000)\nFile(name=/Desktop/file2.txt, size=10000000)\n",
+            "Tree": "which_q(x3,thing(x3),_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "8422a7fa-a85e-48fa-902e-6c85667c01c9"
         }
     ]
 }

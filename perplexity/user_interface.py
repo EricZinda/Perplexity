@@ -205,7 +205,7 @@ class UserInterface(object):
                 else:
                     print(f"Error: {tree['Error']}")
 
-                print(f"Response:\n {tree['ResponseMessage']}")
+                print(f"Response:\n{tree['ResponseMessage']}")
 
             tree_index += 1
 
