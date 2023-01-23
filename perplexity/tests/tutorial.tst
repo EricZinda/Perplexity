@@ -213,11 +213,18 @@
             "ID": "4043a857-553d-4601-9235-ca34fc6e60a4"
         },
         {
+            "Command": "\"blue\" is in this folder",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "dfa7fc82-b238-4f94-8001-5f690181baf7"
+        },
+        {
             "Command": "delete \"blue\"",
             "Expected": "Done!",
             "Tree": "pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "dfa7fc82-b238-4f94-8001-5f690181baf7"
+            "ID": "8ad5cc45-0b32-4360-a06f-83db9d24f0d2"
         }
     ]
 }
