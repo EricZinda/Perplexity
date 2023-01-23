@@ -49,7 +49,8 @@ class Folder(Container):
         yield from self.all_locations()
 
     def __eq__(self, obj):
-        return isinstance(obj, Folder) and self.name == obj.name
+        return isinstance(obj, Folder) and self.name == obj.name or \
+               (isinstance(obj, QuotedText) and self == self.file_system.item_from_path(obj.name))
 
     def __ne__(self, obj):
         return not self == obj
@@ -66,7 +67,8 @@ class File(Container):
         return f"File(name={self.name}, size={self.size})"
 
     def __eq__(self, obj):
-        return isinstance(obj, File) and self.name == obj.name
+        return isinstance(obj, File) and self.name == obj.name or \
+               (isinstance(obj, QuotedText) and self == self.file_system.item_from_path(obj.name))
 
     def __ne__(self, obj):
         return not self == obj
