@@ -95,6 +95,8 @@ class TestManager(object):
         if not os.path.exists(self.test_root_folder):
             os.makedirs(self.test_root_folder)
 
+        self.load_session_data()
+
     def full_test_path(self, test_name):
         return os.path.join(self.test_root_folder, test_name)
 
@@ -183,3 +185,23 @@ class TestManager(object):
                                    "Enabled": True,
                                    "ID": str(uuid.uuid4())
                                    })
+
+    # Used to hold arbitrary information about the
+    # session, across runs
+    def session_data_path(self):
+        return self.full_test_path("session_info.json")
+
+    def load_session_data(self):
+        if os.path.exists(self.session_data_path()):
+            with open(self.session_data_path(), "r") as file:
+                self.session_data = json.loads(file.read())
+        else:
+            self.session_data = {}
+
+    def record_session_data(self, key, value):
+        self.session_data[key] = value
+        with open(self.session_data_path(), "w") as file:
+            file.write(json.dumps(self.session_data, indent=4))
+
+    def session_data(self, key):
+        return self.session_data.get(key, None)

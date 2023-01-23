@@ -204,6 +204,20 @@
             "Tree": "_this_q_dem(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "ecfb6513-af04-4b08-9ab0-de6f27873473"
+        },
+        {
+            "Command": "/new examples.Example23_reset",
+            "Expected": "State reset using examples.Example23_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "4043a857-553d-4601-9235-ca34fc6e60a4"
+        },
+        {
+            "Command": "delete \"blue\"",
+            "Expected": "Done!",
+            "Tree": "pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "dfa7fc82-b238-4f94-8001-5f690181baf7"
         }
     ]
 }

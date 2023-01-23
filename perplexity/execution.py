@@ -80,7 +80,7 @@ class ExecutionContext(object):
         # function name given a string like "folder_n_of".
         # "vocabulary.Predication" returns a two-item list,
         # where item[0] is the module and item[1] is the function
-        predication_argument_names = self.arg_types_from_call(predication.args)
+        predication_argument_names = self.arg_types_from_call(predication)
         for module_function in self.vocabulary.predications(predication.name,
                                                             predication_argument_names,
                                                             self._phrase_type):
@@ -109,13 +109,20 @@ class ExecutionContext(object):
 
     # Replace scopal arguments with an "h" and simply
     # return the others
-    def arg_types_from_call(self, predication_args):
+    def arg_types_from_call(self, predication):
         arg_types = []
-        for arg in predication_args:
-            if isinstance(arg, str):
-                arg_types.append(arg[0])
+        for arg_index in range(0, len(predication.args)):
+            if predication.arg_names is not None:
+                arg_name = predication.arg_names[arg_index]
+
+            arg = predication.args[arg_index]
+            if arg_name is not None and arg_name == "CARG":
+                arg_types.append("c")
             else:
-                arg_types.append("h")
+                if isinstance(arg, str):
+                    arg_types.append(arg[0])
+                else:
+                    arg_types.append("h")
 
         return arg_types
 

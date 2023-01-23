@@ -34,28 +34,32 @@ class UserInterface(object):
         if force_input is None:
             # input() pauses the program and waits for the user to
             # type input and hit enter, and then returns it
-            user_input = str(input("? "))
+            self.user_input = str(input("? "))
         else:
-            user_input = force_input
+            self.user_input = force_input
 
-        command_result = self.handle_command(user_input)
+        command_result = self.handle_command(self.user_input)
         if command_result is True:
             return
 
         elif command_result is not None:
             print(command_result)
-            self.interaction_record = {"UserInput": user_input,
+            self.interaction_record = {"UserInput": self.user_input,
                                        "Mrss": [],
                                        "ChosenMrsIndex": None,
                                        "ChosenTreeIndex": None,
-                                       "ChosenResponse": command_result}
+                                       "ChosenResponse": command_result,
+                                       "ChosenError": None}
 
         else:
-            self.interaction_record = {"UserInput": user_input,
+            self.interaction_record = {"UserInput": self.user_input,
                                        "Mrss": [],
                                        "ChosenMrsIndex": None,
                                        "ChosenTreeIndex": None,
-                                       "ChosenResponse": None}
+                                       "ChosenResponse": None,
+                                       "ChosenError": None}
+
+            self.test_manager.record_session_data("last_phrase", self.user_input)
 
         # self.records is a list if we are recording commands
         if isinstance(self.records, list):
@@ -67,16 +71,18 @@ class UserInterface(object):
 
         # Loop through each MRS and each tree that can be
         # generated from it...
-        for mrs in self.mrss_from_phrase(user_input):
+        for mrs in self.mrss_from_phrase(self.user_input):
             mrs_record = {"Mrs": mrs,
                           "UnknownWords": self.unknown_words(mrs),
                           "Trees": []}
             self.interaction_record["Mrss"].append(mrs_record)
             if len(mrs_record["UnknownWords"]) > 0:
                 if self.interaction_record["ChosenResponse"] is None:
-                    self.interaction_record["ChosenResponse"] = self.response_function(None, [], [0, ["unknownWords", mrs_record["UnknownWords"]]])
+                    self.interaction_record["ChosenError"] = [0, ["unknownWords", mrs_record["UnknownWords"]]]
+                    self.interaction_record["ChosenResponse"] = self.response_function(None, [], self.interaction_record["ChosenError"])
                     self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
                     self.interaction_record["ChosenTreeIndex"] = len(mrs_record["Trees"]) - 1
+                    pipeline_logger.debug(f"Recording best answer: {self.interaction_record['ChosenResponse']}")
 
                 continue
 
@@ -102,9 +108,13 @@ class UserInterface(object):
                 pipeline_logger.debug(f"{len(tree_record['Solutions'])} solutions, error: {tree_record['Error']}")
                 tree_record["ResponseMessage"] = self.response_function(tree_info, tree_record["Solutions"], tree_record["Error"])
                 if len(tree_record["Solutions"]) > 0:
+                    # If there were solutions, this is our answer,
+                    # return it and stop looking
+                    self.interaction_record["ChosenError"] = tree_record["Error"]
                     self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
                     self.interaction_record["ChosenTreeIndex"] = len(mrs_record["Trees"]) - 1
                     self.interaction_record["ChosenResponse"] = tree_record["ResponseMessage"]
+                    pipeline_logger.debug(f"Recording best answer: {self.interaction_record['ChosenResponse']}")
 
                     # This worked, apply the results to the current world state if it was a command
                     if sentence_force_from_tree_info(tree_info) == "comm":
@@ -117,9 +127,11 @@ class UserInterface(object):
                     # This failed, remember it if it is the "best" failure
                     # which we currently define as the first one
                     if self.interaction_record["ChosenResponse"] is None:
+                        self.interaction_record["ChosenError"] = tree_record["Error"]
                         self.interaction_record["ChosenResponse"] = tree_record["ResponseMessage"]
                         self.interaction_record["ChosenMrsIndex"] = len(self.interaction_record["Mrss"]) - 1
                         self.interaction_record["ChosenTreeIndex"] = len(mrs_record["Trees"]) - 1
+                        pipeline_logger.debug(f"Recording best answer: {self.interaction_record['ChosenResponse']}")
 
         # If we got here, nothing worked: print out the best failure
         print(self.interaction_record["ChosenResponse"])
@@ -213,7 +225,12 @@ class UserInterface(object):
         unknown_words = []
         phrase_type = sentence_force(mrs.index, mrs.variables)
         for predication in mrs.predications:
-            argument_types = [argument[1][0] for argument in predication.args.items()]
+            argument_types = []
+            for argument_item in predication.args.items():
+                if argument_item[0] == "CARG":
+                    argument_types.append("c")
+                else:
+                    argument_types.append(argument_item[1][0])
             predications = list(self.execution_context.vocabulary.predications(predication.predicate, argument_types, phrase_type))
             if len(predications) == 0:
                 # This predication is not implemented
@@ -307,6 +324,13 @@ def command_show(ui, arg):
     all = arg.lower() == "all"
     ui.print_diagnostics(all)
     return True
+
+
+def command_repeat(ui, arg):
+    repeat_phrase = ui.test_manager.session_data["last_phrase"]
+    print(f"Repeat: {repeat_phrase}")
+    ui.user_input = repeat_phrase
+    return None
 
 
 def command_record_test(ui, arg):
@@ -403,6 +427,9 @@ pipeline_logger = logging.getLogger('Pipeline')
 command_data = {
     "help": {"Function": command_help, "Category": "General",
              "Description": "Get list of commands", "Example": "/help"},
+    "r": {"Function": command_repeat, "Category": "General",
+            "Description": "Repeat the last phrase",
+            "Example": "/r"},
     "new": {"Function": command_new, "Category": "General",
             "Description": "Calls the passed function to get the new state to use",
             "Example": "/new examples.Example18_reset"},

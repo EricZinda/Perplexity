@@ -180,6 +180,9 @@ class FileSystemMock(FileSystem):
                 yield item[1]
 
     def item_from_path(self, path):
+        if os.path.dirname(path) == "":
+            path = os.path.join(self.current_directory().name, path)
+
         if path in self.items:
             return self.items[path]
 
@@ -189,6 +192,11 @@ class FileSystemMock(FileSystem):
 
     def delete_item(self, delete_item):
         self.items.pop(delete_item.name)
+
+
+class QuotedText(object):
+    def __init__(self, name):
+        self.name = name
 
 
 pipeline_logger = logging.getLogger('Pipeline')

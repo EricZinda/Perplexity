@@ -1,6 +1,6 @@
 import copy
 import logging
-from file_system_example.objects import Actor
+from file_system_example.objects import Actor, QuotedText
 
 
 # The state representation used by the file system example
@@ -48,7 +48,8 @@ class State(object):
         return self.variables.get(variable_name, None)
 
     # This is how predications will set the value
-    # of an "x" variable
+    # of an "x" variable (or another type of variable
+    # that is acting like an unquantified "x" variable)
     def set_x(self, variable_name, item):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
@@ -118,7 +119,12 @@ class DeleteOperation(object):
 
     def apply_to(self, state):
         if isinstance(state, FileSystemState):
-            state.file_system.delete_item(self.object_to_delete)
+            if isinstance(self.object_to_delete, QuotedText):
+                object_to_delete = state.file_system.item_from_path(self.object_to_delete.name)
+            else:
+                object_to_delete = self.object_to_delete
+
+            state.file_system.delete_item(object_to_delete)
 
         else:
             for index in range(0, len(state.objects)):

@@ -3,10 +3,11 @@ from collections import defaultdict
 
 
 class TreePredication(object):
-    def __init__(self, index, name, args):
+    def __init__(self, index, name, args, arg_names=None):
         self.index = index
         self.name = name
         self.args = args
+        self.arg_names = arg_names
 
     def introduced_variable(self):
         return self.args[0]
@@ -30,7 +31,7 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, curren
     # have the same key and should be put in conjunction (i.e. be and'd together)
     conjunction_list = []
     for predication in predication_list:
-        tree_node = TreePredication(current_index[0], predication.predicate, [])
+        tree_node = TreePredication(current_index[0], predication.predicate, [], [])
         current_index[0] += 1
 
         # Recurse through this predication's arguments
@@ -50,6 +51,7 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, curren
                     new_value = original_value
 
             tree_node.args.append(new_value)
+            tree_node.arg_names.append(arg_name)
 
         conjunction_list.append(tree_node)
 

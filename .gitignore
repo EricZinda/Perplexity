@@ -8,3 +8,4 @@ venv/
 __pycache__/
 *.pem
 .DS_Store
+perplexity/tests/session_info.json

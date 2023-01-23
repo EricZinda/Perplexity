@@ -50,7 +50,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
             # OR the format: "x_actor"
             if len(arg_name) == 1 or (len(arg_name) > 1 and arg_name[1] == "_"):
                 arg_type = arg_name[0]
-                if arg_type not in ["u", "i", "p", "e", "x", "h"]:
+                if arg_type not in ["u", "i", "p", "e", "x", "h", "c"]:
                     raise Exception(f"Argument {arg_index} of predication {function.__name__} has an unknown argument type of {arg_type}'")
 
                 arg_list.append(arg_type)

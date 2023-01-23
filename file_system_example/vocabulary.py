@@ -1,5 +1,5 @@
 import logging
-from file_system_example.objects import File, Folder, Actor, Container
+from file_system_example.objects import File, Folder, Actor, Container, QuotedText
 from file_system_example.state import DeleteOperation
 from perplexity.execution import ExecutionContext, call, report_error, execution_context
 from perplexity.tree import TreePredication
@@ -16,8 +16,9 @@ def delete_v_1_comm(state, e_introduced, x_actor, x_what):
     if state.get_variable(x_actor).name == "Computer":
         x_what_value = state.get_variable(x_what)
 
-        # Only allow deleting files and folders
-        if isinstance(x_what_value, (File, Folder)):
+        # Only allow deleting files and folders or
+        # textual names of files
+        if isinstance(x_what_value, (File, Folder, QuotedText)):
             yield state.apply_operations([DeleteOperation(x_what_value)])
 
         else:
@@ -261,6 +262,54 @@ def in_p_loc(state, e_introduced, x_actor, x_location):
                 yield state.set_x(x_actor, location)
 
     report_error(["thingHasNoLocation", x_actor, x_location])
+
+
+@Predication(vocabulary)
+def quoted(state, c_raw_text, i_text):
+    # c_raw_text_value will always be set to a
+    # raw string
+    c_raw_text_value = c_raw_text
+    i_text_value = state.get_variable(i_text)
+
+    if i_text_value is None:
+        yield state.set_x(i_text, QuotedText(c_raw_text_value))
+    else:
+        if isinstance(i_text_value, QuotedText) and i_text_value.name == c_raw_text:
+            yield state
+
+
+@Predication(vocabulary)
+def fw_seq(state, x_phrase, i_part):
+    x_phrase_value = state.get_variable(x_phrase)
+    i_part_value = state.get_variable(i_part)
+    if i_part_value is None:
+        if x_phrase_value is None:
+            # This should never happen since it basically means
+            # "return all possible strings"
+            assert False
+        else:
+            yield state.set_x(i_part, x_phrase_value)
+    else:
+        if x_phrase_value is None:
+            yield state.set_x(x_phrase, i_part_value)
+
+        elif x_phrase_value == i_part_value:
+            yield state
+
+#
+# @Predication(vocabulary)
+# def fw_seq(state, x_phrase, i_part1, i_part2):
+#     pass
+#
+#
+# @Predication(vocabulary)
+# def fw_seq(state, x_phrase, x_part1, i_part2):
+#     pass
+
+
+@Predication(vocabulary)
+def proper_q(state, x_variable, h_rstr, h_body):
+    yield from default_quantifier(state, x_variable, h_rstr, h_body)
 
 
 @Predication(vocabulary)
