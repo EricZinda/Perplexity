@@ -8,6 +8,9 @@ from perplexity.utilities import parse_predication_name
 def english_for_delphin_variable(failure_index, variable, tree_info, default_a_quantifier=True):
     if isinstance(variable, list):
         if variable[0] == "AtPredication":
+            # Use the English for this variable as if the
+            # error happened at the specified predication
+            # instead of where it really happened
             failure_index = variable[1].index
             logger.debug(f"error predication index is: {failure_index}")
             variable = variable[2]

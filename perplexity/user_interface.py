@@ -270,8 +270,8 @@ class UserInterface(object):
         # Don't print errors to the screen
         f = open(os.devnull, 'w')
 
-        # Create an instance of the ACE parser and ask to give <= 25 MRS documents
-        with ace.ACEParser(self.erg_file(), cmdargs=['-n', '25'], stderr=f) as parser:
+        # Create an instance of the ACE parser and ask to give <= 100 MRS documents
+        with ace.ACEParser(self.erg_file(), cmdargs=['-n', '100'], stderr=f) as parser:
             ace_response = parser.interact(phrase)
             pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
 
