@@ -1,6 +1,6 @@
 import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
-from file_system_example.state import DeleteOperation
+from file_system_example.state import DeleteOperation, FileSystemState
 from perplexity.execution import ExecutionContext, call, report_error, execution_context
 from perplexity.tree import TreePredication
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
@@ -16,13 +16,21 @@ def delete_v_1_comm(state, e_introduced, x_actor, x_what):
     if state.get_variable(x_actor).name == "Computer":
         x_what_value = state.get_variable(x_what)
 
-        # Only allow deleting files and folders or
-        # textual names of files
-        if isinstance(x_what_value, (File, Folder, QuotedText)):
-            yield state.apply_operations([DeleteOperation(x_what_value)])
-
+        # If this is text, make sure it actually exists
+        if isinstance(x_what_value, QuotedText):
+            actual_item = state.file_system.item_from_path(x_what_value.name)
+            if actual_item is not None:
+                yield state.apply_operations([DeleteOperation(x_what_value)])
+            else:
+                report_error(["notFound", x_what])
         else:
-            report_error(["cantDo", "delete", x_what])
+            # Only allow deleting files and folders or
+            # textual names of files
+            if isinstance(x_what_value, (File, Folder, QuotedText)):
+                yield state.apply_operations([DeleteOperation(x_what_value)])
+
+            else:
+                report_error(["cantDo", "delete", x_what])
 
     else:
         report_error(["dontKnowActor", x_actor])
