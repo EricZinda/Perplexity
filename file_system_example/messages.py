@@ -1,7 +1,7 @@
 import logging
 from perplexity.generation import english_for_delphin_variable
-from perplexity.tree import find_predicate, predication_from_index, \
-    find_predicate_from_introduced
+from perplexity.tree import find_predication, predication_from_index, \
+    find_predication_from_introduced
 from perplexity.utilities import parse_predication_name, sentence_force
 
 
@@ -26,9 +26,9 @@ def respond_to_mrs_tree(tree, solutions, error):
 
     elif sentence_force_type == "ques":
         # See if this is a "WH" type question
-        wh_predication = find_predicate(tree["Tree"], "_which_q")
+        wh_predication = find_predication(tree["Tree"], "_which_q")
         if wh_predication is None:
-            wh_predication = find_predicate(tree["Tree"], "which_q")
+            wh_predication = find_predication(tree["Tree"], "which_q")
 
         if wh_predication is None:
             # This was a simple question, so the user only expects
@@ -46,7 +46,7 @@ def respond_to_mrs_tree(tree, solutions, error):
             if len(solutions) > 0:
                 # Build an error term that we can use to call generate_message
                 # to get the response
-                index_predication = find_predicate_from_introduced(tree["Tree"], tree["Index"])
+                index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
                 answer_items = []
                 for solution in solutions:

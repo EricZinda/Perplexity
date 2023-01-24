@@ -9,7 +9,7 @@ from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import find_predicate, tree_from_assignments
+from perplexity.tree import find_predication, tree_from_assignments
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
@@ -263,7 +263,7 @@ class UserInterface(object):
 
         # Now apply all the operations to the original state object and
         # print it to prove it happened
-        self.state = self.state.apply_operations(all_operations)
+        self.state = self.state.apply_operations(all_operations, False)
         logger.debug(f"Final state: {self.state.objects}")
 
     def mrss_from_phrase(self, phrase):

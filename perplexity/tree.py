@@ -9,11 +9,33 @@ class TreePredication(object):
         self.args = args
         self.arg_names = arg_names
 
+        if arg_names is not None:
+            self.arg_types = []
+            for arg_index in range(0, len(self.arg_names)):
+                self.arg_types.append(self.type_from_argument(self.arg_names[arg_index], self.args[arg_index]))
+
+    def type_from_argument(self, name, value):
+        if name == "CARG":
+            return "c"
+        else:
+            if isinstance(value, str):
+                return value[0]
+            else:
+                return "h"
+
     def introduced_variable(self):
         if self.arg_names[0] == "CARG":
             return self.args[1]
         else:
             return self.args[0]
+
+    def argument_types(self):
+        return self.arg_types
+
+    def append_arg(self, name, value):
+        self.arg_names.append(name)
+        self.args.append(value)
+        self.arg_types.append(self.type_from_argument(name, value))
 
     def __repr__(self):
         return f"{self.name}({','.join([str(arg) for arg in self.args])})"
@@ -53,8 +75,7 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, curren
                 else:
                     new_value = original_value
 
-            tree_node.args.append(new_value)
-            tree_node.arg_names.append(arg_name)
+            tree_node.append_arg(arg_name, new_value)
 
         conjunction_list.append(tree_node)
 
@@ -239,7 +260,20 @@ def walk_tree_args_until(term, predication_func, arg_func):
     return None
 
 
-def find_predicate_from_introduced(term, introduced_variable):
+def find_predications_using_variable(term, variable):
+    def match_predication_using_variable(predication):
+        for arg_index in range(1, len(predication.arg_types)):
+            if predication.arg_types[arg_index] not in ["c", "h"]:
+                if predication.args[arg_index] == variable:
+                    predication_list.append(predication)
+
+    predication_list = []
+    walk_tree_predications_until(term, match_predication_using_variable)
+
+    return predication_list
+
+
+def find_predication_from_introduced(term, introduced_variable):
     def match_introduced_variable(predication):
         if predication.introduced_variable() == introduced_variable:
             return predication
@@ -252,7 +286,7 @@ def find_predicate_from_introduced(term, introduced_variable):
 # Walk the tree represented by "term" and
 # return the predication that matches
 # "predicate_name" or "None" if none is found
-def find_predicate(term, predication_name):
+def find_predication(term, predication_name):
     # This function gets called for every predication
     # in the tree. It is a private function since it is
     # only used here

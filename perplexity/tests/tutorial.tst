@@ -232,6 +232,27 @@
             "Tree": "_this_q_dem(x10,_folder_n_of(x10,i15),proper_q(x3,[quoted(blue,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "7184c555-009b-474f-853d-5cff2eb459f2"
+        },
+        {
+            "Command": "\"the yearly budget.txt\" is in this folder",
+            "Expected": "Yes, that is true.",
+            "Tree": "_this_q_dem(x15,_folder_n_of(x15,i20),proper_q(x3,[quoted(budget.txt,i9), quoted(yearly,i11), quoted(the,i10), fw_seq(x8,i10,i11), fw_seq(x3,x8,i9)],_in_p_loc(e2,x3,x15)))",
+            "Enabled": true,
+            "ID": "a3022350-209f-4a47-b916-47fec27a1d03"
+        },
+        {
+            "Command": "delete \"the yearly budget.txt\"",
+            "Expected": "Done!",
+            "Tree": "pronoun_q(x3,pron(x3),proper_q(x8,[quoted(budget.txt,i14), quoted(yearly,i16), quoted(the,i15), fw_seq(x13,i15,i16), fw_seq(x8,x13,i14)],_delete_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "ed4e63f5-94e7-4814-a75e-3fca5111b119"
+        },
+        {
+            "Command": "\"the yearly budget.txt\" is in this folder",
+            "Expected": "'the yearly budget.txt' is not in this folder",
+            "Tree": "_this_q_dem(x15,_folder_n_of(x15,i20),proper_q(x3,[quoted(budget.txt,i9), quoted(yearly,i11), quoted(the,i10), fw_seq(x8,i10,i11), fw_seq(x3,x8,i9)],_in_p_loc(e2,x3,x15)))",
+            "Enabled": true,
+            "ID": "4f09e0fa-11f0-4493-b78c-59b45fb110f5"
         }
     ]
 }

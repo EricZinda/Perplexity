@@ -83,11 +83,12 @@ class State(object):
 
     # Call to apply a list of operations to
     # a new State object
-    def apply_operations(self, operation_list):
+    def apply_operations(self, operation_list, record_operations=True):
         newState = copy.deepcopy(self)
         for operation in operation_list:
             operation.apply_to(newState)
-            newState.operations.append(operation)
+            if record_operations:
+                newState.operations.append(operation)
 
         return newState
 

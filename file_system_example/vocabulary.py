@@ -286,8 +286,8 @@ def quoted(state, c_raw_text, i_text):
             yield state
 
 
-@Predication(vocabulary)
-def fw_seq(state, x_phrase, i_part):
+@Predication(vocabulary, names=["fw_seq"])
+def fw_seq1(state, x_phrase, i_part):
     x_phrase_value = state.get_variable(x_phrase)
     i_part_value = state.get_variable(i_part)
     if i_part_value is None:
@@ -304,15 +304,35 @@ def fw_seq(state, x_phrase, i_part):
         elif x_phrase_value == i_part_value:
             yield state
 
-#
-# @Predication(vocabulary)
-# def fw_seq(state, x_phrase, i_part1, i_part2):
-#     pass
-#
-#
-# @Predication(vocabulary)
-# def fw_seq(state, x_phrase, x_part1, i_part2):
-#     pass
+
+@Predication(vocabulary, names=["fw_seq"])
+def fw_seq2(state, x_phrase, i_part1, i_part2):
+    x_phrase_value = state.get_variable(x_phrase)
+    i_part1_value = state.get_variable(i_part1)
+    i_part2_value = state.get_variable(i_part2)
+
+    if isinstance(i_part1_value, QuotedText) and isinstance(i_part2_value, QuotedText):
+        combined_value = QuotedText(" ".join([i_part1_value.name, i_part2_value.name]))
+        if x_phrase_value is None:
+            yield state.set_x(x_phrase, combined_value)
+
+        elif isinstance(x_phrase_value, QuotedText) and x_phrase_value.name == combined_value.name:
+            yield state
+
+
+@Predication(vocabulary, names=["fw_seq"])
+def fw_seq3(state, x_phrase, x_part1, i_part2):
+    x_phrase_value = state.get_variable(x_phrase)
+    x_part1_value = state.get_variable(x_part1)
+    i_part2_value = state.get_variable(i_part2)
+
+    if isinstance(x_part1_value, QuotedText) and isinstance(i_part2_value, QuotedText):
+        combined_value = QuotedText(" ".join([x_part1_value.name, i_part2_value.name]))
+        if x_phrase_value is None:
+            yield state.set_x(x_phrase, combined_value)
+
+        elif isinstance(x_phrase_value, QuotedText) and x_phrase_value.name == combined_value.name:
+            yield state
 
 
 @Predication(vocabulary)

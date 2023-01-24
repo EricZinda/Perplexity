@@ -125,8 +125,8 @@ class Vocabulary(object):
                 else:
                     type_list.append((module, function))
 
-    def predications(self, name, args, predication_type):
-        name_key = self.name_key(name, args, predication_type)
+    def predications(self, name, arg_types, predication_type):
+        name_key = self.name_key(name, arg_types, predication_type)
         if name_key in self.all:
             for functionName in self.all[name_key]:
                 yield functionName

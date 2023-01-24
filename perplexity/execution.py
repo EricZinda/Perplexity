@@ -80,9 +80,8 @@ class ExecutionContext(object):
         # function name given a string like "folder_n_of".
         # "vocabulary.Predication" returns a two-item list,
         # where item[0] is the module and item[1] is the function
-        predication_argument_names = self.arg_types_from_call(predication)
         for module_function in self.vocabulary.predications(predication.name,
-                                                            predication_argument_names,
+                                                            predication.arg_types,
                                                             self._phrase_type):
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
