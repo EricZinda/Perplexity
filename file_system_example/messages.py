@@ -150,6 +150,10 @@ def generate_message(tree_info, error_term):
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"{arg1} is not in {arg2}"
 
+    elif error_constant == "notFound":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        return f"{arg1} was not found"
+
     elif error_constant == "answerWithList":
         answer_predication = error_arguments[1]
         answer_items = error_arguments[2]
@@ -179,5 +183,27 @@ def generate_message(tree_info, error_term):
     else:
         return error_term
 
+
+def error_priority(error_string):
+    global error_priority_dict
+    if error_string is None:
+        return 0
+    else:
+        return error_priority_dict.get(error_string[1][0], error_priority_dict["defaultPriority"])
+
+
+# Highest numbers are best errors to return
+# The absolute value of number doesn't mean anything, they are just for sorting
+# The defaultPriority key is the default value for errors that aren't explicitly listed
+error_priority_dict = {
+    # Unknown words error should only be shown if
+    # there are no other errors
+    "unknownWords": 1,
+    "defaultPriority": 1000,
+
+    # This is just used when sorting to indicate no error, i.e. success.
+    # Nothing should be higher
+    "success": 10000000
+}
 
 pipeline_logger = logging.getLogger('Pipeline')

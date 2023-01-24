@@ -1,4 +1,4 @@
-from file_system_example.messages import respond_to_mrs_tree
+from file_system_example.messages import respond_to_mrs_tree, error_priority
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
 from file_system_example.vocabulary import folder_n_of, vocabulary
@@ -498,7 +498,7 @@ def Example23_reset():
 
 
 def Example23():
-    user_interface = UserInterface(Example23_reset, vocabulary, respond_to_mrs_tree)
+    user_interface = UserInterface(Example23_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()

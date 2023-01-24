@@ -225,6 +225,13 @@
             "Tree": "pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "8ad5cc45-0b32-4360-a06f-83db9d24f0d2"
+        },
+        {
+            "Command": "\"blue\" is in this folder",
+            "Expected": "thing is not in this folder",
+            "Tree": "_this_q_dem(x10,_folder_n_of(x10,i15),proper_q(x3,[quoted(blue,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
+            "Enabled": true,
+            "ID": "7184c555-009b-474f-853d-5cff2eb459f2"
         }
     ]
 }

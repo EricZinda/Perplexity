@@ -182,17 +182,35 @@ def fw_seq(state, x_phrase, i_part):
 
 ~~~
 def delete_v_1_comm(state, e_introduced, x_actor, x_what):
-    # We only know how to delete things from the
-    # computer's perspective
-    if state.get_variable(x_actor).name == "Computer":
-        x_what_value = state.get_variable(x_what)
 
-        # Only allow deleting files and folders or
-        # textual names of files
-        if isinstance(x_what_value, (File, Folder, QuotedText)):
-            yield state.apply_operations([DeleteOperation(x_what_value)])
+    ...
+    
+        # If this is text, make sure it actually exists
+        if isinstance(x_what_value, QuotedText):
+            actual_item = state.file_system.item_from_path(x_what_value.name)
+            if actual_item is not None:
+                yield state.apply_operations([DeleteOperation(x_what_value)])
+            else:
+                report_error(["notFound", x_what])
+        else:
+            # Only allow deleting files and folders or
+            # textual names of files
+            if isinstance(x_what_value, (File, Folder, QuotedText)):
+                yield state.apply_operations([DeleteOperation(x_what_value)])
+
+            else:
+                report_error(["cantDo", "delete", x_what])
             
+            
+def generate_message(tree_info, error_term):
 
+    ...
+    
+    elif error_constant == "notFound":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        return f"{arg1} was not found"
+        
+        
 class DeleteOperation(object):
     
     ...
@@ -217,7 +235,7 @@ def proper_q(state, x_variable, h_rstr, h_body):
     yield from default_quantifier(state, x_variable, h_rstr, h_body) 
 ~~~
 
-With those changes, 
+With those changes, we can now use some simple phrases with one word quoted files:
 
 ~~~
 def Example23_reset():
@@ -235,12 +253,20 @@ def Example23():
         user_interface.interact_once()
         print()
         
-# Running Example23() gives:
-? "blue" is in this folder
-? delete "blue"
-? "blue" is in this folder
+Test: "blue" is in this folder
+Yes, that is true.
+
+Test: delete "blue"
+Done!
+
+Test: "blue" is in this folder
+thing is not in this folder
 ~~~
 
+We are almost done, but that last message is not great. We still need to teach [our NLG system](../devhowto/devhowtoConceptualFailures/) how to interpret the new predications:
+
+~~~
+~~~
 
 ~~~
 Sentence Force: comm

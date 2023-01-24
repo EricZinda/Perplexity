@@ -164,6 +164,9 @@ class TreeRenderer(object):
                 y_node.line_y = index
 
     def print_tree(self, node):
+        if node is None:
+            return
+
         self.calculate_positions(node)
         surface = TextSurface()
         self.print_node(surface, 0, node)
