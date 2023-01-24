@@ -44,7 +44,7 @@ def respond_to_mrs_tree(tree, solutions, error):
                 
 ~~~
 
-The error term is in the form: `[-1, ["answerWithList", index_predication, answer_items]]`. `answerWithList` means this is a "Wh" question answer. We also pass the `index_predication` because, as described in the topic on [sentence force](../devhowto/devhowtoSentenceForce/), this indicates the predication that the sentence is *about* (aka the "syntactic head"). Having this allows us to provide different answers for different "verbs". In this case, `loc_nonsp` is acting as a verb (this behavior is also described in [that section](../devhowto/devhowtoSentenceForce/)) and so we can modify `generate_message()` to respond differently:
+The error term is in the form: `[-1, ["answerWithList", index_predication, answer_items]]`. `answerWithList` means this is a "Wh" question answer. We also pass the `index_predication` because, as described in the [MRS topic](../devhowto/devhowToMRS/), this indicates the predication that the sentence is *about* (aka the "syntactic head"). Having this allows us to provide different answers for different "verbs". In this case, `loc_nonsp` is acting as a verb (this behavior is also described in [that section](../devhowto/devhowtoSentenceForce/)) and so we can modify `generate_message()` to respond differently:
 
 ~~~
 def generate_message(tree_info, error_term):

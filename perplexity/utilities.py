@@ -61,12 +61,10 @@ def parse_predication_name(name):
     return result
 
 
-def sentence_force_from_tree_info(tree_info):
-    return sentence_force(tree_info["Index"], tree_info["Variables"])
-
-
-def sentence_force(index_variable, variables):
-    return variables[index_variable]["SF"]
+def sentence_force(variables):
+    for variable in variables.items():
+        if "SF" in variable[1]:
+            return variable[1]["SF"]
 
 
 def ShowLogging(name, level=logging.DEBUG):

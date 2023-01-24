@@ -2,7 +2,7 @@ import logging
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predicate, predication_from_index, \
     find_predicate_from_introduced
-from perplexity.utilities import parse_predication_name, sentence_force_from_tree_info
+from perplexity.utilities import parse_predication_name, sentence_force
 
 
 # Implements the response for a given tree
@@ -13,7 +13,7 @@ def respond_to_mrs_tree(tree, solutions, error):
         message = generate_message(None, error)
         return message
 
-    sentence_force_type = sentence_force_from_tree_info(tree)
+    sentence_force_type = sentence_force(tree["Variables"])
     if sentence_force_type == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.

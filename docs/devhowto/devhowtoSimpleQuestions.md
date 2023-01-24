@@ -64,6 +64,7 @@ HCONS: < h0 qeq h1 h5 qeq h7 > ]
 _which_q(x3,RSTR,BODY)
                    └─ _large_a_1(e2,x3)
 ~~~
+
 The MRS looks *very* similar and still has a `SF: ques` sentence force. However, it used a new quantifier: `_which_q`. `which_q` is simply a way for the MRS to indicate which variable the user is expecting an answer to. In this case: `x3`. These are called "wh" questions in linguistics (i.e. which, what, where, when, who). The quantifier itself doesn't quantify anything, it simply evaluates all the `RSTR` answers against the `BODY` and returns whatever worked. The ERG has several quantifiers that are just "markers"  like this. So, we're going to build a function they can share, called `default_quantifier()`:
 
 ~~~

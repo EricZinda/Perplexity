@@ -11,7 +11,7 @@ from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predicate, tree_from_assignments
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, sentence_force_from_tree_info, module_name, import_function_from_names
+from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
 
 def no_error_priority(error):
@@ -119,7 +119,7 @@ class UserInterface(object):
                         self.evaluate_best_response()
 
                         # This worked, apply the results to the current world state if it was a command
-                        if sentence_force_from_tree_info(tree_info) == "comm":
+                        if sentence_force(tree_info["Variables"]) == "comm":
                             self.apply_solutions_to_state(tree_record["Solutions"])
 
                         print(tree_record["ResponseMessage"])
@@ -189,7 +189,7 @@ class UserInterface(object):
                     print(f"\n***** {extra}Parse #{mrs_index}:")
                     mrs_record = self.interaction_record["Mrss"][mrs_index]
                     mrs = mrs_record['Mrs']
-                    print(f"Sentence Force: {sentence_force(mrs.index, mrs.variables)}")
+                    print(f"Sentence Force: {sentence_force(mrs.variables)}")
                     print(simplemrs.encode(mrs, indent=True))
 
                     if all:
@@ -232,7 +232,7 @@ class UserInterface(object):
 
     def unknown_words(self, mrs):
         unknown_words = []
-        phrase_type = sentence_force(mrs.index, mrs.variables)
+        phrase_type = sentence_force(mrs.variables)
         for predication in mrs.predications:
             argument_types = []
             for argument_item in predication.args.items():

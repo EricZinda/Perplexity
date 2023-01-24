@@ -1,7 +1,7 @@
 import contextvars
 import logging
 import sys
-from perplexity.utilities import sentence_force, sentence_force_from_tree_info
+from perplexity.utilities import sentence_force
 
 
 class ExecutionContext(object):
@@ -23,7 +23,7 @@ class ExecutionContext(object):
             self._error = None
             self._error_predication_index = -1
             self._predication_index = 0
-            self._phrase_type = sentence_force_from_tree_info(tree_info)
+            self._phrase_type = sentence_force(tree_info["Variables"])
             yield from self.call(state.set_x("tree", tree_info), tree_info["Tree"])
 
     def call(self, state, term):

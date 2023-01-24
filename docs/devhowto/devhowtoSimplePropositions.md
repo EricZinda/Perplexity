@@ -1,7 +1,7 @@
 ## Responding to Simple Propositions
-"Propositions" are sentences that declare something to be true like "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be [handled later](devhowtoChoosingWhichFailure)). A phrase is a proposition if the "sentence force" (SF) property of its MRS `index` variable is `prop` as [described in the previous section](devhowtoSentenceForce).
+"Propositions" are sentences that declare something to be true like "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be [handled later](devhowtoChoosingWhichFailure)). A phrase is a proposition if the "sentence force" (SF) property of one or more of its variables is `prop` as [described in the previous section](devhowtoSentenceForce).
 
-Below is the MRS for "A file is very large". As described in the [previous section](devhowtoSentenceForce): The `INDEX = e2`, and `e2` has a sentence force of "proposition": `SF: prop`.
+Below is the MRS for "A file is very large". As described in the [previous section](devhowtoSentenceForce): `e2` has a sentence force of "proposition": `SF: prop`.
 ~~~
 [ TOP: h0
 INDEX: e2
@@ -19,7 +19,7 @@ _a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
                         └ _large_a_1(e2,x3)
 ~~~
 
-In order to start responding to user phrases properly, we need to begin passing in more information from the MRS, not just the predications.  We'll need the variable properties and the `INDEX`. We'll do this using a dictionary. In fact, we can make it easier to read using the Python `json` format. The `json` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
+In order to start responding to user phrases properly, we need to begin passing in more information from the MRS, not just the predications.  We'll need the variable properties. We'll do this using a dictionary. In fact, we can make it easier to read using the Python `json` format. The `json` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
 
 In a `json` declaration:
 - Dictionaries are surrounded by `{}` with key/value pairs represented by `"key":"value"`
@@ -49,7 +49,7 @@ mrs["RELS"] = [["_a_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]
 ~~~
 Thus, the `mrs` variable ends up being a big, single `json` object that has the MRS definition (that we understand so far) in it.
 
-Now we can create a new function called `RespondToMRS()` that inspects the MRS to properly respond to a proposition:
+Now we can create a new function called `RespondToMRS()` that inspects the MRS and uses the handy `sentence_force()` function to properly respond to a proposition:
 
 ~~~
 def RespondToMRS(state, mrs):
@@ -59,8 +59,7 @@ def RespondToMRS(state, mrs):
     for item in Call(vocabulary, state, mrs["RELS"]):
         solution.append(item)
     
-    index_variable = mrs["Index"]
-    sentence_force = mrs["Variables"][index_variable]["SF"]
+    sentence_force = sentence_force(mrs["Variables"])
     if sentence_force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
@@ -69,6 +68,12 @@ def RespondToMRS(state, mrs):
             print("Yes, that is true.")
         else:
             print("No, that isn't correct.")
+            
+            
+def sentence_force(variables):
+    for variable in variables.items():
+        if "SF" in variable[1]:
+            return variable[1]["SF"]
             
             
 # Evaluate the proposition: "a file is large"
