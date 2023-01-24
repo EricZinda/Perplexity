@@ -152,7 +152,10 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "notFound":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"{arg1} was not found"
+        if arg1[0] in ["'", '"']:
+            return f"{arg1} was not found"
+        else:
+            return f"'{arg1}' was not found"
 
     elif error_constant == "answerWithList":
         answer_predication = error_arguments[1]
