@@ -263,9 +263,39 @@ Test: "blue" is in this folder
 thing is not in this folder
 ~~~
 
-We are almost done, but that last message is not great. We still need to teach [our NLG system](../devhowto/devhowtoConceptualFailures/) how to interpret the new predications:
+We are almost done, but that last message is not great. We still need to teach [our NLG system](../devhowto/devhowtoConceptualFailures/) how to interpret the new predications so it doesn't say 'thing' in the error:
 
 ~~~
+def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
+    
+    ...
+    
+                # Some abstract predications *should* contribute to the
+                # English description of a variable
+                
+                ...
+                
+                elif parsed_predication["Lemma"] == "quoted":
+                    nlg_data["Topic"] = predication.args[0]
+
+                elif parsed_predication["Lemma"] == "fw_seq":
+                    string_list = []
+                    for arg_index in range(1, len(predication.arg_names)):
+                        if predication.args[arg_index][0] == "i":
+                            # Use 1000 to make sure we go through the whole tree
+                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info, default_a_quantifier=False))
+
+                        elif predication.args[arg_index][0] == "x":
+                            # Use 1000 to make sure we go through the whole tree
+                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info, default_a_quantifier=False))
+                            
+                    nlg_data["Topic"] = f"\'{' '.join(string_list)}\'"
+~~~
+
+Now we get:
+~~~
+Test: "blue" is in this folder
+'blue' is not in this folder
 ~~~
 
 ~~~

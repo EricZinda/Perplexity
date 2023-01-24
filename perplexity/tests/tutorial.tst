@@ -228,7 +228,7 @@
         },
         {
             "Command": "\"blue\" is in this folder",
-            "Expected": "thing is not in this folder",
+            "Expected": "'blue' is not in this folder",
             "Tree": "_this_q_dem(x10,_folder_n_of(x10,i15),proper_q(x3,[quoted(blue,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "7184c555-009b-474f-853d-5cff2eb459f2"

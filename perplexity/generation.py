@@ -5,7 +5,7 @@ from perplexity.utilities import parse_predication_name
 
 # Given the index where an error happened and a variable,
 # return what that variable "is" up to that point, in English
-def english_for_delphin_variable(failure_index, variable, tree_info):
+def english_for_delphin_variable(failure_index, variable, tree_info, default_a_quantifier=True):
     if isinstance(variable, list):
         if variable[0] == "AtPredication":
             failure_index = variable[1].index
@@ -37,7 +37,7 @@ def english_for_delphin_variable(failure_index, variable, tree_info):
 
     # Take the data we gathered and convert to English
     logger.debug(f"NLG data for {variable}: {nlg_data}")
-    return convert_to_english(nlg_data)
+    return convert_to_english(nlg_data, default_a_quantifier)
 
 
 # See if this predication in any way contributes words to
@@ -69,6 +69,22 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                 # English description of a variable
                 if parsed_predication["Lemma"] == "pron":
                     nlg_data["Topic"] = pronoun_from_variable(tree_info, variable)
+
+                elif parsed_predication["Lemma"] == "quoted":
+                    nlg_data["Topic"] = predication.args[0]
+
+                elif parsed_predication["Lemma"] == "fw_seq":
+                    string_list = []
+                    for arg_index in range(1, len(predication.arg_names)):
+                        if predication.args[arg_index][0] == "i":
+                            # Use 1000 to make sure we go through the whole tree
+                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info, default_a_quantifier=False))
+
+                        elif predication.args[arg_index][0] == "x":
+                            # Use 1000 to make sure we go through the whole tree
+                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info, default_a_quantifier=False))
+
+                    nlg_data["Topic"] = f"\'{' '.join(string_list)}\'"
 
     # Assume that adjectives that take the variable as their first argument
     # are adding an adjective modifier to the phrase
@@ -106,13 +122,13 @@ def pronoun_from_variable(tree_info, variable):
 
 # Takes the information gathered in the nlg_data dictionary
 # and converts it, in a very simplistic way, to English
-def convert_to_english(nlg_data):
+def convert_to_english(nlg_data, default_a_quantifier):
     phrase = ""
 
     if "Quantifier" in nlg_data:
         if nlg_data["Quantifier"] != "<none>":
             phrase += nlg_data["Quantifier"] + " "
-    else:
+    elif default_a_quantifier:
         phrase += "a "
 
     if "Modifiers" in nlg_data:

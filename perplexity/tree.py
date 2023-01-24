@@ -10,7 +10,10 @@ class TreePredication(object):
         self.arg_names = arg_names
 
     def introduced_variable(self):
-        return self.args[0]
+        if self.arg_names[0] == "CARG":
+            return self.args[1]
+        else:
+            return self.args[0]
 
     def __repr__(self):
         return f"{self.name}({','.join([str(arg) for arg in self.args])})"
