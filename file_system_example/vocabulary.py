@@ -131,8 +131,14 @@ def pron(state, x_who):
 
 # Many quantifiers are simply markers and should use this as
 # the default behavior
+
+# Many quantifiers are simply markers and should use this as
+# the default behavior
 @Predication(vocabulary, names=["pronoun_q"])
-def default_quantifier(state, x_variable, h_rstr, h_body):
+def default_quantifier(state, x_variable, h_rstr_orig, h_body_orig, reverse=False):
+    h_rstr = h_body_orig if reverse else h_rstr_orig
+    h_body = h_rstr_orig if reverse else h_body_orig
+
     # Find every solution to RSTR
     rstr_found = False
     for solution in call(state, h_rstr):
@@ -144,7 +150,8 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
 
     if not rstr_found:
         # Ignore whatever error the RSTR produced, this is a better one
-        report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
+        if not reverse:
+            report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
 
 
 def rstr_reorderable(rstr):
@@ -153,10 +160,7 @@ def rstr_reorderable(rstr):
 
 @Predication(vocabulary, names=["which_q", "_which_q"])
 def which_q(state, x_variable, h_rstr, h_body):
-    if rstr_reorderable(h_rstr):
-        yield from default_quantifier(state, x_variable, h_body, h_rstr)
-    else:
-        yield from default_quantifier(state, x_variable, h_rstr, h_body)
+    yield from default_quantifier(state, x_variable, h_rstr, h_body, reverse=rstr_reorderable(h_rstr))
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
