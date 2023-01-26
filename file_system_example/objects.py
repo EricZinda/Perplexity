@@ -8,6 +8,7 @@ from pathlib import Path
 # Base class that objects derive from so that
 # objects have a unique ID that is preserved even
 # when they are copied
+from file_system_example.variable_binding import VariableBinding
 
 
 class UniqueObject(object):
@@ -116,7 +117,7 @@ class FileSystem(object):
 
     # Return all directories and files
     # in the whole system
-    def all_individuals(self):
+    def all_individuals(self, variable):
         pass
 
     def contained_items(self, folder):
@@ -188,9 +189,9 @@ class FileSystemMock(FileSystem):
         if path in self.items:
             return self.items[path]
 
-    def all_individuals(self):
+    def all_individuals(self, variable):
         for item in self.items.items():
-            yield item[1]
+            yield VariableBinding(variable, item[1])
 
     def delete_item(self, delete_item):
         self.items.pop(delete_item.name)

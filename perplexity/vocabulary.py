@@ -16,11 +16,11 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
     # returns True or False, if False sets an error using report_error
     def ensure_handles_event(state, handles, event):
         if event[0] == "e":
-            eventState = state.get_variable(event)
+            event_binding = state.get_binding(event)
             # Look at everything in event and make sure it is handled
-            if eventState is not None:
+            if event_binding is not None:
                 foundItem = False
-                for item in eventState.items():
+                for item in event_binding.value.items():
                     for handledItem in handles:
                         if item[0] == handledItem[0]:
                             foundItem = True
@@ -32,7 +32,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
             # Look at everything it handles and make sure the required things are there
             for item in handles:
-                if item[1] == EventOption.required and (eventState is None or item[0] not in eventState):
+                if item[1] == EventOption.required and (event_binding is None or item[0] not in event_binding.value):
                     report_error(["formNotUnderstood", "missing", item])
                     return False
 
