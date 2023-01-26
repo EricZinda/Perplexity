@@ -50,7 +50,7 @@ def respond_to_mrs_tree(tree, solutions, error):
                 wh_variable = wh_predication.introduced_variable()
                 answer_items = []
                 for solution in solutions:
-                    answer_items.append(solution.get_variable(wh_variable))
+                    answer_items.append(solution.get_binding(wh_variable).value)
 
                 message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
                 return message
