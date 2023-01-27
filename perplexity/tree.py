@@ -262,17 +262,17 @@ def walk_tree_args_until(term, predication_func, arg_func):
     return None
 
 
-# True if an `fw_seq` predication is used by something *besides* and `fw_seq` predication
+# True if an `fw_seq` predication is used by something *besides* an `fw_seq` predication
 # because that means it is the final one
-def is_last_fw_seq(tree, fw_seq_predication):
-    consuming_predications = find_predications_using_variable(tree, fw_seq_predication.args[0])
-    return len([predication for predication in consuming_predications if predication.name != "fw_seq"]) > 0
-
-
 def is_this_last_fw_seq(state):
     this_tree = state.get_binding("tree").value
     this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
     return is_last_fw_seq(this_tree["Tree"], this_predication)
+
+
+def is_last_fw_seq(tree, fw_seq_predication):
+    consuming_predications = find_predications_using_variable(tree, fw_seq_predication.args[0])
+    return len([predication for predication in consuming_predications if predication.name != "fw_seq"]) > 0
 
 
 def find_predications_using_variable(term, variable):
