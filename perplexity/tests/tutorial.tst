@@ -253,6 +253,34 @@
             "Tree": "_this_q_dem(x15,_folder_n_of(x15,i20),proper_q(x3,[quoted(budget.txt,i9), quoted(yearly,i11), quoted(the,i10), fw_seq(x8,i10,i11), fw_seq(x3,x8,i9)],_in_p_loc(e2,x3,x15)))",
             "Enabled": true,
             "ID": "4f09e0fa-11f0-4493-b78c-59b45fb110f5"
+        },
+        {
+            "Command": "what is \"foo\" in?",
+            "Expected": "'foo' was not found",
+            "Tree": "which_q(x5,thing(x5),proper_q(x3,[quoted(foo,i13), fw_seq(x3,i13)],_in_p_loc(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "767c57ee-5234-4c6d-9dce-9f8a2c789711"
+        },
+        {
+            "Command": "what is in \"foo\"",
+            "Expected": "'foo' was not found",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(foo,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "cf9f7269-1dfe-439a-adc6-caa15dbc887f"
+        },
+        {
+            "Command": "where is \"doesn't exist\"",
+            "Expected": "'doesn\u2019t exist' was not found",
+            "Tree": "which_q(x4,place_n(x4),proper_q(x3,[quoted(exist,i14), quoted(doesn\u2019t,i13), fw_seq(x3,i13,i14)],loc_nonsp(e2,x3,x4)))",
+            "Enabled": true,
+            "ID": "cd5bbf5b-d4de-469b-b690-5e125dda5378"
+        },
+        {
+            "Command": "what is in this 'blue'",
+            "Expected": "thing is not in this 'blue'",
+            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,[quoted(blue,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "34f4e321-b387-4e56-b2ed-3fec5a574cf5"
         }
     ]
 }

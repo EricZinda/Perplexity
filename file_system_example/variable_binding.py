@@ -2,7 +2,8 @@ class VariableData(object):
     def __init__(self, name):
         self.name = name
 
-
+# Use None in variable_data to represent a value
+# That is not bound to an actual variable
 class VariableBinding(object):
     def __init__(self, variable_data, value):
         self.value = value

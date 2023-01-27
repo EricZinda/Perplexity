@@ -16,7 +16,7 @@ go to /user/brett
 list out f56.txt
 ~~~
 
-The easiest approach is to require the user to quote anything that represents a file or folder.  We can attempt to do more complicated options later.
+The ERG will represent these, but they require implementing several more predications. The easiest approach is to require the user to quote anything that represents a file or folder.  We can attempt to do more options later.
 
 
 If the user simply types in a phrase like "delete 'blue'", the ERG produces 4 parses. The first two attempt to interpret "blue" semantically as the color "blue" by using the predication `_blue_a_1`:
@@ -62,7 +62,7 @@ udef_q(x4,RSTR,BODY)
 
 ~~~
 
-That would be useful, perhaps, in a phrase like "She is 'blue'", where we do mean to use the "blue" semantically to mean "sad" but where the speaker is indicating this is a nonstandard or special use of the word by putting it in quotes. This is not we want, so we can examine the next parse:
+That would be useful, perhaps, in a phrase like "She is 'blue'", where we do mean to use the "blue" semantically to mean "sad" but where the speaker is indicating this is a nonstandard or special use of the word by putting it in quotes. This is not we want, so we can move to the next parse:
 
 ~~~
 ***** Parse #2:

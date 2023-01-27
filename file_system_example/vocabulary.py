@@ -1,8 +1,9 @@
 import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
-from file_system_example.state import DeleteOperation, FileSystemState
-from perplexity.execution import ExecutionContext, call, report_error, execution_context
-from perplexity.tree import TreePredication
+from file_system_example.state import DeleteOperation
+from file_system_example.variable_binding import VariableBinding
+from perplexity.execution import call, report_error, execution_context
+from perplexity.tree import TreePredication, is_this_last_fw_seq
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 vocabulary = Vocabulary()
@@ -16,23 +17,13 @@ def delete_v_1_comm(state, e_introduced, x_actor, x_what):
     if state.get_binding(x_actor).value.name == "Computer":
         x_what_binding = state.get_binding(x_what)
 
-        # If this is text, make sure it actually exists
-        if isinstance(x_what_binding.value, QuotedText):
-            actual_item = state.file_system.item_from_path(x_what_binding.value.name)
-            if actual_item is not None:
-                yield state.apply_operations([DeleteOperation(x_what_binding)])
-
-            else:
-                report_error(["notFound", x_what])
+        # Only allow deleting files and folders or
+        # textual names of files
+        if isinstance(x_what_binding.value, (File, Folder)):
+            yield state.apply_operations([DeleteOperation(x_what_binding)])
 
         else:
-            # Only allow deleting files and folders or
-            # textual names of files
-            if isinstance(x_what_binding.value, (File, Folder, QuotedText)):
-                yield state.apply_operations([DeleteOperation(x_what_binding)])
-
-            else:
-                report_error(["cantDo", "delete", x_what])
+            report_error(["cantDo", "delete", x_what])
 
     else:
         report_error(["dontKnowActor", x_actor])
@@ -53,15 +44,20 @@ def degree_multiplier_from_event(state, e_introduced):
     return degree_multiplier
 
 
-def in_scope(state, obj):
-    # If it is the folder the user is in
+# See if the value in binding is "in scope"
+def in_scope(state, binding):
+    # In scope if binding.value is the folder the user is in
     user = state.user()
-    if user.current_directory == obj:
+    if user.current_directory == binding.value:
         return True
 
-    # If it is a file in the directory the user is in
-    for file in user.current_directory.contained_items():
-        if file == obj:
+    # In scope if binding.value is a file in the directory the user is in
+    # We are looking at the contained items in the user's current directory
+    # which is *not* the object in the binding. So: we need contained_items()
+    # to report an error that is not variable related, so we pass it None
+    contained_binding = VariableBinding(None, user.current_directory)
+    for file in user.current_directory.contained_items(contained_binding):
+        if file == binding.value:
             return True
 
 
@@ -70,7 +66,8 @@ def this_q_dem(state, x_variable, h_rstr, h_body):
     # Run the RSTR which should fill in the variable with an item
     rstr_single_solution = None
     for solution in call(state, h_rstr):
-        if in_scope(solution, solution.get_binding(x_variable).value):
+        x_variable_binding = solution.get_binding(x_variable)
+        if in_scope(solution, x_variable_binding):
             if rstr_single_solution is None:
                 rstr_single_solution = solution
 
@@ -260,7 +257,7 @@ def in_p_loc(state, e_introduced, x_actor, x_location):
     if x_actor_binding is not None:
         if x_location_binding is not None:
             # x_actor is "in" x_location if x_location contains it
-            for item in x_location_binding.value.contained_items():
+            for item in x_location_binding.value.contained_items(x_location_binding.variable):
                 if x_actor_binding.value == item:
                     # Variables are already set,
                     # no need to set them again, just return the state
@@ -269,14 +266,14 @@ def in_p_loc(state, e_introduced, x_actor, x_location):
         else:
             # Need to find all the things that x_actor is "in"
             if hasattr(x_actor_binding.value, "containers"):
-                for item in x_actor_binding.value.containers():
+                for item in x_actor_binding.value.containers(x_actor_binding.variable):
                     yield state.set_x(x_location, item)
 
     else:
         # Actor is unbound, this means "What is in X?" type of question
         # Whatever x_location "contains" is "in" it
         if hasattr(x_location_binding.value, "contained_items"):
-            for location in x_location_binding.value.contained_items():
+            for location in x_location_binding.value.contained_items(x_location_binding.variable):
                 yield state.set_x(x_actor, location)
 
     report_error(["thingHasNoLocation", x_actor, x_location])
@@ -297,6 +294,26 @@ def quoted(state, c_raw_text, i_text):
             yield state
 
 
+# Get all the interpretations of the quoted text
+# and return them iteratively
+def all_interpretations_of(state, value):
+    if isinstance(value, QuotedText) and is_this_last_fw_seq(state):
+        # Get all the interpretations of the quoted text
+        # and return them iteratively
+        yield from value.all_interpretations(state)
+
+    else:
+        yield value
+
+
+def yield_from_fw_seq(state, variable, value):
+    if is_this_last_fw_seq(state):
+        for interpretation in all_interpretations_of(state, value):
+            yield state.set_x(variable, interpretation)
+    else:
+        yield state.set_x(variable, value)
+
+
 @Predication(vocabulary, names=["fw_seq"])
 def fw_seq1(state, x_phrase, i_part):
     x_phrase_binding = state.get_binding(x_phrase)
@@ -309,9 +326,10 @@ def fw_seq1(state, x_phrase, i_part):
 
         else:
             yield state.set_x(i_part, x_phrase_binding.value)
+
     else:
         if x_phrase_binding is None:
-            yield state.set_x(x_phrase, i_part_binding.value)
+            yield from yield_from_fw_seq(state, x_phrase, i_part_binding.value)
 
         elif x_phrase_binding.value == i_part_binding.value:
             yield state
@@ -326,10 +344,7 @@ def fw_seq2(state, x_phrase, i_part1, i_part2):
     if isinstance(i_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([i_part1_binding.value.name, i_part2_binding.value.name]))
         if x_phrase_binding is None:
-            yield state.set_x(x_phrase, combined_value)
-
-        elif isinstance(x_phrase_binding.value, QuotedText) and x_phrase_binding.value.name == combined_value.name:
-            yield state
+            yield from yield_from_fw_seq(state, x_phrase, combined_value)
 
 
 @Predication(vocabulary, names=["fw_seq"])
@@ -341,10 +356,7 @@ def fw_seq3(state, x_phrase, x_part1, i_part2):
     if isinstance(x_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([x_part1_binding.value.name, i_part2_binding.value.name]))
         if x_phrase_binding is None:
-            yield state.set_x(x_phrase, combined_value)
-
-        elif isinstance(x_phrase_binding.value, QuotedText) and x_phrase_binding.value.name == combined_value.name:
-            yield state
+            yield from yield_from_fw_seq(state, x_phrase, combined_value)
 
 
 @Predication(vocabulary)
@@ -361,13 +373,13 @@ def loc_nonsp(state, e_introduced, x_actor, x_location):
         if hasattr(x_actor_binding.value, "all_locations"):
             if x_location_binding is None:
                 # This is a "where is X?" type query since no location specified
-                for location in x_actor_binding.value.all_locations():
+                for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
                     yield state.set_x(x_location, location)
 
             else:
                 # The system is asking if a location of x_actor is x_location,
                 # so check the list exhaustively until we find a match, then stop
-                for location in x_actor_binding.value.all_locations():
+                for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
                     if location == x_location_binding.value:
                         # Variables are already set,
                         # no need to set them again, just return the state

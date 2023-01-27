@@ -1,5 +1,5 @@
 import logging
-from perplexity.tree import walk_tree_predications_until, find_predications_using_variable
+from perplexity.tree import walk_tree_predications_until, find_predications_using_variable, is_last_fw_seq
 from perplexity.utilities import parse_predication_name
 
 
@@ -89,11 +89,10 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
 
                     # If the only thing consuming the introduced variable are other fw_seq predications
                     # Then this is not the final fw_seq, so don't put quotes around it
-                    consuming_predications = find_predications_using_variable(tree_info["Tree"], predication.args[0])
-                    if len([predication for predication in consuming_predications if predication.name != "fw_seq"]) == 0:
-                        nlg_data["Topic"] = f"{' '.join(string_list)}"
-                    else:
+                    if is_last_fw_seq(tree_info["Tree"], predication):
                         nlg_data["Topic"] = f"'{' '.join(string_list)}'"
+                    else:
+                        nlg_data["Topic"] = f"{' '.join(string_list)}"
 
     # Assume that adjectives that take the variable as their first argument
     # are adding an adjective modifier to the phrase

@@ -4,6 +4,17 @@ import sys
 from perplexity.utilities import sentence_force
 
 
+# Allows code to throw an exception that should get converted
+# to a user visible message
+class MessageException(Exception):
+    def __init__(self, message_name, message_args):
+        self.message_name = message_name
+        self.message_args = message_args
+
+    def message_object(self):
+        return [self.message_name] + self.message_args
+
+
 class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
@@ -93,14 +104,20 @@ class ExecutionContext(object):
             # predication function we wrote in Python
             function = getattr(module, module_function[1])
 
-            # You call a function "pointer" and pass it arguments
-            # that are a list by using "function(*function_args)"
-            # So: this is actually calling our function (which
-            # returns an iterator and thus we can iterate over it)
-            success = False
-            for next_state in function(*function_args):
-                success = True
-                yield next_state
+            # If a MessageException happens during execution,
+            # convert it to an error
+            try:
+                # You call a function "pointer" and pass it arguments
+                # that are a list by using "function(*function_args)"
+                # So: this is actually calling our function (which
+                # returns an iterator and thus we can iterate over it)
+                success = False
+                for next_state in function(*function_args):
+                    success = True
+                    yield next_state
+
+            except MessageException as error:
+                self.report_error(error.message_object())
 
             # If an implementation works, don't call any others
             if success:

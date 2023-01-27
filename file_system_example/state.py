@@ -1,6 +1,6 @@
 import copy
 import logging
-from file_system_example.objects import Actor, QuotedText
+from file_system_example.objects import Actor
 from file_system_example.variable_binding import VariableBinding, VariableData, variable_binding_iterator
 
 
@@ -126,13 +126,7 @@ class DeleteOperation(object):
 
     def apply_to(self, state):
         if isinstance(state, FileSystemState):
-            if isinstance(self.binding_to_delete.value, QuotedText):
-                object_to_delete = state.file_system.item_from_path(self.binding_to_delete.value.name)
-
-            else:
-                object_to_delete = self.binding_to_delete.value
-
-            state.file_system.delete_item(object_to_delete)
+            state.file_system.delete_item(self.binding_to_delete)
 
         else:
             for index in range(0, len(state.objects)):
