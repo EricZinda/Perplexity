@@ -220,6 +220,13 @@
             "ID": "dfa7fc82-b238-4f94-8001-5f690181baf7"
         },
         {
+            "Command": "what is in this 'blue'",
+            "Expected": "thing is not in this 'blue'",
+            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,[quoted(blue,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "34f4e321-b387-4e56-b2ed-3fec5a574cf5"
+        },
+        {
             "Command": "delete \"blue\"",
             "Expected": "Done!",
             "Tree": "pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8)))",
@@ -274,13 +281,6 @@
             "Tree": "which_q(x4,place_n(x4),proper_q(x3,[quoted(exist,i14), quoted(doesn\u2019t,i13), fw_seq(x3,i13,i14)],loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "cd5bbf5b-d4de-469b-b690-5e125dda5378"
-        },
-        {
-            "Command": "what is in this 'blue'",
-            "Expected": "thing is not in this 'blue'",
-            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,[quoted(blue,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
-            "Enabled": true,
-            "ID": "34f4e321-b387-4e56-b2ed-3fec5a574cf5"
         }
     ]
 }
