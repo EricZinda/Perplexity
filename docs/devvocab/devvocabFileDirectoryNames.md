@@ -1,5 +1,5 @@
 ## Representing File and Directory Names: `fw_seq` and `quoted`
-There are several challenges with representing file and directory names in a phrase. First, the user may or may not represent them with some kind of escaping characters around them. For example, to move to the directory "blue" they could say:
+There are several challenges with representing file and directory names in a phrase. First, the user may or may not represent them with some kind of escaping characters around them. For example: to move to the directory "blue" they might say:
 
 ~~~
 go to 'blue'
@@ -12,7 +12,7 @@ The ERG will nicely recognize the different types of quotes as quotes, so those 
 Furthermore, many of the specifiers the user may use for directories or files are not English:
 
 ~~~
-go to /user/brett
+go to /usr/gol
 list out f56.txt
 ~~~
 
@@ -62,7 +62,7 @@ udef_q(x4,RSTR,BODY)
 
 ~~~
 
-That would be useful, perhaps, in a phrase like "She is 'blue'", where we do mean to use the "blue" semantically to mean "sad" but where the speaker is indicating this is a nonstandard or special use of the word by putting it in quotes. This is not we want, so we can move to the next parse:
+That would be useful, perhaps, in a phrase like "She is 'blue'", where we do mean to use "blue" semantically to mean "sad".  In these cases, the information that "blue" was in quotes was lost. This may be the right answer for some scenarios, but it is not we want, so we can move to the next parse:
 
 ~~~
 ***** Parse #2:
@@ -92,7 +92,7 @@ pronoun_q(x3,RSTR,BODY)              │
     
 ~~~
 
-This one is closer because it does indicate that `i13` is a `fw_seq`. `fw_seq` stands for "foreign word sequence" (since quotations often delineate foreign phrases), but it is also used for all kinds of quoted text. It is described in more detail [here](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_ForeignExpressions/). In this case, it is telling us that the phrase includes a string in quotes (by using `fw_seq`), but also gives us the semantic interpretation of the phrase in quotes (by using `_blue_a_1`). That would be a good hint if our system was trying to see if the usage of "blue" was a "non-standard" use of the term to mean something like "sad" instead of saying "she is literally the color blue", but it still isn't quite the interpretation we want. 
+This one is closer. It indicates that `i13` is a `fw_seq`. `fw_seq` stands for "foreign word sequence" (since quotations often delineate foreign phrases), but it is also used for all kinds of quoted text. It is described in more detail [here](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_ForeignExpressions/). In this case, it is telling us that the phrase includes a string in quotes (by using `fw_seq`), but also gives us the semantic interpretation of the phrase in quotes (by using `_blue_a_1`). That would be a good hint if our system was trying to see if the speaker was indicating to us that the usage of "blue" was a "non-standard" use of the term by putting it in quotes since it captures both the semantic meaning and the fact that quotes were around it. In other words, the speaker meant something like "sad" instead of saying "she is literally the color blue", but it still isn't quite the interpretation we want. 
 
 The next one is what we need here:
 ~~~
@@ -119,19 +119,17 @@ pronoun_q(x3,RSTR,BODY)              │
                     └─ proper_q(x8,RSTR,BODY)
                                           └─ _delete_v_1(e2,x3,x8)
 ~~~
-This parse doesn't try to deliver the semantic interpretation of the word in quotes, and instead just gives us the raw term using the predication `quoted`, meaning "this text was in quotes". Then, it uses `fw_seq` on the quoted variable `i13`. This will make more sense later since `fw_seq` is used to join together all the words in a quoted string. We'll see that next. For now, it is just a degenerate case that is there for consistency with more complicated quoted strings.
+This parse doesn't try to deliver the semantic interpretation of the word in quotes. It just provides the raw term using the predication `quoted`, meaning "this text was in quotes". Then, it uses `fw_seq` on the quoted variable `i13`. This indicates it was a "sequence" of one quoted word. Finally, `x8` is quantified by `proper_q` which is often used for proper nouns, but can be used as a marker of all kinds of "raw text". For this scenario, we don't need to change its current behavior which passes the values of `x8` from its `RSTR` to its `BODY` as [described here](https://blog.inductorsoftware.com/docsproto/howto/devhowto/devhowtoSimpleQuestions). So, for this, we need to implement: `quoted(i)`, `fw_seq(x,i)` and update `_delete_v_1(e,x,x)` to handle whatever they output.
 
-Note that `x8` is quantified by `proper_q` which is often used for proper nouns, but can be used as a marker of all kinds of "raw text". We don't need to change its current behavior which is just to pass along the values from its `RSTR` to its `BODY`. So for this, we need to implement: `quoted(i)`, `fw_seq(x,i)` and update  `_delete_v_1(e,x,x)` to handle whatever they output.
-
-`quoted` is special in that it has an argument called `CARG` (described in detail [here](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_Essence/#further-ers-contents)). `CARG` is a way to pass a constant to a predication without holding in a variable. The argument will simply be raw text:
+`quoted` is unusual in that it has an argument called `CARG` (described in detail [here](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_Essence/#further-ers-contents)). `CARG` is a way to pass a constant to a predication without holding in a variable. The argument will simply be raw text:
 
 ~~~
           [ quoted<8:12> LBL: h12 ARG0: i13 CARG: "blue" ]
 ~~~
 
-It is also special in that it uses an `i` variable instead of an `x` variable to hold a value. This is because the ERG wanted to avoid having to have a quantifier for each quoted string, as would be required for an `x` argument. That pattern was covered in the [MRS topic](../devhowto/devhowtoMRS/#other-variables-types-i-u-p).
+It is also unusual in that it uses an `i` variable instead of an `x` variable to hold an individual. This is because the ERG wanted to avoid having to have a quantifier for each quoted string (as would be required for an `x` argument). That pattern was covered in the [MRS topic](../devhowto/devhowtoMRS#other-variables-types-i-u-p).
 
-So, the implementation of `quoted` only has to take the `CARG` and put it into a new object called `QuotedText` that simply holds the string, and set the `i` variable to that object:
+So, the implementation of `quoted` only has to take the `CARG`, put it into a new object called `QuotedText` (that simply holds the string), and set the `i` variable to that object if `i` is unbound. Or: ensure that they are equal if both are bound:
 
 ~~~
 class QuotedText(object):
@@ -156,7 +154,7 @@ def quoted(state, c_raw_text, i_text):
             yield state
 ~~~
 
-Implementing the [predication contract](../devhowto/devhowtoPredicationContract) on `fw_seq(x,i)` is a little subtle. The meaning of `fw_seq(x,i)` is less linguistic and more mechanical: It is true when `x` and `i` hold the same "quoted term". If they are both bound, this is easy to check, but if `x` is unbound, conceptually we should look through all the state in the world to which state is the same as `i`. Since `i` could be any string, it would be impossible to do it that way. Instead, we can just assume that  any text exists in the world (since files and folders can be named anything), and simply set `x` to `i` if it is unbound. 
+Implementing the [predication contract](../devhowto/devhowtoPredicationContract) on `fw_seq(x,i)` is a little more subtle. The meaning of `fw_seq(x,i)` is less linguistic and more mechanical: It is true when `x` and `i` hold the same "quoted term". If they are both bound, this is easy to check. If `x` is unbound, according to the predication contract, we should conceptually look through all the state in the world to find which state is the same as `i`. Since `i` could be any string, it would be impossible to do it that way. Instead, we can just assume that all possible text exists in the world (since files and folders can be named anything), and assume it will always exist. So we can simply set `x` to `i` if it is unbound (or vice versa if `i` is unbound): 
 
 ~~~
 @Predication(vocabulary)
@@ -177,15 +175,17 @@ def fw_seq(state, x_phrase, i_part):
         elif x_phrase_value == i_part_value:
             yield state
 ~~~
-(Note that `fw_seq` comes in several flavors since its real job is combine two words at a time from a string and this version is just a degenerate case. We'll get to that next.)
+(Note that `fw_seq` comes in several flavors since its usual job is combine two words at a time from a string and this version is just a degenerate case. We'll get to that next.)
 
-This simple approach means that `delete_v_1_comm` would have to now include `QuotedText` as a valid thing to delete, and `DeleteOperation.apply_to()` would have to be modified to handle converting a `QuotedText` object to a file (or folder). In fact, lots of terms will now have to special case `QuotedText` since the user could say things like:
+This simple approach means that `delete_v_1_comm` would have to now include `QuotedText` as a valid thing to delete, and `DeleteOperation.apply_to()` would have to be modified to handle converting a `QuotedText` object to a file or folder. In fact, lots of predications would now have to special case `QuotedText` since the user could say things like:
 
 > What is in "foo"?
+> 
 > Where is "/etc/settings"
+> 
 > etc.
 
-A different approach allows us to make this more invisible. We can put the logic for converting the quoted text into real objects directly into `fw_seq`:
+A different approach allows us to make this more invisible. We can put the logic for converting the quoted text into file and folder objects directly into `fw_seq`:
 ~~~
 @Predication(vocabulary, names=["fw_seq"])
 def fw_seq1(state, x_phrase, i_part):
@@ -209,21 +209,14 @@ def fw_seq1(state, x_phrase, i_part):
             
             
 def yield_from_fw_seq(state, variable, value):
-    for interpretation in all_interpretations_of(state, value):
-        yield state.set_x(variable, interpretation)
-        
-        
-# Get all the interpretations of the quoted text
-# and return them iteratively
-def all_interpretations_of(state, value):
-    if isinstance(value, QuotedText):
+    if hasattr(value, "all_interpretations"):
         # Get all the interpretations of the quoted text
         # and return them iteratively
-        yield from value.all_interpretations(state)
-
+        for interpretation in value.all_interpretations(state):
+            yield state.set_x(variable, interpretation)
     else:
-        yield value
-        
+        yield value        
+       
         
 class QuotedText(object):
     def __init__(self, name):
@@ -248,7 +241,7 @@ class QuotedText(object):
         yield self
 ~~~
 
-In this approach, `fw_seq` yields every interpretation of the quoted text using the helper functions `yield_from_fw_seq()` and `all_interpretations_of()`. Those call the `all_interpretations()` method of `QuotedText` and allow it to convert itself to whatever it can mean, thus centralizing the code.
+In this approach, `fw_seq` yields every interpretation of the quoted text using the helper functions `yield_from_fw_seq()`. It calls the `all_interpretations()` method of `QuotedText` and allows it to convert itself to whatever it can mean, thus centralizing the code.
 
 `proper_q` can just be a default quantifier as described [here](../devhowto/devhowtoSimpleQuestions):
 
@@ -286,7 +279,7 @@ Test: "blue" is in this folder
 thing is not in this folder
 ~~~
 
-That last message is not great. As always, when we add a new predication to the system, we need to teach [the NLG system](../devhowto/devhowtoConceptualFailures/) how to interpret the new predications so that it doesn't say 'thing' in the error:
+That last message is not great. As always, when we add a new predication to the system, we need to teach [the NLG system](../devhowto/devhowtoConceptualFailures) how to interpret the new predications so that it doesn't say 'thing' in the error:
 
 ~~~
 def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
@@ -370,9 +363,9 @@ And then indicates that they are all part of a sequence using the predication `f
           [ fw_seq<7:30> LBL: h12 ARG0: x8 ARG1: x13 ARG2: i14 ]
 ~~~
 
-The first `fw_seq` joins together `i15` and `i16` which are "the" and "yearly" and puts the result in `x13`. The next `fw_seq` joins together `x13` and `i14` (which is "budget.txt") and puts the result in `x8`. So now, `x8` has the entire string again. Note that `x8` is quantified by `proper_q` which is often used for proper nouns, but can be used as a marker of all kinds of "raw text". 
+The first `fw_seq` joins together `i15` and `i16` which are "the" and "yearly" and puts the result in `x13`. The next `fw_seq` joins together `x13` and `i14` (which is "budget.txt") and puts the result in `x8`. So now, `x8` has the entire string again. `x8` is quantified by `proper_q` which is often used for proper nouns, but can be used as a marker of all kinds of "raw text". 
 
-For this, we will need an implementation of `fw_seq(x,x,i)` and `fw_seq(x,i,i)`. We will need to name these differently because Python doesn't allow overloaded functions (i.e. the same function name with different arguments).  Here are all three together:
+To make this work, we will need an implementation of `fw_seq(x,x,i)` and `fw_seq(x,i,i)`. We will need to name these differently because Python doesn't allow overloaded functions (i.e. the same function name with different arguments).  Here are all three together:
 
 ~~~
 @Predication(vocabulary, names=["fw_seq"])
@@ -420,7 +413,9 @@ def fw_seq3(state, x_phrase, x_part1, i_part2):
             yield from yield_from_fw_seq(state, x_phrase, combined_value)
 ~~~
 
-You can see that the two new ones have logic to combine the strings they are passed into a single string and return the objects that this string represents using `yield_from_fw_seq()`. But now we have a dilemma: we don't want each `fw_seq` in a multiword string to convert the substring into objects, we only want this to happen on the *final* `fw_seq`, the one that creates the final string. We can detect this case by noticing that the final `fw_seq` is the only one whose introduced variable is used by something *other than* another `fw_seq`. The non-final ones are only consumed by other `fw_seq` as you can see in the MRS above.
+You can see that the two new `fw_seq` implementations have logic to combine the `QuotedText` objects they are passed into a `QuotedText` object. It then returns the objects that this string represents using `yield_from_fw_seq()`. 
+
+Now we have a dilemma: we don't want each `fw_seq` in a multiword string to convert the substring into objects, we only want this to happen on the *final* `fw_seq`, the one that creates the final string. We can detect this case by noticing that the final `fw_seq` is the only one whose introduced variable is used by something *other than* another `fw_seq`. The non-final ones are only consumed by other `fw_seq` as you can see in the MRS above.
 
 So, we can build a helper to detect if a `fw_seq` predication is the final one:
 ~~~
@@ -442,16 +437,24 @@ def find_predications_using_variable(term, variable):
     return predication_list
 ~~~
 
-Now we can use this helper in `yield_from_fw_seq()`. Note that `yield_from_fw_seq()` needs a slightly different version of `is_last_fw_seq()` since we need to pass the predication itself to `is_last_fw_seq()` and we don't have that in the middle of executing it. So, we added another helper for that called `is_this_last_fw_seq()`:
+Now we can use this helper in `yield_from_fw_seq()`. Note that `yield_from_fw_seq()` needs a slightly different version of `is_last_fw_seq()` since we need to pass the predication itself to `is_last_fw_seq()` and we don't have that in the middle of executing it. 
+
+So, we added another helper to do just that called `is_this_last_fw_seq()`:
 
 ~~~
 def yield_from_fw_seq(state, variable, value):
     if is_this_last_fw_seq(state):
-        for interpretation in all_interpretations_of(state, value):
-            yield state.set_x(variable, interpretation)
+        if hasattr(value, "all_interpretations"):
+            # Get all the interpretations of the quoted text
+            # and return them iteratively
+            for interpretation in value.all_interpretations(state):
+                yield state.set_x(variable, interpretation)
+        else:
+            yield value
+
     else:
         yield state.set_x(variable, value)
-        
+                
         
 def is_this_last_fw_seq(state):
     this_tree = state.get_binding("tree").value

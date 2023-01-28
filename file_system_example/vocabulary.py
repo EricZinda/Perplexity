@@ -1,6 +1,6 @@
 import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
-from file_system_example.state import DeleteOperation
+from file_system_example.state import DeleteOperation, ChangeDirectoryOperation
 from file_system_example.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context
 from perplexity.tree import TreePredication, is_this_last_fw_seq
@@ -17,8 +17,7 @@ def delete_v_1_comm(state, e_introduced, x_actor, x_what):
     if state.get_binding(x_actor).value.name == "Computer":
         x_what_binding = state.get_binding(x_what)
 
-        # Only allow deleting files and folders or
-        # textual names of files
+        # Only allow deleting files and folders
         if isinstance(x_what_binding.value, (File, Folder)):
             yield state.apply_operations([DeleteOperation(x_what_binding)])
 
@@ -294,22 +293,16 @@ def quoted(state, c_raw_text, i_text):
             yield state
 
 
-# Get all the interpretations of the quoted text
-# and return them iteratively
-def all_interpretations_of(state, value):
-    if isinstance(value, QuotedText) and is_this_last_fw_seq(state):
-        # Get all the interpretations of the quoted text
-        # and return them iteratively
-        yield from value.all_interpretations(state)
-
-    else:
-        yield value
-
-
 def yield_from_fw_seq(state, variable, value):
     if is_this_last_fw_seq(state):
-        for interpretation in all_interpretations_of(state, value):
-            yield state.set_x(variable, interpretation)
+        if hasattr(value, "all_interpretations"):
+            # Get all the interpretations of the quoted text
+            # and return them iteratively
+            for interpretation in value.all_interpretations(state):
+                yield state.set_x(variable, interpretation)
+        else:
+            yield value
+
     else:
         yield state.set_x(variable, value)
 

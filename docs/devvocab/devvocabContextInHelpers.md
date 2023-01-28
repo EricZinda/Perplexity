@@ -57,7 +57,7 @@ So we can't just return an error when the text "bad directory" is [being convert
             ...
 ~~~
 
-To do this we'll have to start passing the variable name to helper methods so that they can return proper errors, like this:
+To do this, we'll have to start passing the variable name to helper methods so that they can return proper errors, like this:
 
 ~~~
 @Predication(vocabulary, names=["_in_p_loc"])
@@ -92,9 +92,9 @@ class FileSystemMock(FileSystem):
 
 ~~~
 
-Unfortunately, this means any helper that returns an error message needs to have the variable passed to it, which makes those helpers a little messier. However, it is much cleaner to centralize the error reporting code and have some extra arguments passed than the alternative: to catch errors that can happen all throughout the predications and return the errors there.  
+Unfortunately, this means any helper that returns an error message needs to have the variable passed to it, which makes those helpers a little messier. However, it is much cleaner to centralize the error reporting code by having some extra arguments passed than the alternative: catching errors that can happen all throughout the predications and returning the errors from them.  
 
-Notice that the `FileSystemMock` class raises an `MessageException` exception when a object is not found. This is a special exception designed to be reported to the user. It has all the information needed by the system to report a nice error, using variable names, etc. Without code to convert the exception to user text, however, the system will just crash. Let's add that code:
+Notice that the `FileSystemMock` class raises an `MessageException` exception when a object is not found. This is a special exception designed to be reported to the user. It has all the information needed by the system to report a nice error, using DELPH-IN variable names, etc. Without code to convert the exception to user text, however, the system will just crash. Let's add that code:
 
 ~~~
     def _call_predication(self, state, predication):
@@ -119,6 +119,6 @@ Notice that the `FileSystemMock` class raises an `MessageException` exception wh
 
 The code is deep in the system where predications are called. By putting the code there, we can just assume that a predication has failed if it gets an exception and, if it is a `MessageException`, convert it to a user-reportable error.
 
-By passing variable context to helpers, and supporting converting `MessageExceptions` to user errors, we can allow helper functions to `raise` an error and have it be reported, without having to do a lot of special case handling in the predications themselves.
+By passing variable context to helpers, and converting `MessageExceptions` to user errors, we can allow helper functions to `raise` an error and have it be reported, without having to do a lot of special case handling in the predications themselves.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
