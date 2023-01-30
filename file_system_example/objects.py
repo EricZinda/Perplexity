@@ -2,8 +2,7 @@ import logging
 import os
 import pathlib
 import uuid
-from pathlib import Path
-from file_system_example.variable_binding import VariableBinding
+from perplexity.variable_binding import VariableBinding
 
 
 # Base class that objects derive from so that
@@ -46,7 +45,7 @@ class Folder(Container):
         return not self == obj
 
     def contained_items(self, variable_data):
-        yield from self.file_system.contained_items(VariableBinding(variable_data, self))
+        yield from self.file_system.contained_items(self, variable_data)
 
     def all_locations(self, variable_data):
         if self.exists():
@@ -90,7 +89,7 @@ class File(Container):
             raise MessageException("notFound", [variable_data.name])
 
     def contained_items(self, variable_data):
-        yield from self.file_system.contained_items(VariableBinding(variable_data, self))
+        yield from self.file_system.contained_items(self, variable_data)
 
     def containers(self, variable_data):
         yield from self.all_locations(variable_data)
@@ -174,14 +173,14 @@ class FileSystemMock(FileSystem):
     def current_directory(self):
         return self.current
 
-    def contained_items(self, folder_binding):
-        if folder_binding.value.name in self.items:
+    def contained_items(self, container, variable_data):
+        if self.exists(container.name):
             for item in self.items.items():
-                if str(pathlib.PurePath(item[0]).parent) == folder_binding.value.name:
+                if str(pathlib.PurePath(item[0]).parent) == container.name:
                     yield item[1]
 
         else:
-            raise MessageException("notFound", [folder_binding.variable.name])
+            raise MessageException("notFound", [variable_data.name])
 
     # Will create a File object for a nonexistent path
     def item_from_path(self, path):

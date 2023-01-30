@@ -1,7 +1,7 @@
 import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation
-from file_system_example.variable_binding import VariableBinding
+from perplexity.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context
 from perplexity.tree import TreePredication, is_this_last_fw_seq
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
@@ -10,8 +10,7 @@ vocabulary = Vocabulary()
 
 
 @Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
-def go_v_1_comm(state, e_introduced, x_actor):
-    e_introduced_binding = state.get_binding(e_introduced)
+def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
     x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
 
     # Only allow moving to folders
@@ -21,47 +20,44 @@ def go_v_1_comm(state, e_introduced, x_actor):
     else:
         if hasattr(x_location_binding.value, "exists") and x_location_binding.value.exists():
             report_error(["cantDo", "change directory to", x_location_binding.variable.name])
+
         else:
             report_error(["notFound", x_location_binding.variable.name])
 
 
 @Predication(vocabulary, names=["_to_p_dir"])
-def to_p_dir(state, e_introduced, e_target, x_location):
-    x_location_binding = state.get_binding(x_location)
+def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
 
     preposition_info = {
         "EndLocation": x_location_binding
     }
 
-    yield state.add_to_e(e_target, "DirectionalPreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
+    yield state.add_to_e(e_target_binding.variable.name, "DirectionalPreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
 
 
 # TODO: delete_v_1 doesn't actually meet the contract since it doesn't allow free variables
 @Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
-def delete_v_1_comm(state, e_introduced, x_actor, x_what):
+def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     # We only know how to delete things from the
     # computer's perspective
-    if state.get_binding(x_actor).value.name == "Computer":
-        x_what_binding = state.get_binding(x_what)
-
+    if x_actor_binding.value.name == "Computer":
         # Only allow deleting files and folders
         if isinstance(x_what_binding.value, (File, Folder)):
             yield state.apply_operations([DeleteOperation(x_what_binding)])
 
         else:
-            report_error(["cantDo", "delete", x_what])
+            report_error(["cantDo", "delete", x_what_binding.variable.name])
 
     else:
-        report_error(["dontKnowActor", x_actor])
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
 
 
 # This is a helper function that any predication that can
 # be "very'd" can use to understand just how "very'd" it is
-def degree_multiplier_from_event(state, e_introduced):
+def degree_multiplier_from_event(state, e_introduced_binding):
     # if a "very" is modifying this event, use that value
     # otherwise, return 1
-    e_introduced_binding = state.get_binding(e_introduced)
-    if e_introduced_binding is None or "DegreeMultiplier" not in e_introduced_binding.value:
+    if e_introduced_binding.value is None or "DegreeMultiplier" not in e_introduced_binding.value:
         degree_multiplier = 1
 
     else:
@@ -88,18 +84,18 @@ def in_scope(state, binding):
 
 
 @Predication(vocabulary, names=["_this_q_dem"])
-def this_q_dem(state, x_variable, h_rstr, h_body):
+def this_q_dem(state, x_variable_binding, h_rstr, h_body):
     # Run the RSTR which should fill in the variable with an item
     rstr_single_solution = None
     for solution in call(state, h_rstr):
-        x_variable_binding = solution.get_binding(x_variable)
+        x_variable_binding = solution.get_binding(x_variable_binding.variable.name)
         if in_scope(solution, x_variable_binding):
             if rstr_single_solution is None:
                 rstr_single_solution = solution
 
             else:
                 # Make sure there is only one since "this" shouldn't be ambiguous
-                report_error(["moreThanOneInScope", ["AtPredication", h_body, x_variable]], force=True)
+                report_error(["moreThanOneInScope", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
                 return
 
     if rstr_single_solution is not None:
@@ -111,11 +107,11 @@ def this_q_dem(state, x_variable, h_rstr, h_body):
     else:
         # Ignore whatever error the RSTR produced, this is a better one
         # Report the variable's English representation as it would be in the BODY
-        report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
+        report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
 @Predication(vocabulary, names=["_a_q"])
-def a_q(state, x_variable, h_rstr, h_body):
+def a_q(state, x_variable_binding, h_rstr, h_body):
     # Run the RSTR which should fill in the variable with an item
     rstr_found = False
     for solution in call(state, h_rstr):
@@ -134,24 +130,25 @@ def a_q(state, x_variable, h_rstr, h_body):
     if not rstr_found:
         # Ignore whatever error the RSTR produced, this is a better one
         # Report the variable's English representation as it would be in the BODY
-        report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
+        report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
 @Predication(vocabulary, names=["pron"])
-def pron(state, x_who):
-    x_who_binding = state.get_binding(x_who)
-    if x_who_binding is None:
+def pron(state, x_who_binding):
+    if x_who_binding.value is None:
         iterator = state.all_individuals()
+
     else:
         iterator = [x_who_binding.value]
 
-    person = int(state.get_binding("tree").value["Variables"][x_who]["PERS"])
+    person = int(state.get_binding("tree").value["Variables"][x_who_binding.variable.name]["PERS"])
     for value in iterator:
         if isinstance(value, Actor) and value.person == person:
-            yield state.set_x(x_who, value)
+            yield state.set_x(x_who_binding.variable.name, value)
             break
+
         else:
-            report_error(["dontKnowPronoun", x_who])
+            report_error(["dontKnowPronoun", x_who_binding.variable.name])
 
 
 # Many quantifiers are simply markers and should use this as
@@ -160,7 +157,7 @@ def pron(state, x_who):
 # Many quantifiers are simply markers and should use this as
 # the default behavior
 @Predication(vocabulary, names=["pronoun_q"])
-def default_quantifier(state, x_variable, h_rstr_orig, h_body_orig, reverse=False):
+def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
 
@@ -176,7 +173,7 @@ def default_quantifier(state, x_variable, h_rstr_orig, h_body_orig, reverse=Fals
     if not rstr_found:
         # Ignore whatever error the RSTR produced, this is a better one
         if not reverse:
-            report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
+            report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
 def rstr_reorderable(rstr):
@@ -184,31 +181,29 @@ def rstr_reorderable(rstr):
 
 
 @Predication(vocabulary, names=["which_q", "_which_q"])
-def which_q(state, x_variable, h_rstr, h_body):
-    yield from default_quantifier(state, x_variable, h_rstr, h_body, reverse=rstr_reorderable(h_rstr))
+def which_q(state, x_variable_binding, h_rstr, h_body):
+    yield from default_quantifier(state, x_variable_binding, h_rstr, h_body, reverse=rstr_reorderable(h_rstr))
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
-def very_x_deg(state, e_introduced, e_target):
+def very_x_deg(state, e_introduced_binding, e_target_binding):
     # First see if we have been "very'd"!
-    initial_degree_multiplier = degree_multiplier_from_event(state, e_introduced)
+    initial_degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
     # We'll interpret "very" as meaning "one order of magnitude larger"
-    yield state.add_to_e(e_target, "DegreeMultiplier", {"Value": initial_degree_multiplier * 10, "Originator": execution_context().current_predication_index()})
+    yield state.add_to_e(e_target_binding.variable.name, "DegreeMultiplier", {"Value": initial_degree_multiplier * 10, "Originator": execution_context().current_predication_index()})
 
 
 @Predication(vocabulary, names=["_large_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
-def large_a_1(state, e_introduced, x_target):
-    x_target_binding = state.get_binding(x_target)
-
-    if x_target_binding is None:
+def large_a_1(state, e_introduced_binding, x_target_binding):
+    if x_target_binding.value is None:
         iterator = state.all_individuals()
     else:
         iterator = [x_target_binding.value]
 
     # See if any modifiers have changed *how* large
     # we should be
-    degree_multiplier = degree_multiplier_from_event(state, e_introduced)
+    degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
     for value in iterator:
         # Arbitrarily decide that "large" means a size greater
@@ -217,17 +212,15 @@ def large_a_1(state, e_introduced, x_target):
         # Remember that "hasattr()" checks if an object has
         # a property
         if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
-            new_state = state.set_x(x_target, value)
-            yield new_state
+            yield state.set_x(x_target_binding.variable.name, value)
+
         else:
-            report_error(["adjectiveDoesntApply", "large", x_target])
+            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
 
 
 @Predication(vocabulary, names=["_small_a_1"])
-def small_a_1(state, e_introduced, x_target):
-    x_target_binding = state.get_binding(x_target)
-
-    if x_target_binding is None:
+def small_a_1(state, e_introduced_binding, x_target_binding):
+    if x_target_binding.value is None:
         iterator = state.all_individuals()
 
     else:
@@ -238,31 +231,27 @@ def small_a_1(state, e_introduced, x_target):
         # Remember that "hasattr()" checks if an object has
         # a property
         if hasattr(value, 'size') and value.size <= 1000000:
-            new_state = state.set_x(x_target, value)
+            new_state = state.set_x(x_target_binding.variable.name, value)
             yield new_state
 
         else:
-            report_error(["adjectiveDoesntApply", "small", x_target])
+            report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
 
 
 @Predication(vocabulary)
-def thing(state, x):
-    x_binding = state.get_binding(x)
-
-    if x_binding is None:
+def thing(state, x_binding):
+    if x_binding.value is None:
         iterator = state.all_individuals()
     else:
         iterator = [x_binding.value]
 
     for value in iterator:
-        yield state.set_x(x, value)
+        yield state.set_x(x_binding.variable.name, value)
 
 
 @Predication(vocabulary)
-def place_n(state, x):
-    x_binding = state.get_binding(x)
-
-    if x_binding is None:
+def place_n(state, x_binding):
+    if x_binding.value is None:
         iterator = state.all_individuals()
 
     else:
@@ -272,16 +261,13 @@ def place_n(state, x):
         # Any object is a "place" as long as it can
         # contain things
         if isinstance(value, Container):
-            yield state.set_x(x, value)
+            yield state.set_x(x_binding.variable.name, value)
 
 
 @Predication(vocabulary, names=["_in_p_loc"])
-def in_p_loc(state, e_introduced, x_actor, x_location):
-    x_actor_binding = state.get_binding(x_actor)
-    x_location_binding = state.get_binding(x_location)
-
-    if x_actor_binding is not None:
-        if x_location_binding is not None:
+def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    if x_actor_binding.value is not None:
+        if x_location_binding.value is not None:
             # x_actor is "in" x_location if x_location contains it
             for item in x_location_binding.value.contained_items(x_location_binding.variable):
                 if x_actor_binding.value == item:
@@ -293,108 +279,91 @@ def in_p_loc(state, e_introduced, x_actor, x_location):
             # Need to find all the things that x_actor is "in"
             if hasattr(x_actor_binding.value, "containers"):
                 for item in x_actor_binding.value.containers(x_actor_binding.variable):
-                    yield state.set_x(x_location, item)
+                    yield state.set_x(x_location_binding.variable.name, item)
 
     else:
         # Actor is unbound, this means "What is in X?" type of question
         # Whatever x_location "contains" is "in" it
         if hasattr(x_location_binding.value, "contained_items"):
             for location in x_location_binding.value.contained_items(x_location_binding.variable):
-                yield state.set_x(x_actor, location)
+                yield state.set_x(x_actor_binding.variable.name, location)
 
-    report_error(["thingHasNoLocation", x_actor, x_location])
+    report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 
+# c_raw_text_value will always be set to a raw string
 @Predication(vocabulary)
-def quoted(state, c_raw_text, i_text):
-    # c_raw_text_value will always be set to a
-    # raw string
-    c_raw_text_value = c_raw_text
-    i_text_binding = state.get_binding(i_text)
-
-    if i_text_binding is None:
-        yield state.set_x(i_text, QuotedText(c_raw_text_value))
+def quoted(state, c_raw_text_value, i_text_binding):
+    if i_text_binding.value is None:
+        yield state.set_x(i_text_binding.variable.name, QuotedText(c_raw_text_value))
 
     else:
-        if isinstance(i_text_binding.value, QuotedText) and i_text_binding.value.name == c_raw_text:
+        if isinstance(i_text_binding.value, QuotedText) and i_text_binding.value.name == c_raw_text_value:
             yield state
 
 
-def yield_from_fw_seq(state, variable, value):
+def yield_from_fw_seq(state, variable_data, value):
     if is_this_last_fw_seq(state):
         if hasattr(value, "all_interpretations"):
             # Get all the interpretations of the quoted text
             # and return them iteratively
             for interpretation in value.all_interpretations(state):
-                yield state.set_x(variable, interpretation)
+                yield state.set_x(variable_data.name, interpretation)
         else:
             yield value
 
     else:
-        yield state.set_x(variable, value)
+        yield state.set_x(variable_data.name, value)
 
 
 @Predication(vocabulary, names=["fw_seq"])
-def fw_seq1(state, x_phrase, i_part):
-    x_phrase_binding = state.get_binding(x_phrase)
-    i_part_binding = state.get_binding(i_part)
-    if i_part_binding is None:
-        if x_phrase_binding is None:
+def fw_seq1(state, x_phrase_binding, i_part_binding):
+    if i_part_binding.value is None:
+        if x_phrase_binding.value is None:
             # This should never happen since it basically means
             # "return all possible strings"
             assert False
 
         else:
-            yield state.set_x(i_part, x_phrase_binding.value)
+            yield state.set_x(i_part_binding.variable.name, x_phrase_binding.value)
 
     else:
-        if x_phrase_binding is None:
-            yield from yield_from_fw_seq(state, x_phrase, i_part_binding.value)
+        if x_phrase_binding.value is None:
+            yield from yield_from_fw_seq(state, x_phrase_binding.variable, i_part_binding.value)
 
         elif x_phrase_binding.value == i_part_binding.value:
             yield state
 
 
 @Predication(vocabulary, names=["fw_seq"])
-def fw_seq2(state, x_phrase, i_part1, i_part2):
-    x_phrase_binding = state.get_binding(x_phrase)
-    i_part1_binding = state.get_binding(i_part1)
-    i_part2_binding = state.get_binding(i_part2)
-
+def fw_seq2(state, x_phrase_binding, i_part1_binding, i_part2_binding):
     if isinstance(i_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([i_part1_binding.value.name, i_part2_binding.value.name]))
-        if x_phrase_binding is None:
-            yield from yield_from_fw_seq(state, x_phrase, combined_value)
+        if x_phrase_binding.value is None:
+            yield from yield_from_fw_seq(state, x_phrase_binding.variable, combined_value)
 
 
 @Predication(vocabulary, names=["fw_seq"])
-def fw_seq3(state, x_phrase, x_part1, i_part2):
-    x_phrase_binding = state.get_binding(x_phrase)
-    x_part1_binding = state.get_binding(x_part1)
-    i_part2_binding = state.get_binding(i_part2)
-
+def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
     if isinstance(x_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([x_part1_binding.value.name, i_part2_binding.value.name]))
-        if x_phrase_binding is None:
-            yield from yield_from_fw_seq(state, x_phrase, combined_value)
+        if x_phrase_binding.value is None:
+            yield from yield_from_fw_seq(state, x_phrase_binding.variable, combined_value)
 
 
 @Predication(vocabulary)
-def proper_q(state, x_variable, h_rstr, h_body):
-    yield from default_quantifier(state, x_variable, h_rstr, h_body)
+def proper_q(state, x_variable_binding, h_rstr, h_body):
+    yield from default_quantifier(state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary)
-def loc_nonsp(state, e_introduced, x_actor, x_location):
-    x_actor_binding = state.get_binding(x_actor)
-    x_location_binding = state.get_binding(x_location)
-
-    if x_actor_binding is not None:
+def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    if x_actor_binding.value is not None:
         if hasattr(x_actor_binding.value, "all_locations"):
-            if x_location_binding is None:
+            if x_location_binding.value is None:
                 # This is a "where is X?" type query since no location specified
                 for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
-                    yield state.set_x(x_location, location)
+                    yield state.set_x(x_location_binding.variable.name, location)
 
             else:
                 # The system is asking if a location of x_actor is x_location,
@@ -410,29 +379,29 @@ def loc_nonsp(state, e_introduced, x_actor, x_location):
         # For now, return errors for cases where x_actor is unbound
         pass
 
-    report_error(["thingHasNoLocation", x_actor, x_location])
+    report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 
 @Predication(vocabulary, names=["_file_n_of"])
-def file_n_of(state, x, i):
-    x_binding = state.get_binding(x)
-    if x_binding is None:
+def file_n_of(state, x_binding, i_binding):
+    if x_binding.value is None:
         iterator = state.all_individuals()
+
     else:
         iterator = [x_binding.value]
 
     for value in iterator:
         if isinstance(value, File):
-            new_state = state.set_x(x, value)
+            new_state = state.set_x(x_binding.variable.name, value)
             yield new_state
+
         else:
-            report_error(["xIsNotY", x, "file"])
+            report_error(["xIsNotY", x_binding.variable.name, "file"])
 
 
 @Predication(vocabulary, names=["_folder_n_of"])
-def folder_n_of(state, x, i):
-    x_binding = state.get_binding(x)
-    if x_binding is None:
+def folder_n_of(state, x_binding, i_binding):
+    if x_binding.value is None:
         # Variable is unbound:
         # iterate over all individuals in the world
         # using the iterator returned by state.all_individuals()
@@ -454,11 +423,11 @@ def folder_n_of(state, x, i):
             # state.set_x() returns a *new* state that
             # is a copy of the old one with just that one
             # variable set to a new value
-            new_state = state.set_x(x, value)
+            new_state = state.set_x(x_binding.variable.name, value)
             yield new_state
 
         else:
-            report_error(["xIsNotY", x, "folder"])
+            report_error(["xIsNotY", x_binding.variable.name, "folder"])
 
 
 pipeline_logger = logging.getLogger('Pipeline')

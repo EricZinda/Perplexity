@@ -82,10 +82,18 @@ class ExecutionContext(object):
     def _call_predication(self, state, predication):
         logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
 
+        bindings = []
+        for arg_index in range(0, len(predication.args)):
+            if predication.arg_types[arg_index] in ["c", "h"]:
+                bindings.append(predication.args[arg_index])
+
+            else:
+                bindings.append(state.get_binding(predication.args[arg_index]))
+
         # [list] + [list] will return a new, combined list
         # in Python. This is how we add the state object
         # onto the front of the argument list
-        function_args = [state] + predication.args
+        function_args = [state] + bindings
 
         # Look up the actual Python module and
         # function name given a string like "folder_n_of".

@@ -4,6 +4,7 @@ import logging
 
 from perplexity.execution import report_error
 from perplexity.utilities import parse_predication_name
+from perplexity.variable_binding import VariableBinding
 
 
 class EventOption(enum.Enum):
@@ -14,11 +15,10 @@ class EventOption(enum.Enum):
 def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[]):
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
-    def ensure_handles_event(state, handles, event):
-        if event[0] == "e":
-            event_binding = state.get_binding(event)
+    def ensure_handles_event(state, handles, event_binding):
+        if isinstance(event_binding, VariableBinding) and event_binding.variable.name[0] == "e":
             # Look at everything in event and make sure it is handled
-            if event_binding is not None:
+            if event_binding.value is not None:
                 foundItem = False
                 for item in event_binding.value.items():
                     for handledItem in handles:
@@ -32,7 +32,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
             # Look at everything it handles and make sure the required things are there
             for item in handles:
-                if item[1] == EventOption.required and (event_binding is None or item[0] not in event_binding.value):
+                if item[1] == EventOption.required and (event_binding.value is None or item[0] not in event_binding.value):
                     report_error(["formNotUnderstood", "missing", item])
                     return False
 

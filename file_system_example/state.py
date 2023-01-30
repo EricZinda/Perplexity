@@ -1,7 +1,7 @@
 import copy
 import logging
 from file_system_example.objects import Actor
-from file_system_example.variable_binding import VariableBinding, VariableData, variable_binding_iterator
+from perplexity.variable_binding import VariableBinding, VariableData
 
 
 # The state representation used by the file system example
@@ -46,7 +46,7 @@ class State(object):
         # The second argument, "None", is what to return if the
         # key doesn't exist.  "None" is a built-in value in Python
         # like "null"
-        return self.variables.get(variable_name, None)
+        return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
 
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
@@ -74,8 +74,8 @@ class State(object):
     def add_to_e(self, event_name, key, value):
         newState = copy.deepcopy(self)
         e_binding = newState.get_binding(event_name)
-        if e_binding is None:
-            e_binding = VariableBinding(event_name, dict())
+        if e_binding.value is None:
+            e_binding = VariableBinding(VariableData(event_name), dict())
             newState.variables[event_name] = e_binding
 
         e_binding.value[key] = value
