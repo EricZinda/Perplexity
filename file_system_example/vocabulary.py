@@ -141,14 +141,14 @@ def a_q(state, x_variable, h_rstr, h_body):
 def pron(state, x_who):
     x_who_binding = state.get_binding(x_who)
     if x_who_binding is None:
-        iterator = state.all_individuals(x_who)
+        iterator = state.all_individuals()
     else:
-        iterator = [x_who_binding]
+        iterator = [x_who_binding.value]
 
     person = int(state.get_binding("tree").value["Variables"][x_who]["PERS"])
-    for binding in iterator:
-        if isinstance(binding.value, Actor) and binding.value.person == person:
-            yield state.set_x(x_who, binding.value)
+    for value in iterator:
+        if isinstance(value, Actor) and value.person == person:
+            yield state.set_x(x_who, value)
             break
         else:
             report_error(["dontKnowPronoun", x_who])
@@ -202,22 +202,22 @@ def large_a_1(state, e_introduced, x_target):
     x_target_binding = state.get_binding(x_target)
 
     if x_target_binding is None:
-        iterator = state.all_individuals(x_target)
+        iterator = state.all_individuals()
     else:
-        iterator = [x_target_binding]
+        iterator = [x_target_binding.value]
 
     # See if any modifiers have changed *how* large
     # we should be
     degree_multiplier = degree_multiplier_from_event(state, e_introduced)
 
-    for binding in iterator:
+    for value in iterator:
         # Arbitrarily decide that "large" means a size greater
         # than 1,000,000 and apply any multipliers that other
         # predications set in the introduced event
         # Remember that "hasattr()" checks if an object has
         # a property
-        if hasattr(binding.value, 'size') and binding.value.size > degree_multiplier * 1000000:
-            new_state = state.set_x(x_target, binding.value)
+        if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+            new_state = state.set_x(x_target, value)
             yield new_state
         else:
             report_error(["adjectiveDoesntApply", "large", x_target])
@@ -228,17 +228,17 @@ def small_a_1(state, e_introduced, x_target):
     x_target_binding = state.get_binding(x_target)
 
     if x_target_binding is None:
-        iterator = state.all_individuals(x_target)
+        iterator = state.all_individuals()
 
     else:
-        iterator = [x_target_binding]
+        iterator = [x_target_binding.value]
 
-    for binding in iterator:
+    for value in iterator:
         # Arbitrarily decide that "small" means a size <= 1,000,000
         # Remember that "hasattr()" checks if an object has
         # a property
-        if hasattr(binding.value, 'size') and binding.value.size <= 1000000:
-            new_state = state.set_x(x_target, binding.value)
+        if hasattr(value, 'size') and value.size <= 1000000:
+            new_state = state.set_x(x_target, value)
             yield new_state
 
         else:
@@ -250,12 +250,12 @@ def thing(state, x):
     x_binding = state.get_binding(x)
 
     if x_binding is None:
-        iterator = state.all_individuals(x)
+        iterator = state.all_individuals()
     else:
-        iterator = [x_binding]
+        iterator = [x_binding.value]
 
-    for binding in iterator:
-        yield state.set_x(x, binding.value)
+    for value in iterator:
+        yield state.set_x(x, value)
 
 
 @Predication(vocabulary)
@@ -263,16 +263,16 @@ def place_n(state, x):
     x_binding = state.get_binding(x)
 
     if x_binding is None:
-        iterator = state.all_individuals(x)
+        iterator = state.all_individuals()
 
     else:
-        iterator = [x_binding]
+        iterator = [x_binding.value]
 
-    for binding in iterator:
+    for value in iterator:
         # Any object is a "place" as long as it can
         # contain things
-        if isinstance(binding.value, Container):
-            yield state.set_x(x, binding.value)
+        if isinstance(value, Container):
+            yield state.set_x(x, value)
 
 
 @Predication(vocabulary, names=["_in_p_loc"])
@@ -417,13 +417,13 @@ def loc_nonsp(state, e_introduced, x_actor, x_location):
 def file_n_of(state, x, i):
     x_binding = state.get_binding(x)
     if x_binding is None:
-        iterator = state.all_individuals(x)
+        iterator = state.all_individuals()
     else:
-        iterator = [x_binding]
+        iterator = [x_binding.value]
 
-    for binding in iterator:
-        if isinstance(binding.value, File):
-            new_state = state.set_x(x, binding.value)
+    for value in iterator:
+        if isinstance(value, File):
+            new_state = state.set_x(x, value)
             yield new_state
         else:
             report_error(["xIsNotY", x, "file"])
@@ -436,25 +436,25 @@ def folder_n_of(state, x, i):
         # Variable is unbound:
         # iterate over all individuals in the world
         # using the iterator returned by state.all_individuals()
-        iterator = state.all_individuals(x)
+        iterator = state.all_individuals()
 
     else:
         # Variable is bound: create an iterator that will iterate
         # over just that one by creating a list and adding it as
         # the only element
-        iterator = [x_binding]
+        iterator = [x_binding.value]
 
     # By converting both cases to an iterator, the code that
     # checks if x is "a folder" can be shared
-    for binding in iterator:
+    for value in iterator:
         # "isinstance" is a built-in function in Python that
         # checks if a variable is an
         # instance of the specified class
-        if isinstance(binding.value, Folder):
+        if isinstance(value, Folder):
             # state.set_x() returns a *new* state that
             # is a copy of the old one with just that one
             # variable set to a new value
-            new_state = state.set_x(x, binding.value)
+            new_state = state.set_x(x, value)
             yield new_state
 
         else:

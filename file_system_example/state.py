@@ -83,9 +83,9 @@ class State(object):
 
     # This is an iterator (described above) that returns
     # all the objects in the world bound to the specified variable
-    def all_individuals(self, variable):
+    def all_individuals(self):
         for item in self.objects:
-            yield VariableBinding(variable, item)
+            yield item
 
     # Call to apply a list of operations to
     # a new State object
@@ -111,9 +111,9 @@ class FileSystemState(State):
         self.actors = [self.current_user,
                        Actor(name="Computer", person=2, file_system=file_system)]
 
-    def all_individuals(self, variable):
-        yield from self.file_system.all_individuals(variable)
-        yield from variable_binding_iterator(variable, self.actors)
+    def all_individuals(self):
+        yield from self.file_system.all_individuals()
+        yield from self.actors
 
     def user(self):
         return self.current_user

@@ -195,9 +195,9 @@ class FileSystemMock(FileSystem):
             # Mock up a file object for the nonexistent path
             return File(path, file_system=self)
 
-    def all_individuals(self, variable_data):
+    def all_individuals(self):
         for item in self.items.items():
-            yield VariableBinding(variable_data, item[1])
+            yield item[1]
 
     def exists(self, path):
         return path != "" and path in self.items
