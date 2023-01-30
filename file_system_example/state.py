@@ -137,4 +137,12 @@ class DeleteOperation(object):
                     break
 
 
+class ChangeDirectoryOperation(object):
+    def __init__(self, folder_binding):
+        self.folder_binding = folder_binding
+
+    def apply_to(self, state):
+        state.file_system.change_directory(self.folder_binding)
+
+
 pipeline_logger = logging.getLogger('Pipeline')

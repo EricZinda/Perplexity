@@ -79,15 +79,7 @@ Unknown words: [('thing', ['x'], 'ques', False), ('_in_p_loc', ['e', 'x', 'x'], 
 
 We'll need to implement [`_this_q_dem`](devvocabThis_q_dem), [`thing`](devvocabThing), and [`_in_p_loc`](devvocabIn_p_loc), to make it work.
 
-### "go in '<directory>'": `proper_q`, `_go_v_1`, `_to_p_dir`, `fw_seq` and `quoted`
-Moving around in the file system introduces a lot more predications to deal with, and some language complexity. 
-
-First, the phrases a user can use to change directories to, say, the folder "desktop", are many, even if we start by limiting this to using the verb "go":
-
-- go to/in/into/inside desktop
-- go to/in/into/inside 'desktop'
-
-There are many prepositions that seem valid and the user may or may not quote the directory. Let's start by just making "go in 'desktop'" work. The ERG generates 8 different potential parses for that phrase! 
+### "go to 'directory'": `_go_v_1` and `_to_p_dir`
 
 ### TBD
 

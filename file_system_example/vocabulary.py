@@ -9,6 +9,33 @@ from perplexity.vocabulary import Vocabulary, Predication, EventOption
 vocabulary = Vocabulary()
 
 
+@Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
+def go_v_1_comm(state, e_introduced, x_actor):
+    e_introduced_binding = state.get_binding(e_introduced)
+    x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
+
+    # Only allow moving to folders
+    if isinstance(x_location_binding.value, Folder):
+        yield state.apply_operations([ChangeDirectoryOperation(x_location_binding)])
+
+    else:
+        if hasattr(x_location_binding.value, "exists") and x_location_binding.value.exists():
+            report_error(["cantDo", "change directory to", x_location_binding.variable.name])
+        else:
+            report_error(["notFound", x_location_binding.variable.name])
+
+
+@Predication(vocabulary, names=["_to_p_dir"])
+def to_p_dir(state, e_introduced, e_target, x_location):
+    x_location_binding = state.get_binding(x_location)
+
+    preposition_info = {
+        "EndLocation": x_location_binding
+    }
+
+    yield state.add_to_e(e_target, "DirectionalPreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
+
+
 # TODO: delete_v_1 doesn't actually meet the contract since it doesn't allow free variables
 @Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
 def delete_v_1_comm(state, e_introduced, x_actor, x_what):
@@ -47,15 +74,15 @@ def degree_multiplier_from_event(state, e_introduced):
 def in_scope(state, binding):
     # In scope if binding.value is the folder the user is in
     user = state.user()
-    if user.current_directory == binding.value:
+    if user.current_directory() == binding.value:
         return True
 
     # In scope if binding.value is a file in the directory the user is in
     # We are looking at the contained items in the user's current directory
     # which is *not* the object in the binding. So: we need contained_items()
     # to report an error that is not variable related, so we pass it None
-    contained_binding = VariableBinding(None, user.current_directory)
-    for file in user.current_directory.contained_items(contained_binding):
+    contained_binding = VariableBinding(None, user.current_directory())
+    for file in user.current_directory().contained_items(contained_binding):
         if file == binding.value:
             return True
 

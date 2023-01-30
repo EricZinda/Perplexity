@@ -281,6 +281,34 @@
             "Tree": "which_q(x4,place_n(x4),proper_q(x3,[quoted(exist,i14), quoted(doesn\u2019t,i13), fw_seq(x3,i13,i14)],loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "cd5bbf5b-d4de-469b-b690-5e125dda5378"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "State reset using examples.Example23_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "41d51bab-23a8-4169-93a7-365aef864641"
+        },
+        {
+            "Command": "go to \"/documents\"",
+            "Expected": "Done!",
+            "Tree": "proper_q(x9,[quoted(/documents,i14), fw_seq(x9,i14)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
+            "Enabled": true,
+            "ID": "2db0658c-8aac-484f-b120-f9c43de91e26"
+        },
+        {
+            "Command": "what is in this folder?",
+            "Expected": "File(name=/documents/file1.txt, size=1000)\n",
+            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "10313c53-a01e-400e-aa74-b798db3fe3f4"
+        },
+        {
+            "Command": "go to \"doesn't exist\"",
+            "Expected": "'doesn\u2019t exist' was not found",
+            "Tree": "proper_q(x9,[quoted(exist,i15), quoted(doesn\u2019t,i14), fw_seq(x9,i14,i15)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
+            "Enabled": true,
+            "ID": "9f36511c-6b12-40a4-99c9-b4a6765a5ecd"
         }
     ]
 }

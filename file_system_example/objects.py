@@ -49,7 +49,7 @@ class Folder(Container):
         yield from self.file_system.contained_items(VariableBinding(variable_data, self))
 
     def all_locations(self, variable_data):
-        if self.file_system.exists(self.name):
+        if self.exists():
             path = pathlib.PurePath(self.name)
             for parent_path in path.parents:
                 yield self.file_system.item_from_path(parent_path)
@@ -59,6 +59,9 @@ class Folder(Container):
 
     def containers(self, variable_data):
         yield from self.all_locations(variable_data)
+
+    def exists(self):
+        return self.file_system.exists(self.name)
 
 
 class File(Container):
@@ -78,7 +81,7 @@ class File(Container):
         return not self == obj
 
     def all_locations(self, variable_data):
-        if self.file_system.exists(self.name):
+        if self.exists():
             folder = self.file_system.item_from_path(str(pathlib.PurePath(self.name).parent))
             yield folder
             yield from folder.all_locations(variable_data)
@@ -92,6 +95,9 @@ class File(Container):
     def containers(self, variable_data):
         yield from self.all_locations(variable_data)
 
+    def exists(self):
+        return self.file_system.exists(self.name)
+
 
 # Represents something that can "do" things, like a computer
 # or a human (or a dog, etc)
@@ -101,8 +107,6 @@ class Actor(UniqueObject):
         self.name = name
         self.person = person
         self.file_system = file_system
-        if file_system is not None:
-            self.current_directory = self.file_system.current_directory()
 
     def __repr__(self):
         return f"Actor(name={self.name}, person={self.person})"
@@ -110,11 +114,14 @@ class Actor(UniqueObject):
     def all_locations(self, variable_data):
         if self.person == 1:
             # Return the locations for the user "me"
-            yield self.current_directory
-            yield from self.current_directory.all_locations(variable_data)
+            yield self.current_directory()
+            yield from self.current_directory().all_locations(variable_data)
 
     def containers(self, variable_data):
         yield from self.all_locations(variable_data)
+
+    def current_directory(self):
+        return self.file_system.current_directory()
 
 
 class FileSystem(object):
@@ -201,6 +208,13 @@ class FileSystemMock(FileSystem):
 
         else:
             raise MessageException("notFound", [delete_binding.variable.name])
+
+    def change_directory(self, folder_binding):
+        if self.exists(folder_binding.value.name):
+            self.current = folder_binding.value
+
+        else:
+            raise MessageException("notFound", [folder_binding.variable.name])
 
 
 class QuotedText(object):
