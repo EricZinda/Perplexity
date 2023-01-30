@@ -192,7 +192,12 @@ def error_priority(error_string):
     if error_string is None:
         return 0
     else:
-        return error_priority_dict.get(error_string[1][0], error_priority_dict["defaultPriority"])
+        error_constant = error_string[1][0]
+        priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
+        if error_constant == "unknownWords":
+            priority -= len(error_string[1][1])
+
+        return priority
 
 
 # Highest numbers are best errors to return
@@ -200,8 +205,11 @@ def error_priority(error_string):
 # The defaultPriority key is the default value for errors that aren't explicitly listed
 error_priority_dict = {
     # Unknown words error should only be shown if
-    # there are no other errors
-    "unknownWords": 1,
+    # there are no other errors, AND the number
+    # of unknown words is subtracted from it so
+    # lower constants should be defined below this
+    # "unknownWordsMin": 900,
+    "unknownWords": 1000,
     "defaultPriority": 1000,
 
     # This is just used when sorting to indicate no error, i.e. success.

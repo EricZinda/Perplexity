@@ -27,7 +27,6 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
 
 @Predication(vocabulary, names=["_to_p_dir"])
 def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
-
     preposition_info = {
         "EndLocation": x_location_binding
     }
