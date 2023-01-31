@@ -301,18 +301,30 @@ def quoted(state, c_raw_text_value, i_text_binding):
             yield state
 
 
-def yield_from_fw_seq(state, variable_data, value):
-    if is_this_last_fw_seq(state):
-        if hasattr(value, "all_interpretations"):
+def yield_from_fw_seq(state, x_phrase_binding, value):
+    if x_phrase_binding.value is None:
+        # x has not be bound
+        if is_this_last_fw_seq(state) and hasattr(value, "all_interpretations"):
             # Get all the interpretations of the quoted text
-            # and return them iteratively
+            # and bind them iteratively
             for interpretation in value.all_interpretations(state):
-                yield state.set_x(variable_data.name, interpretation)
-        else:
-            yield value
+                yield state.set_x(x_phrase_binding.variable.name, interpretation)
+
+            return
+
+        yield state.set_x(x_phrase_binding.variable.name, value)
 
     else:
-        yield state.set_x(variable_data.name, value)
+        # x has been bound, compare it to value
+        if hasattr(value, "all_interpretations"):
+            # Get all the interpretations of the object
+            # and check them iteratively
+            for interpretation in value.all_interpretations(state):
+                if interpretation == x_phrase_binding.value:
+                    yield state
+        else:
+            if value == x_phrase_binding.value:
+                yield state
 
 
 @Predication(vocabulary, names=["fw_seq"])
@@ -327,32 +339,25 @@ def fw_seq1(state, x_phrase_binding, i_part_binding):
             yield state.set_x(i_part_binding.variable.name, x_phrase_binding.value)
 
     else:
-        if x_phrase_binding.value is None:
-            yield from yield_from_fw_seq(state, x_phrase_binding.variable, i_part_binding.value)
-
-        else:
-            if hasattr(i_part_binding.value, "all_interpretations"):
-                # Get all the interpretations of the quoted text
-                # and check them iteratively
-                for interpretation in i_part_binding.value.all_interpretations(state):
-                    if interpretation == x_phrase_binding.value:
-                        yield state
+        yield from yield_from_fw_seq(state, x_phrase_binding, i_part_binding.value)
 
 
 @Predication(vocabulary, names=["fw_seq"])
 def fw_seq2(state, x_phrase_binding, i_part1_binding, i_part2_binding):
+    # Only succeed if part1 and part2 are set and are QuotedText instances to avoid
+    # having to split x into pieces somehow
     if isinstance(i_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([i_part1_binding.value.name, i_part2_binding.value.name]))
-        if x_phrase_binding.value is None:
-            yield from yield_from_fw_seq(state, x_phrase_binding.variable, combined_value)
+        yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
 
 
 @Predication(vocabulary, names=["fw_seq"])
 def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
+    # Only succeed if part1 and part2 are set and are QuotedText instances to avoid
+    # having to split x into pieces somehow
     if isinstance(x_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([x_part1_binding.value.name, i_part2_binding.value.name]))
-        if x_phrase_binding.value is None:
-            yield from yield_from_fw_seq(state, x_phrase_binding.variable, combined_value)
+        yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
 
 
 @Predication(vocabulary)
