@@ -267,12 +267,13 @@ def place_n(state, x_binding):
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     if x_actor_binding.value is not None:
         if x_location_binding.value is not None:
-            # x_actor is "in" x_location if x_location contains it
-            for item in x_location_binding.value.contained_items(x_location_binding.variable):
-                if x_actor_binding.value == item:
-                    # Variables are already set,
-                    # no need to set them again, just return the state
-                    yield state
+            if hasattr(x_location_binding.value, "contained_items"):
+                # x_actor is "in" x_location if x_location contains it
+                for item in x_location_binding.value.contained_items(x_location_binding.variable):
+                    if x_actor_binding.value == item:
+                        # Variables are already set,
+                        # no need to set them again, just return the state
+                        yield state
 
         else:
             # Need to find all the things that x_actor is "in"

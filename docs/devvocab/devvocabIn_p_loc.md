@@ -61,33 +61,31 @@ The `Folder` object delegates to the `FileSystem` object to return all the items
 Now we can implement the `_in_p_loc` predication:
 
 ~~~
-@Predication(vocabulary, names=["_in_p_loc"])
-def in_p_loc(state, e_introduced, x_actor, x_location):
-    x_actor_value = state.get_variable(x_actor)
-    x_location_value = state.get_variable(x_location)
+def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    if x_actor_binding.value is not None:
+        if x_location_binding.value is not None:
+            if hasattr(x_location_binding.value, "contained_items"):
+                # x_actor is "in" x_location if x_location contains it
+                for item in x_location_binding.value.contained_items(x_location_binding.variable):
+                    if x_actor_binding.value == item:
+                        # Variables are already set,
+                        # no need to set them again, just return the state
+                        yield state
 
-    if x_actor_value is not None:
-        if x_location_value is not None:
-            # x_actor is "in" x_location if x_location contains it
-            for item in x_location_value.contained_items():
-                if x_actor_value == item:
-                    # Variables are already set,
-                    # no need to set them again, just return the state
-                    yield state
         else:
             # Need to find all the things that x_actor is "in"
-            if hasattr(x_actor_value, "containers"):
-                for item in x_actor_value.containers():
-                    yield state.set_x(x_location, item)
+            if hasattr(x_actor_binding.value, "containers"):
+                for item in x_actor_binding.value.containers(x_actor_binding.variable):
+                    yield state.set_x(x_location_binding.variable.name, item)
 
     else:
         # Actor is unbound, this means "What is in X?" type of question
         # Whatever x_location "contains" is "in" it
-        if hasattr(x_location_value, "contained_items"):
-            for location in x_location_value.contained_items():
-                yield state.set_x(x_actor, location)
+        if hasattr(x_location_binding.value, "contained_items"):
+            for location in x_location_binding.value.contained_items(x_location_binding.variable):
+                yield state.set_x(x_actor_binding.variable.name, location)
 
-    report_error(["thingHasNoLocation", x_actor, x_location])
+    report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
     
     
 def generate_message(tree_info, error_term):
