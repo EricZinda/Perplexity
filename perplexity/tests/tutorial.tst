@@ -276,6 +276,13 @@
             "ID": "cf9f7269-1dfe-439a-adc6-caa15dbc887f"
         },
         {
+            "Command": "\"foo\" is in \"/documents\"",
+            "Expected": "'foo' is not in '/documents'",
+            "Tree": "proper_q(x10,[quoted(/documents,i15), fw_seq(x10,i15)],proper_q(x3,[quoted(foo,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
+            "Enabled": true,
+            "ID": "086f2827-5653-4d90-8fe8-a5b3986df029"
+        },
+        {
             "Command": "where is \"doesn't exist\"",
             "Expected": "'doesn\u2019t exist' was not found",
             "Tree": "which_q(x4,place_n(x4),proper_q(x3,[quoted(exist,i14), quoted(doesn\u2019t,i13), fw_seq(x3,i13,i14)],loc_nonsp(e2,x3,x4)))",
