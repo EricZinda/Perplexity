@@ -1,8 +1,9 @@
 Remaining work to be shown in the tutorial:
 
-- 
-- We don't know whether a string is a file or a folder or something else until we know what you want to do with it
-- File system should only delete folders if they really are folders and vice versa
+- delete "file1.txt" in documents doesn't work
+- copy x to y
+  - needs copy with a scopal arg
+  - also copy x in y (the same scenario)
 
 - Support for prepositions
   - show declaring verbs that understand prepositions
