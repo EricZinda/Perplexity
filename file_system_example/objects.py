@@ -60,7 +60,7 @@ class Folder(Container):
         yield from self.all_locations(variable_data)
 
     def exists(self):
-        return self.file_system.exists(self.name)
+        return self.file_system.exists(self.name, is_file=False)
 
 
 class File(Container):
@@ -74,7 +74,14 @@ class File(Container):
         return f"File(name={self.name}, size={self.size})"
 
     def __eq__(self, obj):
-        return isinstance(obj, File) and self.name == obj.name
+        if isinstance(obj, File):
+            if self.has_path() and obj.has_path():
+                return self.name == obj.name
+
+            else:
+                return pathlib.PurePath(self.name).parts[-1] == pathlib.PurePath(obj.name).parts[-1]
+
+        return False
 
     def __ne__(self, obj):
         return not self == obj
@@ -95,7 +102,13 @@ class File(Container):
         yield from self.all_locations(variable_data)
 
     def exists(self):
-        return self.file_system.exists(self.name)
+        return self.file_system.exists(self.name, is_file=True)
+
+    # True if there is no path specified at all
+    # including "./". Indicates the object is a raw
+    # file specifier
+    def has_path(self):
+        return os.path.dirname(self.name) != ""
 
 
 # Represents something that can "do" things, like a computer
@@ -174,9 +187,11 @@ class FileSystemMock(FileSystem):
         return self.current
 
     def contained_items(self, container, variable_data):
-        if self.exists(container.name):
+        path = self.add_current_directory(container.name)
+        is_file = isinstance(container, File)
+        if self.exists(path, is_file=is_file):
             for item in self.items.items():
-                if str(pathlib.PurePath(item[0]).parent) == container.name:
+                if str(pathlib.PurePath(item[0]).parent) == path:
                     yield item[1]
 
         else:
@@ -184,8 +199,7 @@ class FileSystemMock(FileSystem):
 
     # Will create a File object for a nonexistent path
     def item_from_path(self, path):
-        if os.path.dirname(path) == "":
-            path = str(pathlib.PurePath(self.current_directory().name, path))
+        path = self.add_current_directory(path)
 
         if path in self.items:
             return self.items[path]
@@ -194,23 +208,34 @@ class FileSystemMock(FileSystem):
             # Mock up a file object for the nonexistent path
             return File(path, file_system=self)
 
+    def add_current_directory(self, path):
+        if os.path.dirname(path) == "":
+            return str(pathlib.PurePath(self.current_directory().name, path))
+        else:
+            return path
+
     def all_individuals(self):
         for item in self.items.items():
             yield item[1]
 
-    def exists(self, path):
-        return path != "" and path in self.items
+    def exists(self, path, is_file):
+        path = self.add_current_directory(path)
+        return path != "" and path in self.items and isinstance(self.items[path], File if is_file else Folder)
 
     def delete_item(self, delete_binding):
-        if self.exists(delete_binding.value.name):
-            self.items.pop(delete_binding.value.name)
+        path = self.add_current_directory(delete_binding.value.name)
+
+        is_file = isinstance(delete_binding.value, File)
+        if self.exists(path, is_file=is_file):
+            self.items.pop(path)
 
         else:
             raise MessageException("notFound", [delete_binding.variable.name])
 
     def change_directory(self, folder_binding):
-        if self.exists(folder_binding.value.name):
-            self.current = folder_binding.value
+        path = self.add_current_directory(folder_binding.value.name)
+        if self.exists(path, is_file=False):
+            self.current = self.item_from_path(path)
 
         else:
             raise MessageException("notFound", [folder_binding.variable.name])
@@ -220,18 +245,21 @@ class QuotedText(object):
     def __init__(self, name):
         self.name = name
 
-    def all_interpretations(self, state):
-        # The yield the text converted to a file if possible
-        if isinstance(state, FileSystemState):
-            file_system_object = state.file_system.item_from_path(self.name)
-            if file_system_object is not None:
-                yield file_system_object
+    def __repr__(self):
+        return f"{self.name}"
 
-            else:
-                # Create a file that doesn't exist
-                # For when a user is copying a file to
-                # a new location, for example
-                yield File(name=self.name)
+    def all_interpretations(self, state):
+        # The yield the text converted to a file or folder if possible
+        # If one of them exists, return it first so that its errors
+        # get priority
+        file_rep = File(name=self.name, file_system=state.file_system)
+        folder_rep = Folder(name=self.name, file_system=state.file_system)
+        if file_rep.exists():
+            yield file_rep
+            yield folder_rep
+        else:
+            yield folder_rep
+            yield file_rep
 
         # Always yield the text value last since the others
         # are probably what was meant and the first error

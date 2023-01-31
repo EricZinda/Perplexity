@@ -6,7 +6,7 @@ import sys
 from delphin import ace
 from delphin.codecs import simplemrs
 
-from perplexity.execution import ExecutionContext
+from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predication, tree_from_assignments
@@ -120,7 +120,12 @@ class UserInterface(object):
 
                         # This worked, apply the results to the current world state if it was a command
                         if sentence_force(tree_info["Variables"]) == "comm":
-                            self.apply_solutions_to_state(tree_record["Solutions"])
+                            try:
+                                self.apply_solutions_to_state(tree_record["Solutions"])
+
+                            except MessageException as error:
+                                response = self.response_function(tree_info, [], [0, error.message_object()])
+                                tree_record["ResponseMessage"] += f"\n{str(response)}"
 
                         print(tree_record["ResponseMessage"])
                         return

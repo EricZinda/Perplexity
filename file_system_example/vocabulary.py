@@ -330,8 +330,13 @@ def fw_seq1(state, x_phrase_binding, i_part_binding):
         if x_phrase_binding.value is None:
             yield from yield_from_fw_seq(state, x_phrase_binding.variable, i_part_binding.value)
 
-        elif x_phrase_binding.value == i_part_binding.value:
-            yield state
+        else:
+            if hasattr(i_part_binding.value, "all_interpretations"):
+                # Get all the interpretations of the quoted text
+                # and check them iteratively
+                for interpretation in i_part_binding.value.all_interpretations(state):
+                    if interpretation == x_phrase_binding.value:
+                        yield state
 
 
 @Predication(vocabulary, names=["fw_seq"])

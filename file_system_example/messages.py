@@ -208,8 +208,8 @@ error_priority_dict = {
     # there are no other errors, AND the number
     # of unknown words is subtracted from it so
     # lower constants should be defined below this
-    # "unknownWordsMin": 900,
-    "unknownWords": 1000,
+    # "unknownWordsMin": 800,
+    "unknownWords": 900,
     "defaultPriority": 1000,
 
     # This is just used when sorting to indicate no error, i.e. success.

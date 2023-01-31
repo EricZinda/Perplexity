@@ -309,6 +309,34 @@
             "Tree": "proper_q(x9,[quoted(exist,i15), quoted(doesn\u2019t,i14), fw_seq(x9,i14,i15)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
             "Enabled": true,
             "ID": "9f36511c-6b12-40a4-99c9-b4a6765a5ecd"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "State reset using examples.Example23_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "0b3ba5ef-4c0f-4fed-bfaa-45cda3a0ce09"
+        },
+        {
+            "Command": "what is in \"/documents\"",
+            "Expected": "File(name=/documents/file1.txt, size=1000)\n",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(/documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "805cdc7d-1391-40c9-a686-a6ea6c2c58f7"
+        },
+        {
+            "Command": "delete \"file1.txt\" in \"/documents\"",
+            "Expected": "Done!",
+            "Tree": "proper_q(x16,[quoted(/documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[_in_p_loc(e15,x8,x16), quoted(file1.txt,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "f95d74c8-3b08-401e-bc70-7a5517eee968"
+        },
+        {
+            "Command": "what is in \"/documents\"",
+            "Expected": "thing is not in '/documents'",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(/documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "bc7ebed2-b20c-4426-b0d1-124ffe2a5dd0"
         }
     ]
 }
