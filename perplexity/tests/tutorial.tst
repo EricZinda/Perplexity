@@ -344,6 +344,34 @@
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(/documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "bc7ebed2-b20c-4426-b0d1-124ffe2a5dd0"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "State reset using examples.Example23_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "688b1014-1849-42c3-9f6d-1eed9164ce64"
+        },
+        {
+            "Command": "what is in this folder?",
+            "Expected": "File(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=1000)\n",
+            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "4f519332-f958-470e-ae0c-28da1161c5e6"
+        },
+        {
+            "Command": "copy \"file1.txt\" in \"/documents\"",
+            "Expected": "Done!",
+            "Tree": "proper_q(x16,[quoted(/documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[_in_p_loc(e15,x8,x16), quoted(file1.txt,i13), fw_seq(x8,i13)],_copy_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "5a73a52a-fa97-4694-8120-8a47e0c99ce2"
+        },
+        {
+            "Command": "what is in this folder?",
+            "Expected": "File(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=1000)\nFile(name=/Desktop/file1.txt, size=1000)\n",
+            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "b12b4de4-f6ec-4dee-811a-1a9f96003ea7"
         }
     ]
 }

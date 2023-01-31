@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import pathlib
@@ -51,7 +52,7 @@ class Folder(Container):
         if self.exists():
             path = pathlib.PurePath(self.name)
             for parent_path in path.parents:
-                yield self.file_system.item_from_path(parent_path)
+                yield self.file_system.item_from_path(parent_path, is_file=False)
 
         else:
             raise MessageException("notFound", [variable_data.name])
@@ -88,7 +89,7 @@ class File(Container):
 
     def all_locations(self, variable_data):
         if self.exists():
-            folder = self.file_system.item_from_path(str(pathlib.PurePath(self.name).parent))
+            folder = self.file_system.item_from_path(str(pathlib.PurePath(self.name).parent), is_file=False)
             yield folder
             yield from folder.all_locations(variable_data)
 
@@ -176,7 +177,7 @@ class FileSystemMock(FileSystem):
                 if new_path not in self.items:
                     self.items[new_path] = Folder(new_path, file_system=self)
 
-        self.current = self.item_from_path(current)
+        self.current = self.item_from_path(current, is_file=False)
 
     def set_properties(self, obj, props):
         for prop in props.items():
@@ -198,15 +199,19 @@ class FileSystemMock(FileSystem):
             raise MessageException("notFound", [variable_data.name])
 
     # Will create a File object for a nonexistent path
-    def item_from_path(self, path):
+    def item_from_path(self, path, is_file=True):
         path = self.add_current_directory(path)
 
         if path in self.items:
-            return self.items[path]
+            found_item = self.items[path]
+            if isinstance(found_item, File) and is_file or isinstance(found_item, Folder) and not is_file:
+                return found_item
 
-        else:
-            # Mock up a file object for the nonexistent path
+        # Mock up an object for the nonexistent path
+        if is_file:
             return File(path, file_system=self)
+        else:
+            return Folder(path, file_system=self)
 
     def add_current_directory(self, path):
         if os.path.dirname(path) == "":
@@ -224,18 +229,41 @@ class FileSystemMock(FileSystem):
 
     def delete_item(self, delete_binding):
         path = self.add_current_directory(delete_binding.value.name)
-
-        is_file = isinstance(delete_binding.value, File)
-        if self.exists(path, is_file=is_file):
+        if self.exists(path, is_file=isinstance(delete_binding.value, File)):
             self.items.pop(path)
 
         else:
             raise MessageException("notFound", [delete_binding.variable.name])
 
+    def copy_item(self, from_binding, to_binding):
+        if self.exists(from_binding.value.name, is_file=isinstance(from_binding.value, File)):
+            if to_binding is None:
+                to_binding = VariableBinding(None, self.current_directory())
+
+            if self.exists(to_binding.value.name, is_file=isinstance(to_binding.value, File)):
+                item_name = pathlib.PurePath(from_binding.value.name).parts[-1]
+                if isinstance(to_binding.value, Folder):
+                    # "to" is a folder, use it as the new base for the file name
+                    new_item_path = pathlib.PurePath(to_binding.value.name, item_name)
+
+                else:
+                    # "to" includes a file name, use the entire name as the name of the target
+                    new_item_path = to_binding.value.name
+
+                new_item = copy.deepcopy(self.item_from_path(from_binding.value.name, is_file=isinstance(from_binding.value, File)))
+                new_item.name = new_item_path
+                self.items[str(new_item_path)] = new_item
+
+            else:
+                raise MessageException("notFound", [to_binding.variable.name])
+
+        else:
+            raise MessageException("notFound", [from_binding.variable.name])
+
     def change_directory(self, folder_binding):
         path = self.add_current_directory(folder_binding.value.name)
         if self.exists(path, is_file=False):
-            self.current = self.item_from_path(path)
+            self.current = self.item_from_path(path, is_file=False)
 
         else:
             raise MessageException("notFound", [folder_binding.variable.name])
@@ -249,7 +277,7 @@ class QuotedText(object):
         return f"{self.name}"
 
     def all_interpretations(self, state):
-        # The yield the text converted to a file or folder if possible
+        # Yield the text converted to a file or folder if possible
         # If one of them exists, return it first so that its errors
         # get priority
         file_rep = File(name=self.name, file_system=state.file_system)

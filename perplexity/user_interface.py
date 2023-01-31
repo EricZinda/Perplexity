@@ -276,7 +276,7 @@ class UserInterface(object):
         f = open(os.devnull, 'w')
 
         # Create an instance of the ACE parser and ask to give <= 100 MRS documents
-        with ace.ACEParser(self.erg_file(), cmdargs=['-n', '100'], stderr=f) as parser:
+        with ace.ACEParser(self.erg_file(), cmdargs=['-n', '1000'], stderr=f) as parser:
             ace_response = parser.interact(phrase)
             pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
 

@@ -92,14 +92,17 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "doesntExist":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg1 = arg1.strip("'\"")
         return f"There isn't '{arg1}' in the system"
 
     elif error_constant == "dontKnowPronoun":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg1 = arg1.strip("'\"")
         return f"I don't know who '{arg1}' is"
 
     elif error_constant == "dontKnowActor":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg1 = arg1.strip("'\"")
         return f"I don't know who '{arg1}' is"
 
     elif error_constant == "cantDo":
@@ -143,6 +146,7 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "moreThanOneInScope":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg1 = arg1.strip("'\"")
         return f"There is more than one '{arg1}' where you are"
 
     elif error_constant == "thingHasNoLocation":
@@ -152,10 +156,8 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "notFound":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        if arg1[0] in ["'", '"']:
-            return f"{arg1} was not found"
-        else:
-            return f"'{arg1}' was not found"
+        arg1 = arg1.strip("'\"")
+        return f"'{arg1}' was not found"
 
     elif error_constant == "answerWithList":
         answer_predication = error_arguments[1]

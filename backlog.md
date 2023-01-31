@@ -1,6 +1,5 @@
 Remaining work to be shown in the tutorial:
 
-- delete "file1.txt" in documents doesn't work
 - copy x to y
   - needs copy with a scopal arg
   - also copy x in y (the same scenario)

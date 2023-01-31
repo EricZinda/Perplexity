@@ -1,6 +1,6 @@
 import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
-from file_system_example.state import DeleteOperation, ChangeDirectoryOperation
+from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context
 from perplexity.tree import TreePredication, is_this_last_fw_seq
@@ -34,7 +34,6 @@ def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
     yield state.add_to_e(e_target_binding.variable.name, "DirectionalPreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
 
 
-# TODO: delete_v_1 doesn't actually meet the contract since it doesn't allow free variables
 @Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     # We only know how to delete things from the
@@ -46,6 +45,23 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 
         else:
             report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+    else:
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+
+# "copy" where the user did not say where to copy to, assume current directory
+@Predication(vocabulary, names=["_copy_v_1"])
+def copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    # We only know how to copy things from the
+    # computer's perspective
+    if x_actor_binding.value.name == "Computer":
+        # Only allow copying files and folders
+        if isinstance(x_what_binding.value, (File, Folder)):
+            yield state.apply_operations([CopyOperation(x_what_binding, None)])
+
+        else:
+            report_error(["cantDo", "copy", x_what_binding.variable.name])
 
     else:
         report_error(["dontKnowActor", x_actor_binding.variable.name])
@@ -302,6 +318,8 @@ def quoted(state, c_raw_text_value, i_text_binding):
             yield state
 
 
+# Yield all the solutions for fw_seq where value is bound
+# and x_phrase_binding may or may not be
 def yield_from_fw_seq(state, x_phrase_binding, value):
     if x_phrase_binding.value is None:
         # x has not be bound

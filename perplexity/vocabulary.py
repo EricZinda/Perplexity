@@ -126,6 +126,11 @@ class Vocabulary(object):
                     type_list.append((module, function))
 
     def predications(self, name, arg_types, predication_type):
+        # if name == "_in_p_loc":
+        #     print(f"{name} {str(arg_types)}")
+        # if arg_types == ["e", "e", "x"]:
+        #     print("here")
+
         name_key = self.name_key(name, arg_types, predication_type)
         if name_key in self.all:
             for functionName in self.all[name_key]:

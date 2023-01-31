@@ -137,6 +137,16 @@ class DeleteOperation(object):
                     break
 
 
+class CopyOperation(object):
+    def __init__(self, binding_from_copy, binding_to_copy):
+        self.binding_from_copy = binding_from_copy
+        self.binding_to_copy = binding_to_copy
+
+    def apply_to(self, state):
+        if isinstance(state, FileSystemState):
+            state.file_system.copy_item(self.binding_from_copy, self.binding_to_copy)
+
+
 class ChangeDirectoryOperation(object):
     def __init__(self, folder_binding):
         self.folder_binding = folder_binding
