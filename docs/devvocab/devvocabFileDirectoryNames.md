@@ -188,52 +188,67 @@ This simple approach means that `delete_v_1_comm` would have to now include `Quo
 A different approach allows us to make this more invisible. We can put the logic for converting the quoted text into file and folder objects directly into `fw_seq`:
 ~~~
 @Predication(vocabulary, names=["fw_seq"])
-def fw_seq1(state, x_phrase, i_part):
-    x_phrase_binding = state.get_binding(x_phrase)
-    i_part_binding = state.get_binding(i_part)
-    if i_part_binding is None:
-        if x_phrase_binding is None:
+def fw_seq1(state, x_phrase_binding, i_part_binding):
+    if i_part_binding.value is None:
+        if x_phrase_binding.value is None:
             # This should never happen since it basically means
             # "return all possible strings"
             assert False
 
         else:
-            yield state.set_x(i_part, x_phrase_binding.value)
+            yield state.set_x(i_part_binding.variable.name, x_phrase_binding.value)
 
     else:
-        if x_phrase_binding is None:
-            yield from yield_from_fw_seq(state, x_phrase, i_part_binding.value)
+        yield from yield_from_fw_seq(state, x_phrase_binding, i_part_binding.value)
+            
+            
+# Yield all the solutions for fw_seq where value is bound
+# and x_phrase_binding may or may not be
+def yield_from_fw_seq(state, x_phrase_binding, value):
+    if x_phrase_binding.value is None:
+        # x has not be bound
+        if is_this_last_fw_seq(state) and hasattr(value, "all_interpretations"):
+            # Get all the interpretations of the quoted text
+            # and bind them iteratively
+            for interpretation in value.all_interpretations(state):
+                yield state.set_x(x_phrase_binding.variable.name, interpretation)
 
-        elif x_phrase_binding.value == i_part_binding.value:
-            yield state
-            
-            
-def yield_from_fw_seq(state, variable, value):
-    if hasattr(value, "all_interpretations"):
-        # Get all the interpretations of the quoted text
-        # and return them iteratively
-        for interpretation in value.all_interpretations(state):
-            yield state.set_x(variable, interpretation)
+            return
+
+        yield state.set_x(x_phrase_binding.variable.name, value)
+
     else:
-        yield value        
-       
-        
+        # x has been bound, compare it to value
+        if hasattr(value, "all_interpretations"):
+            # Get all the interpretations of the object
+            # and check them iteratively
+            for interpretation in value.all_interpretations(state):
+                if interpretation == x_phrase_binding.value:
+                    yield state
+        else:
+            if value == x_phrase_binding.value:
+                yield state       
+                
+                
 class QuotedText(object):
     def __init__(self, name):
         self.name = name
 
-    def all_interpretations(self, state):
-        # The yield the text converted to a file if possible
-        if isinstance(state, FileSystemState):
-            file_system_object = state.file_system.item_from_path(self.name)
-            if file_system_object is not None:
-                yield file_system_object
+    def __repr__(self):
+        return f"{self.name}"
 
-            else:
-                # Create a file that doesn't exist
-                # For when a user is copying a file to
-                # a new location, for example
-                yield File(name=self.name)
+    def all_interpretations(self, state):
+        # Yield the text converted to a file or folder if possible
+        # If one of them exists, return it first so that its errors
+        # get priority
+        file_rep = File(name=self.name, file_system=state.file_system)
+        folder_rep = Folder(name=self.name, file_system=state.file_system)
+        if file_rep.exists():
+            yield file_rep
+            yield folder_rep
+        else:
+            yield folder_rep
+            yield file_rep
 
         # Always yield the text value last since the others
         # are probably what was meant and the first error
@@ -241,7 +256,11 @@ class QuotedText(object):
         yield self
 ~~~
 
-In this approach, `fw_seq` yields every interpretation of the quoted text using the helper functions `yield_from_fw_seq()`. It calls the `all_interpretations()` method of `QuotedText` and allows it to convert itself to whatever it can mean, thus centralizing the code.
+In this approach, `fw_seq` yields every interpretation of the quoted text using the helper function `yield_from_fw_seq()`. It calls the `all_interpretations()` method of `QuotedText` and allows it to convert itself to whatever it can mean, thus centralizing the code.
+
+`QuotedText.all_interpretations()` yields the objects that exist first since the first error encountered in a given predication will be the one that gets returned. To see why, imagine a scenario where 'blue' is a folder that doesn't have anything in it.  `fw_seq` will convert the text 'blue' into a folder, a file, and the raw text using the `all_interpretations()` method. `in_p_loc` will report the error "'blue' is not found" for the file, "nothing is in 'blue'" for the folder and the text.  Whichever is first will be remembered due to the [error reporting algorithm](../devhowto/devhowtoChoosingWhichFailure). So, we want the objects that actually exist to come first.
+
+This ensures that a phrase like "what is in 'blue'", where 'blue' is a folder that doesn't have anything in it, will return "nothing is in blue" instead of "'blue' doesn't exist". The latter error gets generated
 
 `proper_q` can just be a default quantifier as described [here](../devhowto/devhowtoSimpleQuestions):
 
@@ -369,48 +388,36 @@ To make this work, we will need an implementation of `fw_seq(x,x,i)` and `fw_seq
 
 ~~~
 @Predication(vocabulary, names=["fw_seq"])
-def fw_seq1(state, x_phrase, i_part):
-    x_phrase_binding = state.get_binding(x_phrase)
-    i_part_binding = state.get_binding(i_part)
-    if i_part_binding is None:
-        if x_phrase_binding is None:
+def fw_seq1(state, x_phrase_binding, i_part_binding):
+    if i_part_binding.value is None:
+        if x_phrase_binding.value is None:
             # This should never happen since it basically means
             # "return all possible strings"
             assert False
 
         else:
-            yield state.set_x(i_part, x_phrase_binding.value)
+            yield state.set_x(i_part_binding.variable.name, x_phrase_binding.value)
 
     else:
-        if x_phrase_binding is None:
-            yield from yield_from_fw_seq(state, x_phrase, i_part_binding.value)
-
-        elif x_phrase_binding.value == i_part_binding.value:
-            yield state
+        yield from yield_from_fw_seq(state, x_phrase_binding, i_part_binding.value)
 
 
 @Predication(vocabulary, names=["fw_seq"])
-def fw_seq2(state, x_phrase, i_part1, i_part2):
-    x_phrase_binding = state.get_binding(x_phrase)
-    i_part1_binding = state.get_binding(i_part1)
-    i_part2_binding = state.get_binding(i_part2)
-
+def fw_seq2(state, x_phrase_binding, i_part1_binding, i_part2_binding):
+    # Only succeed if part1 and part2 are set and are QuotedText instances to avoid
+    # having to split x into pieces somehow
     if isinstance(i_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([i_part1_binding.value.name, i_part2_binding.value.name]))
-        if x_phrase_binding is None:
-            yield from yield_from_fw_seq(state, x_phrase, combined_value)
+        yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
 
 
 @Predication(vocabulary, names=["fw_seq"])
-def fw_seq3(state, x_phrase, x_part1, i_part2):
-    x_phrase_binding = state.get_binding(x_phrase)
-    x_part1_binding = state.get_binding(x_part1)
-    i_part2_binding = state.get_binding(i_part2)
-
+def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
+    # Only succeed if part1 and part2 are set and are QuotedText instances to avoid
+    # having to split x into pieces somehow
     if isinstance(x_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([x_part1_binding.value.name, i_part2_binding.value.name]))
-        if x_phrase_binding is None:
-            yield from yield_from_fw_seq(state, x_phrase, combined_value)
+        yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
 ~~~
 
 You can see that the two new `fw_seq` implementations have logic to combine the `QuotedText` objects they are passed into a `QuotedText` object. It then returns the objects that this string represents using `yield_from_fw_seq()`. 
