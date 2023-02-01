@@ -74,7 +74,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                     nlg_data["Topic"] = pronoun_from_variable(tree_info, variable)
 
                 elif parsed_predication["Lemma"] == "quoted":
-                    nlg_data["Topic"] = predication.args[0].replace("\\\\>", "/")
+                    nlg_data["Topic"] = predication.args[0].replace("\\\\>root111", "/").replace("\\\\>", "/")
 
                 elif parsed_predication["Lemma"] == "fw_seq":
                     string_list = []

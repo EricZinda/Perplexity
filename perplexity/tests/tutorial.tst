@@ -372,6 +372,20 @@
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "b12b4de4-f6ec-4dee-811a-1a9f96003ea7"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "State reset using examples.Example23_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "6aeec7a0-0b66-488f-bfc7-f15bcf81c024"
+        },
+        {
+            "Command": "what is in \"\\>root111\"",
+            "Expected": "Folder(name=/documents, size=0)\nFolder(name=/Desktop, size=10000000)\n",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>work111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "87db9431-d91b-492f-844e-919dac3a392f"
         }
     ]
 }

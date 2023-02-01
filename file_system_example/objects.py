@@ -173,7 +173,7 @@ class FileSystemMock(FileSystem):
             # but only if they haven't been added yet so we don't
             # erase any properties that have been specifically set
             # on them
-            for new_path in [root_path] + list(pathlib.PurePath(root_path).parents):
+            for new_path in [root_path] + [str(x) for x in pathlib.PurePath(root_path).parents]:
                 if new_path not in self.items:
                     self.items[new_path] = Folder(new_path, file_system=self)
 
@@ -192,7 +192,10 @@ class FileSystemMock(FileSystem):
         is_file = isinstance(container, File)
         if self.exists(path, is_file=is_file):
             for item in self.items.items():
-                if str(pathlib.PurePath(item[0]).parent) == path:
+                item_path = str(pathlib.PurePath(item[0]).parent)
+                # item_path == item[0] when it is the root ("/")
+                # don't say the root is in itself
+                if item_path != item[0] and item_path == path:
                     yield item[1]
 
         else:
@@ -271,7 +274,7 @@ class FileSystemMock(FileSystem):
 
 class QuotedText(object):
     def __init__(self, name):
-        self.name = name.replace("\\\\>", "/")
+        self.name = name.replace("\\\\>root111", "/").replace("\\\\>", "/")
 
     def __repr__(self):
         return f"{self.name}"

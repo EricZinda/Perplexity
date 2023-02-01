@@ -152,13 +152,15 @@ class UserInterface(object):
 
             if test_char == "/":
                 new_phrase += "\\>"
+            elif test_char == stop_char:
+                break
             else:
                 new_phrase += test_char
 
-            if test_char == stop_char:
-                break
+        if new_phrase.strip() == "\\>":
+            new_phrase = "\\>root111"
 
-        return index, new_phrase
+        return index, new_phrase + stop_char
 
     def autocorrect(self, phrase):
         final_phrase = ""
