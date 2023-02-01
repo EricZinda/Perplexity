@@ -238,8 +238,15 @@ class FileSystemMock(FileSystem):
         else:
             raise MessageException("notFound", [delete_binding.variable.name])
 
-    def copy_item(self, from_binding, to_binding):
-        if self.exists(from_binding.value.name, is_file=isinstance(from_binding.value, File)):
+    def copy_item(self, from_directory_binding, from_binding, to_binding):
+        if from_directory_binding is not None:
+            # PurePath will only attach the from_directory_binding.value.name to the front if
+            # if from_binding.value is relative, otherwise it is ignored
+            from_path = str(pathlib.PurePath(from_directory_binding.value.name, from_binding.value.name))
+        else:
+            from_path = from_binding.value.name
+
+        if self.exists(from_path, is_file=isinstance(from_binding.value, File)):
             if to_binding is None:
                 to_binding = VariableBinding(None, self.current_directory())
 
@@ -253,7 +260,7 @@ class FileSystemMock(FileSystem):
                     # "to" includes a file name, use the entire name as the name of the target
                     new_item_path = to_binding.value.name
 
-                new_item = copy.deepcopy(self.item_from_path(from_binding.value.name, is_file=isinstance(from_binding.value, File)))
+                new_item = copy.deepcopy(self.item_from_path(from_path, is_file=isinstance(from_binding.value, File)))
                 new_item.name = new_item_path
                 self.items[str(new_item_path)] = new_item
 

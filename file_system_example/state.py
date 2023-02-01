@@ -138,13 +138,14 @@ class DeleteOperation(object):
 
 
 class CopyOperation(object):
-    def __init__(self, binding_from_copy, binding_to_copy):
+    def __init__(self, from_directory_binding, binding_from_copy, binding_to_copy):
+        self.from_directory_binding = from_directory_binding
         self.binding_from_copy = binding_from_copy
         self.binding_to_copy = binding_to_copy
 
     def apply_to(self, state):
         if isinstance(state, FileSystemState):
-            state.file_system.copy_item(self.binding_from_copy, self.binding_to_copy)
+            state.file_system.copy_item(self.from_directory_binding, self.binding_from_copy, self.binding_to_copy)
 
 
 class ChangeDirectoryOperation(object):

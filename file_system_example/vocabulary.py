@@ -58,10 +58,37 @@ def copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     if x_actor_binding.value.name == "Computer":
         # Only allow copying files and folders
         if isinstance(x_what_binding.value, (File, Folder)):
-            yield state.apply_operations([CopyOperation(x_what_binding, None)])
+            yield state.apply_operations([CopyOperation(None, x_what_binding, None)])
 
         else:
             report_error(["cantDo", "copy", x_what_binding.variable.name])
+
+    else:
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+
+# "copy" where the user specifies where to copy "from". Assume "to" is current directory since it isn't specified
+# This is really only different from the locative "_in_p_loc(e15,x8,x16), _copy_v_1(e2,x3,x8)" version if:
+# a) The from directory doesn't exist
+# b) The thing to copy has a relative path because our "current directory" for the file will be different
+@Predication(vocabulary, names=["_copy_v_1"], handles=[("StativePreposition", EventOption.required)])
+def stative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    x_copy_from_location_binding = e_introduced_binding.value["StativePreposition"]["Value"]["EndLocation"]
+
+    # We only know how to copy things from the
+    # computer's perspective
+    if x_actor_binding.value.name == "Computer":
+        # We only know how to copy something "from" a folder
+        if isinstance(x_copy_from_location_binding.value, Folder):
+            # Only allow copying files and folders
+            if isinstance(x_what_binding.value, (File, Folder)):
+                yield state.apply_operations([CopyOperation(x_copy_from_location_binding, x_what_binding, None)])
+
+            else:
+                report_error(["cantDo", "copy", x_what_binding.variable.name])
+
+        else:
+            report_error(["cantDo", "copy from", x_what_binding.variable.name])
 
     else:
         report_error(["dontKnowActor", x_actor_binding.variable.name])
@@ -277,6 +304,15 @@ def place_n(state, x_binding):
         # contain things
         if isinstance(value, Container):
             yield state.set_x(x_binding.variable.name, value)
+
+
+@Predication(vocabulary, names=["_in_p_state"])
+def in_p_state(state, e_introduced_binding, e_target_binding, x_location_binding):
+    preposition_info = {
+        "EndLocation": x_location_binding
+    }
+
+    yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
 
 
 @Predication(vocabulary, names=["_in_p_loc"])

@@ -316,6 +316,7 @@ def get_holes_and_floaters(predications, global_qeqs):
             if len(holes_dict) != len(sorted_labels):
                 # This happens sometimes even though it isn't supposed to be valid
                 # so we shouldn't assert, but it also isn't valid
+                print("GRAMMAR ERROR: Holes = {} and Floaters = {}".format(len(holes_dict), len(sorted_labels)))
                 return None, None
 
             # Just return the FloaterNode tree, not the actual predications

@@ -386,6 +386,27 @@
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>work111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "87db9431-d91b-492f-844e-919dac3a392f"
+        },
+        {
+            "Command": "/new examples.Example24_reset",
+            "Expected": "State reset using examples.Example24_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "292119f9-27f4-4bea-9f64-46ec589f07b5"
+        },
+        {
+            "Command": "copy \"\\>temp\\>59.txt\" in \"\\>documents\"",
+            "Expected": "Done!",
+            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(\\\\>temp\\\\>59.txt,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
+            "Enabled": true,
+            "ID": "bedac8b5-c170-423b-82bf-1e1c0fe5c199"
+        },
+        {
+            "Command": "\"59.txt\" is in this folder",
+            "Expected": "Yes, that is true.",
+            "Tree": "_this_q_dem(x10,_folder_n_of(x10,i15),proper_q(x3,[quoted(59.txt,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
+            "Enabled": true,
+            "ID": "b29a3cab-f351-4021-b5a0-0791beca3007"
         }
     ]
 }

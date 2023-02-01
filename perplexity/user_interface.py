@@ -9,7 +9,7 @@ from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import find_predication, tree_from_assignments
+from perplexity.tree import find_predication, tree_from_assignments, find_predications
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
@@ -253,22 +253,22 @@ class UserInterface(object):
             tree_generator = mrs_record["Trees"]
 
         tree_index = 0
-        for tree in tree_generator:
+        for tree_info in tree_generator:
             if all or chosen_tree == tree_index:
                 extra = "CHOSEN " if chosen_tree == tree_index else ""
                 print(f"\n-- {extra}Parse #{parse_number}, {extra}Tree #{tree_index}: \n")
-                draw_tree = create_draw_tree(mrs_record["Mrs"], tree["Tree"])
+                draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
-                print(f"\nText Tree: {tree['Tree']}")
-                if len(tree['Solutions']) > 0:
-                    for solution in tree['Solutions']:
+                print(f"\nText Tree: {tree_info['Tree']}")
+                if len(tree_info['Solutions']) > 0:
+                    for solution in tree_info['Solutions']:
                         print(f"Solution: {str(solution)}")
 
                 else:
-                    print(f"Error: {tree['Error']}")
+                    print(f"Error: {tree_info['Error']}")
 
-                print(f"Response:\n{tree['ResponseMessage']}")
+                print(f"Response:\n{tree_info['ResponseMessage']}")
 
             tree_index += 1
 
@@ -473,6 +473,41 @@ def command_help(ui, arg):
     return True
 
 
+def command_debug_tree(ui, arg):
+    if ui.interaction_record is not None:
+        for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
+            mrs_record = ui.interaction_record["Mrss"][mrs_index]
+
+            if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
+                # The trees aren't generated if we don't know terms for performance
+                # reasons (since we won't be evaluating anything)
+                tree_generator = [{"Tree": tree,
+                                   "Solutions": [],
+                                   "Error": None,
+                                   "ResponseMessage": None} for tree in ui.trees_from_mrs(mrs_record["Mrs"])]
+            else:
+                tree_generator = mrs_record["Trees"]
+
+            for tree_info in tree_generator:
+                print(f"QUOTED: {str(find_predications(tree_info['Tree'], 'quoted'))}")
+
+    return True
+
+
+def command_debug_mrs(ui, arg):
+    if ui.interaction_record is not None:
+        for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
+            found =[]
+            mrs_record = ui.interaction_record["Mrss"][mrs_index]
+            for predication in mrs_record["Mrs"].predications:
+                if predication.predicate == "quoted" or predication.predicate == "fw_seq":
+                    found.append(predication)
+
+            print(found)
+
+    return True
+
+
 logger = logging.getLogger('UserInterface')
 pipeline_logger = logging.getLogger('Pipeline')
 command_data = {
@@ -490,6 +525,12 @@ command_data = {
     "show": {"Function": command_show, "Category": "Parsing",
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
              "Example": "/show or /show all"},
+    "debugtree": {"Function": command_debug_tree, "Category": "Parsing",
+                  "Description": "Shows tracing information about the tree",
+                  "Example": "/debugtree"},
+    "debugmrs": {"Function": command_debug_mrs, "Category": "Parsing",
+                  "Description": "Shows tracing information about the mrs",
+                  "Example": "/debugmrs"},
     "recordtest": {"Function": command_record_test, "Category": "Testing",
                    "Description": "Starts recording a test. Finish with /createtest or /appendtest", "Example": "/record"},
     "createtest": {"Function": command_create_test, "Category": "Testing",

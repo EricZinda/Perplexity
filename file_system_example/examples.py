@@ -490,7 +490,8 @@ def Example22():
 
 
 def Example23_reset():
-    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
+    return FileSystemState(FileSystemMock([
+                                           (True, "/documents/file1.txt", {"size": 1000}),
                                            (False, "/Desktop", {"size": 10000000}),
                                            (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
                                            (True, "/Desktop/blue", {"size": 1000})],
@@ -505,11 +506,28 @@ def Example23():
         print()
 
 
+def Example24_reset():
+    return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
+                                           (True, "/documents/file1.txt", {"size": 1000}),
+                                           (False, "/Desktop", {"size": 10000000}),
+                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
+                                           (True, "/Desktop/blue", {"size": 1000})],
+                                          "/Desktop"))
+
+
+def Example24():
+    user_interface = UserInterface(Example23_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
-    ShowLogging("Execution")
-    ShowLogging("Generation")
-    ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -542,4 +560,4 @@ if __name__ == '__main__':
     # Example20()
     # Example21()
     # Example22()
-    Example23()
+    Example24()
