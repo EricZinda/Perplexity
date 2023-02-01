@@ -1,5 +1,8 @@
 Remaining work to be shown in the tutorial:
 
+- "/" doesn't work
+- "/foo" in "/bar" doesn't either
+- "\foo" does
 - copy x to y
   - needs copy with a scopal arg
   - also copy x in y (the same scenario)

@@ -73,6 +73,10 @@ class UserInterface(object):
         if command_result is not None:
             return
 
+        # Do any corrections or fixup on the text
+        self.user_input = self.autocorrect(self.user_input)
+        self.interaction_record["UserInput"] = self.user_input
+
         # Loop through each MRS and each tree that can be
         # generated from it...
         for mrs in self.mrss_from_phrase(self.user_input):
@@ -137,6 +141,37 @@ class UserInterface(object):
 
         # If we got here, nothing worked: print out the best failure
         print(self.interaction_record["ChosenResponse"])
+
+    # WORKAROUND: ERG doesn't properly quote all strings with "/" so convert to "\"
+    def convert_slashes_until(self, stop_char, start_index, phrase):
+        new_phrase = ""
+        index = start_index
+        while index < len(phrase):
+            test_char = phrase[index]
+            index += 1
+
+            if test_char == "/":
+                new_phrase += "\\>"
+            else:
+                new_phrase += test_char
+
+            if test_char == stop_char:
+                break
+
+        return index, new_phrase
+
+    def autocorrect(self, phrase):
+        final_phrase = ""
+        index = 0
+        while index < len(phrase):
+            final_phrase += phrase[index]
+            if phrase[index] in ["'", "\""]:
+                index, new_phrase = self.convert_slashes_until(phrase[index], index + 1, phrase)
+                final_phrase += new_phrase
+            else:
+                index += 1
+
+        return final_phrase
 
     def evaluate_best_response(self):
         current_mrs_index = len(self.interaction_record["Mrss"]) - 1
