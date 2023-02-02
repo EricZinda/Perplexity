@@ -334,6 +334,29 @@ def find_predications(term, predication_name):
     walk_tree_predications_until(term, match_predication_name)
     return found_predications
 
+
+def find_predications_with_args(term, predication_name, arg_filter):
+    # This function gets called for every predication
+    # in the tree. It is a private function since it is
+    # only used here
+    def match_predication_name(predication):
+        if predication_name == "_" or predication.name.find(predication_name) != -1:
+            if len(arg_filter) == len(predication.arg_types):
+                for index in range(0, len(arg_filter)):
+                    if arg_filter[index] != "_" and arg_filter[index] != predication.arg_types[index]:
+                        return
+
+                found_predications.append(predication)
+
+    found_predications = []
+
+    # Pass our private function to WalkTreeUntil as
+    # a way to filter through the tree to find
+    # predication_name
+    walk_tree_predications_until(term, match_predication_name)
+    return found_predications
+
+
 # Return the predication at a particular index
 def predication_from_index(tree_info, index):
     def stop_at_index(predication):

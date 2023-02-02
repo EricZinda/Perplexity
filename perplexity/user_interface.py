@@ -9,7 +9,7 @@ from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import find_predication, tree_from_assignments, find_predications
+from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_args
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
@@ -33,6 +33,7 @@ class UserInterface(object):
         self.records = None
         self.test_manager = TestManager()
         self.user_input = None
+        self.last_system_command = None
 
     # response_function gets passed three arguments:
     #   response_function(mrs, solutions, error)
@@ -48,6 +49,9 @@ class UserInterface(object):
             self.user_input = force_input
 
         command_result = self.handle_command(self.user_input)
+        if command_result is not None:
+            self.test_manager.record_session_data("last_system_command", self.user_input)
+
         if command_result is True:
             return
 
@@ -59,6 +63,7 @@ class UserInterface(object):
                                    "ChosenError": None}
 
         if command_result is not None:
+            self.test_manager.record_session_data("last_system_command", self.user_input)
             print(command_result)
             self.interaction_record["ChosenResponse"] = command_result
 
@@ -377,6 +382,19 @@ def command_show(ui, arg):
     return True
 
 
+def command_repeat_system_command(ui, arg):
+    if "last_system_command" in ui.test_manager.session_data:
+        repeat_phrase = ui.test_manager.session_data["last_system_command"]
+        ui.user_input = repeat_phrase
+        print(f"Repeat: {repeat_phrase}")
+        return ui.handle_command(repeat_phrase)
+
+    else:
+        print("No last command to repeat")
+
+    return None
+
+
 def command_repeat(ui, arg):
     repeat_phrase = ui.test_manager.session_data["last_phrase"]
     print(f"Repeat: {repeat_phrase}")
@@ -474,6 +492,23 @@ def command_help(ui, arg):
 
 
 def command_debug_tree(ui, arg):
+    predication_name = None
+    if arg != "":
+        parts = arg.split("(")
+        predication_name = parts[0]
+        arg_parts = parts[1].split(",")
+        arg_parts[-1] = arg_parts[-1].strip(")")
+
+        predication_args = []
+        for part in arg_parts:
+            clean_arg = part.strip()
+            if clean_arg in ["_", "None", "none", ""]:
+                predication_args.append("_")
+            else:
+                predication_args.append(clean_arg)
+
+        print(f"searching for trees containing predication: {predication_name}({','.join(predication_args)})\n")
+
     if ui.interaction_record is not None:
         for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
             mrs_record = ui.interaction_record["Mrss"][mrs_index]
@@ -489,7 +524,17 @@ def command_debug_tree(ui, arg):
                 tree_generator = mrs_record["Trees"]
 
             for tree_info in tree_generator:
-                print(f"QUOTED: {str(find_predications(tree_info['Tree'], 'quoted'))}")
+                if predication_name is not None:
+                    if len(find_predications_with_args(tree_info["Tree"], predication_name, predication_args)):
+                        print(f"Found in parse #{mrs_index}:\n")
+                        draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
+                        renderer = TreeRenderer()
+                        renderer.print_tree(draw_tree)
+                        print(f"\nText Tree: {tree_info['Tree']}\n")
+
+                    break
+                else:
+                    print(f"QUOTED: {str(find_predications(tree_info['Tree'], 'quoted'))}")
 
     return True
 
@@ -516,6 +561,9 @@ command_data = {
     "r": {"Function": command_repeat, "Category": "General",
             "Description": "Repeat the last phrase",
             "Example": "/r"},
+    "s": {"Function": command_repeat_system_command, "Category": "General",
+            "Description": "Repeat the last system command (i.e. the /command)",
+            "Example": "/s"},
     "new": {"Function": command_new, "Category": "General",
             "Description": "Calls the passed function to get the new state to use",
             "Example": "/new examples.Example18_reset"},
@@ -526,8 +574,8 @@ command_data = {
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
              "Example": "/show or /show all"},
     "debugtree": {"Function": command_debug_tree, "Category": "Parsing",
-                  "Description": "Shows tracing information about the tree",
-                  "Example": "/debugtree"},
+                  "Description": "Shows tracing information about the tree. give a predication query after to only show trees that match it. Use '_' to mean 'anything' for an argument or the predication name",
+                  "Example": "/debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)"},
     "debugmrs": {"Function": command_debug_mrs, "Category": "Parsing",
                   "Description": "Shows tracing information about the mrs",
                   "Example": "/debugmrs"},

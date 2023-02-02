@@ -265,3 +265,39 @@ Now we have two interpretations of "in" working, let's move on to the third
 ### `_copy_v_1(e2,x3,x8,_in_p_loc(e15,x8,x16))`: copy 'foo' such that it ends up in '/documents'
 
 This version of `_copy_v_1` takes a scopal argument which contains the "in" preposition. As discussed in the section on scopal arguments, scopal arguments occur in places where the predication needs to do something special with the branch of the tree it is passed.  In this case, `_copy_v_1` is being asked to "make `_in_p_loc(e15,x8,x16)` be true", meaning: change the world such that `_in_p_loc(e15,x8,x16)`. Since `x8` is "foo" and `x16` is "/documents", `_copy_v_1` should make "foo" be "in" "/documents".
+
+
+Some examples:
+~~~
+put the vase on the table
+
+            ┌────── _vase_n_1(x8)
+_the_q(x8,RSTR,BODY)             ┌────── _table_n_1(x16)
+                 └─ _the_q(x16,RSTR,BODY)               ┌────── pron(x3)
+                                      └─ pronoun_q(x3,RSTR,BODY)                    ┌─ _on_p_loc(e15,x8,x16)
+                                                             └─ _put_v_1(e2,x3,x8,ARG3)
+~~~
+
+Does `_put_v_1(e,x,x,h)` always take a preposition as its scopal arg?
+
+~~~
+paint the tree green
+
+            ┌────── _tree_n_of(x8,i14)
+_the_q(x8,RSTR,BODY)               ┌────── pron(x3)
+                 └─ pronoun_q(x3,RSTR,BODY)                      ┌─ _green_a_2(e16,x8)
+                                        └─ _paint_v_1(e2,x3,x8,ARG3)
+~~~
+
+Will `_paint_v_1(e,x,x,h)` always take an adjective?
+
+~~~
+make me be quieter
+
+                ┌────── pron(x10)
+pronoun_q(x10,RSTR,BODY)               ┌────── pron(x3)                     ┌── more_comp(e16,e15,u17)
+                     └─ pronoun_q(x3,RSTR,BODY)                      ┌─ and(0,1)
+                                            └─ _make_v_cause(e2,x3,ARG2)      └ _quiet_a_1(e15,x10)
+~~~
+
+Ditto?
