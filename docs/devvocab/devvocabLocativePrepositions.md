@@ -350,7 +350,7 @@ We need a mechanism that converts scopal predications into a generic form so all
 
 To do this, we can't just `call()` the scopal argument `_in_p_loc(e17,x8,x18)` (as we do for [quantifiers](../devhowto/devhowtoScopalArguments)) -- it will fail. "foo" is not yet *in* "/documents". Even if it did work, it wouldn't be in a general form. 
 
-Let's call the form we want: *"normalization"*. "Normalizing" a predication would put it into a more general or canonical form that would reduce whole classes of similiar predications (like locative prepositions) into a single form the code can handle once. Here are a couple of examples to clarify:
+Let's call the form we want: *"normalization"*. "Normalizing" a predication puts it into a more general or canonical form that reduces whole classes of similar predications (like locative prepositions) into a single form the code can handle once. Here are a couple of examples to clarify:
 
 - Normalizing a locative preposition would put it in into a form that contains the thing being located and the place it is being located to. Note that this is *not* necessarily just the two arguments of a locative preposition, as is. `_above_p(e17,x8,x18)`, for example, would need to record the place "above" `x18` instead of `x18` itself.
 - Normalizing an adjective like `_green_a_2(e16,x8)` might be as simple as recording the adjective and the thing it is applied to, but it won't always come from predications that are of the form `adjective(e,x)`. "paint the tree lit" (for a Christmas tree, perhaps) generates the "adjective" `_light_v_cause(e16,i17,x8)` which is a form of verb being *used* as an adjective.
