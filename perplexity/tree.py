@@ -288,6 +288,19 @@ def find_predications_using_variable(term, variable):
     return predication_list
 
 
+def find_predications_using_variable_ARG1(term, variable):
+    def match_predication_using_variable(predication):
+        if len(predication.arg_types) > 1:
+            if predication.arg_types[1] not in ["c", "h"]:
+                if predication.args[1] == variable:
+                    predication_list.append(predication)
+
+    predication_list = []
+    walk_tree_predications_until(term, match_predication_using_variable)
+
+    return predication_list
+
+
 def find_predication_from_introduced(term, introduced_variable):
     def match_introduced_variable(predication):
         if predication.introduced_variable() == introduced_variable:
@@ -335,7 +348,7 @@ def find_predications(term, predication_name):
     return found_predications
 
 
-def find_predications_with_args(term, predication_name, arg_filter):
+def find_predications_with_arg_types(term, predication_name, arg_filter):
     # This function gets called for every predication
     # in the tree. It is a private function since it is
     # only used here

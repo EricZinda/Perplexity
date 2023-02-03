@@ -9,7 +9,7 @@ from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_args
+from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_arg_types
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
@@ -318,7 +318,8 @@ class UserInterface(object):
         f = open(os.devnull, 'w')
 
         # Create an instance of the ACE parser and ask to give <= 100 MRS documents
-        with ace.ACEParser(self.erg_file(), cmdargs=['-n', '1000'], stderr=f) as parser:
+        with ace.ACEParser(self.erg_file(), cmdargs=[], stderr=f) as parser:
+        # with ace.ACEParser(self.erg_file(), cmdargs=['-n', '1000'], stderr=f) as parser:
             ace_response = parser.interact(phrase)
             pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
 
@@ -525,7 +526,7 @@ def command_debug_tree(ui, arg):
 
             for tree_info in tree_generator:
                 if predication_name is not None:
-                    if len(find_predications_with_args(tree_info["Tree"], predication_name, predication_args)):
+                    if len(find_predications_with_arg_types(tree_info["Tree"], predication_name, predication_args)):
                         print(f"Found in parse #{mrs_index}:\n")
                         draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
                         renderer = TreeRenderer()

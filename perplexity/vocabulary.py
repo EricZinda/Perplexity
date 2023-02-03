@@ -61,7 +61,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
         segments = function.__name__.split("_")
         index_types = []
         for index_type in segments:
-            if index_type in ["prop", "ques", "comm"]:
+            if index_type in ["prop", "ques", "comm", "norm"]:
                 index_types.append(index_type)
 
         return index_types
@@ -106,7 +106,7 @@ class Vocabulary(object):
 
     def add_predication(self, module, function, delphin_names, arguments, phrase_types, first=False):
         if len(phrase_types) == 0:
-            phrase_types = ["comm", "ques", "prop"]
+            phrase_types = ["comm", "ques", "prop", "norm"]
 
         for delphin_name in delphin_names:
             name_parts = parse_predication_name(delphin_name)
@@ -126,11 +126,6 @@ class Vocabulary(object):
                     type_list.append((module, function))
 
     def predications(self, name, arg_types, predication_type):
-        # if name == "_in_p_loc":
-        #     print(f"{name} {str(arg_types)}")
-        # if arg_types == ["e", "e", "x"]:
-        #     print("here")
-
         name_key = self.name_key(name, arg_types, predication_type)
         if name_key in self.all:
             for functionName in self.all[name_key]:

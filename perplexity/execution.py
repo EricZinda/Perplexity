@@ -37,7 +37,7 @@ class ExecutionContext(object):
             self._phrase_type = sentence_force(tree_info["Variables"])
             yield from self.call(state.set_x("tree", tree_info), tree_info["Tree"])
 
-    def call(self, state, term):
+    def call(self, state, term, normalize=False):
         # See if the term is actually a list
         # If so, we have a conjunction
         if isinstance(term, list):
@@ -53,10 +53,10 @@ class ExecutionContext(object):
                 # treated as a conjunction.
                 # Call each one and pass the state it returns
                 # to the next one, recursively
-                for nextState in self.call(state, term[0]):
+                for nextState in self.call(state, term[0], normalize):
                     # Note the [1:] syntax which means "return a list
                     # of everything but the first item"
-                    yield from self.call(nextState, term[1:])
+                    yield from self.call(nextState, term[1:], normalize)
 
         else:
             # Keep track of how deep in the tree this
@@ -68,7 +68,7 @@ class ExecutionContext(object):
             # so we assume it is just a term like
             # ["_large_a_1", "e1", "x1"]
             # evaluate it using CallPredication
-            yield from self._call_predication(state, term)
+            yield from self._call_predication(state, term, normalize)
 
             # Restore it since we are recursing
             self._predication_index = last_predication_index
@@ -79,7 +79,7 @@ class ExecutionContext(object):
     # ["folder_n_of", "x1"]
     #   The first item is the predication name
     #   The rest of the items are the arguments
-    def _call_predication(self, state, predication):
+    def _call_predication(self, state, predication, normalize=False):
         logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
 
         bindings = []
@@ -101,7 +101,7 @@ class ExecutionContext(object):
         # where item[0] is the module and item[1] is the function
         for module_function in self.vocabulary.predications(predication.name,
                                                             predication.arg_types,
-                                                            self._phrase_type):
+                                                            self._phrase_type if normalize is False else "norm"):
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
             module = sys.modules[module_function[0]]

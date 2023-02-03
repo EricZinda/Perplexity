@@ -23,7 +23,18 @@ Remaining work to be shown in the tutorial:
               - paint the tree green: _paint_v_1(e2,x3,x8,_green_a_2(e16,x8))
                 - "paint" means "change it to" so it lets its arguments just do that
               - make me be quieter: _make_v_cause(e2,x3,(more_comp(e16,e15,u17), _quiet_a_1(e15,x10)))
-              - 
+                - Make is a special case
+              - It would be *ideal* if this was just the same as abduction.  It isn't quite, since the verb (paint, copy) changes what happens:
+                - paint the flower in the corner
+                - copy the file in the folder
+                - both use a scopal for _in_p_loc(e15,x8,x16) but what "in" does very different
+                - effectively, "paint x in the corner" and "paint x blue" are very different operations meaning different paints
+                  - so maybe the best approach is to build a different version of paint for each class of thing it can handle and treat it like a new argument
+                  - reflect should copy data about itself into its event in a form that can be easily parsed
+                  - How to find the right target in the scopal arg?
+                    - Find all predications that use it as their ARG1?
+                  - And then let "quoting" create a representation that puts them into "classes"
+                    - "quoting" has to be special case code per predication because conversion into a canoncal form is per predication and not directly determinable from arguments. For example "copy the file above folderx" has above(folderx) but the copying should happen in the folder above it
   - also copy x in y (the same scenario)
 
 - Support for prepositions
