@@ -274,7 +274,7 @@ Now we have two interpretations of "in" working, let's move on to the third.
 
 ### 3. `_copy_v_1(e2,x3,x8,_in_p_loc(e15,x8,x16))`: copy 'foo' such that it ends up in '/documents'
 
-This version of `_copy_v_1` takes a scopal argument which contains the "in" preposition. As discussed in the [topic on scopal arguments](../devhowto/devhowtoScopalArguments), scopal arguments occur in places where the predication needs to do something special with the branch of the tree it is passed.  In this case, `_copy_v_1` is being asked to "make `_in_p_loc(e15,x8,x16)` be true", meaning: change the world such that `_in_p_loc(e15,x8,x16)`. Since `x8` is "foo" and `x16` is "/documents", `_copy_v_1` should make "foo" be "in" "/documents".
+This version of `_copy_v_1` takes a scopal argument which contains the "in" preposition. As discussed in the [topic on scopal arguments](../devhowto/devhowtoScopalArguments), scopal arguments occur in places where the predication needs to do something special with the branch of the tree it is passed.  In this case, `_copy_v_1` is being asked to "make `_in_p_loc(e15,x8,x16)` be true", meaning: change the world such that `_in_p_loc(e15,x8,x16)`. Since `x8` is "foo" and `x16` is "/documents", `_copy_v_1` should make "foo" be "in /documents".
 
 Here are two other examples of verbs taking scopal arguments to illustrate:
 ~~~
@@ -294,7 +294,9 @@ _the_q(x8,RSTR,BODY)               ┌────── pron(x3)
                                         └─ _paint_v_1(e2,x3,x8,ARG3)
 ~~~
 
-In all these cases, the verb is being asked to do its thing using the scopal argument in the "way that makes sense". Furthermore, they need to use a scopal argument because they all share the property that the phrase is taking something in the world, and changing it to be something it is not currently. This can all seem wonderfully abstract if you try to imagine how to write code which "paints x in a way that makes any possible thing true", but the approach we're going to take here is much more concrete: Break down each scenario we are focused on for a given verb and implement that.
+In all these cases, the verb using a scopal argument because they all share the property that the phrase is taking something in the world and changing it to be something different. This type of scenario needs a scopal argument because a normal predication would attempt to find a "foo" that *is* in "/documents" ... and that is not true yet. The scopal argument doesn't get evaluated normally (as we'll see below), so it avoids this problem.
+
+So, verbs with scopal arguments have to do what that do in such a way that their scopal argument becomes true. This can all seem wonderfully abstract if you try to imagine how to write code which "paints x in a way that makes any possible thing true", but the approach we're going to take here is much more concrete: Break down each scenario we are focused on for a given verb and implement that.
 
 For example, for "copy 'foo' in '/documents'", the scopal argument is a locative preposition:
 
@@ -311,18 +313,23 @@ proper_q(x8,RSTR,BODY)                           ┌── quoted(/documents,i23
                                                                  └─ _copy_v_1(e2,x3,x8,ARG3)
 ~~~
 
-So, we can implement a version of `_copy_v_1` that knows how to deal with locative prepositions. If we do it carefully, it will work with all kind of prepositions. Note that the follow examples all use the same structure with different prepositions:
+So, we can implement a version of `_copy_v_1` that knows how to deal with locative prepositions. If we do it carefully, it will work with all kind of prepositions. 
+
+Here's how: Note that the following examples all have the same structure with different prepositions:
 
 ~~~
 > copy "foo" into "/documents"
+
                           ┌── quoted(foo,i14)
               ┌────── and(0,1)
               │             └ fw_seq(x8,i14)
-proper_q(x8,RSTR,BODY)
-                   │               ┌────── _/documents/nns_u_unknown(x18)
-                   └─ udef_q(x18,RSTR,BODY)               ┌────── pron(x3)
-                                        └─ pronoun_q(x3,RSTR,BODY)                     ┌─ _into_p(e17,x8,x18)
-                                                               └─ _copy_v_1(e2,x3,x8,ARG3)
+proper_q(x8,RSTR,BODY)                           ┌── quoted(/documents,i23)
+                   │                 ┌────── and(0,1)
+                   │                 │             └ fw_seq(x18,i23)
+                   └─ proper_q(x18,RSTR,BODY)
+                                          │                 ┌────── pron(x3)
+                                          └─ pronoun_q(x3,RSTR,BODY)                     ┌─ _into_p(e17,x8,x18)
+                                                                 └─ _copy_v_1(e2,x3,x8,ARG3)
 
 
 > copy "foo" above "/documents"
@@ -330,7 +337,7 @@ proper_q(x8,RSTR,BODY)
                           ┌── quoted(foo,i14)
               ┌────── and(0,1)
               │             └ fw_seq(x8,i14)
-proper_q(x8,RSTR,BODY)                           ┌── quoted(\\>documents,i23)
+proper_q(x8,RSTR,BODY)                           ┌── quoted(/documents,i23)
                    │                 ┌────── and(0,1)
                    │                 │             └ fw_seq(x18,i23)
                    └─ proper_q(x18,RSTR,BODY)
@@ -339,12 +346,16 @@ proper_q(x8,RSTR,BODY)                           ┌── quoted(\\>documents,i
                                                                  └─ _copy_v_1(e2,x3,x8,ARG3)
 ~~~
 
-First, though, we have a challenge: In the code for `_copy_v_1`, if we just `call()` the scopal argument `_in_p_loc(e17,x8,x18)` (as we do for [quantifiers](../devhowto/devhowtoScopalArguments)) it will fail since "foo" is not yet *in* "/documents". So, we don't want to evaluate scopal argument. Instead, we just want to get it into a more general form that allows `_copy_v_1` to not have to special case every single preposition.  Let's call this "normalization". Normalizing a predication would put it into a more general or canonical form that would reduce whole classes of things into a single form we can reason about. Here are a couple of examples to clarify:
+We need a mechanism that converts scopal predications into a generic form so all of the examples above can be handled in the same way. This form should allow `_copy_v_1` to avoid special casing every single preposition.
+
+To do this, we can't just `call()` the scopal argument `_in_p_loc(e17,x8,x18)` (as we do for [quantifiers](../devhowto/devhowtoScopalArguments)) -- it will fail. "foo" is not yet *in* "/documents". Even if it did work, it wouldn't be in a general form. 
+
+Let's call the form we want: *"normalization"*. "Normalizing" a predication would put it into a more general or canonical form that would reduce whole classes of similiar predications (like locative prepositions) into a single form the code can handle once. Here are a couple of examples to clarify:
 
 - "Normalizing" a locative preposition would put it in into a form that contains the thing being located and the place it is being located to. Note that this is *not* necessarily just the two arguments of a locative preposition, as is. "_above_p(e17,x8,x18)", for example, would need to record the place "above" `x18` instead of `x18` directly.
-- "Normalizing" an adjective like `_green_a_2(e16,x8)` might be as simple as recording the adjective and the thing it is applied to, but it won't always come from predications that are of the form `adjective(e,x)`. "paint the tree lit" (for a Christmas tree, perhaps) generates the "adjective" `_light_v_cause(e16,i17,x8)` which is a form of verb being used as an adjective.
+- "Normalizing" an adjective like `_green_a_2(e16,x8)` might be as simple as recording the adjective and the thing it is applied to, but it won't always come from predications that are of the form `adjective(e,x)`. "paint the tree lit" (for a Christmas tree, perhaps) generates the "adjective" `_light_v_cause(e16,i17,x8)` which is a form of verb being *used* as an adjective.
 
-So, we'll need to implement a version of each predication that knows how to normalize itself into some general form. We'll ask it to put this normalized form into its introduced event so that a predication like `_copy_v_1` can inspect it and decide what to do. And, just like we use the `_comm` postfix on predications that implement commands (as opposed to questions), we'll invent a new postfix called `_norm` to indicate that this version of the predication should only be used when it is asked to normalize.  Like this:
+So, we'll need to implement another version of each predication that knows how to normalize itself. We'll ask it to put this normalized form into its own introduced event (since it is just information about itself) so that predications like `_copy_v_1` can inspect it and decide what to do. And, just like we use the `_comm` postfix on predications that implement commands (as opposed to questions), we'll invent a new postfix called `_norm` to indicate that this version of the predication should only be used when it is asked to normalize.  Like this:
 
 ~~~
 @Predication(vocabulary, names=["_in_p_loc"])
@@ -364,9 +375,9 @@ In this example we've implemented the normalized form of a locative preposition 
 }
 ~~~
 
-... which specifies that the "left side" of the locative preposition (i.e. the first, or left argument) and the place where that thing should end up.  Note that this normalized form allows the inspector to ignore what the preposition actually *is* and just deal with "the place the left side should end up", this allowing the copy code to be generalized.
+... which indicates the "left side" of the locative preposition (i.e. the first, or left argument) and the place where that thing should end up.  Note that this normalized form allows the inspector to ignore what the preposition actually *is* and just deal with "the place the left side should end up", thus allowing the copy code to be generalized.
 
-Next, we need a way for `copy_v_1` to normalize its scopal argument. We can add a `normalize` argument to `ExecutionContext._call_predication()` that simply asks for predications of type "norm" when it is set. That, along with allowing "norm" as an extension in the `Predication` decorator, is all that is needed to support that:
+Next, we need a way for `copy_v_1` to normalize its scopal argument. We can add a `normalize` argument to `ExecutionContext._call_predication()` that simply asks for predications of type "norm" when it is set. That, along with allowing "norm" as an extension in the `Predication` decorator, is all that is needed:
 
 ~~~
 class ExecutionContext(object):
@@ -384,7 +395,11 @@ class ExecutionContext(object):
     ...
 ~~~
 
-The scopal argument for `copy_v_1` could be a whole tree. For example, "copy "blue" in the folder under "/documents"" generates a more complicated scopal argument:
+The scopal argument for `copy_v_1` could be a whole tree. For example:
+
+> copy "blue" in the folder under "/documents"
+ 
+... generates a more complicated scopal argument:
 
 ~~~
                                                                     ┌── quoted(/documents,i29)
@@ -410,28 +425,34 @@ def scopal_events_modifying_individual(x_individual, h_scopal):
     return events
 ~~~
 
-And now we are finally ready to write the `_copy_v_1` verb itself! Be forewarned that there is a lot of "mechanism" in there to fish the right things out of places. We'll fix that next. But first, let's see the raw code and understand what it does:
+And now we are finally ready to write the `_copy_v_1` verb itself! Be forewarned that there is a lot of "mechanism" in there to fish the right things out of the right places. We'll fix that next. But first, let's see the raw code and understand what it does:
 
 ~~~
 @Predication(vocabulary, names=["_copy_v_1"])
 def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding, h_where):
+
     # We only know how to copy things from the
     # computer's perspective
     if x_actor_binding.value.name == "Computer":
+
         # Only allow copying files and folders
         if isinstance(x_what_binding.value, (File, Folder)):
+        
             # Determine which events in the scopal argument will hold
             # the LocativePreposition
             where_events = scopal_events_modifying_individual(x_what_binding.variable.name, h_where)
             found_locative_preposition = False
             if len(where_events) > 0:
+
                 # Normalize the tree, which could return multiple solutions like any call()
                 for solution in call(state, h_where, normalize=True):
+                    
                     # Get the value for each event and see if it holds a 
                     # LocativePreposition
                     for where_event in where_events:
                         e_where_binding = solution.get_binding(where_event)
                         if "LocativePreposition" in e_where_binding.value:
+                            
                             # found the information in the event, copy "in" that location
                             found_locative_preposition = True
                             
@@ -454,7 +475,7 @@ def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_
         report_error(["dontKnowActor", x_actor_binding.variable.name])
 ~~~
 
-Before we clean up the code, let's try out some scenarios to make sure it works.  Remember that we have two other interpretations of "copy "file1.txt" in "/documents" that are actually implemented already. In fact, those two interpretations are returned first by the ERG. So, any phrase that succeeds with one of those, won't exercise this new code.  The phrase "copy 'blue' in '/documents'" will only work using the latest `copy_v_1`, so we'll use that:
+Before we simplify the code, let's try out some scenarios to make sure it works.  Remember that we have two other interpretations of "copy 'file1.txt' in '/documents'" that are implemented already. In fact, those two interpretations are returned first by the ERG. So, any phrase that succeeds with one of those won't exercise this new code.  The phrase "copy 'blue' in '/documents'" will only work using the latest `copy_v_1`, so we'll use that:
 
 ~~~
 ? what is in '/documents'?
@@ -492,3 +513,5 @@ File(name=/documents/blue, size=1000)
 ~~~
 
 Just to make sure that the expected parse is, in fact, what worked, `/show` was executed so we could see the successful tree used and validate it.
+
+Because this code will be the same for all predications that deal with scopal arguments, we can simplify it by writing some helpers.
