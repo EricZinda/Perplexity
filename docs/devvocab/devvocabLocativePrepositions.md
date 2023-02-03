@@ -520,3 +520,154 @@ Just to make sure that the expected parse is, in fact, what worked, `/show` was 
 Because this code will be the same for all predications that deal with scopal arguments, we can simplify it by writing some helpers.
 
 ### Simplifying Scopal Argument Predications
+To reduce the amount of ceremony required to deal with a scopal argument, we'll add the notion of a "virtual argument" to our predications (this is not a DELPH-IN concept, it is just for this Python tutorial). This is a way of declaring what information is needed from an event and having the system pull it out and pass it as an argument instead of fishing it out directly.  It should save a lot of code when dealing with scopal arguments.
+
+In our example, this is the code we are trying to remove:
+
+~~~
+def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding, h_where):
+   
+   ...
+   
+            # Determine which events in the scopal argument will hold
+            # the LocativePreposition
+            where_events = scopal_events_modifying_individual(x_what_binding.variable.name, h_where)
+            found_locative_preposition = False
+            if len(where_events) > 0:
+                # Normalize the tree, which could return multiple solutions like any call()
+                for solution in call(state, h_where, normalize=True):
+                    # Get the value for each event and see if it holds a
+                    # LocativePreposition
+                    for where_event in where_events:
+                        e_where_binding = solution.get_binding(where_event)
+                        if "LocativePreposition" in e_where_binding.value:
+                            # found the information in the event, copy "in" that location
+                            found_locative_preposition = True
+
+                            ...
+                            
+            if not found_locative_preposition:
+                # Fail since we don't know what kind of scopal argument this is
+                report_error(["formNotUnderstood", "missing", "LocativePreposition"])
+~~~
+
+To declare that a predication should have a virtual argument added, we'll add a `virtual_arguments` parameter to the `Predication` decorator. This will tell the system what information should be found and added as the virtual argument (i.e. one which isn't normally on this ERG predication).  Below is the same `locative_copy_v_1_comm()` function, but now using this new approach. You can see that it adds a new virtual `scopal_argument` that is `EventOption.required`, and then passes everything the system will need to know to fish out the argument:
+
+- `scopal_index=3`: the *index* of the scopal argument -- i.e. the forth argument passed in (but this is 3 since it is a zero-based index) (`h_where`)
+- `event_for_arg_index=2`: the index of the argument that holds the instance we are trying to locate using the locative preposition (`x_what_binding`)
+- `event_value_pattern=locative_preposition_end_location`: holds a pattern that can be used to find the value required in an event
+
+This is all the information that the above code needed to find and retrieve the locative preposition value. Then, at runtime, if the information is available, it is passed in a new (aka virtual) argument at the end of the predication. This virtual argument is called `where_binding_generator` below. Note that this is a *generator* of values and not a single value since there might be more than one locative preposition found (e.g. "copy 'foo' in "\documents" and in "\root"):
+
+~~~
+@Predication(vocabulary, names=["_copy_v_1"], virtual_args=[(scopal_argument(scopal_index=3, event_for_arg_index=2, event_value_pattern=locative_preposition_end_location), EventOption.required)])
+def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding, h_where, where_binding_generator):
+    # We only know how to copy things from the
+    # computer's perspective
+    if x_actor_binding.value.name == "Computer":
+        # Only allow copying files and folders
+        if isinstance(x_what_binding.value, (File, Folder)):
+            # We are guaranteed at least one x_where_binding since
+            # this is a required virtual_arg
+            for x_where_binding in where_binding_generator:
+                if isinstance(x_where_binding.value, Folder):
+                    yield state.apply_operations([CopyOperation(None, x_what_binding, x_where_binding)])
+
+                else:
+                    report_error(["cantDo", "copy", x_where_binding.variable.name])
+
+        else:
+            report_error(["cantDo", "copy", x_what_binding.variable.name])
+
+    else:
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+~~~
+
+The last to describe is the `event_value_pattern` argument. It is set to a constant declared elsewhere in the file:
+
+~~~
+# Constants for creating virtual arguments from scopal arguments
+locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
+~~~
+
+The virtual argument code needs to be told what value to pull out from the event.  The pattern shown above is a JSON object that "looks" like the part of the event we want to find.  The last value is an actual Python type, and this describes the kind of thing we expect to find. So, the pattern `locative_preposition_end_location` above will cause the system to look for:
+
+~~~
+event["LocativePreposition"]["Value"]["EndLocation"]
+~~~
+
+... and make sure the value there is a `VariableBinding`.
+
+The code below is not important for understanding the semantics of the ERG or DELPH-IN, it is really just to enable the syntactic sugar above.  But here it is for the curious:
+~~~
+# Return a virtual argument for a predication from a scopal argument
+# This will be a generator since there could be more than one found
+def scopal_argument(scopal_index, event_for_arg_index, event_value_pattern):
+    # Return the actual argument created from the args passed to the predication
+    # at runtime and the information originally passed into the scopal_argument function
+    def scopal_argument_generator(args):
+        # This is the actual generator that loops through the scopal argument
+        def possibly_empty_generator():
+            # Get the arguments we'll need from the runtime arguments
+            x_what_binding = args[event_for_arg_index + 1]
+            h_scopal_arg = args[scopal_index + 1]
+            state = args[0]
+
+            # Determine which events in the scopal argument we need
+            scopal_events = scopal_events_modifying_individual(x_what_binding.variable.name, h_scopal_arg)
+            if len(scopal_events) > 0:
+                # Normalize the tree, which could return multiple solutions like any call()
+                for solution in call(state, h_scopal_arg, normalize=True):
+                    # Get the value for each event and see if it holds
+                    # the pattern being searched for
+                    for scopal_event in scopal_events:
+                        found_binding = solution.get_binding(scopal_event)
+                        if found_binding.value is not None:
+                            found_value = event_value_from_pattern(found_binding.value, event_value_pattern)
+                            if found_value is not None:
+                                yield found_value
+
+        # Make sure there is at least one value found
+        # Otherwise this predication won't be able to execute
+        # so an error should be reported
+        generator = at_least_one_generator(possibly_empty_generator())
+        if generator is None:
+            report_error(["formNotUnderstood", "missing",  next(iter(event_value_pattern))])
+
+        else:
+            return generator
+
+    return scopal_argument_generator
+
+
+# Use the pattern in pattern_dict to find a value in event_dict
+# The pattern is a nested set of dicts, where the last value is an
+# expected type (which could be object if any value is OK):
+#
+# pattern example: {"LocativePreposition": {"EndLocation": VariableBinding}}
+def event_value_from_pattern(event_dict, pattern_dict):
+    # Get the first key from pattern_dict
+    key = next(iter(pattern_dict))
+
+    if key in event_dict:
+        next_event_level = event_dict[key]
+        next_pattern_level = pattern_dict[key]
+        if isinstance(next_pattern_level, dict):
+            return event_value_from_pattern(next_event_level, next_pattern_level)
+        elif isinstance(next_event_level, next_pattern_level):
+            return next_event_level
+
+    return None
+
+
+# Determine which events modify this individual
+def scopal_events_modifying_individual(x_individual, h_scopal):
+    events = []
+    for predication in find_predications_using_variable_ARG1(h_scopal, x_individual):
+        if predication.arg_types[0] == "e":
+            events.append(predication.args[0])
+
+    return events
+~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

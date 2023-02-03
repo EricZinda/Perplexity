@@ -1,7 +1,6 @@
 import enum
 import inspect
 import logging
-
 from perplexity.execution import report_error
 from perplexity.utilities import parse_predication_name
 from perplexity.variable_binding import VariableBinding
@@ -12,7 +11,7 @@ class EventOption(enum.Enum):
     required = 2
 
 
-def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[]):
+def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[], virtual_args=[]):
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
     def ensure_handles_event(state, handles, event_binding):
@@ -66,12 +65,39 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
         return index_types
 
+    def create_virtual_arguments(args, virtual_args):
+        new_args = []
+        for virtual_arg in virtual_args:
+            create_function = virtual_arg[0]
+            new_arg = create_function(args)
+            if new_arg is not None:
+                new_args.append(new_arg)
+            else:
+                if virtual_args[1] == EventOption.required:
+                    # Couldn't create this arg, fail since it is required
+                    # create_function should report an error
+                    return None
+                else:
+                    new_args.append(None)
+
+        return tuple(new_args)
+
     # Gets called when the function is first created
     # function_to_decorate is the function definition
     def PredicationDecorator(function_to_decorate):
         # wrapper_function() actually wraps the predication function
         # and is the real function called at runtime
         def wrapper_function(*args, **kwargs):
+            # First create any virtual args. This could fail and report an error
+            if virtual_args is not None and len(virtual_args) > 0:
+                new_args = create_virtual_arguments(args, virtual_args)
+                if new_args is None:
+                    # One of the args could not be created
+                    # Assume it reported an error
+                    return
+
+                args = args + new_args
+
             # Make sure the event has a structure that will be properly
             # handled by the predication
             if ensure_handles_event(args[0], handles, args[1]):

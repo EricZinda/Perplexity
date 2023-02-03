@@ -1,12 +1,18 @@
+import enum
 import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
+from perplexity.utilities import at_least_one_generator
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context
 from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1
+from perplexity.virtual_arguments import scopal_argument
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 vocabulary = Vocabulary()
+
+# Constants for creating virtual arguments from scopal arguments
+locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
 
 
 @Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
@@ -315,10 +321,6 @@ def in_p_state(state, e_introduced_binding, e_target_binding, x_location_binding
     yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
 
 
-# def create_from_scopal_target(kind, x_individual_index, h_scopal_index):
-#     pass
-
-
 def default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding):
     preposition_info = {
         "LeftSide": x_actor_binding,
@@ -332,49 +334,21 @@ def in_p_loc_norm(state, e_introduced_binding, x_actor_binding, x_location_bindi
     yield from default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding)
 
 
-# Determine which events modify this individual
-def scopal_events_modifying_individual(x_individual, h_scopal):
-    events = []
-    for predication in find_predications_using_variable_ARG1(h_scopal, x_individual):
-        if predication.arg_types[0] == "e":
-            events.append(predication.args[0])
-
-    return events
-
-
-@Predication(vocabulary, names=["_copy_v_1"])
-def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding, h_where):
+@Predication(vocabulary, names=["_copy_v_1"], virtual_args=[(scopal_argument(scopal_index=3, event_for_arg_index=2, event_value_pattern=locative_preposition_end_location), EventOption.required)])
+def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding, h_where, where_binding_generator):
     # We only know how to copy things from the
     # computer's perspective
     if x_actor_binding.value.name == "Computer":
         # Only allow copying files and folders
         if isinstance(x_what_binding.value, (File, Folder)):
-            # Determine which events in the scopal argument will hold
-            # the LocativePreposition
-            where_events = scopal_events_modifying_individual(x_what_binding.variable.name, h_where)
-            found_locative_preposition = False
-            if len(where_events) > 0:
-                # Normalize the tree, which could return multiple solutions like any call()
-                for solution in call(state, h_where, normalize=True):
-                    # Get the value for each event and see if it holds a
-                    # LocativePreposition
-                    for where_event in where_events:
-                        e_where_binding = solution.get_binding(where_event)
-                        if "LocativePreposition" in e_where_binding.value:
-                            # found the information in the event, copy "in" that location
-                            found_locative_preposition = True
+            # We are guaranteed at least one x_where_binding since
+            # this is a required virtual_arg
+            for x_where_binding in where_binding_generator:
+                if isinstance(x_where_binding.value, Folder):
+                    yield state.apply_operations([CopyOperation(None, x_what_binding, x_where_binding)])
 
-                            # Only allow copying into folders
-                            to_location_binding = e_where_binding.value["LocativePreposition"]["Value"]["EndLocation"]
-                            if isinstance(to_location_binding.value, Folder):
-                                yield state.apply_operations([CopyOperation(None, x_what_binding, to_location_binding)])
-
-                            else:
-                                report_error(["cantDo", "copy", to_location_binding.variable.name])
-
-            if not found_locative_preposition:
-                # Fail since we don't know what kind of scopal argument this is
-                report_error(["formNotUnderstood", "missing", "LocativePreposition"])
+                else:
+                    report_error(["cantDo", "copy", x_where_binding.variable.name])
 
         else:
             report_error(["cantDo", "copy", x_what_binding.variable.name])

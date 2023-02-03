@@ -1,6 +1,5 @@
 import logging
 from collections import defaultdict
-
 from perplexity.execution import execution_context
 
 

@@ -409,7 +409,7 @@
             "ID": "b29a3cab-f351-4021-b5a0-0791beca3007"
         },
         {
-            "Command": "/reset",
+            "Command": "/new examples.Example23_reset",
             "Expected": "State reset using examples.Example23_reset().",
             "Tree": null,
             "Enabled": true,
