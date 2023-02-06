@@ -442,6 +442,20 @@
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "8cad0fce-3ce7-4d96-a384-606ef10fd11f"
+        },
+        {
+            "Command": "1 file is in \"\\>documents\"",
+            "Expected": "Yes, that is true.",
+            "Tree": "proper_q(x11,[quoted(\\\\>documents,i16), fw_seq(x11,i16)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "a118dfcc-89c8-4ce7-8402-98b705055796"
+        },
+        {
+            "Command": "2 files are in \"\\>documents\"",
+            "Expected": "2 file is not in '/documents'",
+            "Tree": "proper_q(x11,[quoted(\\\\>documents,i16), fw_seq(x11,i16)],udef_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "76e9fc93-1763-4f2f-8d1b-727480db4577"
         }
     ]
 }

@@ -2,10 +2,12 @@ import enum
 import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
+from perplexity.cardinals import split_cardinal_rstr
 from perplexity.utilities import at_least_one_generator
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context
-from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1
+from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1, \
+    predication_from_index
 from perplexity.virtual_arguments import scopal_argument
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
@@ -199,13 +201,33 @@ def pron(state, x_who_binding):
             report_error(["dontKnowPronoun", x_who_binding.variable.name])
 
 
-# Many quantifiers are simply markers and should use this as
-# the default behavior
+# Contract of aggregate adjective is fail immediately if the aggregate isn't true
+# otherwise iteratively return the answers
+@Predication(vocabulary)
+def card(state, c_count, e_introduced_binding, x_target_binding):
+    pass
+
+
+@Predication(vocabulary)
+def card_with_scope(state, c_count, e_introduced_binding, x_target_binding, h_scope):
+    c_count_value = int(c_count)
+    if c_count_value == 0:
+        yield state
+        return
+    else:
+        solutions = []
+        for solution in call(state, h_scope):
+            solutions.append(solution)
+            if len(solutions) == c_count_value:
+                for solution in solutions:
+                    yield solution
+                return
+
 
 # Many quantifiers are simply markers and should use this as
 # the default behavior
-@Predication(vocabulary, names=["pronoun_q"])
-def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
+@Predication(vocabulary, names=["base_q"])
+def default_quantifier_base(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
 
@@ -222,6 +244,27 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
         # Ignore whatever error the RSTR produced, this is a better one
         if not reverse:
             report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+
+
+# If we are rewriting the tree the error reporting will get messed up
+# We need to properly rewrite the tree and put the new form in state?
+# Option 1: rewrite the tree and execute: cardinal(..., default_q(x, base_rstr, body)
+# Make cardinals take solutions as an argument
+# rewrite to
+@Predication(vocabulary, names=["pronoun_q", "proper_q", "udef_q"])
+def default_quantifier(state, x_variable_binding, h_rstr, h_body, reverse=False):
+    cardinal_predication, cardinal_rstr, base_rstr = split_cardinal_rstr(h_rstr)
+    if cardinal_predication is None:
+        yield from default_quantifier_base(state, x_variable_binding, h_rstr, h_body, reverse)
+
+    else:
+        # Convert to the form: cardinal(..., quantifier_q(x, base_rstr, body)
+        this_predication_index = execution_context().current_predication_index()
+        this_predication = predication_from_index(state.get_binding("tree").value, this_predication_index)
+        base_quantifier = TreePredication(this_predication_index, "base_q", [this_predication.args[0], base_rstr, h_body], this_predication.arg_names)
+        cardinal_predication.append_arg("SCOPE", base_quantifier)
+
+        yield from default_quantifier_base(state, x_variable_binding, base_rstr, cardinal_rstr, reverse)
 
 
 def rstr_reorderable(rstr):
@@ -455,11 +498,6 @@ def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
     if isinstance(x_part1_binding.value, QuotedText) and isinstance(i_part2_binding.value, QuotedText):
         combined_value = QuotedText(" ".join([x_part1_binding.value.name, i_part2_binding.value.name]))
         yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
-
-
-@Predication(vocabulary)
-def proper_q(state, x_variable_binding, h_rstr, h_body):
-    yield from default_quantifier(state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary)

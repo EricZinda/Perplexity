@@ -25,10 +25,21 @@ class TreePredication(object):
                 return "h"
 
     def introduced_variable(self):
+        return self.args[self.introduced_variable_index()]
+
+    def introduced_variable_index(self):
         if self.arg_names[0] == "CARG":
-            return self.args[1]
+            return 1
         else:
-            return self.args[0]
+            return 0
+
+    def arg_indices_without_introduced(self):
+        skip_index = self.introduced_variable_index()
+        for index in range(0, len(self.args)):
+            if index == skip_index:
+                continue
+            else:
+                yield index
 
     def argument_types(self):
         return self.arg_types
@@ -344,6 +355,24 @@ def find_predications(term, predication_name):
     # a way to filter through the tree to find
     # predication_name
     walk_tree_predications_until(term, match_predication_name)
+    return found_predications
+
+
+# Return all of the predications named predication_name
+def find_predications_in_list(term, predication_name_list):
+    # This function gets called for every predication
+    # in the tree. It is a private function since it is
+    # only used here
+    def match_predication_names(predication):
+        if predication.name in predication_name_list:
+            found_predications.append(predication)
+
+    found_predications = []
+
+    # Pass our private function to WalkTreeUntil as
+    # a way to filter through the tree to find
+    # predication_name
+    walk_tree_predications_until(term, match_predication_names)
     return found_predications
 
 
