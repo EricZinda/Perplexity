@@ -31,6 +31,7 @@ class ExecutionContext(object):
 
     def solve_mrs_tree(self, state, tree_info):
         with self:
+            set_group_context(None)
             self._error = None
             self._error_predication_index = -1
             self._predication_index = 0
@@ -183,6 +184,49 @@ def reset_execution_context(old_context_token):
 
 def execution_context():
     return _execution_context.get()
+
+
+_group_context = contextvars.ContextVar('Group Context')
+
+
+def call_with_group(*args, **kwargs):
+    call_args = args[1:]
+    try:
+        call_generator = call(*call_args, **kwargs)
+        while True:
+            # print(f"Set {args[0]}")
+            try:
+                old_context_token = set_group_context(args[0])
+                next_state = next(call_generator)
+                reset_group_context(old_context_token)
+                old_context_token = None
+                # print(f"Reset {str(group_context())}")
+
+                yield next_state
+
+            except StopIteration:
+                return
+
+    finally:
+        if old_context_token is not None:
+            reset_group_context(old_context_token)
+            print(f"Reset {str(group_context())}")
+
+
+
+def set_group_context(new_context):
+    global _group_context
+    return _group_context.set(new_context)
+
+
+# Get the token from set_execution_context
+def reset_group_context(old_context_token):
+    global _group_context
+    return _group_context.reset(old_context_token)
+
+
+def group_context():
+    return _group_context.get()
 
 
 # Helpers used by predications just to make the code easier to read

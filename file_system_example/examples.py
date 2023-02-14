@@ -516,7 +516,26 @@ def Example24_reset():
 
 
 def Example24():
-    user_interface = UserInterface(Example23_reset, vocabulary, respond_to_mrs_tree, error_priority)
+    user_interface = UserInterface(Example24_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
+def Example25_reset():
+    return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
+                                           (True, "/documents/file1.txt", {"size": 1000}),
+                                           (False, "/Desktop", {"size": 10000000}),
+                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
+                                           (True, "/Desktop/blue", {"size": 1000}),
+                                           (True, "/temp/the yearly budget.txt", {"size": 10000000}),
+                                           (True, "/temp/blue", {"size": 1000})],
+                                          "/Desktop"))
+
+
+def Example25():
+    user_interface = UserInterface(Example25_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()

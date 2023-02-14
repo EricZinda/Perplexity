@@ -137,9 +137,83 @@ Theory:
                 - needs to get the whole set from the outer one so it can backtrack (or whatever)
                 - Or the outer one needs a way to manipulate the inner one to iteratively pass it items
             - (Doesn't make "men lifted a table" work properly) We have to find all combinations without the cardinals until they are both true
+            - Perhaps it is an optimization that, at the end, calls a special predication that can handle the group, but if it isn't a case like "men lifted a table", then you can fall back to the simpler implementation. Like this:
+                - if it is operating in collective mode, it will use the same 5 for the next item that comes through too
+                    - the cardinal's job is to find N things that match its body, once that succeeds, it returns them all
+                    - Each cardinal that is hit creates a "cardinal checkpoint" while it is solving things, and keeps this the same through its iterations, resetting at the end
+                        - They record the incoming data (so they can retry) and the answers they gave (so they can return at the end)
+                        - This allows them to record to retry the same answers
+                    - If you want to do "men lifted a table" you have to do more mechanics
+                    - The semantic we are looking for in backtracking is:
+                        - find the first N items that meet the body for a given binding
+                        - if the next binding fails for some set of them, we need to replace the ones it failed for
+                        - with the next ones that don't fail, which means we need to pickle the *call* after the set that worked so we can reuse it: I think we need a coroutine
+                            - each successful answer for a collective cardinal is true for the set of all incoming states
+                                - if one fails, at incoming state M, then we need to pick the next candidate from the pickled call and run it through all prior states to make sure it work
+                                - The top level caller is only going to return from *its* cardinal when it has the final solution that works for all of the items in its set
+                                    - If its child is in collective mode, it will have to update all of its solutions to the last set?
+                                        - yes, we are effectively rerunning the tree
+                                            - each cardinal is a choice point that could return a different set of solutions for the things previous run above it
+- We could just collect the list of bindings that do work for a cardinal as it iterates
+  - When we find one that doesn't work, we ask the caller to try again from the top, using the existing bindings, but a new generator?
+  - Each cardinal needs to collect, for every item it solves, a *set* of solutions (that could multiply if it has multiple generators below it)
+    - If a call gives a "collective restart" signal, it means it is providing a different list of solutions for all of the items in the parent that have been generated so far
+      - The general mechanism is that you can tell children you are in "collect" mode and they have a way to signal to you that they are providing replacements
+        - If we build this into the tree we could have a thing which collects each answer but if it sees one with a restart, it replaces it. The restart has work even if the card is deep in the tree
+        - It seems like this restart could cause all kinds of things to change so it would be better to rollback
+          - Each attempt of a cardinal is given an ID
+            - that cardinal stores whatever it wants along with the ID
+              - children cardinals record the parent IDs along with their answers
+              - If they determine a previous answer was bad, they can signal a rollback to the last good one
+              - This signal has to allow the signaller to cache some state they will restart with as well
+              - Then, the caller restarts at that ID using whatever state it cached
+                - When it gets to the callee, they restart at that state using whatever state they cached
+                - The callee only has to put the latest iterator in state, so it can be a normal iterator
+                  - But the caller needs to be able to jump to a certain point in the tree
+                    - They could just replay from the beginning
+                    - But man this is expensive
+                                            
+            - A better answer would be to rollback to the "point where we know things should have failed now" and restart from there from a future point in the tree
+                - if it is operating in distributed mode, it will only find 1 item and return that
+                - The cardinal has to iteratively try both modes
+                - Either way, the cardinal is rewritten to be at the front
+                - How does the caller know which answers are sets?
+                  - There could be a marker variable
+                - The caller could now get a whole tree of answers if a subtree is in collective mode, how is this given?
+                  - We need the notion of a set_call()
+                  - A predication always iteratively returns the answers one by one but the set_call() lets you know which set of returned answers are for the item you just sent in
+                    - the predication indicates which set this is a part of via a value in the state
+                    - Basically, we are giving every Set in the tree an ID
+                      - If a predication is different for sets, it creates a set_id and uses it to indicate which answers are in the set
+                        - it has to create the set along with the variable that is the set
+                        - This means the cardinal has to have a rstr too
+                          - dist: create the set (of one), get the rstr, all the solutions found are for that set (of one)
+                          - coll: create the set (will be n), loop through the rstrs that work, all the solutions that are found are for that set (of n)
+                          - at the end, we can rebuild the answer so that includes sets
+                      - We should be able to do this by having a predicate ask "is variable x a set"? If so there is logic that makes it able to iteratively solve so the predication can treat it as a single item
+                        - scenarios:
+                          - the variables this predication handles are sets (easy)
+                          - something in the body is a set
+                  - Here's the big problem: a predication in collective mode will generate new answers
+                    - Really?
+                  - key observation: it is *eat* that is the one having to deal with sets, child and pizza are both just choosing items
+                    - so *eat* is the one that cares that things are a set
+                    - a middle predication like child just needs to know how to count off its 5 items properly
+                      - think of it like a grouping operation. for pizza(child()) pizza calls group, and then its body
+                        - the child() ensures that every call to it in the same group
+                        - if child() is grouping, the group has to work for every item in its parent group
+                          - OK, so a given predication decides to create a group, and that same child group applies to everything that comes in from the same parent group, *including the ones from the past*
+                            - if a new group comes *in* we need to start collecting answers for that group and continue to apply them to past items
+                              - This means that the parent group will see new items appear for past
+                            - for each item in that predications group
+                            - TODO: handle "men holding table"
+                              - Really it just has to execute at the end and somehow mark as a single thing that happened
+                - How does the callee restart?
+                  - it puts state into the exception that gets passed down again with the retry
     - the other is acting on the result of the quantifier
         cardinal(..., default_q(x, base_rstr, body)
 
+    
 What is the difference between collective and distributive from the perspective of the quantifier?
     - There is no difference here:
         - (collective) Whatever the body does must be true of the whole set
@@ -206,3 +280,6 @@ the predicates gather and numerous apply to the set of men. This is the collecti
 The men lifted the piano.
 
 is ambiguous between the two readings. They could each have lifted it individually, the distributive reading, in which case the logical subject of lift would be the typical element of the set, or they could have lifted it together, the collective reading, in which case it would be the set, or the aggregate.
+
+
+- 

@@ -452,7 +452,7 @@
         },
         {
             "Command": "2 files are in \"\\>documents\"",
-            "Expected": "2 file is not in '/documents'",
+            "Expected": "Yes, that is true.",
             "Tree": "proper_q(x11,[quoted(\\\\>documents,i16), fw_seq(x11,i16)],udef_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "76e9fc93-1763-4f2f-8d1b-727480db4577"

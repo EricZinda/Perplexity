@@ -159,6 +159,14 @@ def generate_message(tree_info, error_term):
         arg1 = arg1.strip("'\"")
         return f"'{arg1}' was not found"
 
+    elif error_constant == "cardNotFound":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg1 = arg1.strip("'\"")
+        if error_arguments[3] > 0:
+            return f"{arg1} were not found (only {error_arguments[3]} was)"
+        else:
+            return f"{arg1} were not found"
+
     elif error_constant == "answerWithList":
         answer_predication = error_arguments[1]
         answer_items = error_arguments[2]
