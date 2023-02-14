@@ -1,9 +1,14 @@
 class VariableData(object):
-    def __init__(self, name):
+    def __init__(self, name, cardinal_id=None):
         self.name = name
+        self.cardinal_id = cardinal_id
 
     def __repr__(self):
-        return f"{self.name}"
+        if self.cardinal_id is not None:
+            return f"{self.name}({self.cardinal_id})"
+
+        else:
+            return f"{self.name}"
 
 
 # Use None in variable_data to represent a value

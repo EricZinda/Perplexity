@@ -48,9 +48,13 @@ def respond_to_mrs_tree(tree, solutions, error):
                 # to get the response
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
-                answer_items = []
+                answer_items = {}
                 for solution in solutions:
-                    answer_items.append(solution.get_binding(wh_variable).value)
+                    binding = solution.get_binding(wh_variable)
+                    if binding.variable.cardinal_id not in answer_items:
+                        answer_items[binding.variable.cardinal_id] = []
+
+                    answer_items[binding.variable.cardinal_id].append(binding.value)
 
                 message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
                 return message
@@ -179,15 +183,15 @@ def generate_message(tree_info, error_term):
                 # "Where is YYY?", so only return the "best" answer, which
                 # is the most specific one
                 best_answer = ""
-                for answer_item in answer_items:
-                    current_answer = str(answer_item.name)
+                for answer_item in answer_items.items():
+                    current_answer = str(answer_item[1][0].name)
                     if len(current_answer) > len(best_answer):
                         best_answer = current_answer
                 message = f"in {best_answer}"
 
             else:
-                for answer_item in answer_items:
-                    message += str(answer_item) + "\n"
+                for answer_item in answer_items.items():
+                    message += ", ".join([str(x) for x in answer_item[1]]) + "\n"
 
             return message
         else:

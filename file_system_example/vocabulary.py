@@ -213,6 +213,17 @@ class RestartException(Exception):
     pass
 
 
+next_group_id = 1
+
+
+def create_group(parent_group_id):
+    global next_group_id
+    value = next_group_id
+    next_group_id += 1
+    return {"GroupItems": [],
+            "GroupID": parent_group_id + ":" + str(value)}
+
+
 # rewrite: default_q(x, [cardinal(x, ...), other()], body)
 # to: cardinal(x, [other()], default_q(x, thing(x), body)
 # to: cardinal(..., default_q(x, base_rstr, body)
@@ -252,7 +263,7 @@ def card_with_scope(state, c_count, e_introduced_binding, x_target_binding, h_rs
 
     else:
         # Create a group to indicate we are building a set (of potentially 1) ourselves.
-        this_group = {"GroupItems": []}
+        this_group = create_group(parent_group["GroupID"] if (parent_group is not None and "GroupID" in parent_group) else "0")
         rstr_generator = call_with_group(this_group, state, h_rstr)
         if parent_group is not None:
             parent_group[this_predicate_index] = this_group
@@ -309,7 +320,8 @@ def card_from_rstr_generator(group, c_count_value, x_target_binding, existing_va
             try:
                 # We now have a new rstr
                 body_states = []
-                for body_state in call_with_group(group, rstr_state.set_x(x_target_binding.variable.name, binding_value), h_body):
+                new_rstr_state = rstr_state.set_x(x_target_binding.variable.name, binding_value, group["GroupID"])
+                for body_state in call_with_group(group, new_rstr_state, h_body):
                     body_states.append(body_state)
 
                 if len(body_states) > 0:
@@ -466,7 +478,7 @@ def thing(state, x_binding):
         iterator = [x_binding.value]
 
     for value in iterator:
-        yield state.set_x(x_binding.variable.name, value)
+        yield state.set_x(x_binding.variable.name, value, x_binding.variable.cardinal_id)
 
 
 @Predication(vocabulary)

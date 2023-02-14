@@ -34,7 +34,7 @@ class State(object):
 
     # Defines what the default printed output of a state object is
     def __repr__(self):
-        return ", ".join([variable_item[0] + " = " + str(variable_item[1].value) for variable_item in self.variables.items() if variable_item[0] != 'tree'])
+        return ", ".join([str(variable_item[1].variable) + " = " + str(variable_item[1].value) for variable_item in self.variables.items() if variable_item[0] != 'tree'])
 
     # A standard "class method" is just a function definition,
     # indented properly, with "self" as the first argument
@@ -51,7 +51,7 @@ class State(object):
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item):
+    def set_x(self, variable_name, item, cardinal_id=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -65,7 +65,7 @@ class State(object):
 
         # Dictionaries hold name/value pairs.
         # This is how you assign values to keys in dictionaries
-        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name), item)
+        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name, cardinal_id), item)
 
         # "return" returns to the caller the new state with
         # that one variable set to a new value
