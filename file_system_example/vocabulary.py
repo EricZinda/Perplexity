@@ -290,6 +290,7 @@ def card_from_rstr_generator(group, c_count_value, x_target_binding, existing_va
         new_values = []
         while True:
             # This loop is iteratively building up a set of c_count_value x_target_binding items
+            # binding_value will hold the next rstr_item to try (which might be one we already tried)
             if len(existing_values) > 0:
                 binding_value = existing_values[0]
                 existing_values.pop(0)
@@ -312,9 +313,22 @@ def card_from_rstr_generator(group, c_count_value, x_target_binding, existing_va
                     body_states.append(body_state)
 
                 if len(body_states) > 0:
+                    # This rstr item (binding_value) worked in the body
+                    # See if it is a duplicate (because rstr returned the same item twice), in which case we should
+                    # ignore it
+                    duplicate = False
+                    for new_value in new_values:
+                        if new_value == binding_value:
+                            # We already have this one
+                            duplicate = True
+                            break
+
+                    if duplicate:
+                        break
+
                     new_values.append(binding_value)
                     solution_sets.append(body_states)
-                    if len(solution_sets) == c_count_value:
+                    if len(new_values) == c_count_value:
                         # We now have solutions for all the items
                         # in this set.
                         return new_values, solution_sets

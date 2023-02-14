@@ -456,6 +456,13 @@
             "Tree": "proper_q(x11,[quoted(\\\\>documents,i16), fw_seq(x11,i16)],udef_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "76e9fc93-1763-4f2f-8d1b-727480db4577"
+        },
+        {
+            "Command": "3 files are in two folders",
+            "Expected": "3 file is not in 2 folder",
+            "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "a8259a8d-4d12-491e-b02d-e701f22234aa"
         }
     ]
 }

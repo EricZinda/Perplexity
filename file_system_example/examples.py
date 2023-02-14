@@ -527,10 +527,10 @@ def Example25_reset():
     return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
                                            (True, "/documents/file1.txt", {"size": 1000}),
                                            (False, "/Desktop", {"size": 10000000}),
-                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
-                                           (True, "/Desktop/blue", {"size": 1000}),
-                                           (True, "/temp/the yearly budget.txt", {"size": 10000000}),
-                                           (True, "/temp/blue", {"size": 1000})],
+                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000, "link": "1"}),
+                                           (True, "/Desktop/blue", {"size": 1000, "link": "2"}),
+                                           (True, "/temp/the yearly budget.txt", {"size": 10000000, "link": "1"}),
+                                           (True, "/temp/blue", {"size": 1000, "link": "2"})],
                                           "/Desktop"))
 
 
@@ -579,4 +579,4 @@ if __name__ == '__main__':
     # Example20()
     # Example21()
     # Example22()
-    Example24()
+    Example25()
