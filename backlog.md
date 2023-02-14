@@ -10,3 +10,4 @@ The ultimate result should be variables with sets in them.
     - Each group has an ID that is ParentID+ChildID
     - Each binding has a place to store the ID
     - When reporting out the answer to a variable that is plural, group the parent+child ids
+- Also need to return which *element* of a set an item is so it won't be repeated in the answer

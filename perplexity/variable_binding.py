@@ -1,11 +1,12 @@
 class VariableData(object):
-    def __init__(self, name, cardinal_id=None):
+    def __init__(self, name, cardinal_id=None, cardinal_item_id=None):
         self.name = name
         self.cardinal_id = cardinal_id
+        self.cardinal_item_id = cardinal_item_id
 
     def __repr__(self):
         if self.cardinal_id is not None:
-            return f"{self.name}({self.cardinal_id})"
+            return f"{self.name}({self.cardinal_id}->{self.cardinal_item_id})"
 
         else:
             return f"{self.name}"

@@ -320,7 +320,7 @@ def card_from_rstr_generator(group, c_count_value, x_target_binding, existing_va
             try:
                 # We now have a new rstr
                 body_states = []
-                new_rstr_state = rstr_state.set_x(x_target_binding.variable.name, binding_value, group["GroupID"])
+                new_rstr_state = rstr_state.set_x(x_target_binding.variable.name, binding_value, group["GroupID"], len(new_values))
                 for body_state in call_with_group(group, new_rstr_state, h_body):
                     body_states.append(body_state)
 
@@ -478,7 +478,7 @@ def thing(state, x_binding):
         iterator = [x_binding.value]
 
     for value in iterator:
-        yield state.set_x(x_binding.variable.name, value, x_binding.variable.cardinal_id)
+        yield state.set_x(x_binding.variable.name, value, x_binding.variable.cardinal_id, x_binding.variable.cardinal_item_id)
 
 
 @Predication(vocabulary)

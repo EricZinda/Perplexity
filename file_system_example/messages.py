@@ -49,12 +49,17 @@ def respond_to_mrs_tree(tree, solutions, error):
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
                 answer_items = {}
+                found_answer_items = {}
                 for solution in solutions:
                     binding = solution.get_binding(wh_variable)
                     if binding.variable.cardinal_id not in answer_items:
                         answer_items[binding.variable.cardinal_id] = []
+                        found_answer_items[binding.variable.cardinal_id] = {}
 
-                    answer_items[binding.variable.cardinal_id].append(binding.value)
+                    # Don't add if it is already there
+                    if binding.variable.cardinal_item_id is None or binding.variable.cardinal_item_id not in found_answer_items[binding.variable.cardinal_id]:
+                        found_answer_items[binding.variable.cardinal_id][binding.variable.cardinal_item_id] = True
+                        answer_items[binding.variable.cardinal_id].append(binding.value)
 
                 message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
                 return message
@@ -191,7 +196,11 @@ def generate_message(tree_info, error_term):
 
             else:
                 for answer_item in answer_items.items():
-                    message += ", ".join([str(x) for x in answer_item[1]]) + "\n"
+                    if answer_item[0] is None:
+                        for ungrouped_item in answer_item[1]:
+                            message += str(ungrouped_item) + "\n"
+                    else:
+                        message += ", ".join([str(x) for x in answer_item[1]]) + "\n"
 
             return message
         else:

@@ -51,7 +51,7 @@ class State(object):
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, cardinal_id=None):
+    def set_x(self, variable_name, item, cardinal_id=None, cardinal_item_id=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -65,7 +65,7 @@ class State(object):
 
         # Dictionaries hold name/value pairs.
         # This is how you assign values to keys in dictionaries
-        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name, cardinal_id), item)
+        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name, cardinal_id, cardinal_item_id), item)
 
         # "return" returns to the caller the new state with
         # that one variable set to a new value
