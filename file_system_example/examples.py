@@ -542,6 +542,27 @@ def Example25():
         print()
 
 
+# Which two files are in two folders?
+# Blue is in /Desktop and /temp
+#
+def Example26_reset():
+    return FileSystemState(FileSystemMock([(True,  "/documents/file1.txt", {"size": 1000}),
+                                           (False, "/Desktop", {"size": 10000000}),
+                                           (True,  "/Desktop/Desktop1.txt", {"size": 10000000}),
+                                           (True,  "/Desktop/Desktop2.txt", {"size": 1000}),
+                                           (True,  "/temp/temp1.txt", {"size": 10000000}),
+                                           (True,  "/temp/temp2.txt", {"size": 1000})],
+                                          "/Desktop"))
+
+
+def Example26():
+    user_interface = UserInterface(Example26_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
     ShowLogging("Execution")
     ShowLogging("Generation")
@@ -579,4 +600,5 @@ if __name__ == '__main__':
     # Example20()
     # Example21()
     # Example22()
-    Example25()
+    # Example25()
+    Example26()

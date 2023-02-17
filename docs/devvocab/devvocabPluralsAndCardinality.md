@@ -229,12 +229,21 @@ What is the difference between collective and distributive from the perspective 
         - So we hold the child constant and loop through all of the items in the RSTR
     - 
 ~~~
-    - pickn(pizzas), pickn(children): There is one set of 3 pizzas that was eaten by one set of 4 children (everyone ate them together = 3 pizzas)
-    - quant(pizzas), pickn(children): There are 3 different individual pizzas that each was eaten by a (potentially different) set of 4 children  (pick a pizza, a group of 4 children ate that one)
-    - pickn(pizzas), quant(children): There is one set of 3 pizzas that was eaten by 4 different individual children  (same as 1??, not if we are talking about lifting...)
-    - quant(pizzas), quant(children): There are 3 different individual pizzas that each was eaten by a (potentially different) individual child (each of 3 pizzas had 4 different children eating it (same as 2??))
-there must be 3 pizzas and there must be 4 (possibly different) children for every pizza = 12
-OR 3 pizzas and the same 4 children eating them
+    - coll(pizzas), coll(children): There is one set of 3 pizzas that was eaten by one set of 4 children (everyone ate them together = 3 pizzas)
+        - each child ate 3 pizzas together
+        - each pizza was eaten by 4 children together
+    - dist(pizzas), coll(children): There are 3 different individual pizzas that each was eaten by a (potentially different) set of 4 children  (pick a pizza, a group of 4 children ate that one)
+        - each child ate 1 pizza separately
+        - each pizza was eaten by 4 children together
+    - coll(pizzas), dist(children): There is one set of 3 pizzas that was eaten by 4 different individual children  
+        (same as 1??, not if we are talking about lifting...)
+        - each child ate 3 pizzas together
+        - each pizza was eaten by 4 children separately
+    - dist(pizzas), dist(children): There are 3 different individual pizzas that each was eaten by 4 (potentially different) individual children (each of 3 pizzas had 4 different children eating it 
+        (same as 2? not if we are talking about lifting))
+        - each child ate 1 pizza separately
+        - each pizza was eaten by 4 children separately
+    
 
                          ┌── _pizza_n_1(x10)
              ┌────── and(0,1)
@@ -248,10 +257,19 @@ udef_q(x10,RSTR,BODY)
                                       
 There must be 4 children and each one must eat 3 (possibly different) pizzas = 12
 
-- pickn(children), pickn(pizzas): There is one set of 4 children that ate one set of 3 pizzas (same as above)
-- quant(children), pickn(pizzas): There are individual children that each ate a (potentially different) set of 3 pizzas
-- pickn(children), quant(pizzas): There is one set of 4 children that ate 3 different individual pizzas
-- quant(children), quant(pizzas): There are 4 individual children that each ate a (potentially different) pizza
+- coll(children), coll(pizzas): There is one set of 4 children that ate one set of 3 pizzas (same as above)
+    - each child ate 3 pizzas together
+    - each pizza was eaten by 4 children together
+- dist(children), coll(pizzas): There are 4 individual children that each ate a (potentially different) set of 3 pizzas
+    - each child ate 3 pizzas together
+    - each pizza was eaten by 1 child separately
+- coll(children), dist(pizzas): There is one set of 4 children that ate 3 different individual pizzas
+        (same as 1??, not if we are talking about lifting...)
+    - each child ate 3 pizzas separately
+    - each pizza was eaten by 4 children together
+- dist(children), dist(pizzas): There are 4 individual children that each ate 3 (potentially different) pizzas
+    - each child ate 3 pizzas separately
+    - each pizza was eaten by 1 child separately
                                    
                         ┌── _child_n_1(x3)
             ┌────── and(0,1)
@@ -263,11 +281,16 @@ udef_q(x3,RSTR,BODY)
                  └─ udef_q(x10,RSTR,BODY)
                                       └─ _eat_v_1(e2,x3,x10)
 ~~~
+
 Our approach will thus be to have the quantifier implementations pull out the cardinals from the RSTR and do the appropriate logic for the quantifier with them.
 
 Really useful info from Hobbs: https://www.isi.edu/~hobbs/metsyn/metsyn.html
+- Use these as examples of verbs that handle different cases
 From: https://www.isi.edu/~hobbs/metsyn/node9.html
 
+More examples:
+- https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3819043/
+- http://www.lingref.com/cpp/wccfl/35/paper3417.pdf
 There are two entities associated with plural NPs--the set of entities referred to by the NP and the typical element of that set. In
 
 The men ran.

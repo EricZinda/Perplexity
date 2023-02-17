@@ -1,7 +1,7 @@
 import contextvars
 import logging
 import sys
-from perplexity.utilities import sentence_force
+from perplexity.utilities import sentence_force, has_cardinals
 
 
 # Allows code to throw an exception that should get converted
@@ -13,6 +13,26 @@ class MessageException(Exception):
 
     def message_object(self):
         return [self.message_name] + self.message_args
+
+
+class RestartException(Exception):
+    pass
+
+
+next_group_id = 1
+
+
+def create_group(is_collective):
+    global next_group_id
+    parent_group = group_context()
+    parent_group_id = parent_group["GroupID"] if parent_group is not None and "GroupID" in parent_group else "0"
+
+    value = next_group_id
+    next_group_id += 1
+    return {"GroupItems": [],
+            "Collective": is_collective,
+            "ChildCardinals": {},
+            "GroupID": parent_group_id + ":" + str(value)}
 
 
 class ExecutionContext(object):
@@ -36,7 +56,38 @@ class ExecutionContext(object):
             self._error_predication_index = -1
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
-            yield from self.call(state.set_x("tree", tree_info), tree_info["Tree"])
+
+            for is_collective in [False, True]:
+                initial_group = create_group(is_collective)
+                try:
+                    yield from self.call_with_group(initial_group, state.set_x("tree", tree_info), tree_info["Tree"])
+
+                except RestartException:
+                    # Ignore restart exceptions since there is no set we are
+                    # generating that can be changed since we are the root
+                    pass
+
+                if len(initial_group["ChildCardinals"]) == 0:
+                    break
+
+    def call_with_group(self, group, state, term, normalize=False):
+        try:
+            call_generator = call(state, term, normalize)
+            while True:
+                try:
+                    old_context_token = set_group_context(group)
+                    next_state = next(call_generator)
+                    reset_group_context(old_context_token)
+                    old_context_token = None
+
+                    yield next_state
+
+                except StopIteration:
+                    return
+
+        finally:
+            if old_context_token is not None:
+                reset_group_context(old_context_token)
 
     def call(self, state, term, normalize=False):
         # See if the term is actually a list
@@ -83,6 +134,7 @@ class ExecutionContext(object):
     def _call_predication(self, state, predication, normalize=False):
         logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
 
+        dynamic_arg_types = []
         bindings = []
         for arg_index in range(0, len(predication.args)):
             if predication.arg_types[arg_index] in ["c", "h"]:
@@ -90,6 +142,13 @@ class ExecutionContext(object):
 
             else:
                 bindings.append(state.get_binding(predication.args[arg_index]))
+
+            arg_type = predication.arg_types[arg_index]
+            if arg_type == "x" and state.get_binding(predication.args[arg_index]).variable.is_collective:
+                dynamic_arg_types.append(arg_type + "_set")
+
+            else:
+                dynamic_arg_types.append(arg_type)
 
         # [list] + [list] will return a new, combined list
         # in Python. This is how we add the state object
@@ -101,7 +160,7 @@ class ExecutionContext(object):
         # "vocabulary.Predication" returns a two-item list,
         # where item[0] is the module and item[1] is the function
         for module_function in self.vocabulary.predications(predication.name,
-                                                            predication.arg_types,
+                                                            dynamic_arg_types,
                                                             self._phrase_type if normalize is False else "norm"):
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
@@ -189,31 +248,6 @@ def execution_context():
 _group_context = contextvars.ContextVar('Group Context')
 
 
-def call_with_group(*args, **kwargs):
-    call_args = args[1:]
-    try:
-        call_generator = call(*call_args, **kwargs)
-        while True:
-            # print(f"Set {args[0]}")
-            try:
-                old_context_token = set_group_context(args[0])
-                next_state = next(call_generator)
-                reset_group_context(old_context_token)
-                old_context_token = None
-                # print(f"Reset {str(group_context())}")
-
-                yield next_state
-
-            except StopIteration:
-                return
-
-    finally:
-        if old_context_token is not None:
-            reset_group_context(old_context_token)
-            # print(f"Reset {str(group_context())}")
-
-
-
 def set_group_context(new_context):
     global _group_context
     return _group_context.set(new_context)
@@ -233,6 +267,10 @@ def group_context():
 # so they don't all have to say execution_context().call(*args, **kwargs)
 def call(*args, **kwargs):
     yield from execution_context().call(*args, **kwargs)
+
+
+def call_with_group(*args, **kwargs):
+    yield from execution_context().call_with_group(*args, **kwargs)
 
 
 def report_error(error, force=False):

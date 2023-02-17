@@ -46,7 +46,7 @@
         },
         {
             "Command": "which 2 files are in two folders?",
-            "Expected": "File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=1000)\n",
+            "Expected": "File(name=/temp/59.txt, size=1000)\nFile(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=1000)\n",
             "Tree": "_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "cf6229f7-87be-4c3d-9820-3bc6d3150de4"

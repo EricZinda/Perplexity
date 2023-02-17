@@ -1,12 +1,13 @@
 class VariableData(object):
-    def __init__(self, name, cardinal_id=None, cardinal_item_id=None):
+    def __init__(self, name, cardinal_id=None, cardinal_item_id=None, is_collective=False):
         self.name = name
         self.cardinal_id = cardinal_id
         self.cardinal_item_id = cardinal_item_id
+        self.is_collective = is_collective
 
     def __repr__(self):
         if self.cardinal_id is not None:
-            return f"{self.name}({self.cardinal_id}->{self.cardinal_item_id})"
+            return f"{self.name}({self.cardinal_id}->{self.cardinal_item_id})[{'coll' if self.is_collective else 'dist'}]"
 
         else:
             return f"{self.name}"

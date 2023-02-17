@@ -6,7 +6,8 @@ from file_system_example.state import DeleteOperation, ChangeDirectoryOperation,
 from perplexity.cardinals import split_cardinal_rstr
 from perplexity.utilities import at_least_one_generator
 from perplexity.variable_binding import VariableBinding
-from perplexity.execution import call, report_error, execution_context, call_with_group, group_context
+from perplexity.execution import call, report_error, execution_context, call_with_group, group_context, create_group, \
+    RestartException
 from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1, \
     predication_from_index
 from perplexity.virtual_arguments import scopal_argument
@@ -209,21 +210,6 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
     pass
 
 
-class RestartException(Exception):
-    pass
-
-
-next_group_id = 1
-
-
-def create_group(parent_group_id):
-    global next_group_id
-    value = next_group_id
-    next_group_id += 1
-    return {"GroupItems": [],
-            "GroupID": parent_group_id + ":" + str(value)}
-
-
 # rewrite: default_q(x, [cardinal(x, ...), other()], body)
 # to: cardinal(x, [other()], default_q(x, thing(x), body)
 # to: cardinal(..., default_q(x, base_rstr, body)
@@ -232,73 +218,89 @@ def card_with_scope(state, c_count, e_introduced_binding, x_target_binding, h_rs
     c_count_value = int(c_count)
     this_predicate_index = execution_context().current_predication_index()
 
-    # If we are in a group from a parent (we only care about the closest group)
-    # the set we create here (which could be a set of 1 for distributed)
-    # must be reused for every element of that group
+    # Get the current group (we only care about the closest group)
+    # This defines the set we are operating against
+    # It will also tell us what mode we should be operating in
     parent_group = group_context()
+    this_is_collective = parent_group["Collective"]
 
-    if parent_group is not None and this_predicate_index in parent_group:
-        # We have already found a set of solutions for this parent group
-        # See if they still apply to this item
-        this_group = parent_group[this_predicate_index]
-        rstr_generator = call_with_group(this_group, state, h_rstr)
-        working_values, solution_sets = card_from_rstr_generator(this_group, c_count_value, x_target_binding, this_group["GroupItems"], state, rstr_generator, h_body)
-        if solution_sets is None:
-            # The existing values set did not ALL work for the new item
-            # We need to generate a new set that works for the past ones and the new one
-            # We know the current set worked for all the old ones
-            # and the new one failed at a certain one, so:
-            # set this_group["GroupItems"] to the set that did work
-            # and throw an exception to make the caller retry each one from the beginning with the current rstr_generator
-            # and the set that worked
-            this_group["RstrGenerator"] = rstr_generator
-            this_group["GroupItems"] = working_values
-            raise RestartException()
+    # If there are no child cardinals don't do two alternatives because it
+    # just creates duplicates
+    has_child_cardinals = False
 
-        else:
-            # The existing values did ALL work for the new item, return them
-            for solution_set in solution_sets:
-                for solution in solution_set:
-                    yield solution
+    # Start with false so that we always do distributive mode since
+    # that is the default the predicates will implement
+    for child_is_collective in [False, True]:
+        if this_predicate_index in parent_group["ChildCardinals"]:
+            # We have already found and stashed a set of solutions for this
+            # parent group. See if they still apply to this item
+            this_card_info = parent_group["ChildCardinals"][this_predicate_index]
+            has_child_cardinals, working_values, solution_sets, groups = card_from_rstr_generator(this_is_collective, child_is_collective, c_count_value, x_target_binding, this_card_info["GroupItems"], state, this_card_info["RstrGenerator"], h_body)
+            if solution_sets is None:
+                # The existing values set did not ALL work for the new item
+                # We need to generate a new set that works for the past ones and the new one
+                # We know the current set worked for all the old ones
+                # and the new one failed at a certain one, so:
+                # set this_group["GroupItems"] to the set that did work
+                # and throw an exception to make the caller retry each one from the beginning with the current rstr_generator
+                # and the set that worked
+                this_card_info["GroupItems"] = working_values
+                raise RestartException()
 
-    else:
-        # Create a group to indicate we are building a set (of potentially 1) ourselves.
-        this_group = create_group(parent_group["GroupID"] if (parent_group is not None and "GroupID" in parent_group) else "0")
-        rstr_generator = call_with_group(this_group, state, h_rstr)
-        if parent_group is not None:
-            parent_group[this_predicate_index] = this_group
-
-        generator = card_from_rstr_generator(this_group, c_count_value, x_target_binding, [], state, rstr_generator, h_body)
-        working_values, solution_sets = generator
-        if solution_sets is None:
-            # The full set didn't work, no need to retry
-            report_error(["cardNotFound", x_target_binding.variable.name, c_count_value, len(working_values) if working_values is not None else 0])
-            return
+            else:
+                # The existing values did ALL work for the new item, return them
+                for solution_set in solution_sets:
+                    for solution in solution_set:
+                        yield solution
 
         else:
-            # rstr_generator contains an iterator that will give us more options if we need them, store that
-            this_group["RstrGenerator"] = rstr_generator
-            this_group["GroupItems"] = working_values
-            for solution_set in solution_sets:
-                for solution in solution_set:
-                    yield solution
+            # Create the generator that will iteratively generate new RSTRs to try
+            # over subsequent calls to this cardinal
+            # RSTR doesn't need to be called with a group since cardinals will
+            # only be in the body
+            rstr_generator = call(state, h_rstr)
+
+            # Get N solutions that apply to the state passed in
+            # Since this is a group we haven't seen, pass [] as the previous answers
+            has_child_cardinals, working_values, solution_sets, groups = card_from_rstr_generator(this_is_collective, child_is_collective, c_count_value, x_target_binding, [], state, rstr_generator, h_body)
+            if solution_sets is None:
+                # Couldn't find a set of N answers that applied in the whole dataset, no need to retry
+                report_error(["cardNotFound", x_target_binding.variable.name, c_count_value, len(working_values) if working_values is not None else 0])
+
+            else:
+                # Create a dict that remembers what we found that we can reuse next time
+                this_card_info = dict()
+                parent_group["ChildCardinals"][this_predicate_index] = this_card_info
+
+                # rstr_generator contains an iterator that will give us more options if we need them, store that
+                this_card_info["RstrGenerator"] = rstr_generator
+                this_card_info["GroupItems"] = working_values
+                for solution_set in solution_sets:
+                    for solution in solution_set:
+                        yield solution
+
+        # If there wasn't a child cardinal, don't try distributive mode
+        if not has_child_cardinals:
+            break
 
 
-# We have n incoming values that have already worked against our values
-# and a new one that doesn't for some set of our values
-# remove the values that it didn't work for
-# now run all previous incoming + new against new RSTRs until we have the set again
-# yields all the solutions as long as the RSTR is true in the body
-# for the right number for this cardinal
-def card_from_rstr_generator(group, c_count_value, x_target_binding, existing_values_orig, state, rstr_generator, h_body):
+# Confirms that existing_values_orig set of values that have already worked also work against
+# the value that just came in.  If existing_values_orig is not enough for this cardinal, finds new
+# ones and tests them
+# Will return when either we have been successful for this cardinal's whole set or failed
+def card_from_rstr_generator(this_is_collective, child_is_collective, c_count_value, x_target_binding, existing_values_orig, state, rstr_generator, h_body):
     restart_once = True
+    groups = []
+    has_child_cardinals = False
+
     while restart_once:
-        # This loop needs to find a new set of c_count_value x_target_binding items that meet the body
+        # This loop needs to find a set of c_count_value x_target_binding items that meet the body
         # It can get restarted if a child set didn't work
         restart_once = False
         existing_values = copy.copy(existing_values_orig)
         solution_sets = []
         new_values = []
+        group = create_group(child_is_collective)
         while True:
             # This loop is iteratively building up a set of c_count_value x_target_binding items
             # binding_value will hold the next rstr_item to try (which might be one we already tried)
@@ -312,38 +314,46 @@ def card_from_rstr_generator(group, c_count_value, x_target_binding, existing_va
                     rstr_state = next(rstr_generator)
 
                 except StopIteration:
-                    # We went through all the possible rstr values for this set
+                    # We went through all the possible rstr values for this set,
+                    # time to end
                     break
 
                 binding_value = rstr_state.get_binding(x_target_binding.variable.name).value
 
             try:
-                # We now have a new rstr
+                # We now have a binding_value to test for the target binding
+                # See if it is a duplicate (because rstr returned the same item twice), in which case we should
+                # ignore it
+                duplicate = False
+                for new_value in new_values:
+                    if new_value == binding_value:
+                        # We already have this one
+                        duplicate = True
+                        break
+
+                if duplicate:
+                    break
+
+                if not this_is_collective:
+                    group = create_group(child_is_collective)
+
                 body_states = []
-                new_rstr_state = rstr_state.set_x(x_target_binding.variable.name, binding_value, group["GroupID"], len(new_values))
+                new_rstr_state = rstr_state.set_x(x_target_binding.variable.name, binding_value, group["GroupID"], len(new_values), this_is_collective)
                 for body_state in call_with_group(group, new_rstr_state, h_body):
                     body_states.append(body_state)
 
+                if len(group["ChildCardinals"]) > 0:
+                    has_child_cardinals = True
+
                 if len(body_states) > 0:
                     # This rstr item (binding_value) worked in the body
-                    # See if it is a duplicate (because rstr returned the same item twice), in which case we should
-                    # ignore it
-                    duplicate = False
-                    for new_value in new_values:
-                        if new_value == binding_value:
-                            # We already have this one
-                            duplicate = True
-                            break
-
-                    if duplicate:
-                        break
-
+                    groups.append(group)
                     new_values.append(binding_value)
                     solution_sets.append(body_states)
                     if len(new_values) == c_count_value:
                         # We now have solutions for all the items
-                        # in this set.
-                        return new_values, solution_sets
+                        # in this set against the member of a parent set
+                        return has_child_cardinals, new_values, solution_sets, groups
 
                 else:
                     # This one didn't work, continue
@@ -358,9 +368,9 @@ def card_from_rstr_generator(group, c_count_value, x_target_binding, existing_va
     if len(solution_sets) > 0:
         # Some of these worked, but not enough
         # return the ones that did
-        return new_values, None
+        return has_child_cardinals, new_values, None, groups
 
-    return [], None
+    return has_child_cardinals, [], None, groups
 
 
 # Many quantifiers are simply markers and should use this as
@@ -478,7 +488,7 @@ def thing(state, x_binding):
         iterator = [x_binding.value]
 
     for value in iterator:
-        yield state.set_x(x_binding.variable.name, value, x_binding.variable.cardinal_id, x_binding.variable.cardinal_item_id)
+        yield state.set_x(x_binding.variable.name, value, x_binding.variable.cardinal_id, x_binding.variable.cardinal_item_id, x_binding.variable.is_collective)
 
 
 @Predication(vocabulary)
@@ -716,3 +726,4 @@ def folder_n_of(state, x_binding, i_binding):
 
 
 pipeline_logger = logging.getLogger('Pipeline')
+cardinal_logger = logging.getLogger('Cardinal')
