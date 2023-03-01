@@ -116,7 +116,7 @@
         },
         {
             "Command": "where am i",
-            "Expected": "in /Desktop",
+            "Expected": "in Folder(name=/Desktop, size=0)",
             "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
             "Enabled": true,
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
@@ -130,14 +130,14 @@
         },
         {
             "Command": "where am i",
-            "Expected": "in /Desktop",
+            "Expected": "in Folder(name=/Desktop, size=0)",
             "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
             "Enabled": true,
             "ID": "44fe6fc2-2d63-4893-a2ac-e59ca7c9fb85"
         },
         {
             "Command": "where is this folder",
-            "Expected": "in /",
+            "Expected": "in Folder(name=/, size=0)",
             "Tree": "[['which_q', 'x4', [['place_n', 'x4']], [['_this_q_dem', 'x3', [['_folder_n_of', 'x3', 'i13']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
             "Enabled": true,
             "ID": "954a3dcf-10f9-42a0-943b-61364cc71c7e"

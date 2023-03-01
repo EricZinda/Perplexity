@@ -1,4 +1,5 @@
 import contextvars
+import copy
 import logging
 import sys
 from perplexity.utilities import sentence_force, has_cardinals
@@ -15,24 +16,168 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
-class RestartException(Exception):
+class RetrySetException(Exception):
     pass
 
 
+next_solution_id = 1
 next_group_id = 1
 
 
-def create_group(is_collective):
+def create_solution_id():
+    global next_solution_id
+    value = next_solution_id
+    next_solution_id += 1
+    return value
+
+
+def create_cardinal_set(child_is_collective):
     global next_group_id
-    parent_group = group_context()
-    parent_group_id = parent_group["GroupID"] if parent_group is not None and "GroupID" in parent_group else "0"
+    parent_solution = group_context()
+    parent_cardinal_id = parent_solution["CardinalID"] if parent_solution is not None and "CardinalID" in parent_solution else None
 
     value = next_group_id
     next_group_id += 1
     return {"GroupItems": [],
-            "Collective": is_collective,
+            "ChildIsCollective": child_is_collective,
             "ChildCardinals": {},
-            "GroupID": parent_group_id + ":" + str(value)}
+            "CardinalID": ((parent_cardinal_id + ":") if parent_cardinal_id is not None else "") + str(value)}
+
+
+def cardinal_tree(solutions):
+    # First figure out the order of the "tree of cardinals" from child to parent
+    # The order of them is simply the number of ids in the cardinal_id
+    # It won't change for the answers so we can just do it on the first one
+    # TODO: For now we are assuming it is a straight line, not a tree
+    tree_info = solutions[0].get_binding("tree")
+    variables = tree_info.value["Variables"]
+    cardinal_list = []
+    for variable_name in variables:
+        binding = solutions[0].get_binding(variable_name)
+        if binding.variable.cardinal_id is not None:
+            cardinal_id_parts = binding.variable.cardinal_id.split(":")
+            cardinal_list.append((len(cardinal_id_parts), variable_name))
+
+    cardinal_list.sort(reverse=True)
+    return [item[1] for item in cardinal_list]
+
+
+# A cardinal picks a solution id for the set of answers it is doing (dist or coll) and sticks with it for that dist or coll
+# The algorithm is: start with the child, each group of the same solution id of the deepest child is a single solution
+def group_answer_sets(solutions):
+    # First figure out the order of the "tree of cardinals" from child to parent
+    cardinal_order = cardinal_tree(solutions)
+
+    # If all solutions (dist and coll) for all cardinals succeeded then there would be a dist and coll at each level
+    # It acts like a binary number: all answers that have the same number go together
+    grouped_answers = {}
+    for item in group_answer_sets2(cardinal_order, solutions, {}):
+        key = []
+        for variable in cardinal_order:
+            key.append("coll" if item[variable][0].variable.is_collective else "dist")
+
+        tuple_key = tuple(key)
+        if tuple_key not in grouped_answers:
+            grouped_answers[tuple_key] = []
+
+        grouped_answers[tuple_key].append(item)
+
+    for grouped_answer in grouped_answers.values():
+        yield grouped_answer
+
+
+def group_answer_sets2(cardinal_order, solutions, answers_orig):
+    if len(cardinal_order) == 0:
+        yield answers_orig
+
+    else:
+        current_variable = cardinal_order[0]
+
+        # First group the solutions into solution groups
+        solution_groups = {}
+        for solution_index in range(0, len(solutions)):
+            solution = solutions[solution_index]
+            binding = solution.get_binding(current_variable)
+            solution_id = binding.variable.cardinal_solution_id
+            cardinal_item_id = binding.variable.cardinal_item_id
+            if solution_id not in solution_groups:
+                solution_groups[solution_id] = []
+
+            solution_groups[solution_id].append((solution, binding))
+
+        # Then recurse on each group
+        for solutions_with_binding in solution_groups.values():
+            solutions = [item[0] for item in solutions_with_binding]
+            # Get rid of duplicates by using cardinal_item_id
+            binding_ids = {}
+            for solution_with_binding in solutions_with_binding:
+                cardinal_id = solution_with_binding[1].variable.cardinal_id
+                cardinal_item_id = solution_with_binding[1].variable.cardinal_item_id
+                binding_ids[str(cardinal_id) + str(cardinal_item_id)] = solution_with_binding[1]
+            bindings = [item for item in binding_ids.values()]
+            is_collective = bindings[0].variable.is_collective
+
+            if is_collective:
+                answers = copy.copy(answers_orig)
+                answers[current_variable] = bindings
+                yield from group_answer_sets2(cardinal_order[1:], solutions, answers)
+
+            else:
+                for binding in bindings:
+                    answers = copy.copy(answers_orig)
+                    answers[current_variable] = [binding]
+                    yield from group_answer_sets2(cardinal_order[1:], solutions, answers)
+
+
+def create_answer_sets_from_variable(variable, solutions):
+    for answer_set in group_answer_sets(solutions):
+        yield [answer[variable] for answer in answer_set]
+
+
+# This is only returning a single variable's answers so it doesn't need to deal with trees of answers, just potentially
+# single answers and set answers for this variable
+# def create_answer_sets_from_variable(variable, solutions):
+#     answer_items = {}
+#     for solution in solutions:
+#         binding = solution.get_binding(variable)
+#         if binding.variable.cardinal_id not in answer_items:
+#             answer_items[binding.variable.cardinal_id] = []
+#
+#         answer_items[binding.variable.cardinal_id].append(binding.value)
+#
+#     if len(answer_items) == 1 and list(answer_items.keys())[0] is None:
+#         # These are not sets, just need to deduplicate
+#         return deduplicate(list(answer_items.values())[0])
+#
+#     else:
+#         # Now we have all the (potentially duplicate) answers. Deduplicate.
+#         final_answer_items = []
+#         answer_items_list = list(answer_items.values())
+#         for answer1_index in range(0, len(answer_items)):
+#             found_duplicate = False
+#             for answer2_index in range(answer1_index + 1, len(answer_items)):
+#                 answer1_list = answer_items_list[answer1_index]
+#                 answer2_list = answer_items_list[answer2_index]
+#                 if lists_are_equal(answer1_list, answer2_list):
+#                     found_duplicate = True
+#                     break
+#
+#             if not found_duplicate:
+#                 final_answer_items.append(answer1_list)
+#
+#         return final_answer_items
+
+
+def deduplicate(list1):
+    return [v1 for i, v1 in enumerate(list1) if not any((v1 == v2 for v2 in list1[:i]))]
+
+
+def lists_are_equal(list1, list2):
+    if len(list1) != len(list2):
+        return False
+    else:
+        unique_list1 = [v1 for i, v1 in enumerate(list1) if not any((v1 == v2 for v2 in list2))]
+        return len(unique_list1) == 0
 
 
 class ExecutionContext(object):
@@ -57,12 +202,12 @@ class ExecutionContext(object):
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
 
-            for is_collective in [False, True]:
-                initial_group = create_group(is_collective)
+            for is_collective in [False]:
+                initial_group = create_cardinal_set(is_collective)
                 try:
                     yield from self.call_with_group(initial_group, state.set_x("tree", tree_info), tree_info["Tree"])
 
-                except RestartException:
+                except RetrySetException:
                     # Ignore restart exceptions since there is no set we are
                     # generating that can be changed since we are the root
                     pass
@@ -116,14 +261,16 @@ class ExecutionContext(object):
             last_predication_index = self._predication_index
             self._predication_index = term.index
 
-            # The first thing in the list was not a list
-            # so we assume it is just a term like
-            # ["_large_a_1", "e1", "x1"]
-            # evaluate it using CallPredication
-            yield from self._call_predication(state, term, normalize)
+            try:
+                # The first thing in the list was not a list
+                # so we assume it is just a term like
+                # ["_large_a_1", "e1", "x1"]
+                # evaluate it using CallPredication
+                yield from self._call_predication(state, term, normalize)
 
-            # Restore it since we are recursing
-            self._predication_index = last_predication_index
+            finally:
+                # Restore it since we are recursing
+                self._predication_index = last_predication_index
 
     # Do not use directly.
     # Use Call() instead so that the predication index is set properly
@@ -144,11 +291,13 @@ class ExecutionContext(object):
                 bindings.append(state.get_binding(predication.args[arg_index]))
 
             arg_type = predication.arg_types[arg_index]
-            if arg_type == "x" and state.get_binding(predication.args[arg_index]).variable.is_collective:
-                dynamic_arg_types.append(arg_type + "_set")
-
-            else:
-                dynamic_arg_types.append(arg_type)
+            # THis isn't necessary because we are removing duplicates
+            # if arg_type == "x" and state.get_binding(predication.args[arg_index]).variable.is_collective:
+            #     dynamic_arg_types.append(arg_type + "_set")
+            #
+            # else:
+            #     dynamic_arg_types.append(arg_type)
+            dynamic_arg_types.append(arg_type)
 
         # [list] + [list] will return a new, combined list
         # in Python. This is how we add the state object

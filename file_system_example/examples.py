@@ -1,3 +1,5 @@
+import itertools
+
 from file_system_example.messages import respond_to_mrs_tree, error_priority
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
@@ -563,11 +565,62 @@ def Example26():
         print()
 
 
+def Example27_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/the yearly budget.txt", {"size": 10000000, "link": "1"}),
+                                           (True, "/Desktop/blue", {"size": 1000, "link": "2"}),
+                                           (True, "/temp/the yearly budget.txt", {"size": 10000000, "link": "1"}),
+                                           (True, "/temp/blue", {"size": 1000, "link": "2"})],
+                                          "/Desktop"))
+
+
+def Example27():
+    user_interface = UserInterface(Example27_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+# dist/dist
+def Example28_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/yellow.txt", {"size": 10000000}),
+                                           (True, "/Desktop/green.txt", {"size": 1000}),
+                                           (True, "/temp/red.txt", {"size": 10000000}),
+                                           (True, "/temp/blue.txt", {"size": 1000})],
+                                          "/Desktop"))
+
+
+def Example28():
+    user_interface = UserInterface(Example28_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+# coll/dist: pick two folders. A file is in both of them together, a different file is in both of them together
+def Example29_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/the yearly budget.txt", {"size": 10000000, "link": "1"}),
+                                           (True, "/Desktop/blue", {"size": 1000, "link": "2"}),
+                                           (True, "/temp/the yearly budget.txt", {"size": 10000000, "link": "1"}),
+                                           (True, "/temp/blue", {"size": 1000, "link": "2"})],
+                                          "/Desktop"))
+
+
+def Example29():
+    user_interface = UserInterface(Example29_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
-    ShowLogging("Execution")
-    ShowLogging("Generation")
-    ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # foo = itertools.combinations(foo(), 2)
+
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Pipeline")
+    ShowLogging("Cardinal")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -601,4 +654,6 @@ if __name__ == '__main__':
     # Example21()
     # Example22()
     # Example25()
-    Example26()
+    # Example27()
+    # Example28()
+    Example29()

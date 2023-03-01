@@ -6,7 +6,7 @@ import sys
 from delphin import ace
 from delphin.codecs import simplemrs
 
-from perplexity.execution import ExecutionContext, MessageException
+from perplexity.execution import ExecutionContext, MessageException, group_answer_sets
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_arg_types
@@ -34,6 +34,8 @@ class UserInterface(object):
         self.test_manager = TestManager()
         self.user_input = None
         self.last_system_command = None
+        self.run_mrs_index = None
+        self.run_tree_index = None
 
     # response_function gets passed three arguments:
     #   response_function(mrs, solutions, error)
@@ -84,7 +86,13 @@ class UserInterface(object):
 
         # Loop through each MRS and each tree that can be
         # generated from it...
+        mrs_index = -1
         for mrs in self.mrss_from_phrase(self.user_input):
+            mrs_index += 1
+            tree_index = -1
+            if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
+                continue
+
             # print(simplemrs.encode(mrs, indent=True))
             mrs_record = {"Mrs": mrs,
                           "UnknownWords": self.unknown_words(mrs),
@@ -102,6 +110,10 @@ class UserInterface(object):
 
             else:
                 for tree in self.trees_from_mrs(mrs):
+                    tree_index += 1
+                    if self.run_tree_index is not None and self.run_tree_index != tree_index:
+                        continue
+
                     tree_record = {"Tree": tree,
                                    "Solutions": [],
                                    "Error": None,
@@ -270,6 +282,15 @@ class UserInterface(object):
                     for solution in tree_info['Solutions']:
                         print(f"Solution: {str(solution)}")
 
+                    print("\nAnswer Sets:\n")
+                    for answer in group_answer_sets(tree_info['Solutions']):
+                        for answer_item in answer:
+                            print(str(answer_item))
+
+                        print("\n")
+                        # answer_string = '\n'.join([str(x) for x in ])
+                    # print(f"\nAnswer Sets:\n{answer_string}")
+
                 else:
                     print(f"Error: {tree_info['Error']}")
 
@@ -434,6 +455,18 @@ def command_append_test(ui, arg):
     return True
 
 
+def command_run_parse(ui, arg):
+    parts = arg.split(",")
+    if len(parts) == 0 or len(parts) > 2:
+        print("Please supply a parseindex, treeindex or just a parseindex")
+
+    ui.run_mrs_index = int(parts[0])
+    if len(parts) == 2:
+        ui.run_tree_index = int(parts[1])
+
+    return True
+
+
 def command_run_test(ui, arg):
     if len(arg) == 0:
         print(f"Please supply a test name.")
@@ -574,6 +607,9 @@ command_data = {
     "show": {"Function": command_show, "Category": "Parsing",
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
              "Example": "/show or /show all"},
+    "runparse": {"Function": command_run_parse, "Category": "Parsing",
+                  "Description": "Only runs the identified parse index and optional tree index",
+                  "Example": "/runparse 1 OR /runparse 1, 0"},
     "debugtree": {"Function": command_debug_tree, "Category": "Parsing",
                   "Description": "Shows tracing information about the tree. give a predication query after to only show trees that match it. Use '_' to mean 'anything' for an argument or the predication name",
                   "Example": "/debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)"},

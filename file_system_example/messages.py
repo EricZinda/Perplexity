@@ -1,4 +1,6 @@
 import logging
+
+from perplexity.execution import create_answer_sets_from_variable, group_answer_sets
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predication, predication_from_index, \
     find_predication_from_introduced
@@ -46,23 +48,10 @@ def respond_to_mrs_tree(tree, solutions, error):
             if len(solutions) > 0:
                 # Build an error term that we can use to call generate_message
                 # to get the response
-                index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
-                answer_items = {}
-                found_answer_items = {}
-                for solution in solutions:
-                    binding = solution.get_binding(wh_variable)
-                    if binding.variable.cardinal_id not in answer_items:
-                        answer_items[binding.variable.cardinal_id] = []
-                        found_answer_items[binding.variable.cardinal_id] = {}
-
-                    # Don't add if it is already there
-                    if binding.variable.cardinal_item_id is None or binding.variable.cardinal_item_id not in found_answer_items[binding.variable.cardinal_id]:
-                        found_answer_items[binding.variable.cardinal_id][binding.variable.cardinal_item_id] = True
-                        answer_items[binding.variable.cardinal_id].append(binding.value)
-
-                message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
-                return message
+                index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
+                messages = [generate_message(tree, [-1, ["answerWithList", index_predication, answers]]) for answers in create_answer_sets_from_variable(wh_variable, solutions)]
+                return "\nand\n\n".join(messages)
 
             else:
                 message = generate_message(tree, error)
@@ -183,24 +172,26 @@ def generate_message(tree_info, error_term):
         if len(answer_items) > 0:
             message = ""
 
-            if answer_predication.name == "loc_nonsp":
-                # if "loc_nonsp" is the "verb", it means the phrase was
+            if answer_predication.name == "loc_nonsp" and len(answer_items) > 0 and not isinstance(answer_items[0], list):
+                # if "loc_nonsp" is the "verb", and it isn't a set based answer,
+                # it means the phrase was
                 # "Where is YYY?", so only return the "best" answer, which
                 # is the most specific one
+                # Unless we are returning sets in
                 best_answer = ""
-                for answer_item in answer_items.items():
-                    current_answer = str(answer_item[1][0].name)
-                    if len(current_answer) > len(best_answer):
-                        best_answer = current_answer
+                for answer_item in answer_items:
+                    answer_item_str = str(answer_item)
+                    if len(answer_item_str) > len(best_answer):
+                        best_answer = answer_item_str
+
                 message = f"in {best_answer}"
 
             else:
-                for answer_item in answer_items.items():
-                    if answer_item[0] is None:
-                        for ungrouped_item in answer_item[1]:
-                            message += str(ungrouped_item) + "\n"
+                for answer_item in answer_items:
+                    if not isinstance(answer_item, list):
+                        message += str(answer_item) + "\n"
                     else:
-                        message += ", ".join([str(x) for x in answer_item[1]]) + "\n"
+                        message += ", ".join([str(x) for x in answer_item]) + "\n"
 
             return message
         else:
