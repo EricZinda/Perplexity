@@ -580,7 +580,8 @@ def Example27():
         user_interface.interact_once()
         print()
 
-# dist/dist
+
+# Only works for dist(folder), dist(file) and dist(folder), coll(file)
 def Example28_reset():
     return FileSystemState(FileSystemMock([(True, "/Desktop/yellow.txt", {"size": 10000000}),
                                            (True, "/Desktop/green.txt", {"size": 1000}),
@@ -655,5 +656,5 @@ if __name__ == '__main__':
     # Example22()
     # Example25()
     # Example27()
-    Example28()
+    Example25()
     # Example29()

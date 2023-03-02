@@ -89,27 +89,27 @@ def group_answer_sets2(cardinal_order, solutions, answers_orig):
     else:
         current_variable = cardinal_order[0]
 
-        # First group the solutions into solution groups
-        solution_groups = {}
+        # First group the cardinal groups
+        cardinal_groups = {}
         for solution_index in range(0, len(solutions)):
             solution = solutions[solution_index]
             binding = solution.get_binding(current_variable)
-            solution_id = binding.variable.cardinal_group_id
-            cardinal_item_id = binding.variable.variable_set_item_id
-            if solution_id not in solution_groups:
-                solution_groups[solution_id] = []
+            cardinal_group_id = binding.variable.cardinal_group_id
+            if cardinal_group_id not in cardinal_groups:
+                cardinal_groups[cardinal_group_id] = []
 
-            solution_groups[solution_id].append((solution, binding))
+            cardinal_groups[cardinal_group_id].append((solution, binding))
 
-        # Then recurse on each group
-        for solutions_with_binding in solution_groups.values():
+        # Then recurse on each cardinal group
+        for solutions_with_binding in cardinal_groups.values():
             solutions = [item[0] for item in solutions_with_binding]
-            # Get rid of duplicates by using cardinal_item_id
+            # Get rid of duplicates by using a key of variable_set_id + variable_set_id_item_id
             binding_ids = {}
             for solution_with_binding in solutions_with_binding:
-                cardinal_id = solution_with_binding[1].variable.variable_set_id
-                cardinal_item_id = solution_with_binding[1].variable.variable_set_item_id
-                binding_ids[str(cardinal_id) + str(cardinal_item_id)] = solution_with_binding[1]
+                variable_set_id = solution_with_binding[1].variable.variable_set_id
+                variable_set_id_item_id = solution_with_binding[1].variable.variable_set_item_id
+                binding_ids[str(variable_set_id) + str(variable_set_id_item_id)] = solution_with_binding[1]
+
             bindings = [item for item in binding_ids.values()]
             is_collective = bindings[0].variable.is_collective
 

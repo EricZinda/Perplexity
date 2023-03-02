@@ -240,13 +240,19 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
     yield from next_cardinal_group()
 
 
-def yield_all_cardinal_group_solutions(cardinal_group_solutions):
+def yield_all_cardinal_group_solutions(this_predicate_index, cardinal_group_id, cardinal_group_solutions):
+    cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{cardinal_group_id} -> SUCC: start returning all answers')
+
+    count = 0
     for variable_set_coll_or_dist_solutions in cardinal_group_solutions:
         for variable_set_solution_alternatives in variable_set_coll_or_dist_solutions:
             for variable_set_item_solutions in variable_set_solution_alternatives:
                 for variable_set_item_solution_alternatives in variable_set_item_solutions:
                     for variable_set_item_solution_alternative in variable_set_item_solution_alternatives:
+                        count += 1
                         yield variable_set_item_solution_alternative
+
+    cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{cardinal_group_id} -> SUCC: stop returning all answers: {count}')
 
 
 # rewrite: default_q(x, [cardinal(x, ...), other()], body)
@@ -270,16 +276,20 @@ def cardinal_variable_set_incoming(state, c_count, e_introduced_binding, x_targe
         # We need to use the same this_cardinal_group that we used for the other elements of the set
         # and try it on this_cardinal_group
         this_cardinal_group = parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"]
+        cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> cached Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
+
         cardinal_group_solutions = cardinal_group_outgoing_solutions(this_predicate_index, state, x_target_binding.variable.name, h_body, this_cardinal_group)
         if len(cardinal_group_solutions) == 0:
             # This cardinal group didn't work. Because we've already worked through at least one item in the
             # parent_variable_set, we can't just immediately try another this_cardinal_group
             # Instead, ask the parent to variable_set_restart so it will start from the beginning of its variable_set
             # and we can find a new this_cardinal_group but where we left off in the generator
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> VariableSetRestart: FAIL Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
             parent_variable_set_cache["NextSolution"] = True
             raise VariableSetRestart
+
         else:
-            yield from yield_all_cardinal_group_solutions(cardinal_group_solutions)
+            yield from yield_all_cardinal_group_solutions(this_predicate_index, this_cardinal_group.cardinal_group_id, cardinal_group_solutions)
 
 
 # Get the next this_cardinal_group because we have a new parent variable_set OR
@@ -310,11 +320,11 @@ def cardinal_variable_set_incoming_next_this_cardinal_group(this_predicate_index
     cardinal_group_solutions = []
     while len(cardinal_group_solutions) == 0:
         try:
-            # Get a new this_cardinal_group from generator
             this_cardinal_group = next(cardinal_group_generator)
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> [{"New parent variable set" if new_parent_variable_set else "Next solution"}] New {"coll" if this_cardinal_group.is_collective else "dist"} Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
 
         except StopIteration:
-            # No more cardinal groups available, fail
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, -> FAIL, No more cardinal groups available')
             return
 
         # Get the solutions to it
@@ -327,13 +337,15 @@ def cardinal_variable_set_incoming_next_this_cardinal_group(this_predicate_index
             # This cardinal group worked, cache it so we can try against other items in the parent_variable_set
             # and return all the answers
             parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"] = this_cardinal_group
-            yield from yield_all_cardinal_group_solutions(cardinal_group_solutions)
+            yield from yield_all_cardinal_group_solutions(this_predicate_index, this_cardinal_group.cardinal_group_id, cardinal_group_solutions)
 
 
 # Get all solutions for the entire this_cardinal_group
 # The whole cardinal group must work or it fails
 def cardinal_group_outgoing_solutions(this_predicate_index, state, variable_name, h_body, this_cardinal_group):
     cardinal_group_solutions = []
+    cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> Checking Cardinal Group: {this_cardinal_group.cardinal_group_items}')
+
     for variable_set_info in this_cardinal_group.cardinal_group_items:
         variable_set_id = variable_set_info[0]
         variable_set_coll_or_dist_solutions = []
@@ -345,7 +357,8 @@ def cardinal_group_outgoing_solutions(this_predicate_index, state, variable_name
             has_child_cardinals, variable_set_solution_alternatives = cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variable_name, h_body,
                                                                                                                this_cardinal_group,
                                                                                                                this_variable_set_cache, variable_set_info)
-            variable_set_coll_or_dist_solutions.append(variable_set_solution_alternatives)
+            if len(variable_set_solution_alternatives) > 0:
+                variable_set_coll_or_dist_solutions.append(variable_set_solution_alternatives)
 
             # If there are not child cardinals, trying the other mode will just give duplicate answers
             if not has_child_cardinals:
@@ -355,11 +368,13 @@ def cardinal_group_outgoing_solutions(this_predicate_index, state, variable_name
             # There were no coll or dist solutions:
             # fail since all variable sets in a cardinal group must succeed (in coll or dist mode)
             # for the cardinal to succeed
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> FAIL Cardinal Group since variable set FAIL {variable_set_info}')
             return []
 
         else:
             cardinal_group_solutions.append(variable_set_coll_or_dist_solutions)
 
+    cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> SUCC Cardinal Group {this_cardinal_group.cardinal_group_items}')
     return cardinal_group_solutions
 
 
@@ -369,13 +384,17 @@ def cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variab
 
     # There could be multiple solutions to this whole set
     variable_set_solution_alternatives = []
-    find_next_solution = True
+    find_next_solution_to_variable_set = True
     has_child_cardinals = False
-    while find_next_solution:
+    while find_next_solution_to_variable_set:
+        # Will contain a list, where each element is solutions to one
+        # variable set item
         variable_set_item_solutions = []
         for variable_set_item_index in range(0, len(variable_set)):
+            # Find a solution for this variable set in the cardinal group
             variable_set_item = variable_set[variable_set_item_index]
 
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> {"[Next solution] " if "NextSolution" in this_variable_set_cache and this_variable_set_cache["NextSolution"] else ""}Checking variable set item: {variable_set_item}')
             new_state = state.set_x(variable_name, variable_set_item, this_cardinal_group.cardinal_group_id,
                                     this_variable_set_cache["VariableSetID"], variable_set_item_index, this_cardinal_group.is_collective)
             try:
@@ -390,29 +409,48 @@ def cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variab
             except VariableSetRestart:
                 # A child asked us to retry which means a child had a variable_set that didn't completely work against this set
                 # So: the alternatives we have so far are right, but we need to restart the variable set (this keeps the same group to allow the child to cache things there)
+                cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> Child requested VariableSetRestart')
                 this_variable_set_cache["NextSolution"] = True
                 break
 
-            # if there were no solutions, then there are no more alternatives
+            # if there were no solutions to this variable set item,
+            # then there are no more alternatives
             if len(variable_set_item_solution_alternatives) == 0:
-                find_next_solution = False
+                find_next_solution_to_variable_set = False
+                cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> FAIL Variable Set Item: {variable_set_item}')
                 break
 
-            variable_set_item_solutions.append(variable_set_item_solution_alternatives)
+            else:
+                cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> SUCC Variable Set Item: {variable_set_item}')
+                variable_set_item_solutions.append(variable_set_item_solution_alternatives)
 
-        # Now we have at least one solution for each of the items
-        variable_set_solution_alternatives.append(variable_set_item_solutions)
+        # If variable_set_item_solutions == len(variable_set),
+        # We have at least one solution that worked for all
+        # the items in the variable set, so we have success for this variable set
+        if len(variable_set_item_solutions) == len(variable_set):
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> SUCC Variable Set Alternative: {variable_set}')
+            variable_set_solution_alternatives.append(variable_set_item_solutions)
+        else:
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> FAIL Variable Set Alternative: {variable_set}')
 
         # If there are not cardinal children, there can't be more alternatives
         if not has_child_cardinals:
-            find_next_solution = False
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> [No child cardinals] Stop checking Variable Set alternatives: {variable_set}')
+            find_next_solution_to_variable_set = False
+
         else:
-            # Tell the child cardinals to give us the next solution for this group
+            # Tell the child cardinals to give us the next solution for this variable set
+            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> Check Variable Set alternatives: {variable_set}')
             this_variable_set_cache["NextSolution"] = True
+
+    if len(variable_set_solution_alternatives) > 0:
+        cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> SUCC Variable Set: variable set had at least one solution: {variable_set}')
+    else:
+        cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> FAIL Variable Set: variable set had no solutions: {variable_set}')
 
     return has_child_cardinals, variable_set_solution_alternatives
 
-#
+        #
 # @Predication(vocabulary)
 # def card_with_scope(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
 #     c_count_value = int(c_count)

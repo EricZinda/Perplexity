@@ -31,8 +31,8 @@
             "ID": "c640e4fe-64fb-4c66-907f-509384f63731"
         },
         {
-            "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Command": "/new examples.Example28_reset",
+            "Expected": "State reset using examples.Example28_reset().",
             "Tree": null,
             "Enabled": true,
             "ID": "281f35b6-4c3a-4c63-af8b-f0d85f14be00"
@@ -46,7 +46,7 @@
         },
         {
             "Command": "which 2 files are in two folders?",
-            "Expected": "File(name=/temp/59.txt, size=1000)\nFile(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=1000)\n",
+            "Expected": "x3#462(0:460:463->0)[dist]=File(name=/Desktop/yellow.txt, size=10000000)\nx3#462(0:460:464->0)[dist]=File(name=/Desktop/green.txt, size=1000)\nx3#507(0:461:508->0)[dist]=File(name=/temp/red.txt, size=10000000)\nx3#507(0:461:509->0)[dist]=File(name=/temp/blue.txt, size=1000)\n\nand\n\nx3#480(0:460:481->0)[coll]=File(name=/Desktop/yellow.txt, size=10000000), x3#480(0:460:481->1)[coll]=File(name=/Desktop/green.txt, size=1000)\nx3#520(0:461:521->0)[coll]=File(name=/temp/red.txt, size=10000000), x3#520(0:461:521->1)[coll]=File(name=/temp/blue.txt, size=1000)\n",
             "Tree": "_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "cf6229f7-87be-4c3d-9820-3bc6d3150de4"
