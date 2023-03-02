@@ -51,7 +51,7 @@ class State(object):
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, solution_id=None, cardinal_id=None, cardinal_item_id=None, is_collective=False, used_collective=False):
+    def set_x(self, variable_name, item, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=False, used_collective=False):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -65,14 +65,14 @@ class State(object):
 
         # Dictionaries hold name/value pairs.
         # This is how you assign values to keys in dictionaries
-        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name, solution_id, cardinal_id, cardinal_item_id, is_collective, used_collective), item)
+        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name, cardinal_group_id, variable_set_id, variable_set_item_id, is_collective, used_collective), item)
 
         # "return" returns to the caller the new state with
         # that one variable set to a new value
         return new_state
 
     def set_x_from_binding(self, binding, item):
-        return self.set_x(binding.variable.name, item, solution_id=binding.variable.cardinal_solution_id, cardinal_id=binding.variable.cardinal_id, cardinal_item_id=binding.variable.cardinal_item_id, is_collective=binding.variable.is_collective, used_collective=binding.variable.used_collective)
+        return self.set_x(binding.variable.name, item, cardinal_group_id=binding.variable.cardinal_group_id, variable_set_id=binding.variable.variable_set_id, variable_set_item_id=binding.variable.variable_set_item_id, is_collective=binding.variable.is_collective, used_collective=binding.variable.used_collective)
 
     def add_to_e(self, event_name, key, value):
         newState = copy.deepcopy(self)

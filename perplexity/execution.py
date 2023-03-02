@@ -16,7 +16,7 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
-class RetrySetException(Exception):
+class VariableSetRestart(Exception):
     pass
 
 
@@ -31,22 +31,18 @@ def create_solution_id():
     return value
 
 
-def create_cardinal_set(child_is_collective):
-    global next_group_id
+def create_variable_set_cache(variable_set_id, child_is_collective):
     parent_solution = group_context()
-    parent_cardinal_id = parent_solution["CardinalID"] if parent_solution is not None and "CardinalID" in parent_solution else None
+    parent_variable_set_id = parent_solution["VariableSetID"] if parent_solution is not None and "VariableSetID" in parent_solution else None
 
-    value = next_group_id
-    next_group_id += 1
-    return {"GroupItems": [],
-            "ChildIsCollective": child_is_collective,
+    return {"ChildIsCollective": child_is_collective,
             "ChildCardinals": {},
-            "CardinalID": ((parent_cardinal_id + ":") if parent_cardinal_id is not None else "") + str(value)}
+            "VariableSetID": ((parent_variable_set_id + ":") if parent_variable_set_id is not None else "") + str(variable_set_id)}
 
 
 def cardinal_tree(solutions):
     # First figure out the order of the "tree of cardinals" from child to parent
-    # The order of them is simply the number of ids in the cardinal_id
+    # The order of them is simply the number of ids in the cardinal_group_id
     # It won't change for the answers so we can just do it on the first one
     # TODO: For now we are assuming it is a straight line, not a tree
     tree_info = solutions[0].get_binding("tree")
@@ -54,8 +50,8 @@ def cardinal_tree(solutions):
     cardinal_list = []
     for variable_name in variables:
         binding = solutions[0].get_binding(variable_name)
-        if binding.variable.cardinal_id is not None:
-            cardinal_id_parts = binding.variable.cardinal_id.split(":")
+        if binding.variable.variable_set_id is not None:
+            cardinal_id_parts = binding.variable.variable_set_id.split(":")
             cardinal_list.append((len(cardinal_id_parts), variable_name))
 
     cardinal_list.sort(reverse=True)
@@ -98,8 +94,8 @@ def group_answer_sets2(cardinal_order, solutions, answers_orig):
         for solution_index in range(0, len(solutions)):
             solution = solutions[solution_index]
             binding = solution.get_binding(current_variable)
-            solution_id = binding.variable.cardinal_solution_id
-            cardinal_item_id = binding.variable.cardinal_item_id
+            solution_id = binding.variable.cardinal_group_id
+            cardinal_item_id = binding.variable.variable_set_item_id
             if solution_id not in solution_groups:
                 solution_groups[solution_id] = []
 
@@ -111,8 +107,8 @@ def group_answer_sets2(cardinal_order, solutions, answers_orig):
             # Get rid of duplicates by using cardinal_item_id
             binding_ids = {}
             for solution_with_binding in solutions_with_binding:
-                cardinal_id = solution_with_binding[1].variable.cardinal_id
-                cardinal_item_id = solution_with_binding[1].variable.cardinal_item_id
+                cardinal_id = solution_with_binding[1].variable.variable_set_id
+                cardinal_item_id = solution_with_binding[1].variable.variable_set_item_id
                 binding_ids[str(cardinal_id) + str(cardinal_item_id)] = solution_with_binding[1]
             bindings = [item for item in binding_ids.values()]
             is_collective = bindings[0].variable.is_collective
@@ -202,12 +198,12 @@ class ExecutionContext(object):
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
 
-            for is_collective in [False]:
-                initial_group = create_cardinal_set(is_collective)
+            for is_collective in [False, True]:
+                initial_group = create_variable_set_cache(0, is_collective)
                 try:
                     yield from self.call_with_group(initial_group, state.set_x("tree", tree_info), tree_info["Tree"])
 
-                except RetrySetException:
+                except VariableSetRestart:
                     # Ignore restart exceptions since there is no set we are
                     # generating that can be changed since we are the root
                     pass

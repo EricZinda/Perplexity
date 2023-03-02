@@ -7,8 +7,8 @@ from file_system_example.state import DeleteOperation, ChangeDirectoryOperation,
 from perplexity.cardinals import split_cardinal_rstr
 from perplexity.utilities import at_least_one_generator
 from perplexity.variable_binding import VariableBinding
-from perplexity.execution import call, report_error, execution_context, call_with_group, group_context, create_cardinal_set, \
-    RetrySetException, create_solution_id
+from perplexity.execution import call, report_error, execution_context, call_with_group, group_context, create_variable_set_cache, \
+    VariableSetRestart, create_solution_id
 from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1, \
     predication_from_index
 from perplexity.virtual_arguments import scopal_argument
@@ -211,217 +211,408 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
     pass
 
 
-def create_combinator(state, variable_name, h_rstr, count):
+# def create_combinator(state, variable_name, h_rstr, count):
+#     def binding_from_call():
+#         for rstr_state in call(state, h_rstr):
+#             yield rstr_state.get_binding(variable_name).value
+#
+#     return itertools.combinations(binding_from_call(), count)
+
+class CardinalGroup(object):
+    def __init__(self, is_collective, cardinal_group_id, cardinal_group_items):
+        self.is_collective = is_collective
+        self.cardinal_group_id = cardinal_group_id
+        self.cardinal_group_items = cardinal_group_items
+
+
+def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr, count):
     def binding_from_call():
         for rstr_state in call(state, h_rstr):
             yield rstr_state.get_binding(variable_name).value
 
-    return itertools.combinations(binding_from_call(), count)
+    def next_cardinal_group():
+        for cardinal_group_elements in itertools.combinations(binding_from_call(), count):
+            if is_collective:
+                yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), cardinal_group_elements])])
+            else:
+                yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [element]]) for element in cardinal_group_elements])
+
+    yield from next_cardinal_group()
+
+
+def yield_all_cardinal_group_solutions(cardinal_group_solutions):
+    for variable_set_coll_or_dist_solutions in cardinal_group_solutions:
+        for variable_set_solution_alternatives in variable_set_coll_or_dist_solutions:
+            for variable_set_item_solutions in variable_set_solution_alternatives:
+                for variable_set_item_solution_alternatives in variable_set_item_solutions:
+                    for variable_set_item_solution_alternative in variable_set_item_solution_alternatives:
+                        yield variable_set_item_solution_alternative
 
 
 # rewrite: default_q(x, [cardinal(x, ...), other()], body)
 # to: cardinal(x, [other()], default_q(x, thing(x), body)
 # to: cardinal(..., default_q(x, base_rstr, body)
-@Predication(vocabulary)
-def card_with_scope(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
+@Predication(vocabulary, names=["card_with_scope"])
+def cardinal_variable_set_incoming(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
     c_count_value = int(c_count)
     this_predicate_index = execution_context().current_predication_index()
+    parent_variable_set_cache = group_context()
 
-    # Get the current cardinal group (we only care about the closest group)
-    # This defines the boundaries of the set we are operating against
-    # And changes when we have a new set from the parent
-    # It will also tell us what mode we should be operating in
-    parent_group = group_context()
+    new_parent_variable_set = this_predicate_index not in parent_variable_set_cache["ChildCardinals"]
+    parent_variable_set_next_solution = "NextSolution" in parent_variable_set_cache and parent_variable_set_cache["NextSolution"] is True
+    if new_parent_variable_set or parent_variable_set_next_solution:
+        yield from cardinal_variable_set_incoming_next_this_cardinal_group(this_predicate_index, state, h_body,
+                                                                           new_parent_variable_set, parent_variable_set_next_solution, parent_variable_set_cache,
+                                                                           x_target_binding.variable.name, h_rstr, c_count_value)
 
-    has_child_cardinals = False
-    for child_is_collective in [False]:
-        has_current_set = this_predicate_index in parent_group["ChildCardinals"] and parent_group["ChildCardinals"][this_predicate_index]["CurrentSet"] is not None
-        next_solution_for_parent_set = "NextSolution" in parent_group and parent_group["NextSolution"] is True
-        if has_current_set and next_solution_for_parent_set:
-            # The parent is asking us to find another set that works with its current set
-            # Clear out our current one so we get a new one
-            has_current_set = False
-            parent_group["ChildCardinals"][this_predicate_index]["CurrentSet"] = None
-            cardinal_logger.debug(f'CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> Parent requested next solution')
+    else:
+        # Continue going through the parent_variable_set: this is the next item in the set
+        # We need to use the same this_cardinal_group that we used for the other elements of the set
+        # and try it on this_cardinal_group
+        this_cardinal_group = parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"]
+        cardinal_group_solutions = cardinal_group_outgoing_solutions(this_predicate_index, state, x_target_binding.variable.name, h_body, this_cardinal_group)
+        if len(cardinal_group_solutions) == 0:
+            # This cardinal group didn't work. Because we've already worked through at least one item in the
+            # parent_variable_set, we can't just immediately try another this_cardinal_group
+            # Instead, ask the parent to variable_set_restart so it will start from the beginning of its variable_set
+            # and we can find a new this_cardinal_group but where we left off in the generator
+            parent_variable_set_cache["NextSolution"] = True
+            raise VariableSetRestart
+        else:
+            yield from yield_all_cardinal_group_solutions(cardinal_group_solutions)
 
-        if has_current_set:
-            # We have already found and stashed a set of solutions for this
-            # parent group. See if they still apply to this item
-            this_card_info = parent_group["ChildCardinals"][this_predicate_index]
-            cardinal_logger.debug(f'SolutionID:{this_card_info["SolutionID"]}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> Test existing set: {this_card_info["CurrentSet"]}')
-            has_child_cardinals, subset_solutions_list_list = card_apply_set(state, child_is_collective, parent_group["ChildIsCollective"], this_card_info["SolutionID"], parent_group["CardinalID"], x_target_binding.variable.name, this_card_info["CurrentSet"], h_body)
 
-            if len(subset_solutions_list_list) == 0:
-                # The existing set did not ALL work for the new item
-                # Set our set to None so we find a new set
-                parent_group["ChildCardinals"][this_predicate_index]["CurrentSet"] = None
+# Get the next this_cardinal_group because we have a new parent variable_set OR
+# Because the parent asked us to to get alternative answers OR
+# Because the current cardinal group didn't work for the parent_variable_set and we threw an
+#   exception asking to start the set over so we can try another
+def cardinal_variable_set_incoming_next_this_cardinal_group(this_predicate_index, state, h_body,
+                                                            new_parent_variable_set, parent_variable_set_next_solution, parent_variable_set_cache,
+                                                            variable_name, h_rstr, c_count_value):
+    if new_parent_variable_set:
+        # Create a new cardinal group generator that matches coll or dist
+        # Cache it so we can use it next time. This must be set even if we fail so that
+        # parents know there are child cardinals
+        cardinal_group_generator = create_cardinal_group_generator(state, parent_variable_set_cache["ChildIsCollective"], variable_name, h_rstr, c_count_value)
+        parent_variable_set_cache["ChildCardinals"][this_predicate_index] = {}
+        parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CardinalGroupGenerator"] = cardinal_group_generator
 
-                # and throw an exception to make the caller retry each one from the beginning with the current rstr_generator
-                # and the set that worked
-                raise RetrySetException()
+    else:
+        assert parent_variable_set_next_solution
+        # Use the existing cached generator
+        # Set parent_variable_set_next_solution = False so we don't do it again
+        cardinal_group_generator = parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CardinalGroupGenerator"]
+        parent_variable_set_cache["NextSolution"] = False
 
-            else:
-                # This set worked again for this body
-                for subset_solutions_list in subset_solutions_list_list:
-                    for subset_solutions in subset_solutions_list:
-                        for subset_solution in subset_solutions:
-                            for solution in subset_solution:
-                                yield solution
+    # Find one this_cardinal_group solution that works,
+    # Then, subsequent calls will try it on other elements of the
+    # parent variable_set
+    cardinal_group_solutions = []
+    while len(cardinal_group_solutions) == 0:
+        try:
+            # Get a new this_cardinal_group from generator
+            this_cardinal_group = next(cardinal_group_generator)
+
+        except StopIteration:
+            # No more cardinal groups available, fail
+            return
+
+        # Get the solutions to it
+        cardinal_group_solutions = cardinal_group_outgoing_solutions(this_predicate_index, state, variable_name, h_body, this_cardinal_group)
+        if len(cardinal_group_solutions) == 0:
+            # This cardinal group didn't work, try the next one
+            continue
 
         else:
-            # Find the next, or first, set for this cardinal and see if it works in the binding
-            # Since this is a new solution, create a new solution id
-            solution_id = create_solution_id()
-            if this_predicate_index in parent_group["ChildCardinals"] and "Combinator" in parent_group["ChildCardinals"][this_predicate_index]:
-                log_message = "Next set"
-                this_card_info = parent_group["ChildCardinals"][this_predicate_index]
-                combinator = parent_group["ChildCardinals"][this_predicate_index]["Combinator"]
-
-            else:
-                log_message = "First set"
-                this_card_info = dict()
-                parent_group["ChildCardinals"][this_predicate_index] = this_card_info
-
-                # Create a new combinator to return all combinations of items from this rstr
-                combinator = create_combinator(state, x_target_binding.variable.name, h_rstr, c_count_value)
-                parent_group["ChildCardinals"][this_predicate_index]["Combinator"] = combinator
-
-            cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> {log_message}')
-
-            # Find one solution set that works for this body
-            while True:
-                try:
-                    binding_set = next(combinator)
-                    cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> Check new set: {binding_set}')
-
-                except StopIteration:
-                    # No more sets available, fail
-                    cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> No more sets available, fail')
-                    return
-
-                has_child_cardinals, subset_solutions_list_list = card_apply_set(state, child_is_collective, parent_group["ChildIsCollective"], solution_id, parent_group["CardinalID"], x_target_binding.variable.name, binding_set, h_body)
-
-                if len(subset_solutions_list_list) > 0:
-                    # We found a set that works for this item
-                    # set our set to this one
-                    this_card_info["CurrentSet"] = binding_set
-                    this_card_info["SolutionID"] = solution_id
-
-                    for subset_solutions_list in subset_solutions_list_list:
-                        for subset_solutions in subset_solutions_list:
-                            for subset_solution in subset_solutions:
-                                for solution in subset_solution:
-                                    yield solution
-
-                    break
-
-        # If there are no child cardinals don't do dist and coll alternatives because it
-        # creates invalid duplicates
-        if not has_child_cardinals:
-            break
+            # This cardinal group worked, cache it so we can try against other items in the parent_variable_set
+            # and return all the answers
+            parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"] = this_cardinal_group
+            yield from yield_all_cardinal_group_solutions(cardinal_group_solutions)
 
 
-# Find one set of answers to the set passed in
-def card_apply_set(state, child_is_collective, is_collective, solution_id, cardinal_id, variable_name, initial_set_values, h_body):
-    if is_collective:
-        # If we are collective, there is one subset that contains N items
-        subsets = [initial_set_values]
-    else:
-        # If we are distributive, there are N subsets of 1 item
-        subsets = [[item] for item in initial_set_values]
+# Get all solutions for the entire this_cardinal_group
+# The whole cardinal group must work or it fails
+def cardinal_group_outgoing_solutions(this_predicate_index, state, variable_name, h_body, this_cardinal_group):
+    cardinal_group_solutions = []
+    for variable_set_info in this_cardinal_group.cardinal_group_items:
+        variable_set_id = variable_set_info[0]
+        variable_set_coll_or_dist_solutions = []
 
-    # Make sure all the subsets succeed
-    # This collects a list of solutions for every subset
-    # If we succeed it should have the same number of items as we do subsets
-    subset_solutions_list_list = []
+        # Try the child in both coll and dist mode
+        for is_child_collective in [False, True]:
+            # Create a this_variable_set_cache to represent the variable_set
+            this_variable_set_cache = create_variable_set_cache(variable_set_id, is_child_collective)
+            has_child_cardinals, variable_set_solution_alternatives = cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variable_name, h_body,
+                                                                                                               this_cardinal_group,
+                                                                                                               this_variable_set_cache, variable_set_info)
+            variable_set_coll_or_dist_solutions.append(variable_set_solution_alternatives)
+
+            # If there are not child cardinals, trying the other mode will just give duplicate answers
+            if not has_child_cardinals:
+                break
+
+        if len(variable_set_coll_or_dist_solutions) == 0:
+            # There were no coll or dist solutions:
+            # fail since all variable sets in a cardinal group must succeed (in coll or dist mode)
+            # for the cardinal to succeed
+            return []
+
+        else:
+            cardinal_group_solutions.append(variable_set_coll_or_dist_solutions)
+
+    return cardinal_group_solutions
+
+
+# Get all alternative solutions to a particular outgoing variable_set
+def cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variable_name, h_body, this_cardinal_group, this_variable_set_cache, variable_set_info):
+    variable_set = variable_set_info[1]
+
+    # There could be multiple solutions to this whole set
+    variable_set_solution_alternatives = []
+    find_next_solution = True
     has_child_cardinals = False
-    for subsets_index in range(0, len(subsets)):
-        # This is the list of solutions for this subset
-        subset_solutions_list = []
-        subset_values = subsets[subsets_index]
+    while find_next_solution:
+        variable_set_item_solutions = []
+        for variable_set_item_index in range(0, len(variable_set)):
+            variable_set_item = variable_set[variable_set_item_index]
 
-        # We are sending all items in this subset to any children in the body
-        # So, let the child know they will be operating against a set of items
-        # by creating a group. Also tell them if they, themselves, should be coll or dist
-        # Each subset gets its own cardinalID to indicate it is a unique set
-        group = create_cardinal_set(child_is_collective)
+            new_state = state.set_x(variable_name, variable_set_item, this_cardinal_group.cardinal_group_id,
+                                    this_variable_set_cache["VariableSetID"], variable_set_item_index, this_cardinal_group.is_collective)
+            try:
+                variable_set_item_solution_alternatives = []
+                for variable_set_item_solution in call_with_group(this_variable_set_cache, new_state, h_body):
+                    variable_set_item_solution_alternatives.append(variable_set_item_solution)
 
-        # We need to find all the answers for this subset, there may be more than one
-        find_next_solution = True
-        while find_next_solution:
+                # Even if it fails, this gets set in children
+                if len(this_variable_set_cache["ChildCardinals"]) > 0:
+                    has_child_cardinals = True
+
+            except VariableSetRestart:
+                # A child asked us to retry which means a child had a variable_set that didn't completely work against this set
+                # So: the alternatives we have so far are right, but we need to restart the variable set (this keeps the same group to allow the child to cache things there)
+                this_variable_set_cache["NextSolution"] = True
+                break
+
+            # if there were no solutions, then there are no more alternatives
+            if len(variable_set_item_solution_alternatives) == 0:
+                find_next_solution = False
+                break
+
+            variable_set_item_solutions.append(variable_set_item_solution_alternatives)
+
+        # Now we have at least one solution for each of the items
+        variable_set_solution_alternatives.append(variable_set_item_solutions)
+
+        # If there are not cardinal children, there can't be more alternatives
+        if not has_child_cardinals:
             find_next_solution = False
-            cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Find next solution for {subset_values}')
+        else:
+            # Tell the child cardinals to give us the next solution for this group
+            this_variable_set_cache["NextSolution"] = True
 
-            # Allow a child to ask for a restart to find an alternative
-            restart_once = True
-            while restart_once:
-                restart_once = False
+    return has_child_cardinals, variable_set_solution_alternatives
 
-                # See if all items in the subset work in the body
-                subset_solutions = []
-                for subset_values_index in range(0, len(subset_values)):
-                    binding_value = subset_values[subset_values_index]
-                    if is_collective:
-                        cardinal_item_id = subset_values_index
-                    else:
-                        cardinal_item_id = subsets_index
-                    body_states = []
-                    cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Checking: {variable_name}={binding_value}')
-                    new_state = state.set_x(variable_name, binding_value, solution_id, cardinal_id, cardinal_item_id, is_collective)
-                    try:
-                        for body_state in call_with_group(group, new_state, h_body):
-                            body_states.append(body_state)
-
-                    except RetrySetException:
-                        # One of the children wants us to do the loop again *with the same items* so they
-                        # can try new values
-                        restart_once = True
-                        cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Child requested retry of {subset_values}')
-                        break
-
-                    if len(group["ChildCardinals"]) > 0:
-                        has_child_cardinals = True
-
-                    if len(body_states) > 0:
-                        # This item (binding_value) from the subset worked in the body
-                        subset_solutions.append(body_states)
-
-                    else:
-                        # This item did not work, and unless they all work, things fail
-                        # so: fail this *solution* (there may be others for this set that did work)
-                        subset_solutions = []
-                        cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Subset item {binding_value} failed, subset fails: {subset_values}')
-                        if solution_id == 1 and cardinal_id == "1":
-                            print("ere")
-                        break
-
-                    group["NextSolution"] = False
-
-                if restart_once:
-                    continue
-
-                if len(subset_solutions) > 0:
-                    # All items in this subset worked in the body
-                    # Continue and make sure the other subsets do too
-                    cardinal_logger.debug(
-                        f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Subset succeeded: {subset_values}')
-                    subset_solutions_list.append(subset_solutions)
-                    if has_child_cardinals:
-                        find_next_solution = True
-                        group["NextSolution"] = True
-
-        # Collect all of the solutions for this subset
-        if len(subset_solutions_list) > 0:
-            subset_solutions_list_list.append(subset_solutions_list)
-
-    if len(subset_solutions_list_list) == len(subsets):
-        # All items in all subsets worked
-        cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Set succeeded: {initial_set_values}')
-        return has_child_cardinals, subset_solutions_list_list
-
-    else:
-        cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Set failed: {initial_set_values}')
-        return has_child_cardinals, []
+#
+# @Predication(vocabulary)
+# def card_with_scope(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
+#     c_count_value = int(c_count)
+#     this_predicate_index = execution_context().current_predication_index()
+#
+#     # Get the current cardinal group (we only care about the closest group)
+#     # This defines the boundaries of the set we are operating against
+#     # And changes when we have a new set from the parent
+#     # It will also tell us what mode we should be operating in
+#     parent_group = group_context()
+#
+#     has_child_cardinals = False
+#     for child_is_collective in [False]:
+#         has_current_set = this_predicate_index in parent_group["ChildCardinals"] and parent_group["ChildCardinals"][this_predicate_index]["CurrentSet"] is not None
+#         next_solution_for_parent_set = "NextSolution" in parent_group and parent_group["NextSolution"] is True
+#         if has_current_set and next_solution_for_parent_set:
+#             # The parent is asking us to find another set that works with its current set
+#             # Clear out our current one so we get a new one
+#             has_current_set = False
+#             parent_group["ChildCardinals"][this_predicate_index]["CurrentSet"] = None
+#             cardinal_logger.debug(f'CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> Parent requested next solution')
+#
+#         if has_current_set:
+#             # We have already found and stashed a set of solutions for this
+#             # parent group. See if they still apply to this item
+#             this_card_info = parent_group["ChildCardinals"][this_predicate_index]
+#             cardinal_logger.debug(f'SolutionID:{this_card_info["SolutionID"]}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> Test existing set: {this_card_info["CurrentSet"]}')
+#             has_child_cardinals, subset_solutions_list_list = card_apply_set(state, child_is_collective, parent_group["ChildIsCollective"], this_card_info["SolutionID"], parent_group["CardinalID"], x_target_binding.variable.name, this_card_info["CurrentSet"], h_body)
+#
+#             if len(subset_solutions_list_list) == 0:
+#                 # The existing set did not ALL work for the new item
+#                 # Set our set to None so we find a new set
+#                 parent_group["ChildCardinals"][this_predicate_index]["CurrentSet"] = None
+#
+#                 # and throw an exception to make the caller retry each one from the beginning with the current rstr_generator
+#                 # and the set that worked
+#                 raise RetrySetException()
+#
+#             else:
+#                 # This set worked again for this body
+#                 for subset_solutions_list in subset_solutions_list_list:
+#                     for subset_solutions in subset_solutions_list:
+#                         for subset_solution in subset_solutions:
+#                             for solution in subset_solution:
+#                                 yield solution
+#
+#         else:
+#             # Find the next, or first, set for this cardinal and see if it works in the binding
+#             # Since this is a new solution, create a new solution id
+#             solution_id = create_solution_id()
+#             if this_predicate_index in parent_group["ChildCardinals"] and "Combinator" in parent_group["ChildCardinals"][this_predicate_index]:
+#                 log_message = "Next set"
+#                 this_card_info = parent_group["ChildCardinals"][this_predicate_index]
+#                 combinator = parent_group["ChildCardinals"][this_predicate_index]["Combinator"]
+#
+#             else:
+#                 log_message = "First set"
+#                 this_card_info = dict()
+#                 parent_group["ChildCardinals"][this_predicate_index] = this_card_info
+#
+#                 # Create a new combinator to return all combinations of items from this rstr
+#                 combinator = create_combinator(state, x_target_binding.variable.name, h_rstr, c_count_value)
+#                 parent_group["ChildCardinals"][this_predicate_index]["Combinator"] = combinator
+#
+#             cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> {log_message}')
+#
+#             # Find one solution set that works for this body
+#             while True:
+#                 try:
+#                     binding_set = next(combinator)
+#                     cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> Check new set: {binding_set}')
+#
+#                 except StopIteration:
+#                     # No more sets available, fail
+#                     cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{parent_group["CardinalID"]}, coll:{parent_group["ChildIsCollective"]}, Predicate:{this_predicate_index} -> No more sets available, fail')
+#                     return
+#
+#                 has_child_cardinals, subset_solutions_list_list = card_apply_set(state, child_is_collective, parent_group["ChildIsCollective"], solution_id, parent_group["CardinalID"], x_target_binding.variable.name, binding_set, h_body)
+#
+#                 if len(subset_solutions_list_list) > 0:
+#                     # We found a set that works for this item
+#                     # set our set to this one
+#                     this_card_info["CurrentSet"] = binding_set
+#                     this_card_info["SolutionID"] = solution_id
+#
+#                     for subset_solutions_list in subset_solutions_list_list:
+#                         for subset_solutions in subset_solutions_list:
+#                             for subset_solution in subset_solutions:
+#                                 for solution in subset_solution:
+#                                     yield solution
+#
+#                     break
+#
+#         # If there are no child cardinals don't do dist and coll alternatives because it
+#         # creates invalid duplicates
+#         if not has_child_cardinals:
+#             break
+#
+#
+# # Find one set of answers to the set passed in
+# def card_apply_set(state, child_is_collective, is_collective, solution_id, cardinal_id, variable_name, initial_set_values, h_body):
+#     if is_collective:
+#         # If we are collective, there is one subset that contains N items
+#         subsets = [initial_set_values]
+#     else:
+#         # If we are distributive, there are N subsets of 1 item
+#         subsets = [[item] for item in initial_set_values]
+#
+#     # Make sure all the subsets succeed
+#     # This collects a list of solutions for every subset
+#     # If we succeed it should have the same number of items as we do subsets
+#     subset_solutions_list_list = []
+#     has_child_cardinals = False
+#     for subsets_index in range(0, len(subsets)):
+#         # This is the list of solutions for this subset
+#         subset_solutions_list = []
+#         subset_values = subsets[subsets_index]
+#
+#         # We are sending all items in this subset to any children in the body
+#         # So, let the child know they will be operating against a set of items
+#         # by creating a group. Also tell them if they, themselves, should be coll or dist
+#         # Each subset gets its own cardinalID to indicate it is a unique set
+#         group = create_cardinal_set(child_is_collective)
+#
+#         # We need to find all the answers for this subset, there may be more than one
+#         find_next_solution = True
+#         while find_next_solution:
+#             find_next_solution = False
+#             cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Find next solution for {subset_values}')
+#
+#             # Allow a child to ask for a restart to find an alternative
+#             restart_once = True
+#             while restart_once:
+#                 restart_once = False
+#
+#                 # See if all items in the subset work in the body
+#                 subset_solutions = []
+#                 for subset_values_index in range(0, len(subset_values)):
+#                     binding_value = subset_values[subset_values_index]
+#                     if is_collective:
+#                         cardinal_item_id = subset_values_index
+#                     else:
+#                         cardinal_item_id = subsets_index
+#                     body_states = []
+#                     cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Checking: {variable_name}={binding_value}')
+#                     new_state = state.set_x(variable_name, binding_value, solution_id, cardinal_id, cardinal_item_id, is_collective)
+#                     try:
+#                         for body_state in call_with_group(group, new_state, h_body):
+#                             body_states.append(body_state)
+#
+#                     except RetrySetException:
+#                         # One of the children wants us to do the loop again *with the same items* so they
+#                         # can try new values
+#                         restart_once = True
+#                         cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Child requested retry of {subset_values}')
+#                         break
+#
+#                     if len(group["ChildCardinals"]) > 0:
+#                         has_child_cardinals = True
+#
+#                     if len(body_states) > 0:
+#                         # This item (binding_value) from the subset worked in the body
+#                         subset_solutions.append(body_states)
+#
+#                     else:
+#                         # This item did not work, and unless they all work, things fail
+#                         # so: fail this *solution* (there may be others for this set that did work)
+#                         subset_solutions = []
+#                         cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Subset item {binding_value} failed, subset fails: {subset_values}')
+#                         if solution_id == 1 and cardinal_id == "1":
+#                             print("ere")
+#                         break
+#
+#                     group["NextSolution"] = False
+#
+#                 if restart_once:
+#                     continue
+#
+#                 if len(subset_solutions) > 0:
+#                     # All items in this subset worked in the body
+#                     # Continue and make sure the other subsets do too
+#                     cardinal_logger.debug(
+#                         f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Subset succeeded: {subset_values}')
+#                     subset_solutions_list.append(subset_solutions)
+#                     if has_child_cardinals:
+#                         find_next_solution = True
+#                         group["NextSolution"] = True
+#
+#         # Collect all of the solutions for this subset
+#         if len(subset_solutions_list) > 0:
+#             subset_solutions_list_list.append(subset_solutions_list)
+#
+#     if len(subset_solutions_list_list) == len(subsets):
+#         # All items in all subsets worked
+#         cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Set succeeded: {initial_set_values}')
+#         return has_child_cardinals, subset_solutions_list_list
+#
+#     else:
+#         cardinal_logger.debug(f'SolutionID:{solution_id}, CardinalID:{cardinal_id}, coll:{is_collective}, Predicate:{execution_context().current_predication_index()} -> Set failed: {initial_set_values}')
+#         return has_child_cardinals, []
 #
 # # rewrite: default_q(x, [cardinal(x, ...), other()], body)
 # # to: cardinal(x, [other()], default_q(x, thing(x), body)

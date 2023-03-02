@@ -1,6 +1,6 @@
 Remaining work to be shown in the tutorial:
-- CardinalID is not changing for each new set in dist
-  - Because it is set by the parent in the group, and the group represents the parent solution
+- dist/dist is not right, getting some that are just one from the inner
+
 - (fixed) coll dist reuses the same item on dist and they should start from the beginning
   - If an existing cardinal_id comes in, we go into coll mode and only test the existing values.
     - coll/dist should see if the set of coll is true for each item in dist coll(folder), dist(file) means: a file is in both folders, a different file is in both folders

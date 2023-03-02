@@ -1,22 +1,23 @@
 # Variables in solutions will have these properties set on the binding:
-# - cardinal_solution_id: for a given cardinal, all solutions that are in a given coll or dist set have the same cardinal_solution_id
-# - cardinal_item_id: the index of this element of the *cardinal_solution_id* or None if there is no set
-# - cardinal_id: the "set" the answer is a part of or None if there is no set
-# - is_collective: True if this variable is acting in collective mode
-# - used_collective: True if the processing of the variable acts differently for collective and distributive modes
+# variable_set_id: a group of values that are treated as a whole. The group has a unique variable_set_id
+# variable_set_item_id: one element of a variable set
+# cardinal_group_id: A cardinal has a group of variable sets that it deals with called a cardinal group. For coll, it is a list of one set of N, for dist it is a list of N sets of 1
+#                   it is a group of pairs of variable_set_id/[list of values]
+# is_collective: True if this variable is acting in collective mode
+# used_collective: True if the processing of the variable acts differently for collective and distributive modes
 #                       Note that this only needs to be set on answers that actually processed the collective mode as a unit
 class VariableData(object):
-    def __init__(self, name, cardinal_solution_id=None, cardinal_id=None, cardinal_item_id=None, is_collective=False, used_collective=False):
+    def __init__(self, name, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=False, used_collective=False):
         self.name = name
-        self.cardinal_solution_id = cardinal_solution_id
-        self.cardinal_id = cardinal_id
-        self.cardinal_item_id = cardinal_item_id
+        self.cardinal_group_id = cardinal_group_id
+        self.variable_set_id = variable_set_id
+        self.variable_set_item_id = variable_set_item_id
         self.is_collective = is_collective
         self.used_collective = used_collective
 
     def __repr__(self):
-        if self.cardinal_id is not None:
-            return f"{self.name}#{self.cardinal_solution_id}({self.cardinal_id}->{self.cardinal_item_id})[{'coll' if self.is_collective else 'dist'}]"
+        if self.variable_set_id is not None:
+            return f"{self.name}#{self.cardinal_group_id}({self.variable_set_id}->{self.variable_set_item_id})[{'coll' if self.is_collective else 'dist'}]"
 
         else:
             return f"{self.name}"

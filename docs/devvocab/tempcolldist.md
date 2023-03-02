@@ -1,5 +1,99 @@
 If we get through all the dist options (which will be the first cardinal_solution_id) for the top parent, we are guaranteed to have succeeded for the right number of all the children.
 
+There are two functions that represent:
+1. Setting things up for what the parent is doing
+2. Doing the logic of this cardinal for children
+
+# TODO: the toplevel mrs looper needs to respect retry
+
+# definitions:
+# variable set: a group of values that are treated as a whole. The group has a unique variable_set_id
+# variable set item: one element of a variable set
+# variable_set_cache: programming language construct that allows children to store information in the parent variable set so it is there next time
+# cardinal group: A cardinal has a group of variable sets that it deals with called a cardinal group. For coll, it is a list of one set of N, for dist it is a list of N sets of 1
+#                   it is a group of pairs of variable_set_id/[list of values]
+# cardinal group item: one of the sets in the cardinal group
+
+# variable_set_restart exception: is a way for a child to restart the parent variable set if the child set didn't work 
+# cardinal group generator: creates a new cardinal group (coll or dist).  Its scope is a parent variable set
+# solution alternatives: For a given set, there might be more than one answer in the children. These are the alternatives
+
+# The parent is either starting a new set or continuing a previous one or asking for a new value for a previous set
+# cardinalid represents the set being bound to a variable. For dist, it is N sets of 1, each having different cardinalids.
+# solutionid represents the set of sets. It is used at the very end to piece together the solutions
+# group is used to mark the boundaries of the incoming set. It can have "NextSolution" set on it to tell the child to get a different solution for the same incoming set
+
+# The logic for managing state that has to do with the parent_variable_set and matching it
+# with a new or cached this_cardinal_group
+def cardinal_variable_set_incoming(N):
+    if new parent_variable_set or parent_variable_set_next_solution:
+        if new parent_variable_set:
+            create a new cardinal group generator that match coll or dist
+        elif parent_variable_set_next_solution:
+            use the existing generator
+            set parent_variable_set_next_solution = False so we don't do it again
+        Loop
+            Get new this_cardinal_group from generator 
+                solutions = cardinal_group_outgoing_solution(this_cardinal_group)
+                if the whole this_cardinal_group didn't work, continue the loop to find one that does
+                if it did work, cache this_cardinal_group and generator in parent_variable_set so it gets reused for the others in that variable_set
+
+    else
+        use the cached this_cardinal_group
+        solutions = cardinal_outgoing_solution(this_cardinal_group)
+        if the whole this_cardinal_group didn't work:
+            Set parent_variable_set_next_solution = True in variable_set_group
+            ask the parent to variable_set_restart so we can find a new set but where we left off in the combinator
+        if it did work, cache the cardinal group
+
+# Get all solutions for the entire this_cardinal_group
+# The whole cardinal group must work or it fails
+def cardinal_group_outgoing_solutions(this_cardinal_group):
+    for each variable_set in this_cardinal_group:
+        variable_set_solutions = []
+        # Try the child in both coll and dist mode
+        for is_child_coll in [False, True]:
+            create a this_variable_set_cache to represent the variable_set
+            answers = cardinal_outgoing_set(this_variable_set_cache, variable_set)
+            variable_set_solutions.append(answers)
+            if not has_children_cardinals:
+                break
+    
+        if variable_set_solutions is empty (meaning no coll or dist solutions): 
+            fail since all variable sets in a cardinal group must succeed for the cardinal to succeed
+        else:
+            cardinal_group_solutions.append(variable_set_solutions)
+    
+    return cardinal_group_solutions
+
+# solve a particular outgoing variable_set. 
+def cardinal_variable_set_outgoing_solutions(this_variable_set_cache, variable_set):
+    There could be multiple solutions to this whole set
+    variable_set_solution_alternatives = []
+    this_variable_set_cache.nextsolution = true
+    while this_variable_set_cache.nextsolution = true
+        # child will reset that value of this_variable_set_cache.nextsolution to false
+        variable_set_solutions = []
+        for each item in variable_set:
+            try:
+                call with this_variable_set_cache
+                collect the one answer that worked in body in variable_set_solutions
+    
+            catch variable_set_restart:
+                a child asked us to retry which means a child had a variable_set that didn't completely work against this set
+                So: the alternatives we have so far are right, but we need to restart the variable set (this keeps the same group to allow the child to cache things there)
+                this_variable_set_cache.nextsolution = true
+                break
+            
+            if no solutions, then fail because every element of the set must work
+            variable_set_solutions.append(answers)
+        
+    
+    if len(variable_set_solution_alternatives) > 0:
+        return variable_set_solution_alternatives
+
+
+
 This is a pipeline. Each node of the pipeline needs to find a set of N items that are true in the body for all of the set of M incoming items
     Assume that the incoming is *always* a set, it may just be of one item, N = 1
     If incoming item is the first in its set, start a new set
