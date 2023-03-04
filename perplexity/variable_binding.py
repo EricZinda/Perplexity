@@ -1,8 +1,8 @@
 # Variables in solutions will have these properties set on the binding:
-# variable_set_id: a group of values that are treated as a whole. The group has a unique variable_set_id
+# variable_set_id: a group of values that are treated as a whole, like a set-based variable. The group has a unique variable_set_id
 # variable_set_item_id: one element of a variable set
 # cardinal_group_id: A cardinal has a group of variable sets that it deals with called a cardinal group. For coll, it is a list of one set of N, for dist it is a list of N sets of 1
-#                   it is a group of pairs of variable_set_id/[list of values]
+#                    it is a group of pairs of variable_set_id/[list of values]
 # is_collective: True if this variable is acting in collective mode
 # used_collective: True if the processing of the variable acts differently for collective and distributive modes
 #                       Note that this only needs to be set on answers that actually processed the collective mode as a unit

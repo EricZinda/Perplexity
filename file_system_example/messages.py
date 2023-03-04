@@ -1,7 +1,6 @@
 import logging
 
-from perplexity.execution import create_answer_sets_from_variable, unique_cardinal_group_sets, \
-    cardinal_answer_list, cardinal_answer_to_english
+from perplexity.cardinals import cardinal_answer_to_english, cardinal_answer_list
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predication, predication_from_index, \
     find_predication_from_introduced

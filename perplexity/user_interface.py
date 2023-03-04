@@ -6,12 +6,12 @@ import sys
 from delphin import ace
 from delphin.codecs import simplemrs
 
-from perplexity.execution import ExecutionContext, MessageException, unique_cardinal_group_sets
+from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_arg_types
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, module_name, import_function_from_names
+from perplexity.utilities import sentence_force, module_name, import_function_from_names, has_cardinals
 
 
 def no_error_priority(error):
@@ -281,15 +281,6 @@ class UserInterface(object):
                 if len(tree_info['Solutions']) > 0:
                     for solution in tree_info['Solutions']:
                         print(f"Solution: {str(solution)}")
-
-                    print("\nAnswer Sets:\n")
-                    for answer in unique_cardinal_group_sets(tree_info['Solutions']):
-                        for answer_item in answer:
-                            print(str(answer_item))
-
-                        print("\n")
-                        # answer_string = '\n'.join([str(x) for x in ])
-                    # print(f"\nAnswer Sets:\n{answer_string}")
 
                 else:
                     print(f"Error: {tree_info['Error']}")
