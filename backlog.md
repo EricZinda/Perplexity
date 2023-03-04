@@ -1,5 +1,6 @@
 Remaining work to be shown in the tutorial:
-- dist/dist is not right, getting some that are just one from the inner
+- Linking files says that the same file is in a folder twice under two names
+- (fixed) dist/dist is not right, getting some that are just one from the inner
 
 - (fixed) coll dist reuses the same item on dist and they should start from the beginning
   - If an existing cardinal_id comes in, we go into coll mode and only test the existing values.

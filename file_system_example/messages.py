@@ -1,6 +1,7 @@
 import logging
 
-from perplexity.execution import create_answer_sets_from_variable, group_answer_sets
+from perplexity.execution import create_answer_sets_from_variable, unique_cardinal_group_sets, \
+    cardinal_answer_list, cardinal_answer_to_english
 from perplexity.generation import english_for_delphin_variable
 from perplexity.tree import find_predication, predication_from_index, \
     find_predication_from_introduced
@@ -50,8 +51,13 @@ def respond_to_mrs_tree(tree, solutions, error):
                 # to get the response
                 wh_variable = wh_predication.introduced_variable()
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
-                messages = [generate_message(tree, [-1, ["answerWithList", index_predication, answers]]) for answers in create_answer_sets_from_variable(wh_variable, solutions)]
-                return "\nand\n\n".join(messages)
+
+                if solutions[0].get_binding(wh_variable).variable.cardinal_group_id is not None:
+                    message = "\nAnother answer is:\n".join([cardinal_answer_to_english(wh_variable, answer["CardinalVariables"], answer["Answer"]) for answer in cardinal_answer_list(solutions)])
+                    return message
+
+                else:
+                    return generate_message(tree, [-1, ["answerWithList", index_predication, [str(solution.get_binding(wh_variable).value) for solution in solutions]]])
 
             else:
                 message = generate_message(tree, error)
@@ -172,7 +178,7 @@ def generate_message(tree_info, error_term):
         if len(answer_items) > 0:
             message = ""
 
-            if answer_predication.name == "loc_nonsp" and len(answer_items) > 0 and not isinstance(answer_items[0], list):
+            if answer_predication.name == "loc_nonsp" and len(answer_items) > 0:
                 # if "loc_nonsp" is the "verb", and it isn't a set based answer,
                 # it means the phrase was
                 # "Where is YYY?", so only return the "best" answer, which
@@ -187,11 +193,7 @@ def generate_message(tree_info, error_term):
                 message = f"in {best_answer}"
 
             else:
-                for answer_item in answer_items:
-                    if not isinstance(answer_item, list):
-                        message += str(answer_item) + "\n"
-                    else:
-                        message += ", ".join([str(x) for x in answer_item]) + "\n"
+                message = "\n".join(answer_items) + "\n"
 
             return message
         else:

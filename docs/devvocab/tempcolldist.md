@@ -4,7 +4,13 @@ There are two functions that represent:
 1. Setting things up for what the parent is doing
 2. Doing the logic of this cardinal for children
 
+# TODO: really test all of the examples here: https://sites.rutgers.edu/kristen-syrett/wp-content/uploads/sites/40/2018/09/Distributivity_Syrett.pdf
+# Also this: https://www-users.york.ac.uk/~ez506/downloads/EGG_Plurals_2.pdf
 # TODO: the toplevel mrs looper needs to respect retry
+# Solved Issue: Two children ate two pizzas could mean: there is one child that ate one pizza and another child that ate another pizza
+#        Two children ate three pizzas could mean: 1 child ate 2 pizzas and 2 children ate 1 of them
+#           The problem with this one is that pizzas are shareable.
+#       Both of these are the cumulative reading: https://www-users.york.ac.uk/~ez506/downloads/EGG_Plurals_2.pdf
 
 # definitions:
 # variable set: a group of values that are treated as a whole. The group has a unique variable_set_id

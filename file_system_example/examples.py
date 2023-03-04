@@ -597,6 +597,7 @@ def Example28():
         user_interface.interact_once()
         print()
 
+
 # coll/dist: pick two folders. A file is in both of them together, a different file is in both of them together
 def Example29_reset():
     return FileSystemState(FileSystemMock([(True, "/Desktop/the yearly budget.txt", {"size": 10000000, "link": "1"}),
@@ -621,7 +622,7 @@ if __name__ == '__main__':
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     # ShowLogging("Pipeline")
-    ShowLogging("Cardinal")
+    # ShowLogging("Cardinal")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -656,5 +657,5 @@ if __name__ == '__main__':
     # Example22()
     # Example25()
     # Example27()
-    Example25()
-    # Example29()
+    # Example28()
+    Example29()

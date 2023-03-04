@@ -6,7 +6,7 @@ import sys
 from delphin import ace
 from delphin.codecs import simplemrs
 
-from perplexity.execution import ExecutionContext, MessageException, group_answer_sets
+from perplexity.execution import ExecutionContext, MessageException, unique_cardinal_group_sets
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_arg_types
@@ -283,7 +283,7 @@ class UserInterface(object):
                         print(f"Solution: {str(solution)}")
 
                     print("\nAnswer Sets:\n")
-                    for answer in group_answer_sets(tree_info['Solutions']):
+                    for answer in unique_cardinal_group_sets(tree_info['Solutions']):
                         for answer_item in answer:
                             print(str(answer_item))
 

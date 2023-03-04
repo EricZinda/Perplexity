@@ -1,5 +1,6 @@
 import contextvars
 import copy
+import itertools
 import logging
 import sys
 from perplexity.utilities import sentence_force, has_cardinals
@@ -40,11 +41,12 @@ def create_variable_set_cache(variable_set_id, child_is_collective):
             "VariableSetID": ((parent_variable_set_id + ":") if parent_variable_set_id is not None else "") + str(variable_set_id)}
 
 
-def cardinal_tree(solutions):
-    # First figure out the order of the "tree of cardinals" from child to parent
-    # The order of them is simply the number of ids in the cardinal_group_id
-    # It won't change for the answers so we can just do it on the first one
-    # TODO: For now we are assuming it is a straight line, not a tree
+# First figure out the order of the "tree of cardinals" from child to parent
+# The order of them is simply the number of ids that compose an individual answer_set_id
+# Since these are built like 0:4:5.
+# It won't change for the answers so we can just do it on the first one
+# TODO: For now we are assuming it is a straight line, not a tree
+def cardinal_tree(solutions, reverse=True):
     tree_info = solutions[0].get_binding("tree")
     variables = tree_info.value["Variables"]
     cardinal_list = []
@@ -54,18 +56,188 @@ def cardinal_tree(solutions):
             cardinal_id_parts = binding.variable.variable_set_id.split(":")
             cardinal_list.append((len(cardinal_id_parts), variable_name))
 
-    cardinal_list.sort(reverse=True)
+    cardinal_list.sort(reverse=reverse)
     return [item[1] for item in cardinal_list]
 
 
-# A cardinal picks a solution id for the set of answers it is doing (dist or coll) and sticks with it for that dist or coll
-# The algorithm is: start with the child, each group of the same solution id of the deepest child is a single solution
-def group_answer_sets(solutions):
+
+# If you say: "which two files are in two folders?" and we consider the parse
+# in the order: dist(folder), dist(file):
+# - the engine might pick a folder cardinal group that contains two variable sets of 1 (since it is dist).
+# - then it will list all combinations of two files that are in each as alternatives
+#
+# If there are a bunch of these, a human might answer "there are a lot of these" and require the person to say "what are all the groups of two files that are in two folders"
+# Or we could say:
+# in folder 1 separately are: (1 and 2), (3 and 4), ...
+# in folder 2 separately are: (5 and 6), ....
+# in folder 1 together are: ...
+# def cardinal_tree_to_english(cardinal_order, cardinal_tree, variable):
+#     this_variable = cardinal_order[0]
+#     response = ""
+#     for type in ["dist", "coll"]:
+#         if type in cardinal_tree:
+#             type_description = "together" if type == "coll" else "separately"
+#             for cardinal_group in cardinal_tree[type].items():
+#                 for answer_set_info in cardinal_group[1].values():
+#                     answer_set_items = [str(item) for item in answer_set_info["VariableSet"].values()]
+#                     answer = ", ".join(answer_set_items) + f" {type_description}"
+#                     if variable == this_variable:
+#                         response += answer + "\n"
+#                     else:
+#                         response += answer + " -> " + cardinal_tree_to_english(cardinal_order[1:], answer_set_info["ChildGroups"], variable)
+#
+#     return response
+
+
+# Prints the English for a single answer.Takes a list of cardinal groups
+# Every cardinal group level needs to print at a new indent
+# Even variableset needs to print on its own line at that indent
+# They all need descriptors
+# Need blanks between variable sets
+# Stop recuring after we hit the cardinal that contains the variable we are looking for
+def cardinal_answer_to_english(variable, cardinal_variables, cardinal_answer_list, indent_level=0):
+    indent = " " * indent_level
+    cardinal_group_answer = []
+    for cardinal_group in cardinal_answer_list:
+        # If this is coll, print on same line and say together
+        type_description = " together" if cardinal_group["Type"] == "coll" else ""
+        variable_set_answer = []
+        for variable_set_info in cardinal_group["VariableSets"]:
+            variable_set_items = [str(item) for item in variable_set_info["VariableSetItems"].values()]
+            answer = indent + ", ".join(variable_set_items) + f'{type_description}\n'
+            if len(variable_set_info["ChildGroups"]) > 0 and variable != cardinal_variables[0]:
+                answer += cardinal_answer_to_english(variable, cardinal_variables[1:], variable_set_info["ChildGroups"], indent_level + 5) + "\n"
+
+            variable_set_answer.append(answer)
+        cardinal_group_answer.append("".join(variable_set_answer))
+    return ("\n" if cardinal_answer_list[0]["Type"] == "dist" else "").join(cardinal_group_answer)
+
+# A parent sends a *variable set* to a child,
+# and the child solves it against that child's *cardinal group*.
+# So, as we consider each child as we recurse down the child chain,
+# we group the whole child cardinal group since that whole child cardinal group (*not* the child variable set)
+# is part of the answer for the parent *variable set*.
+#
+#   Build a tree with the first cardinal at the root and the childmost cardinal at the leaves
+#   that looks like: Group->coll/dist->answerset->group->coll/dist->answerset ...
+# Algorithm:
+#   Loop through the solutions and the variables in tree order
+#       Put each variable in the right spot in the tree using the binding
+#           information of the variable to know which
+#           cardinal group/variable set/variable set item it is
+def cardinal_answer_list(solutions):
+    cardinal_order = cardinal_tree(solutions, reverse=False)
+    answer_tree = {"VariableOrder": cardinal_order}
+    for solution in solutions:
+        add_solution_to_tree(cardinal_order, answer_tree, solution)
+
+    for variation in itertools.product(["coll", "dist"], repeat=len(cardinal_order)):
+        answer = specific_coll_dist_variation(answer_tree, variation)
+        if answer is not None:
+            yield {"CardinalVariables": cardinal_order, "Answer": answer}
+
+
+# The cardinal tree starts like this:
+# coll/dist->Group->answerset->coll/dist->Group->answerset ...
+#
+# We just want to flatten out the coll/dist nodes.  Each cardinal group for each variable is a new answer
+#
+#
+# Group->answerset->Group->answerset ...
+
+# We walk the cardinal tree and flatten it into individual cardinal solutions by returning every different combination
+# of coll/dist nodes for the tree.
+# So the tree of nodes:
+# answerset     ->  coll    ->  group1  ->  answerset1   ->  coll    ->  group1  ->
+#       -> coll -> dist
+#       -> dist -> coll
+#       -> coll -> coll
+#
+# answerset ->  group1  ->  answerset1  ->  group1  ->
+
+# Becomes a list of nodes:
+# coll  -> dist -> dist
+# coll  -> coll -> dist
+# coll  -> dist -> coll
+# coll  -> coll -> coll
+#
+# Each node is a list of *alternatives* that were generated for that variable
+# at that point in the query. Just like "which rock (x1) is in every cave (x2)" would generate
+# a list of alternative assignments to x1 and x2 for every rock in every cave.
+#
+# returns Group(dist/coll)->variableset
+# returns Group(dist/coll)->variableset
+
+# At each node, we ask the child to return either a coll or
+# this has two return two groups
+# Takes an answer set and divides its child cardinal_groups into dist and coll and returns both
+# We have to yield at the very end to get different answers
+# All we are doing is skipping the dist/coll section of the tree
+# Ends up with listofcardinalgroups(cardinalgroup(), cardinalgroup(), ...)
+#
+# The answer is a flat list, with one item for each cardinal in the list.
+# Go through the whole solution N times.  Each time pick a  combinations of dist and coll for all the nodes
+def specific_coll_dist_variation(answer_set_node, variation_list):
+    coll_or_dist_type = variation_list[0]
+    cardinal_groups = []
+    if coll_or_dist_type not in answer_set_node:
+        return None
+
+    for cardinal_group in answer_set_node[coll_or_dist_type].values():
+        new_cardinal_group = {"Type": coll_or_dist_type, "VariableSets": []}
+        for variable_set in cardinal_group.values():
+            if len(variation_list) > 1:
+                new_child_cardinal_groups = specific_coll_dist_variation(variable_set["ChildGroups"], variation_list[1:])
+                if new_child_cardinal_groups is None:
+                    return None
+                else:
+                    new_cardinal_group["VariableSets"].append({"VariableSetItems": variable_set["VariableSet"], "ChildGroups": new_child_cardinal_groups})
+            else:
+                new_cardinal_group["VariableSets"].append({"VariableSetItems": variable_set["VariableSet"], "ChildGroups": []})
+
+        cardinal_groups.append(new_cardinal_group)
+
+    return cardinal_groups
+
+
+def add_solution_to_tree(cardinal_order, answer_tree, solution):
+    variable = cardinal_order[0]
+    binding = solution.get_binding(variable)
+    type_key = "coll" if binding.variable.is_collective else "dist"
+    group_key = str(binding.variable.cardinal_group_id)
+    variable_set_key = binding.variable.variable_set_id
+
+    if type_key not in answer_tree:
+        answer_tree[type_key] = {}
+
+    if group_key not in answer_tree[type_key]:
+        answer_tree[type_key][group_key] = {}
+
+    if variable_set_key not in answer_tree[type_key][group_key]:
+        answer_tree[type_key][group_key][variable_set_key] = {"ChildGroups": {}, "VariableSet": {}}
+
+    # Use the variable_set_item_id to make sure we don't get duplicates
+    answer_tree[type_key][group_key][variable_set_key]["VariableSet"][binding.variable.variable_set_item_id] = binding.value
+
+    if len(cardinal_order) == 1:
+        return
+    else:
+        add_solution_to_tree(cardinal_order[1:], answer_tree[type_key][group_key][variable_set_key]["ChildGroups"], solution)
+
+
+# A cardinal picks a cardinal group id for the set of answers it is doing (dist or coll) and sticks with it for that dist or coll
+# The algorithm is: start with the child, each group of the same cardinal group id of the deepest child is a single solution
+# This routine groups all the answers by unique cardinal groups
+def unique_cardinal_group_sets(solutions):
     # First figure out the order of the "tree of cardinals" from child to parent
     cardinal_order = cardinal_tree(solutions)
 
-    # If all solutions (dist and coll) for all cardinals succeeded then there would be a dist and coll at each level
-    # It acts like a binary number: all answers that have the same number go together
+
+    # If all solutions (dist and coll) for all cardinals succeeded,
+    # then there would be a dist and coll cardinal group for every cardinal variable.
+    # And there could be multiple if there were more than one answer for a given answer set
+    # It acts like a binary number: all answers that have the same number go together. Build a key like "coll, dist, coll"
+    # and use that to group unique answers
     grouped_answers = {}
     for item in group_answer_sets2(cardinal_order, solutions, {}):
         key = []
@@ -82,6 +254,14 @@ def group_answer_sets(solutions):
         yield grouped_answer
 
 
+# Build a dictionary:
+#   key = variables that are cardinals
+#   value = list of values in a single cardinal group id
+#
+# Recursively group the next variable in the cardinal order into a list of unique cardinal group answers for that variable
+# Attach that list of answers to the answers_orig dict, keyed by the variable, and recurse with the next one
+# At the very end, you have a dict that contains the c of lists that is the cardinal group for each cardinal in
+# a single solution. Return that.
 def group_answer_sets2(cardinal_order, solutions, answers_orig):
     if len(cardinal_order) == 0:
         yield answers_orig
@@ -89,7 +269,7 @@ def group_answer_sets2(cardinal_order, solutions, answers_orig):
     else:
         current_variable = cardinal_order[0]
 
-        # First group the cardinal groups
+        # First group the cardinal groups that exist for this variable
         cardinal_groups = {}
         for solution_index in range(0, len(solutions)):
             solution = solutions[solution_index]
@@ -100,10 +280,13 @@ def group_answer_sets2(cardinal_order, solutions, answers_orig):
 
             cardinal_groups[cardinal_group_id].append((solution, binding))
 
-        # Then recurse on each cardinal group
+        # Then recurse on each cardinal group sending only the *unique* values for this variable
+        # but including *all* the solutions
         for solutions_with_binding in cardinal_groups.values():
             solutions = [item[0] for item in solutions_with_binding]
-            # Get rid of duplicates by using a key of variable_set_id + variable_set_id_item_id
+
+            # Get rid of duplicate values for this variable
+            # by using a key of variable_set_id + variable_set_id_item_id
             binding_ids = {}
             for solution_with_binding in solutions_with_binding:
                 variable_set_id = solution_with_binding[1].variable.variable_set_id
@@ -126,42 +309,8 @@ def group_answer_sets2(cardinal_order, solutions, answers_orig):
 
 
 def create_answer_sets_from_variable(variable, solutions):
-    for answer_set in group_answer_sets(solutions):
+    for answer_set in unique_cardinal_group_sets(solutions):
         yield [answer[variable] for answer in answer_set]
-
-
-# This is only returning a single variable's answers so it doesn't need to deal with trees of answers, just potentially
-# single answers and set answers for this variable
-# def create_answer_sets_from_variable(variable, solutions):
-#     answer_items = {}
-#     for solution in solutions:
-#         binding = solution.get_binding(variable)
-#         if binding.variable.cardinal_id not in answer_items:
-#             answer_items[binding.variable.cardinal_id] = []
-#
-#         answer_items[binding.variable.cardinal_id].append(binding.value)
-#
-#     if len(answer_items) == 1 and list(answer_items.keys())[0] is None:
-#         # These are not sets, just need to deduplicate
-#         return deduplicate(list(answer_items.values())[0])
-#
-#     else:
-#         # Now we have all the (potentially duplicate) answers. Deduplicate.
-#         final_answer_items = []
-#         answer_items_list = list(answer_items.values())
-#         for answer1_index in range(0, len(answer_items)):
-#             found_duplicate = False
-#             for answer2_index in range(answer1_index + 1, len(answer_items)):
-#                 answer1_list = answer_items_list[answer1_index]
-#                 answer2_list = answer_items_list[answer2_index]
-#                 if lists_are_equal(answer1_list, answer2_list):
-#                     found_duplicate = True
-#                     break
-#
-#             if not found_duplicate:
-#                 final_answer_items.append(answer1_list)
-#
-#         return final_answer_items
 
 
 def deduplicate(list1):
