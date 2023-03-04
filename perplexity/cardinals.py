@@ -69,8 +69,17 @@ def cardinal_answer_list(solutions):
 
     # Now pull apart individual answers from all the possible unique combinations
     # of collective and distributive cardinal answers
+
+    # Only choose the collective version of solutions where one of the predications
+    # actually paid attention
+    coll_dist_options = [["dist"]] * len(cardinal_order)
+    for solution in solutions:
+        for variable_index in range(0, len(cardinal_order)):
+            if solution.get_binding(cardinal_order[variable_index]).variable.used_collective and len(coll_dist_options[variable_index]) == 1:
+                coll_dist_options[variable_index].append("coll")
+
     # TODO: build this into a proper recursive algorithm and quit brute forcing it
-    for variation in itertools.product(["coll", "dist"], repeat=len(cardinal_order)):
+    for variation in itertools.product(*coll_dist_options):
         answer = specific_coll_dist_variation(answer_tree, variation)
         if answer is not None:
             yield {"CardinalVariables": cardinal_order, "Answer": answer}
