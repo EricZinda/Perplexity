@@ -358,7 +358,7 @@ def find_predications(term, predication_name):
     return found_predications
 
 
-# Return all of the predications named predication_name
+# Return all of the predications that have a name in the list
 def find_predications_in_list(term, predication_name_list):
     # This function gets called for every predication
     # in the tree. It is a private function since it is
@@ -416,6 +416,27 @@ def predication_from_index(tree_info, index):
     walk_tree_predications_until(tree_info["Tree"], stop_at_index)
 
     return index_predication
+
+
+# Return all of the predications that take the introduced variable
+# from primary_predication, and consume it
+def split_predications_consuming_event(term, target_event):
+    def find(predication):
+        introduced_index = predication.introduced_variable_index()
+        for arg_index in range(0, len(predication.arg_types)):
+            if predication.arg_types[arg_index] not in ["c", "h"]:
+                if predication.args[arg_index] == target_event:
+                    if arg_index != introduced_index:
+                        found_predications.append(predication)
+                    return
+
+        remaining_predications.append(predication)
+
+    found_predications = []
+    remaining_predications = []
+
+    walk_tree_predications_until(term, find)
+    return found_predications, remaining_predications
 
 
 pipeline_logger = logging.getLogger('Pipeline')

@@ -466,27 +466,28 @@ def default_quantifier_base(state, x_variable_binding, h_rstr_orig, h_body_orig,
             report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
-# If we are rewriting the tree the error reporting will get messed up
-# We need to properly rewrite the tree and put the new form in state?
-# rewrite: default_q(x, [cardinal(x, ...), other()], body)
-# to: cardinal(x, [other()], default_q(x, thing(x), body)
-# to: cardinal(..., default_q(x, base_rstr, body)
+# Rewrite the cardinal to a form that takes scope
+# Rewrite: quantifier_q(x, [cardinal(x, ...), cardinal_modifier()], body)
+# To the form: [cardinal_modifier(), cardinal_with_scope(x, non_cardinal_rstr, base_quantifier_q(x, thing(x), body)]
+# TODO: If we are rewriting the tree the error reporting will get messed up
+#       We need to properly rewrite the tree and put the new form in state?
 @Predication(vocabulary, names=["pronoun_q", "proper_q", "udef_q"])
 def default_quantifier(state, x_variable_binding, h_rstr, h_body, reverse=False):
-    cardinal_predication, cardinal_rstr, base_rstr = split_cardinal_rstr(h_rstr)
+    cardinal_predication, cardinal_modifiers, non_cardinal_rstr = split_cardinal_rstr(h_rstr)
     if cardinal_predication is None:
+        # Not a cardinal
         yield from default_quantifier_base(state, x_variable_binding, h_rstr, h_body, reverse)
 
     else:
-        # Convert to the form: cardinal(x, [base_rstr], quantifier_q(x, thing(x), body)
         this_predication_index = execution_context().current_predication_index()
         this_predication = predication_from_index(state.get_binding("tree").value, this_predication_index)
         thing_predication = TreePredication(this_predication_index, "thing", [x_variable_binding.variable.name], ["ARG0"])
+
         base_quantifier = TreePredication(this_predication_index, "base_q", [this_predication.args[0], thing_predication, h_body], this_predication.arg_names)
-        cardinal_predication.append_arg("RSTR", base_rstr)
+        cardinal_predication.append_arg("RSTR", non_cardinal_rstr)
         cardinal_predication.append_arg("BODY", base_quantifier)
 
-        yield from call(state, cardinal_predication)
+        yield from call(state, cardinal_modifiers + [cardinal_predication])
 
 
 def rstr_reorderable(rstr):
