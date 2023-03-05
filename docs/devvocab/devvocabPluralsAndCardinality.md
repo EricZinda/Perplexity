@@ -41,23 +41,31 @@ carried.
 
 ### Verbs and operators usage of cardinality
 (Link 1983, 1987, Dowty 1986, Lasersohn 1995).
-    Some verbs imply collective: "the dogs surrounded the prey"
-    Some verbs imply distributive: "The shrimp are red"
-    Some are mixed: "The children ate a cake"
-    - Quantifiers and other words can be added to disambiguate: "the children ate a cake each/every child ate a cake"
+Some verbs force collective, distributive or mixed:
+- collective: "the dogs surrounded the prey"
+  - met: collective
+  - gather:
 
-Verbs are often unambiguously one way or the other:
-tall: distributive (but sara and mary are standing on each others shoulders they can be tall together)
-met: collective
-gather:
-scatter:
+- distributive: "The shrimp are red"
+  - tall: distributive (but sara and mary are standing on each others shoulders they can be tall together)
+  - scatter:
 
-But somtimes can be both
-dance: both
+- mixed: "The children ate a cake"
+    - dance: both
 
-encodes distributed:
-each (strong)
-every (weaker): every man ate a sandwich
+Quantifiers and other words can be added to force one way or another: 
+- "each child ate a cake" each strongly encodes distributive
+- "every child ate a cake" (weaker) encodes distributive
+
+Implementation:
+There are two things that need to be managed for a predicate: 
+- Whether it allows coll/dist: if a verb like surrounded(who, what) *forces* what to always be collective, it should fail for dist for that argument. Otherwise, it should process it.
+- Whether it acts differently in the presence of coll/dist. Verbs that support both need to return answers for both so that downstream cardinals get the opportunity to try them.  However, if they actually have different answers for dist/coll (like "the men lifted the table", lifted(men:dist) is different than lifted(men:coll) they have to *mark* that they processed it so that the answers are preserved. Otherwise the engine will remove duplicates.
+
+two children in two rooms ate 3 pizzas
+
+A given variable is either coll or dist. if it was processed identically for both options, we should only keep one of them.
+At the end, if a cardinal processed a coll variable, we should keep it.
 
 ## Approach
 From the cardinal's perspective, they are just building up sets of N, it is the other predications that have to do something interesting with the "men lifting table"
@@ -66,8 +74,7 @@ Questions:
 This is a pipeline. Each node of the pipeline needs to find a set of N items that are true in the body for all of the set of M incoming items
     Assume that the incoming is *always* a set, it may just be of one item, N = 1
     If incoming item is the first in its set, start a new set
-The only state we need to keep for cardinal, outside of when it is checking a set,
-is the current successful set, and the combinator
+The only state we need to keep for cardinal, outside of when it is checking a set, is the current successful set, and the combinator
 
 The problem is that you have to pick every combination of items to make this work
 Rewrite: quantifier_q(x, [cardinal(x, ...), cardinal_modifier()], body)
@@ -76,9 +83,10 @@ Observation: To handle two cardinals in a phase, the predications involved *must
 the cardinal's job is to find N things that match its body, once that succeeds, it returns them all
 
 If a set is being pushed through there is a group context, this allows children to know they are dealing with a group. Things that don't care about groups (like a noun) can ignore it
+For a child: each cardinal is finding a set and applying it to a parent set. The difference between coll and dist mode is whether its set applies to the parent set *as a group* or *individually*
 
 observation: it is *eat* that is the one having to deal with sets, child and pizza are both just choosing items
-    - For many (most) interpretations you won't be able to tell the difference between this and the distributive
+    - For many (most) interpretations you won't be able to tell the difference between coll and dist
         - so maybe we don't handle it?? Let's try starting there, without supporting it
             To make this work iteratively: pickn(pizzas), pickn(children): There is one set of 3 pizzas that was eaten by one set of 4 children
                 - You need the body to collect all the things that make it true until it gets the right number 
@@ -101,18 +109,51 @@ TALK ABOUT HOW VARIABLES ARE MARKED SO WE KNOW WHAT IS IN THEM
   - The ultimate result should be variables with sets in them. 
     - 5 children eating the same 5 pizzas: x5=[child1, ...], x6=[pizza1, ...]
       - each child eating a different 5: x5=[child1], x6=[pizza1, ....]
-      - Also need to return which *element* of a set an item is so it won't be repeated in the answer
+      - Also need to return which *element* of a set an item is so it won't be repeated in the answer 
+  
+      - collective mode matters even if there is one cardinal in the phrase. For example: the men lifted the table could be one after the other or together
+        - So, something needs to create the top level group and switch it between the modes
 
-  - (done) collective mode matters even if there is one cardinal in the phrase. For example: the men lifted the table could be one after the other or together
-    - (done) So, something needs to create the top level group and switch it between the modes
-Don't try coll and dist for children if there are no children. This is never right and creates duplicates.
-  - The order of dist, coll or coll, dist matters because the first has scope over the second.  the second gets to rechoose
-      - (this is right) It is only the *last* cardinal that can be the same because there is nothing after it that gets to "rechoose"
-      - which means it is correct for the second to last parent to not try alternatives in the child
-        - But it is *not* correct to skip that step if the verb cares
-- For a child: each cardinal is finding a set and applying it to a parent set. The difference between coll and dist mode is whether its set applies to the parent set *as a group* or *individually*
+There are correct:
+- Don't try a coll and dist *variation* of children of the last cardinal if there are no children. This is never right and creates duplicates. because there is nothing after it that gets to "rechoose" so the answers are the same
+- If a predication *doesn't support* coll or dist (like gather/scatter) it needs to fail on that option
+- The order of dist, coll or coll, dist matters because the first has scope over the second.  the second gets to *rechoose* answers
+
+How to generate all the unique cardinal groups if nobody cares?
+- Remember that each cardinal level picks N *cardinal groups* for each *variable set* that comes in!  The root just sends in one variable set (the empty set).
+- So to get the unique cardinal groups, you need *maximize* the number of *variable sets* at each level
+  - So you pick dist all the way through to get the maximum number of cardinal groups since this will be a superset of just sending 1 set (i.e. coll) through
+  - Really, for the last one it doesn't matter
+
+If somebody distinguishes coll/dist for a given variable, you need to return all alternatives for that level
+- You always need to always choose the dist variation for everything up to that level to get the maximum number of cardinal groups handed to it
+
+So:
+  - if a predication can work for either (i.e. isn't wrong) it should let them through but not mark them as processed
+  - if it processes coll differently, it should mark them as processed
+  - if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
+  - if it doesn't work it should fail for them
+
+if nobody cares, the way to get all the unique answers is to do dist all the way through
+
+
+### How to deal with in and files
+How in(what, where) works for sets.  [a, b] in [x, y] is the same as [a], [b] in [x], [y], i.e. the grouping of either doesn't matter. 
+- So, as long as the cardinal groups are the same, the answers *as far as this predicate is concerned* are duplicates.
+
+If a person says "two files in a folder together" it is forcing a group, so we should respect it and return the coll options, even though "in" returns the same thing.
+If a person just says "two files are in a folder", just return the combinations
+
+### How to deal with "x is verb y together"
+If together applies to the verb, it isn't clear if it is grouping the left, right or both sides (at the same time). Return them all.
+
+Thus we can test all the possible coll/dist options by using:
+- two files are in two folders (returns dist/dist)
+- two files are in two folders together (returns coll/dist, dist/coll, coll, coll)
 
 ## Examples
+files in folders:
+in_p_loc doesn't treat either side differently if coll or dist.
 ~~~
   - file(dist), fold(dist): file1 in fold1, file1 in fold2, file2 in fold3, file1 in fold4
   - file(coll), fold(dist): file1 & file2 in fold1, file1 & file2 in fold2
@@ -135,17 +176,17 @@ Don't try coll and dist for children if there are no children. This is never rig
   - fold(dist), fold(dist): fold1 contains file1 & file2, fold2 contains file3 and file4
 ~~~
 ~~~
-    - coll(pizzas), coll(children): There is one set of 3 pizzas that was eaten by one set of 4 children (everyone ate them together = 3 pizzas)
+    - coll(pizzas), coll(children): There is one group of 3 pizzas that was eaten by one group of 4 children (3 pizzas, 4 children)
         - each child ate 3 pizzas together
         - each pizza was eaten by 4 children together
-    - dist(pizzas), coll(children): There are 3 different individual pizzas that each was eaten by a (potentially different) set of 4 children  (pick a pizza, a group of 4 children ate that one)
+    - dist(pizzas), coll(children): There are 3 individual pizzas that each was eaten by a different group of 4 children  (3 pizzas, 12 children)
         - each child ate 1 pizza separately
         - each pizza was eaten by 4 children together
-    - coll(pizzas), dist(children): There is one set of 3 pizzas that was eaten by 4 different individual children  
+    - coll(pizzas), dist(children): There is one group of 3 pizzas that was eaten by a different 4 individual children (3 pizzas, 4 children)
         (same as 1??, not if we are talking about lifting...)
         - each child ate 3 pizzas together
         - each pizza was eaten by 4 children separately
-    - dist(pizzas), dist(children): There are 3 different individual pizzas that each was eaten by 4 (potentially different) individual children (each of 3 pizzas had 4 different children eating it 
+    - dist(pizzas), dist(children): There are 3 individual pizzas that each was eaten by a different 4 individual children (3 pizzas, 12 children) 
         (same as 2? not if we are talking about lifting))
         - each child ate 1 pizza separately
         - each pizza was eaten by 4 children separately
@@ -163,17 +204,21 @@ udef_q(x10,RSTR,BODY)
                                       
 There must be 4 children and each one must eat 3 (possibly different) pizzas = 12
 
-- coll(children), coll(pizzas): There is one set of 4 children that ate one set of 3 pizzas (same as above)
-    - each child ate 3 pizzas together
-    - each pizza was eaten by 4 children together
-- dist(children), coll(pizzas): There are 4 individual children that each ate a (potentially different) set of 3 pizzas
-    - each child ate 3 pizzas together
-    - each pizza was eaten by 1 child separately
-- coll(children), dist(pizzas): There is one set of 4 children that ate 3 different individual pizzas
+- coll(children), coll(pizzas): There is one group of 4 children that, together, ate one group of 3 pizzas (3 pizzas, 4 children)
+    (same as 1 above)
+    - each child ate a group of 3 pizzas
+    - each pizza was eaten by a group of 4 children
+- dist(children), coll(pizzas): There are 4 individual children that, each, ate a different group of 3 pizzas (12 pizzas, 4 children)
+    - each child ate a group of 3 pizzas
+    - each pizza was eaten by 1 individul child
+- coll(children), dist(pizzas): There is one group of 4 children that, together, ate the same 3 individual pizzas (3 pizzas, 4 children)
+        (same as 3 above??, 
         (same as 1??, not if we are talking about lifting...)
-    - each child ate 3 pizzas separately
+    there are only 3 pizzes
+    - each child ate the 3 pizzas separately
     - each pizza was eaten by 4 children together
-- dist(children), dist(pizzas): There are 4 individual children that each ate 3 (potentially different) pizzas
+- dist(children), dist(pizzas): There are 4 individual children that, each, ate a different 3 individual pizzas (12 pizzas, 4 children)
+        (same as 2??, not if we are talking about lifting...)
     - each child ate 3 pizzas separately
     - each pizza was eaten by 1 child separately
                                    
@@ -189,6 +234,10 @@ udef_q(x3,RSTR,BODY)
 ~~~
 
 ## Tests
+each/all/every
+3 boys each carried for piaons (forces boys to dist)
+) A group of three boys carried a group of four pianos. (forces both collective)
+all 3 boys carried all 3
 The cards below 7 and the cards from 7 up were separated.
 The boys surrounded the building
 Mary  and  Sue are  room-mates.  

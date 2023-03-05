@@ -84,6 +84,9 @@ def copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
 # b) The thing to copy has a relative path because our "current directory" for the file will be different
 @Predication(vocabulary, names=["_copy_v_1"], handles=[("StativePreposition", EventOption.required)])
 def stative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    if "EndLocation" not in e_introduced_binding.value["StativePreposition"]["Value"]:
+        report_error(["formNotUnderstood", "missing", "stative preposition end value"])
+
     x_copy_from_location_binding = e_introduced_binding.value["StativePreposition"]["Value"]["EndLocation"]
 
     # We only know how to copy things from the
@@ -578,13 +581,23 @@ def place_n(state, x_binding):
             yield state.set_x(x_binding.variable.name, value)
 
 
+@Predication(vocabulary, names=["_together_p_state"])
+def together_p_state(state, e_introduced_binding, e_target_binding):
+    # There is no value for this stative preposition since there is not an end location
+    yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": None, "Preposition": "together", "Originator": execution_context().current_predication_index()})
+
+
 @Predication(vocabulary, names=["_in_p_state"])
 def in_p_state(state, e_introduced_binding, e_target_binding, x_location_binding):
+    yield from default_p_state("in", state, e_introduced_binding, e_target_binding, x_location_binding)
+
+
+def default_p_state(preposition, state, e_introduced_binding, e_target_binding, x_location_binding):
     preposition_info = {
         "EndLocation": x_location_binding
     }
 
-    yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
+    yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": preposition_info, "Preposition": preposition, "Originator": execution_context().current_predication_index()})
 
 
 def default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding):
@@ -623,8 +636,34 @@ def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_
         report_error(["dontKnowActor", x_actor_binding.variable.name])
 
 
-@Predication(vocabulary, names=["_in_p_loc"])
+@Predication(vocabulary, names=["_in_p_loc"], handles=[("StativePreposition", EventOption.optional)])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    if e_introduced_binding.value is not None and "StativePreposition" in e_introduced_binding.value:
+        if e_introduced_binding.value["StativePreposition"]["Preposition"] == "together":
+            # Two children ate two pizzas together could mean:
+            # 1. each child ate two pizzas at the same time
+            # 2. two children together ate two pizzas
+            # or both
+            # This requires that at least one of the two bindings is collective (and fails for dist/dist)
+            if not x_actor_binding.variable.is_collective and not x_location_binding.variable.is_collective:
+                report_error(["formNotUnderstood", "missing", "collective"])
+                return
+
+            else:
+                for collective_binding in [x_actor_binding, x_location_binding]:
+                    if collective_binding.variable.is_collective:
+                        # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
+                        state = state.set_x(collective_binding.variable.name, collective_binding.value,
+                                            cardinal_group_id=collective_binding.variable.cardinal_group_id,
+                                            variable_set_id=collective_binding.variable.variable_set_id,
+                                            variable_set_item_id=collective_binding.variable.variable_set_item_id,
+                                            is_collective=collective_binding.variable.is_collective,
+                                            used_collective=True)
+
+        else:
+            report_error(["formNotUnderstood", "notHandled", e_introduced_binding.value["StativePreposition"]["Preposition"]])
+            return
+
     if x_actor_binding.value is not None:
         if x_location_binding.value is not None:
             if hasattr(x_location_binding.value, "contained_items"):

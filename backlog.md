@@ -3,10 +3,20 @@ Remaining work to be shown in the tutorial:
 - Linking files says that the same file is in a folder twice under two names
 
 - Need to figure out how to handle what mode verbs are in properly and not return answers that don't make sense (like "2 files are in a folder together")
-  -Design:
-      - We should track whether a card is in dist or coll mode as a property on the variable, so that other things in the system can detect it
-          - each cardinal sets its own variable property itself, its parent tells it what to set it to
-            This allows any predicate in the tree to say that it mattered so it is kept
+- Need to figure out a way to linguistically force coll and dist for the parent and the child
+    which 2 files jointly are in 2 folders (forces files(coll))
+    which 2 files separately are in 2 folders (forces files(dist))
+    which 2 files are in all 3 folders
+    which 2 children eat 2 pizzas
+- Need to implement a verb that does coll 
+- 
+  - what verbs are collective?
+    - add up to
+  - size
+    -Design:
+        - We should track whether a card is in dist or coll mode as a property on the variable, so that other things in the system can detect it
+            - each cardinal sets its own variable property itself, its parent tells it what to set it to
+              This allows any predicate in the tree to say that it mattered so it is kept
 - 
       - We should not succeed for both dist and coll if the verb doesn't distinguish since they will be the same, we should only succeed for one
           - Thus there should be a default for verbs (dist since it is easier and more common) and we only call coll if it is specified

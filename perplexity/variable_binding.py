@@ -17,7 +17,8 @@ class VariableData(object):
 
     def __repr__(self):
         if self.variable_set_id is not None:
-            return f"{self.name}#{self.cardinal_group_id}({self.variable_set_id}->{self.variable_set_item_id})[{'coll' if self.is_collective else 'dist'}]"
+            used_collective_str = "+" if self.used_collective else ""
+            return f"{self.name}#{self.cardinal_group_id}({self.variable_set_id}->{self.variable_set_item_id})[{'coll' + used_collective_str if self.is_collective else 'dist'}]"
 
         else:
             return f"{self.name}"

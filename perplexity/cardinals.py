@@ -72,7 +72,7 @@ def cardinal_answer_list(solutions):
 
     # Only choose the collective version of solutions where one of the predications
     # actually paid attention
-    coll_dist_options = [["dist"]] * len(cardinal_order)
+    coll_dist_options = [["dist"] for _ in range(0, len(cardinal_order))]
     for solution in solutions:
         for variable_index in range(0, len(cardinal_order)):
             if solution.get_binding(cardinal_order[variable_index]).variable.used_collective and len(coll_dist_options[variable_index]) == 1:
