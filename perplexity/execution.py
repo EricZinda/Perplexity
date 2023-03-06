@@ -3,9 +3,9 @@ import copy
 import itertools
 import logging
 import sys
-
+# Use this form to avoid circular dependency, then use perplexity.cardinals.function() when calling
+import perplexity.cardinals
 from perplexity.utilities import sentence_force, has_cardinals
-
 
 # Allows code to throw an exception that should get converted
 # to a user visible message
@@ -59,6 +59,9 @@ class ExecutionContext(object):
         reset_execution_context(self.old_context_token)
 
     def solve_mrs_tree(self, state, tree_info):
+        if False:
+            perplexity.cardinals.cardinal_variable_set_outgoing_solutions(None, None, None, None,
+                                                            None, None, None)
         with self:
             set_group_context(None)
             self._error = None
@@ -67,6 +70,7 @@ class ExecutionContext(object):
             self._phrase_type = sentence_force(tree_info["Variables"])
 
             for is_collective in [False, True]:
+
                 initial_group = create_variable_set_cache(0, is_collective)
                 try:
                     yield from self.call_with_group(initial_group, state.set_x("tree", tree_info), tree_info["Tree"])
