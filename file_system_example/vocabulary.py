@@ -5,15 +5,16 @@ import logging
 from file_system_example.objects import File, Folder, Actor, Container, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.cardinals import split_cardinal_rstr, cardinal_group_outgoing_solutions, \
-    cardinal_variable_set_incoming_next_this_cardinal_group, yield_all_cardinal_group_solutions
+    cardinal_variable_set_incoming_next_this_cardinal_group, yield_all_cardinal_group_solutions, \
+    unique_solution_if_index
 from perplexity.utilities import at_least_one_generator
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context, call_with_group, group_context, \
     create_solution_id, create_variable_set_cache, VariableSetRestart
 from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1, \
-    predication_from_index
+    predication_from_index, find_predication_from_introduced
 from perplexity.virtual_arguments import scopal_argument
-from perplexity.vocabulary import Vocabulary, Predication, EventOption
+from perplexity.vocabulary import Vocabulary, Predication, EventOption, DeclareArg, CollectiveBehavior
 
 vocabulary = Vocabulary()
 
@@ -48,6 +49,10 @@ def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
 
 @Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    if not unique_solution_if_index(state, []):
+        report_error(["duplicateSolution"])
+        return
+
     # We only know how to delete things from the
     # computer's perspective
     if x_actor_binding.value.name == "Computer":
@@ -235,6 +240,8 @@ def cardinal_variable_set_incoming(state, c_count, e_introduced_binding, x_targe
         # Continue going through the parent_variable_set: this is the next item in the set
         # We need to use the same this_cardinal_group that we used for the other elements of the set
         # and try it on this_cardinal_group
+        if "CurrentCardinalGroup" not in parent_variable_set_cache["ChildCardinals"][this_predicate_index]:
+            print("foo")
         this_cardinal_group = parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"]
         cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> cached Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
 
@@ -386,10 +393,46 @@ def place_n(state, x_binding):
             yield state.set_x(x_binding.variable.name, value)
 
 
+# This version doesn't add information to the target event, it just affects cardinal groupings
 @Predication(vocabulary, names=["_together_p_state"])
 def together_p_state(state, e_introduced_binding, e_target_binding):
-    # There is no value for this stative preposition since there is not an end location
-    yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": None, "Preposition": "together", "Originator": execution_context().current_predication_index()})
+    # Figure out which x variables are on e_target_binding
+    target_predication = find_predication_from_introduced(state.get_binding("tree").value["Tree"], e_target_binding.variable.name)
+    target_x_args = target_predication.x_args()
+    target_x_bindings = [state.get_binding(x_arg) for x_arg in target_x_args]
+
+    # Two children ate two pizzas together could mean:
+    # 1. each child ate two pizzas at the same time
+    # 2. two children together ate two pizzas
+    # or both
+    # This requires that at least one of the N bindings is collective (and fails for dist/dist)
+    found_collective = False
+    for binding in target_x_bindings:
+        if binding.variable.is_collective:
+            found_collective = True
+            break
+
+    if not found_collective:
+        report_error(["formNotUnderstood", "missing", "collective"])
+        return
+
+    for collective_binding in target_x_bindings:
+        if collective_binding.variable.is_collective:
+            # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
+            state = state.set_x(collective_binding.variable.name, collective_binding.value,
+                                cardinal_group_id=collective_binding.variable.cardinal_group_id,
+                                variable_set_id=collective_binding.variable.variable_set_id,
+                                variable_set_item_id=collective_binding.variable.variable_set_item_id,
+                                is_collective=collective_binding.variable.is_collective,
+                                used_collective=True)
+
+    yield state
+
+
+# @Predication(vocabulary, names=["_together_p_state"])
+# def together_p_state(state, e_introduced_binding, e_target_binding):
+#     # There is no value for this stative preposition since there is not an end location
+#     yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": None, "Preposition": "together", "Originator": execution_context().current_predication_index()})
 
 
 @Predication(vocabulary, names=["_in_p_state"])
@@ -443,31 +486,9 @@ def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_
 
 @Predication(vocabulary, names=["_in_p_loc"], handles=[("StativePreposition", EventOption.optional)])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
-    if e_introduced_binding.value is not None and "StativePreposition" in e_introduced_binding.value:
-        if e_introduced_binding.value["StativePreposition"]["Preposition"] == "together":
-            # Two children ate two pizzas together could mean:
-            # 1. each child ate two pizzas at the same time
-            # 2. two children together ate two pizzas
-            # or both
-            # This requires that at least one of the two bindings is collective (and fails for dist/dist)
-            if not x_actor_binding.variable.is_collective and not x_location_binding.variable.is_collective:
-                report_error(["formNotUnderstood", "missing", "collective"])
-                return
-
-            else:
-                for collective_binding in [x_actor_binding, x_location_binding]:
-                    if collective_binding.variable.is_collective:
-                        # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
-                        state = state.set_x(collective_binding.variable.name, collective_binding.value,
-                                            cardinal_group_id=collective_binding.variable.cardinal_group_id,
-                                            variable_set_id=collective_binding.variable.variable_set_id,
-                                            variable_set_item_id=collective_binding.variable.variable_set_item_id,
-                                            is_collective=collective_binding.variable.is_collective,
-                                            used_collective=True)
-
-        else:
-            report_error(["formNotUnderstood", "notHandled", e_introduced_binding.value["StativePreposition"]["Preposition"]])
-            return
+    if not unique_solution_if_index(state, []):
+        report_error(["duplicateSolution"])
+        return
 
     if x_actor_binding.value is not None:
         if x_location_binding.value is not None:

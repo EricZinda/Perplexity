@@ -1,7 +1,8 @@
 import copy
 import itertools
 import logging
-from perplexity.tree import find_predications_in_list, walk_tree_predications_until, split_predications_consuming_event
+from perplexity.tree import find_predications_in_list, walk_tree_predications_until, split_predications_consuming_event, \
+    is_index_predication
 from perplexity.execution import create_variable_set_cache, call_with_group, VariableSetRestart, create_solution_id, \
     call
 
@@ -254,7 +255,7 @@ def cardinal_answer_to_english(variable, cardinal_variables, cardinal_answer_lis
     return ("\n" if cardinal_answer_list[0]["Type"] == "dist" else "").join(cardinal_group_answer)
 
 
-# Convert the raw list of answers from a query to a list that groups them
+# Convert the raw list of answers from a query to be a list that groups them
 # into answers that take into account variable sets.
 # Returns each different cardinal-based answer
 def cardinal_answer_list(solutions):
@@ -378,5 +379,27 @@ def specific_coll_dist_variation(answer_set_node, variation_list):
     return cardinal_groups
 
 
-cardinal_logger = logging.getLogger('Cardinal')
+# All of the intermediate (non-index) predications in a phrase should just pass through collective and distributive options
+# if they are valid but not processed specially (like "lift").
+# However, the index predication is the last one in the phrase, and if it does this, it will return a bunch of duplicates.
+# So, it should fail on any that aren't processed specially because they are dups.
+#
+# unique_solution_if_index() will only allow unique dist/coll solutions that were actually processed to come through
+# as well as any that are listed in different_collective_behavior because those are the ones that this predication is
+# going to process
+def unique_solution_if_index(state, different_collective_behavior):
+    # Only filter out solutions for the index predication
+    if not is_index_predication(state):
+        return True
 
+    variables = state.get_binding("tree").value["Variables"]
+    for variable in variables:
+        if variable not in different_collective_behavior:
+            binding = state.get_binding(variable)
+            if binding.variable.is_collective and not binding.variable.used_collective:
+                return False
+
+    return True
+
+
+cardinal_logger = logging.getLogger('Cardinal')

@@ -131,11 +131,35 @@ If somebody distinguishes coll/dist for a given variable, you need to return all
 So:
   - if a predication can work for either (i.e. isn't wrong) it should let them through but not mark them as processed
   - if it processes coll differently, it should mark them as processed
-  - if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
-  - if it doesn't work it should fail for them
+  - if it doesn't work for either coll or dist it should fail for the one it doesn't work for
+      - if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
 
-if nobody cares, the way to get all the unique answers is to do dist all the way through
+if nobody cares, the way to get all the unique answers is to do dist all the way through.
 
+At the very end the logic is:
+- If there is a coll, only use it if someone marked it as used_collective or if you want to use it as used_collective
+  - At the end you don't want to let coll/dist alternatives that are processed the same pass through if they aren't treated differently because they will be duplicates
+- If an answer is all dist, use it.
+
+### How to deal with verbs
+# All of the intermediate (non-index) predications in a phrase should just pass through collective and distributive options
+# if they are valid but not processed specially (like "lift").
+# However, the index predication is the last one in the phrase, and if it does this, it will return a bunch of duplicates.
+# So, it should fail on any that aren't processed specially because they are dups.
+#
+# unique_solution_if_index() will only allow unique dist/coll solutions that were actually processed to come through
+# as well as any that are listed in different_collective_behavior because those are the ones that this predication is
+# going to process
+
+for something like "in", it should get rid of coll/dist duplicates if it is the index, UNLESS it is processing them specially.
+unique_solution_if_index() will only allow unique dist/coll solutions that were actually processed to come through (ignoring var
+
+General programming model: By default, assume they do not handle groups specially, so call unique_solution_if_index([]).  This will not do anything if it is not the index predication.
+- If they handle particular collectives, they to to set that on the call.
+
+How to handle: delete 2 files together in this folder?
+- like "in", it can delete a coll but treats it like dist
+- unique_solution_if_index() will allow a group through if one is used, but otherwise ignores it.
 
 ### How to deal with in and files
 How in(what, where) works for sets.  [a, b] in [x, y] is the same as [a], [b] in [x], [y], i.e. the grouping of either doesn't matter. 
@@ -145,11 +169,22 @@ If a person says "two files in a folder together" it is forcing a group, so we s
 If a person just says "two files are in a folder", just return the combinations
 
 ### How to deal with "x is verb y together"
+"together_p_state" should simply create the appropriate group and call it handled *before* it gets to the predication, and also cancel out dist/dist
 If together applies to the verb, it isn't clear if it is grouping the left, right or both sides (at the same time). Return them all.
+the predications will just pass it through
 
 Thus we can test all the possible coll/dist options by using:
 - two files are in two folders (returns dist/dist)
 - two files are in two folders together (returns coll/dist, dist/coll, coll, coll)
+
+### How to deal with lift or any predicate that treats a group differently
+Option 1: 
+- Set a property of the variable? that says how many items in the group
+- The verb must succeed for all the options, and collect them for a parent cardinal group, until it hits the final one
+- On the final one it checks the whole set for the semantic. If it doesn't work, it sends a special exception to the parent to fail the cardinal group
+
+## Multiple answers with cardinals
+if there are two files in one folder and two in another and you say "delete two files in 2 folders together", which files get deleted
 
 ## Examples
 files in folders:

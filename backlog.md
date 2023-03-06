@@ -2,14 +2,15 @@ Remaining work to be shown in the tutorial:
 - Make "only 2" work for cardinals
 - Linking files says that the same file is in a folder twice under two names
 
-- Need to figure out how to handle what mode verbs are in properly and not return answers that don't make sense (like "2 files are in a folder together")
-- Need to figure out a way to linguistically force coll and dist for the parent and the child
-    which 2 files jointly are in 2 folders (forces files(coll))
-    which 2 files separately are in 2 folders (forces files(dist))
-    which 2 files are in all 3 folders
-    which 2 children eat 2 pizzas
-- Need to implement a verb that does coll 
+- delete 2 files in this folder tries to delete four
+- make delete 2 files in 2 folders together work
 - 
+- Figure out commands so they don't do every combination
+  - 
+- figure out programming model for cardinals in predications (mixins?)
+- Do cumulative
+- Need to implement a verb that handles coll differently like lift
+ 
   - what verbs are collective?
     - add up to
   - size

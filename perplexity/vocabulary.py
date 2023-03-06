@@ -11,6 +11,17 @@ class EventOption(enum.Enum):
     required = 2
 
 
+class CollectiveBehavior(enum.Enum):
+    different = 1
+    same = 2
+
+
+class DeclareArg(object):
+    def __init__(self, variable_type, collective_behavior=CollectiveBehavior.same):
+        self.variable_type = variable_type
+        self.collective_behavior = collective_behavior
+
+
 def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[], virtual_args=[]):
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error

@@ -71,6 +71,55 @@
             "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],[_together_p_state(e19,e2), _in_p_loc(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "9eb79f0e-44de-48cf-9247-716b77fea2ac"
+        },
+        {
+            "Command": "/new examples.Example28_reset",
+            "Expected": "State reset using examples.Example28_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "c87a674c-6168-4cae-b104-d7d405d57ce5"
+        },
+        {
+            "Command": "delete two files in this folder",
+            "Expected": "Done!",
+            "Tree": "_this_q_dem(x17,_folder_n_of(x17,i22),pronoun_q(x3,pron(x3),udef_q(x8,[_in_p_loc(e16,x8,x17), _file_n_of(x8,i15), card(2,e14,x8)],_delete_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "da0c8e66-f8eb-4335-aeb7-f29488c2ea1e"
+        },
+        {
+            "Command": "what is in this folder?",
+            "Expected": "thing is not in this folder",
+            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "247a1b8d-0125-4507-9ecd-ff4e53438c9f"
+        },
+        {
+            "Command": "/new examples.Example28_reset",
+            "Expected": "State reset using examples.Example28_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "94a9f301-22e6-42df-a65d-c90083df8222"
+        },
+        {
+            "Command": "delete 2 files in 2 folders together",
+            "Expected": "Done!",
+            "Tree": "udef_q(x17,[_folder_n_of(x17,i24), card(2,e23,x17)],pronoun_q(x3,pron(x3),udef_q(x8,[_in_p_loc(e16,x8,x17), _file_n_of(x8,i15), card(2,e14,x8)],[_together_p_state(e25,e2), _delete_v_1(e2,x3,x8)])))",
+            "Enabled": true,
+            "ID": "1b892616-b857-462e-96cb-4a59e79af905"
+        },
+        {
+            "Command": "what is in \"\\>Desktop\"?",
+            "Expected": "thing is not in '/Desktop'",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>Desktop,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "e18992e8-4f5e-45cb-9fc1-01f63cd875ac"
+        },
+        {
+            "Command": "what is in \"\\>temp\"?",
+            "Expected": "thing is not in '/temp'",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>temp,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "4bf463fb-e340-4e0a-a092-bcef0f68ca80"
         }
     ]
 }

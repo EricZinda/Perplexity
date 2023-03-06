@@ -76,6 +76,7 @@ class ExecutionContext(object):
                 # This cardinal group worked
                 yield from perplexity.cardinals.yield_all_cardinal_group_solutions(this_predicate_index=0, cardinal_group_id=root_cardinal_group.cardinal_group_id, cardinal_group_solutions=cardinal_group_solutions)
 
+
     def call_with_group(self, group, state, term, normalize=False):
         try:
             call_generator = call(state, term, normalize)

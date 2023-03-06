@@ -27,6 +27,14 @@ class TreePredication(object):
     def introduced_variable(self):
         return self.args[self.introduced_variable_index()]
 
+    def x_args(self):
+        x_args = []
+        for arg_index in range(0, len(self.args)):
+            if self.arg_types[arg_index] == "x":
+                x_args.append(self.args[arg_index])
+
+        return x_args
+
     def introduced_variable_index(self):
         if self.arg_names[0] == "CARG":
             return 1
@@ -271,6 +279,11 @@ def walk_tree_args_until(term, predication_func, arg_func):
 
     return None
 
+
+def is_index_predication(state):
+    this_tree = state.get_binding("tree").value
+    this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
+    return this_predication.introduced_variable() == this_tree["Index"]
 
 # True if an `fw_seq` predication is used by something *besides* an `fw_seq` predication
 # because that means it is the final one
