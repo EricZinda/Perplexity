@@ -59,9 +59,6 @@ class ExecutionContext(object):
         reset_execution_context(self.old_context_token)
 
     def solve_mrs_tree(self, state, tree_info):
-        if False:
-            perplexity.cardinals.cardinal_variable_set_outgoing_solutions(None, None, None, None,
-                                                            None, None, None)
         with self:
             set_group_context(None)
             self._error = None
@@ -69,19 +66,15 @@ class ExecutionContext(object):
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
 
-            for is_collective in [False, True]:
+            # To make cardinals work, run this as if it were a distributive cardinal group that has one variable set in it with one element
+            # Conveniently, we need to set the state to have the variable "tree" it it, so pretend like this cardinal group is setting that value
+            # since cardinal_group_outgoing_solutions will fail if there are no items in the variable set
+            root_cardinal_group = perplexity.cardinals.CardinalGroup(is_collective=False, cardinal_group_id=0, cardinal_group_items=[tuple([str(0), [tree_info]])])
+            cardinal_group_solutions = perplexity.cardinals.cardinal_group_outgoing_solutions(this_predicate_index=0, state=state, variable_name="tree", h_body=tree_info["Tree"], this_cardinal_group=root_cardinal_group)
 
-                initial_group = create_variable_set_cache(0, is_collective)
-                try:
-                    yield from self.call_with_group(initial_group, state.set_x("tree", tree_info), tree_info["Tree"])
-
-                except VariableSetRestart:
-                    # Ignore restart exceptions since there is no set we are
-                    # generating that can be changed since we are the root
-                    pass
-
-                if len(initial_group["ChildCardinals"]) == 0:
-                    break
+            if len(cardinal_group_solutions) > 0:
+                # This cardinal group worked
+                yield from perplexity.cardinals.yield_all_cardinal_group_solutions(this_predicate_index=0, cardinal_group_id=root_cardinal_group.cardinal_group_id, cardinal_group_solutions=cardinal_group_solutions)
 
     def call_with_group(self, group, state, term, normalize=False):
         try:
