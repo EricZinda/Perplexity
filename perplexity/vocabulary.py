@@ -1,6 +1,8 @@
 import enum
 import inspect
 import logging
+
+from perplexity.cardinals import unique_solution_if_index
 from perplexity.execution import report_error
 from perplexity.utilities import parse_predication_name
 from perplexity.variable_binding import VariableBinding
@@ -112,7 +114,21 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
             # Make sure the event has a structure that will be properly
             # handled by the predication
             if ensure_handles_event(args[0], handles, args[1]):
+                # Then make sure that we fail for any duplicate cardinal answers
+                # *before* we get to the predication
+                if "state" in kwargs:
+                    state = kwargs["state"]
+                else:
+                    state = args[0]
+
+                # TODO: pay attention to predication declaration of args that
+                # the predication is going to handle itself as collective
+                if not unique_solution_if_index(state, []):
+                    report_error(["duplicateSolution"])
+                    return
+
                 yield from function_to_decorate(*args, **kwargs)
+
 
         predication_names = names if names is not None else [function_to_decorate.__name__]
         final_arguments = arguments if arguments is not None else arguments_from_function(function_to_decorate)

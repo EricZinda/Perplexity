@@ -49,10 +49,6 @@ def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
 
 @Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
-    if not unique_solution_if_index(state, []):
-        report_error(["duplicateSolution"])
-        return
-
     # We only know how to delete things from the
     # computer's perspective
     if x_actor_binding.value.name == "Computer":
@@ -486,10 +482,6 @@ def locative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_
 
 @Predication(vocabulary, names=["_in_p_loc"], handles=[("StativePreposition", EventOption.optional)])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
-    if not unique_solution_if_index(state, []):
-        report_error(["duplicateSolution"])
-        return
-
     if x_actor_binding.value is not None:
         if x_location_binding.value is not None:
             if hasattr(x_location_binding.value, "contained_items"):

@@ -2,11 +2,6 @@ Remaining work to be shown in the tutorial:
 - Make "only 2" work for cardinals
 - Linking files says that the same file is in a folder twice under two names
 
-- delete 2 files in this folder tries to delete four
-- make delete 2 files in 2 folders together work
-- 
-- Figure out commands so they don't do every combination
-  - 
 - figure out programming model for cardinals in predications (mixins?)
 - Do cumulative
 - Need to implement a verb that handles coll differently like lift
