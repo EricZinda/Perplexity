@@ -9,7 +9,7 @@ from perplexity.execution import create_variable_set_cache, call_with_group, Var
 
 # Split a potential cardinal predicate into pieces:
 #   new_cardinal: just the bare cardinal predication with "_with_scope" appended
-#   cardinal_modifiers: a list of all the modifiers of the cardinal
+#   cardinal_modifiers: a list of all the terms modifying the introduced variable of the cardinal
 #   remaining_predications: any terms that were not cardinal-impacting.  i.e. the "bare rstr".
 #       If it is not a cardinal, just return all of term
 def split_cardinal_rstr(term):

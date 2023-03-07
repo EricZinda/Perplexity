@@ -9,7 +9,8 @@ from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_arg_types
+from perplexity.tree import find_predication, tree_from_assignments, find_predications, \
+    find_predications_with_arg_types, match_predication_pattern, TreePredication
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, has_cardinals
 
@@ -237,7 +238,7 @@ class UserInterface(object):
 
         return None
 
-    def print_diagnostics(self, all):
+    def print_diagnostics(self, all, first_tree_only=False):
         if self.interaction_record is not None:
             print(f"User Input: {self.interaction_record['UserInput']}")
             print(f"{len(self.interaction_record['Mrss'])} Parses")
@@ -256,9 +257,9 @@ class UserInterface(object):
                     else:
                         chosen_tree = self.interaction_record["ChosenTreeIndex"]
 
-                    self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record)
+                    self.print_diagnostics_trees(all, first_tree_only, mrs_index, chosen_tree, mrs_record)
 
-    def print_diagnostics_trees(self, all, parse_number, chosen_tree, mrs_record):
+    def print_diagnostics_trees(self, all, first_tree_only, parse_number, chosen_tree, mrs_record):
         if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
@@ -271,7 +272,7 @@ class UserInterface(object):
 
         tree_index = 0
         for tree_info in tree_generator:
-            if all or chosen_tree == tree_index:
+            if (first_tree_only and tree_index == 0) or (not first_tree_only and (all or chosen_tree == tree_index)):
                 extra = "CHOSEN " if chosen_tree == tree_index else ""
                 print(f"\n-- {extra}Parse #{parse_number}, {extra}Tree #{tree_index}: \n")
                 draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
@@ -390,8 +391,18 @@ class UserInterface(object):
 
 
 def command_show(ui, arg):
-    all = arg.lower() == "all"
-    ui.print_diagnostics(all)
+    parts = arg.split(",")
+    if len(parts) == 1:
+        all = arg.lower() == "all"
+        first_tree_only = False
+    elif len(parts) == 2:
+        all = parts[0].lower() == "all"
+        first_tree_only = bool(parts[1])
+    else:
+        print("Don't know that argument set")
+        return True
+
+    ui.print_diagnostics(all, first_tree_only)
     return True
 
 
@@ -516,50 +527,68 @@ def command_help(ui, arg):
     return True
 
 
-def command_debug_tree(ui, arg):
+def command_find_tree(ui, arg):
     predication_name = None
     if arg != "":
-        parts = arg.split("(")
-        predication_name = parts[0]
-        arg_parts = parts[1].split(",")
-        arg_parts[-1] = arg_parts[-1].strip(")")
+        predication_descriptions = arg.split("&")
+        predication_patterns = []
+        for description in predication_descriptions:
+            parts = description.split("(")
+            predication_name = parts[0]
+            arg_parts = parts[1].split(",")
+            arg_parts[-1] = arg_parts[-1].strip(")")
+            if predication_name in ["_", "None", "none", ""]:
+                predication_name = "_"
 
-        predication_args = []
-        for part in arg_parts:
-            clean_arg = part.strip()
-            if clean_arg in ["_", "None", "none", ""]:
-                predication_args.append("_")
-            else:
-                predication_args.append(clean_arg)
+            predication_args = []
+            for part in arg_parts:
+                clean_arg = part.strip()
+                if clean_arg in ["_", "None", "none", ""]:
+                    predication_args.append("_")
+                else:
+                    if len(clean_arg) > 1:
+                        clean_arg = clean_arg[0]
+                    predication_args.append(clean_arg)
 
-        print(f"searching for trees containing predication: {predication_name}({','.join(predication_args)})\n")
+            predication_patterns.append((predication_name, predication_args))
+
+        predications_prompt = ",".join([f"{predication_pattern[0]}({', '.join(predication_pattern[1])})" for predication_pattern in predication_patterns])
+        print(f"searching for trees containing predications: {predications_prompt}\n")
 
     if ui.interaction_record is not None:
         for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
             mrs_record = ui.interaction_record["Mrss"][mrs_index]
 
-            if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
-                # The trees aren't generated if we don't know terms for performance
-                # reasons (since we won't be evaluating anything)
-                tree_generator = [{"Tree": tree,
-                                   "Solutions": [],
-                                   "Error": None,
-                                   "ResponseMessage": None} for tree in ui.trees_from_mrs(mrs_record["Mrs"])]
-            else:
-                tree_generator = mrs_record["Trees"]
+            no_match = False
+            for pattern in predication_patterns:
+                found_pattern_match = False
+                for ep in mrs_record["Mrs"].predications:
+                    predication = TreePredication(0, ep.predicate, [arg[1] for arg in ep.args.items()], [arg[0] for arg in ep.args.items()])
+                    if match_predication_pattern(predication, pattern[0], pattern[1]):
+                        found_pattern_match = True
+                        break
 
-            for tree_info in tree_generator:
-                if predication_name is not None:
-                    if len(find_predications_with_arg_types(tree_info["Tree"], predication_name, predication_args)):
-                        print(f"Found in parse #{mrs_index}:\n")
-                        draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
-                        renderer = TreeRenderer()
-                        renderer.print_tree(draw_tree)
-                        print(f"\nText Tree: {tree_info['Tree']}\n")
-
+                if not found_pattern_match:
+                    no_match = True
                     break
+
+            if not no_match:
+                print(f"Found in parse #{mrs_index}:\n")
+                if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
+                    # The trees aren't generated if we don't know terms for performance
+                    # reasons (since we won't be evaluating anything)
+                    tree_list = [{"Tree": tree,
+                                       "Solutions": [],
+                                       "Error": None,
+                                       "ResponseMessage": None} for tree in ui.trees_from_mrs(mrs_record["Mrs"])]
                 else:
-                    print(f"QUOTED: {str(find_predications(tree_info['Tree'], 'quoted'))}")
+                    tree_list = mrs_record["Trees"]
+
+                tree_info = tree_list[0]
+                draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
+                renderer = TreeRenderer()
+                renderer.print_tree(draw_tree)
+                print(f"\nText Tree: {tree_info['Tree']}\n")
 
     return True
 
@@ -596,14 +625,14 @@ command_data = {
               "Description": "Resets to the initial state",
               "Example": "/reset"},
     "show": {"Function": command_show, "Category": "Parsing",
-             "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
-             "Example": "/show or /show all"},
+             "Description": "Shows tracing information from last command. Add 'all' to see all interpretations, add 'all, True' to just see the first parse from them",
+             "Example": "/show or /show all or /show all, True"},
     "runparse": {"Function": command_run_parse, "Category": "Parsing",
                   "Description": "Only runs the identified parse index and optional tree index",
                   "Example": "/runparse 1 OR /runparse 1, 0"},
-    "debugtree": {"Function": command_debug_tree, "Category": "Parsing",
+    "findtree": {"Function": command_find_tree, "Category": "Parsing",
                   "Description": "Shows tracing information about the tree. give a predication query after to only show trees that match it. Use '_' to mean 'anything' for an argument or the predication name",
-                  "Example": "/debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)"},
+                  "Example": "/findtree OR /findtree which(x,h,h) OR /findtree _(e,x,_,h) OR /findtree which_q(_,_,_)&in_p_loc(e,x,x)"},
     "debugmrs": {"Function": command_debug_mrs, "Category": "Parsing",
                   "Description": "Shows tracing information about the mrs",
                   "Example": "/debugmrs"},

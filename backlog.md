@@ -2,9 +2,60 @@ Remaining work to be shown in the tutorial:
 - Make "only 2" work for cardinals
 - Linking files says that the same file is in a folder twice under two names
 
-- figure out programming model for cardinals in predications (mixins?)
-- Do cumulative
 - Need to implement a verb that handles coll differently like lift
+- which 2 files total 5
+-                                                ┌── _file_n_of(x5,i11)
+                                   ┌────── and(0,1)
+               ┌────── card(5,x14,i│0)           └ card(2,e10,x5)
+number_q(x14,RSTR,BODY)            │
+                    └─ udef_q(x5,RSTR,BODY)
+                                        │      ┌── loc_nonsp(e13,e2,x14)
+                                        └─ and(0,1)
+                                                 └ _total_v_1(e2,x5,i12)
+
+which 2 files total 5 megabytes
+                         ┌── _megabyte_n_1(x11,u18)
+             ┌────── and(0,1)
+             │             └ card(5,e17,x11)
+udef_q(x11,RSTR,BODY)
+                  │                            ┌── _file_n_of(x3,i10)
+                  │                ┌────── and(0,1)
+                  │                │             └ card(2,e9,x3)
+                  └─ _which_q(x3,RSTR,BODY)
+                                        └─ _total_v_1(e2,x3,x11)
+
+                                    ┌────── card(5,x17,i23)
+             ┌────── number_q(x17,RSTR,BODY)    ┌── _megabyte_n_1(x11,u24)
+             │                           └─ and(0,1)
+             │                                    └ compound(e16,x11,x17)
+udef_q(x11,RSTR,BODY)
+                  │                            ┌── _file_n_of(x3,i10)
+                  │                ┌────── and(0,1)
+                  │                │             └ card(2,e9,x3)
+                  └─ _which_q(x3,RSTR,BODY)
+                                        └─ _total_v_1(e2,x3,x11)
+
+START HERE NEXT maybe find: /findtree card(_,x,_)&total_v_1(e,x,_)&compound(e,x,x)
+# Rewrite: quantifier_q(x, [cardinal(x, ...), cardinal_modifier()], body)
+# To the form: [cardinal_modifier(), cardinal_with_scope(x, non_cardinal_rstr, base_quantifier_q(x, thing(x), body)]
+# card_with_scope([_megabyte_n_1(x10,u18), _total_a_1(e15,x10)], udef_q(x10, body)
+
+
+The size of 2 files together is 1 megabyte
+
+The size of a file is 1 megabyte: This is the only way it is read:
+                         ┌── _megabyte_n_1(x14,u21)
+             ┌────── and(0,1)
+             │             └ card(1,e20,x14)
+udef_q(x14,RSTR,BODY)
+                  │                                ┌────── _file_n_of(x8,i13)
+                  │              ┌────── _a_q(x8,RSTR,BODY)
+                  │              │                      └─ _size_n_of(x3,x8)
+                  └─ _the_q(x3,RSTR,BODY)
+                                      └─ _be_v_id(e2,x3,x14)
+
+
+- Do cumulative
  
   - what verbs are collective?
     - add up to
