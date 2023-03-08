@@ -14,7 +14,8 @@ from perplexity.execution import call, report_error, execution_context, call_wit
 from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1, \
     predication_from_index, find_predication_from_introduced
 from perplexity.virtual_arguments import scopal_argument
-from perplexity.vocabulary import Vocabulary, Predication, EventOption, DeclareArg, CollectiveBehavior
+from perplexity.vocabulary import Vocabulary, Predication, EventOption, DeclareArg, CollectiveBehavior, \
+    PredicationProperty
 
 vocabulary = Vocabulary()
 
@@ -209,8 +210,24 @@ def pron(state, x_who_binding):
             report_error(["dontKnowPronoun", x_who_binding.variable.name])
 
 
-# Contract of aggregate adjective is fail immediately if the aggregate isn't true
-# otherwise iteratively return the answers
+class Megabyte(object):
+    def __init__(self):
+        pass
+
+
+@Predication(vocabulary, names=["_megabyte_n_1"], properties={"Measurement": True})
+def megabyte_n_1(state, x_binding, u_binding):
+    if x_binding.value is None:
+        yield state.set_x(x_binding.variable.name, Megabyte())
+
+    else:
+        if isinstance(x_binding.value, Megabyte):
+            yield state
+
+        else:
+            report_error(["xIsNotY", x_binding.value, "megabyte"])
+
+
 @Predication(vocabulary)
 def card(state, c_count, e_introduced_binding, x_target_binding):
     pass

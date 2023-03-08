@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 from perplexity.execution import execution_context
+from perplexity.utilities import parse_predication_name
 
 
 class TreePredication(object):
@@ -434,6 +435,15 @@ def predication_from_index(tree_info, index):
     walk_tree_predications_until(tree_info["Tree"], stop_at_index)
 
     return index_predication
+
+
+def find_predication_that_introduces_variable(term, variable):
+    def find(predication):
+        if parse_predication_name(predication.name)["Pos"] != "q":
+            if predication.introduced_variable() == variable:
+                return predication
+
+    return walk_tree_predications_until(term, find)
 
 
 # Return all of the predications that take the introduced variable

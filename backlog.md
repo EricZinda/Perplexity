@@ -41,19 +41,31 @@ START HERE NEXT maybe find: /findtree card(_,x,_)&total_v_1(e,x,_)&compound(e,x,
 # card_with_scope([_megabyte_n_1(x10,u18), _total_a_1(e15,x10)], udef_q(x10, body)
 
 
-The size of 2 files together is 1 megabyte
-
-The size of a file is 1 megabyte: This is the only way it is read:
-                         ┌── _megabyte_n_1(x14,u21)
+- Implement: The size of 2 files is 10 megabytes
+                         ┌── _megabyte_n_1(x16,u23)
              ┌────── and(0,1)
-             │             └ card(1,e20,x14)
-udef_q(x14,RSTR,BODY)
-                  │                                ┌────── _file_n_of(x8,i13)
-                  │              ┌────── _a_q(x8,RSTR,BODY)
-                  │              │                      └─ _size_n_of(x3,x8)
+             │             └ card(10,e22,x16)
+             │                                                   ┌── _file_n_of(x8,i15)
+             │                                       ┌────── and(0,1)
+             │                                       │             └ card(2,e14,x8)
+udef_q(x16,RSTR,BODY)                                │
+                  │              ┌────── udef_q(x8,RSTR,BODY)
+                  │              │                        └─ _size_n_of(x3,x8)
                   └─ _the_q(x3,RSTR,BODY)
-                                      └─ _be_v_id(e2,x3,x14)
+                                      └─ _be_v_id(e2,x3,x16)
 
+- Implement: The size of a file is 1 megabyte:
+    This is the only way it is read:
+                             ┌── _megabyte_n_1(x14,u21)
+                 ┌────── and(0,1)
+                 │             └ card(1,e20,x14)
+    udef_q(x14,RSTR,BODY)
+    ways to model:
+    - allow predications to return a special thing that says "as many as you want", special case it in card implementation
+      - hard to implement because it is using itertools
+      - call the rstr once to check what it is?
+      - Find the predication that introduces x that card uses and see what that is
+    - don't convert to set at all. Requires knowing that the rstr is going to return a special thing
 
 - Do cumulative
  

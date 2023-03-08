@@ -618,16 +618,16 @@ def Example29():
 if __name__ == '__main__':
     # foo = itertools.combinations(foo(), 2)
 
-    # ShowLogging("Execution")
-    # ShowLogging("Generation")
-    # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
-    # ShowLogging("Cardinal")
+    ShowLogging("Execution")
+    ShowLogging("Generation")
+    ShowLogging("UserInterface")
+    ShowLogging("Pipeline")
+    ShowLogging("Cardinal")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
     with ExecutionContext(vocabulary):
-        execution_context()._phrase_type = "prop"
+        execution_context().phrase_type = "prop"
         # Example1()
         # Example2()
         # Example3()

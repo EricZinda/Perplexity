@@ -2,9 +2,9 @@ import copy
 import itertools
 import logging
 from perplexity.tree import find_predications_in_list, walk_tree_predications_until, split_predications_consuming_event, \
-    is_index_predication
+    is_index_predication, find_predication_that_introduces_variable
 from perplexity.execution import create_variable_set_cache, call_with_group, VariableSetRestart, create_solution_id, \
-    call
+    call, execution_context
 
 
 # Split a potential cardinal predicate into pieces:
@@ -12,6 +12,9 @@ from perplexity.execution import create_variable_set_cache, call_with_group, Var
 #   cardinal_modifiers: a list of all the terms modifying the introduced variable of the cardinal
 #   remaining_predications: any terms that were not cardinal-impacting.  i.e. the "bare rstr".
 #       If it is not a cardinal, just return all of term
+from perplexity.vocabulary import PredicationProperty
+
+
 def split_cardinal_rstr(term):
     # Get the list of all cardinal-impacting terms in term
     cardinal_impacting_terms = ["_a+few_a_1", "card", "ord", "much-many", "several"]
@@ -41,10 +44,34 @@ class CardinalGroup(object):
         self.cardinal_group_items = cardinal_group_items
 
 
+class Measurement(object):
+    def __init__(self, measurement_type, count):
+        self.measurement_type = measurement_type
+        self.count = count
+
+
 def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr, count):
     def binding_from_call():
         for rstr_state in call(state, h_rstr):
             yield rstr_state.get_binding(variable_name).value
+
+    # If the term is a measurement like megabyte don't create a whole set of them
+    def rstr_is_measurement():
+        context = execution_context()
+        introducing_predication = find_predication_that_introduces_variable(state.get_binding("tree").value["Tree"],
+                                                                            variable_name)
+        is_measurement = None
+        for module_function_metadata in context.vocabulary.predications(introducing_predication.name,
+                                                                        introducing_predication.arg_types,
+                                                                        context.phrase_type):
+            if PredicationProperty.measurement in module_function_metadata[2].properties and \
+                    module_function_metadata[2].properties[PredicationProperty.measurement]:
+                if is_measurement is None or is_measurement is True:
+                    is_measurement = True
+                else:
+                    assert False, f"Conflicting measurement properties on {introducing_predication.name}"
+
+        return is_measurement
 
     def next_cardinal_group():
         for cardinal_group_elements in itertools.combinations(binding_from_call(), count):
@@ -53,7 +80,25 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
             else:
                 yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [element]]) for element in cardinal_group_elements])
 
-    yield from next_cardinal_group()
+    def measurement_cardinal_group():
+        single_binding = None
+        for binding in binding_from_call():
+            if single_binding is not None:
+                assert False, f"measurement predication {introducing_predication.name} returns more than one value"
+
+            else:
+                single_binding = binding
+
+        measurement = Measurement(single_binding, count)
+        yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [measurement]])])
+
+    if rstr_is_measurement():
+        # Return a single cardinal group with a single variable set of one element from the rstr since it
+        # is a measurement instead of creating a set of 50 for "50 megabytes"
+        yield from measurement_cardinal_group()
+
+    else:
+        yield from next_cardinal_group()
 
 
 def yield_all_cardinal_group_solutions(this_predicate_index, cardinal_group_id, cardinal_group_solutions):

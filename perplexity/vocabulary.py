@@ -2,7 +2,7 @@ import enum
 import inspect
 import logging
 
-from perplexity.cardinals import unique_solution_if_index
+import perplexity.cardinals
 from perplexity.execution import report_error
 from perplexity.utilities import parse_predication_name
 from perplexity.variable_binding import VariableBinding
@@ -18,13 +18,22 @@ class CollectiveBehavior(enum.Enum):
     same = 2
 
 
+class PredicationProperty(str, enum.Enum):
+    measurement = "Measurement"
+
+
 class DeclareArg(object):
     def __init__(self, variable_type, collective_behavior=CollectiveBehavior.same):
         self.variable_type = variable_type
         self.collective_behavior = collective_behavior
 
 
-def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[], virtual_args=[]):
+class PredicationMetadata(object):
+    def __init__(self, properties):
+        self.properties = properties
+
+
+def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[], virtual_args=[], properties=[]):
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
     def ensure_handles_event(state, handles, event_binding):
@@ -123,17 +132,16 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
                 # TODO: pay attention to predication declaration of args that
                 # the predication is going to handle itself as collective
-                if not unique_solution_if_index(state, []):
+                if not perplexity.cardinals.unique_solution_if_index(state, []):
                     report_error(["duplicateSolution"])
                     return
 
                 yield from function_to_decorate(*args, **kwargs)
 
-
         predication_names = names if names is not None else [function_to_decorate.__name__]
         final_arguments = arguments if arguments is not None else arguments_from_function(function_to_decorate)
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
-        vocabulary.add_predication(function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arguments, final_phrase_types)
+        vocabulary.add_predication(PredicationMetadata(properties), function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arguments, final_phrase_types)
 
         return wrapper_function
 
@@ -141,9 +149,9 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
 
 # The structure of self.all is:
-#   {"erase_v_1__exx__comm": [(module, function), ...],
-#    "erase_v_1__exx__ques": [(module, function), ...],
-#    "delete_v_1__exx__comm": [(module, function), ...],
+#   {"erase_v_1__exx__comm": [(module, function, metadata), ...],
+#    "erase_v_1__exx__ques": [(module, function, metadata), ...],
+#    "delete_v_1__exx__comm": [(module, function, metadata), ...],
 #    ... }
 class Vocabulary(object):
     def __init__(self):
@@ -157,7 +165,7 @@ class Vocabulary(object):
         name_parts = parse_predication_name(delphin_name)
         return name_parts["Lemma"] in self.words
 
-    def add_predication(self, module, function, delphin_names, arguments, phrase_types, first=False):
+    def add_predication(self, metadata, module, function, delphin_names, arguments, phrase_types, first=False):
         if len(phrase_types) == 0:
             phrase_types = ["comm", "ques", "prop", "norm"]
 
@@ -174,15 +182,15 @@ class Vocabulary(object):
                     type_list = self.all[name_key]
 
                 if first:
-                    type_list.insert(0, (module, function))
+                    type_list.insert(0, (module, function, metadata))
                 else:
-                    type_list.append((module, function))
+                    type_list.append((module, function, metadata))
 
     def predications(self, name, arg_types, predication_type):
         name_key = self.name_key(name, arg_types, predication_type)
         if name_key in self.all:
-            for functionName in self.all[name_key]:
-                yield functionName
+            for module_function_metadata in self.all[name_key]:
+                yield module_function_metadata
 
 
 pipeline_logger = logging.getLogger('Pipeline')

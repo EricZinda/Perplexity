@@ -50,7 +50,7 @@ class ExecutionContext(object):
         self._error = None
         self._error_predication_index = -1
         self._predication_index = -1
-        self._phrase_type = None
+        self.phrase_type = None
 
     def __enter__(self):
         self.old_context_token = set_execution_context(self)
@@ -64,7 +64,7 @@ class ExecutionContext(object):
             self._error = None
             self._error_predication_index = -1
             self._predication_index = 0
-            self._phrase_type = sentence_force(tree_info["Variables"])
+            self.phrase_type = sentence_force(tree_info["Variables"])
 
             # To make cardinals work, run this as if it were a distributive cardinal group that has one variable set in it with one element
             # Conveniently, we need to set the state to have the variable "tree" it it, so pretend like this cardinal group is setting that value
@@ -141,7 +141,7 @@ class ExecutionContext(object):
     #   The first item is the predication name
     #   The rest of the items are the arguments
     def _call_predication(self, state, predication, normalize=False):
-        logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
+        logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self.phrase_type}]")
 
         dynamic_arg_types = []
         bindings = []
@@ -172,7 +172,7 @@ class ExecutionContext(object):
         # where item[0] is the module and item[1] is the function
         for module_function in self.vocabulary.predications(predication.name,
                                                             dynamic_arg_types,
-                                                            self._phrase_type if normalize is False else "norm"):
+                                                            self.phrase_type if normalize is False else "norm"):
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
             module = sys.modules[module_function[0]]
