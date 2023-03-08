@@ -5,7 +5,7 @@ import platform
 import sys
 from delphin import ace
 from delphin.codecs import simplemrs
-
+import perplexity.cardinals
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
@@ -110,12 +110,14 @@ class UserInterface(object):
                 self.evaluate_best_response()
 
             else:
-                for tree in self.trees_from_mrs(mrs):
+                for original_tree in self.trees_from_mrs(mrs):
                     tree_index += 1
                     if self.run_tree_index is not None and self.run_tree_index != tree_index:
                         continue
 
+                    tree = perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree)
                     tree_record = {"Tree": tree,
+                                   "OriginalTree": original_tree,
                                    "Solutions": [],
                                    "Error": None,
                                    "ResponseMessage": None}
@@ -238,7 +240,7 @@ class UserInterface(object):
 
         return None
 
-    def print_diagnostics(self, all, first_tree_only=False):
+    def print_diagnostics(self, all, first_tree_only=False, include_cardinal_tree=False):
         if self.interaction_record is not None:
             print(f"User Input: {self.interaction_record['UserInput']}")
             print(f"{len(self.interaction_record['Mrss'])} Parses")
@@ -257,16 +259,17 @@ class UserInterface(object):
                     else:
                         chosen_tree = self.interaction_record["ChosenTreeIndex"]
 
-                    self.print_diagnostics_trees(all, first_tree_only, mrs_index, chosen_tree, mrs_record)
+                    self.print_diagnostics_trees(all, first_tree_only, include_cardinal_tree, mrs_index, chosen_tree, mrs_record)
 
-    def print_diagnostics_trees(self, all, first_tree_only, parse_number, chosen_tree, mrs_record):
+    def print_diagnostics_trees(self, all, first_tree_only, include_cardinal_tree, parse_number, chosen_tree, mrs_record):
         if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
-            tree_generator = [{"Tree": tree,
+            tree_generator = [{"Tree": perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree),
+                               "OriginalTree": original_tree,
                                "Solutions": [],
                                "Error": None,
-                               "ResponseMessage": None} for tree in self.trees_from_mrs(mrs_record["Mrs"])]
+                               "ResponseMessage": None} for original_tree in self.trees_from_mrs(mrs_record["Mrs"])]
         else:
             tree_generator = mrs_record["Trees"]
 
@@ -275,10 +278,17 @@ class UserInterface(object):
             if (first_tree_only and tree_index == 0) or (not first_tree_only and (all or chosen_tree == tree_index)):
                 extra = "CHOSEN " if chosen_tree == tree_index else ""
                 print(f"\n-- {extra}Parse #{parse_number}, {extra}Tree #{tree_index}: \n")
-                draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
+                draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["OriginalTree"])
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
-                print(f"\nText Tree: {tree_info['Tree']}")
+                print(f"\nText Tree: {tree_info['OriginalTree']}")
+                if include_cardinal_tree:
+                    print("\n")
+                    draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
+                    renderer = TreeRenderer()
+                    renderer.print_tree(draw_tree)
+                    print(f"\nCardinal Tree: {tree_info['Tree']}")
+
                 if len(tree_info['Solutions']) > 0:
                     for solution in tree_info['Solutions']:
                         print(f"Solution: {str(solution)}")
@@ -392,17 +402,24 @@ class UserInterface(object):
 
 def command_show(ui, arg):
     parts = arg.split(",")
-    if len(parts) == 1:
-        all = arg.lower() == "all"
-        first_tree_only = False
-    elif len(parts) == 2:
+    all = False
+    first_tree_only = False
+    include_cardinal_tree = False
+
+    if len(parts) >= 1:
         all = parts[0].lower() == "all"
+
+    if len(parts) >= 2:
         first_tree_only = bool(parts[1])
-    else:
+
+    if len(parts) >= 3:
+        include_cardinal_tree = bool(parts[2])
+
+    if len(parts) >= 4:
         print("Don't know that argument set")
         return True
 
-    ui.print_diagnostics(all, first_tree_only)
+    ui.print_diagnostics(all, first_tree_only, include_cardinal_tree)
     return True
 
 
@@ -625,8 +642,8 @@ command_data = {
               "Description": "Resets to the initial state",
               "Example": "/reset"},
     "show": {"Function": command_show, "Category": "Parsing",
-             "Description": "Shows tracing information from last command. Add 'all' to see all interpretations, add 'all, True' to just see the first parse from them",
-             "Example": "/show or /show all or /show all, True"},
+             "Description": "Shows tracing information from last command. Takes arguments: all/solution, True/False(see first parse), True/False(include cardinal tree)",
+             "Example": "/show or /show all or /show all, True or /show solution, False, True"},
     "runparse": {"Function": command_run_parse, "Category": "Parsing",
                   "Description": "Only runs the identified parse index and optional tree index",
                   "Example": "/runparse 1 OR /runparse 1, 0"},

@@ -5,25 +5,13 @@ from perplexity.tree import TreePredication
 from perplexity.utilities import parse_predication_name
 
 
-# Get original argument names from the mrs given a name and arg count
-def arg_names_from_mrs(mrs, predication_name, arg_count):
-    for item in mrs.predications:
-        if item.predicate == predication_name and arg_count == len(item.args):
-            return list(item.args.keys())
-
-    # Give anything without a real predication
-    # (like the fake "and" predication we add)
-    # just a list of numbers
-    return [str(item) for item in range(0, arg_count)]
-
-
 # Convert Perplexity tree format to a set
 # of printable nodes
 def create_draw_tree(mrs, tree_node, parent=None, hole=None):
     if isinstance(tree_node, list):
         if len(tree_node) > 1:
             # Need to treat as a single fake "and" node
-            predication = TreePredication(-1, "and", tree_node)
+            predication = TreePredication(-1, "and", tree_node, [str(item) for item in range(0, len(tree_node))])
         else:
             predication = tree_node[0]
 
@@ -34,7 +22,7 @@ def create_draw_tree(mrs, tree_node, parent=None, hole=None):
         return
 
     new_node = DrawNode(parent, predication.name, hole)
-    arg_names = arg_names_from_mrs(mrs, predication.name, len(predication.args))
+    arg_names = predication.arg_names
 
     for arg_index in range(0, len(arg_names)):
         arg = predication.args[arg_index]

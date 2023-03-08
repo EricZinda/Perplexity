@@ -5,6 +5,7 @@ import logging
 import sys
 # Use this form to avoid circular dependency, then use perplexity.cardinals.function() when calling
 import perplexity.cardinals
+import perplexity.tree
 from perplexity.utilities import sentence_force, has_cardinals
 
 # Allows code to throw an exception that should get converted
@@ -60,7 +61,6 @@ class ExecutionContext(object):
 
     def solve_mrs_tree(self, state, tree_info):
         logger.debug(f"solve MRS {tree_info['Tree']}")
-
         with self:
             set_group_context(None)
             self._error = None
@@ -173,9 +173,11 @@ class ExecutionContext(object):
         # function name given a string like "folder_n_of".
         # "vocabulary.Predication" returns a two-item list,
         # where item[0] is the module and item[1] is the function
+        found_one_implementation = False
         for module_function in self.vocabulary.predications(predication.name,
                                                             dynamic_arg_types,
                                                             self.phrase_type if normalize is False else "norm"):
+            found_one_implementation = True
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
             module = sys.modules[module_function[0]]
@@ -204,6 +206,8 @@ class ExecutionContext(object):
             # If an implementation works, don't call any others
             if success:
                 break
+
+        assert found_one_implementation, f"There should always be one implementation since all terms are checked before calling the tree. Couldn't find {predication.name}"
 
     # Replace scopal arguments with an "h" and simply
     # return the others

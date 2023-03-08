@@ -142,7 +142,7 @@ def in_scope(state, binding):
             return True
 
 
-@Predication(vocabulary, names=["_this_q_dem"])
+@Predication(vocabulary, names=["_this_q_dem", "_this_q_dem_cardinal"])
 def this_q_dem(state, x_variable_binding, h_rstr, h_body):
     # Run the RSTR which should fill in the variable with an item
     rstr_single_solution = None
@@ -169,7 +169,7 @@ def this_q_dem(state, x_variable_binding, h_rstr, h_body):
         report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
-@Predication(vocabulary, names=["_a_q"])
+@Predication(vocabulary, names=["_a_q", "_a_q_cardinal"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     # Run the RSTR which should fill in the variable with an item
     rstr_found = False
@@ -269,8 +269,8 @@ def cardinal_variable_set_incoming(state, c_count, e_introduced_binding, x_targe
 
 # Many quantifiers are simply markers and should use this as
 # the default behavior
-@Predication(vocabulary, names=["base_q"])
-def default_quantifier_base(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
+@Predication(vocabulary, names=["pronoun_q_cardinal", "proper_q_cardinal", "udef_q_cardinal", "pronoun_q", "proper_q", "udef_q"])
+def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
 
@@ -289,35 +289,11 @@ def default_quantifier_base(state, x_variable_binding, h_rstr_orig, h_body_orig,
             report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
-# Rewrite the cardinal to a form that takes scope
-# Rewrite: quantifier_q(x, [cardinal(x, ...), cardinal_modifier()], body)
-# To the form: [cardinal_modifier(), cardinal_with_scope(x, non_cardinal_rstr, base_quantifier_q(x, thing(x), body)]
-# TODO: If we are rewriting the tree the error reporting will get messed up
-#       We need to properly rewrite the tree and put the new form in state?
-@Predication(vocabulary, names=["pronoun_q", "proper_q", "udef_q"])
-def default_quantifier(state, x_variable_binding, h_rstr, h_body, reverse=False):
-    cardinal_predication, cardinal_modifiers, non_cardinal_rstr = split_cardinal_rstr(h_rstr)
-    if cardinal_predication is None:
-        # Not a cardinal
-        yield from default_quantifier_base(state, x_variable_binding, h_rstr, h_body, reverse)
-
-    else:
-        this_predication_index = execution_context().current_predication_index()
-        this_predication = predication_from_index(state.get_binding("tree").value, this_predication_index)
-        thing_predication = TreePredication(this_predication_index, "thing", [x_variable_binding.variable.name], ["ARG0"])
-
-        base_quantifier = TreePredication(this_predication_index, "base_q", [this_predication.args[0], thing_predication, h_body], this_predication.arg_names)
-        cardinal_predication.append_arg("RSTR", non_cardinal_rstr)
-        cardinal_predication.append_arg("BODY", base_quantifier)
-
-        yield from call(state, cardinal_modifiers + [cardinal_predication])
-
-
 def rstr_reorderable(rstr):
     return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing"]
 
 
-@Predication(vocabulary, names=["which_q", "_which_q"])
+@Predication(vocabulary, names=["which_q", "which_q_cardinal", "_which_q", "_which_q_cardinal"])
 def which_q(state, x_variable_binding, h_rstr, h_body):
     yield from default_quantifier(state, x_variable_binding, h_rstr, h_body, reverse=rstr_reorderable(h_rstr))
 
@@ -611,7 +587,9 @@ def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
 @Predication(vocabulary)
 def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
     if x_actor_binding.value is not None:
+        if x_location_binding.value is not None:
 
+            if isinstance(x_location_binding.value, Measurement):
                 # asking to see if actor "is" a measurement
                 if hasattr(x_actor_binding.value, "size_measurement"):
                     if x_location_binding.value == x_actor_binding.value.size_measurement():

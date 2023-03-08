@@ -1,6 +1,7 @@
+import copy
 import logging
 from collections import defaultdict
-from perplexity.execution import execution_context
+import perplexity.execution
 from perplexity.utilities import parse_predication_name
 
 
@@ -50,6 +51,11 @@ class TreePredication(object):
             else:
                 yield index
 
+    def scopal_arg_indices(self):
+        for index in range(0, len(self.args)):
+            if self.arg_types[index] == "h":
+                yield index
+
     def argument_types(self):
         return self.arg_types
 
@@ -57,6 +63,11 @@ class TreePredication(object):
         self.arg_names.append(name)
         self.args.append(value)
         self.arg_types.append(self.type_from_argument(name, value))
+
+    def arg_from_name(self, name):
+        for arg_index in range(0, len(self.args)):
+            if name == self.arg_names[arg_index]:
+                return self.args[arg_index]
 
     def __repr__(self):
         return f"{self.name}({','.join([str(arg) for arg in self.args])})"
@@ -113,6 +124,9 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, curren
 #   is sorted such that predications that *modify* e variables
 #   come before the *introducer* of them
 def sort_conjunctions(predication_list):
+    # rememember the order of index predications
+    predication_index_list = [predication.index for predication in predication_list]
+
     # Build a dict with keys of introduced e args and values of the
     #   index of the predication that introduced them
     introduced_dict = {}
@@ -135,8 +149,10 @@ def sort_conjunctions(predication_list):
     assert not topological_sort.has_cycle, f"cyclic dependencies in predications {predication_list}"
 
     sorted_predications = []
-    for predication_index in topological_sort.sorted_nodes:
-        sorted_predications.append(predication_list[predication_index])
+    for sorted_node_index in range(0, len(topological_sort.sorted_nodes)):
+        predication = predication_list[topological_sort.sorted_nodes[sorted_node_index]]
+        predication.index = predication_index_list[sorted_node_index]
+        sorted_predications.append(predication)
 
     return sorted_predications
 
@@ -281,16 +297,51 @@ def walk_tree_args_until(term, predication_func, arg_func):
     return None
 
 
+# Walk every predication in the tree and allow predication_rewrite_func() to rewrite it
+# Then recurse over the rewritten predication
+def rewrite_tree_predications(term, predication_rewrite_func, index_by_ref):
+    if isinstance(term, list):
+        # This is a conjunction, recurse through the
+        # predications in it
+        new_term = []
+        for predication in term:
+            new_term.append(rewrite_tree_predications(predication, predication_rewrite_func, index_by_ref))
+
+        return new_term
+
+    else:
+        # This is a predication, rewrite it
+        new_term = predication_rewrite_func(term, index_by_ref)
+        if new_term is None:
+            # no rewrite, copy and keep the term, but use the new index_by_ref
+            predication_copy = copy.deepcopy(term)
+            predication_copy.index = index_by_ref[0]
+            index_by_ref[0] += 1
+
+            # See if any of its terms are scopal
+            # i.e. are predications themselves
+            for scopal_index in predication_copy.scopal_arg_indices():
+                predication_copy.args[scopal_index] = rewrite_tree_predications(predication_copy.args[scopal_index], predication_rewrite_func, index_by_ref)
+
+            return predication_copy
+
+        else:
+            # New term has been rewritten the rewriter needs to have handled all
+            # of its args recursively, so we are done
+            return new_term
+
+
 def is_index_predication(state):
     this_tree = state.get_binding("tree").value
-    this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
+    this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
     return this_predication.introduced_variable() == this_tree["Index"]
+
 
 # True if an `fw_seq` predication is used by something *besides* an `fw_seq` predication
 # because that means it is the final one
 def is_this_last_fw_seq(state):
     this_tree = state.get_binding("tree").value
-    this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
+    this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
@@ -338,12 +389,12 @@ def find_predication_from_introduced(term, introduced_variable):
 # Walk the tree represented by "term" and
 # return the predication that matches
 # "predicate_name" or "None" if none is found
-def find_predication(term, predication_name):
+def find_predication(term, predication_name_alternatives):
     # This function gets called for every predication
     # in the tree. It is a private function since it is
     # only used here
     def match_predication_name(predication):
-        if predication.name == predication_name:
+        if predication.name in predication_name_alternatives:
             return predication
         else:
             return None

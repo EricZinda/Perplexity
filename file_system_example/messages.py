@@ -28,9 +28,7 @@ def respond_to_mrs_tree(tree, solutions, error):
 
     elif sentence_force_type == "ques":
         # See if this is a "WH" type question
-        wh_predication = find_predication(tree["Tree"], "_which_q")
-        if wh_predication is None:
-            wh_predication = find_predication(tree["Tree"], "which_q")
+        wh_predication = find_predication(tree["Tree"], ["_which_q", "_which_q_cardinal", "which_q", "which_q_cardinal"])
 
         if wh_predication is None:
             # This was a simple question, so the user only expects
