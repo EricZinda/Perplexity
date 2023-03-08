@@ -120,6 +120,20 @@
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>temp,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4bf463fb-e340-4e0a-a092-bcef0f68ca80"
+        },
+        {
+            "Command": "/new examples.Example28_reset",
+            "Expected": "State reset using examples.Example28_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "56240649-99ed-40b3-885d-d84ff4bd45f7"
+        },
+        {
+            "Command": "which 2 files are 10 megabytes",
+            "Expected": "Measure:10 mb\n     File(name=/Desktop/yellow.txt, size=10000000)\n     File(name=/temp/red.txt, size=10000000)\n\n",
+            "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(10,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],loc_nonsp(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "20927658-b149-423c-a512-34521bc8ebdf"
         }
     ]
 }

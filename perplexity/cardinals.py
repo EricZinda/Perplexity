@@ -5,6 +5,7 @@ from perplexity.tree import find_predications_in_list, walk_tree_predications_un
     is_index_predication, find_predication_that_introduces_variable
 from perplexity.execution import create_variable_set_cache, call_with_group, VariableSetRestart, create_solution_id, \
     call, execution_context
+from perplexity.vocabulary import PredicationProperty
 
 
 # Split a potential cardinal predicate into pieces:
@@ -12,9 +13,6 @@ from perplexity.execution import create_variable_set_cache, call_with_group, Var
 #   cardinal_modifiers: a list of all the terms modifying the introduced variable of the cardinal
 #   remaining_predications: any terms that were not cardinal-impacting.  i.e. the "bare rstr".
 #       If it is not a cardinal, just return all of term
-from perplexity.vocabulary import PredicationProperty
-
-
 def split_cardinal_rstr(term):
     # Get the list of all cardinal-impacting terms in term
     cardinal_impacting_terms = ["_a+few_a_1", "card", "ord", "much-many", "several"]
@@ -48,6 +46,16 @@ class Measurement(object):
     def __init__(self, measurement_type, count):
         self.measurement_type = measurement_type
         self.count = count
+
+    def __eq__(self, other):
+        if isinstance(other, Measurement):
+            return self.measurement_type == other.measurement_type and self.count == other.count
+
+        else:
+            return False
+
+    def __repr__(self):
+        return "Measure:" + str(self.count) + " " + str(self.measurement_type)
 
 
 def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr, count):
@@ -84,13 +92,14 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
         single_binding = None
         for binding in binding_from_call():
             if single_binding is not None:
-                assert False, f"measurement predication {introducing_predication.name} returns more than one value"
+                assert False, f"measurement predication returns more than one value"
 
             else:
                 single_binding = binding
 
-        measurement = Measurement(single_binding, count)
-        yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [measurement]])])
+        if single_binding is not None:
+            measurement = Measurement(single_binding, count)
+            yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [measurement]])])
 
     if rstr_is_measurement():
         # Return a single cardinal group with a single variable set of one element from the rstr since it
@@ -220,7 +229,8 @@ def cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variab
 
             cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> {"[Next solution] " if "NextSolution" in this_variable_set_cache and this_variable_set_cache["NextSolution"] else ""}Checking variable set item: {variable_set_item}')
             new_state = state.set_x(variable_name, variable_set_item, this_cardinal_group.cardinal_group_id,
-                                    this_variable_set_cache["VariableSetID"], variable_set_item_index, this_cardinal_group.is_collective)
+                                    this_variable_set_cache["VariableSetID"], variable_set_item_index, this_cardinal_group.is_collective,
+                                    variable_set_items=variable_set_info[1])
             try:
                 variable_set_item_solution_alternatives = []
                 for variable_set_item_solution in call_with_group(this_variable_set_cache, new_state, h_body):

@@ -59,6 +59,8 @@ class ExecutionContext(object):
         reset_execution_context(self.old_context_token)
 
     def solve_mrs_tree(self, state, tree_info):
+        logger.debug(f"solve MRS {tree_info['Tree']}")
+
         with self:
             set_group_context(None)
             self._error = None
@@ -75,7 +77,6 @@ class ExecutionContext(object):
             if len(cardinal_group_solutions) > 0:
                 # This cardinal group worked
                 yield from perplexity.cardinals.yield_all_cardinal_group_solutions(this_predicate_index=0, cardinal_group_id=root_cardinal_group.cardinal_group_id, cardinal_group_solutions=cardinal_group_solutions)
-
 
     def call_with_group(self, group, state, term, normalize=False):
         try:
@@ -130,9 +131,11 @@ class ExecutionContext(object):
                 # evaluate it using CallPredication
                 yield from self._call_predication(state, term, normalize)
 
-            finally:
-                # Restore it since we are recursing
+            except:
+                # Restore it since we are recursing and an exception
+                # has removed all forward progress
                 self._predication_index = last_predication_index
+                raise
 
     # Do not use directly.
     # Use Call() instead so that the predication index is set properly

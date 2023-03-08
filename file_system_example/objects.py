@@ -3,6 +3,8 @@ import logging
 import os
 import pathlib
 import uuid
+
+from perplexity.cardinals import Measurement
 from perplexity.variable_binding import VariableBinding
 
 
@@ -24,6 +26,20 @@ class Container(UniqueObject):
     def contained_items(self):
         if False:
             yield None
+
+
+class Megabyte(object):
+    def __init__(self):
+        self.units = "mb"
+
+    def __repr__(self):
+        return self.units
+
+    def __eq__(self, other):
+        return hasattr(other, "measurement_type") and self.measurement_type() == other.measurement_type()
+
+    def measurement_type(self):
+        return self.units
 
 
 # Derive from UniqueObject and call
@@ -113,6 +129,9 @@ class File(Container):
     # file specifier
     def has_path(self):
         return os.path.dirname(self.name) != ""
+
+    def size_measurement(self):
+        return Measurement(Megabyte(), self.size/1000000)
 
 
 # Represents something that can "do" things, like a computer

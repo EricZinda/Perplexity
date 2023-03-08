@@ -40,6 +40,21 @@ START HERE NEXT maybe find: /findtree card(_,x,_)&total_v_1(e,x,_)&compound(e,x,
 # To the form: [cardinal_modifier(), cardinal_with_scope(x, non_cardinal_rstr, base_quantifier_q(x, thing(x), body)]
 # card_with_scope([_megabyte_n_1(x10,u18), _total_a_1(e15,x10)], udef_q(x10, body)
 
+- Implement: which 2 files are 10 megabytes/which 2 files are 10 megabytes together
+    - is it really necessary to implement loc_nonsp? maybejust _be_v_id is enough, because that seems required?
+      - No, look at this
+
+                           ┌── _megabyte_n_1(x11,u18)
+               ┌────── and(0,1)
+               │             └ card(10,e17,x11)
+udef_q(x11,RSTR,BODY)                          ┌── _file_n_of(x3,i10)
+                  │                ┌────── and(0,1)
+                  │                │             └ card(2,e9,x3)
+                  └─ _which_q(x3,RSTR,BODY)
+                                        │      ┌── _together_p(e19,x3)
+                                        └─ and(0,1)
+                                                 └ loc_nonsp(e2,x3,x11)
+
 
 - Implement: The size of 2 files is 10 megabytes
                          ┌── _megabyte_n_1(x16,u23)
@@ -54,18 +69,7 @@ udef_q(x16,RSTR,BODY)                                │
                   └─ _the_q(x3,RSTR,BODY)
                                       └─ _be_v_id(e2,x3,x16)
 
-- Implement: The size of a file is 1 megabyte:
-    This is the only way it is read:
-                             ┌── _megabyte_n_1(x14,u21)
-                 ┌────── and(0,1)
-                 │             └ card(1,e20,x14)
-    udef_q(x14,RSTR,BODY)
-    ways to model:
-    - allow predications to return a special thing that says "as many as you want", special case it in card implementation
-      - hard to implement because it is using itertools
-      - call the rstr once to check what it is?
-      - Find the predication that introduces x that card uses and see what that is
-    - don't convert to set at all. Requires knowing that the rstr is going to return a special thing
+
 
 - Do cumulative
  

@@ -7,13 +7,14 @@
 # used_collective: True if the processing of the variable acts differently for collective and distributive modes
 #                       Note that this only needs to be set on answers that actually processed the collective mode as a unit
 class VariableData(object):
-    def __init__(self, name, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=False, used_collective=False):
+    def __init__(self, name, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=False, used_collective=False, variable_set_items=None):
         self.name = name
         self.cardinal_group_id = cardinal_group_id
         self.variable_set_id = variable_set_id
         self.variable_set_item_id = variable_set_item_id
         self.is_collective = is_collective
         self.used_collective = used_collective
+        self.variable_set_items = variable_set_items
 
     def __repr__(self):
         if self.variable_set_id is not None:

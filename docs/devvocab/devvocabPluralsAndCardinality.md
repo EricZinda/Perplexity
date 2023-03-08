@@ -161,6 +161,8 @@ How to handle: delete 2 files together in this folder?
 - like "in", it can delete a coll but treats it like dist
 - unique_solution_if_index() will allow a group through if one is used, but otherwise ignores it.
 
+We can't get the sets directly because they might not be on the context stack anymore?
+So instead we have to collect them
 ### How to deal with in and files
 How in(what, where) works for sets.  [a, b] in [x, y] is the same as [a], [b] in [x], [y], i.e. the grouping of either doesn't matter. 
 - So, as long as the cardinal groups are the same, the answers *as far as this predicate is concerned* are duplicates.

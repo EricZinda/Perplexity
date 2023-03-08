@@ -2,11 +2,11 @@ import copy
 import enum
 import itertools
 import logging
-from file_system_example.objects import File, Folder, Actor, Container, QuotedText
+from file_system_example.objects import File, Folder, Actor, Container, QuotedText, Megabyte
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.cardinals import split_cardinal_rstr, cardinal_group_outgoing_solutions, \
     cardinal_variable_set_incoming_next_this_cardinal_group, yield_all_cardinal_group_solutions, \
-    unique_solution_if_index
+    unique_solution_if_index, Measurement
 from perplexity.utilities import at_least_one_generator
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context, call_with_group, group_context, \
@@ -210,18 +210,13 @@ def pron(state, x_who_binding):
             report_error(["dontKnowPronoun", x_who_binding.variable.name])
 
 
-class Megabyte(object):
-    def __init__(self):
-        pass
-
-
 @Predication(vocabulary, names=["_megabyte_n_1"], properties={"Measurement": True})
 def megabyte_n_1(state, x_binding, u_binding):
     if x_binding.value is None:
         yield state.set_x(x_binding.variable.name, Megabyte())
 
     else:
-        if isinstance(x_binding.value, Megabyte):
+        if x_binding.value == Megabyte():
             yield state
 
         else:
@@ -404,6 +399,22 @@ def place_n(state, x_binding):
         # contain things
         if isinstance(value, Container):
             yield state.set_x(x_binding.variable.name, value)
+
+
+@Predication(vocabulary, names=["_together_p"])
+def together_p(state, e_introduced_binding, x_target_binding):
+    if x_target_binding.variable.is_collective:
+        # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
+        yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
+                          cardinal_group_id=x_target_binding.variable.cardinal_group_id,
+                          variable_set_id=x_target_binding.variable.variable_set_id,
+                          variable_set_item_id=x_target_binding.variable.variable_set_item_id,
+                          is_collective=x_target_binding.variable.is_collective,
+                          used_collective=True,
+                          variable_set_items=x_target_binding.variable.variable_set_items)
+
+    else:
+        report_error(["formNotUnderstood", "missing", "collective"])
 
 
 # This version doesn't add information to the target event, it just affects cardinal groupings
@@ -600,6 +611,33 @@ def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
 @Predication(vocabulary)
 def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
     if x_actor_binding.value is not None:
+
+                # asking to see if actor "is" a measurement
+                if hasattr(x_actor_binding.value, "size_measurement"):
+                    if x_location_binding.value == x_actor_binding.value.size_measurement():
+                        yield state
+                    else:
+                        report_error(["thingHasNoSize", x_actor_binding.variable.name, x_location_binding.value.count])
+                        return
+                # if x_actor_binding.variable.is_collective:
+                    #     # We need to see if all of the variables in this variable set add up to the value
+                    #     x_actor_variable_set_items = x_actor_binding.variable.variable_set_items
+                    #     total = 0
+                    #     for item in x_actor_variable_set_items:
+                    #         total += item.size_measurement().count
+                    #
+                    #     if x_location_binding.value.count == total:
+                    #         yield state
+                    #
+                    #     else:
+                    #         report_error(["thingHasNoSize", x_actor_binding.variable.name, x_location_binding.value.count])
+                    #         return
+                    # else:
+                    #     if x_location_binding.value == x_actor_binding.value.size_measurement():
+                    #         yield state
+            else:
+                return
+
         if hasattr(x_actor_binding.value, "all_locations"):
             if x_location_binding.value is None:
                 # This is a "where is X?" type query since no location specified
