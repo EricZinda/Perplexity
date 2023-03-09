@@ -217,12 +217,15 @@ def error_priority(error_string):
 # The absolute value of number doesn't mean anything, they are just for sorting
 # The defaultPriority key is the default value for errors that aren't explicitly listed
 error_priority_dict = {
+    ""
     # Unknown words error should only be shown if
     # there are no other errors, AND the number
     # of unknown words is subtracted from it so
-    # lower constants should be defined below this
+    # lower constants should be defined below this:
     # "unknownWordsMin": 800,
     "unknownWords": 900,
+    # Slightly better than not knowing the word at all
+    "formNotUnderstood": 901,
     "defaultPriority": 1000,
 
     # This is just used when sorting to indicate no error, i.e. success.

@@ -588,41 +588,35 @@ def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
 def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
     if x_actor_binding.value is not None:
         if x_location_binding.value is not None:
-
             if isinstance(x_location_binding.value, Measurement):
-                # asking to see if actor "is" a measurement
+                # asking to see if actor "is" a measurement, as in "is file 5 mb"
                 if hasattr(x_actor_binding.value, "size_measurement"):
-                    if x_location_binding.value == x_actor_binding.value.size_measurement():
-                        yield state
+                    # Only works if actor has a measurement
+                    if x_actor_binding.variable.is_collective:
+                        # Collective: We need to see if all of the variables in this variable set add up to the value
+                        # For simplicity, assume all measurements are in megabytes
+                        x_actor_variable_set_items = x_actor_binding.variable.variable_set_items
+                        total = 0
+                        for item in x_actor_variable_set_items:
+                            total += item.size_measurement().count
+
+                        if x_location_binding.value.count == total:
+                            yield state
+
+                        else:
+                            report_error(["xIsNotY", x_actor_binding.variable.name, x_location_binding.value.count])
+                            return
+
                     else:
-                        report_error(["thingHasNoSize", x_actor_binding.variable.name, x_location_binding.value.count])
-                        return
-                # if x_actor_binding.variable.is_collective:
-                    #     # We need to see if all of the variables in this variable set add up to the value
-                    #     x_actor_variable_set_items = x_actor_binding.variable.variable_set_items
-                    #     total = 0
-                    #     for item in x_actor_variable_set_items:
-                    #         total += item.size_measurement().count
-                    #
-                    #     if x_location_binding.value.count == total:
-                    #         yield state
-                    #
-                    #     else:
-                    #         report_error(["thingHasNoSize", x_actor_binding.variable.name, x_location_binding.value.count])
-                    #         return
-                    # else:
-                    #     if x_location_binding.value == x_actor_binding.value.size_measurement():
-                    #         yield state
-            else:
-                return
+                        # Distributive: each one must be this value
+                        if x_location_binding.value == x_actor_binding.value.size_measurement():
+                            yield state
 
-        if hasattr(x_actor_binding.value, "all_locations"):
-            if x_location_binding.value is None:
-                # This is a "where is X?" type query since no location specified
-                for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
-                    yield state.set_x(x_location_binding.variable.name, location)
+                        else:
+                            report_error(["xIsNotY", x_actor_binding.variable.name, x_location_binding.value.count])
+                            return
 
-            else:
+            elif hasattr(x_actor_binding.value, "all_locations"):
                 # The system is asking if a location of x_actor is x_location,
                 # so check the list exhaustively until we find a match, then stop
                 for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
@@ -631,6 +625,13 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
                         # no need to set them again, just return the state
                         yield state
                         break
+
+        else:
+            if hasattr(x_actor_binding.value, "all_locations"):
+                # This is a "where is X?" type query since no location specified
+                for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
+                    yield state.set_x(x_location_binding.variable.name, location)
+
 
     else:
         # For now, return errors for cases where x_actor is unbound

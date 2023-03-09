@@ -218,29 +218,29 @@ class UserInterface(object):
     # None: Was not a command
     # Str: The string that should be recorded for the command
     def handle_command(self, text):
-        try:
-            text = text.strip()
-            if len(text) > 0:
-                if text[0] == "/":
-                    text = text[1:]
-                    items = text.split()
-                    if len(items) > 0:
-                        command = items[0].strip().lower()
-                        command_info = command_data.get(command, None)
-                        if command_info is not None:
-                            return command_info["Function"](self, " ".join(text.split()[1:]))
+        # try:
+        text = text.strip()
+        if len(text) > 0:
+            if text[0] == "/":
+                text = text[1:]
+                items = text.split()
+                if len(items) > 0:
+                    command = items[0].strip().lower()
+                    command_info = command_data.get(command, None)
+                    if command_info is not None:
+                        return command_info["Function"](self, " ".join(text.split()[1:]))
 
-                        else:
-                            print("Don't know that command ...")
-                            return True
+                    else:
+                        print("Don't know that command ...")
+                        return True
 
-        except Exception as error:
-            print(str(error))
-            return True
+        # except Exception as error:
+        #     print(str(error))
+        #     return True
 
         return None
 
-    def print_diagnostics(self, all, first_tree_only=False, include_cardinal_tree=False):
+    def print_diagnostics(self, all, first_tree_only=False):
         if self.interaction_record is not None:
             print(f"User Input: {self.interaction_record['UserInput']}")
             print(f"{len(self.interaction_record['Mrss'])} Parses")
@@ -259,9 +259,9 @@ class UserInterface(object):
                     else:
                         chosen_tree = self.interaction_record["ChosenTreeIndex"]
 
-                    self.print_diagnostics_trees(all, first_tree_only, include_cardinal_tree, mrs_index, chosen_tree, mrs_record)
+                    self.print_diagnostics_trees(all, first_tree_only, mrs_index, chosen_tree, mrs_record)
 
-    def print_diagnostics_trees(self, all, first_tree_only, include_cardinal_tree, parse_number, chosen_tree, mrs_record):
+    def print_diagnostics_trees(self, all, first_tree_only, parse_number, chosen_tree, mrs_record):
         if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
@@ -282,7 +282,7 @@ class UserInterface(object):
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
                 print(f"\nText Tree: {tree_info['OriginalTree']}")
-                if include_cardinal_tree:
+                if str(tree_info['OriginalTree']) != str(tree_info['Tree']):
                     print("\n")
                     draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
                     renderer = TreeRenderer()
@@ -413,13 +413,10 @@ def command_show(ui, arg):
         first_tree_only = bool(parts[1])
 
     if len(parts) >= 3:
-        include_cardinal_tree = bool(parts[2])
-
-    if len(parts) >= 4:
         print("Don't know that argument set")
         return True
 
-    ui.print_diagnostics(all, first_tree_only, include_cardinal_tree)
+    ui.print_diagnostics(all, first_tree_only)
     return True
 
 
@@ -642,8 +639,8 @@ command_data = {
               "Description": "Resets to the initial state",
               "Example": "/reset"},
     "show": {"Function": command_show, "Category": "Parsing",
-             "Description": "Shows tracing information from last command. Takes arguments: all/solution, True/False(see first parse), True/False(include cardinal tree)",
-             "Example": "/show or /show all or /show all, True or /show solution, False, True"},
+             "Description": "Shows tracing information from last command. Takes arguments: all/one, True/False(see first tree only)",
+             "Example": "/show or /show all or /show all, True"},
     "runparse": {"Function": command_run_parse, "Category": "Parsing",
                   "Description": "Only runs the identified parse index and optional tree index",
                   "Example": "/runparse 1 OR /runparse 1, 0"},

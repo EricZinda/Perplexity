@@ -134,6 +134,20 @@
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(10,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],loc_nonsp(e2,x3,x11)))",
             "Enabled": true,
             "ID": "20927658-b149-423c-a512-34521bc8ebdf"
+        },
+        {
+            "Command": "/new examples.Example30_reset",
+            "Expected": "State reset using examples.Example30_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "0fb18ce9-2076-4343-9a6b-19ba9d572ac9"
+        },
+        {
+            "Command": "which 2 files are 10 megabytes together",
+            "Expected": "Measure:10 mb\n     File(name=/Desktop/yellow.txt, size=5000000), File(name=/temp/red.txt, size=5000000) together\n\n",
+            "Tree": "card_with_scope(10,e17,x11,[_megabyte_n_1(x11,u18)],udef_q_cardinal(x11,thing(x11),card_with_scope(2,e9,x3,[_file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),[_together_p(e19,x3), loc_nonsp(e2,x3,x11)]))))",
+            "Enabled": true,
+            "ID": "5627aacd-1ef6-488b-80c2-f7e1b1c25a73"
         }
     ]
 }

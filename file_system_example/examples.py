@@ -615,14 +615,30 @@ def Example29():
         print()
 
 
+# Only works for dist(folder), dist(file) and dist(folder), coll(file)
+def Example30_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/yellow.txt", {"size": 5000000}),
+                                           (True, "/Desktop/green.txt", {"size": 1000}),
+                                           (True, "/temp/red.txt", {"size": 5000000}),
+                                           (True, "/temp/blue.txt", {"size": 1000})],
+                                          "/Desktop"))
+
+
+def Example30():
+    user_interface = UserInterface(Example30_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
 if __name__ == '__main__':
     # foo = itertools.combinations(foo(), 2)
 
-    ShowLogging("Execution")
-    ShowLogging("Generation")
-    ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
-    ShowLogging("Cardinal")
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Pipeline")
+    # ShowLogging("Cardinal")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -659,5 +675,6 @@ if __name__ == '__main__':
     # Example24()
     # Example25()
     # Example27()
-    Example28()
+    # Example28()
     # Example29()
+    Example30()

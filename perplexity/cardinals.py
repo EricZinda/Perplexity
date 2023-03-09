@@ -19,8 +19,8 @@ def rewrite_mrs_tree_for_cardinals(tree):
 
         else:
             new_cardinal_predication, cardinal_modifiers, cardinal_rstr_list = split_cardinal_rstr(predication.arg_from_name("RSTR"))
-            if new_cardinal_predication is None:
-                # Not a cardinal, don't modify it
+            if new_cardinal_predication is None or len(cardinal_rstr_list) == 0:
+                # Not a cardinal with scope, don't modify it
                 return None
 
             else:
@@ -43,7 +43,7 @@ def rewrite_mrs_tree_for_cardinals(tree):
                 for cardinal_rstr in cardinal_rstr_list:
                     new_cardinal_rstr_list.append(rewrite_tree_predications(cardinal_rstr, convert_cardinal_quantifiers, index_by_ref))
 
-                new_cardinal_predication.append_arg("RSTR", new_cardinal_rstr_list if len(new_cardinal_rstr_list) > 1 else new_cardinal_rstr_list[0])
+                new_cardinal_predication.append_arg("RSTR", new_cardinal_rstr_list if len(new_cardinal_rstr_list) > 0 else new_cardinal_rstr_list[0])
 
                 # The base quantifier gets executed next, so remember the index it should use
                 base_quantifier_index = index_by_ref[0]

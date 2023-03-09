@@ -67,6 +67,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                 # It is introducing it, thus it is the "main" description
                 # of the variable, usually a noun predication
                 nlg_data["Topic"] = parsed_predication["Lemma"]
+
             else:
                 # Some abstract predications *should* contribute to the
                 # English description of a variable
@@ -91,12 +92,19 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                     # Then this is not the final fw_seq, so don't put quotes around it
                     if is_last_fw_seq(tree_info["Tree"], predication):
                         nlg_data["Topic"] = f"'{' '.join(string_list)}'"
+
                     else:
                         nlg_data["Topic"] = f"{' '.join(string_list)}"
 
     # Assume that adjectives that take the variable as their first argument
     # are adding an adjective modifier to the phrase
     elif parsed_predication["Pos"] == "a" and predication.args[1] == variable:
+        if "Modifiers" not in nlg_data:
+            nlg_data["Modifiers"] = []
+
+        nlg_data["Modifiers"].append(parsed_predication["Lemma"])
+
+    elif parsed_predication["Pos"] == "p" and predication.args[1] == variable:
         if "Modifiers" not in nlg_data:
             nlg_data["Modifiers"] = []
 
