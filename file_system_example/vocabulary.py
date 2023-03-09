@@ -225,7 +225,7 @@ def megabyte_n_1(state, x_binding, u_binding):
 
 @Predication(vocabulary)
 def card(state, c_count, e_introduced_binding, x_target_binding):
-    pass
+    assert False
 
 
 # rewrite: default_q(x, [cardinal(x, ...), other()], body)

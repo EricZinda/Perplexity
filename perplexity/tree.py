@@ -423,27 +423,28 @@ def find_predications(term, predication_name):
     return found_predications
 
 
-# Return all of the predications that have a name in the list
-def find_predications_in_list(term, predication_name_list):
-    # This function gets called for every predication
-    # in the tree. It is a private function since it is
-    # only used here
-    def match_predication_names(predication):
+# Return all of the predications in the list that have a name in the list
+def find_predications_in_list_in_list(term, predication_name_list):
+    if isinstance(term, list):
+        term_list = term
+    else:
+        term_list = [term]
+
+    found_predications = []
+    for predication in term_list:
         if predication.name in predication_name_list:
             found_predications.append(predication)
 
-    found_predications = []
-
-    # Pass our private function to WalkTreeUntil as
-    # a way to filter through the tree to find
-    # predication_name
-    walk_tree_predications_until(term, match_predication_names)
     return found_predications
 
 
 def match_predication_pattern(predication, predication_name_filter, arg_filter):
     if predication_name_filter == "_" or predication.name.find(predication_name_filter) != -1:
-        if len(arg_filter) == len(predication.arg_types):
+        if len(arg_filter) == 0:
+            # any number of args matches
+            return True
+
+        elif len(arg_filter) == len(predication.arg_types):
             for index in range(0, len(arg_filter)):
                 if arg_filter[index] != "_" and arg_filter[index] != predication.arg_types[index]:
                     return

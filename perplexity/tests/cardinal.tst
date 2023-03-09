@@ -148,6 +148,20 @@
             "Tree": "card_with_scope(10,e17,x11,[_megabyte_n_1(x11,u18)],udef_q_cardinal(x11,thing(x11),card_with_scope(2,e9,x3,[_file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),[_together_p(e19,x3), loc_nonsp(e2,x3,x11)]))))",
             "Enabled": true,
             "ID": "5627aacd-1ef6-488b-80c2-f7e1b1c25a73"
+        },
+        {
+            "Command": "/new examples.Example30_reset",
+            "Expected": "State reset using examples.Example30_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "dd6efb7a-43f4-42c8-a546-9135326bc0e0"
+        },
+        {
+            "Command": "which 2 files are in this folder together?",
+            "Expected": "File(name=/Desktop/yellow.txt, size=5000000), File(name=/Desktop/green.txt, size=1000) together\n",
+            "Tree": "_this_q_dem(x11,_folder_n_of(x11,i16),card_with_scope(2,e9,x3,[_file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),[_together_p_state(e17,e2), _in_p_loc(e2,x3,x11)])))",
+            "Enabled": true,
+            "ID": "b52e8e15-021e-40fe-8554-3b0f5e6693d4"
         }
     ]
 }

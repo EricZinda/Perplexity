@@ -549,20 +549,22 @@ def command_find_tree(ui, arg):
         for description in predication_descriptions:
             parts = description.split("(")
             predication_name = parts[0]
-            arg_parts = parts[1].split(",")
-            arg_parts[-1] = arg_parts[-1].strip(")")
             if predication_name in ["_", "None", "none", ""]:
                 predication_name = "_"
 
+            # Figure out the args
             predication_args = []
-            for part in arg_parts:
-                clean_arg = part.strip()
-                if clean_arg in ["_", "None", "none", ""]:
-                    predication_args.append("_")
-                else:
-                    if len(clean_arg) > 1:
-                        clean_arg = clean_arg[0]
-                    predication_args.append(clean_arg)
+            if len(parts) > 1:
+                arg_parts = parts[1].split(",")
+                arg_parts[-1] = arg_parts[-1].strip(")")
+                for part in arg_parts:
+                    clean_arg = part.strip()
+                    if clean_arg in ["_", "None", "none", ""]:
+                        predication_args.append("_")
+                    else:
+                        if len(clean_arg) > 1:
+                            clean_arg = clean_arg[0]
+                        predication_args.append(clean_arg)
 
             predication_patterns.append((predication_name, predication_args))
 

@@ -164,6 +164,34 @@ How to handle: delete 2 files together in this folder?
 We can't get the sets directly because they might not be on the context stack anymore?
 So instead we have to collect them
 
+### Rewriting terms
+“which 2 files in this folder together are 2 megabytes”
+                         ┌── _megabyte_n_1(x19,u26)
+             ┌────── and(0,1)
+             │             └ card(2,e25,x19)
+             │                                                           ┌────── _together_p_state(e18,e11)
+udef_q(x19,RSTR,BODY)                                                    │
+                  │                                          ┌────── _fol│er_n_of(x12,i17)
+                  │                ┌────── _this_q_dem(x12,RSTR,BODY)    │ ┌──── _in_p_loc(e11,x3,x12)
+                  │                │                              └─ and(0,1,2,3)
+                  │                │                                         └─│ _file_n_of(x3,i10)
+                  └─ _which_q(x3,RSTR,BODY)                                    │
+                                        │                                      └ card(2,e9,x3)
+                                        └─ loc_nonsp(e2,x3,x19)
+
+if we treat card(2,e9,x3) like:
+    card(, [file, in, together], thing(x))
+    in the body, would it work
+
+Really, the parent_variable_set_cache is just:
+- alternating between coll/dist
+- giving each cardinal a place to cache information
+- allowing the cardinals to communicate (retry, etc)
+
+The information about what state we are in is in the bindings.
+
+If we only assume that things that modify the cardinal are in the same conjunction with it we could convert 
+
 ### Dealing with size
 100 MB would be a set of 100.  Optimize
 

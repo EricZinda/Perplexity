@@ -6,6 +6,36 @@ Remaining work to be shown in the tutorial:
 - TODO: For collective, we actually run it N times even though the answer is the same.  Can we optimize?
 
 - Do testing
-  - Fails: which files in this folder are 2 megabytes together
-    - Suspect that it is because terms in between a parent and the child retry and the child 
+- (works) which 2 files are in this folder together
+                                                    ┌── _file_n_of(x3,i10)
+                                        ┌────── and(0,1)
+                  ┌────── _folder_n_of(x│1,i16)       └ card(2,e9,x3)
+_this_q_dem(x11,RSTR,BODY)              │
+                       └─ _which_q(x3,RSTR,BODY)
+                                             │      ┌── _together_p_state(e17,e2)
+                                             └─ and(0,1)
+                                                      └ _in_p_loc(e2,x3,x11)
+
+Text Tree: _this_q_dem(x11,_folder_n_of(x11,i16),_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],[_together_p_state(e17,e2), _in_p_loc(e2,x3,x11)]))
+
+
+                  ┌────── _folder_n_of(x11,i16)
+_this_q_dem(x11,RSTR,BODY)                          ┌────── _file_n_of(x3,i10)
+                       └─ card_with_scope(2,e9,x3,RSTR,BODY)                       ┌────── thing(x3)
+                                                         └─ _which_q_cardinal(x3,RSTR,BODY)    ┌── _together_p_state(e17,e2)
+                                                                                        └─ and(0,1)
+                                                                                                 └ _in_p_loc(e2,x3,x11)
+- Doesn't work: which 2 files in this folder together are 2 megabytes
+  - /runparse 13,3
+  - /findtree together_p_state&_in_p_loc&loc_nonsp
+  - Found in parse #13: seems to be the one 
+    - I think the problem is that together_p_state and together_p can set a variable to "collective only" *before* the cardinal of that variable runs
+      - The cardinal needs to respect that
+      - the together predications need to set it to used even if it isn't collective yet?  Maybe only if it isn't set to a cardinal group? that seems right
+
+- (fixed) Fails: which files in this folder are 2 megabytes together
+  - Suspect that it is because terms in between a parent and the child retry and the child 
+- Doens't work: which files in this folder are 2 megabytes together (when none is)
+  - should return a good error
+  - First problem: together, megabyte doesn't work
 - Do cumulative
