@@ -76,6 +76,18 @@ def has_cardinals(variables):
     return False
 
 
+def is_plural(state, variable_name):
+    variables = state.get_binding("tree").value["Variables"]
+
+    for variable in variables.items():
+        if variable[0] == variable_name:
+            if "NUM" in variable[1]:
+                if variable[1]["NUM"] == "pl":
+                    return True
+            else:
+                return False
+
+
 def ShowLogging(name, level=logging.DEBUG):
     logger = logging.getLogger(name)
     logger.setLevel(level)

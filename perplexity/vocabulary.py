@@ -59,7 +59,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
         return True
 
-    def arguments_from_function(function):
+    def argtypes_from_function(function):
         arg_spec = inspect.getfullargspec(function)
 
         # Skip the first arg since it should always be "state"
@@ -130,16 +130,29 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
                 else:
                     state = args[0]
 
-                # TODO: pay attention to predication declaration of args that
-                # the predication is going to handle itself as collective
-                if not perplexity.cardinals.unique_solution_if_index(state, []):
+                if not perplexity.cardinals.unique_solution_if_index(state, different_collective_behavior_arg_indices):
                     report_error(["duplicateSolution"])
                     return
 
                 yield from function_to_decorate(*args, **kwargs)
 
+        def arg_metadata(arg_specs):
+            if arg_specs is None:
+                return [], argtypes_from_function(function_to_decorate)
+
+            else:
+                inner_different_collective_behavior_arg_indices = []
+                arg_types = []
+                for arg_spec_index in range(0, len(arg_specs)):
+                    arg_spec = arg_specs[arg_spec_index]
+                    arg_types.append(arg_spec.variable_type)
+                    if arg_spec.collective_behavior == CollectiveBehavior.different:
+                        inner_different_collective_behavior_arg_indices.append(arg_spec_index)
+
+                return inner_different_collective_behavior_arg_indices, arg_types
+
         predication_names = names if names is not None else [function_to_decorate.__name__]
-        final_arguments = arguments if arguments is not None else arguments_from_function(function_to_decorate)
+        different_collective_behavior_arg_indices, final_arguments = arg_metadata(arguments)
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
         vocabulary.add_predication(PredicationMetadata(properties), function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arguments, final_phrase_types)
 

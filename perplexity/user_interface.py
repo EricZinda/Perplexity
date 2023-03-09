@@ -218,25 +218,25 @@ class UserInterface(object):
     # None: Was not a command
     # Str: The string that should be recorded for the command
     def handle_command(self, text):
-        # try:
-        text = text.strip()
-        if len(text) > 0:
-            if text[0] == "/":
-                text = text[1:]
-                items = text.split()
-                if len(items) > 0:
-                    command = items[0].strip().lower()
-                    command_info = command_data.get(command, None)
-                    if command_info is not None:
-                        return command_info["Function"](self, " ".join(text.split()[1:]))
+        try:
+            text = text.strip()
+            if len(text) > 0:
+                if text[0] == "/":
+                    text = text[1:]
+                    items = text.split()
+                    if len(items) > 0:
+                        command = items[0].strip().lower()
+                        command_info = command_data.get(command, None)
+                        if command_info is not None:
+                            return command_info["Function"](self, " ".join(text.split()[1:]))
 
-                    else:
-                        print("Don't know that command ...")
-                        return True
+                        else:
+                            print("Don't know that command ...")
+                            return True
 
-        # except Exception as error:
-        #     print(str(error))
-        #     return True
+        except Exception as error:
+            print(str(error))
+            return True
 
         return None
 

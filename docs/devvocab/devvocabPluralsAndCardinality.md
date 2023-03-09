@@ -142,17 +142,15 @@ At the very end the logic is:
 - If an answer is all dist, use it.
 
 ### How to deal with verbs
-# All of the intermediate (non-index) predications in a phrase should just pass through collective and distributive options
-# if they are valid but not processed specially (like "lift").
-# However, the index predication is the last one in the phrase, and if it does this, it will return a bunch of duplicates.
-# So, it should fail on any that aren't processed specially because they are dups.
-#
-# unique_solution_if_index() will only allow unique dist/coll solutions that were actually processed to come through
-# as well as any that are listed in different_collective_behavior because those are the ones that this predication is
-# going to process
+used_collective on a variable binding means: something has already processed this collective cardinal set as a set, and so it needs to contribute to the answer
 
-for something like "in", it should get rid of coll/dist duplicates if it is the index, UNLESS it is processing them specially.
-unique_solution_if_index() will only allow unique dist/coll solutions that were actually processed to come through (ignoring var
+All of the intermediate (non-index) predications in a phrase should just pass through collective and distributive options if they are valid but not processed specially (like "lift") so that downstream predications get a chance to look at them. However, the index predication is the last one in the phrase, and if *it* does this, it will return a bunch of duplicates. So, it should fail on any that aren't processed specially because they are dups. We do this automatically by forcing verbs to declare in `vocabulary` if they process collective verbs specially, and we don't even call them with collective if they don't process them (or if something in the tree didn't process them).
+
+unique_solution_if_index() will only allow coll solutions that were actually processed to come through, as well as any that are listed in different_collective_behavior because those are the ones that this predication is going to process.
+
+if someone says "delete 2 files together in this folder", "together" only allows through collective variables, or, if it is a cardinal-bearing variable that hasn't been processed, forces it to collective mode, so that the cardinal that generates the cardinal groups will only do that option.
+
+for something like "in", it should get rid of coll/dist duplicates if it is the index, UNLESS they were processed or it is processing them specially.
 
 General programming model: By default, assume they do not handle groups specially, so call unique_solution_if_index([]).  This will not do anything if it is not the index predication.
 - If they handle particular collectives, they to to set that on the call.

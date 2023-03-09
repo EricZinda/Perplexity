@@ -25,14 +25,18 @@ _this_q_dem(x11,RSTR,BODY)                          ┌────── _file_
                                                          └─ _which_q_cardinal(x3,RSTR,BODY)    ┌── _together_p_state(e17,e2)
                                                                                         └─ and(0,1)
                                                                                                  └ _in_p_loc(e2,x3,x11)
-- Doesn't work: which 2 files in this folder together are 2 megabytes
-  - /runparse 13,3
-  - /findtree together_p_state&_in_p_loc&loc_nonsp
-  - Found in parse #13: seems to be the one 
+- together_p_state does't do all the combinations. Should it?
+- All of the places where state.set_x() are used, lose the state that is set and make cardinals not work right. The values need to stick.
+- loc_nonsp declaration applies to both "location" and "size".  Need different versions with different declarations
+- 
+- (fixed) fails: which 2 files are 10 megabytes together in Example30_reset
+- (fixed) fails: delete 2 files in 2 folders together returns dist and coll options 
+- (fixed) Doesn't work: which 2 files in this folder together are 2 megabytes
     - I think the problem is that together_p_state and together_p can set a variable to "collective only" *before* the cardinal of that variable runs
       - The cardinal needs to respect that
-      - the together predications need to set it to used even if it isn't collective yet?  Maybe only if it isn't set to a cardinal group? that seems right
+      - the together predications need to set it to used even if it isn't collective yet if it is plural
 
+- (fixed) support card(c,e,x) in the body of a quantifier
 - (fixed) Fails: which files in this folder are 2 megabytes together
   - Suspect that it is because terms in between a parent and the child retry and the child 
 - Doens't work: which files in this folder are 2 megabytes together (when none is)

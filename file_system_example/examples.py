@@ -631,12 +631,30 @@ def Example30():
         user_interface.interact_once()
         print()
 
+
+# Only works for dist(folder), dist(file) and dist(folder), coll(file)
+def Example31_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/yellow.txt", {"size": 1000000}),
+                                           (True, "/Desktop/green.txt", {"size": 1000000}),
+                                           (True, "/temp/red.txt", {"size": 5000000}),
+                                           (True, "/temp/blue.txt", {"size": 1000})],
+                                          "/Desktop"))
+
+
+def Example31():
+    user_interface = UserInterface(Example31_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
     # foo = itertools.combinations(foo(), 2)
 
     # ShowLogging("Execution")
     # ShowLogging("Generation")
-    # ShowLogging("UserInterface")
+    ShowLogging("UserInterface")
     # ShowLogging("Pipeline")
     # ShowLogging("Cardinal")
 
@@ -678,3 +696,4 @@ if __name__ == '__main__':
     # Example28()
     # Example29()
     Example30()
+    # Example31()

@@ -162,6 +162,20 @@
             "Tree": "_this_q_dem(x11,_folder_n_of(x11,i16),card_with_scope(2,e9,x3,[_file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),[_together_p_state(e17,e2), _in_p_loc(e2,x3,x11)])))",
             "Enabled": true,
             "ID": "b52e8e15-021e-40fe-8554-3b0f5e6693d4"
+        },
+        {
+            "Command": "/new examples.Example31_reset",
+            "Expected": "State reset using examples.Example31_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "a5b9145b-0372-4e00-9afe-3d3344926c45"
+        },
+        {
+            "Command": "which 2 files in this folder together are 2 megabytes",
+            "Expected": "Measure:2 mb\n     File(name=/Desktop/yellow.txt, size=1000000), File(name=/Desktop/green.txt, size=1000000) together\n\n",
+            "Tree": "_this_q_dem(x12,_folder_n_of(x12,i17),card_with_scope(2,e25,x19,[_megabyte_n_1(x19,u26)],udef_q_cardinal(x19,thing(x19),card_with_scope(2,e9,x3,[_together_p_state(e18,e11), _in_p_loc(e11,x3,x12), _file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),loc_nonsp(e2,x3,x19))))))",
+            "Enabled": true,
+            "ID": "6b7e7895-842c-4b70-af6a-6be3f7dc3a53"
         }
     ]
 }

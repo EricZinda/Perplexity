@@ -1,8 +1,10 @@
 import copy
 import itertools
 import logging
-from perplexity.tree import find_predications_in_list_in_list, walk_tree_predications_until, split_predications_consuming_event, \
-    is_index_predication, find_predication_that_introduces_variable, rewrite_tree_predications, TreePredication
+from perplexity.tree import find_predications_in_list_in_list, walk_tree_predications_until, \
+    split_predications_consuming_event, \
+    is_index_predication, find_predication_that_introduces_variable, rewrite_tree_predications, TreePredication, \
+    predication_from_index
 from perplexity.execution import create_variable_set_cache, call_with_group, VariableSetRestart, create_solution_id, \
     call, execution_context
 from perplexity.utilities import parse_predication_name
@@ -178,7 +180,7 @@ class Measurement(object):
 def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr, count):
     def binding_from_call():
         for rstr_state in call(state, h_rstr):
-            yield rstr_state.get_binding(variable_name).value
+            yield rstr_state.get_binding(variable_name)
 
     # If the term is a measurement like megabyte don't create a whole set of them
     def rstr_is_measurement():
@@ -198,12 +200,28 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
 
         return is_measurement
 
+    # if we are being asked to generate a distributive group, but the cardinal group
+    # is forced collective by something in the rstr, we should not return the group
+    def invalid_collective_cardinal_group(binding):
+        if binding.variable.is_collective and not is_collective:
+            this_predicate_index = execution_context().current_predication_index()
+            cardinal_logger.debug(
+                f'Pred:{this_predicate_index} -> FAIL: rstr required collective and card wanted distributive: {h_rstr}')
+            return True
+
+        else:
+            return False
+
     def next_cardinal_group():
-        for cardinal_group_elements in itertools.combinations(binding_from_call(), count):
-            if is_collective:
-                yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), cardinal_group_elements])])
+        for cardinal_group_element_bindings in itertools.combinations(binding_from_call(), count):
+            cardinal_group_values = [element.value for element in cardinal_group_element_bindings]
+            if invalid_collective_cardinal_group(cardinal_group_element_bindings[0]):
+                return
             else:
-                yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [element]]) for element in cardinal_group_elements])
+                if is_collective:
+                    yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), cardinal_group_values])])
+                else:
+                    yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [element]]) for element in cardinal_group_values])
 
     def measurement_cardinal_group():
         single_binding = None
@@ -215,8 +233,11 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
                 single_binding = binding
 
         if single_binding is not None:
-            measurement = Measurement(single_binding, count)
-            yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [measurement]])])
+            if invalid_collective_cardinal_group(single_binding):
+                return
+            else:
+                measurement = Measurement(single_binding.value, count)
+                yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [measurement]])])
 
     if rstr_is_measurement():
         # Return a single cardinal group with a single variable set of one element from the rstr since it
@@ -560,17 +581,23 @@ def specific_coll_dist_variation(answer_set_node, variation_list):
 # However, the index predication is the last one in the phrase, and if it does this, it will return a bunch of duplicates.
 # So, it should fail on any that aren't processed specially because they are dups.
 #
-# unique_solution_if_index() will only allow unique dist/coll solutions that were actually processed to come through
+# unique_solution_if_index() will only allow coll solutions that were actually processed to come through
 # as well as any that are listed in different_collective_behavior because those are the ones that this predication is
 # going to process
-def unique_solution_if_index(state, different_collective_behavior):
+def unique_solution_if_index(state, different_collective_behavior_arg_indices):
     # Only filter out solutions for the index predication
     if not is_index_predication(state):
         return True
 
+    this_tree = state.get_binding("tree").value
+    this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
+    different_collective_argnames = [this_predication.args[index] for index in different_collective_behavior_arg_indices]
+
     variables = state.get_binding("tree").value["Variables"]
     for variable in variables:
-        if variable not in different_collective_behavior:
+        if variable not in different_collective_argnames:
+            # This variable does not have different collective behavior for this verb, fail
+            # if the variable is collective
             binding = state.get_binding(variable)
             if binding.variable.is_collective and not binding.variable.used_collective:
                 return False
