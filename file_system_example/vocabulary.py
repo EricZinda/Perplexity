@@ -249,7 +249,10 @@ def cardinal_variable_set_incoming(state, c_count, e_introduced_binding, x_targe
         # We need to use the same this_cardinal_group that we used for the other elements of the set
         # and try it on this_cardinal_group
         if "CurrentCardinalGroup" not in parent_variable_set_cache["ChildCardinals"][this_predicate_index]:
-            print("foo")
+            # This means that we ran out of this cardinal groups, but something between the previous cardinal
+            # group and this one is trying alternatives.  They should just all fail
+            return
+
         this_cardinal_group = parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"]
         cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> cached Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
 

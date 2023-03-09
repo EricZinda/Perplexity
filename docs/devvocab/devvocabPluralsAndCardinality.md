@@ -163,6 +163,10 @@ How to handle: delete 2 files together in this folder?
 
 We can't get the sets directly because they might not be on the context stack anymore?
 So instead we have to collect them
+
+### Dealing with size
+100 MB would be a set of 100.  Optimize
+
 ### How to deal with in and files
 How in(what, where) works for sets.  [a, b] in [x, y] is the same as [a], [b] in [x], [y], i.e. the grouping of either doesn't matter. 
 - So, as long as the cardinal groups are the same, the answers *as far as this predicate is concerned* are duplicates.
