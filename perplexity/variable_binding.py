@@ -3,12 +3,12 @@
 # variable_set_item_id: one element of a variable set
 # cardinal_group_id: A cardinal has a group of variable sets that it deals with called a cardinal group. For coll, it is a list of one set of N, for dist it is a list of N sets of 1
 #                    it is a group of pairs of variable_set_id/[list of values]
-# is_collective: True if this variable is acting in collective mode
+# is_collective: True if this variable is acting in collective mode.  If None, then it hasn't been determined yet
 # used_collective: True if the processing of the variable acts differently for collective and distributive modes
 #                       Note that this only needs to be set on answers that actually processed the collective mode as a unit
 # variable_set_items: the entire set of variable set items.  Used for verbs like "lift" that operate on the whole set
 class VariableData(object):
-    def __init__(self, name, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=False, used_collective=False, variable_set_items=None):
+    def __init__(self, name, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=None, used_collective=False, variable_set_items=None):
         self.name = name
         self.cardinal_group_id = cardinal_group_id
         self.variable_set_id = variable_set_id

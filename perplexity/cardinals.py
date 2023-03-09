@@ -178,8 +178,18 @@ class Measurement(object):
 
 
 def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr, count):
+    # When calling the rstr, we need to indicate if we are looking for coll or dist values
+    # for the variable by setting only the is_collective value of the binding.  Leaving
+    # cardinal_group_id and the rest unset tells predicates that we haven't got a value yet
     def binding_from_call():
-        for rstr_state in call(state, h_rstr):
+        rstr_binding = state.get_binding(variable_name)
+        new_state = state.set_x(variable_name, rstr_binding.value,
+                                cardinal_group_id=rstr_binding.variable.cardinal_group_id,
+                                variable_set_id=rstr_binding.variable.variable_set_id,
+                                variable_set_item_id=rstr_binding.variable.variable_set_item_id,
+                                is_collective=is_collective,
+                                used_collective=rstr_binding.variable.used_collective)
+        for rstr_state in call(new_state, h_rstr):
             yield rstr_state.get_binding(variable_name)
 
     # If the term is a measurement like megabyte don't create a whole set of them

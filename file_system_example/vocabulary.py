@@ -397,6 +397,9 @@ def together_p(state, e_introduced_binding, x_target_binding):
 
 
 # This version doesn't add information to the target event, it just affects cardinal groupings
+# together_p_state just acts like a restriction on all x args on its target predication
+# it ensures that at least one of them is collective
+#
 # Two children ate two pizzas together could mean:
 # 1. each child ate two pizzas at the same time
 # 2. two children together ate two pizzas
@@ -411,8 +414,12 @@ def together_p_state(state, e_introduced_binding, e_target_binding):
     target_predication = find_predication_from_introduced(state.get_binding("tree").value["Tree"], e_target_binding.variable.name)
     target_x_args = target_predication.x_args()
     target_x_bindings = [state.get_binding(x_arg) for x_arg in target_x_args]
+    yield from force_bindings_to_collective(state, target_x_bindings)
 
-    # First see if one or both of the variables are already collective and just force it to be used
+
+def force_bindings_to_collective(state, target_x_bindings):
+    # First see if any of the variables are already collective and just force them to be used
+    # in the answer by setting used_collective=True
     found_collective = False
     for binding in target_x_bindings:
         if binding.variable.is_collective:
@@ -422,7 +429,7 @@ def together_p_state(state, e_introduced_binding, e_target_binding):
     if found_collective:
         for collective_binding in target_x_bindings:
             if collective_binding.variable.is_collective:
-                # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
+                # if it forces coll, it should mark them as processed (or they won't get selected as a unique answer since dist is the default)
                 state = state.set_x(collective_binding.variable.name, collective_binding.value,
                                     cardinal_group_id=collective_binding.variable.cardinal_group_id,
                                     variable_set_id=collective_binding.variable.variable_set_id,
@@ -433,21 +440,31 @@ def together_p_state(state, e_introduced_binding, e_target_binding):
         yield state
 
     else:
-        # If that didn't work, try all the combinations of setting is_collective to True for
-        # anything that doesn't have a cardinal yet
-        uncardinalized_bindings = []
+        # None of the target variables are collective, but one of them might not have bee
+        # set to coll/dist yet, and together() is here to set that value to collective.
+        # Here's why it will only be one:
+        # IF the predication it targets has N variables, then it *must* be the case that
+        #   the target predication is in the tree under the quantifiers that declare those variables.
+        #   This means that at most one of the ones that are plural should be left "uncardinalized"
+        #   because it is either in the rstr or body of all the cardinals and those have set that value
+        #   (BUT this requires that cardinalization is set *before* the rstr is run).
+        #   Furthermore, this one variable would be the one that is quantified by the quantifier that
+        #   the target predication is in the rstr of (if it is in the body it will be set and not uncardinalized)
+        #   In the rstr, when we are looking for a value, we only set variable_binding.is_collective
+        #   and leave the others unset to indicate this is what mode that variable is in.
+        uncardinalized_binding = None
         for target_x_binding in target_x_bindings:
-            if is_plural(state, target_x_binding.variable.name) and target_x_binding.variable.cardinal_group_id is None:
-                uncardinalized_bindings.append(target_x_binding)
+            if is_plural(state, target_x_binding.variable.name) and target_x_binding.variable.is_collective is None:
+                assert uncardinalized_binding is None
+                uncardinalized_binding = target_x_binding
 
-        if len(uncardinalized_bindings) > 0:
-            for target_x_binding in uncardinalized_bindings:
-                state = state.set_x(target_x_binding.variable.name, target_x_binding.value,
-                                    cardinal_group_id=target_x_binding.variable.cardinal_group_id,
-                                    variable_set_id=target_x_binding.variable.variable_set_id,
-                                    variable_set_item_id=target_x_binding.variable.variable_set_item_id,
-                                    is_collective=True,
-                                    used_collective=True)
+        if uncardinalized_binding is not None:
+            state = state.set_x(uncardinalized_binding.variable.name, uncardinalized_binding.value,
+                                cardinal_group_id=uncardinalized_binding.variable.cardinal_group_id,
+                                variable_set_id=uncardinalized_binding.variable.variable_set_id,
+                                variable_set_item_id=uncardinalized_binding.variable.variable_set_item_id,
+                                is_collective=True,
+                                used_collective=True)
             yield state
 
         else:
