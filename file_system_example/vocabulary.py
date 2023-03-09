@@ -382,18 +382,20 @@ def place_n(state, x_binding):
 
 @Predication(vocabulary, names=["_together_p"])
 def together_p(state, e_introduced_binding, x_target_binding):
-    if x_target_binding.variable.is_collective:
-        # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
-        yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
-                          cardinal_group_id=x_target_binding.variable.cardinal_group_id,
-                          variable_set_id=x_target_binding.variable.variable_set_id,
-                          variable_set_item_id=x_target_binding.variable.variable_set_item_id,
-                          is_collective=x_target_binding.variable.is_collective,
-                          used_collective=True,
-                          variable_set_items=x_target_binding.variable.variable_set_items)
-
-    else:
-        report_error(["formNotUnderstood", "missing", "collective"])
+    yield from force_bindings_to_collective(state, [x_target_binding])
+    #
+    # if x_target_binding.variable.is_collective:
+    #     # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
+    #     yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
+    #                       cardinal_group_id=x_target_binding.variable.cardinal_group_id,
+    #                       variable_set_id=x_target_binding.variable.variable_set_id,
+    #                       variable_set_item_id=x_target_binding.variable.variable_set_item_id,
+    #                       is_collective=x_target_binding.variable.is_collective,
+    #                       used_collective=True,
+    #                       variable_set_items=x_target_binding.variable.variable_set_items)
+    #
+    # else:
+    #     report_error(["formNotUnderstood", "missing", "collective"])
 
 
 # This version doesn't add information to the target event, it just affects cardinal groupings
@@ -435,7 +437,8 @@ def force_bindings_to_collective(state, target_x_bindings):
                                     variable_set_id=collective_binding.variable.variable_set_id,
                                     variable_set_item_id=collective_binding.variable.variable_set_item_id,
                                     is_collective=collective_binding.variable.is_collective,
-                                    used_collective=True)
+                                    used_collective=True,
+                                    variable_set_items=collective_binding.variable.variable_set_items)
 
         yield state
 
@@ -464,13 +467,15 @@ def force_bindings_to_collective(state, target_x_bindings):
                                 variable_set_id=uncardinalized_binding.variable.variable_set_id,
                                 variable_set_item_id=uncardinalized_binding.variable.variable_set_item_id,
                                 is_collective=True,
-                                used_collective=True)
+                                used_collective=True,
+                                variable_set_items=uncardinalized_binding.variable.variable_set_items                                )
             yield state
 
         else:
+            # If it id not find an existing collective binding and there isn't one to
+            # set then "together" cant be run
             report_error(["formNotUnderstood", "missing", "collective"])
             return
-
 
 
 # @Predication(vocabulary, names=["_together_p_state"])
