@@ -4,10 +4,23 @@ Remaining work to be shown in the tutorial:
 - Make "only 2" work for cardinals
 - Do cumulative
 - Linking files says that the same file is in a folder twice under two names
-
+- Is it really right for the index verb to just grab the set from the variable? The other variables it got passed might be different for different variables?
+  - Maybe it is OK because it runs every set against every item?
+  
+- does card() really need the body? or can it just appear in the rstr?
+  - We'd need a different way to manage the variable_set_cache
+    - The engine could automatically do it
+    - hasChildrenCardinals is easy to detect up fron
+    - Parent VariableSetID could be determined by knowing what the parent variable is and checking variable metadata
+    - Need to properly handle VariableSetRestart in the quantifier
+    - 
+- Implement "the"
+  - The problem is that "the" needs to act like a cardinal of cardinals, every and any also do this
+  - Attempt to do it simply by rewriting the cardinal to use a "thing" body to simulate the new approach
+  - 
 - Make sure we can implement various quantifiers with cardinals
 - there are special case lists of predications in the card stuff, need this to be dynamic
-- Implement separately
+- Implement "separately"
 - delete 1 file in this folder, deletes 2
   - Treats it as "delete all 1 files that are in this folder"
   - Similar to the problem of "which 2 files are in this folder" -- if there are 3, you'll get many answers, should be one
@@ -17,4 +30,3 @@ Remaining work to be shown in the tutorial:
 - TODO: For collective, we actually run it N times even though the answer is the same.  Can we optimize?
 
 - Do testing
-"together, which 3 files are 3 mb" - doesn't work because it is together_p(e4,e2), loc_nonsp(e2,x6,x13)

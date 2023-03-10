@@ -142,6 +142,56 @@ def in_scope(state, binding):
             return True
 
 
+# @Predication(vocabulary, names=["_the_q_cardinal"])
+# def the_q_cardinal(state, x_variable_binding, h_rstr, h_body):
+#     if x_variable_binding.variable.is_collective:
+#         x_variable_set_items = x_variable_binding.variable.variable_set_items
+#         variable_set_solutions = []
+#         for item in x_variable_set_items:
+#             body_solutions = []
+#             for body_solution in call(state.set_x(x_variable_binding.variable.name, item), h_body):
+#                 body_solutions.append(body_solution)
+#
+#             if len(body_solutions) > 0:
+#                 variable_set_solutions.append(body_solutions)
+#             else:
+#                 return
+#
+#         # ??? Need to ensure no other the_s ran
+#         for variable_set_solution in variable_set_solutions:
+#             for body_solution in variable_set_solution:
+#                 yield body_solution
+#     else:
+#         yield from this_q_dem(x_variable_binding, h_rstr, h_body)
+
+
+# @Predication(vocabulary, names=["_the_q"])
+# def the_q(state, x_variable_binding, h_rstr, h_body):
+#     rstr_single_solution = None
+#     current_variable_set = None
+#     if x_variable_binding.variable.is_collective:
+#         for solution in call(state, h_rstr):
+#             x_variable_binding = solution.get_binding(x_variable_binding.variable.name)
+#             if current_variable_set is None or x_variable_binding.variable.variable_set_id == current_variable_set:
+#                 # Now see if that solution works in the BODY
+#                 try:
+#                     for body_solution in call(rstr_single_solution, h_body):
+#                         yield body_solution
+#                 except VariableSetRestart:
+#                     # A child asked us to retry which means a child had a variable_set that didn't completely work against this set
+#                     # So: the alternatives we have so far are right, but we need to restart the variable set (this keeps the same group to allow the child to cache things there)
+#                     # Tell the rstr to retry
+#                     this_variable_set_cache["NextSolution"] = True
+#                     break
+#
+#             else:
+#                 # More than one variable set, fail
+
+# @Predication(vocabulary, names=["_the_q"])
+def the_q(state, x_variable_binding, h_rstr, h_body):
+    yield from this_q_dem(state, x_variable_binding, h_rstr, h_body)
+
+
 @Predication(vocabulary, names=["_this_q_dem", "_this_q_dem_cardinal"])
 def this_q_dem(state, x_variable_binding, h_rstr, h_body):
     # Run the RSTR which should fill in the variable with an item
@@ -159,7 +209,6 @@ def this_q_dem(state, x_variable_binding, h_rstr, h_body):
 
     if rstr_single_solution is not None:
         # Now see if that solution works in the BODY
-        body_found = False
         for body_solution in call(rstr_single_solution, h_body):
             yield body_solution
 
@@ -232,7 +281,7 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
 # to: cardinal(x, [other()], default_q(x, thing(x), body)
 # to: cardinal(..., default_q(x, base_rstr, body)
 @Predication(vocabulary, names=["card_with_scope"])
-def cardinal_variable_set_incoming(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
+def card_variable_set_incoming(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
     c_count_value = int(c_count)
     this_predicate_index = execution_context().current_predication_index()
     parent_variable_set_cache = group_context()

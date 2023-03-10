@@ -666,6 +666,7 @@ def Example32():
         print()
 
 
+
 if __name__ == '__main__':
     # foo = itertools.combinations(foo(), 2)
 
@@ -712,5 +713,5 @@ if __name__ == '__main__':
     # Example27()
     # Example28()
     # Example29()
-    Example32()
-    # Example31()
+    # Example32()
+    Example31()
