@@ -71,7 +71,7 @@ class ExecutionContext(object):
             # To make cardinals work, run this as if it were a distributive cardinal group that has one variable set in it with one element
             # Conveniently, we need to set the state to have the variable "tree" it it, so pretend like this cardinal group is setting that value
             # since cardinal_group_outgoing_solutions will fail if there are no items in the variable set
-            root_cardinal_group = perplexity.cardinals.CardinalGroup(is_collective=False, cardinal_group_id=0, cardinal_group_items=[tuple([str(0), [tree_info]])])
+            root_cardinal_group = perplexity.cardinals.CardinalGroup(is_collective=False, used_collective=False, cardinal_group_id=0, cardinal_group_items=[tuple([str(0), [tree_info]])])
             cardinal_group_solutions = perplexity.cardinals.cardinal_group_outgoing_solutions(this_predicate_index=0, state=state, variable_name="tree", h_body=tree_info["Tree"], this_cardinal_group=root_cardinal_group)
 
             if len(cardinal_group_solutions) > 0:

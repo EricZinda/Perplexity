@@ -155,8 +155,9 @@ def split_cardinal_rstr(term):
 
 
 class CardinalGroup(object):
-    def __init__(self, is_collective, cardinal_group_id, cardinal_group_items):
+    def __init__(self, is_collective, used_collective, cardinal_group_id, cardinal_group_items):
         self.is_collective = is_collective
+        self.used_collective = used_collective
         self.cardinal_group_id = cardinal_group_id
         self.cardinal_group_items = cardinal_group_items
 
@@ -224,10 +225,12 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
             if invalid_collective_cardinal_group(cardinal_group_element_bindings[0]):
                 return
             else:
+                # Need to pass along cardinal_group_element_bindings[0].variable.used_collective in case
+                # the rstr forced collective
                 if is_collective:
-                    yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), cardinal_group_values])])
+                    yield CardinalGroup(is_collective, cardinal_group_element_bindings[0].variable.used_collective, create_solution_id(), [tuple([str(create_solution_id()), cardinal_group_values])])
                 else:
-                    yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [element]]) for element in cardinal_group_values])
+                    yield CardinalGroup(is_collective, cardinal_group_element_bindings[0].variable.used_collective, create_solution_id(), [tuple([str(create_solution_id()), [element]]) for element in cardinal_group_values])
 
     def measurement_cardinal_group():
         single_binding = None
@@ -242,8 +245,10 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
             if invalid_collective_cardinal_group(single_binding):
                 return
             else:
+                # Need to pass along single_binding.variable.used_collective in case
+                # the rstr forced collective
                 measurement = Measurement(single_binding.value, count)
-                yield CardinalGroup(is_collective, create_solution_id(), [tuple([str(create_solution_id()), [measurement]])])
+                yield CardinalGroup(is_collective, single_binding.variable.used_collective, create_solution_id(), [tuple([str(create_solution_id()), [measurement]])])
 
     if rstr_is_measurement():
         # Return a single cardinal group with a single variable set of one element from the rstr since it
@@ -381,6 +386,7 @@ def cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variab
                                     variable_set_id=this_variable_set_cache["VariableSetID"],
                                     variable_set_item_id=variable_set_item_index,
                                     is_collective=this_cardinal_group.is_collective,
+                                    used_collective=this_cardinal_group.used_collective,
                                     variable_set_items=variable_set_info[1])
 
             try:

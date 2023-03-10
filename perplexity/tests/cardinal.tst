@@ -130,7 +130,7 @@
         },
         {
             "Command": "which 2 files are 10 megabytes",
-            "Expected": "Measure:10 mb\n     File(name=/Desktop/yellow.txt, size=10000000)\n     File(name=/temp/red.txt, size=10000000)\n\n",
+            "Expected": "Measure:10 mb together\n     File(name=/Desktop/yellow.txt, size=10000000)\n     File(name=/temp/red.txt, size=10000000)\n\n",
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(10,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],loc_nonsp(e2,x3,x11)))",
             "Enabled": true,
             "ID": "20927658-b149-423c-a512-34521bc8ebdf"
@@ -144,7 +144,7 @@
         },
         {
             "Command": "which 2 files are 10 megabytes together",
-            "Expected": "Measure:10 mb\n     File(name=/Desktop/yellow.txt, size=5000000), File(name=/temp/red.txt, size=5000000) together\n\n",
+            "Expected": "Measure:10 mb together\n     File(name=/Desktop/yellow.txt, size=5000000), File(name=/temp/red.txt, size=5000000) together\n\n",
             "Tree": "card_with_scope(10,e17,x11,[_megabyte_n_1(x11,u18)],udef_q_cardinal(x11,thing(x11),card_with_scope(2,e9,x3,[_file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),[_together_p(e19,x3), loc_nonsp(e2,x3,x11)]))))",
             "Enabled": true,
             "ID": "5627aacd-1ef6-488b-80c2-f7e1b1c25a73"
@@ -172,10 +172,24 @@
         },
         {
             "Command": "which 2 files in this folder together are 2 megabytes",
-            "Expected": "Measure:2 mb\n     File(name=/Desktop/yellow.txt, size=1000000), File(name=/Desktop/green.txt, size=1000000) together\n\n",
+            "Expected": "Measure:2 mb together\n     File(name=/Desktop/yellow.txt, size=1000000), File(name=/Desktop/green.txt, size=1000000) together\n\n",
             "Tree": "_this_q_dem(x12,_folder_n_of(x12,i17),card_with_scope(2,e25,x19,[_megabyte_n_1(x19,u26)],udef_q_cardinal(x19,thing(x19),card_with_scope(2,e9,x3,[_together_p_state(e18,e11), _in_p_loc(e11,x3,x12), _file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),loc_nonsp(e2,x3,x19))))))",
             "Enabled": true,
             "ID": "6b7e7895-842c-4b70-af6a-6be3f7dc3a53"
+        },
+        {
+            "Command": "/new examples.Example30_reset",
+            "Expected": "State reset using examples.Example30_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "6b611246-ab33-445a-8c15-d2f6ae6b9bfe"
+        },
+        {
+            "Command": "which 2 files in this folder are 2 megabytes together",
+            "Expected": "a 2 in file is not 2 together megabyte",
+            "Tree": "_this_q_dem(x12,_folder_n_of(x12,i17),card_with_scope(2,e24,x18,[_together_p(e26,x18), _megabyte_n_1(x18,u25)],udef_q_cardinal(x18,thing(x18),card_with_scope(2,e9,x3,[_in_p_loc(e11,x3,x12), _file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),loc_nonsp(e2,x3,x18))))))",
+            "Enabled": true,
+            "ID": "b94f291a-9fcb-4654-9548-8579264cff1d"
         }
     ]
 }

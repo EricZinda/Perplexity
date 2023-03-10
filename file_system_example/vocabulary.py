@@ -220,7 +220,7 @@ def megabyte_n_1(state, x_binding, u_binding):
             yield state
 
         else:
-            report_error(["xIsNotY", x_binding.value, "megabyte"])
+            report_error(["xIsNotYValue", x_binding.value, "megabyte"])
 
 
 @Predication(vocabulary)
@@ -613,14 +613,23 @@ def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
 
 
 # handles size only
-# loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that
-@Predication(vocabulary, names=["loc_nonsp"], arguments=[DeclareArg("e"), DeclareArg("x", collective_behavior=CollectiveBehavior.different), DeclareArg("x")])
-def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_location_binding):
+# loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
+# we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
+@Predication(vocabulary, names=["loc_nonsp"], arguments=[DeclareArg("e"), DeclareArg("x", collective_behavior=CollectiveBehavior.different), DeclareArg("x", collective_behavior=CollectiveBehavior.different)])
+def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
     if x_actor_binding.value is not None:
-        if x_location_binding.value is not None:
-            if isinstance(x_location_binding.value, Measurement):
+        if x_size_binding.value is not None:
+            if isinstance(x_size_binding.value, Measurement):
                 # asking to see if actor "is" a measurement, as in "is file 5 mb"
                 if hasattr(x_actor_binding.value, "size_measurement"):
+                    if not x_size_binding.variable.is_collective:
+                        # we only deal with x megabytes as coll because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
+                        report_error(["formNotUnderstood", "missing", "collective"])
+                        return
+
+                    state = state.set_x(x_size_binding.variable.name, x_size_binding.value,
+                                        used_collective=True)
+
                     # Only works if actor has a measurement
                     if x_actor_binding.variable.is_collective:
                         # Collective: We need to see if all of the variables in this variable set add up to the value
@@ -630,21 +639,21 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_location_bind
                         for item in x_actor_variable_set_items:
                             total += item.size_measurement().count
 
-                        if x_location_binding.value.count == total:
+                        if x_size_binding.value.count == total:
                             yield state.set_x(x_actor_binding.variable.name, x_actor_binding.value,
                                               used_collective=True)
 
                         else:
-                            report_error(["xIsNotY", x_actor_binding.variable.name, x_location_binding.value.count])
+                            report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
                             return
 
                     else:
                         # Distributive: each one must be this value
-                        if x_location_binding.value == x_actor_binding.value.size_measurement():
+                        if x_size_binding.value == x_actor_binding.value.size_measurement():
                             yield state
 
                         else:
-                            report_error(["xIsNotY", x_actor_binding.variable.name, x_location_binding.value.count])
+                            report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
                             return
 
     else:
@@ -694,7 +703,7 @@ def file_n_of(state, x_binding, i_binding):
             yield new_state
 
         else:
-            report_error(["xIsNotY", x_binding.variable.name, "file"])
+            report_error(["xIsNotYValue", x_binding.variable.name, "file"])
 
 
 @Predication(vocabulary, names=["_folder_n_of"])
@@ -725,7 +734,7 @@ def folder_n_of(state, x_binding, i_binding):
             yield new_state
 
         else:
-            report_error(["xIsNotY", x_binding.variable.name, "folder"])
+            report_error(["xIsNotYValue", x_binding.variable.name, "folder"])
 
 
 pipeline_logger = logging.getLogger('Pipeline')
