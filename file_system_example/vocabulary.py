@@ -612,9 +612,10 @@ def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
         yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
 
 
+# handles size only
 # loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that
-@Predication(vocabulary, arguments=[DeclareArg("e"), DeclareArg("x", collective_behavior=CollectiveBehavior.different), DeclareArg("x")])
-def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
+@Predication(vocabulary, names=["loc_nonsp"], arguments=[DeclareArg("e"), DeclareArg("x", collective_behavior=CollectiveBehavior.different), DeclareArg("x")])
+def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_location_binding):
     if x_actor_binding.value is not None:
         if x_location_binding.value is not None:
             if isinstance(x_location_binding.value, Measurement):
@@ -646,7 +647,17 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
                             report_error(["xIsNotY", x_actor_binding.variable.name, x_location_binding.value.count])
                             return
 
-            elif hasattr(x_actor_binding.value, "all_locations"):
+    else:
+        # For now, return errors for cases where x_actor is unbound
+        pass
+
+
+# Just handles place locations
+@Predication(vocabulary, names=["loc_nonsp"])
+def loc_nonsp_place(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    if x_actor_binding.value is not None:
+        if x_location_binding.value is not None:
+            if hasattr(x_actor_binding.value, "all_locations"):
                 # The system is asking if a location of x_actor is x_location,
                 # so check the list exhaustively until we find a match, then stop
                 for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
