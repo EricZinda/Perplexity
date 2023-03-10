@@ -190,6 +190,20 @@
             "Tree": "_this_q_dem(x12,_folder_n_of(x12,i17),card_with_scope(2,e24,x18,[_together_p(e26,x18), _megabyte_n_1(x18,u25)],udef_q_cardinal(x18,thing(x18),card_with_scope(2,e9,x3,[_in_p_loc(e11,x3,x12), _file_n_of(x3,i10)],_which_q_cardinal(x3,thing(x3),loc_nonsp(e2,x3,x18))))))",
             "Enabled": true,
             "ID": "b94f291a-9fcb-4654-9548-8579264cff1d"
+        },
+        {
+            "Command": "/new examples.Example32_reset",
+            "Expected": "State reset using examples.Example32_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "3916c08b-f13e-4f67-9989-a1acb4d71adf"
+        },
+        {
+            "Command": "together, which 3 files are 3 mb",
+            "Expected": "Measure:3 mb together\n     File(name=/Desktop/yellow.txt, size=1000000), File(name=/Desktop/green.txt, size=1000000), File(name=/Desktop/orange.txt, size=1000000) together\n\n",
+            "Tree": "card_with_scope(3,e19,x13,[_megabyte_n_1(x13,u20)],udef_q_cardinal(x13,thing(x13),card_with_scope(3,e11,x6,[_file_n_of(x6,i12)],_which_q_cardinal(x6,thing(x6),[_together_p(e4,e2), loc_nonsp(e2,x6,x13)]))))",
+            "Enabled": true,
+            "ID": "790639f3-3eec-46ab-8c3e-9253b83d727d"
         }
     ]
 }

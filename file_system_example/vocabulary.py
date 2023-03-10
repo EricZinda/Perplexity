@@ -380,10 +380,15 @@ def place_n(state, x_binding):
             yield state.set_x(x_binding.variable.name, value)
 
 
+# Needed for "together, which 3 files are 3 mb?"
+@Predication(vocabulary, names=["_together_p"])
+def together_p_ee(state, e_introduced_binding, e_target_binding):
+    yield from together_p_state(state, e_introduced_binding, e_target_binding)
+
+
 @Predication(vocabulary, names=["_together_p"])
 def together_p(state, e_introduced_binding, x_target_binding):
     yield from force_bindings_to_collective(state, [x_target_binding])
-
 
 
 # This version doesn't add information to the target event, it just affects cardinal groupings

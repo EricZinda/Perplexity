@@ -193,6 +193,20 @@ If we only assume that things that modify the cardinal are in the same conjuncti
 ### Dealing with size
 100 MB would be a set of 100.  Optimize
 
+### Dealing with answers
+If there are 3 files:
+? which 2 files are in this folder? / delete 2 files in this folder
+File(name=/Desktop/yellow.txt, size=1000000)
+File(name=/Desktop/green.txt, size=1000000)
+
+File(name=/Desktop/yellow.txt, size=1000000)
+File(name=/Desktop/orange.txt, size=1000000)
+
+File(name=/Desktop/green.txt, size=1000000)
+File(name=/Desktop/orange.txt, size=1000000)
+
+delete will delete them all.  There is an implicit "which (single group of) two files" which should return a failure if there are more than two
+
 ### How to deal with in and files
 How in(what, where) works for sets.  [a, b] in [x, y] is the same as [a], [b] in [x], [y], i.e. the grouping of either doesn't matter. 
 - So, as long as the cardinal groups are the same, the answers *as far as this predicate is concerned* are duplicates.
