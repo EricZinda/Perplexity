@@ -362,7 +362,7 @@ def thing(state, x_binding):
         iterator = [x_binding.value]
 
     for value in iterator:
-        yield state.set_x_from_binding(x_binding, value)
+        yield state.set_x(x_binding.variable.name, value)
 
 
 @Predication(vocabulary)
@@ -383,19 +383,7 @@ def place_n(state, x_binding):
 @Predication(vocabulary, names=["_together_p"])
 def together_p(state, e_introduced_binding, x_target_binding):
     yield from force_bindings_to_collective(state, [x_target_binding])
-    #
-    # if x_target_binding.variable.is_collective:
-    #     # if it only allows coll, it should mark them as processed (or they won't get selected since dist is the default)
-    #     yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
-    #                       cardinal_group_id=x_target_binding.variable.cardinal_group_id,
-    #                       variable_set_id=x_target_binding.variable.variable_set_id,
-    #                       variable_set_item_id=x_target_binding.variable.variable_set_item_id,
-    #                       is_collective=x_target_binding.variable.is_collective,
-    #                       used_collective=True,
-    #                       variable_set_items=x_target_binding.variable.variable_set_items)
-    #
-    # else:
-    #     report_error(["formNotUnderstood", "missing", "collective"])
+
 
 
 # This version doesn't add information to the target event, it just affects cardinal groupings
@@ -433,12 +421,7 @@ def force_bindings_to_collective(state, target_x_bindings):
             if collective_binding.variable.is_collective:
                 # if it forces coll, it should mark them as processed (or they won't get selected as a unique answer since dist is the default)
                 state = state.set_x(collective_binding.variable.name, collective_binding.value,
-                                    cardinal_group_id=collective_binding.variable.cardinal_group_id,
-                                    variable_set_id=collective_binding.variable.variable_set_id,
-                                    variable_set_item_id=collective_binding.variable.variable_set_item_id,
-                                    is_collective=collective_binding.variable.is_collective,
-                                    used_collective=True,
-                                    variable_set_items=collective_binding.variable.variable_set_items)
+                                    used_collective=True)
 
         yield state
 
@@ -463,12 +446,8 @@ def force_bindings_to_collective(state, target_x_bindings):
 
         if uncardinalized_binding is not None:
             state = state.set_x(uncardinalized_binding.variable.name, uncardinalized_binding.value,
-                                cardinal_group_id=uncardinalized_binding.variable.cardinal_group_id,
-                                variable_set_id=uncardinalized_binding.variable.variable_set_id,
-                                variable_set_item_id=uncardinalized_binding.variable.variable_set_item_id,
                                 is_collective=True,
-                                used_collective=True,
-                                variable_set_items=uncardinalized_binding.variable.variable_set_items                                )
+                                used_collective=True)
             yield state
 
         else:
@@ -549,14 +528,14 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
             # Need to find all the things that x_actor is "in"
             if hasattr(x_actor_binding.value, "containers"):
                 for item in x_actor_binding.value.containers(x_actor_binding.variable):
-                    yield state.set_x_from_binding(x_location_binding, item)
+                    yield state.set_x(x_location_binding.variable.name, item)
 
     else:
         # Actor is unbound, this means "What is in X?" type of question
         # Whatever x_location "contains" is "in" it
         if hasattr(x_location_binding.value, "contained_items"):
             for location in x_location_binding.value.contained_items(x_location_binding.variable):
-                yield state.set_x_from_binding(x_actor_binding, location)
+                yield state.set_x(x_actor_binding.variable.name, location)
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
@@ -652,12 +631,7 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
                         if x_location_binding.value.count == total:
                             yield state.set_x(x_actor_binding.variable.name, x_actor_binding.value,
-                                              cardinal_group_id=x_actor_binding.variable.cardinal_group_id,
-                                              variable_set_id=x_actor_binding.variable.variable_set_id,
-                                              variable_set_item_id=x_actor_binding.variable.variable_set_item_id,
-                                              is_collective=x_actor_binding.variable.is_collective,
-                                              used_collective=True,
-                                              variable_set_items=x_actor_binding.variable.variable_set_items)
+                                              used_collective=True)
 
                         else:
                             report_error(["xIsNotY", x_actor_binding.variable.name, x_location_binding.value.count])
@@ -705,7 +679,7 @@ def file_n_of(state, x_binding, i_binding):
 
     for value in iterator:
         if isinstance(value, File):
-            new_state = state.set_x_from_binding(x_binding, value)
+            new_state = state.set_x(x_binding.variable.name, value)
             yield new_state
 
         else:

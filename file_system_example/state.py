@@ -50,8 +50,9 @@ class State(object):
 
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
-    # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=False, used_collective=False, variable_set_items=None):
+    # that is acting like an unquantified "x" variable).
+    # maintains any variable metadata that was already set
+    def set_x(self, variable_name, item, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=None, used_collective=None, variable_set_items=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -65,20 +66,23 @@ class State(object):
 
         # Dictionaries hold name/value pairs.
         # This is how you assign values to keys in dictionaries
-        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name, cardinal_group_id, variable_set_id, variable_set_item_id, is_collective, used_collective, variable_set_items), item)
+        if variable_name in new_state.variables:
+            initial_variable_data = new_state.variables[variable_name].variable
+        else:
+            initial_variable_data = VariableData(variable_name)
+
+        variable_data = initial_variable_data.copy_with_changes(cardinal_group_id=cardinal_group_id,
+                                                                variable_set_id=variable_set_id,
+                                                                variable_set_item_id=variable_set_item_id,
+                                                                is_collective=is_collective,
+                                                                used_collective=used_collective,
+                                                                variable_set_items=variable_set_items)
+
+        new_state.variables[variable_name] = VariableBinding(variable_data, item)
 
         # "return" returns to the caller the new state with
         # that one variable set to a new value
         return new_state
-
-    def set_x_from_binding(self, binding, item):
-        return self.set_x(binding.variable.name, item,
-                          cardinal_group_id=binding.variable.cardinal_group_id,
-                          variable_set_id=binding.variable.variable_set_id,
-                          variable_set_item_id=binding.variable.variable_set_item_id,
-                          is_collective=binding.variable.is_collective,
-                          used_collective=binding.variable.used_collective,
-                          variable_set_items=binding.variable.variable_set_items)
 
     def add_to_e(self, event_name, key, value):
         newState = copy.deepcopy(self)

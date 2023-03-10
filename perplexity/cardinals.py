@@ -184,11 +184,7 @@ def create_cardinal_group_generator(state, is_collective, variable_name, h_rstr,
     def binding_from_call():
         rstr_binding = state.get_binding(variable_name)
         new_state = state.set_x(variable_name, rstr_binding.value,
-                                cardinal_group_id=rstr_binding.variable.cardinal_group_id,
-                                variable_set_id=rstr_binding.variable.variable_set_id,
-                                variable_set_item_id=rstr_binding.variable.variable_set_item_id,
-                                is_collective=is_collective,
-                                used_collective=rstr_binding.variable.used_collective)
+                                is_collective=is_collective)
         for rstr_state in call(new_state, h_rstr):
             yield rstr_state.get_binding(variable_name)
 
@@ -380,9 +376,13 @@ def cardinal_variable_set_outgoing_solutions(this_predicate_index, state, variab
             variable_set_item = variable_set[variable_set_item_index]
 
             cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id}, VarSetID: {this_variable_set_cache["VariableSetID"]} -> {"[Next solution] " if "NextSolution" in this_variable_set_cache and this_variable_set_cache["NextSolution"] else ""}Checking variable set item: {variable_set_item}')
-            new_state = state.set_x(variable_name, variable_set_item, this_cardinal_group.cardinal_group_id,
-                                    this_variable_set_cache["VariableSetID"], variable_set_item_index, this_cardinal_group.is_collective,
+            new_state = state.set_x(variable_name, variable_set_item,
+                                    cardinal_group_id=this_cardinal_group.cardinal_group_id,
+                                    variable_set_id=this_variable_set_cache["VariableSetID"],
+                                    variable_set_item_id=variable_set_item_index,
+                                    is_collective=this_cardinal_group.is_collective,
                                     variable_set_items=variable_set_info[1])
+
             try:
                 variable_set_item_solution_alternatives = []
                 for variable_set_item_solution in call_with_group(this_variable_set_cache, new_state, h_body):

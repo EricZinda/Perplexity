@@ -8,6 +8,7 @@
 #                       Note that this only needs to be set on answers that actually processed the collective mode as a unit
 # variable_set_items: the entire set of variable set items.  Used for verbs like "lift" that operate on the whole set
 class VariableData(object):
+    # These are the defaults if a variable has never been set
     def __init__(self, name, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=None, used_collective=False, variable_set_items=None):
         self.name = name
         self.cardinal_group_id = cardinal_group_id
@@ -16,6 +17,15 @@ class VariableData(object):
         self.is_collective = is_collective
         self.used_collective = used_collective
         self.variable_set_items = variable_set_items
+
+    def copy_with_changes(self, cardinal_group_id=None, variable_set_id=None, variable_set_item_id=None, is_collective=None, used_collective=None, variable_set_items=None):
+        return VariableData(self.name,
+                            cardinal_group_id=cardinal_group_id if cardinal_group_id is not None else self.cardinal_group_id,
+                            variable_set_id=variable_set_id if variable_set_id is not None else self.variable_set_id,
+                            variable_set_item_id=variable_set_item_id if variable_set_item_id is not None else self.variable_set_item_id,
+                            is_collective=is_collective if is_collective is not None else self.is_collective,
+                            used_collective=used_collective if used_collective is not None else self.used_collective,
+                            variable_set_items=variable_set_items if variable_set_items is not None else self.variable_set_items)
 
     def __repr__(self):
         if self.variable_set_id is not None:
