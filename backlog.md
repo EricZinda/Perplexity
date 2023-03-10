@@ -6,11 +6,12 @@ Remaining work to be shown in the tutorial:
 - Linking files says that the same file is in a folder twice under two names
 - Is it really right for the index verb to just grab the set from the variable? The other variables it got passed might be different for different variables?
   - Maybe it is OK because it runs every set against every item?
-  
+- Implement "the files are together"
+
 - does card() really need the body? or can it just appear in the rstr?
   - We'd need a different way to manage the variable_set_cache
     - The engine could automatically do it
-    - hasChildrenCardinals is easy to detect up fron
+    - hasChildrenCardinals is easy to detect up front
     - Parent VariableSetID could be determined by knowing what the parent variable is and checking variable metadata
     - Need to properly handle VariableSetRestart in the quantifier
     - 

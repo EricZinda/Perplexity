@@ -9,8 +9,8 @@ from perplexity.cardinals import split_cardinal_rstr, cardinal_group_outgoing_so
     unique_solution_if_index, Measurement
 from perplexity.utilities import at_least_one_generator, is_plural
 from perplexity.variable_binding import VariableBinding
-from perplexity.execution import call, report_error, execution_context, call_with_group, group_context, \
-    create_solution_id, create_variable_set_cache, VariableSetRestart
+from perplexity.execution import call, report_error, execution_context, \
+    create_solution_id, create_variable_set_cache, VariableSetRestart, get_parent_variable_set_cache
 from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1, \
     predication_from_index, find_predication_from_introduced
 from perplexity.virtual_arguments import scopal_argument
@@ -141,6 +141,48 @@ def in_scope(state, binding):
         if file == binding.value:
             return True
 
+
+@Predication(vocabulary, names=["_the_q_cardinal"])
+def the_q_cardinal(state, x_variable_binding, h_rstr, h_body):
+    if x_variable_binding.variable.is_collective:
+        find_next_cardinal_group = True
+        cardinal_group_solution = None
+        while find_next_cardinal_group:
+            # Loop through all the elements of this variable set
+            variable_set_solutions = []
+            for variable_set_item in call(state, h_rstr):
+                # We have an element of a cardinal group
+                body_solutions = []
+                try:
+                    for body_solution in call(state, h_body):
+                        body_solutions.append(body_solution)
+
+                except VariableSetRestart:
+                    # Somehow tell card_scope() to restart this group
+                    # Somehow tell the child to find the next group
+                    # and keep us in same group
+                    find_next_cardinal_group = True
+                    break
+
+                if len(body_solutions) > 0:
+                    variable_set_solutions.append(body_solutions)
+
+                else:
+                    # One item didn't work, tell the parent to retry
+                    # The current variable set and we will try another
+                    # group
+                    raise VariableSetRestart
+
+            # All the variable_set items worked, thus this group worked
+            if cardinal_group_solution is None:
+                cardinal_group_solution = variable_set_solutions
+                # Somehow tell the child to try the next group
+                find_next_cardinal_group = True
+
+            else:
+                # Fail because there was more than on cardinal set that worked
+                # report_error()
+                return
 
 # @Predication(vocabulary, names=["_the_q_cardinal"])
 # def the_q_cardinal(state, x_variable_binding, h_rstr, h_body):
@@ -284,7 +326,7 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
 def card_variable_set_incoming(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
     c_count_value = int(c_count)
     this_predicate_index = execution_context().current_predication_index()
-    parent_variable_set_cache = group_context()
+    parent_variable_set_cache = get_parent_variable_set_cache(x_target_binding.variable.name)
 
     new_parent_variable_set = this_predicate_index not in parent_variable_set_cache["ChildCardinals"]
     parent_variable_set_next_solution = "NextSolution" in parent_variable_set_cache and parent_variable_set_cache["NextSolution"] is True

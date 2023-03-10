@@ -299,19 +299,19 @@ def walk_tree_args_until(term, predication_func, arg_func):
 
 # Walk every predication in the tree and allow predication_rewrite_func() to rewrite it
 # Then recurse over the rewritten predication
-def rewrite_tree_predications(term, predication_rewrite_func, index_by_ref):
+def rewrite_tree_predications(term, predication_rewrite_func, index_by_ref, extra):
     if isinstance(term, list):
         # This is a conjunction, recurse through the
         # predications in it
         new_term = []
         for predication in term:
-            new_term.append(rewrite_tree_predications(predication, predication_rewrite_func, index_by_ref))
+            new_term.append(rewrite_tree_predications(predication, predication_rewrite_func, index_by_ref, extra))
 
         return new_term
 
     else:
         # This is a predication, rewrite it
-        new_term = predication_rewrite_func(term, index_by_ref)
+        new_term = predication_rewrite_func(term, index_by_ref, extra)
         if new_term is None:
             # no rewrite, copy and keep the term, but use the new index_by_ref
             predication_copy = copy.deepcopy(term)
@@ -321,7 +321,7 @@ def rewrite_tree_predications(term, predication_rewrite_func, index_by_ref):
             # See if any of its terms are scopal
             # i.e. are predications themselves
             for scopal_index in predication_copy.scopal_arg_indices():
-                predication_copy.args[scopal_index] = rewrite_tree_predications(predication_copy.args[scopal_index], predication_rewrite_func, index_by_ref)
+                predication_copy.args[scopal_index] = rewrite_tree_predications(predication_copy.args[scopal_index], predication_rewrite_func, index_by_ref, extra)
 
             return predication_copy
 

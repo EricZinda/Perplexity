@@ -8,6 +8,7 @@ import perplexity.cardinals
 import perplexity.tree
 from perplexity.utilities import sentence_force, has_cardinals
 
+
 # Allows code to throw an exception that should get converted
 # to a user visible message
 class MessageException(Exception):
@@ -34,17 +35,6 @@ def create_solution_id():
     return value
 
 
-def create_variable_set_cache(variable_set_id, child_is_collective):
-    parent_solution = group_context()
-    parent_variable_set_id = parent_solution[
-        "VariableSetID"] if parent_solution is not None and "VariableSetID" in parent_solution else None
-
-    return {"ChildIsCollective": child_is_collective,
-            "ChildCardinals": {},
-            "VariableSetID": ((parent_variable_set_id + ":") if parent_variable_set_id is not None else "") + str(
-                variable_set_id)}
-
-
 class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
@@ -52,6 +42,7 @@ class ExecutionContext(object):
         self._error_predication_index = -1
         self._predication_index = -1
         self.phrase_type = None
+        self.cardinal_tree = None
 
     def __enter__(self):
         self.old_context_token = set_execution_context(self)
@@ -59,14 +50,14 @@ class ExecutionContext(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         reset_execution_context(self.old_context_token)
 
-    def solve_mrs_tree(self, state, tree_info):
+    def solve_mrs_tree(self, state, tree_info, cardinal_tree):
         logger.debug(f"solve MRS {tree_info['Tree']}")
         with self:
-            set_group_context(None)
             self._error = None
             self._error_predication_index = -1
             self._predication_index = 0
             self.phrase_type = sentence_force(tree_info["Variables"])
+            self.cardinal_tree = cardinal_tree
 
             # To make cardinals work, run this as if it were a distributive cardinal group that has one variable set in it with one element
             # Conveniently, we need to set the state to have the variable "tree" it it, so pretend like this cardinal group is setting that value
@@ -77,25 +68,6 @@ class ExecutionContext(object):
             if len(cardinal_group_solutions) > 0:
                 # This cardinal group worked
                 yield from perplexity.cardinals.yield_all_cardinal_group_solutions(this_predicate_index=0, cardinal_group_id=root_cardinal_group.cardinal_group_id, cardinal_group_solutions=cardinal_group_solutions)
-
-    def call_with_group(self, group, state, term, normalize=False):
-        try:
-            call_generator = call(state, term, normalize)
-            while True:
-                try:
-                    old_context_token = set_group_context(group)
-                    next_state = next(call_generator)
-                    reset_group_context(old_context_token)
-                    old_context_token = None
-
-                    yield next_state
-
-                except StopIteration:
-                    return
-
-        finally:
-            if old_context_token is not None:
-                reset_group_context(old_context_token)
 
     def call(self, state, term, normalize=False):
         # See if the term is actually a list
@@ -263,32 +235,29 @@ def execution_context():
     return _execution_context.get()
 
 
-_group_context = contextvars.ContextVar('Group Context')
+def set_variable_set_cache(variable, value):
+    execution_context().cardinal_tree.set_variable_set_cache(variable, value)
 
 
-def set_group_context(new_context):
-    global _group_context
-    return _group_context.set(new_context)
+def get_parent_variable_set_cache(child_variable):
+    return execution_context().cardinal_tree.parent_group_context(child_variable)
 
 
-# Get the token from set_execution_context
-def reset_group_context(old_context_token):
-    global _group_context
-    return _group_context.reset(old_context_token)
+def create_variable_set_cache(variable_name, variable_set_id, child_is_collective):
+    parent_variable_set_cache = get_parent_variable_set_cache(variable_name)
+    parent_variable_set_id = parent_variable_set_cache[
+        "VariableSetID"] if parent_variable_set_cache is not None and "VariableSetID" in parent_variable_set_cache else None
 
-
-def group_context():
-    return _group_context.get()
+    return {"ChildIsCollective": child_is_collective,
+            "ChildCardinals": {},
+            "VariableSetID": ((parent_variable_set_id + ":") if parent_variable_set_id is not None else "") + str(
+                variable_set_id)}
 
 
 # Helpers used by predications just to make the code easier to read
 # so they don't all have to say execution_context().call(*args, **kwargs)
 def call(*args, **kwargs):
     yield from execution_context().call(*args, **kwargs)
-
-
-def call_with_group(*args, **kwargs):
-    yield from execution_context().call_with_group(*args, **kwargs)
 
 
 def report_error(error, force=False):

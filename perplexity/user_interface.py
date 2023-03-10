@@ -115,9 +115,10 @@ class UserInterface(object):
                     if self.run_tree_index is not None and self.run_tree_index != tree_index:
                         continue
 
-                    tree = perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree)
+                    cardinal_tree, tree = perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree)
                     tree_record = {"Tree": tree,
                                    "OriginalTree": original_tree,
+                                   "CardinalTree": cardinal_tree,
                                    "Solutions": [],
                                    "Error": None,
                                    "ResponseMessage": None}
@@ -129,7 +130,7 @@ class UserInterface(object):
                                  "Variables": mrs.variables,
                                  "Tree": tree}
 
-                    for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
+                    for item in self.execution_context.solve_mrs_tree(self.state, tree_info, cardinal_tree):
                         pipeline_logger.debug(f"solution: {item}")
                         tree_record["Solutions"].append(item)
 
@@ -265,11 +266,14 @@ class UserInterface(object):
         if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
-            tree_generator = [{"Tree": perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree),
-                               "OriginalTree": original_tree,
-                               "Solutions": [],
-                               "Error": None,
-                               "ResponseMessage": None} for original_tree in self.trees_from_mrs(mrs_record["Mrs"])]
+            for original_tree in self.trees_from_mrs(mrs_record["Mrs"]):
+                cardinal_tree, tree = perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree)
+                tree_generator = [{"Tree": tree,
+                                   "OriginalTree": original_tree,
+                                   "CardinalTree": cardinal_tree,
+                                   "Solutions": [],
+                                   "Error": None,
+                                   "ResponseMessage": None} ]
         else:
             tree_generator = mrs_record["Trees"]
 
