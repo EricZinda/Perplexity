@@ -67,15 +67,6 @@ def sentence_force(variables):
             return variable[1]["SF"]
 
 
-def has_cardinals(variables):
-    for variable in variables.items():
-        if "NUM" in variable[1]:
-            if variable[1]["NUM"] == "pl":
-                return True
-
-    return False
-
-
 def is_plural(state, variable_name):
     variables = state.get_binding("tree").value["Variables"]
 

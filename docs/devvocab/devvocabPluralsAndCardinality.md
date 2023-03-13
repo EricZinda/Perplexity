@@ -39,6 +39,11 @@ Cumulative readings have the following two properties:
 carried.
 2 There is no number dependency between the two arguments. (No type 3 distributivity)
 
+### Implied initial quantifier
+"which 2 rocks are in 2 folders" has an implied cardinal of "a"
+
+### quantifiers and cardinals
+Quantifiers 
 ### Verbs and operators usage of cardinality
 (Link 1983, 1987, Dowty 1986, Lasersohn 1995).
 Some verbs force collective, distributive or mixed:

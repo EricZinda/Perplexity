@@ -4,7 +4,7 @@ import logging
 from perplexity.tree import find_predications_in_list_in_list, \
     split_predications_consuming_event, \
     is_index_predication, find_predication_that_introduces_variable, rewrite_tree_predications, TreePredication, \
-    predication_from_index
+    predication_from_index, has_cardinals
 from perplexity.execution import create_variable_set_cache, VariableSetRestart, create_solution_id, \
     call, execution_context, set_variable_set_cache
 from perplexity.utilities import parse_predication_name
@@ -26,12 +26,21 @@ class CardinalTree(object):
         for child in node.child_cardinals:
             self._fill_map(child, node)
 
-    def parent_group_context(self, child_variable):
+    def get_cardinal_group_cache(self, variable):
+        return self.child_map[variable].cardinal_group_cache
+
+    def set_cardinal_group_cache(self, variable, value):
+        self.child_map[variable].cardinal_group_cache = value
+
+    def get_parent_variable_set_cache(self, child_variable):
         parent_node = self.child_parent_map[child_variable]
         if parent_node is None:
             return None
         else:
             return parent_node.variable_set_cache
+
+    def get_variable_set_cache(self, variable):
+        return self.child_map[variable].variable_set_cache
 
     def set_variable_set_cache(self, variable, value):
         self.child_map[variable].variable_set_cache = value
@@ -42,6 +51,7 @@ class CardinalNode(object):
     def __init__(self, cardinal_variable):
         self.cardinal_variable = cardinal_variable
         self.variable_set_cache = None
+        self.cardinal_group_cache = None
         self.child_cardinals = []
 
 
@@ -51,21 +61,26 @@ class CardinalNode(object):
 def rewrite_mrs_tree_for_cardinals(tree):
     def convert_cardinal_in_rstr(predication, new_cardinal_predication, cardinal_modifiers, cardinal_rstr_list, index_by_ref, parent_cardinal_node):
         # Rewrite: quantifier1_q(x, [cardinal1(x, ...), cardinal_modifier()], body)
-        # To the form: [cardinal_modifier(), cardinal1_with_scope(x, cardinal_rstr, quantifier1_q_cardinal(x, thing(x), body)]
+        # To the form: quantifier1_q_cardinal(x, [cardinal_modifier(), cardinal1_with_scope(x, cardinal_rstr)], body]
 
         # Create a new cardinal node that represents this cardinal
         # and add it to the parent
         this_cardinal_node = CardinalNode(new_cardinal_predication.args[2])
         parent_cardinal_node.child_cardinals.append(this_cardinal_node)
 
-        # First convert the cardinal_modifiers since they are first in the new
-        # term, we want them to have the lowest indices
+        # first convert the quantifier since it is first to be run
+        new_quantifier = copy.deepcopy(predication)
+        new_quantifier.index = index_by_ref[0]
+        new_quantifier.name = new_quantifier.name + "_cardinal"
+        index_by_ref[0] += 1
+
+        # Then convert the cardinal_modifiers since they are first in the rstr
+        # which gets run first
         new_cardinal_modifiers = []
         for cardinal_modifier in cardinal_modifiers:
             new_cardinal_modifiers.append(rewrite_tree_predications(cardinal_modifier, convert_cardinal_quantifiers, index_by_ref, this_cardinal_node))
 
-        # The new_cardinal_predication comes next in the index list,
-        # so remember the current index to use for it
+        # The new_cardinal_predication comes next in the rstr list
         new_cardinal_predication.index = index_by_ref[0]
         index_by_ref[0] += 1
 
@@ -74,35 +89,19 @@ def rewrite_mrs_tree_for_cardinals(tree):
         for cardinal_rstr in cardinal_rstr_list:
             new_cardinal_rstr_list.append(rewrite_tree_predications(cardinal_rstr, convert_cardinal_quantifiers, index_by_ref, this_cardinal_node))
 
-        new_cardinal_predication.append_arg("RSTR", new_cardinal_rstr_list if len(new_cardinal_rstr_list) > 0 else new_cardinal_rstr_list[0])
-
-        # The base quantifier gets executed next, so remember the index it should use
-        base_quantifier_index = index_by_ref[0]
-        index_by_ref[0] += 1
-
-        # Then create the thing(x) predication
-        thing_predication = TreePredication(index_by_ref[0], "thing", [predication.args[0]], ["ARG0"])
-        index_by_ref[0] += 1
+        new_cardinal_predication.append_arg("SCOPE", new_cardinal_rstr_list if len(new_cardinal_rstr_list) > 1 else new_cardinal_rstr_list[0])
 
         # Finally convert the body
         new_body = rewrite_tree_predications(predication.arg_from_name("BODY"), convert_cardinal_quantifiers, index_by_ref, this_cardinal_node)
 
-        # Finally, create the base_quantifier, using the same names as the original
-        base_quantifier = TreePredication(base_quantifier_index, f"{predication.name}_cardinal",
-                                          [predication.args[0], thing_predication, new_body],
-                                          predication.arg_names)
+        # Set the new RSTR and BODY of the quantifier
+        new_quantifier.args[1] = new_cardinal_modifiers + [new_cardinal_predication] if len(new_cardinal_modifiers) > 0 else new_cardinal_predication
+        new_quantifier.args[2] = new_body
 
-        # Add this to the cardinal predication
-        new_cardinal_predication.append_arg("BODY", base_quantifier)
-
-        # return [cardinal_modifier(), cardinal1_with_scope(x, cardinal_rstr, quantifier1_q_cardinal(x, thing(x), body)]
-        if len(new_cardinal_modifiers) > 0:
-            return new_cardinal_modifiers + [new_cardinal_predication]
-
-        else:
-            return new_cardinal_predication
+        return new_quantifier
 
     def convert_cardinal_in_body(predication, new_cardinal_predication, cardinal_modifiers, cardinal_rstr_list, index_by_ref, parent_cardinal_node):
+        assert False
         # Rewrite: quantifier1_q(x, rstr, [cardinal1(x, ...), cardinal_modifier()])
         # To the form: quantifier1_q(x, rstr, [cardinal_modifier(), cardinal1_with_scope(x, cardinal_rstr, thing(x))]
 
@@ -167,11 +166,37 @@ def rewrite_mrs_tree_for_cardinals(tree):
             else:
                 return convert_cardinal_in_rstr(predication, new_cardinal_predication, cardinal_modifiers, cardinal_rstr_list, index_by_ref, parent_cardinal_node)
 
-    cardinal_tree = CardinalTree()
-    new_tree = rewrite_tree_predications(tree, convert_cardinal_quantifiers, [0], cardinal_tree.root_node)
-    cardinal_tree.optimize()
+    if has_cardinals(tree):
+        cardinal_tree = CardinalTree()
+        new_tree = rewrite_tree_predications(tree, convert_cardinal_quantifiers, [0], cardinal_tree.root_node)
+        cardinal_tree.optimize()
 
-    return cardinal_tree, new_tree
+        return cardinal_tree, new_tree
+
+    else:
+        return None, tree
+#
+# # add the quantifier udef_q(tree, <actual tree>, thing(x))
+# def add_implied_initial_cardinal_quantifier(tree, convert_cardinal_quantifiers, index_by_ref, parent_cardinal_node):
+#     this_cardinal_node = CardinalNode("tree")
+#     parent_cardinal_node.child_cardinals.append(this_cardinal_node)
+#
+#     quantifier = TreePredication(index_by_ref[0], "udef_q", [], [])
+#     index_by_ref[0] += 1
+#     quantifier.append_arg("ARG0", "tree", "x")
+#     quantifier.append_arg("RSTR", rewrite_tree_predications(tree, convert_cardinal_quantifiers, index_by_ref, this_cardinal_node))
+#
+#     thing_predication = TreePredication(index_by_ref[0], "thing", [], [])
+#     index_by_ref[0] += 1
+#     thing_predication.append_arg("ARG0", "tree", "x")
+#
+#     quantifier.append_arg("BODY", thing_predication)
+#
+#     return quantifier
+
+
+def cardinal_predication_list():
+    return ["_a+few_a_1", "card", "ord", "much-many", "several"]
 
 
 # Split a potential cardinal predicate into pieces:
@@ -181,7 +206,7 @@ def rewrite_mrs_tree_for_cardinals(tree):
 #       If it is not a cardinal, just return all of term
 def split_cardinal_rstr(term):
     # Get the list of all cardinal-impacting terms in term
-    cardinal_impacting_terms = ["_a+few_a_1", "card", "ord", "much-many", "several"]
+    cardinal_impacting_terms = cardinal_predication_list()
     cardinal_impacting_list = find_predications_in_list_in_list(term, cardinal_impacting_terms)
 
     if len(cardinal_impacting_list) > 0:
@@ -216,6 +241,9 @@ class CardinalGroup(object):
         self.used_collective = used_collective
         self.cardinal_group_id = cardinal_group_id
         self.cardinal_group_items = cardinal_group_items
+
+    def __repr__(self):
+        return f'{self.cardinal_group_id}: {[str(item) for item in self.cardinal_group_items]}'
 
 
 class Measurement(object):

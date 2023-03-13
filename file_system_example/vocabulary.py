@@ -6,11 +6,12 @@ from file_system_example.objects import File, Folder, Actor, Container, QuotedTe
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.cardinals import split_cardinal_rstr, cardinal_group_outgoing_solutions, \
     cardinal_variable_set_incoming_next_this_cardinal_group, yield_all_cardinal_group_solutions, \
-    unique_solution_if_index, Measurement
+    unique_solution_if_index, Measurement, create_cardinal_group_generator
 from perplexity.utilities import at_least_one_generator, is_plural
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import call, report_error, execution_context, \
-    create_solution_id, create_variable_set_cache, VariableSetRestart, get_parent_variable_set_cache
+    create_solution_id, create_variable_set_cache, VariableSetRestart, get_parent_variable_set_cache, \
+    set_variable_set_cache, get_this_variable_set_cache, get_cardinal_group_cache
 from perplexity.tree import TreePredication, is_this_last_fw_seq, find_predications_using_variable_ARG1, \
     predication_from_index, find_predication_from_introduced
 from perplexity.virtual_arguments import scopal_argument
@@ -157,12 +158,16 @@ def the_q_cardinal(state, x_variable_binding, h_rstr, h_body):
                     for body_solution in call(state, h_body):
                         body_solutions.append(body_solution)
 
-                except VariableSetRestart:
-                    # Somehow tell card_scope() to restart this group
-                    # Somehow tell the child to find the next group
-                    # and keep us in same group
-                    find_next_cardinal_group = True
-                    break
+                except VariableSetRestart as error:
+                    if error.child_cardinal_variable == x_variable_binding.variable.name:
+                        raise
+
+                    else:
+                        # Somehow tell card_scope() to restart this group
+                        # Somehow tell the child to find the next group
+                        # and keep us in same group
+                        find_next_cardinal_group = True
+                        break
 
                 if len(body_solutions) > 0:
                     variable_set_solutions.append(body_solutions)
@@ -171,7 +176,7 @@ def the_q_cardinal(state, x_variable_binding, h_rstr, h_body):
                     # One item didn't work, tell the parent to retry
                     # The current variable set and we will try another
                     # group
-                    raise VariableSetRestart
+                    raise VariableSetRestart(x_variable_binding.variable.name)
 
             # All the variable_set items worked, thus this group worked
             if cardinal_group_solution is None:
@@ -319,51 +324,123 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
     assert False
 
 
-# rewrite: default_q(x, [cardinal(x, ...), other()], body)
-# to: cardinal(x, [other()], default_q(x, thing(x), body)
-# to: cardinal(..., default_q(x, base_rstr, body)
-@Predication(vocabulary, names=["card_with_scope"])
-def card_variable_set_incoming(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
-    c_count_value = int(c_count)
-    this_predicate_index = execution_context().current_predication_index()
-    parent_variable_set_cache = get_parent_variable_set_cache(x_target_binding.variable.name)
+class NoMoreVariableSets(Exception):
+    pass
 
-    new_parent_variable_set = this_predicate_index not in parent_variable_set_cache["ChildCardinals"]
-    parent_variable_set_next_solution = "NextSolution" in parent_variable_set_cache and parent_variable_set_cache["NextSolution"] is True
-    if new_parent_variable_set or parent_variable_set_next_solution:
-        yield from cardinal_variable_set_incoming_next_this_cardinal_group(this_predicate_index, state, h_body,
-                                                                           new_parent_variable_set, parent_variable_set_next_solution, parent_variable_set_cache,
-                                                                           x_target_binding.variable.name, h_rstr, c_count_value)
+
+class NoMoreCardinalGroups(Exception):
+    pass
+
+
+# card_with_scope has a current group and set.
+# card_with_scope iterates through all the cardinal groups for a cardinal
+# It has two incoming "arguments" ("NextCardinalGroup" and "NextVariableSet")
+# That tell it to move to the next item in either.
+# If you just iterate it with those two arguments set to false, it iterates its current variable set
+# starting with the first variable set item
+#
+# The quantifier that owns this cardinal communicates with it by using the
+# variable_set_cache associated with this x_target_binding
+# "NextVariableSet" = True: to get the next current variable set
+# "NextCardinalGroup" = True: to find next cardinal group
+@Predication(vocabulary)
+def card_with_scope(state, c_count, e_introduced_binding, x_target_binding, h_scope):
+    variable_name = x_target_binding.variable.name
+    c_count_value = int(c_count)
+    parent_variable_set_cache = get_parent_variable_set_cache(variable_name)
+
+    next_cardinal_group = False
+    next_variable_set = False
+    if parent_variable_set_cache["ChildCardinals"][variable_name].get("NextCardinalGroup", False):
+        cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> NextCardinalGroup=True')
+        parent_variable_set_cache["ChildCardinals"][variable_name]["NextCardinalGroup"] = False
+        next_cardinal_group = True
+
+    elif parent_variable_set_cache["ChildCardinals"][variable_name].get("NextVariableSet", False):
+        cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> NextVariableSet=True')
+        parent_variable_set_cache["ChildCardinals"][variable_name]["NextVariableSet"] = False
+        next_variable_set = True
+
+    # Each cardinal group (and associated generator) are created for a parent *variable set*
+    # If this is the first time we've seen this parent_set, create a new cardinal group
+    new_parent_variable_set = "CardinalGroupGenerator" not in parent_variable_set_cache["ChildCardinals"][variable_name]
+    if new_parent_variable_set:
+        cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> New parent variable set: creating new generator')
+        cardinal_group_generator = create_cardinal_group_generator(state,
+                                                                   parent_variable_set_cache["ChildIsCollective"],
+                                                                   variable_name,
+                                                                   h_scope,
+                                                                   c_count_value)
+
+        parent_variable_set_cache["ChildCardinals"][variable_name]["CardinalGroupGenerator"] = cardinal_group_generator
+        next_cardinal_group = True
 
     else:
-        # Continue going through the parent_variable_set: this is the next item in the set
-        # We need to use the same this_cardinal_group that we used for the other elements of the set
-        # and try it on this_cardinal_group
-        if "CurrentCardinalGroup" not in parent_variable_set_cache["ChildCardinals"][this_predicate_index]:
-            # This means that we ran out of this cardinal groups, but something between the previous cardinal
-            # group and this one is trying alternatives.  They should just all fail
-            return
+        cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Same parent variable set: using existing generator')
+        cardinal_group_generator = parent_variable_set_cache["ChildCardinals"][variable_name]["CardinalGroupGenerator"]
 
-        this_cardinal_group = parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"]
-        cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> cached Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
+    if next_cardinal_group:
+        try:
+            this_cardinal_group = next(cardinal_group_generator)
+            parent_variable_set_cache["ChildCardinals"][variable_name]["CurrentCardinalGroup"] = this_cardinal_group
+            parent_variable_set_cache["ChildCardinals"][variable_name]["CurrentVariableSetInfoIndex"] = -1
+            next_variable_set = True
+            cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Next cardinal group selected: {this_cardinal_group}')
 
-        cardinal_group_solutions = cardinal_group_outgoing_solutions(this_predicate_index, state, x_target_binding.variable.name, h_body, this_cardinal_group)
-        if len(cardinal_group_solutions) == 0:
-            # This cardinal group didn't work. Because we've already worked through at least one item in the
-            # parent_variable_set, we can't just immediately try another this_cardinal_group
-            # Instead, ask the parent to variable_set_restart so it will start from the beginning of its variable_set
-            # and we can find a new this_cardinal_group but where we left off in the generator
-            cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> VariableSetRestart: FAIL Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
-            parent_variable_set_cache["NextSolution"] = True
-            raise VariableSetRestart
+        except StopIteration:
+            # No more groups, fail
+            cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> FAIL, No more cardinal groups')
+            raise NoMoreCardinalGroups
+
+    else:
+        this_cardinal_group = parent_variable_set_cache["ChildCardinals"][variable_name]["CurrentCardinalGroup"]
+        cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Using existing cardinal group: {this_cardinal_group}')
+
+    if next_variable_set:
+        parent_variable_set_cache["ChildCardinals"][variable_name]["CurrentVariableSetInfoIndex"] += 1
+        variable_set_info_index = parent_variable_set_cache["ChildCardinals"][variable_name]["CurrentVariableSetInfoIndex"]
+        if variable_set_info_index < len(this_cardinal_group.cardinal_group_items):
+            this_variable_set_info = this_cardinal_group.cardinal_group_items[variable_set_info_index]
+            # Because this is a new variable set, create a new cache
+            set_variable_set_cache(variable_name, create_variable_set_cache(variable_name=variable_name, child_is_collective=False, variable_set_id=this_variable_set_info[0]))
+            cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Next variable set: {this_variable_set_info[1]}')
 
         else:
-            yield from yield_all_cardinal_group_solutions(this_predicate_index, this_cardinal_group.cardinal_group_id, cardinal_group_solutions)
+            # No more variable sets, fail
+            cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> No more variable sets')
+            raise NoMoreVariableSets
+
+    else:
+        if parent_variable_set_cache["ChildCardinals"][variable_name]["RestartGroup"]:
+            parent_variable_set_cache["ChildCardinals"][variable_name]["RestartGroup"] = False
+            cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Restarting with variable set 0')
+            variable_set_info_index = 0
+
+        else:
+            variable_set_info_index = parent_variable_set_cache["ChildCardinals"][variable_name]["CurrentVariableSetInfoIndex"]
+            cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Using existing variable set index {variable_set_info_index}')
+
+        this_variable_set_info = this_cardinal_group.cardinal_group_items[variable_set_info_index]
+        cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Variable set is {this_variable_set_info[1]}')
+
+    # Now yield each item in the variable set
+    variable_set_id = this_variable_set_info[0]
+    variable_set = this_variable_set_info[1]
+
+    for variable_set_item_index in range(0, len(variable_set)):
+        cardinal_logger.debug(f'var:{variable_name}: card_with_scope -> Checking variable set item {variable_set_item_index}: {variable_set[variable_set_item_index]}')
+        yield state.set_x(x_target_binding.variable.name, variable_set[variable_set_item_index],
+                          cardinal_group_id=this_cardinal_group.cardinal_group_id,
+                          variable_set_id=variable_set_id,
+                          variable_set_item_id=variable_set_item_index,
+                          is_collective=this_cardinal_group.is_collective,
+                          used_collective=this_cardinal_group.used_collective,
+                          variable_set_items=variable_set)
 
 
 # Many quantifiers are simply markers and should use this as
 # the default behavior
-@Predication(vocabulary, names=["pronoun_q_cardinal", "proper_q_cardinal", "udef_q_cardinal", "pronoun_q", "proper_q", "udef_q"])
+@Predication(vocabulary, names=["pronoun_q", "proper_q", "udef_q"])
 def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
@@ -383,13 +460,293 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
             report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
+# The quantifier gets an incoming variable set and tries to find a single cardinal group that works for it
+# If the incoming variable set is true for all variable sets in its group, the quantifier is true for its cardinal group.
+#   BUT: Each variable set it is true for is a different "set based answer"
+# Because the parent cardinal is testing a variable set *iteratively*,
+# We need to remember the "current" cardinal group *for that set* so we can reuse it for each element of the set
+# We track this in the parent_variable_set_cache
+# If it succeeds, the parent will ask for alternative groups that work against that set as well
+@Predication(vocabulary, names=["pronoun_q_cardinal", "proper_q_cardinal", "udef_q_cardinal"])
+def default_quantifier_cardinal(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
+    h_rstr = h_body_orig if reverse else h_rstr_orig
+    h_body = h_rstr_orig if reverse else h_body_orig
+
+    # parent_variable_set_cache holds the cached information about
+    # which group and set we are currently on since a cardinal group goes with a parent *set*.
+    # The cardinal always starts iterating with the
+    # first variable set item in its current set
+    parent_variable_set_cache = get_parent_variable_set_cache(x_variable_binding.variable.name)
+    if x_variable_binding.variable.name not in parent_variable_set_cache["ChildCardinals"]:
+        parent_variable_set_cache["ChildCardinals"][x_variable_binding.variable.name] = {}
+
+    try:
+        cardinal_logger.debug(f'var:{x_variable_binding.variable.name}: card_quantifier -> Find next cardinal group that succeeds...')
+
+        # Now we have a group to to work with, see if it works for this
+        # incoming variable set item. If any item of the set fails, it will
+        # raise VariableSetRestart which our parent group will catch and
+        # retry the parent variable set from the beginning.
+        # It will also set this_variable_set_cache["NextCardinalGroup"] = True
+        # To make sure we try a new group
+        this_cardinal_group_solution = quantifier_incoming_variable_set_item_test_this_cardinal_group(parent_variable_set_cache,
+                                                                                                       state,
+                                                                                                       x_variable_binding.variable.name,
+                                                                                                       h_rstr,
+                                                                                                       h_body)
+        if this_cardinal_group_solution is None:
+            # The group did not work for this incoming variable set item,
+            # since we may have already tested some variable set items in the incoming set,
+            # ask the parent to restart so we can find a new group
+            cardinal_logger.debug(
+                f'var:{x_variable_binding.variable.name}: card_quantifier -> FAIL, This cardinal group didn\'t work for this variable set item, ask parent to retry its set')
+            raise VariableSetRestart(x_variable_binding.variable.name)
+
+        else:
+            # The group worked for this variable set item,
+            # Succeed, and the next variable set item will come through
+            cardinal_logger.debug(f'var:{x_variable_binding.variable.name}: card_quantifier -> SUCC, this cardinal group worked for this variable set item, return it')
+            yield from yield_all(this_cardinal_group_solution)
+
+    except NoMoreCardinalGroups:
+        # There are no more cardinal groups to try,
+        # so there are no more answers to the parent variable set
+        cardinal_logger.debug(f'var:{x_variable_binding.variable.name}: card_quantifier -> Ran out of cardinal groups, stop looking')
+        raise
+
+
+def yield_all(variable_set_solutions):
+    for variable_set_item_solutions in variable_set_solutions:
+        for body_solutions in variable_set_item_solutions:
+            for body_solution in body_solutions:
+                yield body_solution
+
+
+# For a single incoming variable set item from a parent variable set:
+# Get all solutions for each variable set in this_cardinal_group
+# All variable sets in the whole cardinal group must work or it fails
+def quantifier_incoming_variable_set_item_test_this_cardinal_group(parent_variable_set_cache, state, variable_name, h_rstr, h_body):
+    cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> See if cardinal group succeeds, start at first variable set')
+    parent_variable_set_cache["ChildCardinals"][variable_name]["RestartGroup"] = True
+
+    variable_set_solutions = []
+    next_variable_set = True
+    while next_variable_set:
+        cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> Check the next variable set...')
+        try:
+            variable_set_item_solutions = quantifier_variable_set_outgoing(parent_variable_set_cache, state, variable_name, h_rstr, h_body)
+            if len(variable_set_item_solutions) == 0:
+                # This variable set failed against the parent state
+                # So, we fail the group
+                cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> FAIL, Variable set failed so group fails')
+                return
+
+            else:
+                variable_set_solutions.append(variable_set_item_solutions)
+
+            parent_variable_set_cache["ChildCardinals"][variable_name]["NextVariableSet"] = True
+
+        except NoMoreVariableSets:
+            next_variable_set = False
+
+    cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> SUCC, all variable sets succeeded: successful cardinal group')
+    return variable_set_solutions
+
+
+# Only see if a single variable set from the current cardinal group is true
+def quantifier_variable_set_outgoing(parent_variable_set_cache, state, variable_name, h_rstr, h_body):
+    variable_set_item_solutions = []
+
+    restart_variable_set = True
+    while restart_variable_set:
+        restart_variable_set = False
+
+        # card_scope() will only iterate through the items in
+        # one variable set and then fail
+        try:
+            for variable_set_item_state in call(state, h_rstr):
+                body_solutions = []
+                for body_solution in call(variable_set_item_state, h_body):
+                    body_solutions.append(body_solution)
+
+                if len(body_solutions) > 0:
+                    # We had at least one solution to this variable set item
+                    # so it succeeds
+                    cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> SUCC, found {len(body_solutions)} solutions for this variable set item')
+                    variable_set_item_solutions.append(body_solutions)
+
+                else:
+                    # One variable set item didn't work, so this cardinal group fails
+                    # Because we need to test all items of the parent variable set against the new group
+                    # We need to ask the parent to retry its current variable set from the beginning
+                    # Wwe will try another group when the quantifier predication is called again
+                    cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> FAIL, no solutions worked for this variable set item')
+                    parent_variable_set_cache["ChildCardinals"][variable_name]["NextCardinalGroup"] = True
+                    return []
+
+        except VariableSetRestart as error:
+            # Don't catch restarts that our own cardinal threw
+            if error.child_cardinal_variable == variable_name:
+                raise
+
+            else:
+                cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> Child requested restart, retrying this variable set')
+                # Restart from the first variable set item
+                # which happens if we just call the rstr again
+                variable_set_item_solutions = []
+                restart_variable_set = True
+
+    if len(variable_set_item_solutions) == 0:
+        cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> FAIL, variable set failed')
+
+    else:
+        cardinal_logger.debug(f'var:{variable_name}: card_quantifier -> SUCC, variable set succeeded')
+
+    return variable_set_item_solutions
+
+
+def root_mrs_evaluator(state, tree):
+    restart_variable_set = True
+    tree_solutions = []
+    while restart_variable_set:
+        restart_variable_set = False
+
+        # Pretend we only have a single solution set of one item
+        # for the tree
+        try:
+            for tree_solution in call(state, tree):
+                tree_solutions.append(tree_solution)
+
+            if len(tree_solutions) > 0:
+                # We had at least one solution to this tree
+                # so it succeeds
+                cardinal_logger.debug(f'var:root -> SUCC, found {len(tree_solutions)} solutions for this tree')
+                break
+
+            else:
+                # no more solutions
+                cardinal_logger.debug(f'var:root -> no more solutions')
+
+        except VariableSetRestart:
+            cardinal_logger.debug(f'var:root -> card_quantifier -> Child requested restart, retrying variable set')
+            # Restart from the first variable set item
+            # which happens if we just call the rstr again
+            tree_solutions = []
+            restart_variable_set = True
+
+        except NoMoreCardinalGroups:
+            restart_variable_set = False
+
+    if len(tree_solutions) == 0:
+        cardinal_logger.debug(f'var:root -> FAIL, no solutions')
+        cardinal_logger.debug(f'var:root -> card_quantifier -> No more cardinal groups, no more solutions')
+
+    else:
+        for solution in tree_solutions:
+            yield solution
+
+
+# @Predication(vocabulary, names=["_the_q_cardinal"])
+# def the_q_cardinal(state, x_variable_binding, h_rstr, h_body):
+#     if x_variable_binding.variable.is_collective:
+#         find_next_cardinal_group = True
+#         cardinal_group_solution = None
+#         while find_next_cardinal_group:
+#             # Loop through all the elements of this variable set
+#             variable_set_solutions = []
+#             for variable_set_item in call(state, h_rstr):
+#                 # We have an element of a cardinal group
+#                 body_solutions = []
+#                 try:
+#                     for body_solution in call(state, h_body):
+#                         body_solutions.append(body_solution)
+#
+#                 except VariableSetRestart as error:
+#                     if error.child_cardinal_variable == x_variable_binding.variable.name:
+#                         raise
+#
+#                     else:
+#                         # Somehow tell card_scope() to restart this group
+#                         # Somehow tell the child to find the next group
+#                         # and keep us in same group
+#                         find_next_cardinal_group = True
+#                         break
+#
+#                 if len(body_solutions) > 0:
+#                     variable_set_solutions.append(body_solutions)
+#
+#                 else:
+#                     # One item didn't work, tell the parent to retry
+#                     # The current variable set and we will try another
+#                     # group
+#                     raise VariableSetRestart(x_variable_binding.variable.name)
+#
+#             # All the variable_set items worked, thus this group worked
+#             if cardinal_group_solution is None:
+#                 cardinal_group_solution = variable_set_solutions
+#                 # Somehow tell the child to try the next group
+#                 find_next_cardinal_group = True
+#
+#             else:
+#                 # Fail because there was more than on cardinal set that worked
+#                 # report_error()
+#                 return
+
+
+# rewrite: default_q(x, [cardinal(x, ...), other()], body)
+# to: cardinal(x, [other()], default_q(x, thing(x), body)
+# to: cardinal(..., default_q(x, base_rstr, body)
+# @Predication(vocabulary, names=[])
+# def card_variable_set_incoming(state, c_count, e_introduced_binding, x_target_binding, h_rstr, h_body):
+#     c_count_value = int(c_count)
+#     this_predicate_index = execution_context().current_predication_index()
+#     parent_variable_set_cache = get_parent_variable_set_cache(x_target_binding.variable.name)
+#
+#     new_parent_variable_set = this_predicate_index not in parent_variable_set_cache["ChildCardinals"]
+#     parent_variable_set_next_solution = "NextSolution" in parent_variable_set_cache and parent_variable_set_cache["NextSolution"] is True
+#     if new_parent_variable_set or parent_variable_set_next_solution:
+#         yield from cardinal_variable_set_incoming_next_this_cardinal_group(this_predicate_index, state, h_body,
+#                                                                            new_parent_variable_set, parent_variable_set_next_solution, parent_variable_set_cache,
+#                                                                            x_target_binding.variable.name, h_rstr, c_count_value)
+#
+#     else:
+#         # Continue going through the parent_variable_set: this is the next item in the set
+#         # We need to use the same this_cardinal_group that we used for the other elements of the set
+#         # and try it on this_cardinal_group
+#         if "CurrentCardinalGroup" not in parent_variable_set_cache["ChildCardinals"][this_predicate_index]:
+#             # This means that we ran out of this cardinal groups, but something between the previous cardinal
+#             # group and this one is trying alternatives.  They should just all fail
+#             return
+#
+#         this_cardinal_group = parent_variable_set_cache["ChildCardinals"][this_predicate_index]["CurrentCardinalGroup"]
+#         cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> cached Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
+#
+#         cardinal_group_solutions = cardinal_group_outgoing_solutions(this_predicate_index, state, x_target_binding.variable.name, h_body, this_cardinal_group)
+#         if len(cardinal_group_solutions) == 0:
+#             # This cardinal group didn't work. Because we've already worked through at least one item in the
+#             # parent_variable_set, we can't just immediately try another this_cardinal_group
+#             # Instead, ask the parent to variable_set_restart so it will start from the beginning of its variable_set
+#             # and we can find a new this_cardinal_group but where we left off in the generator
+#             cardinal_logger.debug(f'Pred:{this_predicate_index}, CrdGrpID:{this_cardinal_group.cardinal_group_id} -> VariableSetRestart: FAIL Cardinal Group -> {this_cardinal_group.cardinal_group_items}')
+#             parent_variable_set_cache["NextSolution"] = True
+#             raise VariableSetRestart
+#
+#         else:
+#             yield from yield_all_cardinal_group_solutions(this_predicate_index, this_cardinal_group.cardinal_group_id, cardinal_group_solutions)
+
+
 def rstr_reorderable(rstr):
     return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing"]
 
 
-@Predication(vocabulary, names=["which_q", "which_q_cardinal", "_which_q", "_which_q_cardinal"])
+@Predication(vocabulary, names=["which_q", "_which_q"])
 def which_q(state, x_variable_binding, h_rstr, h_body):
     yield from default_quantifier(state, x_variable_binding, h_rstr, h_body, reverse=rstr_reorderable(h_rstr))
+
+
+@Predication(vocabulary, names=["which_q_cardinal", "_which_q_cardinal"])
+def which_q_cardinal(state, x_variable_binding, h_rstr, h_body):
+    yield from default_quantifier_cardinal(state, x_variable_binding, h_rstr, h_body, reverse=rstr_reorderable(h_rstr))
 
 
 @Predication(vocabulary, names=["_very_x_deg"])

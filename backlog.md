@@ -8,13 +8,28 @@ Remaining work to be shown in the tutorial:
   - Maybe it is OK because it runs every set against every item?
 - Implement "the files are together"
 
-- does card() really need the body? or can it just appear in the rstr?
-  - We'd need a different way to manage the variable_set_cache
-    - The engine could automatically do it
-    - hasChildrenCardinals is easy to detect up front
-    - Parent VariableSetID could be determined by knowing what the parent variable is and checking variable metadata
-    - Need to properly handle VariableSetRestart in the quantifier
-    - 
+- make card_with_scope() take one scope and be in the rstr
+- Next problem "1 file is in /documents"
+  - a regular quantifer is at the top: proper_q(x11,[quoted(\\>documents,i16), fw_seq(x11,i16)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_in_p_loc(e2,x3,x11)))
+  - It succeeds on the first time through
+  - then it retries because it has an alternative
+  - The second time through the cardinal is using the same variable set and index again
+    - IT SHOULD HAVE: restarted from scratch on the same variable set 
+    - actually, it should have: iterated through the cardinal set to confirm the normal cardinal it worked with all of them?
+  - Fix: the default should be to find the next cardinal group unless specifically asked to find 
+    - Need to distinguish between retries from a parent and retries from a normal quantifier
+- (I think fixed) Here's the problem:
+  - The only cardinal finds a group that works
+  - it saves the answer, and looks for the next group, that one fails so it throws asking the parent to retry and never returns the answer
+  - we are really trying to have a cardinal return all the groups, so it shouldn't throw, it should just return all the groups
+- The basic logic is:
+  - Given a variable set see which child groups are true for all elements of it
+    - The variable item elements come through one at a time, so, one comes in
+    - We either create a group or use an existing one. We need to hold the group constant for all items in the parent set
+    - If the group succeeds, return it and that is one answer for the parent set
+      - Then the parent set tries again *with the same set* to see if there is another answer
+    - If the child group does not succeed, the parent should retry with the same set until there are no more groups
+    - Optimize: don't need to throw if it is the first element of the set
 - Implement "the"
   - The problem is that "the" needs to act like a cardinal of cardinals, every and any also do this
   - Attempt to do it simply by rewriting the cardinal to use a "thing" body to simulate the new approach

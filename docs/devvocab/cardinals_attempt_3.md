@@ -14,7 +14,8 @@ The job of `card_with_scope()` is to create cardinal groups and variable sets an
 - Same logic as before:
   - If you call with new parent, it picks a new group
   - If you call with "NextGroup", it picks a new group
-  - If you call with "retry", it restarts the group
+  - If you call with "NextGroup", it picks a new set in the group
+  - If you call with "retryset", it restarts the current set
   - If you call with same parent, it iterates through existing group till it fails
   
 Quantifiers just have to pay attention to if their arguments are collective or not, just like other verbs

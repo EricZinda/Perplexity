@@ -12,7 +12,7 @@ from perplexity.test_manager import TestManager, TestIterator, TestFolderIterato
 from perplexity.tree import find_predication, tree_from_assignments, find_predications, \
     find_predications_with_arg_types, match_predication_pattern, TreePredication
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, module_name, import_function_from_names, has_cardinals
+from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
 
 def no_error_priority(error):

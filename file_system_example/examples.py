@@ -673,7 +673,7 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("Cardinal")
 
     # Early examples need a context to set the vocabulary since
@@ -706,7 +706,7 @@ if __name__ == '__main__':
     # Example19()
     # Example20()
     # Example21()
-    # Example23()
+    Example23()
     # Example22()
     # Example24()
     # Example25()
@@ -714,4 +714,4 @@ if __name__ == '__main__':
     # Example28()
     # Example29()
     # Example32()
-    Example31()
+    # Example31()

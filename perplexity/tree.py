@@ -59,10 +59,10 @@ class TreePredication(object):
     def argument_types(self):
         return self.arg_types
 
-    def append_arg(self, name, value):
+    def append_arg(self, name, value, arg_type=None):
         self.arg_names.append(name)
         self.args.append(value)
-        self.arg_types.append(self.type_from_argument(name, value))
+        self.arg_types.append(self.type_from_argument(name, value) if arg_type is None else arg_type)
 
     def arg_from_name(self, name):
         for arg_index in range(0, len(self.args)):
@@ -517,6 +517,10 @@ def split_predications_consuming_event(term, target_event):
 
     walk_tree_predications_until(term, find)
     return found_predications, remaining_predications
+
+
+def has_cardinals(term):
+    return find_predication(term, perplexity.cardinals.cardinal_predication_list()) is not None
 
 
 pipeline_logger = logging.getLogger('Pipeline')

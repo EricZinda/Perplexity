@@ -6,7 +6,8 @@ import sys
 # Use this form to avoid circular dependency, then use perplexity.cardinals.function() when calling
 import perplexity.cardinals
 import perplexity.tree
-from perplexity.utilities import sentence_force, has_cardinals
+import file_system_example
+from perplexity.utilities import sentence_force
 
 
 # Allows code to throw an exception that should get converted
@@ -21,7 +22,8 @@ class MessageException(Exception):
 
 
 class VariableSetRestart(Exception):
-    pass
+    def __init__(self, child_cardinal_variable):
+        self.child_cardinal_variable = child_cardinal_variable
 
 
 next_solution_id = 1
@@ -59,15 +61,10 @@ class ExecutionContext(object):
             self.phrase_type = sentence_force(tree_info["Variables"])
             self.cardinal_tree = cardinal_tree
 
-            # To make cardinals work, run this as if it were a distributive cardinal group that has one variable set in it with one element
-            # Conveniently, we need to set the state to have the variable "tree" it it, so pretend like this cardinal group is setting that value
-            # since cardinal_group_outgoing_solutions will fail if there are no items in the variable set
-            root_cardinal_group = perplexity.cardinals.CardinalGroup(is_collective=False, used_collective=False, cardinal_group_id=0, cardinal_group_items=[tuple([str(0), [tree_info]])])
-            cardinal_group_solutions = perplexity.cardinals.cardinal_group_outgoing_solutions(this_predicate_index=0, state=state, variable_name="tree", h_body=tree_info["Tree"], this_cardinal_group=root_cardinal_group)
-
-            if len(cardinal_group_solutions) > 0:
-                # This cardinal group worked
-                yield from perplexity.cardinals.yield_all_cardinal_group_solutions(this_predicate_index=0, cardinal_group_id=root_cardinal_group.cardinal_group_id, cardinal_group_solutions=cardinal_group_solutions)
+            # The first cardinal needs a parent cache to tell it if it should be coll or dist
+            self.cardinal_tree.set_variable_set_cache("tree", create_variable_set_cache(variable_name="tree", child_is_collective=False, variable_set_id=0))
+            state = state.set_x("tree", tree_info)
+            yield from file_system_example.vocabulary.root_mrs_evaluator(state, tree_info["Tree"])
 
     def call(self, state, term, normalize=False):
         # See if the term is actually a list
@@ -235,23 +232,30 @@ def execution_context():
     return _execution_context.get()
 
 
+def get_cardinal_group_cache(variable):
+    execution_context().cardinal_tree.get_cardinal_group_cache(variable)
+
+
 def set_variable_set_cache(variable, value):
     execution_context().cardinal_tree.set_variable_set_cache(variable, value)
 
 
 def get_parent_variable_set_cache(child_variable):
-    return execution_context().cardinal_tree.parent_group_context(child_variable)
+    return execution_context().cardinal_tree.get_parent_variable_set_cache(child_variable)
 
 
-def create_variable_set_cache(variable_name, variable_set_id, child_is_collective):
+def get_this_variable_set_cache(child_variable):
+    return execution_context().cardinal_tree.get_variable_set_cache(child_variable)
+
+
+def create_variable_set_cache(variable_name, child_is_collective, variable_set_id):
     parent_variable_set_cache = get_parent_variable_set_cache(variable_name)
-    parent_variable_set_id = parent_variable_set_cache[
-        "VariableSetID"] if parent_variable_set_cache is not None and "VariableSetID" in parent_variable_set_cache else None
+    parent_variable_set_id = parent_variable_set_cache["VariableSetID"] if parent_variable_set_cache is not None and "VariableSetID" in parent_variable_set_cache else None
 
-    return {"ChildIsCollective": child_is_collective,
-            "ChildCardinals": {},
-            "VariableSetID": ((parent_variable_set_id + ":") if parent_variable_set_id is not None else "") + str(
-                variable_set_id)}
+    return {"VariableSetID": ((parent_variable_set_id + ":") if parent_variable_set_id is not None else "") + str(variable_set_id),
+            "ChildIsCollective": child_is_collective,
+            "ChildCardinals": {}
+            }
 
 
 # Helpers used by predications just to make the code easier to read
