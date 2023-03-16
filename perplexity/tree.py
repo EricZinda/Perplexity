@@ -269,6 +269,12 @@ def is_this_last_fw_seq(state):
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
+def is_index_predication(state):
+    this_tree = state.get_binding("tree").value
+    this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
+    return this_predication.introduced_variable() == this_tree["Index"]
+
+
 def is_last_fw_seq(tree, fw_seq_predication):
     consuming_predications = find_predications_using_variable(tree, fw_seq_predication.args[0])
     return len([predication for predication in consuming_predications if predication.name != "fw_seq"]) > 0

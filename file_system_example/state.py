@@ -51,7 +51,7 @@ class State(object):
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item):
+    def set_x(self, variable_name, item, is_collective=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -63,9 +63,14 @@ class State(object):
         # Find a common mistake early
         assert not isinstance(item, VariableBinding)
 
-        # Dictionaries hold name/value pairs.
-        # This is how you assign values to keys in dictionaries
-        new_state.variables[variable_name] = VariableBinding(VariableData(variable_name), item)
+        if variable_name in new_state.variables:
+            initial_variable_data = new_state.variables[variable_name].variable
+        else:
+            initial_variable_data = VariableData(variable_name)
+
+        variable_data = initial_variable_data.copy_with_changes(is_collective=is_collective)
+
+        new_state.variables[variable_name] = VariableBinding(variable_data, item)
 
         # "return" returns to the caller the new state with
         # that one variable set to a new value

@@ -76,6 +76,18 @@ def ShowLogging(name, level=logging.DEBUG):
     logger.addHandler(file_handler)
 
 
+def is_plural(state, variable_name):
+    variables = state.get_binding("tree").value["Variables"]
+
+    for variable in variables.items():
+        if variable[0] == variable_name:
+            if "NUM" in variable[1]:
+                if variable[1]["NUM"] == "pl":
+                    return True
+            else:
+                return False
+
+
 # Get the actual module name even if it is the
 # initial python file run, which gets the module
 # name "__main__"

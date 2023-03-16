@@ -1,7 +1,7 @@
 from file_system_example.messages import respond_to_mrs_tree, error_priority
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
-from file_system_example.vocabulary import folder_n_of, vocabulary
+from file_system_example.vocabulary2 import vocabulary
 from perplexity.execution import ExecutionContext, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 
@@ -27,18 +27,6 @@ def call_predication(*args, **kwargs):
 
 ##########################
 
-# List all folders
-def Example1():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt"),
-                   File(name="file2.txt")])
-
-    for item in folder_n_of(state, "x1", None):
-        print(item.variables)
-
-    print("\nThe original `state` object is not changed:")
-    print(state.variables)
 
 
 # List folders using call_predication
@@ -516,7 +504,24 @@ def Example24_reset():
 
 
 def Example24():
-    user_interface = UserInterface(Example23_reset, vocabulary, respond_to_mrs_tree, error_priority)
+    user_interface = UserInterface(Example24_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
+def Example25_reset():
+    return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
+                                           (True, "/documents/file1.txt", {"size": 1000}),
+                                           (False, "/Desktop", {"size": 10000000}),
+                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
+                                           (True, "/Desktop/blue", {"size": 10000000})],
+                                          "/Desktop"))
+
+
+def Example25():
+    user_interface = UserInterface(Example25_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()
@@ -524,10 +529,10 @@ def Example24():
 
 
 if __name__ == '__main__':
-    ShowLogging("Execution")
-    ShowLogging("Generation")
-    ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -560,4 +565,5 @@ if __name__ == '__main__':
     # Example20()
     # Example21()
     # Example22()
-    Example24()
+    # Example24()
+    Example25()

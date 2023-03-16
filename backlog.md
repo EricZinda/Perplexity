@@ -1,5 +1,11 @@
 Remaining work to be shown in the tutorial:
 
+- Plurals work
+  - The way yield_set_or_ind works is wrong it should pay attention to the variable *mode* not whether the variable in the MRS is plural
+  - Bug: Which files are large? can return a single file
+    - rewrite plural quantifiers into quantifier_q(x, CARD, RSTR, BODY)
+    - give uncardinalized plural rstrs a "plural(x)" cardinalizer 
+- 
 - copy x to y
   - needs copy with a scopal arg
     - We need to support turning a tree into something abstract that can be manipulated and understood
