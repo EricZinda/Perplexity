@@ -3,6 +3,7 @@ import logging
 import os
 import platform
 import sys
+import perplexity.cardinals
 from delphin import ace
 from delphin.codecs import simplemrs
 
@@ -101,8 +102,11 @@ class UserInterface(object):
                 self.evaluate_best_response()
 
             else:
-                for tree in self.trees_from_mrs(mrs):
+                for original_tree in self.trees_from_mrs(mrs):
+                    # tree = perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree)
+                    tree = original_tree
                     tree_record = {"Tree": tree,
+                                   "OriginalTree": original_tree,
                                    "Solutions": [],
                                    "Error": None,
                                    "ResponseMessage": None}

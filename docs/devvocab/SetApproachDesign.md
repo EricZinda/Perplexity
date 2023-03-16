@@ -10,7 +10,24 @@ Examples:
     _this_q_dem(x11,RSTR,BODY)            │
                            └─ udef_q(x3,RSTR,BODY)
                                                └─ _in_p_loc(e2,x3,x11)
-    
+
+    only two files are large    
+                            ┌──── _file_n_of(x3,i11)
+                            │ ┌── _only_x_deg(e5,e6)
+                ┌────── and(0,1,2)
+                │               └ card(2,e6,x3)
+    udef_q(x3,RSTR,BODY)
+                     └─ _large_a_1(e2,x3)
+
+    only a few files are large
+                            ┌──── _file_n_of(x3,i10)
+                            │ ┌── _only_x_deg(e8,e9)
+                ┌────── and(0,1,2)
+                │               └ _a+few_a_1(e9,x3)
+    udef_q(x3,RSTR,BODY)
+                     └─ _large_a_1(e2,x3)
+
+
     files are in this folder:
                      ┌────── _folder_n_of(x9,i14)
     _this_q_dem(x9,RSTR,BODY)            ┌────── _file_n_of(x3,i8)
@@ -34,6 +51,43 @@ Examples:
                            └─ udef_q(x3,RSTR,BODY)    ┌── _together_p(e9,e2)
                                                └─ and(0,1)
                                                         └ _in_p_loc(e2,x3,x10)
+each/all/every
+3 boys each carried for piaons (forces boys to dist)
+) A group of three boys carried a group of four pianos. (forces both collective)
+all 3 boys carried all 3
+The cards below 7 and the cards from 7 up were separated.
+The boys surrounded the building
+Mary  and  Sue are  room-mates.  
+The  girls hated  each  other. 
+The girls told the boys two stories each
+The boys are tall.
+Two students danced. (could be either)
+The boys are building a raft.
+    The boys are building a raft each. (operator fixex)
+    Every boy is building a raft. (quantifier fixes)
+(Lasersohn 1995): The students closed their notebooks, left the room, and gathered in the hall after class. (The same DP can have both collective a distributive readings in
+the same sentence.)
+John and bill are a good team.
+The committee is made up of John, Mary, Bill and Susan.
+(Gillon 1987, 1990) Gilbert, Sullivan and Mozart wrote operas.
+    - fact: Mozart wrote operas, and Gilbert and Sullivan wrote operas.
+(Gillon 1987, 1990) Rodgers, Hammerstein and Hart wrote musicals.
+    - fact: Rodgers and Hammerstein wrote musicals together, and Hammerstein and Hart wrote musicals together, but they did not write musicals as a trio, nor individually.
+Schwarzschild (2011).  Force distributive: be round/square, have brown/blue eyes, be tall/big, and be intelligent
+Those boxes are heavy. (could be both)
+Three boys are holding each balloon.
+Two boys (each) pushed a car (together).
+Two boys (each) built a tower (together).
+Two girls pushed a car (together).
+Two girls (each) drew a circle (together).
+
+(see Landman, 2000, Tunstall, 1998)
+    Jake photographed every student in the class, but not separately.
+    Jake photographed each student in the class, but not separately
+
+No professors are in class
+    Are there professors in class?
+
 
 _file_n_of(x3)
 - because x3 is plural, file_n_of fills x3 with all files, which can be a generator or any type of iterator
@@ -69,12 +123,43 @@ Potential designs:
         set the variable to coll or dist before calling rstr
 
     cardinals:
-        In this model: a plural quantifier gets 3 things: quantifier_q(x, CARD, RSTR, BODY)
-            Things like udef_q() run like card(x, udef_q(....
-            Things like "the" use the cardinal after the rstr
-            Things like "a" as in "a few dogs" or "only a few dogs" use the cardinal on the body to check how many
-            examples:
-                children ate pizzas: could be 2 children each ate 2 pizzas, or 2 children ate 2 pizzas
+        (go this way) option 1:
+            In a perfect world card() would stay as card(c, x) which means that it *must* always work on a set
+            which means that the rstr would stay a set and only the quantifier changes it to something else
+            The problem is that things in the rstr like together_p, separately(), 
+    
+            The rule could be: 
+                in a rstr: if the binding metadata mode is None, it should do the default which, for plural, is to treat a variable as a set
+                something in the rstr can set the binding mode one way or the other as well
+                when the quantifier finally gets it, it is allowed to convert to dist OR coll if the mode is None, otherwise it can only do one of them
+            So: card(2, x) does *not* change the mode, it leave it at None, BUT: it only works on a set, and it produces groups of 2
+                it can get modified by "separate", "together", "at least", etc
+
+                Issue: "only 2 files are large" is a challenge since it needs to fail for the first 2 through if there is a second 2
+                    - workaround: could set some bit that the quantifier uses since it works fine if we do card(udef_q(
+    
+                                            ┌──── _file_n_of(x3,i11)
+                                            │ ┌── _only_x_deg(e5,e6)
+                                ┌────── and(0,1,2)
+                                │               └ card(2,e6,x3)
+                    udef_q(x3,RSTR,BODY)
+                                     └─ _large_a_1(e2,x3)
+                Issue: "files are large" should fail if there is only 1 file.  Similar problem to the above. Means "only > 1 x" 
+                solution: just add a property to the binding that only the quantifier looks for. For plural, it can be inferred. Call this a "gate"
+
+        option 2:
+            rewrite the term.
+
+            cardinals get turned into the form card(c, x, body)
+            In this model: a plural quantifier gets 3 things: quantifier_q(x, CARD, RSTR, BODY)
+                Things like udef_q() run like card(x, udef_q(....
+                    "two files are large" -> 
+                        Option 1: udef_q([card(2, x), file(x)], large(x)): would work, but would iterate through all sets of 2 files
+                        Option 2: udef_q(card(2, x), file(x), large(x)): allows udef to run the cardinal *after* but only works if it is really:  card(2, x, udef_q(file(x), large(x)))
+                Things like "the" use the cardinal after the rstr
+                Things like "a" as in "a few dogs" or "only a few dogs" use the cardinal on the body to check how many
+                examples:
+                    children ate pizzas: could be 2 children each ate 2 pizzas, or 2 children ate 2 pizzas
 
     bare plurals:
         Option: A fake cardinal is put in the rstr of quantifiers if there isn't one ("rocks are in this folder")

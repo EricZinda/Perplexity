@@ -1,30 +1,11 @@
 from file_system_example.objects import File
+from perplexity.cardinals import no_gate, gate_func_from_binding, yield_coll_or_dist
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication
 from perplexity.utilities import is_plural
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 vocabulary = Vocabulary()
-
-
-def yield_coll_or_dist(state, binding, value_set):
-    if len(value_set) == 0:
-        return
-
-    if binding.variable.is_collective:
-        yield state.set_x(binding.variable.name, value_set)
-
-    else:
-        for value in value_set:
-            yield state.set_x(binding.variable.name, value)
-
-
-def yield_all(set):
-    if isinstance(set, list):
-        for item in set:
-            yield from yield_all(item)
-    else:
-        yield set
 
 
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q"])
@@ -39,14 +20,24 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
     # Return a different error if there is no rstr that works
     # in any mode
     rstr_found = False
+    gate_function = None
     for mode in modes:
+        gate_info = {}
         state = state.set_x(x_variable_binding.variable.name, x_variable_binding.value,
                             is_collective=mode)
 
         for solution in call(state, h_rstr):
+            if gate_function is None:
+                gate_function = gate_func_from_binding(state, state.get_binding(x_variable_binding.variable.name))
+
             rstr_found = True
+            body_solutions = []
             for body_solution in call(solution, h_body):
-                yield body_solution
+                body_solutions.append(body_solution)
+
+            yield from gate_function(state.get_binding(x_variable_binding.variable.name).value, body_solutions, gate_info)
+
+        yield from (gate_function if gate_function is not None else no_gate)(None, None, gate_info, True)
 
     if not rstr_found:
         # Ignore whatever error the RSTR produced, this is a better one

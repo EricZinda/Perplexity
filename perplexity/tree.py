@@ -1,3 +1,4 @@
+import copy
 import logging
 from collections import defaultdict
 from perplexity.execution import execution_context
@@ -306,6 +307,21 @@ def find_predications_using_variable_ARG1(term, variable):
     return predication_list
 
 
+# Return all of the predications in the list that have a name in the list
+def find_predications_in_list_in_list(term, predication_name_list):
+    if isinstance(term, list):
+        term_list = term
+    else:
+        term_list = [term]
+
+    found_predications = []
+    for predication in term_list:
+        if predication.name in predication_name_list:
+            found_predications.append(predication)
+
+    return found_predications
+
+
 def find_predication_from_introduced(term, introduced_variable):
     def match_introduced_variable(predication):
         if predication.introduced_variable() == introduced_variable:
@@ -393,6 +409,61 @@ def predication_from_index(tree_info, index):
     walk_tree_predications_until(tree_info["Tree"], stop_at_index)
 
     return index_predication
+
+
+# Walk every predication in the tree and allow predication_rewrite_func() to rewrite it
+# Then recurse over the rewritten predication
+def rewrite_tree_predications(term, predication_rewrite_func, index_by_ref):
+    if isinstance(term, list):
+        # This is a conjunction, recurse through the
+        # predications in it
+        new_term = []
+        for predication in term:
+            new_term.append(rewrite_tree_predications(predication, predication_rewrite_func, index_by_ref))
+
+        return new_term
+
+    else:
+        # This is a predication, rewrite it
+        new_term = predication_rewrite_func(term, index_by_ref)
+        if new_term is None:
+            # no rewrite, copy and keep the term, but use the new index_by_ref
+            predication_copy = copy.deepcopy(term)
+            predication_copy.index = index_by_ref[0]
+            index_by_ref[0] += 1
+
+            # See if any of its terms are scopal
+            # i.e. are predications themselves
+            for scopal_index in predication_copy.scopal_arg_indices():
+                predication_copy.args[scopal_index] = rewrite_tree_predications(predication_copy.args[scopal_index], predication_rewrite_func, index_by_ref)
+
+            return predication_copy
+
+        else:
+            # New term has been rewritten the rewriter needs to have handled all
+            # of its args recursively, so we are done
+            return new_term
+
+
+# Return all of the predications that take the introduced variable
+# from primary_predication, and consume it
+def split_predications_consuming_event(term, target_event):
+    def find(predication):
+        introduced_index = predication.introduced_variable_index()
+        for arg_index in range(0, len(predication.arg_types)):
+            if predication.arg_types[arg_index] not in ["c", "h"]:
+                if predication.args[arg_index] == target_event:
+                    if arg_index != introduced_index:
+                        found_predications.append(predication)
+                    return
+
+        remaining_predications.append(predication)
+
+    found_predications = []
+    remaining_predications = []
+
+    walk_tree_predications_until(term, find)
+    return found_predications, remaining_predications
 
 
 pipeline_logger = logging.getLogger('Pipeline')
