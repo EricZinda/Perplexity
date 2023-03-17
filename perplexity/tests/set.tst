@@ -49,7 +49,7 @@
         },
         {
             "Command": "which files are large",
-            "Expected": "File(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=10000000)\n",
+            "Expected": "[File(name=/Desktop/the yearly budget.txt, size=10000000)]\n[File(name=/Desktop/blue, size=10000000)]\n",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "321bb542-a3bc-4cb1-b4f4-065aad48dce7"

@@ -1,10 +1,13 @@
 Remaining work to be shown in the tutorial:
 
 - Plurals work
-  - Bug: Which files are large? can return a single file
-    - rewrite plural quantifiers into quantifier_q(x, CARD, RSTR, BODY)
-    - give uncardinalized plural rstrs a "plural(x)" cardinalizer 
-- 
+  - implement a_q()
+    - if it is singular what should it do?
+      - if it runs in collective mode "a file is large" will send the whole set
+      - 
+  - implement card()
+  - The quantifier forces the rstr first
+    - 
 - copy x to y
   - needs copy with a scopal arg
     - We need to support turning a tree into something abstract that can be manipulated and understood

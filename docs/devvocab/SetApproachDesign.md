@@ -51,8 +51,9 @@ Examples:
                            └─ udef_q(x3,RSTR,BODY)    ┌── _together_p(e9,e2)
                                                └─ and(0,1)
                                                         └ _in_p_loc(e2,x3,x10)
+1 file is in this folder
 each/all/every
-3 boys each carried for piaons (forces boys to dist)
+3 boys each carried for pianos (forces boys to dist)
 ) A group of three boys carried a group of four pianos. (forces both collective)
 all 3 boys carried all 3
 The cards below 7 and the cards from 7 up were separated.
@@ -103,7 +104,39 @@ Questions:
         things that introduce x variables like rock_n(x): has to create them from scratch (which is why thing(x) exists)
         things that dont: which can assume they are set to something
 
-Potential designs:
+Need another design:
+    variable bindings are like the "introduced event" of the variable. 
+        Quantifiers pay attention to what the rstr predications set this to and change behavior as appropriately
+        It is also *way* more efficient for things like "2 files are large"?
+            2 files leaves the whole set of files and runs them through the body
+            if at the end there are "exactly 2 files" then it succeeded
+        2 children ate 2 pizzas 
+        This model totally makes sense now...
+            It seems like it will make cumulative mode brain dead simple too...?
+    variables are always sets, could be a set of 1
+    There is a difference between predications "filtering" x and "checking" x. Can't get my head around it
+        large_a operates in two modes:
+            as a verb, it will only work on sets of 1
+            as an adjective, it filters the set down
+    file_n will always set x to the set of files
+    card() needs to always restrict to a set of N
+    quantifier has to turn them into coll or dist groups and ensure that the entire collective or dist set works
+        the quantifier x binding gets a mode set to say which mode it is in
+        How to handle any coll/dist restrictions (like together, separately):
+            together() sets a property on the variable binding to say which mode it has to be in. 
+            The quantifier pays attention and does the right thing
+        How to handle the cardinality restriction?
+            The rstr sets x to a set AND (potentially) adds a criteria to how many elements of x must be true in the solution. 
+                For card(2) it means "exactly 2"
+                For at most card(2) it means "<= 2"
+                If there is no cardinal in a plural it means "> 1"
+    2 children ate 2 pizzas
+        run the set of children through as a set
+            then see how many of the set remain
+        run the set of children through as a set of N
+            then see how many of that group remain
+
+Failed design:
     New General Model
         A predication restricts its variables and yields new state with those variables set to the new set for which they are true
             When predications fill a variable (like "file_n(x)") they fill it as a set or individual based on whether the variable metadata is_collective or not
@@ -123,43 +156,28 @@ Potential designs:
         set the variable to coll or dist before calling rstr
 
     cardinals:
-        (go this way) option 1:
-            In a perfect world card() would stay as card(c, x) which means that it *must* always work on a set
-            which means that the rstr would stay a set and only the quantifier changes it to something else
-            The problem is that things in the rstr like together_p, separately(), 
-    
-            The rule could be: 
-                in a rstr: if the binding metadata mode is None, it should do the default which, for plural, is to treat a variable as a set
-                something in the rstr can set the binding mode one way or the other as well
-                when the quantifier finally gets it, it is allowed to convert to dist OR coll if the mode is None, otherwise it can only do one of them
-            So: card(2, x) does *not* change the mode, it leave it at None, BUT: it only works on a set, and it produces groups of 2
-                it can get modified by "separate", "together", "at least", etc
+        In a perfect world card() would stay as card(c, x) which means that it *must* always work on a set
+        which means that the rstr would stay a set and only the quantifier changes it to something else
+        The problem is that things in the rstr like together_p, separately(), 
 
-                Issue: "only 2 files are large" is a challenge since it needs to fail for the first 2 through if there is a second 2
-                    - workaround: could set some bit that the quantifier uses since it works fine if we do card(udef_q(
-    
-                                            ┌──── _file_n_of(x3,i11)
-                                            │ ┌── _only_x_deg(e5,e6)
-                                ┌────── and(0,1,2)
-                                │               └ card(2,e6,x3)
-                    udef_q(x3,RSTR,BODY)
-                                     └─ _large_a_1(e2,x3)
-                Issue: "files are large" should fail if there is only 1 file.  Similar problem to the above. Means "only > 1 x" 
-                solution: just add a property to the binding that only the quantifier looks for. For plural, it can be inferred. Call this a "gate"
+        The rule could be: 
+            in a rstr: if the binding metadata mode is None, it should do the default which, for plural, is to treat a variable as a set
+            something in the rstr can set the binding mode one way or the other as well
+            when the quantifier finally gets it, it is allowed to convert to dist OR coll if the mode is None, otherwise it can only do one of them
+        So: card(2, x) does *not* change the mode, it leave it at None, BUT: it only works on a set, and it produces groups of 2
+            it can get modified by "separate", "together", "at least", etc
 
-        option 2:
-            rewrite the term.
+            Issue: "only 2 files are large" is a challenge since it needs to fail for the first 2 through if there is a second 2
+                - workaround: could set some bit that the quantifier uses since it works fine if we do card(udef_q(
 
-            cardinals get turned into the form card(c, x, body)
-            In this model: a plural quantifier gets 3 things: quantifier_q(x, CARD, RSTR, BODY)
-                Things like udef_q() run like card(x, udef_q(....
-                    "two files are large" -> 
-                        Option 1: udef_q([card(2, x), file(x)], large(x)): would work, but would iterate through all sets of 2 files
-                        Option 2: udef_q(card(2, x), file(x), large(x)): allows udef to run the cardinal *after* but only works if it is really:  card(2, x, udef_q(file(x), large(x)))
-                Things like "the" use the cardinal after the rstr
-                Things like "a" as in "a few dogs" or "only a few dogs" use the cardinal on the body to check how many
-                examples:
-                    children ate pizzas: could be 2 children each ate 2 pizzas, or 2 children ate 2 pizzas
+                                        ┌──── _file_n_of(x3,i11)
+                                        │ ┌── _only_x_deg(e5,e6)
+                            ┌────── and(0,1,2)
+                            │               └ card(2,e6,x3)
+                udef_q(x3,RSTR,BODY)
+                                 └─ _large_a_1(e2,x3)
+            Issue: "files are large" should fail if there is only 1 file.  Similar problem to the above. Means "only > 1 x" 
+            solution: just add a property to the binding that only the quantifier looks for. For plural, it can be inferred. Call this a "gate"
 
     bare plurals:
         Option: A fake cardinal is put in the rstr of quantifiers if there isn't one ("rocks are in this folder")
@@ -187,3 +205,20 @@ Future optimization:
                     ┌────── _rock_n_1(x3)
         udef_q(x3,RSTR,BODY)
                          └─ _together_p(e2,x3)
+
+History:
+    Alternative option for cardinal handling:
+
+        option 2:
+            rewrite the term.
+
+            cardinals get turned into the form card(c, x, body)
+            In this model: a plural quantifier gets 3 things: quantifier_q(x, CARD, RSTR, BODY)
+                Things like udef_q() run like card(x, udef_q(....
+                    "two files are large" -> 
+                        Option 1: udef_q([card(2, x), file(x)], large(x)): would work, but would iterate through all sets of 2 files
+                        Option 2: udef_q(card(2, x), file(x), large(x)): allows udef to run the cardinal *after* but only works if it is really:  card(2, x, udef_q(file(x), large(x)))
+                Things like "the" use the cardinal after the rstr
+                Things like "a" as in "a few dogs" or "only a few dogs" use the cardinal on the body to check how many
+                examples:
+                    children ate pizzas: could be 2 children each ate 2 pizzas, or 2 children ate 2 pizzas

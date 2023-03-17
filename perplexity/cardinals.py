@@ -1,23 +1,5 @@
-import copy
-
 from perplexity.execution import report_error
-from perplexity.tree import rewrite_tree_predications, TreePredication, find_predications_in_list_in_list, \
-    split_predications_consuming_event
-
-# Rewrite the cardinal to a form that takes scope
-from perplexity.utilities import parse_predication_name, is_plural
-
-
-def yield_coll_or_dist(state, binding, value_set):
-    if len(value_set) == 0:
-        return
-
-    if binding.variable.is_collective:
-        yield state.set_x(binding.variable.name, value_set)
-
-    else:
-        for value in value_set:
-            yield state.set_x(binding.variable.name, value)
+from perplexity.utilities import is_plural
 
 
 def yield_all(set_or_answer):
@@ -30,8 +12,8 @@ def yield_all(set_or_answer):
 
 # For phrases like "files are large" or "only 2 files are large" we need a gate around
 # the quantifier that only returns answers if they meet some criteria
-# Note that the thing being counted is the actual rstr values, so [a, b] would count as
-# 2
+# Note that the thing being counted is the actual rstr values,
+# so rstr_x = [a, b] would count as 2
 def gate_func_from_binding(state, binding):
     if is_plural(state, binding.variable.name):
         return plural_gate

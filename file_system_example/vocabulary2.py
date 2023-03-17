@@ -1,9 +1,11 @@
+import itertools
 from file_system_example.objects import File
-from perplexity.cardinals import no_gate, gate_func_from_binding, yield_coll_or_dist
+from perplexity.cardinals import no_gate, gate_func_from_binding, yield_all
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication
 from perplexity.utilities import is_plural
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
+
 
 vocabulary = Vocabulary()
 
@@ -13,36 +15,62 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
 
-    # If x is plural, start with the collective reading,
-    # Otherwise just do dist
     modes = [True, False] if is_plural(state, x_variable_binding.variable.name) else [False]
 
-    # Return a different error if there is no rstr that works
-    # in any mode
-    rstr_found = False
+    # Gate function is the same for every value of the rstr
     gate_function = None
-    for mode in modes:
-        gate_info = {}
-        state = state.set_x(x_variable_binding.variable.name, x_variable_binding.value,
-                            is_collective=mode)
 
+    # Need to do coll and dist versions
+    for is_collective in modes:
+        gate_info = {}
+
+        # Run the rstr
         for solution in call(state, h_rstr):
+            # If the rstr forced x to an incompatible mode, fail this mode
+            rstr_binding = solution.get_binding(x_variable_binding.variable.name)
+            if rstr_binding.variable.is_collective is not None and rstr_binding.variable.is_collective != is_collective:
+                report_error(["wrongMode"])
+                break
+
+            # The gate function must be retrieved after the rstr is run
             if gate_function is None:
                 gate_function = gate_func_from_binding(state, state.get_binding(x_variable_binding.variable.name))
 
-            rstr_found = True
-            body_solutions = []
-            for body_solution in call(solution, h_body):
-                body_solutions.append(body_solution)
+            if is_collective:
+                body_solutions = []
+                for body_solution in call(solution, h_body):
+                    body_solutions.append(body_solution)
 
-            yield from gate_function(state.get_binding(x_variable_binding.variable.name).value, body_solutions, gate_info)
+                if len(body_solutions) > 0:
+                    yield from gate_function(rstr_binding.value, body_solutions, gate_info)
+
+            else:
+                # Distributive mode requires that we run each element in the set
+                # through the system individually
+                for dist_item in rstr_binding.value:
+                    body_solutions = []
+                    dist_state = solution.set_x(x_variable_binding.variable.name, [dist_item])
+                    for body_solution in call(dist_state, h_body):
+                        body_solutions.append(body_solution)
+
+                    if len(body_solutions) > 0:
+                        yield from gate_function([dist_item], body_solutions, gate_info)
 
         yield from (gate_function if gate_function is not None else no_gate)(None, None, gate_info, True)
 
-    if not rstr_found:
-        # Ignore whatever error the RSTR produced, this is a better one
-        if not reverse:
-            report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+
+@Predication(vocabulary)
+def card(state, c_count, e_introduced_binding, x_target_binding):
+    # if not x_target_binding.variable.is_collective:
+    #     report_error(["notColl", x_target_binding.variable.name])
+    #     return
+    # x is set to a set of values, restrict them to just files
+    # iterator = x_target_binding.value if isinstance(x_target_binding.value, list) else [x_target_binding.value]
+
+    # Yield all combinations of c_count items
+    c_count_value = int(c_count)
+    for cardinal_group in itertools.combinations(x_target_binding.value, c_count_value):
+        yield state.set_x(x_target_binding.variable.name, cardinal_group)
 
 
 # Values come in, the job of the predication is to restrict them
@@ -58,28 +86,30 @@ def file_n_of(state, x_binding, i_binding):
 
     else:
         # x is set to a set of values, restrict them to just files
-        iterator = x_binding.value if isinstance(x_binding.value, list) else [x_binding.value]
+        iterator = x_binding.value
 
     values = []
     for value in iterator:
         if isinstance(value, File):
             values.append(value)
 
-    yield from yield_coll_or_dist(state, x_binding, values)
+    if len(values) > 0:
+        yield state.set_x(x_binding.variable.name, values)
 
 
-# large_a_1 should only work distributively since it doesn't support adding everything up
-# to see if the set is large
+# large_a operates in two modes:
+#     as a verb, it will only work on sets of 1
+#     as an adjective, it filters the set down
 @Predication(vocabulary, names=["_large_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
 def large_a_1(state, e_introduced_binding, x_target_binding):
-    if x_target_binding.variable.is_collective:
+    if is_index_predication(state) and len(x_target_binding.value) > 1:
         report_error(["notDist", x_target_binding.variable.name])
         return
 
     if x_target_binding.value is None:
         iterator = state.all_individuals()
     else:
-        iterator = x_target_binding.value if isinstance(x_target_binding.value, list) else [x_target_binding.value]
+        iterator = x_target_binding.value
 
     # See if any modifiers have changed *how* large
     # we should be
@@ -98,7 +128,8 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
         else:
             report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
 
-    yield from yield_coll_or_dist(state, x_target_binding, values)
+    if len(values) > 0:
+        yield state.set_x(x_target_binding.variable.name, values)
 
 
 # This is a helper function that any predication that can

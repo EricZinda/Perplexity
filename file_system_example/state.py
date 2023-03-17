@@ -70,7 +70,9 @@ class State(object):
 
         variable_data = initial_variable_data.copy_with_changes(is_collective=is_collective)
 
-        new_state.variables[variable_name] = VariableBinding(variable_data, item)
+        # Need to copy the item so that if the list is changed it won't affect
+        # the state which is supposed to be immutable
+        new_state.variables[variable_name] = VariableBinding(variable_data, copy.deepcopy(item))
 
         # "return" returns to the caller the new state with
         # that one variable set to a new value
