@@ -1,6 +1,6 @@
 import itertools
 from file_system_example.objects import File
-from perplexity.cardinals import no_gate, gate_func_from_binding, yield_all
+from perplexity.cardinals import cardinal_from_binding
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication
 from perplexity.utilities import is_plural
@@ -18,12 +18,10 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
     modes = [True, False] if is_plural(state, x_variable_binding.variable.name) else [False]
 
     # Gate function is the same for every value of the rstr
-    gate_function = None
+    cardinal = None
 
     # Need to do coll and dist versions
     for is_collective in modes:
-        gate_info = {}
-
         # Run the rstr
         for solution in call(state, h_rstr):
             # If the rstr forced x to an incompatible mode, fail this mode
@@ -33,8 +31,8 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
                 break
 
             # The gate function must be retrieved after the rstr is run
-            if gate_function is None:
-                gate_function = gate_func_from_binding(state, state.get_binding(x_variable_binding.variable.name))
+            if cardinal is None:
+                cardinal = cardinal_from_binding(state, state.get_binding(x_variable_binding.variable.name))
 
             if is_collective:
                 body_solutions = []
@@ -42,7 +40,7 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
                     body_solutions.append(body_solution)
 
                 if len(body_solutions) > 0:
-                    yield from gate_function(rstr_binding.value, body_solutions, gate_info)
+                    yield from cardinal.yield_if_criteria_met(rstr_binding.value, body_solutions)
 
             else:
                 # Distributive mode requires that we run each element in the set
@@ -54,9 +52,10 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
                         body_solutions.append(body_solution)
 
                     if len(body_solutions) > 0:
-                        yield from gate_function([dist_item], body_solutions, gate_info)
+                        yield from cardinal.yield_if_criteria_met([dist_item], body_solutions)
 
-        yield from (gate_function if gate_function is not None else no_gate)(None, None, gate_info, True)
+        if cardinal is not None:
+            yield from cardinal.yield_finish()
 
 
 @Predication(vocabulary)
