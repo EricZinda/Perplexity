@@ -1,5 +1,6 @@
 from perplexity.execution import report_error
 from perplexity.utilities import is_plural
+from importlib import import_module
 
 
 class StopQuantifierException(Exception):
@@ -20,7 +21,14 @@ def yield_all(set_or_answer):
 # Note that the thing being counted is the actual rstr values,
 # so rstr_x = [a, b] would count as 2
 def cardinal_from_binding(state, binding):
-    if is_plural(state, binding.variable.name):
+    if binding.variable.cardinal is not None:
+        module_class_name = binding.variable.cardinal[0]
+        module_path, class_name = module_class_name.rsplit('.', 1)
+        module = import_module(module_path)
+        class_constructor = getattr(module, class_name)
+        return class_constructor(*binding.variable.cardinal[1])
+
+    elif is_plural(state, binding.variable.name):
         return PluralCardinal()
 
     else:

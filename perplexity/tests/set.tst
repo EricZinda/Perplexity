@@ -81,6 +81,51 @@
             "Tree": "_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d2e97c97-96a8-4ad6-a4fd-9625577b2881"
+        },
+        {
+            "Command": "/new examples.Example25_reset",
+            "Expected": "State reset using examples.Example25_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "51c1f3fc-2555-407d-bb5b-29778adb2b22"
+        },
+        {
+            "Command": "1 file is large",
+            "Expected": [
+                1,
+                [
+                    "too many"
+                ]
+            ],
+            "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "3ffe599b-e9fb-40d7-a32b-56fa35710574"
+        },
+        {
+            "Command": "2 files are large",
+            "Expected": "Yes, that is true.",
+            "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "e606990b-d627-4895-806d-0db06a40826b"
+        },
+        {
+            "Command": "which 2 files are large",
+            "Expected": "[File(name=/Desktop/the yearly budget.txt, size=10000000)]\n[File(name=/Desktop/blue, size=10000000)]\n",
+            "Tree": "_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "19a53d3f-931d-40c4-85d2-389d76719410"
+        },
+        {
+            "Command": "3 files are large",
+            "Expected": [
+                0,
+                [
+                    "notEnough"
+                ]
+            ],
+            "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "907f6e7b-4924-46d7-8555-263f9bf041ff"
         }
     ]
 }

@@ -1,6 +1,6 @@
 import itertools
 from file_system_example.objects import File
-from perplexity.cardinals import cardinal_from_binding, StopQuantifierException
+from perplexity.cardinals import cardinal_from_binding, StopQuantifierException, yield_all
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication
 from perplexity.utilities import is_plural
@@ -60,7 +60,7 @@ def quantifier_implementation(state, x_variable_binding, h_rstr, h_body, behavio
 
             # The gate function must be retrieved after the rstr is run
             if cardinal is None:
-                cardinal = cardinal_from_binding(state, state.get_binding(x_variable_binding.variable.name))
+                cardinal = cardinal_from_binding(solution, solution.get_binding(x_variable_binding.variable.name))
 
             try:
                 if is_collective:
@@ -82,16 +82,51 @@ def quantifier_implementation(state, x_variable_binding, h_rstr, h_body, behavio
 
 @Predication(vocabulary)
 def card(state, c_count, e_introduced_binding, x_target_binding):
-    # if not x_target_binding.variable.is_collective:
-    #     report_error(["notColl", x_target_binding.variable.name])
-    #     return
-    # x is set to a set of values, restrict them to just files
-    # iterator = x_target_binding.value if isinstance(x_target_binding.value, list) else [x_target_binding.value]
+    yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
+                      cardinal=["vocabulary2.CardCardinal", [int(c_count)]])
 
-    # Yield all combinations of c_count items
-    c_count_value = int(c_count)
-    for cardinal_group in itertools.combinations(x_target_binding.value, c_count_value):
-        yield state.set_x(x_target_binding.variable.name, cardinal_group)
+
+# card(2) means "exactly 2"
+# This means that it doesn't actually return answers
+# until yield_finish() is called because it needs to ensure that
+# not more than 2 were successful
+class CardCardinal(object):
+    def __init__(self, count):
+        self.count = count
+        self.yielded_rstr_count = 0
+        self.running_count = 0
+        self.cached_answers = []
+
+    def criteria_met(self):
+        return self.running_count == self.count
+
+    def yield_if_criteria_met(self, rstr_value, answers):
+        # Force to be a generator
+        if False:
+            yield None
+
+        if len(answers) > 0:
+            self.cached_answers += answers
+            if isinstance(rstr_value, list):
+                self.running_count += len(rstr_value)
+            else:
+                self.running_count += 1
+
+            if self.running_count > self.count:
+                raise StopQuantifierException
+
+    def yield_finish(self):
+        if self.criteria_met():
+            yield from yield_all(self.cached_answers)
+
+        else:
+            if self.running_count > self.count:
+                report_error(["too many"], force=True)
+
+            else:
+                # If we got over 1, we already yielded them
+                # So there is nothing to finish
+                report_error(["notEnough"], force=True)
 
 
 # Values come in, the job of the predication is to restrict them

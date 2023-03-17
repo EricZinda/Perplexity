@@ -51,7 +51,7 @@ class State(object):
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, is_collective=None):
+    def set_x(self, variable_name, item, is_collective=None, cardinal=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -68,7 +68,8 @@ class State(object):
         else:
             initial_variable_data = VariableData(variable_name)
 
-        variable_data = initial_variable_data.copy_with_changes(is_collective=is_collective)
+        variable_data = initial_variable_data.copy_with_changes(is_collective=is_collective,
+                                                                cardinal=cardinal)
 
         # Need to copy the item so that if the list is changed it won't affect
         # the state which is supposed to be immutable
