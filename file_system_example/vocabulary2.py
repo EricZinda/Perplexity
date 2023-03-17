@@ -1,6 +1,6 @@
 import itertools
 from file_system_example.objects import File
-from perplexity.cardinals import cardinal_from_binding
+from perplexity.cardinals import cardinal_from_binding, StopQuantifierException
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication
 from perplexity.utilities import is_plural
@@ -10,11 +10,39 @@ from perplexity.vocabulary import Vocabulary, Predication, EventOption
 vocabulary = Vocabulary()
 
 
+@Predication(vocabulary, names=["_a_q"])
+def a_q(state, x_variable_binding, h_rstr, h_body):
+    def a_behavior(state, rstr_value, cardinal, h_body):
+        body_solutions = []
+        for body_solution in call(state, h_body):
+            body_solutions.append(body_solution)
+
+        if len(body_solutions) > 0:
+            yield from cardinal.yield_if_criteria_met(rstr_value, body_solutions)
+            if cardinal.criteria_met():
+                # We have returned "a" (arbitrary) item, stop
+                raise StopQuantifierException
+
+    yield from quantifier_implementation(state, x_variable_binding, h_rstr, h_body, a_behavior)
+
+
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q"])
 def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
 
+    def default_quantifier_behavior(state, rstr_value, cardinal, h_body):
+        body_solutions = []
+        for body_solution in call(state, h_body):
+            body_solutions.append(body_solution)
+
+        if len(body_solutions) > 0:
+            yield from cardinal.yield_if_criteria_met(rstr_value, body_solutions)
+
+    yield from quantifier_implementation(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
+
+
+def quantifier_implementation(state, x_variable_binding, h_rstr, h_body, behavior_function):
     modes = [True, False] if is_plural(state, x_variable_binding.variable.name) else [False]
 
     # Gate function is the same for every value of the rstr
@@ -34,25 +62,19 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
             if cardinal is None:
                 cardinal = cardinal_from_binding(state, state.get_binding(x_variable_binding.variable.name))
 
-            if is_collective:
-                body_solutions = []
-                for body_solution in call(solution, h_body):
-                    body_solutions.append(body_solution)
+            try:
+                if is_collective:
+                    yield from behavior_function(solution, rstr_binding.value, cardinal, h_body)
 
-                if len(body_solutions) > 0:
-                    yield from cardinal.yield_if_criteria_met(rstr_binding.value, body_solutions)
+                else:
+                    # Distributive mode requires that we run each element in the set
+                    # through the system individually
+                    for dist_item in rstr_binding.value:
+                        dist_state = solution.set_x(x_variable_binding.variable.name, [dist_item])
+                        yield from behavior_function(dist_state, [dist_item], cardinal, h_body)
 
-            else:
-                # Distributive mode requires that we run each element in the set
-                # through the system individually
-                for dist_item in rstr_binding.value:
-                    body_solutions = []
-                    dist_state = solution.set_x(x_variable_binding.variable.name, [dist_item])
-                    for body_solution in call(dist_state, h_body):
-                        body_solutions.append(body_solution)
-
-                    if len(body_solutions) > 0:
-                        yield from cardinal.yield_if_criteria_met([dist_item], body_solutions)
+            except StopQuantifierException:
+                break
 
         if cardinal is not None:
             yield from cardinal.yield_finish()

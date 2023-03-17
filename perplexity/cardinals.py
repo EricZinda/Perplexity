@@ -2,6 +2,11 @@ from perplexity.execution import report_error
 from perplexity.utilities import is_plural
 
 
+class StopQuantifierException(Exception):
+    def __init__(self):
+        pass
+
+
 def yield_all(set_or_answer):
     if isinstance(set_or_answer, list):
         for item in set_or_answer:
@@ -27,6 +32,9 @@ class NoCardinal(object):
         self.yielded_rstr_count = 0
         self.running_count = 0
 
+    def criteria_met(self):
+        return self.yielded_rstr_count > 0
+
     def yield_if_criteria_met(self, rstr_value, answers):
         if isinstance(rstr_value, list):
             self.running_count += len(rstr_value)
@@ -50,6 +58,9 @@ class PluralCardinal(object):
         self.running_count = 0
         self.cached_answers = []
 
+    def criteria_met(self):
+        return self.running_count > 1
+
     def yield_if_criteria_met(self, rstr_value, answers):
         if len(answers) > 0:
             self.cached_answers += answers
@@ -58,7 +69,7 @@ class PluralCardinal(object):
             else:
                 self.running_count += 1
 
-            if self.running_count > 1:
+            if self.criteria_met():
                 # We've achieved "more than one", start returning answers
                 yield from yield_all(self.cached_answers)
                 self.yielded_rstr_count += len(rstr_value)
@@ -69,7 +80,7 @@ class PluralCardinal(object):
         if False:
             yield None
 
-        if self.running_count <= 1:
+        if not self.criteria_met():
             # If we got over 1, we already yielded them
             # So there is nothing to finish
             report_error(["notPlural"], force=True)

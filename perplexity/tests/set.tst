@@ -53,6 +53,34 @@
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "321bb542-a3bc-4cb1-b4f4-065aad48dce7"
+        },
+        {
+            "Command": "/new examples.Example25_reset",
+            "Expected": "State reset using examples.Example25_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "586671ad-5fd6-45e5-8236-64d521eb3faa"
+        },
+        {
+            "Command": "a file is large",
+            "Expected": "Yes, that is true.",
+            "Tree": "_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "e6ffb672-551a-48af-98de-34ff9b0c1a04"
+        },
+        {
+            "Command": "/new examples.Example20_reset",
+            "Expected": "State reset using examples.Example20_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "5ab6cda0-d667-498e-84fe-6fbd59be14ab"
+        },
+        {
+            "Command": "a file is large",
+            "Expected": "a file is not large",
+            "Tree": "_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "d2e97c97-96a8-4ad6-a4fd-9625577b2881"
         }
     ]
 }
