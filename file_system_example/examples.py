@@ -534,6 +534,7 @@ def Example26_reset():
                                            (False, "/Desktop", {"size": 10000000}),
                                            (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
                                            (True, "/Desktop/bigfile.txt", {"size": 20000000}),
+                                           (True, "/Desktop/bigfile2.txt", {"size": 20000000}),
                                            (True, "/Desktop/blue", {"size": 10000000})],
                                           "/Desktop"))
 
@@ -584,5 +585,5 @@ if __name__ == '__main__':
     # Example21()
     # Example22()
     # Example24()
-    # Example25()
-    Example26()
+    Example25()
+    # Example26()

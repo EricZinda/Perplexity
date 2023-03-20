@@ -1,3 +1,5 @@
+import sys
+
 from file_system_example.objects import Measurement
 from perplexity.execution import report_error
 from perplexity.utilities import is_plural
@@ -39,7 +41,11 @@ def cardinal_from_binding(state, h_body, binding):
     if binding.variable.cardinal is not None:
         module_class_name = binding.variable.cardinal[0]
         module_path, class_name = module_class_name.rsplit('.', 1)
-        module = import_module(module_path)
+        if module_path != "cardinals":
+            module = import_module(module_path)
+        else:
+            module = sys.modules[__name__]
+
         class_constructor = getattr(module, class_name)
         return class_constructor(*([binding.variable.name, h_body] + binding.variable.cardinal[1]))
 
@@ -110,4 +116,47 @@ class PluralCardinal(object):
             report_error(["notPlural"], force=True)
 
 
+# card(2) means "exactly 2"
+# This means that it doesn't actually return answers
+# until yield_finish() is called because it needs to ensure that
+# not more than 2 were successful
+class CardCardinal(object):
+    def __init__(self, variable, h_body, count):
+        self.variable = variable
+        self.h_body = h_body
+        self.count = count
+        self.yielded_rstr_count = 0
+        self.running_count = 0
+        self.cached_answers = []
 
+    def criteria_met(self):
+        return self.running_count == self.count
+
+    def yield_if_criteria_met(self, rstr_value, answers):
+        # Force to be a generator
+        if False:
+            yield None
+
+        if len(answers) > 0:
+            self.cached_answers += answers
+            self.running_count += count_rstr(rstr_value)
+
+            if self.running_count > self.count:
+                raise StopQuantifierException
+
+    def yield_finish(self):
+        if self.criteria_met():
+            yield from yield_all(self.cached_answers)
+
+        else:
+            if self.running_count == 0:
+                # No rstrs worked, so don't return an error
+                return
+
+            elif self.running_count > self.count:
+                report_error(["too many"], force=True)
+
+            else:
+                # If we got over 1, we already yielded them
+                # So there is nothing to finish
+                report_error(["notEnough"], force=True)

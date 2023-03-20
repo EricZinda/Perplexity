@@ -39,6 +39,14 @@ class TreePredication(object):
         self.args.append(value)
         self.arg_types.append(self.type_from_argument(name, value))
 
+    def x_args(self):
+        x_args = []
+        for arg_index in range(0, len(self.args)):
+            if self.arg_types[arg_index] == "x":
+                x_args.append(self.args[arg_index])
+
+        return x_args
+
     def __repr__(self):
         return f"{self.name}({','.join([str(arg) for arg in self.args])})"
 

@@ -105,6 +105,9 @@ Questions:
         things that dont: which can assume they are set to something
 
 Need another design:
+    Deeper issues:
+    - "which files are 20 mb": Singular is an OK answer in this situation, but returns nothing if there is only one file
+
     variables are always sets, could be a set of 1
     predications always yield all the solutions
     file_n will always set x to the set of files
@@ -123,6 +126,7 @@ Need another design:
             It seems like it will make cumulative mode brain dead simple too...?
     card() needs to always restrict to a set of N
     quantifier has to turn them into coll or dist groups. The cardinal is what ensures that the entire collective or dist set works
+        the quantifier quantifies *over* the sets managed by the cardinality.  Thus "only a few x" means "1 set of a few"
         the quantifier x binding gets a mode set to say which mode it is in
         How to handle any coll/dist restrictions (like together, separately):
             together() sets a property on the variable binding to say which mode it has to be in. 

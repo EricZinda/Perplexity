@@ -35,6 +35,8 @@ class UserInterface(object):
         self.test_manager = TestManager()
         self.user_input = None
         self.last_system_command = None
+        self.run_mrs_index = None
+        self.run_tree_index = None
 
     # response_function gets passed three arguments:
     #   response_function(mrs, solutions, error)
@@ -85,7 +87,13 @@ class UserInterface(object):
 
         # Loop through each MRS and each tree that can be
         # generated from it...
+        mrs_index = -1
         for mrs in self.mrss_from_phrase(self.user_input):
+            mrs_index += 1
+            tree_index = -1
+            if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
+                continue
+
             # print(simplemrs.encode(mrs, indent=True))
             mrs_record = {"Mrs": mrs,
                           "UnknownWords": self.unknown_words(mrs),
@@ -103,6 +111,10 @@ class UserInterface(object):
 
             else:
                 for tree in self.trees_from_mrs(mrs):
+                    tree_index += 1
+                    if self.run_tree_index is not None and self.run_tree_index != tree_index:
+                        continue
+
                     tree_record = {"Tree": tree,
                                    "Solutions": [],
                                    "Error": None,
@@ -453,6 +465,18 @@ def command_run_test(ui, arg):
     return True
 
 
+def command_run_parse(ui, arg):
+    parts = arg.split(",")
+    if len(parts) == 0 or len(parts) > 2:
+        print("Please supply a parseindex, treeindex or just a parseindex")
+
+    ui.run_mrs_index = int(parts[0])
+    if len(parts) == 2:
+        ui.run_tree_index = int(parts[1])
+
+    return True
+
+
 def command_run_folder(ui, arg):
     if len(arg) == 0:
         print(f"Please supply a folder name.")
@@ -575,6 +599,9 @@ command_data = {
     "show": {"Function": command_show, "Category": "Parsing",
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
              "Example": "/show or /show all"},
+    "runparse": {"Function": command_run_parse, "Category": "Parsing",
+                  "Description": "Only runs the identified parse index and optional tree index",
+                  "Example": "/runparse 1 OR /runparse 1, 0"},
     "debugtree": {"Function": command_debug_tree, "Category": "Parsing",
                   "Description": "Shows tracing information about the tree. give a predication query after to only show trees that match it. Use '_' to mean 'anything' for an argument or the predication name",
                   "Example": "/debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)"},
