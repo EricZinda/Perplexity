@@ -121,6 +121,11 @@ def card_normal(state, c_count, e_introduced_binding, x_target_binding):
                           cardinal=["cardinals.CardCardinal", [int(c_count)]])
 
 
+@Predication(vocabulary, names=["_a+few_a_1"])
+def a_few_a_1(state, e_introduced_binding, x_target_binding):
+    yield state.set_x(x_target_binding.variable.name, x_target_binding.value, cardinal=["cardinals.BetweenCardinal", [3, 5]])
+
+
 # Values come in, the job of the predication is to restrict them
 # to something that is true for the predication and yield that state
 # Whether they yield the values one by one (distributive) or as a set

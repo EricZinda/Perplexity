@@ -4,16 +4,14 @@ Remaining work to be shown in the tutorial:
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
 - Plurals work
     - "which files are 20 mb": Singular file is an OK answer in this situation but it fails because the system is expecting "files"
-  - implement "together"
-    - (fixed) Together, which files are 20 mb: returns "too many"
-    - Together allows single files
-
-  - implement "in"
-    - "which files are in this folder"
-            ┌────── _folder_n_of(x9,i14)
+    - implement "few"
+      - see if "a file is a few megabytes" works
+    - implement "in"
+      - "which files are in this folder"
+              ┌────── _folder_n_of(x9,i14)
 _the_q(x9,RSTR,BODY)              ┌────── _file_n_of(x3,i8)
-                 └─ _which_q(x3,RSTR,BODY)
-                                       └─ _in_p_loc(e2,x3,x9)
+                   └─ _which_q(x3,RSTR,BODY)
+                                         └─ _in_p_loc(e2,x3,x9)
 
 - copy x to y
   - needs copy with a scopal arg

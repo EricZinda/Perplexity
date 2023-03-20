@@ -142,6 +142,8 @@ class CardCardinal(object):
             self.running_count += count_rstr(rstr_value)
 
             if self.running_count > self.count:
+                # Stop at this point because "exactly 2" will fail
+                # So don't keep returning answers
                 raise StopQuantifierException
 
     def yield_finish(self):
@@ -154,6 +156,53 @@ class CardCardinal(object):
                 return
 
             elif self.running_count > self.count:
+                report_error(["too many"], force=True)
+
+            else:
+                # If we got over 1, we already yielded them
+                # So there is nothing to finish
+                report_error(["notEnough"], force=True)
+
+
+# For implementing things like "a few" where there is a number
+# between 3 and, say 5
+class BetweenCardinal(object):
+    def __init__(self, variable, h_body, min_count, max_count):
+        self.variable = variable
+        self.h_body = h_body
+        self.min_count = min_count
+        self.max_count = max_count
+        self.yielded_rstr_count = 0
+        self.running_count = 0
+        self.cached_answers = []
+
+    def criteria_met(self):
+        return self.min_count <= self.running_count <= self.max_count
+
+    def yield_if_criteria_met(self, rstr_value, answers):
+        # Force to be a generator
+        if False:
+            yield None
+
+        if len(answers) > 0:
+            self.cached_answers += answers
+            self.running_count += count_rstr(rstr_value)
+
+            if self.running_count > self.max_count:
+                # Stop at this point because "exactly 2" will fail
+                # So don't keep returning answers
+                raise StopQuantifierException
+
+    def yield_finish(self):
+        if self.criteria_met():
+            yield from yield_all(self.cached_answers)
+
+        else:
+            if self.running_count == 0:
+                # No rstrs worked, so don't return an error
+                return
+
+            elif self.running_count > self.max_count:
                 report_error(["too many"], force=True)
 
             else:

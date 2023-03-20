@@ -176,6 +176,58 @@
             "Tree": "udef_q(x10,[_megabyte_n_1(x10,u17), card(20,e16,x10)],_which_q(x3,[_together_p(e9,x3), _file_n_of(x3,i8)],loc_nonsp(e2,x3,x10)))",
             "Enabled": true,
             "ID": "3333a366-a02a-4b4f-b874-671ef6b26b87"
+        },
+        {
+            "Command": "/new examples.Example25_reset",
+            "Expected": "State reset using examples.Example25_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "2cb61ffe-acb3-47ad-8cf5-1d3936c188ad"
+        },
+        {
+            "Command": "a few files are large",
+            "Expected": [
+                0,
+                [
+                    "notEnough"
+                ]
+            ],
+            "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "c4d1b82e-8be5-4b58-810d-97de24716ac5"
+        },
+        {
+            "Command": "/new examples.Example26_reset",
+            "Expected": "State reset using examples.Example26_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "2de5cbb2-de44-4857-bb0a-c1ece19cd4fc"
+        },
+        {
+            "Command": "a few files are large",
+            "Expected": "Yes, that is true.",
+            "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "7bb89f92-03e9-400d-99b7-5d9d3fec52e9"
+        },
+        {
+            "Command": "/new examples.Example27_reset",
+            "Expected": "State reset using examples.Example27_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "b3665d6c-d098-4bce-86c3-031a9c04d67a"
+        },
+        {
+            "Command": "a few files are large",
+            "Expected": [
+                3,
+                [
+                    "too many"
+                ]
+            ],
+            "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "2d32bbb8-f4b2-4069-a19d-0f67e0a4262e"
         }
     ]
 }
