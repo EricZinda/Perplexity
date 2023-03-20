@@ -26,6 +26,36 @@ class Container(UniqueObject):
             yield None
 
 
+class Megabyte(object):
+    def __init__(self):
+        self.units = "mb"
+
+    def __repr__(self):
+        return self.units
+
+    def __eq__(self, other):
+        return hasattr(other, "measurement_type") and self.measurement_type() == other.measurement_type()
+
+    def measurement_type(self):
+        return self.units
+
+
+class Measurement(object):
+    def __init__(self, measurement_type, count):
+        self.measurement_type = measurement_type
+        self.count = count
+
+    def __eq__(self, other):
+        if isinstance(other, Measurement):
+            return self.measurement_type == other.measurement_type and self.count == other.count
+
+        else:
+            return False
+
+    def __repr__(self):
+        return "Measure:" + str(self.count) + " " + str(self.measurement_type)
+
+
 # Derive from UniqueObject and call
 # its __init__ method from this __init__
 # method so we get the unique ID created
@@ -110,6 +140,9 @@ class File(Container):
     # file specifier
     def has_path(self):
         return os.path.dirname(self.name) != ""
+
+    def size_measurement(self):
+        return Measurement(Megabyte(), self.size/1000000)
 
 
 # Represents something that can "do" things, like a computer

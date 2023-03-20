@@ -105,6 +105,14 @@ Questions:
         things that dont: which can assume they are set to something
 
 Need another design:
+    variables are always sets, could be a set of 1
+    predications always yield all the solutions
+    file_n will always set x to the set of files
+    There is a difference between predications "filtering" x and "checking" x. Can't get my head around it
+        large_a operates in two modes:
+            as a verb, it will only work on sets of 1
+            as an adjective, it filters the set down
+
     variable bindings are like the "introduced event" of the variable. 
         Quantifiers pay attention to what the rstr predications set this to and change behavior as appropriately
         It is also *way* more efficient for things like "2 files are large"?
@@ -113,14 +121,8 @@ Need another design:
         2 children ate 2 pizzas 
         This model totally makes sense now...
             It seems like it will make cumulative mode brain dead simple too...?
-    variables are always sets, could be a set of 1
-    There is a difference between predications "filtering" x and "checking" x. Can't get my head around it
-        large_a operates in two modes:
-            as a verb, it will only work on sets of 1
-            as an adjective, it filters the set down
-    file_n will always set x to the set of files
     card() needs to always restrict to a set of N
-    quantifier has to turn them into coll or dist groups and ensure that the entire collective or dist set works
+    quantifier has to turn them into coll or dist groups. The cardinal is what ensures that the entire collective or dist set works
         the quantifier x binding gets a mode set to say which mode it is in
         How to handle any coll/dist restrictions (like together, separately):
             together() sets a property on the variable binding to say which mode it has to be in. 

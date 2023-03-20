@@ -438,7 +438,7 @@ def Example20_reset():
 
 
 def Example20():
-    user_interface = UserInterface(Example20_reset, vocabulary, respond_to_mrs_tree)
+    user_interface = UserInterface(Example20_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()
@@ -454,7 +454,7 @@ def Example21_reset():
 
 
 def Example21():
-    user_interface = UserInterface(Example21_reset, vocabulary, respond_to_mrs_tree)
+    user_interface = UserInterface(Example21_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()
@@ -470,7 +470,7 @@ def Example22_reset():
 
 
 def Example22():
-    user_interface = UserInterface(Example22_reset, vocabulary, respond_to_mrs_tree)
+    user_interface = UserInterface(Example22_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()
@@ -528,11 +528,29 @@ def Example25():
         print()
 
 
+def Example26_reset():
+    return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
+                                           (True, "/documents/file1.txt", {"size": 1000}),
+                                           (False, "/Desktop", {"size": 10000000}),
+                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
+                                           (True, "/Desktop/bigfile.txt", {"size": 20000000}),
+                                           (True, "/Desktop/blue", {"size": 10000000})],
+                                          "/Desktop"))
+
+
+def Example26():
+    user_interface = UserInterface(Example26_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -566,4 +584,5 @@ if __name__ == '__main__':
     # Example21()
     # Example22()
     # Example24()
-    Example25()
+    # Example25()
+    Example26()

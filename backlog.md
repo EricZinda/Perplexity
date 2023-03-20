@@ -1,8 +1,16 @@
 Remaining work to be shown in the tutorial:
 
+- This new model will *change* the rstr in a child predication to filter it down. 
+  - Basically the state at any given node of the tree represents the restricted values of the variables at that point
 - Plurals work
-  - implement card()
-  - 
+  - implement "in"
+    - "which files are in this folder"
+            ┌────── _folder_n_of(x9,i14)
+_the_q(x9,RSTR,BODY)              ┌────── _file_n_of(x3,i8)
+                 └─ _which_q(x3,RSTR,BODY)
+                                       └─ _in_p_loc(e2,x3,x9)
+  - implement "together"
+
 - copy x to y
   - needs copy with a scopal arg
     - We need to support turning a tree into something abstract that can be manipulated and understood

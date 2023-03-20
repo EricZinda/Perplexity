@@ -80,9 +80,14 @@ def generate_message(tree_info, error_term):
     error_arguments = error_term[1]
     error_constant = error_arguments[0]
 
-    if error_constant == "xIsNotY":
+    if error_constant == "xIsNotYValue":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         arg2 = error_arguments[2]
+        return f"{arg1} is not {arg2}"
+
+    elif error_constant == "xIsNotY":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"{arg1} is not {arg2}"
 
     elif error_constant == "adjectiveDoesntApply":
@@ -166,20 +171,22 @@ def generate_message(tree_info, error_term):
         if len(answer_items) > 0:
             message = ""
 
-            if answer_predication.name == "loc_nonsp":
-                # if "loc_nonsp" is the "verb", it means the phrase was
-                # "Where is YYY?", so only return the "best" answer, which
-                # is the most specific one
-                best_answer = ""
-                for answer_item in answer_items:
-                    current_answer = str(answer_item.name)
-                    if len(current_answer) > len(best_answer):
-                        best_answer = current_answer
-                message = f"in {best_answer}"
-
-            else:
-                for answer_item in answer_items:
-                    message += str(answer_item) + "\n"
+            for answer_item in answer_items:
+                message += str(answer_item) + "\n"
+            # if answer_predication.name == "loc_nonsp":
+            #     # if "loc_nonsp" is the "verb", it means the phrase was
+            #     # "Where is YYY?", so only return the "best" answer, which
+            #     # is the most specific one
+            #     best_answer = ""
+            #     for answer_item in answer_items:
+            #         current_answer = str(answer_item.name)
+            #         if len(current_answer) > len(best_answer):
+            #             best_answer = current_answer
+            #     message = f"in {best_answer}"
+            #
+            # else:
+            #     for answer_item in answer_items:
+            #         message += str(answer_item) + "\n"
 
             return message
         else:
@@ -193,6 +200,7 @@ def error_priority(error_string):
     global error_priority_dict
     if error_string is None:
         return 0
+
     else:
         error_constant = error_string[1][0]
         priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
@@ -209,9 +217,11 @@ error_priority_dict = {
     # Unknown words error should only be shown if
     # there are no other errors, AND the number
     # of unknown words is subtracted from it so
-    # lower constants should be defined below this
+    # lower constants should be defined below this:
     # "unknownWordsMin": 800,
     "unknownWords": 900,
+    # Slightly better than not knowing the word at all
+    "formNotUnderstood": 901,
     "defaultPriority": 1000,
 
     # This is just used when sorting to indicate no error, i.e. success.

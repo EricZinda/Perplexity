@@ -1,5 +1,5 @@
 import itertools
-from file_system_example.objects import File
+from file_system_example.objects import File, Folder, Megabyte, Measurement
 from perplexity.cardinals import cardinal_from_binding, StopQuantifierException, yield_all
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication
@@ -13,15 +13,12 @@ vocabulary = Vocabulary()
 @Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     def a_behavior(state, rstr_value, cardinal, h_body):
-        body_solutions = []
         for body_solution in call(state, h_body):
-            body_solutions.append(body_solution)
+            yield from cardinal.yield_if_criteria_met(body_solution.get_binding(x_variable_binding.variable.name).value, [body_solution])
 
-        if len(body_solutions) > 0:
-            yield from cardinal.yield_if_criteria_met(rstr_value, body_solutions)
-            if cardinal.criteria_met():
-                # We have returned "a" (arbitrary) item, stop
-                raise StopQuantifierException
+        if cardinal.criteria_met():
+            # We have returned "a" (arbitrary) item, stop
+            raise StopQuantifierException
 
     yield from quantifier_implementation(state, x_variable_binding, h_rstr, h_body, a_behavior)
 
@@ -32,12 +29,8 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
     h_body = h_rstr_orig if reverse else h_body_orig
 
     def default_quantifier_behavior(state, rstr_value, cardinal, h_body):
-        body_solutions = []
         for body_solution in call(state, h_body):
-            body_solutions.append(body_solution)
-
-        if len(body_solutions) > 0:
-            yield from cardinal.yield_if_criteria_met(rstr_value, body_solutions)
+            yield from cardinal.yield_if_criteria_met(body_solution.get_binding(x_variable_binding.variable.name).value, [body_solution])
 
     yield from quantifier_implementation(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
 
@@ -45,13 +38,18 @@ def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reve
 def quantifier_implementation(state, x_variable_binding, h_rstr, h_body, behavior_function):
     modes = [True, False] if is_plural(state, x_variable_binding.variable.name) else [False]
 
-    # Gate function is the same for every value of the rstr
-    cardinal = None
-
     # Need to do coll and dist versions
+    rstr_found = False
     for is_collective in modes:
+        # Gate function is the same for every value of the rstr
+        cardinal = None
+
         # Run the rstr
         for solution in call(state, h_rstr):
+            rstr_found = True
+            if is_collective and len(solution.get_binding(x_variable_binding.variable.name).value) <= 1:
+                break
+
             # If the rstr forced x to an incompatible mode, fail this mode
             rstr_binding = solution.get_binding(x_variable_binding.variable.name)
             if rstr_binding.variable.is_collective is not None and rstr_binding.variable.is_collective != is_collective:
@@ -60,7 +58,7 @@ def quantifier_implementation(state, x_variable_binding, h_rstr, h_body, behavio
 
             # The gate function must be retrieved after the rstr is run
             if cardinal is None:
-                cardinal = cardinal_from_binding(solution, solution.get_binding(x_variable_binding.variable.name))
+                cardinal = cardinal_from_binding(solution, h_body, solution.get_binding(x_variable_binding.variable.name))
 
             try:
                 if is_collective:
@@ -79,11 +77,31 @@ def quantifier_implementation(state, x_variable_binding, h_rstr, h_body, behavio
         if cardinal is not None:
             yield from cardinal.yield_finish()
 
+    if not rstr_found:
+        report_error(["doesntExist", ["AtPredicationIndex", h_body, x_variable_binding.variable.name]], force=True)
 
-@Predication(vocabulary)
-def card(state, c_count, e_introduced_binding, x_target_binding):
-    yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
-                      cardinal=["vocabulary2.CardCardinal", [int(c_count)]])
+
+def variable_is_megabyte(binding):
+    return binding.value is not None and len(binding.value) == 1 and isinstance(binding.value[0], Megabyte)
+
+
+def variable_is_measure(binding):
+    return binding.value is not None and len(binding.value) == 1 and isinstance(binding.value[0], Measurement)
+
+
+# 10 mb should not generate a set of 10 1mbs
+# special case this.  Turns a megabyte into a *measure* which is a set of megabytes
+@Predication(vocabulary, names=["card"])
+def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
+    if variable_is_megabyte(x_target_binding):
+        yield state.set_x(x_target_binding.variable.name, [Measurement(x_target_binding.value[0], int(c_count))])
+
+
+@Predication(vocabulary, names=["card"])
+def card_normal(state, c_count, e_introduced_binding, x_target_binding):
+    if not variable_is_megabyte(x_target_binding):
+        yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
+                          cardinal=["vocabulary2.CardCardinal", [int(c_count)]])
 
 
 # card(2) means "exactly 2"
@@ -91,7 +109,9 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
 # until yield_finish() is called because it needs to ensure that
 # not more than 2 were successful
 class CardCardinal(object):
-    def __init__(self, count):
+    def __init__(self, variable, h_body, count):
+        self.variable = variable
+        self.h_body = h_body
         self.count = count
         self.yielded_rstr_count = 0
         self.running_count = 0
@@ -107,7 +127,7 @@ class CardCardinal(object):
 
         if len(answers) > 0:
             self.cached_answers += answers
-            if isinstance(rstr_value, list):
+            if isinstance(rstr_value, (list, tuple)):
                 self.running_count += len(rstr_value)
             else:
                 self.running_count += 1
@@ -120,7 +140,11 @@ class CardCardinal(object):
             yield from yield_all(self.cached_answers)
 
         else:
-            if self.running_count > self.count:
+            if self.running_count == 0:
+                # No rstrs worked, so don't return an error
+                return
+
+            elif self.running_count > self.count:
                 report_error(["too many"], force=True)
 
             else:
@@ -148,6 +172,59 @@ def file_n_of(state, x_binding, i_binding):
     for value in iterator:
         if isinstance(value, File):
             values.append(value)
+
+    if len(values) > 0:
+        yield state.set_x(x_binding.variable.name, values)
+
+
+@Predication(vocabulary, names=["_folder_n_of"])
+def folder_n_of(state, x_binding, i_binding):
+    if x_binding.value is None:
+        iterator = state.all_individuals()
+
+    else:
+        iterator = x_binding.value
+
+    values = []
+    for value in iterator:
+        if isinstance(value, Folder):
+            values.append(value)
+
+    if len(values) > 0:
+        yield state.set_x(x_binding.variable.name, values)
+
+
+@Predication(vocabulary, names=["_megabyte_n_1"])
+def megabyte_n_1(state, x_binding, u_binding):
+    if x_binding.value is None:
+        iterator = [Megabyte()]
+
+    else:
+        iterator = x_binding.value
+
+    values = []
+    for value in iterator:
+        if isinstance(value, Megabyte):
+            values.append(value)
+
+    if len(values) > 0:
+        yield state.set_x(x_binding.variable.name, values)
+
+    else:
+        report_error(["xIsNotYValue", x_binding.value, "megabyte"])
+
+
+@Predication(vocabulary)
+def thing(state, x_binding):
+    if x_binding.value is None:
+        iterator = state.all_individuals()
+
+    else:
+        iterator = x_binding.value
+
+    values = []
+    for value in iterator:
+        values.append(value)
 
     if len(values) > 0:
         yield state.set_x(x_binding.variable.name, values)
@@ -202,19 +279,45 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 
 
-# # x_actor_binding, x_location_binding will always be set to *something* but it could
-# # be something broad like thing(x) or place(x)
-# def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
-#     # restrict to just actors in location
-#     final_actors = []
-#     final_locations = []
-#     for actor in x_actor_binding.values:
-#         for location in x_location_binding.values:
-#             if actor in location:
-#                 final_actors.append(actor)
-#                 final_locations.append(location)
-#
-#     if len(final_actors) > 0:
-#         yield state.set_x(x_actor_binding.variable.name, final_actors).set_x(x_location_binding.variable.name, final_locations)
-#     else:
-#         report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    # restrict to just actors in location
+    final_actors = []
+    final_locations = []
+    for actor in x_actor_binding.value:
+        for location in x_location_binding.value:
+            if actor in location:
+                final_actors.append(actor)
+                final_locations.append(location)
+
+    if len(final_actors) > 0:
+        yield state.set_x(x_actor_binding.variable.name, final_actors).set_x(x_location_binding.variable.name, final_locations)
+    else:
+        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+
+
+# handles size only
+# loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
+# we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
+@Predication(vocabulary, names=["loc_nonsp"])
+def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
+    if x_actor_binding.value is not None:
+        if x_size_binding.value is not None:
+            if variable_is_measure(x_size_binding):
+                # Try to add up all combinations of x_actor_binding
+                # to total x_size_binding
+                for i in range(0, len(x_actor_binding.value)):
+                    for j in itertools.combinations(x_actor_binding.value, i):
+                        total = 0
+                        for actor in j:
+                            if not hasattr(actor, "size_measurement"):
+                                report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
+                                return
+                            else:
+                                total += actor.size_measurement().count
+
+                        if x_size_binding.value[0].count == total:
+                            yield state.set_x(x_actor_binding.variable.name, j)
+
+                        else:
+                            report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
+

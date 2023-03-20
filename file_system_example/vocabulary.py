@@ -502,7 +502,7 @@ def file_n_of(state, x_binding, i_binding):
             yield new_state
 
         else:
-            report_error(["xIsNotY", x_binding.variable.name, "file"])
+            report_error(["xIsNotYValue", x_binding.variable.name, "file"])
 
 
 @Predication(vocabulary, names=["_folder_n_of"])
@@ -533,7 +533,7 @@ def folder_n_of(state, x_binding, i_binding):
             yield new_state
 
         else:
-            report_error(["xIsNotY", x_binding.variable.name, "folder"])
+            report_error(["xIsNotYValue", x_binding.variable.name, "folder"])
 
 
 pipeline_logger = logging.getLogger('Pipeline')

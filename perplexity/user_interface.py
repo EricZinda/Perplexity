@@ -102,11 +102,8 @@ class UserInterface(object):
                 self.evaluate_best_response()
 
             else:
-                for original_tree in self.trees_from_mrs(mrs):
-                    # tree = perplexity.cardinals.rewrite_mrs_tree_for_cardinals(original_tree)
-                    tree = original_tree
+                for tree in self.trees_from_mrs(mrs):
                     tree_record = {"Tree": tree,
-                                   "OriginalTree": original_tree,
                                    "Solutions": [],
                                    "Error": None,
                                    "ResponseMessage": None}
