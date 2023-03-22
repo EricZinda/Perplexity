@@ -106,6 +106,14 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
 
         nlg_data["Modifiers"].append(parsed_predication["Lemma"].replace("+", " "))
 
+    elif parsed_predication["Pos"] == "p" and predication.args[1] == variable:
+        if "PostModifiers" not in nlg_data:
+            nlg_data["PostModifiers"] = []
+
+        prep_english = english_for_delphin_variable(99, predication.args[2], tree_info)
+
+        nlg_data["PostModifiers"].append(parsed_predication["Lemma"].replace("+", " ") + " " + prep_english)
+
     elif parsed_predication["Lemma"] == "card" and predication.args[2] == variable:
         if "Modifiers" not in nlg_data:
             nlg_data["Modifiers"] = []
@@ -155,11 +163,14 @@ def convert_to_english(nlg_data, default_a_quantifier):
         phrase += " ".join(nlg_data["Modifiers"]) + " "
 
     if "Topic" in nlg_data:
-        phrase += nlg_data["Topic"]
+        phrase += nlg_data["Topic"] + " "
     else:
-        phrase += "thing"
+        phrase += "thing "
 
-    return phrase
+    if "PostModifiers" in nlg_data:
+        phrase += " ".join(nlg_data["PostModifiers"]) + " "
+
+    return phrase.strip()
 
 
 logger = logging.getLogger('Generation')

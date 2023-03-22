@@ -67,19 +67,17 @@ def default_quantifier(state, x_variable_binding, h_rstr, h_body):
 
 
 class CardinalGroup(object):
-    def __init__(self, variable_name, is_collective, original_rstr_set, solutions):
+    def __init__(self, variable_name, is_collective, original_rstr_set, cardinal_group_set, solutions):
         assert not is_collective or (is_collective and len(solutions) == 1), \
             "collective cardinal groups can only have 1 solution"
         self.variable_name = variable_name
         self.is_collective = is_collective
         self.original_rstr_set = original_rstr_set
+        self.cardinal_group_set = cardinal_group_set
         self.solutions = solutions
 
     def cardinal_group_values(self):
-        if self.is_collective:
-            return self.solutions[0].get_binding(self.variable_name).value
-        else:
-            return [solution.get_binding(self.variable_name).value for solution in self.solutions]
+        return self.cardinal_group_set
 
 
 # Implementation of all quantifiers that take cardinals and plurals into account
@@ -94,6 +92,7 @@ def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_f
     # collective and distributive mode.
     cardinal = None
     rstr_found = True
+    raw_group_solutions = []
     for rstr_solution in call(state, h_rstr):
         rstr_found = True
         rstr_binding = rstr_solution.get_binding(variable_name)
@@ -114,25 +113,47 @@ def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_f
             if is_collective:
                 for x_variable_solution in call(rstr_solution.set_x(variable_name, rstr_binding.value, is_collective=is_collective), h_body):
                     # Every collective answer is a different cardinal group
-                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=[x_variable_solution]))
+                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
+                                                             is_collective=is_collective,
+                                                             original_rstr_set=rstr_binding.value,
+                                                             cardinal_group_set=x_variable_solution.get_binding(variable_name).value,
+                                                             solutions=[x_variable_solution]))
 
             elif is_plural(state, variable_name):
                 # If this is plural, all distributive answers *together* are a cardinal group
                 x_variable_values = [[value] for value in rstr_binding.value]
                 dist_cardinal_group_solutions = []
+                cardinal_group_set = []
                 for x_variable_value in x_variable_values:
+                    cardinal_group_item = None
                     for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, is_collective=is_collective), h_body):
+                        cardinal_group_item = x_variable_value
                         dist_cardinal_group_solutions.append(x_variable_solution)
 
+                    if cardinal_group_item is not None:
+                        cardinal_group_set.append(x_variable_value)
+
                 if len(dist_cardinal_group_solutions) > 0:
-                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=dist_cardinal_group_solutions))
+                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
+                                                             is_collective=is_collective,
+                                                             original_rstr_set=rstr_binding.value,
+                                                             cardinal_group_set=cardinal_group_set,
+                                                             solutions=dist_cardinal_group_solutions))
 
             else:
                 # If it is singular, each distributive answer is a cardinal group
                 x_variable_values = [[value] for value in rstr_binding.value]
                 for x_variable_value in x_variable_values:
+                    singular_item_solutions = []
                     for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, is_collective=is_collective), h_body):
-                        raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=[x_variable_solution]))
+                        singular_item_solutions.append(x_variable_solution)
+
+                    if len(singular_item_solutions) > 0:
+                        raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
+                                                                 is_collective=is_collective,
+                                                                 original_rstr_set=rstr_binding.value,
+                                                                 cardinal_group_set=x_variable_value,
+                                                                 solutions=singular_item_solutions))
 
     if not rstr_found:
         report_error(["doesntExist", ["AtPredication", h_body, variable_name]], force=True)
@@ -310,20 +331,68 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 
 
-def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
-    # restrict to just actors in location
-    final_actors = []
-    final_locations = []
-    for actor in x_actor_binding.value:
-        for location in x_location_binding.value:
-            if actor in location:
-                final_actors.append(actor)
-                final_locations.append(location)
+# This is "distributive" in the sense that it
+# only ever calls criteria_function with single value sets
+# It assumes [x,y] op [z] is the same as [x] op [z] and [y] op [z]
+def all_combinations_distributive_2(state, binding1, binding2, criteria_function):
+    for binding1_set_size in range(1, len(binding1.value) + 1):
+        for binding1_set in itertools.combinations(binding1.value, binding1_set_size):
+            for binding2_set_size in range(1, len(binding2.value) + 1):
+                for binding2_set in itertools.combinations(binding2.value, binding2_set_size):
+                    # See if everything in binding1_set has the criteria_function relationship
+                    # to binding2_set
+                    sets_fail = False
+                    for binding1_item in binding1_set:
+                        for binding2_item in binding2_set:
+                            if not criteria_function(binding1_item, binding2_item):
+                                sets_fail = True
+                                break
+                        if sets_fail:
+                            break
 
-    if len(final_actors) > 0:
-        yield state.set_x(x_actor_binding.variable.name, final_actors).set_x(x_location_binding.variable.name, final_locations)
-    else:
-        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+                    if not sets_fail:
+                        yield state.set_x(binding1.variable.name, binding1_set).set_x(binding2.variable.name, binding2_set)
+
+
+# def combination_iterator(variable_set, size):
+#     if len(variable_set) == 1 and isinstance(variable_set[0], Measurement):
+#             return rstr_value[0].count
+#
+#
+# # This is "collective" in the sense that it
+# # calls criteria_function with all combinations of sets that are 2 or more items
+# def all_combinations_collective_2(state, binding1, binding2, criteria_function):
+#     for binding1_set_size in range(2, len(binding1.value) + 1):
+#         for binding1_set in itertools.combinations(binding1.value, binding1_set_size):
+#             for binding2_set_size in range(2, len(binding2.value) + 1):
+#                 for binding2_set in itertools.combinations(binding2.value, binding2_set_size):
+#                     # See if everything in binding1_set has the criteria_function relationship
+#                     # to binding2_set
+#                     if criteria_function(binding1_set, binding2_set):
+#                         yield state.set_x(binding1.variable.name, binding1_set).set_x(binding2.variable.name, binding2_set)
+# As a verb, "in" has no notion of "together" for actors or locations that is different than "separately"
+# So force distributive
+# Worst case: return all combinations of actors that are in all combinations of locations
+@Predication(vocabulary, names=["_in_p_loc"])
+def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    if is_index_predication(state) and (x_actor_binding.variable.is_collective or x_location_binding.variable.is_collective):
+        report_error(["notDist"])
+        return
+
+    if x_actor_binding.value is not None:
+        if x_location_binding is not None:
+            def item_in_item(item1, item2):
+                # x_actor is "in" x_location if x_location contains it
+                found_location = False
+                for item in item2.contained_items(x_location_binding.variable):
+                    if item1 == item:
+                        found_location = True
+                        break
+                return found_location
+
+            yield from all_combinations_distributive_2(state, x_actor_binding, x_location_binding, item_in_item)
+
+    report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 
 # handles size only
@@ -336,10 +405,17 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             if variable_is_measure(x_size_binding):
                 # Try to add up all combinations of x_actor_binding
                 # to total x_size_binding
-                for i in range(1, len(x_actor_binding.value) + 1):
-                    for j in itertools.combinations(x_actor_binding.value, i):
+
+                # If we are collective, don't create a set of 1 item
+                if x_actor_binding.variable.is_collective:
+                    min_set_size = 2
+                else:
+                    min_set_size = 1
+
+                for x_actor_set_size in range(min_set_size, len(x_actor_binding.value) + 1):
+                    for x_actor_set in itertools.combinations(x_actor_binding.value, x_actor_set_size):
                         total = 0
-                        for actor in j:
+                        for actor in x_actor_set:
                             if not hasattr(actor, "size_measurement"):
                                 report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
                                 return
@@ -347,7 +423,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
                                 total += actor.size_measurement().count
 
                         if x_size_binding.value[0].count == total:
-                            yield state.set_x(x_actor_binding.variable.name, j)
+                            yield state.set_x(x_actor_binding.variable.name, x_actor_set)
 
                         else:
                             report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])

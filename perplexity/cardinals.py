@@ -84,7 +84,11 @@ class PluralCardinal(object):
 
     def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
         cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
-        if cardinal_group_values_count > 1:
+
+        # "which rocks are in here?" - the speaker assumes it will return "this one rock"
+        # (i.e. work even if there is only a single rock).
+        # So: bare Plurals just assumes there is one.
+        if cardinal_group_values_count > 0:
             return True
 
         else:

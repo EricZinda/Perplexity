@@ -2,19 +2,14 @@ Remaining work to be shown in the tutorial:
 
 - This new model will *change* the rstr in a child predication to filter it down. 
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
+  
 - Plurals work
-    - We don't test singular..."the file is large"
-        If the phrase is singular, it will be distributive only and the cardinal groups are singular
-            If there is more than one rstr, it should fail with "more than 1"
-    - "which files are 20 mb": Singular file is an OK answer in this situation but it fails because the system is expecting "files"
-      - Which files are large? -> same thing
     - "a file is a few megabytes" doesn't work
-    - implement "in"
-      - "which files are in this folder"
-              ┌────── _folder_n_of(x9,i14)
-_the_q(x9,RSTR,BODY)              ┌────── _file_n_of(x3,i8)
-                   └─ _which_q(x3,RSTR,BODY)
-                                         └─ _in_p_loc(e2,x3,x9)
+    - 4 files are in a folder together -> forces collective which doesn't make sense with "in" so it fails with ['formNotUnderstood', 'missing', 'collective']
+        Also: a few files are in a folder together
+        If you said "4 files are in a folder" it could find 4 different folders
+        So in this case the user could be using it as a way to say "4 files are in the same folder"
+  
 
 - copy x to y
   - needs copy with a scopal arg

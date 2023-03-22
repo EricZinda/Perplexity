@@ -1,3 +1,6 @@
+Weird cases:
+"which rocks are in here?" - should return single rocks.  Plurals
+
 x-variables can be a set or an individual.
 Examples:
 

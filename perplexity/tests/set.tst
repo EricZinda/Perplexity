@@ -11,14 +11,14 @@
         },
         {
             "Command": "files are large",
-            "Expected": "There isn't more than one large file",
+            "Expected": "Yes, that is true.",
             "Tree": "udef_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "331f555e-dd75-4836-88b3-6cde597eaebd"
         },
         {
             "Command": "which files are large",
-            "Expected": "There isn't more than one large file",
+            "Expected": "[File(name=/Desktop/the yearly budget.txt, size=10000000)]\n",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "aa892111-3d4a-477e-8ae2-858d95d9074c"
@@ -261,6 +261,76 @@
             "Tree": "udef_q(x10,[_megabyte_n_1(x10,u17), card(30,e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],loc_nonsp(e2,x3,x10)))",
             "Enabled": true,
             "ID": "7ff0f68e-4ca3-4085-a67f-1ae4b64a5287"
+        },
+        {
+            "Command": "/new examples.Example25_reset",
+            "Expected": "State reset using examples.Example25_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "64f3b027-5ae2-43cb-aaee-98b2fff80a4e"
+        },
+        {
+            "Command": "which files are in folders",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)\n(File(name=/documents/file1.txt, size=1000),)\n(File(name=/Desktop/the yearly budget.txt, size=10000000),)\n(File(name=/Desktop/blue, size=10000000),)\n",
+            "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "c412fa91-5229-4186-989f-f3513d5410f3"
+        },
+        {
+            "Command": "which files are in a folder?",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)\n",
+            "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
+        },
+        {
+            "Command": "/new examples.Example26_reset",
+            "Expected": "State reset using examples.Example26_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "d6f55030-75f1-43a5-a8fc-7a913b503490"
+        },
+        {
+            "Command": "which 2 files are in a folder?",
+            "Expected": "There are more than 2 file in a folder",
+            "Tree": "_a_q(x11,_folder_n_of(x11,i16),_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "3a9b446e-1a73-49c6-a5c7-7a7d1847b359"
+        },
+        {
+            "Command": "/new examples.Example26_reset",
+            "Expected": "State reset using examples.Example26_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "df3dd43d-a0cf-4063-bf05-803d768a5e56"
+        },
+        {
+            "Command": "which 2 files in a folder are 20 mb",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n(File(name=/Desktop/bigfile.txt, size=20000000),)\n(File(name=/Desktop/bigfile2.txt, size=20000000),)\n",
+            "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],_which_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x18))))",
+            "Enabled": true,
+            "ID": "b20c612e-0359-48c8-b344-804c2144ed05"
+        },
+        {
+            "Command": "which 2 files in a folder together are 20 mb",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n",
+            "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x19,[_megabyte_n_1(x19,u26), card(20,e25,x19)],_which_q(x3,[_file_n_of(x3,i10), _together_p(e18,x3), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x19))))",
+            "Enabled": true,
+            "ID": "455fabb0-664d-4530-86ac-2a63a087db08"
+        },
+        {
+            "Command": "/new examples.Example25_reset",
+            "Expected": "State reset using examples.Example25_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "540d92f2-9561-43f9-9756-6e17f12d9bee"
+        },
+        {
+            "Command": "the 2 files in a folder are 20 mb",
+            "Expected": "Yes, that is true.",
+            "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],_the_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x18))))",
+            "Enabled": true,
+            "ID": "6d9105ef-59a6-42d0-9e11-08d96a530b54"
         }
     ]
 }
