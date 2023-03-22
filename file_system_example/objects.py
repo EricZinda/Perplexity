@@ -259,7 +259,7 @@ class FileSystemMock(FileSystem):
     def all_individuals(self):
         links = {}
         for item in self.items.items():
-            if hasattr(item[1], "link"):
+            if hasattr(item[1], "link") and item[1].link is not None:
                 if item[1].link in links:
                     continue
                 else:
