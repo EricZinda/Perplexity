@@ -114,6 +114,10 @@ def generate_message(tree_info, error_term):
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
         return f"That isn't true for all {arg1}"
 
+    elif error_constant == "moreThan1":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        return f"There is more than one {arg1}"
+
     elif error_constant == "adjectiveDoesntApply":
         arg1 = error_arguments[1]
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)

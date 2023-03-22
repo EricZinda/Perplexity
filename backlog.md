@@ -3,9 +3,9 @@ Remaining work to be shown in the tutorial:
 - This new model will *change* the rstr in a child predication to filter it down. 
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
 - Plurals work
-    - Implement "the" as "the one and only thing"
     - We don't test singular..."the file is large"
-    - 
+        If the phrase is singular, it will be distributive only and the cardinal groups are singular
+            If there is more than one rstr, it should fail with "more than 1"
     - "which files are 20 mb": Singular file is an OK answer in this situation but it fails because the system is expecting "files"
       - Which files are large? -> same thing
     - "a file is a few megabytes" doesn't work

@@ -20,7 +20,12 @@ vocabulary = Vocabulary()
 def the_q(state, x_variable_binding, h_rstr, h_body):
     def the_behavior(cardinal_group_solutions):
         single_cardinal_group = None
+        if len(cardinal_group_solutions) > 1:
+            report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+            return
+
         for cardinal_group in cardinal_group_solutions:
+            # The file is large should fail if there is more than one "the file"
             # "The 2 files are large" should fail if there are more than 2 files but only 2 are large
             if len(cardinal_group.cardinal_group_values()) != len(cardinal_group.original_rstr_set):
                 # There was not a single "the"
@@ -77,7 +82,7 @@ class CardinalGroup(object):
             return [solution.get_binding(self.variable_name).value for solution in self.solutions]
 
 
-# Implementation of all quantifiers that takes cardinals and plurals into account
+# Implementation of all quantifiers that take cardinals and plurals into account
 def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_function, cardinal_scoped_to_initial_rstr=False):
     variable_name = x_variable_binding.variable.name
 
@@ -111,8 +116,8 @@ def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_f
                     # Every collective answer is a different cardinal group
                     raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=[x_variable_solution]))
 
-            else:
-                # All distributive answers *together* are a cardinal group
+            elif is_plural(state, variable_name):
+                # If this is plural, all distributive answers *together* are a cardinal group
                 x_variable_values = [[value] for value in rstr_binding.value]
                 dist_cardinal_group_solutions = []
                 for x_variable_value in x_variable_values:
@@ -121,6 +126,13 @@ def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_f
 
                 if len(dist_cardinal_group_solutions) > 0:
                     raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=dist_cardinal_group_solutions))
+
+            else:
+                # If it is singular, each distributive answer is a cardinal group
+                x_variable_values = [[value] for value in rstr_binding.value]
+                for x_variable_value in x_variable_values:
+                    for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, is_collective=is_collective), h_body):
+                        raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=[x_variable_solution]))
 
     if not rstr_found:
         report_error(["doesntExist", ["AtPredication", h_body, variable_name]], force=True)
