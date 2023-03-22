@@ -15,6 +15,10 @@ def english_for_delphin_variable(failure_index, variable, tree_info, default_a_q
             logger.debug(f"error predication index is: {failure_index}")
             variable = variable[2]
 
+        elif variable[0] == "AfterFullPhrase":
+            failure_index = 100000000
+            variable = variable[1]
+
     # This function will be called for every predication in the MRS
     # as we walk it in execution order
     def record_predications_until_failure_index(predication):
@@ -58,7 +62,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
             if parsed_predication["Surface"] is True:
                 if parsed_predication["Lemma"] not in ["which"]:
                     # It is quantifying it
-                    nlg_data["Quantifier"] = parsed_predication["Lemma"]
+                    nlg_data["Quantifier"] = parsed_predication["Lemma"].replace("+", " ")
             else:
                 nlg_data["Quantifier"] = "<none>"
 
@@ -66,7 +70,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
             if parsed_predication["Surface"] is True:
                 # It is introducing it, thus it is the "main" description
                 # of the variable, usually a noun predication
-                nlg_data["Topic"] = parsed_predication["Lemma"]
+                nlg_data["Topic"] = parsed_predication["Lemma"].replace("+", " ")
             else:
                 # Some abstract predications *should* contribute to the
                 # English description of a variable
@@ -100,7 +104,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
         if "Modifiers" not in nlg_data:
             nlg_data["Modifiers"] = []
 
-        nlg_data["Modifiers"].append(parsed_predication["Lemma"])
+        nlg_data["Modifiers"].append(parsed_predication["Lemma"].replace("+", " "))
 
     elif parsed_predication["Lemma"] == "card" and predication.args[2] == variable:
         if "Modifiers" not in nlg_data:

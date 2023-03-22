@@ -90,6 +90,30 @@ def generate_message(tree_info, error_term):
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"{arg1} is not {arg2}"
 
+    elif error_constant == "notPlural":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        return f"There isn't more than one {arg1}"
+
+    elif error_constant == "moreThan":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        return f"There are more than {arg1}"
+
+    elif error_constant == "lessThan":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        return f"There are less than {arg1}"
+
+    elif error_constant == "tooMany":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        return f"There are more than {arg1}"
+
+    elif error_constant == "notEnough":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        return f"There are less than {arg1}"
+
+    elif error_constant == "notTrueForAll":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        return f"That isn't true for all {arg1}"
+
     elif error_constant == "adjectiveDoesntApply":
         arg1 = error_arguments[1]
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)

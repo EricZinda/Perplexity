@@ -1,6 +1,6 @@
 import itertools
 from file_system_example.objects import File, Folder, Megabyte, Measurement
-from perplexity.cardinals import cardinal_from_binding, StopQuantifierException, yield_all, count_rstr
+from perplexity.cardinals import cardinal_from_binding, yield_all
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication, find_predication_from_introduced
 from perplexity.utilities import is_plural
@@ -10,92 +10,138 @@ from perplexity.vocabulary import Vocabulary, Predication, EventOption
 vocabulary = Vocabulary()
 
 
+# Several meanings:
+# 1. Means "this" which only succeeds for rstrs that are the single in scope x set and there are no others that are in scope
+#       "put the two keys in the lock": should only work if there are only two keys in scope:
+#       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
+# 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
+#       same approach
+@Predication(vocabulary, names=["_the_q"])
+def the_q(state, x_variable_binding, h_rstr, h_body):
+    def the_behavior(cardinal_group_solutions):
+        single_cardinal_group = None
+        for cardinal_group in cardinal_group_solutions:
+            # "The 2 files are large" should fail if there are more than 2 files but only 2 are large
+            if len(cardinal_group.cardinal_group_values()) != len(cardinal_group.original_rstr_set):
+                # There was not a single "the"
+                report_error(["notTrueForAll", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+                return
+
+            elif single_cardinal_group is not None:
+                report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+                return
+
+            else:
+                single_cardinal_group = cardinal_group
+
+        if single_cardinal_group is not None:
+            yield from yield_all(single_cardinal_group.solutions)
+
+    yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, the_behavior, cardinal_scoped_to_initial_rstr=True)
+
+
 # "a" stops returning answers after a single solution works
 @Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
-    def a_behavior(state, rstr_value, cardinal, h_body):
-        yield state
+    def a_behavior(cardinal_group_solutions):
+        # Return "a" (arbitrary) item, then stop
+        if len(cardinal_group_solutions) > 0:
+            yield from yield_all(cardinal_group_solutions[0].solutions)
 
-        # We have returned "a" (arbitrary) item, stop
-        raise StopQuantifierException
-
-    yield from quantifier_implementation(state, x_variable_binding, h_rstr, h_body, a_behavior)
+    yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, a_behavior)
 
 
 # The default quantifier just passes through all answers
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q"])
-def default_quantifier(state, x_variable_binding, h_rstr_orig, h_body_orig, reverse=False):
-    h_rstr = h_body_orig if reverse else h_rstr_orig
-    h_body = h_rstr_orig if reverse else h_body_orig
+def default_quantifier(state, x_variable_binding, h_rstr, h_body):
+    def default_quantifier_behavior(cardinal_group_solutions):
+        for cardinal_group_solution in cardinal_group_solutions:
+            yield from yield_all(cardinal_group_solution.solutions)
 
-    def default_quantifier_behavior(state, rstr_value, cardinal, h_body):
-        yield state
+    yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
 
-    yield from quantifier_implementation(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
+
+class CardinalGroup(object):
+    def __init__(self, variable_name, is_collective, original_rstr_set, solutions):
+        assert not is_collective or (is_collective and len(solutions) == 1), \
+            "collective cardinal groups can only have 1 solution"
+        self.variable_name = variable_name
+        self.is_collective = is_collective
+        self.original_rstr_set = original_rstr_set
+        self.solutions = solutions
+
+    def cardinal_group_values(self):
+        if self.is_collective:
+            return self.solutions[0].get_binding(self.variable_name).value
+        else:
+            return [solution.get_binding(self.variable_name).value for solution in self.solutions]
 
 
 # Implementation of all quantifiers that takes cardinals and plurals into account
-def quantifier_implementation(state, x_variable_binding, h_rstr, h_body, behavior_function):
+def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_function, cardinal_scoped_to_initial_rstr=False):
     variable_name = x_variable_binding.variable.name
+
     # Run in both collective and distributive if it is plural
     modes = [True, False] if is_plural(state, x_variable_binding.variable.name) else [False]
 
-    # Return a better error if there aren't any rstrs at all
-    rstr_found = False
-    for is_collective in modes:
-        # Get on set of rstr values first
-        for rstr_solution in call(state, h_rstr):
-            cardinal = None
-            rstr_found = True
+    # Get a rstr set value.
+    # This defines the cardinal group that needs to be checked in
+    # collective and distributive mode.
+    cardinal = None
+    rstr_found = True
+    for rstr_solution in call(state, h_rstr):
+        rstr_found = True
+        rstr_binding = rstr_solution.get_binding(variable_name)
+
+        # Assume the cardinal is the same for all rstr values
+        if cardinal is None:
+            cardinal = cardinal_from_binding(state, h_body, rstr_binding)
+
+        # rstr_solutions will have one entry for every solution given by the rstr
+        # that entry may have many XVariableSolutions
+        raw_group_solutions = []
+        for is_collective in modes:
 
             # If the rstr forced x to an incompatible coll/dist mode (as in "x ate pizzas *together*"), fail this mode
-            rstr_binding = rstr_solution.get_binding(variable_name)
             if rstr_binding.variable.is_collective is not None and rstr_binding.variable.is_collective != is_collective:
-                report_error(["wrongMode"])
-                break
+                continue
 
-            # Attempt to solve the body with these RSTRs
-            try:
-                if is_collective:
-                    # Get each collective solution to the body
-                    for body_solution in call(rstr_solution.set_x(variable_name, rstr_binding.value, is_collective=True), h_body):
-                        # Cardinal criteria is set by running the rstr so we have to retrieve it here
-                        cardinal = cardinal_from_binding(body_solution, h_body, body_solution.get_binding(variable_name))
+            if is_collective:
+                for x_variable_solution in call(rstr_solution.set_x(variable_name, rstr_binding.value, is_collective=is_collective), h_body):
+                    # Every collective answer is a different cardinal group
+                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=[x_variable_solution]))
 
-                        # See if the cardinal criteria has been met yet
-                        # For collective, the cardinal criteria applies to the single rstr set
-                        for cardinal_criteria_met_answer in cardinal.yield_if_criteria_met(body_solution.get_binding(variable_name).value, [body_solution]):
-                            # It has, so now let the quantifier decide if the answers are properly quantified
-                            yield from behavior_function(cardinal_criteria_met_answer, body_solution.get_binding(variable_name).value, cardinal, h_body)
+            else:
+                # All distributive answers *together* are a cardinal group
+                x_variable_values = [[value] for value in rstr_binding.value]
+                dist_cardinal_group_solutions = []
+                for x_variable_value in x_variable_values:
+                    for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, is_collective=is_collective), h_body):
+                        dist_cardinal_group_solutions.append(x_variable_solution)
 
-                else:
-                    # Cardinal criteria is set by running the rstr so we have to retrieve it here
-                    # The cardinal criteria applies to all of the distributive answers as a group, so it
-                    # does not get reset with each of the distributive answers
-                    cardinal = cardinal_from_binding(rstr_solution, h_body, rstr_solution.get_binding(variable_name))
-
-                    # Distributive mode requires that we run each element in the set
-                    # through the system individually
-                    for dist_item in rstr_binding.value:
-                        # Get the solution to this distributive item in the body
-                        for body_solution in call(rstr_solution.set_x(variable_name, [dist_item], is_collective=False), h_body):
-                            # See if the cardinal has been successful yet
-                            for dist_answer in cardinal.yield_if_criteria_met(body_solution.get_binding(variable_name).value, [body_solution]):
-                                # It has, so now let the quantifier decide if the answers are quantified
-                                yield from behavior_function(dist_answer, [dist_item], cardinal, h_body)
-
-            # Allow cardinals like "a" to stop execution when they are done
-            except StopQuantifierException:
-                break
-
-        # After coll or dist mode is finished, a cardinal like "only 2 files are x",
-        # may have held answers to make sure there are "only 2", so now we give it a chance to finish
-        if cardinal is not None:
-            for answer in cardinal.yield_finish():
-                yield from behavior_function(answer, None, cardinal, h_body)
+                if len(dist_cardinal_group_solutions) > 0:
+                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name, is_collective=is_collective, original_rstr_set=rstr_binding.value, solutions=dist_cardinal_group_solutions))
 
     if not rstr_found:
-        report_error(["doesntExist", ["AtPredicationIndex", h_body, variable_name]], force=True)
+        report_error(["doesntExist", ["AtPredication", h_body, variable_name]], force=True)
+        return
+
+    if len(raw_group_solutions) == 0:
+        return
+
+    else:
+        # The cardinal tests if each set of cardinal group solutions meets a criteria like "a few x" or "2 x" or "more than a few x"
+        # Its criteria must be true across all the values in the cardinal group
+
+        # Run the cardinal over all the values in a cardinal group
+        cardinal_group_solutions = []
+        for cardinal_group in raw_group_solutions:
+            if cardinal.meets_criteria(cardinal_group, cardinal_scoped_to_initial_rstr):
+                cardinal_group_solutions.append(cardinal_group)
+
+        # Evaluate the quantifier. It should quantify at the level of the cardinal group
+        # So, "the 2 babies" can be true because it is a single "set of 2 babies" even in dist mode
+        yield from quantifier_function(cardinal_group_solutions)
 
 
 def variable_is_megabyte(binding):

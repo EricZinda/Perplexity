@@ -6,11 +6,6 @@ from perplexity.utilities import is_plural
 from importlib import import_module
 
 
-class StopQuantifierException(Exception):
-    def __init__(self):
-        pass
-
-
 def yield_all(set_or_answer):
     if isinstance(set_or_answer, (list, tuple)):
         for item in set_or_answer:
@@ -43,6 +38,7 @@ def cardinal_from_binding(state, h_body, binding):
         module_path, class_name = module_class_name.rsplit('.', 1)
         if module_path != "cardinals":
             module = import_module(module_path)
+
         else:
             module = sys.modules[__name__]
 
@@ -57,63 +53,44 @@ def cardinal_from_binding(state, h_body, binding):
 
 
 class NoCardinal(object):
-    def __init__(self, variable, h_body):
-        self.variable = variable
+    def __init__(self, variable_name, h_body):
+        self.variable_name = variable_name
         self.h_body = h_body
-        self.yielded_rstr_count = 0
-        self.running_count = 0
 
-    def criteria_met(self):
-        return self.yielded_rstr_count > 0
+    def meets_criteria(self, cardinal_group_values, cardinal_scoped_to_initial_rstr):
+        return True
 
-    def yield_if_criteria_met(self, rstr_value, answers):
-        self.running_count += count_rstr(rstr_value)
-        yield from yield_all(answers)
-        self.yielded_rstr_count += len(rstr_value)
 
-    def yield_finish(self):
-        # Force to be a generator
-        if False:
-            yield None
-
-        return
+# class SingularCardinal(object):
+#     def __init__(self, variable_name, h_body):
+#         self.variable_name = variable_name
+#         self.h_body = h_body
+#
+#     def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
+#         cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
+#         if cardinal_group_values_count == 1:
+#             return True
+#
+#         else:
+#             error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+#             report_error(["notSingular", error_location, self.variable_name], force=True)
+#             return False
 
 
 class PluralCardinal(object):
-    def __init__(self, variable, h_body):
-        self.variable = variable
+    def __init__(self, variable_name, h_body):
+        self.variable_name = variable_name
         self.h_body = h_body
-        self.yielded_rstr_count = 0
-        self.running_count = 0
-        self.cached_answers = []
 
-    def criteria_met(self):
-        return self.running_count > 1
+    def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
+        cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
+        if cardinal_group_values_count > 1:
+            return True
 
-    def yield_if_criteria_met(self, rstr_value, answers):
-        if len(answers) > 0:
-            self.cached_answers += answers
-            self.running_count += count_rstr(rstr_value)
-
-            if self.criteria_met():
-                # We've achieved "more than one", start returning answers
-                yield from yield_all(self.cached_answers)
-                self.yielded_rstr_count += len(rstr_value)
-                self.cached_answers = []
-
-    def yield_finish(self):
-        # Force to be a generator
-        if False:
-            yield None
-
-        if self.running_count == 0:
-            # No rstrs worked, so don't return an error
-            return
-
-        elif not self.criteria_met():
-            # If we got over 1, we already yielded them
-            # So there is nothing to finish
-            report_error(["notPlural"], force=True)
+        else:
+            error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+            report_error(["notPlural", error_location, self.variable_name], force=True)
+            return False
 
 
 # card(2) means "exactly 2"
@@ -121,91 +98,46 @@ class PluralCardinal(object):
 # until yield_finish() is called because it needs to ensure that
 # not more than 2 were successful
 class CardCardinal(object):
-    def __init__(self, variable, h_body, count):
-        self.variable = variable
+    def __init__(self, variable_name, h_body, count):
+        self.variable_name = variable_name
         self.h_body = h_body
         self.count = count
-        self.yielded_rstr_count = 0
-        self.running_count = 0
-        self.cached_answers = []
 
-    def criteria_met(self):
-        return self.running_count == self.count
+    def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
+        cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
+        error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+        if cardinal_group_values_count > self.count:
+            report_error(["moreThan", error_location, self.count], force=True)
+            return False
 
-    def yield_if_criteria_met(self, rstr_value, answers):
-        # Force to be a generator
-        if False:
-            yield None
-
-        if len(answers) > 0:
-            self.cached_answers += answers
-            self.running_count += count_rstr(rstr_value)
-
-            if self.running_count > self.count:
-                # Stop at this point because "exactly 2" will fail
-                # So don't keep returning answers
-                raise StopQuantifierException
-
-    def yield_finish(self):
-        if self.criteria_met():
-            yield from yield_all(self.cached_answers)
+        elif cardinal_group_values_count < self.count:
+            report_error(["lessThan", error_location, self.count], force=True)
+            return False
 
         else:
-            if self.running_count == 0:
-                # No rstrs worked, so don't return an error
-                return
-
-            elif self.running_count > self.count:
-                report_error(["too many"], force=True)
-
-            else:
-                # If we got over 1, we already yielded them
-                # So there is nothing to finish
-                report_error(["notEnough"], force=True)
+            return True
 
 
 # For implementing things like "a few" where there is a number
 # between 3 and, say 5
 class BetweenCardinal(object):
-    def __init__(self, variable, h_body, min_count, max_count):
-        self.variable = variable
+    def __init__(self, variable_name, h_body, min_count, max_count):
+        self.variable_name = variable_name
         self.h_body = h_body
         self.min_count = min_count
         self.max_count = max_count
-        self.yielded_rstr_count = 0
-        self.running_count = 0
-        self.cached_answers = []
 
-    def criteria_met(self):
-        return self.min_count <= self.running_count <= self.max_count
+    def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
+        cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
+        error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+        if cardinal_group_values_count > self.max_count:
+            report_error(["tooMany", error_location], force=True)
+            return False
 
-    def yield_if_criteria_met(self, rstr_value, answers):
-        # Force to be a generator
-        if False:
-            yield None
-
-        if len(answers) > 0:
-            self.cached_answers += answers
-            self.running_count += count_rstr(rstr_value)
-
-            if self.running_count > self.max_count:
-                # Stop at this point because "exactly 2" will fail
-                # So don't keep returning answers
-                raise StopQuantifierException
-
-    def yield_finish(self):
-        if self.criteria_met():
-            yield from yield_all(self.cached_answers)
+        elif cardinal_group_values_count < self.min_count:
+            report_error(["notEnough", error_location], force=True)
+            return False
 
         else:
-            if self.running_count == 0:
-                # No rstrs worked, so don't return an error
-                return
+            return True
 
-            elif self.running_count > self.max_count:
-                report_error(["too many"], force=True)
-
-            else:
-                # If we got over 1, we already yielded them
-                # So there is nothing to finish
-                report_error(["notEnough"], force=True)

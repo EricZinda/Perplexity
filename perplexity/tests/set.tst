@@ -11,24 +11,14 @@
         },
         {
             "Command": "files are large",
-            "Expected": [
-                0,
-                [
-                    "notPlural"
-                ]
-            ],
+            "Expected": "There isn't more than one large file",
             "Tree": "udef_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "331f555e-dd75-4836-88b3-6cde597eaebd"
         },
         {
             "Command": "which files are large",
-            "Expected": [
-                0,
-                [
-                    "notPlural"
-                ]
-            ],
+            "Expected": "There isn't more than one large file",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "aa892111-3d4a-477e-8ae2-858d95d9074c"
@@ -91,12 +81,7 @@
         },
         {
             "Command": "1 file is large",
-            "Expected": [
-                3,
-                [
-                    "too many"
-                ]
-            ],
+            "Expected": "There are more than 1 large file",
             "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "3ffe599b-e9fb-40d7-a32b-56fa35710574"
@@ -117,12 +102,7 @@
         },
         {
             "Command": "3 files are large",
-            "Expected": [
-                0,
-                [
-                    "notEnough"
-                ]
-            ],
+            "Expected": "There are less than 3 large file",
             "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "907f6e7b-4924-46d7-8555-263f9bf041ff"
@@ -186,12 +166,7 @@
         },
         {
             "Command": "a few files are large",
-            "Expected": [
-                0,
-                [
-                    "notEnough"
-                ]
-            ],
+            "Expected": "There are less than a few large file",
             "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "c4d1b82e-8be5-4b58-810d-97de24716ac5"
@@ -219,15 +194,45 @@
         },
         {
             "Command": "a few files are large",
-            "Expected": [
-                3,
-                [
-                    "too many"
-                ]
-            ],
+            "Expected": "There are more than a few large file",
             "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "2d32bbb8-f4b2-4069-a19d-0f67e0a4262e"
+        },
+        {
+            "Command": "/new examples.Example25_reset",
+            "Expected": "State reset using examples.Example25_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "110a3b3d-6725-448b-aed5-2b4ef2b6c0eb"
+        },
+        {
+            "Command": "the files are large",
+            "Expected": "That isn't true for all the file",
+            "Tree": "_the_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "d0738761-c3cc-45ab-a754-29b4cc871fc8"
+        },
+        {
+            "Command": "the large files are large",
+            "Expected": "Yes, that is true.",
+            "Tree": "_the_q(x3,[_file_n_of(x3,i9), _large_a_1(e8,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "4868231b-cc7e-4ee9-834d-c1c0ce486b69"
+        },
+        {
+            "Command": "the 2 large files are large",
+            "Expected": "Yes, that is true.",
+            "Tree": "_the_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(2,e9,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "373004b4-16bd-4b58-99e1-c9dc0db87051"
+        },
+        {
+            "Command": "the 3 files are large",
+            "Expected": "There are more than the 3 file",
+            "Tree": "_the_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "d5ea50ee-c182-4db4-b2d8-83e1cf19b254"
         }
     ]
 }

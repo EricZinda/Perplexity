@@ -3,9 +3,12 @@ Remaining work to be shown in the tutorial:
 - This new model will *change* the rstr in a child predication to filter it down. 
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
 - Plurals work
+    - Implement "the" as "the one and only thing"
+    - We don't test singular..."the file is large"
+    - 
     - "which files are 20 mb": Singular file is an OK answer in this situation but it fails because the system is expecting "files"
-    - implement "few"
-      - see if "a file is a few megabytes" works
+      - Which files are large? -> same thing
+    - "a file is a few megabytes" doesn't work
     - implement "in"
       - "which files are in this folder"
               ┌────── _folder_n_of(x9,i14)
