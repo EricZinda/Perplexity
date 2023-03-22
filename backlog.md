@@ -10,7 +10,6 @@ Remaining work to be shown in the tutorial:
         If you said "4 files are in a folder" it could find 4 different folders
         So in this case the user could be using it as a way to say "4 files are in the same folder"
   
-
 - copy x to y
   - needs copy with a scopal arg
     - We need to support turning a tree into something abstract that can be manipulated and understood
