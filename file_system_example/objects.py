@@ -95,11 +95,12 @@ class Folder(Container):
 
 
 class File(Container):
-    def __init__(self, name, size=None, file_system=None):
+    def __init__(self, name, size=None, file_system=None, link=None):
         super().__init__()
         self.name = name
         self.size = size
         self.file_system = file_system
+        self.link = link
 
     def __repr__(self):
         return f"File(name={self.name}, size={self.size})"
@@ -107,12 +108,12 @@ class File(Container):
     def __eq__(self, obj):
         if isinstance(obj, File):
             if self.has_path() and obj.has_path():
-                return self.name == obj.name
+                self_name = self.name if self.link is None else self.link
+                obj_name = obj.name if obj.link is None else obj.link
+                return self_name == obj_name
 
             else:
                 return pathlib.PurePath(self.name).parts[-1] == pathlib.PurePath(obj.name).parts[-1]
-
-        return False
 
     def __ne__(self, obj):
         return not self == obj
