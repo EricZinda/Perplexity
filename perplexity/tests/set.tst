@@ -331,6 +331,20 @@
             "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],_the_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x18))))",
             "Enabled": true,
             "ID": "6d9105ef-59a6-42d0-9e11-08d96a530b54"
+        },
+        {
+            "Command": "/new examples.Example31_reset",
+            "Expected": "State reset using examples.Example31_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "e022e4fc-2b86-4f4f-ac51-8a800414672f"
+        },
+        {
+            "Command": "which files are in 2 folders?",
+            "Expected": "(File(name=/Desktop/file4.txt, size=10000000),)\n(File(name=/Desktop/file5.txt, size=10000000),)\n(File(name=/Desktop/file4.txt, size=10000000),)\n(File(name=/Desktop/file5.txt, size=10000000),)\n",
+            "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(2,e15,x9)],_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "55cb41a3-eb62-4162-aa8f-123a1cfacc8c"
         }
     ]
 }

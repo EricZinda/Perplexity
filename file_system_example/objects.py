@@ -257,7 +257,14 @@ class FileSystemMock(FileSystem):
             return path
 
     def all_individuals(self):
+        links = {}
         for item in self.items.items():
+            if hasattr(item[1], "link"):
+                if item[1].link in links:
+                    continue
+                else:
+                    links[item[1].link] = item[0]
+
             yield item[1]
 
     def exists(self, path, is_file):

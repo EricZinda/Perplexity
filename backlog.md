@@ -4,6 +4,9 @@ Remaining work to be shown in the tutorial:
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
   
 - Plurals work
+    - 2 files are in 2 folders repeats everything because file(x) lists all the files duplicated 
+
+- 
     - "a file is a few megabytes" doesn't work
     - 4 files are in a folder together -> forces collective which doesn't make sense with "in" so it fails with ['formNotUnderstood', 'missing', 'collective']
         Also: a few files are in a folder together
