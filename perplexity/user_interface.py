@@ -127,9 +127,12 @@ class UserInterface(object):
                                  "Variables": mrs.variables,
                                  "Tree": tree}
 
+                    duplicate_solutions = []
                     for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
                         pipeline_logger.debug(f"solution: {item}")
-                        tree_record["Solutions"].append(item)
+                        duplicate_solutions.append(item)
+
+                    tree_record["Solutions"] = perplexity.cardinals.RemoveDuplicates(duplicate_solutions)
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()

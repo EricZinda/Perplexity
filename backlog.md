@@ -3,10 +3,9 @@ Remaining work to be shown in the tutorial:
 - This new model will *change* the rstr in a child predication to filter it down. 
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
   
-- Plurals work
-    - 2 files are in 2 folders repeats everything because file(x) lists all the files duplicated 
-
-- 
+Plurals work 
+    - Make the combinatorics of predications easier to deal with
+        TODO: Make quantifiers set coll/dist on the binding
     - "a file is a few megabytes" doesn't work
     - 4 files are in a folder together -> forces collective which doesn't make sense with "in" so it fails with ['formNotUnderstood', 'missing', 'collective']
         Also: a few files are in a folder together

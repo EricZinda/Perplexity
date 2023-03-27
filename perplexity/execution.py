@@ -6,6 +6,9 @@ from perplexity.utilities import sentence_force
 
 # Allows code to throw an exception that should get converted
 # to a user visible message
+from perplexity.variable_binding import VariableValueType
+
+
 class MessageException(Exception):
     def __init__(self, message_name, message_args):
         self.message_name = message_name
@@ -35,7 +38,7 @@ class ExecutionContext(object):
             self._error_predication_index = -1
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
-            yield from self.call(state.set_x("tree", tree_info), tree_info["Tree"])
+            yield from self.call(state.set_x("tree", [tree_info], VariableValueType.distributive), tree_info["Tree"])
 
     def call(self, state, term, normalize=False):
         # See if the term is actually a list

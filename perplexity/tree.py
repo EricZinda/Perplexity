@@ -278,13 +278,13 @@ def walk_tree_args_until(term, predication_func, arg_func):
 # True if an `fw_seq` predication is used by something *besides* an `fw_seq` predication
 # because that means it is the final one
 def is_this_last_fw_seq(state):
-    this_tree = state.get_binding("tree").value
+    this_tree = state.get_binding("tree").value[0]
     this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
 def is_index_predication(state):
-    this_tree = state.get_binding("tree").value
+    this_tree = state.get_binding("tree").value[0]
     this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
     return this_predication.introduced_variable() == this_tree["Index"]
 

@@ -26,11 +26,6 @@ The men lifted the piano.
 
 is ambiguous between the two readings. They could each have lifted it individually, the distributive reading, in which case the logical subject of lift would be the typical element of the set, or they could have lifted it together, the collective reading, in which case it would be the set, or the aggregate.
 
-TODO: Our approach could be expanded to cumulative:
-- It would require the parent to send in all combinations of a set of parent items
-- The child would have have to check against all combinations of a set of children items
-- And the parent would do a final check to see if there are left over.  The child respond to the check by failing if there are left overs.
-
 
 Cumulative started with Scha (1981)
 Three boys carried two pianos.
@@ -63,9 +58,10 @@ Quantifiers and other words can be added to force one way or another:
 - "each child ate a cake" each strongly encodes distributive
 - "every child ate a cake" (weaker) encodes distributive
 
-Implementation:
+### Verb Implementation
+
 There are two things that need to be managed for a predicate: 
-- Whether it allows coll/dist: if a verb like surrounded(who, what) *forces* what to always be collective, it should fail for dist for that argument. Otherwise, it should process it.
+- Whether it *allows* coll/dist: if a verb like surrounded(who, what) *forces* what to always be collective, it should fail for dist for that argument. Otherwise, for verbs like "in" which have a collective interpretation but don't do anything, it should process it when it is not the verb. When it is the verb, it shouldn't, to remove duplicates
 - Whether it acts differently in the presence of coll/dist. Verbs that support both need to return answers for both so that downstream cardinals get the opportunity to try them.  However, if they actually have different answers for dist/coll (like "the men lifted the table", lifted(men:dist) is different than lifted(men:coll) they have to *mark* that they processed it so that the answers are preserved. Otherwise the engine will remove duplicates.
 
 two children in two rooms ate 3 pizzas

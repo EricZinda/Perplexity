@@ -1,9 +1,11 @@
 import itertools
 from file_system_example.objects import File, Folder, Megabyte, Measurement
-from perplexity.cardinals import cardinal_from_binding, yield_all
+from perplexity.cardinals import cardinal_from_binding, yield_all, in_style_predication, \
+    combinatorial_style_predication, lift_style_predication
 from perplexity.execution import report_error, call
 from perplexity.tree import is_index_predication, find_predication_from_introduced
 from perplexity.utilities import is_plural
+from perplexity.variable_binding import VariableValueType, is_collective_type
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 
@@ -18,29 +20,39 @@ vocabulary = Vocabulary()
 #       same approach
 @Predication(vocabulary, names=["_the_q"])
 def the_q(state, x_variable_binding, h_rstr, h_body):
-    def the_behavior(cardinal_group_solutions):
-        single_cardinal_group = None
-        if len(cardinal_group_solutions) > 1:
-            report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-            return
+    def the_behavior(cardinal_group_solutions_combined):
+        # "the" could work for both coll and dist, so first break solutions into coll or dist sets
+        coll_cardinal_group_solutions = []
+        dist_cardinal_group_solutions = []
+        for cardinal_group in cardinal_group_solutions_combined:
+            if cardinal_group.is_collective:
+                coll_cardinal_group_solutions.append(cardinal_group)
+            else:
+                dist_cardinal_group_solutions.append(cardinal_group)
 
-        for cardinal_group in cardinal_group_solutions:
-            # The file is large should fail if there is more than one "the file"
-            # "The 2 files are large" should fail if there are more than 2 files but only 2 are large
-            if len(cardinal_group.cardinal_group_values()) != len(cardinal_group.original_rstr_set):
-                # There was not a single "the"
-                report_error(["notTrueForAll", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-                return
-
-            elif single_cardinal_group is not None:
+        for cardinal_group_solutions in [coll_cardinal_group_solutions, dist_cardinal_group_solutions]:
+            single_cardinal_group = None
+            if len(cardinal_group_solutions) > 1:
                 report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
                 return
 
-            else:
-                single_cardinal_group = cardinal_group
+            for cardinal_group in cardinal_group_solutions:
+                # The file is large should fail if there is more than one "the file"
+                # "The 2 files are large" should fail if there are more than 2 files but only 2 are large
+                if len(cardinal_group.cardinal_group_values()) != len(cardinal_group.original_rstr_set):
+                    # There was not a single "the"
+                    report_error(["notTrueForAll", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+                    return
 
-        if single_cardinal_group is not None:
-            yield from yield_all(single_cardinal_group.solutions)
+                elif single_cardinal_group is not None:
+                    report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+                    return
+
+                else:
+                    single_cardinal_group = cardinal_group
+
+            if single_cardinal_group is not None:
+                yield from yield_all(single_cardinal_group.solutions)
 
     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, the_behavior, cardinal_scoped_to_initial_rstr=True)
 
@@ -70,6 +82,7 @@ class CardinalGroup(object):
     def __init__(self, variable_name, is_collective, original_rstr_set, cardinal_group_set, solutions):
         assert not is_collective or (is_collective and len(solutions) == 1), \
             "collective cardinal groups can only have 1 solution"
+
         self.variable_name = variable_name
         self.is_collective = is_collective
         self.original_rstr_set = original_rstr_set
@@ -87,73 +100,80 @@ def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_f
     # Run in both collective and distributive if it is plural
     modes = [True, False] if is_plural(state, x_variable_binding.variable.name) else [False]
 
-    # Get a rstr set value.
-    # This defines the cardinal group that needs to be checked in
-    # collective and distributive mode.
-    cardinal = None
-    rstr_found = True
     raw_group_solutions = []
-    for rstr_solution in call(state, h_rstr):
+    cardinal = None
+    for is_collective in modes:
+        # Get a rstr set value.
+        # This defines the cardinal group that needs to be checked in
+        # collective and distributive mode.
         rstr_found = True
-        rstr_binding = rstr_solution.get_binding(variable_name)
 
-        # Assume the cardinal is the same for all rstr values
-        if cardinal is None:
-            cardinal = cardinal_from_binding(state, h_body, rstr_binding)
+        # Set the type (coll or dist) of the binding before calling the RSTR so that
+        # predications like "together" can fail there
+        # Since this is the quantifier, nothing should have set the type yet
+        assert x_variable_binding.variable.value_type == VariableValueType.none
+        value_type = VariableValueType.combinatoric_collective if is_collective else VariableValueType.combinatoric_distributive
+        if is_plural(state, variable_name) and not is_collective:
+            # If this is plural, all distributive answers *together* are a cardinal group
+            cardinal_group_set = []
+            dist_cardinal_group_solutions = []
+            for rstr_solution in call(state.set_x(x_variable_binding.variable.name, x_variable_binding.value, value_type), h_rstr):
+                rstr_found = True
+                rstr_binding = rstr_solution.get_binding(variable_name)
+                if cardinal is None:
+                    cardinal = cardinal_from_binding(state, h_body, rstr_binding)
+                    assert cardinal is not None
 
-        # rstr_solutions will have one entry for every solution given by the rstr
-        # that entry may have many XVariableSolutions
-        raw_group_solutions = []
-        for is_collective in modes:
-
-            # If the rstr forced x to an incompatible coll/dist mode (as in "x ate pizzas *together*"), fail this mode
-            if rstr_binding.variable.is_collective is not None and rstr_binding.variable.is_collective != is_collective:
-                continue
-
-            if is_collective:
-                for x_variable_solution in call(rstr_solution.set_x(variable_name, rstr_binding.value, is_collective=is_collective), h_body):
-                    # Every collective answer is a different cardinal group
-                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
-                                                             is_collective=is_collective,
-                                                             original_rstr_set=rstr_binding.value,
-                                                             cardinal_group_set=x_variable_solution.get_binding(variable_name).value,
-                                                             solutions=[x_variable_solution]))
-
-            elif is_plural(state, variable_name):
-                # If this is plural, all distributive answers *together* are a cardinal group
                 x_variable_values = [[value] for value in rstr_binding.value]
-                dist_cardinal_group_solutions = []
-                cardinal_group_set = []
                 for x_variable_value in x_variable_values:
                     cardinal_group_item = None
-                    for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, is_collective=is_collective), h_body):
+                    for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, VariableValueType.distributive), h_body):
                         cardinal_group_item = x_variable_value
                         dist_cardinal_group_solutions.append(x_variable_solution)
 
                     if cardinal_group_item is not None:
                         cardinal_group_set.append(x_variable_value)
 
-                if len(dist_cardinal_group_solutions) > 0:
-                    raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
-                                                             is_collective=is_collective,
-                                                             original_rstr_set=rstr_binding.value,
-                                                             cardinal_group_set=cardinal_group_set,
-                                                             solutions=dist_cardinal_group_solutions))
+            if len(dist_cardinal_group_solutions) > 0:
+                raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
+                                                         is_collective=is_collective,
+                                                         original_rstr_set=rstr_binding.value,
+                                                         cardinal_group_set=cardinal_group_set,
+                                                         solutions=dist_cardinal_group_solutions))
 
-            else:
-                # If it is singular, each distributive answer is a cardinal group
-                x_variable_values = [[value] for value in rstr_binding.value]
-                for x_variable_value in x_variable_values:
-                    singular_item_solutions = []
-                    for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, is_collective=is_collective), h_body):
-                        singular_item_solutions.append(x_variable_solution)
+        else:
+            for rstr_solution in call(state.set_x(x_variable_binding.variable.name, x_variable_binding.value, value_type), h_rstr):
+                rstr_found = True
+                rstr_binding = rstr_solution.get_binding(variable_name)
 
-                    if len(singular_item_solutions) > 0:
+                # Assume the cardinal is the same for all rstr values
+                if cardinal is None:
+                    cardinal = cardinal_from_binding(state, h_body, rstr_binding)
+                    assert cardinal is not None
+
+                if is_collective:
+                    for x_variable_solution in call(rstr_solution, h_body):
+                        # Every collective answer is a different cardinal group
                         raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
                                                                  is_collective=is_collective,
                                                                  original_rstr_set=rstr_binding.value,
-                                                                 cardinal_group_set=x_variable_value,
-                                                                 solutions=singular_item_solutions))
+                                                                 cardinal_group_set=x_variable_solution.get_binding(variable_name).value,
+                                                                 solutions=[x_variable_solution]))
+
+                else:
+                    # If it is singular, each distributive answer is a cardinal group
+                    x_variable_values = [[value] for value in rstr_binding.value]
+                    for x_variable_value in x_variable_values:
+                        singular_item_solutions = []
+                        for x_variable_solution in call(rstr_solution, h_body):
+                            singular_item_solutions.append(x_variable_solution)
+
+                        if len(singular_item_solutions) > 0:
+                            raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
+                                                                     is_collective=is_collective,
+                                                                     original_rstr_set=rstr_binding.value,
+                                                                     cardinal_group_set=x_variable_value,
+                                                                     solutions=singular_item_solutions))
 
     if not rstr_found:
         report_error(["doesntExist", ["AtPredication", h_body, variable_name]], force=True)
@@ -181,8 +201,8 @@ def variable_is_megabyte(binding):
     return binding.value is not None and len(binding.value) == 1 and isinstance(binding.value[0], Megabyte)
 
 
-def variable_is_measure(binding):
-    return binding.value is not None and len(binding.value) == 1 and isinstance(binding.value[0], Measurement)
+def value_is_measure(value):
+    return value is not None and len(value) == 1 and isinstance(value[0], Measurement)
 
 
 # 10 mb should not generate a set of 10 1mbs
@@ -190,19 +210,22 @@ def variable_is_measure(binding):
 @Predication(vocabulary, names=["card"])
 def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
     if variable_is_megabyte(x_target_binding):
-        yield state.set_x(x_target_binding.variable.name, [Measurement(x_target_binding.value[0], int(c_count))], is_collective=True)
+        yield state.set_x(x_target_binding.variable.name,
+                          [Measurement(x_target_binding.value[0], int(c_count))],
+                          value_type=VariableValueType.collective)
 
 
 @Predication(vocabulary, names=["card"])
 def card_normal(state, c_count, e_introduced_binding, x_target_binding):
     if not variable_is_megabyte(x_target_binding):
-        yield state.set_x(x_target_binding.variable.name, x_target_binding.value,
-                          cardinal=["cardinals.CardCardinal", [int(c_count)]])
+        yield state.set_variable_data(x_target_binding.variable.name,
+                                      cardinal=["cardinals.CardCardinal", [int(c_count)]])
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
-    yield state.set_x(x_target_binding.variable.name, x_target_binding.value, cardinal=["cardinals.BetweenCardinal", [3, 5]])
+    yield state.set_variable_data(x_target_binding.variable.name,
+                                  cardinal=["cardinals.BetweenCardinal", [3, 5]])
 
 
 # Values come in, the job of the predication is to restrict them
@@ -211,110 +234,49 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
 # (collective) is determined by the variable metadata
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
-    if x_binding.value is None:
-        # Unbound variable means "all things"
-        # Restrict the values of x (i.e. the world) to "all files"
-        iterator = state.all_individuals()
+    def criteria(value):
+        return isinstance(value, File)
 
-    else:
-        # x is set to a set of values, restrict them to just files
-        iterator = x_binding.value
-
-    values = []
-    for value in iterator:
-        if isinstance(value, File):
-            values.append(value)
-
-    if len(values) > 0:
-        yield state.set_x(x_binding.variable.name, values)
+    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
 
 
 @Predication(vocabulary, names=["_folder_n_of"])
 def folder_n_of(state, x_binding, i_binding):
-    if x_binding.value is None:
-        iterator = state.all_individuals()
+    def criteria(value):
+        return isinstance(value, Folder)
 
-    else:
-        iterator = x_binding.value
-
-    values = []
-    for value in iterator:
-        if isinstance(value, Folder):
-            values.append(value)
-
-    if len(values) > 0:
-        yield state.set_x(x_binding.variable.name, values)
+    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
 
 
 @Predication(vocabulary, names=["_megabyte_n_1"])
 def megabyte_n_1(state, x_binding, u_binding):
-    if x_binding.value is None:
-        iterator = [Megabyte()]
+    def criteria(value):
+        return isinstance(value, Megabyte)
 
-    else:
-        iterator = x_binding.value
-
-    values = []
-    for value in iterator:
-        if isinstance(value, Megabyte):
-            values.append(value)
-
-    if len(values) > 0:
-        yield state.set_x(x_binding.variable.name, values)
-
-    else:
-        report_error(["xIsNotYValue", x_binding.value, "megabyte"])
+    yield from combinatorial_style_predication(state, x_binding, [Megabyte()], criteria)
 
 
 @Predication(vocabulary)
 def thing(state, x_binding):
-    if x_binding.value is None:
-        iterator = state.all_individuals()
+    def criteria(_):
+        return True
 
-    else:
-        iterator = x_binding.value
-
-    values = []
-    for value in iterator:
-        values.append(value)
-
-    if len(values) > 0:
-        yield state.set_x(x_binding.variable.name, values)
+    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
 
 
-# large_a operates in two modes:
-#     as a verb, it will only work on sets of 1
-#     as an adjective, it filters the set down
 @Predication(vocabulary, names=["_large_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
 def large_a_1(state, e_introduced_binding, x_target_binding):
-    if is_index_predication(state) and len(x_target_binding.value) > 1:
-        report_error(["notDist", x_target_binding.variable.name])
-        return
-
-    if x_target_binding.value is None:
-        iterator = state.all_individuals()
-    else:
-        iterator = x_target_binding.value
-
-    # See if any modifiers have changed *how* large
-    # we should be
-    degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
-
-    values = []
-    for value in iterator:
-        # Arbitrarily decide that "large" means a size greater
-        # than 1,000,000 and apply any multipliers that other
-        # predications set in the introduced event
-        # Remember that "hasattr()" checks if an object has
-        # a property
+    def criteria(value):
         if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
-            values.append(value)
+            return True
 
         else:
             report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            return False
 
-    if len(values) > 0:
-        yield state.set_x(x_target_binding.variable.name, values)
+    # See if any modifiers have changed *how* large we should be
+    degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
+    yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
 
 
 # This is a helper function that any predication that can
@@ -331,56 +293,10 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 
 
-# This is "distributive" in the sense that it
-# only ever calls criteria_function with single value sets
-# It assumes [x,y] op [z] is the same as [x] op [z] and [y] op [z]
-def all_combinations_distributive_2(state, binding1, binding2, criteria_function):
-    for binding1_set_size in range(1, len(binding1.value) + 1):
-        for binding1_set in itertools.combinations(binding1.value, binding1_set_size):
-            for binding2_set_size in range(1, len(binding2.value) + 1):
-                for binding2_set in itertools.combinations(binding2.value, binding2_set_size):
-                    # See if everything in binding1_set has the criteria_function relationship
-                    # to binding2_set
-                    sets_fail = False
-                    for binding1_item in binding1_set:
-                        for binding2_item in binding2_set:
-                            if not criteria_function(binding1_item, binding2_item):
-                                sets_fail = True
-                                break
-                        if sets_fail:
-                            break
-
-                    if not sets_fail:
-                        yield state.set_x(binding1.variable.name, binding1_set).set_x(binding2.variable.name, binding2_set)
-
-
-# def combination_iterator(variable_set, size):
-#     if len(variable_set) == 1 and isinstance(variable_set[0], Measurement):
-#             return rstr_value[0].count
-#
-#
-# # This is "collective" in the sense that it
-# # calls criteria_function with all combinations of sets that are 2 or more items
-# def all_combinations_collective_2(state, binding1, binding2, criteria_function):
-#     for binding1_set_size in range(2, len(binding1.value) + 1):
-#         for binding1_set in itertools.combinations(binding1.value, binding1_set_size):
-#             for binding2_set_size in range(2, len(binding2.value) + 1):
-#                 for binding2_set in itertools.combinations(binding2.value, binding2_set_size):
-#                     # See if everything in binding1_set has the criteria_function relationship
-#                     # to binding2_set
-#                     if criteria_function(binding1_set, binding2_set):
-#                         yield state.set_x(binding1.variable.name, binding1_set).set_x(binding2.variable.name, binding2_set)
-# As a verb, "in" has no notion of "together" for actors or locations that is different than "separately"
-# So force distributive
-# Worst case: return all combinations of actors that are in all combinations of locations
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
-    if is_index_predication(state) and (x_actor_binding.variable.is_collective or x_location_binding.variable.is_collective):
-        report_error(["notDist"])
-        return
-
     if x_actor_binding.value is not None:
-        if x_location_binding is not None:
+        if x_location_binding.value is not None:
             def item_in_item(item1, item2):
                 # x_actor is "in" x_location if x_location contains it
                 found_location = False
@@ -388,9 +304,12 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
                     if item1 == item:
                         found_location = True
                         break
+                if not found_location:
+                    report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+
                 return found_location
 
-            yield from all_combinations_distributive_2(state, x_actor_binding, x_location_binding, item_in_item)
+            yield from in_style_predication(state, x_actor_binding, x_location_binding, item_in_item)
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
@@ -400,33 +319,33 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
 @Predication(vocabulary, names=["loc_nonsp"])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
+    def criteria(actor_set, size_set):
+        if value_is_measure(size_set):
+            if not is_collective_type(x_size_binding.variable.value_type):
+                # we only deal with x megabytes as coll because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
+                report_error(["formNotUnderstood", "missing", "collective"])
+                return False, None, None
+
+            # Try to add up all combinations of x_actor_binding
+            # to total size_set[0]
+            total = 0
+            for actor in actor_set:
+                if not hasattr(actor, "size_measurement"):
+                    report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
+                    return
+                else:
+                    total += actor.size_measurement().count
+
+            if size_set[0].count == total:
+                return True, True, True
+
+            else:
+                report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
+                return False, None, None
+
     if x_actor_binding.value is not None:
         if x_size_binding.value is not None:
-            if variable_is_measure(x_size_binding):
-                # Try to add up all combinations of x_actor_binding
-                # to total x_size_binding
-
-                # If we are collective, don't create a set of 1 item
-                if x_actor_binding.variable.is_collective:
-                    min_set_size = 2
-                else:
-                    min_set_size = 1
-
-                for x_actor_set_size in range(min_set_size, len(x_actor_binding.value) + 1):
-                    for x_actor_set in itertools.combinations(x_actor_binding.value, x_actor_set_size):
-                        total = 0
-                        for actor in x_actor_set:
-                            if not hasattr(actor, "size_measurement"):
-                                report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
-                                return
-                            else:
-                                total += actor.size_measurement().count
-
-                        if x_size_binding.value[0].count == total:
-                            yield state.set_x(x_actor_binding.variable.name, x_actor_set)
-
-                        else:
-                            report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
+            yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria)
 
 
 # Needed for "together, which 3 files are 3 mb?"
@@ -455,7 +374,7 @@ def together_p(state, e_introduced_binding, x_target_binding):
 @Predication(vocabulary, names=["_together_p_state"])
 def together_p_state(state, e_introduced_binding, e_target_binding):
     # Figure out which x variables are on e_target_binding
-    target_predication = find_predication_from_introduced(state.get_binding("tree").value["Tree"], e_target_binding.variable.name)
+    target_predication = find_predication_from_introduced(state.get_binding("tree").value[0]["Tree"], e_target_binding.variable.name)
     target_x_args = target_predication.x_args()
     target_x_bindings = [state.get_binding(x_arg) for x_arg in target_x_args]
     yield from force_bindings_to_collective(state, target_x_bindings)
@@ -466,7 +385,7 @@ def force_bindings_to_collective(state, target_x_bindings):
     # in the answer by setting used_collective=True
     found_collective = False
     for binding in target_x_bindings:
-        if binding.variable.is_collective:
+        if binding.variable.value_type in [VariableValueType.collective, VariableValueType.combinatoric_collective]:
             yield state
             return
 
@@ -485,13 +404,13 @@ def force_bindings_to_collective(state, target_x_bindings):
         #   and leave the others unset to indicate this is what mode that variable is in.
         uncardinalized_binding = None
         for target_x_binding in target_x_bindings:
-            if is_plural(state, target_x_binding.variable.name) and target_x_binding.variable.is_collective is None:
+            if is_plural(state, target_x_binding.variable.name) and target_x_binding.variable.value_type in [VariableValueType.combinatoric_either, VariableValueType.none]:
                 assert uncardinalized_binding is None
                 uncardinalized_binding = target_x_binding
 
         if uncardinalized_binding is not None:
             state = state.set_x(uncardinalized_binding.variable.name, uncardinalized_binding.value,
-                                is_collective=True)
+                                VariableValueType.combinatoric_collective)
             yield state
 
         else:

@@ -77,7 +77,7 @@ def ShowLogging(name, level=logging.DEBUG):
 
 
 def is_plural(state, variable_name):
-    variables = state.get_binding("tree").value["Variables"]
+    variables = state.get_binding("tree").value[0]["Variables"]
 
     for variable in variables.items():
         if variable[0] == variable_name:

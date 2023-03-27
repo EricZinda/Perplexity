@@ -1,7 +1,7 @@
 import copy
 import logging
 from file_system_example.objects import Actor
-from perplexity.variable_binding import VariableBinding, VariableData
+from perplexity.variable_binding import VariableBinding, VariableData, VariableValueType
 
 
 # The state representation used by the file system example
@@ -34,7 +34,7 @@ class State(object):
 
     # Defines what the default printed output of a state object is
     def __repr__(self):
-        return ", ".join([variable_item[0] + " = " + str(variable_item[1].value) for variable_item in self.variables.items() if variable_item[0] != 'tree'])
+        return ", ".join([str(variable_item[1]) for variable_item in self.variables.items() if variable_item[0] != 'tree'])
 
     # A standard "class method" is just a function definition,
     # indented properly, with "self" as the first argument
@@ -48,10 +48,14 @@ class State(object):
         # like "null"
         return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
 
+    def set_variable_data(self, variable_name, cardinal=None, used_collective=None):
+        binding = self.get_binding(variable_name)
+        return self.set_x(variable_name, binding.value, binding.variable.value_type, cardinal=cardinal, used_collective=used_collective)
+
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, is_collective=None, cardinal=None):
+    def set_x(self, variable_name, item, value_type, cardinal=None, used_collective=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -60,16 +64,18 @@ class State(object):
         # Now we have a new "State" object with the same
         # world state that we can modify.
 
-        # Find a common mistake early
+        # Find a common mistakes early
         assert not isinstance(item, VariableBinding)
-
+        if value_type == VariableValueType.distributive and len(item) > 1:
+            assert False
         if variable_name in new_state.variables:
             initial_variable_data = new_state.variables[variable_name].variable
         else:
-            initial_variable_data = VariableData(variable_name)
+            initial_variable_data = VariableData(variable_name, value_type)
 
-        variable_data = initial_variable_data.copy_with_changes(is_collective=is_collective,
-                                                                cardinal=cardinal)
+        variable_data = initial_variable_data.copy_with_changes(value_type=value_type,
+                                                                cardinal=cardinal,
+                                                                used_collective=used_collective)
 
         # Need to copy the item so that if the list is changed it won't affect
         # the state which is supposed to be immutable

@@ -189,7 +189,7 @@ def pron(state, x_who_binding):
     else:
         iterator = [x_who_binding.value]
 
-    person = int(state.get_binding("tree").value["Variables"][x_who_binding.variable.name]["PERS"])
+    person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
     for value in iterator:
         if isinstance(value, Actor) and value.person == person:
             yield state.set_x(x_who_binding.variable.name, value)
