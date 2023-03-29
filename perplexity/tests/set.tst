@@ -373,6 +373,34 @@
             "Tree": "_the_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(4,e9,x3)],udef_q(x12,[_megabyte_n_1(x12,u19), card(20,e18,x12)],loc_nonsp(e2,x3,x12)))",
             "Enabled": true,
             "ID": "feb7f6d9-c583-4afc-b7d8-6614885db415"
+        },
+        {
+            "Command": "/new examples.Example30_reset",
+            "Expected": "State reset using examples.Example30_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "021c1bd5-fb80-45fb-9782-9faabb8aaae0"
+        },
+        {
+            "Command": "which 2 files are in 2 folders?",
+            "Expected": "[File(name=/Desktop/file2.txt, size=10000000)]\n[File(name=/Desktop/file3.txt, size=10000000)]\n[File(name=/documents/file4.txt, size=10000000)]\n[File(name=/documents/file5.txt, size=10000000)]\n",
+            "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "86773c14-37d1-4ace-9906-eea776f6b402"
+        },
+        {
+            "Command": "/new examples.Example31_reset",
+            "Expected": "State reset using examples.Example31_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "9ea1e81f-8dae-483e-b78a-787301ef6866"
+        },
+        {
+            "Command": "which 2 files are in 2 folders",
+            "Expected": "[File(name=/Desktop/file4.txt, size=10000000)]\n[File(name=/Desktop/file5.txt, size=10000000)]\n[File(name=/Desktop/file4.txt, size=10000000)]\n[File(name=/Desktop/file5.txt, size=10000000)]\n",
+            "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "e94d4a20-05d6-4242-bbc5-d16657e67374"
         }
     ]
 }
