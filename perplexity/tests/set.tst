@@ -345,6 +345,34 @@
             "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(2,e15,x9)],_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "55cb41a3-eb62-4162-aa8f-123a1cfacc8c"
+        },
+        {
+            "Command": "1 file is in a folder together",
+            "Expected": "I don't understand the way you are using: together",
+            "Tree": "_a_q(x11,[_folder_n_of(x11,i16), _together_p(e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "61c8885b-063a-460e-9b8a-a25c01f31df4"
+        },
+        {
+            "Command": "/new examples.Example26_reset",
+            "Expected": "State reset using examples.Example26_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "20df35cc-f31e-45d7-8380-4c65ae1c3a2a"
+        },
+        {
+            "Command": "which 2 large files are 20 mb",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n[File(name=/Desktop/bigfile.txt, size=20000000)]\n[File(name=/Desktop/bigfile2.txt, size=20000000)]\n",
+            "Tree": "udef_q(x12,[_megabyte_n_1(x12,u19), card(20,e18,x12)],_which_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(2,e9,x3)],loc_nonsp(e2,x3,x12)))",
+            "Enabled": true,
+            "ID": "3b8c9772-1b9b-4636-894b-4e42f0b23159"
+        },
+        {
+            "Command": "the 4 large files are 20 mb",
+            "Expected": "That isn't true for all the large 4 file",
+            "Tree": "_the_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(4,e9,x3)],udef_q(x12,[_megabyte_n_1(x12,u19), card(20,e18,x12)],loc_nonsp(e2,x3,x12)))",
+            "Enabled": true,
+            "ID": "feb7f6d9-c583-4afc-b7d8-6614885db415"
         }
     ]
 }

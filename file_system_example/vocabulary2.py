@@ -1,8 +1,8 @@
 import itertools
 from file_system_example.objects import File, Folder, Megabyte, Measurement
-from perplexity.cardinals import cardinal_from_binding, yield_all, in_style_predication, \
-    combinatorial_style_predication, lift_style_predication
+from perplexity.cardinals import cardinal_from_binding, yield_all, CardinalGroup
 from perplexity.execution import report_error, call
+from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication
 from perplexity.tree import is_index_predication, find_predication_from_introduced
 from perplexity.utilities import is_plural
 from perplexity.variable_binding import VariableValueType, is_collective_type
@@ -76,21 +76,6 @@ def default_quantifier(state, x_variable_binding, h_rstr, h_body):
             yield from yield_all(cardinal_group_solution.solutions)
 
     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
-
-
-class CardinalGroup(object):
-    def __init__(self, variable_name, is_collective, original_rstr_set, cardinal_group_set, solutions):
-        assert not is_collective or (is_collective and len(solutions) == 1), \
-            "collective cardinal groups can only have 1 solution"
-
-        self.variable_name = variable_name
-        self.is_collective = is_collective
-        self.original_rstr_set = original_rstr_set
-        self.cardinal_group_set = cardinal_group_set
-        self.solutions = solutions
-
-    def cardinal_group_values(self):
-        return self.cardinal_group_set
 
 
 # Implementation of all quantifiers that take cardinals and plurals into account
