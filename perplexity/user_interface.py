@@ -133,7 +133,15 @@ class UserInterface(object):
                         pipeline_logger.debug(f"solution: {item}")
                         duplicate_solutions.append(item)
 
-                    tree_record["Solutions"] = perplexity.cardinals2.final_answers(duplicate_solutions)
+                    tree_record["SolutionGroups"] = perplexity.cardinals2.final_answer_groups(duplicate_solutions)
+                    # Build a comprehension that unwraps a set of sets into a set
+                    tree_record["Solutions"] = []
+                    for group in tree_record["SolutionGroups"]:
+                        print("Next Solution:\n")
+                        for item in group:
+                            print(item)
+                            tree_record["Solutions"].append(item)
+                    print("\nEnd of Solutions\n")
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()

@@ -101,9 +101,6 @@ class PluralCardinal(object):
 
 
 # card(2) means "exactly 2"
-# This means that it doesn't actually return answers
-# until yield_finish() is called because it needs to ensure that
-# not more than 2 were successful
 class CardCardinal(object):
     def __init__(self, variable_name, h_body, count):
         self.variable_name = variable_name
@@ -124,26 +121,72 @@ class CardCardinal(object):
         else:
             return True
 
-    def solution_groups(self, solutions_with_rstr):
+    # If combinatorial is False then this solution group *must* be true for all the
+    # solutions passed in in order to keep the solution group true for the previous
+    # quantifier
+    def solution_groups(self, solutions_with_rstr, combinatorial=False):
+        # Get all the unique values assigned to this variable
         variable_assignments = []
         for solution_index in range(len(solutions_with_rstr)):
             binding_value = solutions_with_rstr[solution_index][0].get_binding(self.variable_name).value
-            # Hack: find a better way to remove duplicates
-            if binding_value not in [variable_assignment[0] for variable_assignment in variable_assignments]:
-                variable_assignments.append((binding_value, solution_index))
+            # TODO: find a better way to remove duplicates
+            unique = True
+            for variable_assignment in variable_assignments:
+                if binding_value == variable_assignment[0]:
+                    variable_assignment[1].append(solution_index)
+                    unique = False
+                    break
 
-        # Then get all the combinations of those sets that add up to n
-        combinations_of_lists = []
-        # largest set of lists that can add up to self.count is where every list is 1 item long
-        for combination_size in range(1, self.count + 1):
-            for combination in itertools.combinations(variable_assignments, combination_size):
-                if sum(len(item[0]) for item in combination) == self.count:
-                    combinations_of_lists.append(combination)
+            if unique:
+                variable_assignments.append((binding_value, [solution_index]))
 
-        # Finally, return the solutions that contained the assignments
-        for combination in combinations_of_lists:
-            combination_solutions = [solutions_with_rstr[combination_item[1]] for combination_item in combination]
-            yield combination_solutions
+        if combinatorial:
+            combinations_of_lists = []
+            # Then get all the combinations of those sets that add up to n
+            # largest set of lists that can add up to self.count is where every list is 1 item long
+            for combination_size in range(1, self.count + 1):
+                for combination in itertools.combinations(variable_assignments, combination_size):
+                    # combination is a list of 2 element lists
+                    if sum(len(item[0]) for item in combination) == self.count:
+                        combinations_of_lists.append(combination)
+
+            # Finally, return all possible combinations of solutions that contained the assignments
+            # which means returning all combinations of every non-empty subset of all the lists
+            # Each combination in combinations_of_lists is a list of 2 element lists:
+            #   0 is a list of variable assignments
+            #   1 is a list of solutions that had that assignment
+            for combination in combinations_of_lists:
+                for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
+                    print(f"combination: {combination}\n   solution:")
+                    combination_solutions = []
+                    for index in possible_solution:
+                        print(f"   {solutions_with_rstr[index][0]}")
+                        combination_solutions.append(solutions_with_rstr[index])
+
+                    yield combination_solutions
+
+        else:
+            if sum(len(item[0]) for item in variable_assignments) != self.count:
+                return
+
+            yield solutions_with_rstr
+
+
+# Given a list of lists, returns another list of lists
+# with all combinations of items from the original lists
+# ensuring there is always one item from every list
+def all_combinations_with_elements_from_all(list_of_lists):
+    # returns nonempty subsets of list items
+    def non_empties(items):
+        subsets = []
+        n = len(items)
+        for i in range(1, n + 1):
+            subsets.extend(itertools.combinations(items, i))
+        return subsets
+
+    all_combinations_of_each_list = [non_empties(items) for items in list_of_lists]
+    combs = [list(itertools.chain(*answer)) for answer in itertools.product(*all_combinations_of_each_list)]
+    return combs
 
 
 # For implementing things like "a few" where there is a number
@@ -236,3 +279,7 @@ class CardinalGroup(object):
 
     def cardinal_group_values(self):
         return self.cardinal_group_set
+
+
+if __name__ == '__main__':
+    print(list(all_combinations_with_elements_from_all([[1], [2, 3], [4]])))

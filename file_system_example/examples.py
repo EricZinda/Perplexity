@@ -641,12 +641,14 @@ def Example32_reset():
                                            (True, "/documents/file5.txt", {"size": 10000000})],
                                            "/Desktop"))
 
+
 def Example32():
     user_interface = UserInterface(Example32_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()
         print()
+
 
 if __name__ == '__main__':
     # ShowLogging("Execution")
@@ -691,6 +693,6 @@ if __name__ == '__main__':
     # Example27()
     # Example28()
     # Example29()
-    Example30()
-    # Example31()
+    # Example30()
+    Example31()
     # Example32()

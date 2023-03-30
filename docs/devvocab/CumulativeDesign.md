@@ -18,26 +18,39 @@ Start with udef_q:
 To get all the readings we need to generate all combinations.
 
 Brute force:
-    If you get all uncardinalized answers for coll and dist
-    Then run the cardinals against this and return all combinations of solutions where the set of x is unique and the cardinals are true
+    If you get all unquantified answers for coll and dist you get all the possible values that could be true
+        "2 files in 2 folders" just becomes "files in folders"
+    Then run the quantifiers cardinals against this and return all combinations of solutions where the set of x is unique and the cardinals are true
         You have to walk the cardinals and pick those solutions for which one is true, and then pass that filtered set to the next one
-    The bindings in the solutions contain the cardinals that should be used for them
+        The bindings in the solutions contain the cardinals that should be used for them
+        Need to return groups of solutions that are "1 solution group" as the actual answer
+    Issue: When the "2 file" cardinal filters the solutions to 2 individual files it passes along all the folders that those two files are in
+        When the "2 folder" cardinal ...
+        It seems like each cardinal needs to be passing along all combinations of solutions that have 2 files? Not the entire group?
+        This means subsequent ones need to use all the solutions in their solutions
+        But what about the first one?
+            The first one just selects solutions that match and has to be combinatorial since nothing has been restricted yet
+        Now dist, dist doesn't work because it requires file() to send along 4 answers
 
     Optimizations:
         Starting with the cardinal that generated the smallest set is probably best
         You can rule out everything if there aren't even card(rstr(x)) available at all for the first one (but maybe not for child cards because the rstr could depend on the first?)
 
-
+    Questions:
+        Can we really run quantifiers after the fact?
+        Can you really run quantifiers in any order?
+            every(x, rstr, body)
 Could we use this approach for dist and coll too?
     It might be better in that 
     coll for a variable is a single set that matches the cardinal. We'd need to group all the solutions that have the same values that 
     dist for a variable is a group of N sets of 1 that matches the cardinal
     coll is just cuml where you require the set to be in a single answer? Doesn't that just fall out naturally? 
-        No, Cuml would not allow "2 children ate two pizzas" to have 2 children that ate two different pizzas each
-                
-    dist is just cuml where you require the set to be in all different answers? Doesn't that just fall out naturally?
-
-1. Run quantifiers uncardinalized
+        dist is just cuml where you require the set to be in all different answers? Doesn't that just fall out naturally?
+            No, Cuml would not allow "2 children ate two pizzas" to have 2 children that ate two different pizzas each
+    Real algorithm is:  
+        collective: value of one variable meets the cardinal
+        distributive: value of one variable meets the cardinal
+1. Run query without quantifiers or cardinals
 2. Cardinalize them
 3. Quantify them
 
