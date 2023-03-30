@@ -4,6 +4,7 @@ import os
 import platform
 import sys
 import perplexity.cardinals
+import perplexity.cardinals2
 from delphin import ace
 from delphin.codecs import simplemrs
 
@@ -132,7 +133,7 @@ class UserInterface(object):
                         pipeline_logger.debug(f"solution: {item}")
                         duplicate_solutions.append(item)
 
-                    tree_record["Solutions"] = perplexity.cardinals.RemoveDuplicates(duplicate_solutions)
+                    tree_record["Solutions"] = perplexity.cardinals2.final_answers(duplicate_solutions)
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()

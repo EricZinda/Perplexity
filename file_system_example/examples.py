@@ -636,6 +636,18 @@ def Example31():
         print()
 
 
+def Example32_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/documents/file5.txt", {"size": 10000000})],
+                                           "/Desktop"))
+
+def Example32():
+    user_interface = UserInterface(Example32_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
 if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
@@ -675,9 +687,10 @@ if __name__ == '__main__':
     # Example22()
     # Example24()
     # Example25()
-    Example26()
+    # Example26()
     # Example27()
     # Example28()
     # Example29()
-    # Example30()
+    Example30()
     # Example31()
+    # Example32()

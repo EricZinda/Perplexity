@@ -1,11 +1,12 @@
 import itertools
 from file_system_example.objects import File, Folder, Megabyte, Measurement
 from perplexity.cardinals import cardinal_from_binding, yield_all, CardinalGroup
+from perplexity.cardinals2 import quantifier_raw
 from perplexity.execution import report_error, call
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication
 from perplexity.tree import is_index_predication, find_predication_from_introduced
 from perplexity.utilities import is_plural
-from perplexity.variable_binding import VariableValueType, is_collective_type
+from perplexity.variable_binding import VariableValueType, is_collective_type, VariableBinding
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 
@@ -71,11 +72,15 @@ def a_q(state, x_variable_binding, h_rstr, h_body):
 # The default quantifier just passes through all answers
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q"])
 def default_quantifier(state, x_variable_binding, h_rstr, h_body):
-    def default_quantifier_behavior(cardinal_group_solutions):
-        for cardinal_group_solution in cardinal_group_solutions:
-            yield from yield_all(cardinal_group_solution.solutions)
+    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
-    yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
+# @Predication(vocabulary, names=["udef_q", "which_q", "_which_q"])
+# def default_quantifier(state, x_variable_binding, h_rstr, h_body):
+#     def default_quantifier_behavior(cardinal_group_solutions):
+#         for cardinal_group_solution in cardinal_group_solutions:
+#             yield from yield_all(cardinal_group_solution.solutions)
+#
+#     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
 
 
 # Implementation of all quantifiers that take cardinals and plurals into account

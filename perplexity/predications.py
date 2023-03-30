@@ -28,9 +28,14 @@ def discrete_variable_set_generator(binding):
         value_type = VariableValueType.distributive
 
     else:
-        # binding.variable.value_type == VariableValueType.combinatoric_either:
-        # TODO: Should never get here because the quantifier will set one or the other of coll/dist
-        assert False
+        # In this new world this is OK
+        min_set_size = 1
+        max_set_size = len(binding.value)
+        value_type = VariableValueType.collective
+
+        # # binding.variable.value_type == VariableValueType.combinatoric_either:
+        # # TODO: Should never get here because the quantifier will set one or the other of coll/dist
+        # assert False
 
     for value_set_size in range(min_set_size, max_set_size + 1):
         for value_set in itertools.combinations(binding.value, value_set_size):
@@ -106,9 +111,11 @@ def combinatorial_style_predication(state, binding, all_individuals_generator, p
         pass
 
     else:
-        # binding.variable.value_type == VariableValueType.combinatoric_either:
-        # Should never get here because the quantifier will set one or the other of coll/dist
-        assert False
+        # In this new world this is OK
+        pass
+        # # binding.variable.value_type == VariableValueType.combinatoric_either:
+        # # Should never get here because the quantifier will set one or the other of coll/dist
+        # assert False
 
     if binding.value is None:
         # Unbound variable means the incoming set contains "all individuals"

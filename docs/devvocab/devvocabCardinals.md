@@ -34,6 +34,9 @@ Cumulative readings have the following two properties:
 carried.
 2 There is no number dependency between the two arguments. (No type 3 distributivity)
 
+From wikipedia: https://en.wikipedia.org/wiki/Cumulativity_(linguistics)
+If X is true of both of a and b, then it is also true of the combination of a and b
+
 ### Implied initial quantifier
 "which 2 rocks are in 2 folders" has an implied cardinal of "a"
 

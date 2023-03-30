@@ -124,6 +124,27 @@ class CardCardinal(object):
         else:
             return True
 
+    def solution_groups(self, solutions_with_rstr):
+        variable_assignments = []
+        for solution_index in range(len(solutions_with_rstr)):
+            binding_value = solutions_with_rstr[solution_index][0].get_binding(self.variable_name).value
+            # Hack: find a better way to remove duplicates
+            if binding_value not in [variable_assignment[0] for variable_assignment in variable_assignments]:
+                variable_assignments.append((binding_value, solution_index))
+
+        # Then get all the combinations of those sets that add up to n
+        combinations_of_lists = []
+        # largest set of lists that can add up to self.count is where every list is 1 item long
+        for combination_size in range(1, self.count + 1):
+            for combination in itertools.combinations(variable_assignments, combination_size):
+                if sum(len(item[0]) for item in combination) == self.count:
+                    combinations_of_lists.append(combination)
+
+        # Finally, return the solutions that contained the assignments
+        for combination in combinations_of_lists:
+            combination_solutions = [solutions_with_rstr[combination_item[1]] for combination_item in combination]
+            yield combination_solutions
+
 
 # For implementing things like "a few" where there is a number
 # between 3 and, say 5

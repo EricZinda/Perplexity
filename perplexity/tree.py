@@ -2,6 +2,7 @@ import copy
 import logging
 from collections import defaultdict
 from perplexity.execution import execution_context
+from perplexity.utilities import parse_predication_name
 
 
 class TreePredication(object):
@@ -343,6 +344,17 @@ def find_predication_from_introduced(term, introduced_variable):
             return None
 
     return walk_tree_predications_until(term, match_introduced_variable)
+
+
+def find_quantifier_from_variable(term, variable_name):
+    def match_variable(predication):
+        predication_data = parse_predication_name(predication.name)
+        if predication_data["Pos"] == "q" and predication.args[0] == variable_name:
+            return predication
+        else:
+            return None
+
+    return walk_tree_predications_until(term, match_variable)
 
 
 # Walk the tree represented by "term" and
