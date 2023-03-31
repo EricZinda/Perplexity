@@ -27,7 +27,7 @@ The men lifted the piano.
 is ambiguous between the two readings. They could each have lifted it individually, the distributive reading, in which case the logical subject of lift would be the typical element of the set, or they could have lifted it together, the collective reading, in which case it would be the set, or the aggregate.
 
 
-Cumulative started with Scha (1981)
+Cumulative started with Scha (1981) (https://people.umass.edu/scable/LING720-FA10/Handouts/Scha-198184.pdf)
 Three boys carried two pianos.
 Cumulative readings have the following two properties:
 1 Each boy must participate in the carrying, and each piano must be

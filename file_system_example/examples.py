@@ -694,5 +694,5 @@ if __name__ == '__main__':
     # Example28()
     # Example29()
     # Example30()
-    Example31()
-    # Example32()
+    # Example31()
+    Example32()

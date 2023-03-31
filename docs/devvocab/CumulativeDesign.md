@@ -25,7 +25,6 @@ Brute force:
         The bindings in the solutions contain the cardinals that should be used for them
         Need to return groups of solutions that are "1 solution group" as the actual answer
     Issue: When the "2 file" cardinal filters the solutions to 2 individual files it passes along all the folders that those two files are in
-        When the "2 folder" cardinal ...
         It seems like each cardinal needs to be passing along all combinations of solutions that have 2 files? Not the entire group?
         This means subsequent ones need to use all the solutions in their solutions
         But what about the first one?
@@ -37,9 +36,26 @@ Brute force:
         You can rule out everything if there aren't even card(rstr(x)) available at all for the first one (but maybe not for child cards because the rstr could depend on the first?)
 
     Questions:
+        How does this really work:
+            Unquantified and Uncardinalized gives you all potential answers 
+            If you then filter the answers to the groups that are true for each quantifier in question, and only pass those that are true to the next one
+            The cardinals and quantifiers are always operating on some relationship between the original RSTR solutions and those that are true in the body
+                All you need to know is what is original rstr(x) and what is postbodyrstr(x)
+                AFew(x) 
+            Do we really need all combinations of answers returned?
+                The fact that there may be many solutions involving a particular value of x doesn't matter for the count. So we should always make it a unique count.
+                BUT: if we allow downstream predicates to filter out solutions, they may remove one that made an upstream true which breaks the logic. 
+                    so: the only way to have downstream predicates able to operate in isolation is to say they must not remove any solutions, which means all possible combinations need to run
+                        OR: Optimization: maybe predicates can pass combinatoric options down?
+            A cardinal for 2 is really just saying "two unique things are involved, somehow", it should allow downstream predicates to try all the alternatives
+            How do you get rid of duplicates? Maybe duplicates don't really matter, they just get filtered at the bitter end by only reporting unique values.
+            If you don't, then something like 
+            It seems like we just need to be able to explore all the solutions until one is found and then return that
         Can we really run quantifiers after the fact?
-        Can you really run quantifiers in any order?
+            As long as we have the original rstr there, maybe?
+            But: we won't have a record if it fails for it to return a good error. Should be some kind of workaround for this
             every(x, rstr, body)
+
 Could we use this approach for dist and coll too?
     It might be better in that 
     coll for a variable is a single set that matches the cardinal. We'd need to group all the solutions that have the same values that 
@@ -57,4 +73,13 @@ Could we use this approach for dist and coll too?
 Is there an iterative approach?
     Cuml is an operation over the solutions that groups them
 - Find every combination of rstr that matches the cardinal
+    
+What are the proper answers when 2 files are linked in two folders
+which 2 files are in two folders?
+coll, coll
+dist, coll
+coll, dist
+dist, dist
+cuml:
+    file1 in folder1, file2 in folder2
     
