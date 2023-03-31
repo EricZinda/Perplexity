@@ -6,6 +6,9 @@ from perplexity.utilities import parse_predication_name, sentence_force
 
 
 # Implements the response for a given tree
+from perplexity.variable_binding import VariableValueType
+
+
 def respond_to_mrs_tree(tree, solutions, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary
@@ -50,7 +53,11 @@ def respond_to_mrs_tree(tree, solutions, error):
                 wh_variable = wh_predication.introduced_variable()
                 answer_items = []
                 for solution in solutions:
-                    answer_items.append(solution.get_binding(wh_variable).value)
+                    binding = solution.get_binding(wh_variable)
+                    if binding.variable.value_type == VariableValueType.combinatoric:
+                        answer_items += [[value] for value in binding.value]
+                    else:
+                        answer_items.append(binding.value)
 
                 message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
                 return message

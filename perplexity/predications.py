@@ -76,9 +76,11 @@ def combinatorial_style_predication(state, binding, all_individuals_generator, p
         # This is a single set that needs to be kept intact
         # and succeed or fail as a unit
         all_must_succeed = True
+        value_type = VariableValueType.set
 
     else:
         all_must_succeed = False
+        value_type = VariableValueType.combinatoric
 
     if binding.value is None:
         # Unbound variable means the incoming set contains "all individuals"
@@ -97,4 +99,4 @@ def combinatorial_style_predication(state, binding, all_individuals_generator, p
             return
 
     if len(values) > 0:
-        yield state.set_x(binding.variable.name, values, binding.variable.value_type)
+        yield state.set_x(binding.variable.name, values, value_type)
