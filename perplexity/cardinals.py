@@ -6,7 +6,7 @@ from perplexity.execution import report_error
 from perplexity.utilities import is_plural
 from importlib import import_module
 
-from perplexity.variable_binding import VariableValueType, is_collective_type
+from perplexity.variable_binding import VariableValueType
 
 
 def yield_all(set_or_answer):
@@ -55,13 +55,10 @@ def cardinal_from_binding(state, h_body, binding):
         return NoCardinal(binding.variable.name, h_body)
 
 
-# cardinal_criteria will be sent a list of all the rstr values used in this solution, which might
-# be duplicated if the solutions contain a dist and a coll solution.  The card needs to count them as if they
-# are separate items?
-# Every solution group should be a dist, coll, or cuml solution, let's say as separate solutions
-# I think the problem is that in allows both transparently, and it really should return all the combinations
-# But ignore the coll ones that aren't used?
-def solution_groups_helper(variable_name, max_count, solutions_with_rstr, cardinal_criteria, combinatorial=False):
+# max_answer_count is the maximum number of individual items that will ever be used. None means all
+#   So, for "2 boys", it should be 2 since it must be no more than 2
+#   but for "boys" it has to be None since it could be a huge set of boys
+def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr, cardinal_criteria, combinatorial=False):
     # Get all the unique values assigned to this variable
     variable_assignments = []
     for solution_index in range(len(solutions_with_rstr)):
@@ -77,11 +74,14 @@ def solution_groups_helper(variable_name, max_count, solutions_with_rstr, cardin
         if unique:
             variable_assignments.append((binding_value, [solution_index]))
 
+    if max_answer_count is None:
+        max_answer_count = len(variable_assignments)
+
     if combinatorial:
         combinations_of_lists = []
         # Then get all the combinations of those sets that meet the criteria
         # largest set of lists that can add up to self.count is where every list is 1 item long
-        for combination_size in range(1, max_count + 1):
+        for combination_size in range(1, max_answer_count + 1):
             for combination in itertools.combinations(variable_assignments, combination_size):
                 # combination is a list of 2 element lists
                 unique_values = []
@@ -90,7 +90,6 @@ def solution_groups_helper(variable_name, max_count, solutions_with_rstr, cardin
                         if item not in unique_values:
                             unique_values.append(item)
                 if cardinal_criteria(unique_values):
-                # if cardinal_criteria(list(itertools.chain(*[item[0] for item in combination]))):
                     combinations_of_lists.append(combination)
 
         # Finally, return all possible combinations of solutions that contained the assignments
@@ -114,9 +113,10 @@ def solution_groups_helper(variable_name, max_count, solutions_with_rstr, cardin
             for item in lst:
                 if item not in unique_values:
                     unique_values.append(item)
+
         if cardinal_criteria(unique_values):
-        # if cardinal_criteria(list(itertools.chain(*[item[0] for item in variable_assignments]))):
             yield solutions_with_rstr
+
         else:
             return
 
@@ -128,22 +128,6 @@ class NoCardinal(object):
 
     def meets_criteria(self, cardinal_group_values, cardinal_scoped_to_initial_rstr):
         return True
-
-
-# class SingularCardinal(object):
-#     def __init__(self, variable_name, h_body):
-#         self.variable_name = variable_name
-#         self.h_body = h_body
-#
-#     def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
-#         cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
-#         if cardinal_group_values_count == 1:
-#             return True
-#
-#         else:
-#             error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
-#             report_error(["notSingular", error_location, self.variable_name], force=True)
-#             return False
 
 
 class PluralCardinal(object):
@@ -164,6 +148,12 @@ class PluralCardinal(object):
             error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
             report_error(["notPlural", error_location, self.variable_name], force=True)
             return False
+
+    def solution_groups(self, solutions_with_rstr, combinatorial=False):
+        def criteria(rstr_value_list):
+            return len(rstr_value_list) > 0
+
+        yield from solution_groups_helper(self.variable_name, None, solutions_with_rstr, criteria, combinatorial)
 
 
 # card(2) means "exactly 2"

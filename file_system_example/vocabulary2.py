@@ -1,12 +1,11 @@
-import itertools
 from file_system_example.objects import File, Folder, Megabyte, Measurement
 from perplexity.cardinals import cardinal_from_binding, yield_all, CardinalGroup
 from perplexity.cardinals2 import quantifier_raw
 from perplexity.execution import report_error, call
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication
-from perplexity.tree import is_index_predication, find_predication_from_introduced
+from perplexity.tree import find_predication_from_introduced
 from perplexity.utilities import is_plural
-from perplexity.variable_binding import VariableValueType, is_collective_type, VariableBinding
+from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
 

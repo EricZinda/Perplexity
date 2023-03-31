@@ -1,17 +1,10 @@
 import enum
 
 
-def is_collective_type(variable_value_type):
-    return variable_value_type in [VariableValueType.combinatoric_collective, VariableValueType.collective]
-
-
 class VariableValueType(enum.Enum):
     none = 0
-    combinatoric_either = 1
-    combinatoric_collective = 2
-    combinatoric_distributive = 3
-    collective = 4
-    distributive = 5
+    combinatoric = 1
+    set = 2
 
 
 class VariableData(object):

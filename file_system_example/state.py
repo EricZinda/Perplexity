@@ -66,8 +66,6 @@ class State(object):
 
         # Find a common mistakes early
         assert not isinstance(item, VariableBinding)
-        if value_type == VariableValueType.distributive and len(item) > 1:
-            assert False
         if variable_name in new_state.variables:
             initial_variable_data = new_state.variables[variable_name].variable
         else:
