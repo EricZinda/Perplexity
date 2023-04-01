@@ -51,13 +51,27 @@ def respond_to_mrs_tree(tree, solutions, error):
                 # to get the response
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
+
+                # Get unique items from all solutions
+
                 answer_items = []
+                def unique_answer(new_item):
+                    for item in answer_items:
+                        if new_item == item:
+                            return []
+                    else:
+                        return new_item
+
                 for solution in solutions:
                     binding = solution.get_binding(wh_variable)
                     if binding.variable.value_type == VariableValueType.combinatoric:
-                        answer_items += [[value] for value in binding.value]
+                        unique = unique_answer([[value] for value in binding.value])
+                        if len(unique) > 0:
+                            answer_items.append(unique)
                     else:
-                        answer_items.append(binding.value)
+                        unique = unique_answer(binding.value)
+                        if len(unique) > 0:
+                            answer_items.append(unique)
 
                 message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
                 return message

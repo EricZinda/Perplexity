@@ -651,10 +651,10 @@ def Example32():
 
 
 if __name__ == '__main__':
-    # ShowLogging("Execution")
-    # ShowLogging("Generation")
-    # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Execution")
+    ShowLogging("Generation")
+    ShowLogging("UserInterface")
+    ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -684,11 +684,11 @@ if __name__ == '__main__':
     # Example17()
     # Example18()
     # Example19()
-    # Example20()
+    Example20()
     # Example21()
     # Example22()
     # Example24()
-    Example25()
+    # Example25()
     # Example26()
     # Example27()
     # Example28()

@@ -2,8 +2,9 @@ from file_system_example.objects import File, Folder, Megabyte, Measurement
 from perplexity.cardinals import cardinal_from_binding, yield_all, CardinalGroup
 from perplexity.cardinals2 import quantifier_raw
 from perplexity.execution import report_error, call
-from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication
-from perplexity.tree import find_predication_from_introduced
+from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
+    individual_only_style_predication_1
+from perplexity.tree import find_predication_from_introduced, is_index_predication
 from perplexity.utilities import is_plural
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
@@ -58,18 +59,18 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 
 
 # "a" stops returning answers after a single solution works
-@Predication(vocabulary, names=["_a_q"])
-def a_q(state, x_variable_binding, h_rstr, h_body):
-    def a_behavior(cardinal_group_solutions):
-        # Return "a" (arbitrary) item, then stop
-        if len(cardinal_group_solutions) > 0:
-            yield from yield_all(cardinal_group_solutions[0].solutions)
-
-    yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, a_behavior)
+# @Predication(vocabulary, names=["_a_q"])
+# def a_q(state, x_variable_binding, h_rstr, h_body):
+#     def a_behavior(cardinal_group_solutions):
+#         # Return "a" (arbitrary) item, then stop
+#         if len(cardinal_group_solutions) > 0:
+#             yield from yield_all(cardinal_group_solutions[0].solutions)
+#
+#     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, a_behavior)
 
 
 # The default quantifier just passes through all answers
-@Predication(vocabulary, names=["udef_q", "which_q", "_which_q"])
+@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "_a_q"])
 def default_quantifier(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -217,10 +218,8 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
                                   cardinal=["cardinals.BetweenCardinal", [3, 5]])
 
 
-# Values come in, the job of the predication is to restrict them
-# to something that is true for the predication and yield that state
-# Whether they yield the values one by one (distributive) or as a set
-# (collective) is determined by the variable metadata
+# true for both sets and individuals as long as everything
+# in the set is a file
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def criteria(value):
@@ -229,6 +228,8 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
 
 
+# true for both sets and individuals as long as everything
+# in the set is a file
 @Predication(vocabulary, names=["_folder_n_of"])
 def folder_n_of(state, x_binding, i_binding):
     def criteria(value):
@@ -253,19 +254,37 @@ def thing(state, x_binding):
     yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
 
 
+# "large_a" means that each individual thing in a combinatoric argument is large
+# BUT: if you ask if large([a, b]) of a set as an index, it will fail
 @Predication(vocabulary, names=["_large_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
 def large_a_1(state, e_introduced_binding, x_target_binding):
-    def criteria(value):
-        if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
-            return True
-
-        else:
-            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
-            return False
-
     # See if any modifiers have changed *how* large we should be
     degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
-    yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
+
+    if is_index_predication(state):
+        def criteria_index(value):
+            if len(value) > 1:
+                report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            else:
+                if hasattr(value[0], 'size') and value[0].size > degree_multiplier * 1000000:
+                    return True
+
+                else:
+                    report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+                    return False
+
+        yield from individual_only_style_predication_1(state, x_target_binding, criteria_index)
+
+    else:
+        def criteria(value):
+            if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+                return True
+
+            else:
+                report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+                return False
+
+        yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
 
 
 # This is a helper function that any predication that can

@@ -23,6 +23,39 @@ def discrete_variable_set_generator(binding):
                 yield VariableValueType.set, value_set
 
 
+def discrete_variable_individual_generator(binding):
+    if binding.variable.value_type == VariableValueType.set:
+        # This is a single set that needs to be kept intact
+        yield VariableValueType.set, binding.value
+        return
+
+    else:
+        # Generate all possible sets of 1
+        assert binding.variable.value_type == VariableValueType.combinatoric
+
+        min_set_size = 1
+        max_set_size = 1
+
+        for value_set_size in range(min_set_size, max_set_size + 1):
+            for value_set in itertools.combinations(binding.value, value_set_size):
+                yield VariableValueType.set, value_set
+
+
+# Ensures that solutions are sets (not combinatoric) and only passes through
+# individual sets if it is given a combinatoric
+def individual_only_style_predication_1(state, binding, prediction_function):
+    if binding.variable.value_type == VariableValueType.set:
+        # Pass sets through, if it is > 1 item the predication_function should fail
+        iterator = [binding.value]
+    else:
+        # If it is combinatoric, only pass through individuals
+        iterator = [[value] for value in binding.value]
+
+    for value in iterator:
+        if prediction_function(value):
+            yield state.set_x(binding.variable.name, value, VariableValueType.set)
+
+
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things

@@ -6,6 +6,9 @@ from perplexity.tree import find_quantifier_from_variable
 
 
 # Return each quantified variable, along with its cardinal and quantifier
+from perplexity.variable_binding import VariableValueType
+
+
 def variable_cardinal_quantifier(state):
     tree_info = state.get_binding("tree").value[0]
     variables = tree_info["Variables"]
@@ -59,6 +62,25 @@ def _which_q_impl(variable_name, cardinal_solution_group):
 
 
 def udef_q_impl(variable_name, cardinal_solution_group):
+    yield cardinal_solution_group
+
+
+# Solution groups are never combinatoric due to the solution_groups_helper
+# so we can just see if there is more than one "a"
+def _a_q_impl(variable_name, cardinal_solution_group):
+    found_item = None
+    for solution_rstr in cardinal_solution_group:
+        binding = solution_rstr[0].get_binding(variable_name)
+        if found_item is None:
+            found_item = binding.value
+
+        elif found_item == binding.value:
+            continue
+
+        else:
+            # More than one "a", so fails
+            return
+
     yield cardinal_solution_group
 
 

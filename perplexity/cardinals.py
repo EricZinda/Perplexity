@@ -1,8 +1,10 @@
+import copy
 import itertools
 import sys
 
 from file_system_example.objects import Measurement
 from perplexity.execution import report_error
+from perplexity.set_utilities import all_nonempty_subsets, all_combinations_with_elements_from_all
 from perplexity.utilities import is_plural
 from importlib import import_module
 
@@ -52,82 +54,131 @@ def cardinal_from_binding(state, h_body, binding):
         return PluralCardinal(binding.variable.name, h_body)
 
     else:
-        return NoCardinal(binding.variable.name, h_body)
+        return SingularCardinal(binding.variable.name, h_body)
 
 
+# Ensure that solutions_with_rstr_orig is broken up into a set of solution groups that are not combinatoric
+# in any way
 # max_answer_count is the maximum number of individual items that will ever be used. None means all
 #   So, for "2 boys", it should be 2 since it must be no more than 2
 #   but for "boys" it has to be None since it could be a huge set of boys
-def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr, cardinal_criteria, combinatorial=False):
-    # Get all the unique values assigned to this variable
-    variable_assignments = []
-    for solution_index in range(len(solutions_with_rstr)):
-        binding_value = solutions_with_rstr[solution_index][0].get_binding(variable_name).value
-        # TODO: find a better way to remove duplicates, support hashing objects and use set?
-        unique = True
-        for variable_assignment in variable_assignments:
-            if binding_value == variable_assignment[0]:
-                variable_assignment[1].append(solution_index)
-                unique = False
-                break
+# combinatorial is True when any combination of the solutions can be used, otherwise, the exact set must be true
+def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr_orig, cardinal_criteria, solution_group_combinatorial=False):
+    # If variable_name is a combinatorial variable it means that any combination of values in it are true, so as long as one
+    #   remains at the end, the solution group is still valid.
+    #       For solution_group_combinatorial=true, it is the equivalent of breaking it into N more alternative
+    #           solutions with each solution having one of the combinations of possible values
+    #       For solution_group_combinatorial=false, it means as long as one of the values in the final answer it is valid
+    # Turn each combinatorial solution into a list of set solutions
+    set_solution_alternatives_list = []
+    set_solution_list = []
+    for solution in solutions_with_rstr_orig:
+        binding = solution[0].get_binding(variable_name)
+        if binding.variable.value_type == VariableValueType.combinatoric:
+            binding_alternatives = []
+            for subset in all_nonempty_subsets(binding.value):
+                binding_alternatives.append([solution[0].set_x(variable_name, subset, VariableValueType.set), solution[1]])
+            set_solution_alternatives_list.append(binding_alternatives)
+        else:
+            set_solution_list.append(solution)
 
-        if unique:
-            variable_assignments.append((binding_value, [solution_index]))
-
-    if max_answer_count is None:
-        max_answer_count = len(variable_assignments)
-
-    if combinatorial:
-        combinations_of_lists = []
-        # Then get all the combinations of those sets that meet the criteria
-        # largest set of lists that can add up to self.count is where every list is 1 item long
-        for combination_size in range(1, max_answer_count + 1):
-            for combination in itertools.combinations(variable_assignments, combination_size):
-                # combination is a list of 2 element lists
-                unique_values = []
-                for lst in [item[0] for item in combination]:
-                    for item in lst:
-                        if item not in unique_values:
-                            unique_values.append(item)
-                if cardinal_criteria(unique_values):
-                    combinations_of_lists.append(combination)
-
-        # Finally, return all possible combinations of solutions that contained the assignments
-        # which means returning all combinations of every non-empty subset of all the lists
-        # Each combination in combinations_of_lists is a list of 2 element lists:
-        #   0 is a list of variable assignments
-        #   1 is a list of solutions that had that assignment
-        for combination in combinations_of_lists:
-            for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
-                print(f"combination: {combination}\n   solution:")
-                combination_solutions = []
-                for index in possible_solution:
-                    print(f"   {solutions_with_rstr[index][0]}")
-                    combination_solutions.append(solutions_with_rstr[index])
-
-                yield combination_solutions
+    if solution_group_combinatorial:
+        alternative = set_solution_list
+        for alternatives in set_solution_alternatives_list:
+            alternative.extend(alternatives)
+        final_alternatives_list = [alternative]
 
     else:
-        unique_values = []
-        for lst in [item[0] for item in variable_assignments]:
-            for item in lst:
-                if item not in unique_values:
-                    unique_values.append(item)
+        final_alternatives_list = []
+        for alternative_list in all_combinations_with_elements_from_all(set_solution_alternatives_list):
+            alternative = []
+            # First add all the solutions that are shared between the alternatives
+            # because they weren't combinatorial
+            if len(set_solution_list) > 0:
+                alternative.append(copy.deepcopy(set_solution_list))
+            # Then add this combinatorial alternative
+            alternative += alternative_list
+            final_alternatives_list.append(alternative)
 
-        if cardinal_criteria(unique_values):
-            yield solutions_with_rstr
+        if len(final_alternatives_list) == 0:
+            final_alternatives_list = [solutions_with_rstr_orig]
+
+    for solutions_with_rstr in final_alternatives_list:
+        # Get all the unique values assigned to this variable, and collect the solutions that go with them
+        variable_assignments = []
+        for solution_index in range(len(solutions_with_rstr)):
+            binding_value = solutions_with_rstr[solution_index][0].get_binding(variable_name).value
+            # TODO: find a better way to remove duplicates, support hashing objects and use set?
+            unique = True
+            for variable_assignment in variable_assignments:
+                if binding_value == variable_assignment[0]:
+                    variable_assignment[1].append(solution_index)
+                    unique = False
+                    break
+
+            if unique:
+                variable_assignments.append((binding_value, [solution_index]))
+
+        if max_answer_count is None:
+            max_answer_count = len(variable_assignments)
+
+        if solution_group_combinatorial:
+            combinations_of_lists = []
+            # Then get all the combinations of those sets that meet the criteria
+            # largest set of lists that can add up to self.count is where every list is 1 item long
+            for combination_size in range(1, max_answer_count + 1):
+                for combination in itertools.combinations(variable_assignments, combination_size):
+                    # combination is a list of 2 element lists
+                    unique_values = []
+                    for lst in [item[0] for item in combination]:
+                        for item in lst:
+                            if item not in unique_values:
+                                unique_values.append(item)
+                    if cardinal_criteria(unique_values):
+                        combinations_of_lists.append(combination)
+
+            # Finally, return all possible combinations of solutions that contained the assignments
+            # which means returning all combinations of every non-empty subset of all the lists
+            # Each combination in combinations_of_lists is a list of 2 element lists:
+            #   0 is a list of variable assignments
+            #   1 is a list of solutions that had that assignment
+            for combination in combinations_of_lists:
+                for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
+                    print(f"combination: {combination}\n   solution:")
+                    combination_solutions = []
+                    for index in possible_solution:
+                        print(f"   {solutions_with_rstr[index][0]}")
+                        combination_solutions.append(solutions_with_rstr[index])
+
+                    yield combination_solutions
 
         else:
-            return
+            unique_values = []
+            for lst in [item[0] for item in variable_assignments]:
+                for item in lst:
+                    if item not in unique_values:
+                        unique_values.append(item)
+
+            if cardinal_criteria(unique_values):
+                yield solutions_with_rstr
+
+            else:
+                continue
 
 
-class NoCardinal(object):
+class SingularCardinal(object):
     def __init__(self, variable_name, h_body):
         self.variable_name = variable_name
         self.h_body = h_body
 
     def meets_criteria(self, cardinal_group_values, cardinal_scoped_to_initial_rstr):
         return True
+
+    def solution_groups(self, solutions_with_rstr, combinatorial=False):
+        def criteria(rstr_value_list):
+            return len(rstr_value_list) == 1
+
+        yield from solution_groups_helper(self.variable_name, None, solutions_with_rstr, criteria, combinatorial)
 
 
 class PluralCardinal(object):
@@ -185,23 +236,6 @@ class CardCardinal(object):
             return len(rstr_value_list) == self.count
 
         yield from solution_groups_helper(self.variable_name, self.count, solutions_with_rstr, criteria, combinatorial)
-
-
-# Given a list of lists, returns another list of lists
-# with all combinations of items from the original lists
-# ensuring there is always one item from every list
-def all_combinations_with_elements_from_all(list_of_lists):
-    # returns nonempty subsets of list items
-    def non_empties(items):
-        subsets = []
-        n = len(items)
-        for i in range(1, n + 1):
-            subsets.extend(itertools.combinations(items, i))
-        return subsets
-
-    all_combinations_of_each_list = [non_empties(items) for items in list_of_lists]
-    combs = [list(itertools.chain(*answer)) for answer in itertools.product(*all_combinations_of_each_list)]
-    return combs
 
 
 # For implementing things like "a few" where there is a number

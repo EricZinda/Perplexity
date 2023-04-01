@@ -44,9 +44,18 @@ Brute force:
                 AFew(x) 
             Do we really need all combinations of answers returned?
                 The fact that there may be many solutions involving a particular value of x doesn't matter for the count. So we should always make it a unique count.
-                BUT: if we allow downstream predicates to filter out solutions, they may remove one that made an upstream true which breaks the logic. 
+                BUT: if we allow downstream predicates to filter out solutions, they may remove one that made an upstream predicate true which breaks the logic. 
                     so: the only way to have downstream predicates able to operate in isolation is to say they must not remove any solutions, which means all possible combinations need to run
                         OR: Optimization: maybe predicates can pass combinatoric options down?
+                In other words: we need all combinations to be sent so that downstream predications can just see if the whole set is true, because there isn't a way to easily remove a solution at that point
+                    and be sure you didn't break the upstream truth
+                And: it isn't enough just to send one set of truth values, because downstream predications may need a different one that is also true
+                Example: which files are large? returns all the alternatives many times
+                    Because it gets 3 set answers 
+                    The first quantifier is sent them as solution_combinatorial
+                    And it sends all the combinations
+                    Because it *might* have been: which large files are in this folder, in which case if it *didn't* send all the alternatives, it might have missed the solution        
+
             A cardinal for 2 is really just saying "two unique things are involved, somehow", it should allow downstream predicates to try all the alternatives
             How do you get rid of duplicates? Maybe duplicates don't really matter, they just get filtered at the bitter end by only reporting unique values.
             If you don't, then something like 
