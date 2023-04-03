@@ -1,14 +1,10 @@
 import sys
-
 from perplexity.cardinals import cardinal_from_binding
 from perplexity.execution import call
 from perplexity.tree import find_quantifier_from_variable
 
 
 # Return each quantified variable, along with its cardinal and quantifier
-from perplexity.variable_binding import VariableValueType
-
-
 def variable_cardinal_quantifier(state):
     tree_info = state.get_binding("tree").value[0]
     variables = tree_info["Variables"]

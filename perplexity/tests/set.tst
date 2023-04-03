@@ -123,7 +123,7 @@
         },
         {
             "Command": "1 file is 20 megabytes",
-            "Expected": "1 file is not 20 megabyte",
+            "Expected": "There are more than 1 file",
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],loc_nonsp(e2,x3,x11)))",
             "Enabled": true,
             "ID": "883c4f0e-5d43-4ab5-86a8-7aa2ebc1a46d"
@@ -137,7 +137,7 @@
         },
         {
             "Command": "which files are 20 mb?",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n[File(name=/Desktop/bigfile.txt, size=20000000)]\n[File(name=/Desktop/bigfile2.txt, size=20000000)]\n",
+            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)\n(File(name=/Desktop/bigfile2.txt, size=20000000),)\n(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n",
             "Tree": "udef_q(x9,[_megabyte_n_1(x9,u16), card(20,e15,x9)],_which_q(x3,_file_n_of(x3,i8),loc_nonsp(e2,x3,x9)))",
             "Enabled": true,
             "ID": "05f835da-64f9-4c95-aabe-2dc8ba26bf73"
