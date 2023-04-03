@@ -194,7 +194,7 @@
         },
         {
             "Command": "a few files are large",
-            "Expected": "There are more than a few large file",
+            "Expected": "Yes, that is true.",
             "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "2d32bbb8-f4b2-4069-a19d-0f67e0a4262e"

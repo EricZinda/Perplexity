@@ -145,10 +145,10 @@ def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr_
             #   1 is a list of solutions that had that assignment
             for combination in combinations_of_lists:
                 for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
-                    print(f"combination: {combination}\n   solution:")
+                    # print(f"combination: {combination}\n   solution:")
                     combination_solutions = []
                     for index in possible_solution:
-                        print(f"   {solutions_with_rstr[index][0]}")
+                        # print(f"   {solutions_with_rstr[index][0]}")
                         combination_solutions.append(solutions_with_rstr[index])
 
                     yield combination_solutions
@@ -177,7 +177,7 @@ class SingularCardinal(object):
 
     def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False):
         def criteria(rstr_value_list):
-            return len(rstr_value_list) == 1
+            return count_set(rstr_value_list) == 1
 
         yield from solution_groups_helper(self.variable_name, None, solutions_with_rstr, criteria, combinatorial)
 
@@ -203,7 +203,7 @@ class PluralCardinal(object):
 
     def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False):
         def criteria(rstr_value_list):
-            return len(rstr_value_list) > 0
+            return count_set(rstr_value_list) > 0
 
         yield from solution_groups_helper(self.variable_name, None, solutions_with_rstr, criteria, combinatorial)
 
@@ -234,7 +234,7 @@ class CardCardinal(object):
     # quantifier
     def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
         def criteria(rstr_value_list):
-            cardinal_group_values_count = len(rstr_value_list)
+            cardinal_group_values_count = count_set(rstr_value_list)
             error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
 
             if cardinal_group_values_count > self.count:
@@ -273,6 +273,27 @@ class BetweenCardinal(object):
 
         else:
             return True
+
+    # If combinatorial is False then this solution group *must* be true for all the
+    # solutions passed in in order to keep the solution group true for the previous
+    # quantifier
+    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
+        def criteria(rstr_value_list):
+            cardinal_group_values_count = count_set(rstr_value_list)
+            error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+
+            if cardinal_group_values_count > self.max_count:
+                execution_context.report_error_for_index(0, ["moreThan", error_location, self.max_count], force=True)
+                return False
+
+            elif cardinal_group_values_count < self.min_count:
+                execution_context.report_error_for_index(0, ["lessThan", error_location, self.min_count], force=True)
+                return False
+
+            else:
+                return True
+
+        yield from solution_groups_helper(self.variable_name, self.max_count, solutions_with_rstr, criteria, combinatorial)
 
 
 # After a set of answers is generated, terms that support both coll and dist will generate both options
