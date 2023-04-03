@@ -153,10 +153,13 @@ class ExecutionContext(object):
 
         return arg_types
 
-    def report_error(self, error, force=False):
-        if force or self._error_predication_index < self._predication_index:
+    def report_error_for_index(self, predication_index, error, force=False):
+        if force or self._error_predication_index < predication_index:
             self._error = error
-            self._error_predication_index = self._predication_index
+            self._error_predication_index = predication_index
+
+    def report_error(self, error, force=False):
+        self.report_error_for_index(self._predication_index, error, force)
 
     def error(self):
         return [self._error_predication_index, self._error]

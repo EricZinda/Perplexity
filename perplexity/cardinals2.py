@@ -26,14 +26,14 @@ def variable_cardinal_quantifier(state):
 
 # Filter the unquantified solutions by recursively filtering them by each quantified variable
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(solutions_with_rstr):
+def solution_groups(execution_context, solutions_with_rstr):
     if len(solutions_with_rstr) > 0:
         # Go through each variable that has a quantifier in any order.
         quantifier_list = [data for data in variable_cardinal_quantifier(solutions_with_rstr[0][0])]
-        yield from filter_solutions_for_next_quantifier(quantifier_list, solutions_with_rstr, True)
+        yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions_with_rstr, True)
 
 
-def filter_solutions_for_next_quantifier(quantifier_list, solutions_with_rstr, initial_cardinal=False):
+def filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions_with_rstr, initial_cardinal=False):
     if len(quantifier_list) == 0:
         yield solutions_with_rstr
 
@@ -43,12 +43,12 @@ def filter_solutions_for_next_quantifier(quantifier_list, solutions_with_rstr, i
         quantifier = quantifier_list[0][2]
 
         # Call that cardinal to get groups of solutions that meet it
-        for cardinal_solution_group in cardinal.solution_groups(solutions_with_rstr, initial_cardinal):
+        for cardinal_solution_group in cardinal.solution_groups(execution_context, solutions_with_rstr, initial_cardinal):
             # Then call the quantifier to further filter those groups into quantified groups that meet it
             #   The quantifier needs to yield groups of the solution that match it.  For example "a_q" needs to yield every one.
             for quantified_cardinal_solution_group in quantifier(variable_name, cardinal_solution_group):
                 # Pass the filtered groups down to the next one
-                yield from filter_solutions_for_next_quantifier(quantifier_list[1:], quantified_cardinal_solution_group)
+                yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list[1:], quantified_cardinal_solution_group)
 
 
 def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
@@ -85,9 +85,9 @@ def _a_q_impl(variable_name, cardinal_solution_group):
     yield cardinal_solution_group
 
 
-def final_answer_groups(solutions):
+def final_answer_groups(execution_context, solutions):
     all_solution_groups = []
-    for group in solution_groups([[solution, []] for solution in solutions]):
+    for group in solution_groups(execution_context, [[solution, []] for solution in solutions]):
         all_solution_groups.append([solution_info[0] for solution_info in group])
 
     return all_solution_groups

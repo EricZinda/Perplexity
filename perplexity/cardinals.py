@@ -175,7 +175,7 @@ class SingularCardinal(object):
     def meets_criteria(self, cardinal_group_values, cardinal_scoped_to_initial_rstr):
         return True
 
-    def solution_groups(self, solutions_with_rstr, combinatorial=False):
+    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False):
         def criteria(rstr_value_list):
             return len(rstr_value_list) == 1
 
@@ -201,7 +201,7 @@ class PluralCardinal(object):
             report_error(["notPlural", error_location, self.variable_name], force=True)
             return False
 
-    def solution_groups(self, solutions_with_rstr, combinatorial=False):
+    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False):
         def criteria(rstr_value_list):
             return len(rstr_value_list) > 0
 
@@ -232,9 +232,21 @@ class CardCardinal(object):
     # If combinatorial is False then this solution group *must* be true for all the
     # solutions passed in in order to keep the solution group true for the previous
     # quantifier
-    def solution_groups(self, solutions_with_rstr, combinatorial=False):
+    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
         def criteria(rstr_value_list):
-            return len(rstr_value_list) == self.count
+            cardinal_group_values_count = len(rstr_value_list)
+            error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+
+            if cardinal_group_values_count > self.count:
+                execution_context.report_error_for_index(0, ["moreThan", error_location, self.count], force=True)
+                return False
+
+            elif cardinal_group_values_count < self.count:
+                execution_context.report_error_for_index(0, ["lessThan", error_location, self.count], force=True)
+                return False
+
+            else:
+                return True
 
         yield from solution_groups_helper(self.variable_name, self.count, solutions_with_rstr, criteria, combinatorial)
 
