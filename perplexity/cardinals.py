@@ -90,15 +90,16 @@ def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr_
 
     else:
         final_alternatives_list = []
-        for alternative_list in all_combinations_with_elements_from_all(set_solution_alternatives_list):
-            alternative = []
-            # First add all the solutions that are shared between the alternatives
-            # because they weren't combinatorial
-            if len(set_solution_list) > 0:
-                alternative.append(copy.deepcopy(set_solution_list))
-            # Then add this combinatorial alternative
-            alternative += alternative_list
-            final_alternatives_list.append(alternative)
+        if len(set_solution_alternatives_list) != 0:
+            for alternative_list in all_combinations_with_elements_from_all(set_solution_alternatives_list):
+                alternative = []
+                # First add all the solutions that are shared between the alternatives
+                # because they weren't combinatorial
+                if len(set_solution_list) > 0:
+                    alternative.append(copy.deepcopy(set_solution_list))
+                # Then add this combinatorial alternative
+                alternative += alternative_list
+                final_alternatives_list.append(alternative)
 
         if len(final_alternatives_list) == 0:
             final_alternatives_list = [solutions_with_rstr_orig]
