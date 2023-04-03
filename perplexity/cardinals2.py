@@ -27,9 +27,10 @@ def variable_cardinal_quantifier(state):
 # Filter the unquantified solutions by recursively filtering them by each quantified variable
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(solutions_with_rstr):
-    # Go through each variable that has a quantifier in any order.
-    quantifier_list = [data for data in variable_cardinal_quantifier(solutions_with_rstr[0][0])]
-    yield from filter_solutions_for_next_quantifier(quantifier_list, solutions_with_rstr, True)
+    if len(solutions_with_rstr) > 0:
+        # Go through each variable that has a quantifier in any order.
+        quantifier_list = [data for data in variable_cardinal_quantifier(solutions_with_rstr[0][0])]
+        yield from filter_solutions_for_next_quantifier(quantifier_list, solutions_with_rstr, True)
 
 
 def filter_solutions_for_next_quantifier(quantifier_list, solutions_with_rstr, initial_cardinal=False):
