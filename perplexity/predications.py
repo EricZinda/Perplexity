@@ -1,22 +1,35 @@
+import enum
 import itertools
+
+from perplexity.cardinals import count_set
 from perplexity.variable_binding import VariableValueType
+
+
+class VariableValueSetSize(enum.Enum):
+    all = 0
+    more_than_one = 1
+    exactly_one = 2
 
 
 # Yields each possible variable set from binding based on what type of value it is
 # "discrete" means it will generate specific all possible sets (i.e. not yield a combinatoric value)
-# If a variable is combinatoric it means it represents all combinations of values in that set
-def discrete_variable_set_generator(binding):
+def discrete_variable_set_generator(binding, set_size):
     if binding.variable.value_type == VariableValueType.set:
-        # This is a single set that needs to be kept intact
-        yield VariableValueType.set, binding.value
+        binding_value = binding.value
+        if set_size == VariableValueSetSize.all or \
+           (set_size == VariableValueSetSize.more_than_one and count_set(binding_value) > 1) or \
+           (set_size == VariableValueSetSize.exactly_one and count_set(binding_value) == 1):
+            # This is a single set that needs to be kept intact
+            yield VariableValueType.set, binding.value
+
         return
 
     else:
         # Generate all possible sets
         assert binding.variable.value_type == VariableValueType.combinatoric
 
-        min_set_size = 1
-        max_set_size = len(binding.value)
+        min_set_size = 2 if set_size == VariableValueSetSize.more_than_one else 1
+        max_set_size = 1 if set_size == VariableValueSetSize.exactly_one else len(binding.value)
 
         for value_set_size in range(min_set_size, max_set_size + 1):
             for value_set in itertools.combinations(binding.value, value_set_size):
@@ -59,11 +72,11 @@ def individual_only_style_predication_1(state, binding, prediction_function):
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
-def lift_style_predication(state, binding1, binding2, prediction_function):
+def lift_style_predication(state, binding1, binding2, prediction_function, binding1_set_size=VariableValueSetSize.all, binding2_set_size=VariableValueSetSize.all):
     # See if everything in binding1_set has the
     # prediction_function relationship to binding2_set
-    for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1):
-        for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2):
+    for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
+        for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
             # See if everything in binding1_set has the
             # prediction_function relationship to binding2_set
             success, set1_used_collective, set2_used_collective = prediction_function(binding1_set, binding2_set)
@@ -79,11 +92,11 @@ def lift_style_predication(state, binding1, binding2, prediction_function):
 # - {a, b} predicate {x, y} can be checked as a predicate x, a predicate y, etc.
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
 # - that the any combinatoric terms will be turned into single set terms (coll or dist)
-def in_style_predication(state, binding1, binding2, prediction_function):
+def in_style_predication(state, binding1, binding2, prediction_function, binding1_set_size=VariableValueSetSize.all, binding2_set_size=VariableValueSetSize.all):
     # See if everything in binding1_set has the
     # prediction_function relationship to binding2_set
-    for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1):
-        for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2):
+    for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
+        for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
             # See if everything in binding1_set has the
             # prediction_function relationship to binding2_set
             sets_fail = False

@@ -19,7 +19,7 @@ def yield_all(set_or_answer):
         yield set_or_answer
 
 
-def count_rstr(rstr_value):
+def count_set(rstr_value):
     if isinstance(rstr_value, (list, tuple)):
         if len(rstr_value) == 1 and isinstance(rstr_value[0], Measurement):
             return rstr_value[0].count
@@ -188,7 +188,7 @@ class PluralCardinal(object):
         self.h_body = h_body
 
     def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
-        cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
+        cardinal_group_values_count = count_set(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
 
         # "which rocks are in here?" - the speaker assumes it will return "this one rock"
         # (i.e. work even if there is only a single rock).
@@ -216,7 +216,7 @@ class CardCardinal(object):
         self.count = count
 
     def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
-        cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
+        cardinal_group_values_count = count_set(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
         error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
         if cardinal_group_values_count > self.count:
             report_error(["moreThan", error_location, self.count], force=True)
@@ -261,7 +261,7 @@ class BetweenCardinal(object):
         self.max_count = max_count
 
     def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
-        cardinal_group_values_count = count_rstr(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
+        cardinal_group_values_count = count_set(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
         error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
         if cardinal_group_values_count > self.max_count:
             report_error(["tooMany", error_location], force=True)

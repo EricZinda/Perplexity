@@ -5,6 +5,8 @@ Remaining work to be shown in the tutorial:
   
 Plurals work 
     - work through the tests and make them work in new regime
+    - together, which files are 20 mb
+        - creates: udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],_which_q(x6,_file_n_of(x6,i10),[_together_p(e4,e2), loc_nonsp(e2,x6,x11)]))
     - Should we be removing duplicates like we did before? Can do this later
     - "a file is a few megabytes" doesn't work
     - 4 files are in a folder together -> forces collective which doesn't make sense with "in" so it fails with ['formNotUnderstood', 'missing', 'collective']

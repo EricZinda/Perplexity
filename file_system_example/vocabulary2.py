@@ -1,9 +1,9 @@
 from file_system_example.objects import File, Folder, Megabyte, Measurement
 from perplexity.cardinals import cardinal_from_binding, yield_all, CardinalGroup
 from perplexity.cardinals2 import quantifier_raw
-from perplexity.execution import report_error, call
+from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
-    individual_only_style_predication_1
+    individual_only_style_predication_1, VariableValueSetSize
 from perplexity.tree import find_predication_from_introduced, is_index_predication
 from perplexity.utilities import is_plural
 from perplexity.variable_binding import VariableValueType
@@ -325,7 +325,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # handles size only
 # loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
-@Predication(vocabulary, names=["loc_nonsp"])
+@Predication(vocabulary, names=["loc_nonsp"], handles=[("CardinalLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):
@@ -353,7 +353,23 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
 
     if x_actor_binding.value is not None:
         if x_size_binding.value is not None:
-            yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria)
+            # If a cardinal limiter like "together" is acting on this verb, it is unclear
+            # if it is for x_actor or x_size, so we have to try both
+            if e_introduced_binding.value is not None and "CardinalLimiter" in e_introduced_binding.value:
+                set_size = e_introduced_binding.value["CardinalLimiter"]["Value"]["ValueSetSize"]
+            else:
+                set_size = VariableValueSetSize.all
+
+            yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, set_size, VariableValueSetSize.all)
+            yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, set_size)
+
+
+# Used for prepositions like "together" or "separately" that modify how a verb should handle cardinality
+def default_cardinal_limiter_norm(state, e_introduced_binding, e_target_binding, set_size):
+    info = {
+        "ValueSetSize": set_size
+    }
+    yield state.add_to_e(e_target_binding.variable.name, "CardinalLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
 # Needed for "together, which 3 files are 3 mb?"
@@ -364,65 +380,12 @@ def together_p_ee(state, e_introduced_binding, e_target_binding):
 
 @Predication(vocabulary, names=["_together_p"])
 def together_p(state, e_introduced_binding, x_target_binding):
-    yield from force_bindings_to_collective(state, [x_target_binding])
+    assert False
+    # yield from force_bindings_to_collective(state, [x_target_binding])
 
 
-# This version doesn't add information to the target event, it just affects cardinal groupings
-# together_p_state just acts like a restriction on all x args on its target predication
-# it ensures that at least one of them is collective
-#
-# Two children ate two pizzas together could mean:
-# 1. each child ate two pizzas at the same time
-# 2. two children together ate two pizzas
-# or both
-# So, "together_p_state" needs to force the x variables in its target to have all combinations
-# of coll/dist settings where there is at least one coll
-# HOWEVER, it should only do this for variables that are "cardinal-bearing", meaning: those that are plurals
-# otherwise, it will force things like "you" to be plural when the speaker didn't say it
 @Predication(vocabulary, names=["_together_p_state"])
 def together_p_state(state, e_introduced_binding, e_target_binding):
-    # Figure out which x variables are on e_target_binding
-    target_predication = find_predication_from_introduced(state.get_binding("tree").value[0]["Tree"], e_target_binding.variable.name)
-    target_x_args = target_predication.x_args()
-    target_x_bindings = [state.get_binding(x_arg) for x_arg in target_x_args]
-    yield from force_bindings_to_collective(state, target_x_bindings)
+    yield from default_cardinal_limiter_norm(state, e_introduced_binding, e_target_binding, VariableValueSetSize.more_than_one)
 
 
-def force_bindings_to_collective(state, target_x_bindings):
-    # First see if any of the variables are already collective and just force them to be used
-    # in the answer by setting used_collective=True
-    found_collective = False
-    for binding in target_x_bindings:
-        if binding.variable.value_type == VariableValueType.set and len(binding.value) > 1:
-            yield state
-            return
-
-    if not found_collective:
-        # None of the target variables are collective, but one of them might not have been
-        # set to coll/dist yet, and together() is here to set that value to collective.
-        # Here's why it will only be one:
-        # IF the predication it targets has N variables, then it *must* be the case that
-        #   the target predication is in the tree under the quantifiers that declare those variables.
-        #   This means that at most one of the ones that are plural should be left "uncardinalized"
-        #   because it is either in the rstr or body of all the cardinals and those have set that value
-        #   (BUT this requires that cardinalization is set *before* the rstr is run).
-        #   Furthermore, this one variable would be the one that is quantified by the quantifier that
-        #   the target predication is in the rstr of (if it is in the body it will be set and not uncardinalized)
-        #   In the rstr, when we are looking for a value, we only set variable_binding.is_collective
-        #   and leave the others unset to indicate this is what mode that variable is in.
-        uncardinalized_binding = None
-        for target_x_binding in target_x_bindings:
-            if is_plural(state, target_x_binding.variable.name) and target_x_binding.variable.value_type in [VariableValueType.combinatoric_either, VariableValueType.none]:
-                assert uncardinalized_binding is None
-                uncardinalized_binding = target_x_binding
-
-        if uncardinalized_binding is not None:
-            state = state.set_x(uncardinalized_binding.variable.name, uncardinalized_binding.value,
-                                VariableValueType.combinatoric_collective)
-            yield state
-
-        else:
-            # If it id not find an existing collective binding and there isn't one to
-            # set then "together" cant be run
-            report_error(["formNotUnderstood", "missing", "collective"])
-            return

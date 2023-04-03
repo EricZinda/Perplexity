@@ -145,7 +145,7 @@
         {
             "Command": "together, which files are 20 mb",
             "Comments": "Correctly returns single files in dist mode because it treats 'mb' as the collective that together is forcing",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n[File(name=/Desktop/bigfile.txt, size=20000000)]\n[File(name=/Desktop/bigfile2.txt, size=20000000)]\n",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n(File(name=/Desktop/bigfile.txt, size=20000000),)\n(File(name=/Desktop/bigfile2.txt, size=20000000),)\n",
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],_which_q(x6,_file_n_of(x6,i10),[_together_p(e4,e2), loc_nonsp(e2,x6,x11)]))",
             "Enabled": true,
             "ID": "d4a1b97d-9fcf-448e-a429-4356eb3e171d"
