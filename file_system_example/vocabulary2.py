@@ -3,7 +3,7 @@ from perplexity.cardinals import cardinal_from_binding, yield_all, CardinalGroup
 from perplexity.cardinals2 import quantifier_raw
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
-    individual_only_style_predication_1, VariableValueSetSize
+    individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator
 from perplexity.tree import find_predication_from_introduced, is_index_predication
 from perplexity.utilities import is_plural
 from perplexity.variable_binding import VariableValueType
@@ -340,7 +340,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             for actor in actor_set:
                 if not hasattr(actor, "size_measurement"):
                     report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
-                    return
+                    return False, None, None
                 else:
                     total += actor.size_measurement().count
 
@@ -380,8 +380,8 @@ def together_p_ee(state, e_introduced_binding, e_target_binding):
 
 @Predication(vocabulary, names=["_together_p"])
 def together_p(state, e_introduced_binding, x_target_binding):
-    assert False
-    # yield from force_bindings_to_collective(state, [x_target_binding])
+    for _, x_target_value in discrete_variable_set_generator(x_target_binding, VariableValueSetSize.more_than_one):
+        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set)
 
 
 @Predication(vocabulary, names=["_together_p_state"])

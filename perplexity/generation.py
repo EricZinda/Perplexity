@@ -110,9 +110,13 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
         if "PostModifiers" not in nlg_data:
             nlg_data["PostModifiers"] = []
 
-        prep_english = english_for_delphin_variable(99, predication.args[2], tree_info)
-
-        nlg_data["PostModifiers"].append(parsed_predication["Lemma"].replace("+", " ") + " " + prep_english)
+        if len(predication.args) == 3:
+            prep_english = english_for_delphin_variable(99, predication.args[2], tree_info)
+            nlg_data["PostModifiers"].append(parsed_predication["Lemma"].replace("+", " ") + " " + prep_english)
+        elif len(predication.args) == 2:
+            nlg_data["PostModifiers"].append(parsed_predication["Lemma"].replace("+", " "))
+        else:
+            return
 
     elif parsed_predication["Lemma"] == "card" and predication.args[2] == variable:
         if "Modifiers" not in nlg_data:
