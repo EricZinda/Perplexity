@@ -20,14 +20,16 @@ def all_combinations_with_elements_from_all(list_of_lists):
     return combs
 
 
-def append_if_unique(existing_values, new_value):
-    unique = True
+def in_equals(existing_values, new_value):
     for existing_value in existing_values:
         if new_value == existing_value:
-            unique = False
-            break
+            return True
 
-    if unique:
+    return False
+
+
+def append_if_unique(existing_values, new_value):
+    if not in_equals(existing_values, new_value):
         existing_values.append(new_value)
 
 

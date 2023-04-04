@@ -13,7 +13,7 @@ from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_arg_types
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, module_name, import_function_from_names
+from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator
 
 
 def no_error_priority(error):
@@ -64,6 +64,7 @@ class UserInterface(object):
                                    "ChosenMrsIndex": None,
                                    "ChosenTreeIndex": None,
                                    "ChosenResponse": None,
+                                   "ResponseGenerator": None,
                                    "ChosenError": None}
 
         if command_result is not None:
@@ -104,9 +105,11 @@ class UserInterface(object):
             if len(mrs_record["UnknownWords"]) > 0:
                 unknown_words_error = [0, ["unknownWords", mrs_record["UnknownWords"]]]
                 tree_record = {"Tree": None,
+                               "SolutionGroups": None,
                                "Solutions": [],
                                "Error": unknown_words_error,
-                               "ResponseMessage": self.response_function(None, [], unknown_words_error)}
+                               "ResponseGenerator": self.response_function(None, [], unknown_words_error),
+                               "ResponseMessage": ""}
                 mrs_record["Trees"].append(tree_record)
                 self.evaluate_best_response()
 
@@ -119,7 +122,8 @@ class UserInterface(object):
                     tree_record = {"Tree": tree,
                                    "Solutions": [],
                                    "Error": None,
-                                   "ResponseMessage": None}
+                                   "ResponseGenerator": [],
+                                   "ResponseMessage": ""}
                     mrs_record["Trees"].append(tree_record)
 
                     # Collect all the solutions for this tree against the
@@ -133,23 +137,15 @@ class UserInterface(object):
                         pipeline_logger.debug(f"solution: {item}")
                         duplicate_solutions.append(item)
 
+                    pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
                     duplicate_solutions = perplexity.cardinals2.remove_duplicates(duplicate_solutions)
-                    tree_record["SolutionGroups"] = perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions)
-
-                    # Build a comprehension that unwraps a set of sets into a set
-                    tree_record["Solutions"] = []
-                    for group in tree_record["SolutionGroups"]:
-                        # print("Next Solution:\n")
-                        for item in group:
-                            # print(item)
-                            tree_record["Solutions"].append(item)
-                    # print("\nEnd of Solutions\n")
+                    pipeline_logger.debug(f"{len(duplicate_solutions)} unquantified solutions.")
+                    tree_record["SolutionGroups"] = at_least_one_generator(perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions))
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()
-                    pipeline_logger.debug(f"{len(tree_record['Solutions'])} solutions, error: {tree_record['Error']}")
-                    tree_record["ResponseMessage"] = self.response_function(tree_info, tree_record["Solutions"], tree_record["Error"])
-                    if len(tree_record["Solutions"]) > 0:
+                    tree_record["ResponseGenerator"] = self.response_function(tree_info, tree_record["SolutionGroups"], tree_record["Error"])
+                    if tree_record["SolutionGroups"] is not None:
                         # If there were solutions, this is our answer,
                         # return it and stop looking
                         self.evaluate_best_response()
@@ -157,13 +153,15 @@ class UserInterface(object):
                         # This worked, apply the results to the current world state if it was a command
                         if sentence_force(tree_info["Variables"]) == "comm":
                             try:
-                                self.apply_solutions_to_state(tree_record["Solutions"])
+                                self.apply_solutions_to_state(tree_record["SolutionGroups"])
 
                             except MessageException as error:
                                 response = self.response_function(tree_info, [], [0, error.message_object()])
                                 tree_record["ResponseMessage"] += f"\n{str(response)}"
 
-                        print(tree_record["ResponseMessage"])
+                        for response in tree_record["ResponseGenerator"]:
+                            tree_record["ResponseMessage"] += response
+                            print(response)
                         return
 
                     else:
@@ -172,7 +170,9 @@ class UserInterface(object):
                         self.evaluate_best_response()
 
         # If we got here, nothing worked: print out the best failure
-        print(self.interaction_record["ChosenResponse"])
+        for response in self.interaction_record["ChosenResponseGenerator"]:
+            tree_record["ResponseMessage"] += response
+            print(response)
 
     # WORKAROUND: ERG doesn't properly quote all strings with "/" so convert to "\"
     def convert_slashes_until(self, stop_char, start_index, phrase):
@@ -213,13 +213,13 @@ class UserInterface(object):
         tree_record = self.interaction_record["Mrss"][current_mrs_index]["Trees"][current_tree_index]
 
         # If there was a success, return it as the best answer
-        if len(tree_record["Solutions"]) > 0 or \
+        if tree_record["SolutionGroups"] is not None or \
                 (self.error_priority_function(tree_record["Error"]) > self.error_priority_function(self.interaction_record["ChosenError"])):
             self.interaction_record["ChosenMrsIndex"] = current_mrs_index
             self.interaction_record["ChosenTreeIndex"] = current_tree_index
             self.interaction_record["ChosenError"] = tree_record["Error"]
-            self.interaction_record["ChosenResponse"] = tree_record["ResponseMessage"]
-            pipeline_logger.debug(f"Recording best answer: {self.interaction_record['ChosenResponse']}")
+            self.interaction_record["ChosenResponseGenerator"] = tree_record["ResponseGenerator"]
+            pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_tree_index}")
 
     # Commands always start with "/", followed by a string of characters and then
     # a space. Any arguments are after the space and their format is command specific.

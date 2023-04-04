@@ -18,7 +18,7 @@ Start with udef_q:
 To get all the readings we need to generate all combinations.
 
 Brute force:
-    If you get all unquantified answers for coll and dist you get all the possible values that could be true
+    If you get all unquantified answers for all non-empty subsets you get all the possible values that could be true
         "2 files in 2 folders" just becomes "files in folders"
     Then run the quantifiers cardinals against this and return all combinations of solutions where the set of x is unique and the cardinals are true
         You have to walk the cardinals and pick those solutions for which one is true, and then pass that filtered set to the next one

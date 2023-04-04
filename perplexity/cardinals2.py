@@ -119,9 +119,10 @@ def _a_q_impl(execution_context, variable_name, h_body, cardinal_solution_group)
 def final_answer_groups(execution_context, solutions):
     all_solution_groups = []
     for group in solution_groups(execution_context, [[solution, []] for solution in solutions]):
-        all_solution_groups.append([solution_info[0] for solution_info in group])
-
-    return all_solution_groups
+        yield [solution_info[0] for solution_info in group]
+    #     all_solution_groups.append([solution_info[0] for solution_info in group])
+    #
+    # return all_solution_groups
 
 
 # After a set of answers is generated, terms that support both coll and dist will generate both options

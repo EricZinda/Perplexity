@@ -64,13 +64,16 @@ def cardinal_from_binding(state, h_body, binding):
 #   but for "boys" it has to be None since it could be a huge set of boys
 # combinatorial is True when any combination of the solutions can be used, otherwise, the exact set must be true
 def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr_orig, cardinal_criteria, solution_group_combinatorial=False):
+    # First: Build a list of the set values variable_name has, and which solutions go with each set
     # If variable_name is a combinatorial variable it means that any combination of values in it are true, so as long as one
     #   remains at the end, the solution group is still valid.
     #       For solution_group_combinatorial=true, it is the equivalent of breaking it into N more alternative
     #           solutions with each solution having one of the combinations of possible values
     #       For solution_group_combinatorial=false, it means as long as one of the values in the final answer it is valid
-    # Turn each combinatorial solution into a list of set solutions
+
+    # If variable_name is combinatoric, all of its alternative combinations get added to set_solution_alternatives_list
     set_solution_alternatives_list = []
+    # If not, it gets added, as is, to set_solution_list
     set_solution_list = []
     for solution in solutions_with_rstr_orig:
         binding = solution[0].get_binding(variable_name)
@@ -82,6 +85,9 @@ def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr_
         else:
             set_solution_list.append(solution)
 
+    # Now, the combination of set_solution_alternatives_list together with set_solution_list contain all the alternative assignments
+    # of variable_name.
+    # Next, make final_alternatives_list contain the merged list
     if solution_group_combinatorial:
         alternative = set_solution_list
         for alternatives in set_solution_alternatives_list:
@@ -136,22 +142,22 @@ def solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr_
                             if item not in unique_values:
                                 unique_values.append(item)
                     if cardinal_criteria(unique_values):
-                        combinations_of_lists.append(combination)
+            #             combinations_of_lists.append(combination)
+            #
+            # # Finally, return all possible combinations of solutions that contained the assignments
+            # # which means returning all combinations of every non-empty subset of all the lists
+            # # Each combination in combinations_of_lists is a list of 2 element lists:
+            # #   0 is a list of variable assignments
+            # #   1 is a list of solutions that had that assignment
+            # for combination in combinations_of_lists:
+                        for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
+                            # print(f"combination: {combination}\n   solution:")
+                            combination_solutions = []
+                            for index in possible_solution:
+                                # print(f"   {solutions_with_rstr[index][0]}")
+                                combination_solutions.append(solutions_with_rstr[index])
 
-            # Finally, return all possible combinations of solutions that contained the assignments
-            # which means returning all combinations of every non-empty subset of all the lists
-            # Each combination in combinations_of_lists is a list of 2 element lists:
-            #   0 is a list of variable assignments
-            #   1 is a list of solutions that had that assignment
-            for combination in combinations_of_lists:
-                for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
-                    # print(f"combination: {combination}\n   solution:")
-                    combination_solutions = []
-                    for index in possible_solution:
-                        # print(f"   {solutions_with_rstr[index][0]}")
-                        combination_solutions.append(solutions_with_rstr[index])
-
-                    yield combination_solutions
+                            yield combination_solutions
 
         else:
             unique_values = []

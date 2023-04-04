@@ -5,18 +5,29 @@ Remaining work to be shown in the tutorial:
   
 Plurals work 
     - work through the tests and make them work in new regime 
-    - which files are in folders
-        returns collective answers
-        Needs to ignore unused sets
-            It isn't a matter of just ignoring coll for in when it is an index because it might only get coll
-            It is really that 
+    - Bug: we can't remove duplicates *before* running quantifiers and cardinals because they might need them
+    - Really slow: Example28
+        a few files are in a folder together
+            Need to walk this through
+        "4 files are in a folder"
+        Returns an *enormous* number of items
+            Are they all really legit?
+        Start with "which files are in folders?"
+            "in_p_loc" receives two combinatoric variables very quickly
+            Then it tries every combination, returns pretty fast
+                there are no duplicates, they are legit combinations
+            solution_groups_helper() gets the list of solutions
+            Really blows up on this line:                 for combination in itertools.combinations(variable_assignments, combination_size):
+            Could be easily streamed 
+                but: final_answer_groups() collects them all before returning
+                and: user_interface is designed to require all answers
+                    response_function could be designed to only pull as many as it needs
+        Ideas:
+            If we stream it we can short circuit fast to answer yes or no
+                We can also start returning answers quickly
+            If we look at the size of actor and location, we can optimize and check differently
     - Need to implement "only a few files are large" and have it fail when there are a lot
-    - Should we be removing duplicates like we did before? Can do this later
     - "a file is a few megabytes" doesn't work
-    - 4 files are in a folder together -> forces collective which doesn't make sense with "in" so it fails with ['formNotUnderstood', 'missing', 'collective']
-        Also: a few files are in a folder together
-        If you said "4 files are in a folder" it could find 4 different folders
-        So in this case the user could be using it as a way to say "4 files are in the same folder"
   
 - copy x to y
   - needs copy with a scopal arg

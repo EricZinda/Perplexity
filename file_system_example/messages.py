@@ -1,31 +1,33 @@
 import logging
 from perplexity.generation import english_for_delphin_variable
+from perplexity.set_utilities import append_if_unique, in_equals
 from perplexity.tree import find_predication, predication_from_index, \
     find_predication_from_introduced
-from perplexity.utilities import parse_predication_name, sentence_force
-
+from perplexity.utilities import parse_predication_name, sentence_force, at_least_one_generator
 
 # Implements the response for a given tree
 from perplexity.variable_binding import VariableValueType
 
 
-def respond_to_mrs_tree(tree, solutions, error):
+def respond_to_mrs_tree(tree, solution_groups, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary
     if tree is None:
         message = generate_message(None, error)
-        return message
+        yield message
+        return
 
     sentence_force_type = sentence_force(tree["Variables"])
     if sentence_force_type == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
-        if len(solutions) > 0:
-            return "Yes, that is true."
+        if solution_groups is not None:
+            yield "Yes, that is true."
+
         else:
             message = generate_message(tree, error)
-            return message
+            yield message
 
     elif sentence_force_type == "ques":
         # See if this is a "WH" type question
@@ -37,44 +39,37 @@ def respond_to_mrs_tree(tree, solutions, error):
             # This was a simple question, so the user only expects
             # a yes or no.
             # The phrase was "true" if there was at least one answer
-            if len(solutions) > 0:
-                return "Yes."
+            if solution_groups is not None:
+                yield "Yes."
+
             else:
                 message = generate_message(tree, error)
-                return message
+                yield message
+
         else:
             # This was a "WH" question. Return the values of the variable
             # asked about from the solution
             # The phrase was "true" if there was at least one answer
-            if len(solutions) > 0:
+            if solution_groups is not None:
                 # Build an error term that we can use to call generate_message
                 # to get the response
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
 
                 # Get unique items from all solutions
-
                 answer_items = []
-                def unique_answer(new_item):
-                    for item in answer_items:
-                        if new_item == item:
-                            return []
-                    else:
-                        return new_item
-
-                for solution in solutions:
-                    binding = solution.get_binding(wh_variable)
-                    if binding.variable.value_type == VariableValueType.combinatoric:
-                        unique = unique_answer([[value] for value in binding.value])
-                        if len(unique) > 0:
-                            answer_items.append(unique)
-                    else:
-                        unique = unique_answer(binding.value)
-                        if len(unique) > 0:
-                            answer_items.append(unique)
-
-                message = generate_message(tree, [-1, ["answerWithList", index_predication, answer_items]])
-                return message
+                for solution_group in solution_groups:
+                    for solution in solution_group:
+                        binding = solution.get_binding(wh_variable)
+                        if binding.variable.value_type == VariableValueType.combinatoric:
+                            value_set = [[value] for value in binding.value]
+                            if not in_equals(answer_items, value_set):
+                                answer_items.append(value_set)
+                                yield generate_message(tree, [-1, ["answerWithList", index_predication, [value_set]]])
+                        else:
+                            if not in_equals(answer_items, binding.value):
+                                answer_items.append(binding.value)
+                                yield generate_message(tree, [-1, ["answerWithList", index_predication, [binding.value]]])
 
             else:
                 message = generate_message(tree, error)
@@ -83,7 +78,7 @@ def respond_to_mrs_tree(tree, solutions, error):
     elif sentence_force_type == "comm":
         # This was a command so, if it works, just say so
         # We'll get better errors and messages in upcoming sections
-        if len(solutions) > 0:
+        if len(solution_groups) > 0:
             return "Done!"
         else:
             message = generate_message(tree, error)
@@ -218,10 +213,7 @@ def generate_message(tree_info, error_term):
         answer_items = error_arguments[2]
 
         if len(answer_items) > 0:
-            message = ""
-
-            for answer_item in answer_items:
-                message += str(answer_item) + "\n"
+            message = "\n".join([str(answer_item) for answer_item in answer_items])
             # if answer_predication.name == "loc_nonsp":
             #     # if "loc_nonsp" is the "verb", it means the phrase was
             #     # "Where is YYY?", so only return the "best" answer, which

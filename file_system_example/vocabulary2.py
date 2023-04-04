@@ -350,6 +350,8 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             else:
                 report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
                 return False, None, None
+        else:
+            return False, None, None
 
     if x_actor_binding.value is not None:
         if x_size_binding.value is not None:
