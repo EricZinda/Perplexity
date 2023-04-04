@@ -7,7 +7,6 @@ import perplexity.cardinals
 import perplexity.cardinals2
 from delphin import ace
 from delphin.codecs import simplemrs
-
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
@@ -38,6 +37,7 @@ class UserInterface(object):
         self.last_system_command = None
         self.run_mrs_index = None
         self.run_tree_index = None
+        self.show_all_answers = False
 
     # response_function gets passed three arguments:
     #   response_function(mrs, solutions, error)
@@ -140,7 +140,11 @@ class UserInterface(object):
                     pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
                     duplicate_solutions = perplexity.cardinals2.remove_duplicates(duplicate_solutions)
                     pipeline_logger.debug(f"{len(duplicate_solutions)} unquantified solutions.")
-                    tree_record["SolutionGroups"] = at_least_one_generator(perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions))
+                    if self.show_all_answers:
+                        tree_record["SolutionGroups"] = list(perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions))
+                        tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
+                    else:
+                        tree_record["SolutionGroups"] = at_least_one_generator(perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions))
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()
@@ -162,6 +166,7 @@ class UserInterface(object):
                         for response in tree_record["ResponseGenerator"]:
                             tree_record["ResponseMessage"] += response
                             print(response)
+
                         return
 
                     else:
@@ -293,9 +298,12 @@ class UserInterface(object):
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
                 print(f"\nText Tree: {tree_info['Tree']}")
-                if len(tree_info['Solutions']) > 0:
-                    for solution in tree_info['Solutions']:
-                        print(f"Solution: {str(solution)}")
+                if isinstance(tree_info['SolutionGroups'], list) and len(tree_info['SolutionGroups']) > 0:
+                    print(f"\nSolution groups:")
+                    for solution_group in tree_info['SolutionGroups']:
+                        print(f"")
+                        for solution in solution_group:
+                            print(f"{str(solution)}")
 
                 else:
                     print(f"Error: {tree_info['Error']}")
@@ -479,6 +487,17 @@ def command_run_test(ui, arg):
     return True
 
 
+def command_soln(ui, arg):
+    if len(arg) == 0:
+        ui.show_all_answers = not ui.show_all_answers
+    else:
+        ui.show_all_answers = arg.strip().lower() == "all"
+
+    print(f"Show all solutions is now: {ui.show_all_answers}")
+
+    return True
+
+
 def command_run_parse(ui, arg):
     parts = arg.split(",")
     if len(parts) == 0 or len(parts) > 2:
@@ -613,6 +632,9 @@ command_data = {
     "show": {"Function": command_show, "Category": "Parsing",
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
              "Example": "/show or /show all"},
+    "soln": {"Function": command_soln, "Category": "Parsing",
+             "Description": "Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else to only see what is required",
+             "Example": "/soln or /soln all"},
     "runparse": {"Function": command_run_parse, "Category": "Parsing",
                   "Description": "Only runs the identified parse index and optional tree index",
                   "Example": "/runparse 1 OR /runparse 1, 0"},

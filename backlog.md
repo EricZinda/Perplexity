@@ -5,6 +5,10 @@ Remaining work to be shown in the tutorial:
   
 Plurals work 
     - work through the tests and make them work in new regime 
+    - Make /show work with streaming
+        START HERE NEXT: /show should show answers grouped
+    - Bug: "which files are in folders": returns a crazy number of answers
+        - Report answers by group
     - Bug: we can't remove duplicates *before* running quantifiers and cardinals because they might need them
     - Really slow: Example28
         a few files are in a folder together
