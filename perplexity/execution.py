@@ -25,6 +25,8 @@ class ExecutionContext(object):
         self._error_predication_index = -1
         self._predication_index = -1
         self._phrase_type = None
+        self._variable_execution_data = {}
+        self.tree_info = None
 
     def __enter__(self):
         self.old_context_token = set_execution_context(self)
@@ -38,6 +40,7 @@ class ExecutionContext(object):
             self._error_predication_index = -1
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
+            self.tree_info = tree_info
             yield from self.call(state.set_x("tree", [tree_info], VariableValueType.set), tree_info["Tree"])
 
     def call(self, state, term, normalize=False):
@@ -167,6 +170,15 @@ class ExecutionContext(object):
     def current_predication_index(self):
         return self._predication_index
 
+    def set_variable_execution_data(self, variable_name, key, value):
+        if variable_name not in self._variable_execution_data:
+            self._variable_execution_data[variable_name] = {}
+
+        self._variable_execution_data[variable_name][key] = value
+
+    def get_variable_execution_data(self, variable_name):
+        return self._variable_execution_data.get(variable_name, {})
+
 
 # ContextVars is a thread-safe way to set the execution context
 # used by the predications
@@ -199,6 +211,14 @@ def call(*args, **kwargs):
 
 def report_error(error, force=False):
     execution_context().report_error(error, force)
+
+
+def set_variable_execution_data(variable_name, key, value):
+    execution_context().set_variable_execution_data(variable_name, key, value)
+
+
+def get_variable_execution_data(variable_name):
+    return execution_context().get_variable_execution_data(variable_name)
 
 
 logger = logging.getLogger('Execution')

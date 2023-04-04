@@ -229,7 +229,7 @@
         },
         {
             "Command": "the 3 files are large",
-            "Expected": "There are more than the 3 file",
+            "Expected": "There are less than the 3 large file",
             "Tree": "_the_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d5ea50ee-c182-4db4-b2d8-83e1cf19b254"
@@ -257,7 +257,7 @@
         },
         {
             "Command": "a few files are 30 mb",
-            "Expected": "There are less than a few file",
+            "Expected": "Yes, that is true.",
             "Tree": "udef_q(x10,[_megabyte_n_1(x10,u17), card(30,e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],loc_nonsp(e2,x3,x10)))",
             "Enabled": true,
             "ID": "7ff0f68e-4ca3-4085-a67f-1ae4b64a5287"

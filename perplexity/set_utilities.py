@@ -20,5 +20,16 @@ def all_combinations_with_elements_from_all(list_of_lists):
     return combs
 
 
+def append_if_unique(existing_values, new_value):
+    unique = True
+    for existing_value in existing_values:
+        if new_value == existing_value:
+            unique = False
+            break
+
+    if unique:
+        existing_values.append(new_value)
+
+
 if __name__ == '__main__':
     print(list(all_combinations_with_elements_from_all([[[1], [2], [3]]])))

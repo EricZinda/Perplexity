@@ -5,9 +5,7 @@ Remaining work to be shown in the tutorial:
   
 Plurals work 
     - work through the tests and make them work in new regime
-    - a few files are large
-        - returns true because it gets all combinations.
-        - we used to interpret as "only a few files are large"
+        
     - Need to implement "only a few files are large" and have it fail when there are a lot
     - Should we be removing duplicates like we did before? Can do this later
     - "a file is a few megabytes" doesn't work

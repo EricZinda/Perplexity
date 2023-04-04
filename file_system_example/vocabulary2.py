@@ -19,43 +19,43 @@ vocabulary = Vocabulary()
 #       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
 # 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
 #       same approach
-@Predication(vocabulary, names=["_the_q"])
-def the_q(state, x_variable_binding, h_rstr, h_body):
-    def the_behavior(cardinal_group_solutions_combined):
-        # "the" could work for both coll and dist, so first break solutions into coll or dist sets
-        coll_cardinal_group_solutions = []
-        dist_cardinal_group_solutions = []
-        for cardinal_group in cardinal_group_solutions_combined:
-            if cardinal_group.is_collective:
-                coll_cardinal_group_solutions.append(cardinal_group)
-            else:
-                dist_cardinal_group_solutions.append(cardinal_group)
-
-        for cardinal_group_solutions in [coll_cardinal_group_solutions, dist_cardinal_group_solutions]:
-            single_cardinal_group = None
-            if len(cardinal_group_solutions) > 1:
-                report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-                return
-
-            for cardinal_group in cardinal_group_solutions:
-                # The file is large should fail if there is more than one "the file"
-                # "The 2 files are large" should fail if there are more than 2 files but only 2 are large
-                if len(cardinal_group.cardinal_group_values()) != len(cardinal_group.original_rstr_set):
-                    # There was not a single "the"
-                    report_error(["notTrueForAll", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-                    return
-
-                elif single_cardinal_group is not None:
-                    report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-                    return
-
-                else:
-                    single_cardinal_group = cardinal_group
-
-            if single_cardinal_group is not None:
-                yield from yield_all(single_cardinal_group.solutions)
-
-    yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, the_behavior, cardinal_scoped_to_initial_rstr=True)
+# @Predication(vocabulary, names=["_the_q"])
+# def the_q(state, x_variable_binding, h_rstr, h_body):
+#     def the_behavior(cardinal_group_solutions_combined):
+#         # "the" could work for both coll and dist, so first break solutions into coll or dist sets
+#         coll_cardinal_group_solutions = []
+#         dist_cardinal_group_solutions = []
+#         for cardinal_group in cardinal_group_solutions_combined:
+#             if cardinal_group.is_collective:
+#                 coll_cardinal_group_solutions.append(cardinal_group)
+#             else:
+#                 dist_cardinal_group_solutions.append(cardinal_group)
+#
+#         for cardinal_group_solutions in [coll_cardinal_group_solutions, dist_cardinal_group_solutions]:
+#             single_cardinal_group = None
+#             if len(cardinal_group_solutions) > 1:
+#                 report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+#                 return
+#
+#             for cardinal_group in cardinal_group_solutions:
+#                 # The file is large should fail if there is more than one "the file"
+#                 # "The 2 files are large" should fail if there are more than 2 files but only 2 are large
+#                 if len(cardinal_group.cardinal_group_values()) != len(cardinal_group.original_rstr_set):
+#                     # There was not a single "the"
+#                     report_error(["notTrueForAll", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+#                     return
+#
+#                 elif single_cardinal_group is not None:
+#                     report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+#                     return
+#
+#                 else:
+#                     single_cardinal_group = cardinal_group
+#
+#             if single_cardinal_group is not None:
+#                 yield from yield_all(single_cardinal_group.solutions)
+#
+#     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, the_behavior, cardinal_scoped_to_initial_rstr=True)
 
 
 # "a" stops returning answers after a single solution works
@@ -70,7 +70,7 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 
 
 # The default quantifier just passes through all answers
-@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "_a_q"])
+@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "_a_q", "_the_q"])
 def default_quantifier(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 

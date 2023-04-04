@@ -76,9 +76,8 @@ def ShowLogging(name, level=logging.DEBUG):
     logger.addHandler(file_handler)
 
 
-def is_plural(state, variable_name):
-    variables = state.get_binding("tree").value[0]["Variables"]
-
+def is_plural_from_tree_info(tree_info, variable_name):
+    variables = tree_info["Variables"]
     for variable in variables.items():
         if variable[0] == variable_name:
             if "NUM" in variable[1]:
@@ -86,6 +85,10 @@ def is_plural(state, variable_name):
                     return True
             else:
                 return False
+
+
+def is_plural(state, variable_name):
+    return is_plural_from_tree_info(state.get_binding("tree").value[0], variable_name)
 
 
 # Get the actual module name even if it is the
