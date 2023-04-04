@@ -4,7 +4,7 @@ import sys
 
 from file_system_example.objects import Measurement
 from perplexity.execution import report_error
-from perplexity.set_utilities import all_nonempty_subsets, all_combinations_with_elements_from_all
+from perplexity.set_utilities import all_nonempty_subsets, all_combinations_with_elements_from_all, append_if_unique
 from perplexity.utilities import is_plural
 from importlib import import_module
 
@@ -214,12 +214,12 @@ class PluralCardinal(object):
         yield from solution_groups_helper(self.variable_name, None, solutions_with_rstr, criteria, combinatorial)
 
 
-# card(2) means "exactly 2"
 class CardCardinal(object):
-    def __init__(self, variable_name, h_body, count):
+    def __init__(self, variable_name, h_body, count, card_is_exactly):
         self.variable_name = variable_name
         self.h_body = h_body
         self.count = count
+        self.exactly = card_is_exactly
 
     def meets_criteria(self, cardinal_group, cardinal_scoped_to_initial_rstr):
         cardinal_group_values_count = count_set(cardinal_group.original_rstr_set if cardinal_scoped_to_initial_rstr else cardinal_group.cardinal_group_values())
@@ -241,7 +241,9 @@ class CardCardinal(object):
     def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
         def criteria(rstr_value_list):
             cardinal_group_values_count = count_set(rstr_value_list)
-            error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+            error_location = ["AtPredication", self.h_body,
+                              self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase",
+                                                                                           self.variable_name]
 
             if cardinal_group_values_count > self.count:
                 execution_context.report_error_for_index(0, ["moreThan", error_location, self.count], force=True)
@@ -252,9 +254,40 @@ class CardCardinal(object):
                 return False
 
             else:
+                nonlocal group_rstr
+                group_rstr = rstr_value_list
                 return True
 
-        yield from solution_groups_helper(self.variable_name, self.count, solutions_with_rstr, criteria, combinatorial)
+        if self.exactly:
+            error_location = ["AtPredication", self.h_body,
+                              self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase",
+                                                                                           self.variable_name]
+
+            # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups ("only 2 files are in the folder")
+            # it also limits *all* the solutions to that number. So we need to go to the bitter end before we know that that are "only 2"
+            group_rstr = []
+            unique_rstrs = []
+            groups = []
+            for group in solution_groups_helper(self.variable_name, self.count, solutions_with_rstr, criteria, combinatorial):
+                for item in group_rstr:
+                    append_if_unique(unique_rstrs, item)
+
+                if len(unique_rstrs) > self.count:
+                    execution_context.report_error_for_index(0, ["moreThan", error_location, self.count], force=True)
+                    return
+
+                else:
+                    groups.append(group)
+
+            if len(unique_rstrs) < self.count:
+                execution_context.report_error_for_index(0, ["lessThan", error_location, self.count], force=True)
+                return
+
+            else:
+                yield from groups
+
+        else:
+            yield from solution_groups_helper(self.variable_name, self.count, solutions_with_rstr, criteria, combinatorial)
 
 
 # For implementing things like "a few" where there is a number

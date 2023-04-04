@@ -4,6 +4,8 @@ Remaining work to be shown in the tutorial:
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
   
 Plurals work 
+    - Need to implement "only 2 files are large" and have it fail when there are a lot
+        which are the only 2 files?
     - work through the tests and make them work in new regime 
     - Should remove duplicates before reporting answers
     - Really slow: Example28
@@ -21,7 +23,10 @@ Plurals work
             Really blows up on this line:                 for combination in itertools.combinations(variable_assignments, combination_size):
         Ideas:
             If we look at the size of actor and location, we can optimize and check differently
-    - Need to implement "only a few files are large" and have it fail when there are a lot
+    - all 3 boys carried all 3
+    - The girls told the boys two stories each
+            The boys are building a raft each. (operator fixex)
+
     - "a file is a few megabytes" doesn't work
   
 - copy x to y

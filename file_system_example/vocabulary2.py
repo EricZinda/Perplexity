@@ -205,11 +205,16 @@ def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
                           value_type=VariableValueType.set)
 
 
-@Predication(vocabulary, names=["card"])
+@Predication(vocabulary, names=["card"], handles=[("CardinalDegreeLimiter", EventOption.optional)])
 def card_normal(state, c_count, e_introduced_binding, x_target_binding):
     if not variable_is_megabyte(x_target_binding):
+        if e_introduced_binding.value is not None and "CardinalDegreeLimiter" in e_introduced_binding.value:
+            card_is_exactly = e_introduced_binding.value["CardinalDegreeLimiter"]["Value"]["Only"]
+        else:
+            card_is_exactly = False
+
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      cardinal=["cardinals.CardCardinal", [int(c_count)]])
+                                      cardinal=["cardinals.CardCardinal", [int(c_count), card_is_exactly]])
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
@@ -364,6 +369,14 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
 
             yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, set_size, VariableValueSetSize.all)
             yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, set_size)
+
+
+@Predication(vocabulary, names=["_only_x_deg"])
+def only_x_deg_ee(state, e_introduced_binding, e_target_binding):
+    info = {
+        "Only": True
+    }
+    yield state.add_to_e(e_target_binding.variable.name, "CardinalDegreeLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
 # Used for prepositions like "together" or "separately" that modify how a verb should handle cardinality

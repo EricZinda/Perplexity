@@ -429,6 +429,27 @@
             "Tree": "_a_q(x11,_folder_n_of(x11,i16),udef_q(x3,[_file_n_of(x3,i10), card(4,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "1a73a9fb-0c5e-49bc-8063-a85df202a70c"
+        },
+        {
+            "Command": "/new examples.Example26_reset",
+            "Expected": "State reset using examples.Example26_reset().",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "3bf6bd45-a9a1-44e9-be7d-336ac320952b"
+        },
+        {
+            "Command": "2 files are large",
+            "Expected": null,
+            "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "5162b0c9-fa3e-4c94-abc3-04a62f8dfc68"
+        },
+        {
+            "Command": "only 2 files are large",
+            "Expected": null,
+            "Tree": "udef_q(x3,[_file_n_of(x3,i11), _only_x_deg(e5,e6), card(2,e6,x3)],_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "29ebc2f2-3fe3-4e9e-b62b-58050d28a0ad"
         }
     ]
 }
