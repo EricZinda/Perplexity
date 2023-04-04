@@ -4,8 +4,12 @@ Remaining work to be shown in the tutorial:
   - Basically the state at any given node of the tree represents the restricted values of the variables at that point
   
 Plurals work 
-    - work through the tests and make them work in new regime
-        
+    - work through the tests and make them work in new regime 
+    - which files are in folders
+        returns collective answers
+        Needs to ignore unused sets
+            It isn't a matter of just ignoring coll for in when it is an index because it might only get coll
+            It is really that 
     - Need to implement "only a few files are large" and have it fail when there are a lot
     - Should we be removing duplicates like we did before? Can do this later
     - "a file is a few megabytes" doesn't work

@@ -133,6 +133,7 @@ class UserInterface(object):
                         pipeline_logger.debug(f"solution: {item}")
                         duplicate_solutions.append(item)
 
+                    duplicate_solutions = perplexity.cardinals2.remove_duplicates(duplicate_solutions)
                     tree_record["SolutionGroups"] = perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions)
 
                     # Build a comprehension that unwraps a set of sets into a set

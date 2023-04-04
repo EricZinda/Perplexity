@@ -568,7 +568,6 @@ def Example27():
         print()
 
 
-
 def Example28_reset():
     return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
                                            (True, "/documents/file1.txt", {"size": 1000}),
@@ -601,7 +600,6 @@ def Example29():
     while True:
         user_interface.interact_once()
         print()
-
 
 
 def Example30_reset():
@@ -691,8 +689,8 @@ if __name__ == '__main__':
     # Example25()
     # Example26()
     # Example27()
-    Example28()
+    # Example28()
     # Example29()
     # Example30()
-    # Example31()
+    Example31()
     # Example32()

@@ -1,5 +1,5 @@
 import sys
-from perplexity.cardinals import cardinal_from_binding
+from perplexity.cardinals import cardinal_from_binding, count_set
 from perplexity.execution import call, set_variable_execution_data, get_variable_execution_data, report_error
 from perplexity.set_utilities import append_if_unique
 from perplexity.tree import find_quantifier_from_variable
@@ -7,6 +7,7 @@ from perplexity.tree import find_quantifier_from_variable
 
 # Return each quantified variable, along with its cardinal and quantifier
 from perplexity.utilities import is_plural_from_tree_info
+from perplexity.variable_binding import VariableValueType
 
 
 def variable_cardinal_quantifier_predication(state):
@@ -121,3 +122,64 @@ def final_answer_groups(execution_context, solutions):
         all_solution_groups.append([solution_info[0] for solution_info in group])
 
     return all_solution_groups
+
+
+# After a set of answers is generated, terms that support both coll and dist will generate both options
+# just in case other predications use either of them.  But, if nobody ends up using them, they are just duplicates
+# remove them here
+def remove_duplicates(solutions):
+    if len(solutions) == 0:
+        return []
+
+    # Go through each variable in all solutions and see if it is coll or dist and used dist
+    variables = solutions[0].get_binding("tree").value[0]["Variables"]
+    variable_names = [variable_name for variable_name in variables if variable_name[0] == "x"]
+    variable_states = {}
+    for solution in solutions:
+        for variable_name in variable_names:
+            if variable_name not in variable_states:
+                variable_states[variable_name] = {"Coll": False, "Dist": False, "UsedColl": False}
+            binding = solution.get_binding(variable_name)
+            if binding.variable.value_type == VariableValueType.set:
+                if count_set(binding.value) > 1:
+                    variable_states[variable_name]["Coll"] = True
+                else:
+                    variable_states[variable_name]["Dist"] = True
+
+            else:
+                if count_set(binding.value) > 1:
+                    variable_states[variable_name]["Coll"] = True
+                    variable_states[variable_name]["Dist"] = True
+                else:
+                    variable_states[variable_name]["Dist"] = True
+
+            if binding.variable.used_collective:
+                variable_states[variable_name]["UsedColl"] = True
+
+    # The final plural just generates duplicates if it goes through both coll and dist
+    # If a variable has only coll or only dist answers keep it
+    # If a variable has both coll and dist: if coll_used only keep the dist
+    # An answer is kept if it is UsedColl
+    unique_solutions = []
+    for solution in solutions:
+        duplicate = False
+        for variable_name in variable_names:
+            # If a variable has only coll or only dist answers keep all of whichever it has
+            if variable_states[variable_name]["Coll"] != variable_states[variable_name]["Dist"]:
+                continue
+
+            # If a solution has a variable that used coll, keep that
+            if solution.get_binding(variable_name).variable.used_collective:
+                continue
+
+            # Otherwise, keep it if it is dist
+            if count_set(solution.get_binding(variable_name).value) == 1:
+                continue
+
+            duplicate = True
+            break
+
+        if not duplicate:
+            unique_solutions.append(solution)
+
+    return unique_solutions

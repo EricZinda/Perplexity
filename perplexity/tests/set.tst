@@ -271,14 +271,14 @@
         },
         {
             "Command": "which files are in folders",
-            "Expected": "[File(name=/temp/59.txt, size=1000)]\n[File(name=/documents/file1.txt, size=1000)]\n[File(name=/Desktop/the yearly budget.txt, size=10000000)]\n[File(name=/Desktop/blue, size=10000000)]\n",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)\n(File(name=/documents/file1.txt, size=1000),)\n(File(name=/Desktop/the yearly budget.txt, size=10000000),)\n(File(name=/Desktop/blue, size=10000000),)\n",
             "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "c412fa91-5229-4186-989f-f3513d5410f3"
         },
         {
             "Command": "which files are in a folder?",
-            "Expected": "[File(name=/temp/59.txt, size=1000)]\n[File(name=/documents/file1.txt, size=1000)]\n[File(name=/Desktop/the yearly budget.txt, size=10000000)]\n[File(name=/Desktop/blue, size=10000000)]\n",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)\n(File(name=/documents/file1.txt, size=1000),)\n(File(name=/Desktop/the yearly budget.txt, size=10000000),)\n(File(name=/Desktop/blue, size=10000000),)\n",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
@@ -292,7 +292,7 @@
         },
         {
             "Command": "which 2 files are in a folder?",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/bigfile.txt, size=20000000))\n(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/bigfile2.txt, size=20000000))\n(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n(File(name=/Desktop/bigfile.txt, size=20000000), File(name=/Desktop/bigfile2.txt, size=20000000))\n(File(name=/Desktop/bigfile.txt, size=20000000), File(name=/Desktop/blue, size=10000000))\n(File(name=/Desktop/bigfile2.txt, size=20000000), File(name=/Desktop/blue, size=10000000))\n",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)\n(File(name=/Desktop/bigfile.txt, size=20000000),)\n(File(name=/Desktop/bigfile2.txt, size=20000000),)\n(File(name=/Desktop/blue, size=10000000),)\n",
             "Tree": "_a_q(x11,_folder_n_of(x11,i16),_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "3a9b446e-1a73-49c6-a5c7-7a7d1847b359"
@@ -306,7 +306,7 @@
         },
         {
             "Command": "which 2 files in a folder are 20 mb",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n[File(name=/Desktop/bigfile.txt, size=20000000)]\n[File(name=/Desktop/bigfile2.txt, size=20000000)]\n",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n(File(name=/Desktop/bigfile.txt, size=20000000),)\n(File(name=/Desktop/bigfile2.txt, size=20000000),)\n",
             "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],_which_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x18))))",
             "Enabled": true,
             "ID": "b20c612e-0359-48c8-b344-804c2144ed05"
@@ -327,7 +327,7 @@
         },
         {
             "Command": "the 2 files in a folder are 20 mb",
-            "Expected": "Yes, that is true.",
+            "Expected": "That isn't true for all the 2 file in a folder",
             "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],_the_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x18))))",
             "Enabled": true,
             "ID": "6d9105ef-59a6-42d0-9e11-08d96a530b54"
@@ -341,14 +341,14 @@
         },
         {
             "Command": "which files are in 2 folders?",
-            "Expected": "[File(name=/Desktop/file4.txt, size=10000000)]\n[File(name=/Desktop/file5.txt, size=10000000)]\n[File(name=/Desktop/file4.txt, size=10000000)]\n[File(name=/Desktop/file5.txt, size=10000000)]\n",
+            "Expected": "(File(name=/Desktop/file4.txt, size=10000000),)\n(File(name=/Desktop/file5.txt, size=10000000),)\n",
             "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(2,e15,x9)],_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "55cb41a3-eb62-4162-aa8f-123a1cfacc8c"
         },
         {
             "Command": "1 file is in a folder together",
-            "Expected": "I don't understand the way you are using: together",
+            "Expected": "1 file is not in a folder together",
             "Tree": "_a_q(x11,[_folder_n_of(x11,i16), _together_p(e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "61c8885b-063a-460e-9b8a-a25c01f31df4"
@@ -362,7 +362,7 @@
         },
         {
             "Command": "which 2 large files are 20 mb",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n[File(name=/Desktop/bigfile.txt, size=20000000)]\n[File(name=/Desktop/bigfile2.txt, size=20000000)]\n",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))\n(File(name=/Desktop/bigfile.txt, size=20000000),)\n(File(name=/Desktop/bigfile2.txt, size=20000000),)\n",
             "Tree": "udef_q(x12,[_megabyte_n_1(x12,u19), card(20,e18,x12)],_which_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(2,e9,x3)],loc_nonsp(e2,x3,x12)))",
             "Enabled": true,
             "ID": "3b8c9772-1b9b-4636-894b-4e42f0b23159"
@@ -383,7 +383,7 @@
         },
         {
             "Command": "which 2 files are in 2 folders?",
-            "Expected": "[File(name=/Desktop/file2.txt, size=10000000)]\n[File(name=/Desktop/file3.txt, size=10000000)]\n[File(name=/documents/file4.txt, size=10000000)]\n[File(name=/documents/file5.txt, size=10000000)]\n",
+            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)\n(File(name=/documents/file4.txt, size=10000000),)\n(File(name=/documents/file5.txt, size=10000000),)\n(File(name=/Desktop/file3.txt, size=10000000),)\n",
             "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "86773c14-37d1-4ace-9906-eea776f6b402"
@@ -397,7 +397,7 @@
         },
         {
             "Command": "which 2 files are in 2 folders",
-            "Expected": "[File(name=/Desktop/file4.txt, size=10000000)]\n[File(name=/Desktop/file5.txt, size=10000000)]\n[File(name=/Desktop/file4.txt, size=10000000)]\n[File(name=/Desktop/file5.txt, size=10000000)]\n",
+            "Expected": "(File(name=/Desktop/file4.txt, size=10000000),)\n(File(name=/Desktop/file5.txt, size=10000000),)\n",
             "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "e94d4a20-05d6-4242-bbc5-d16657e67374"
