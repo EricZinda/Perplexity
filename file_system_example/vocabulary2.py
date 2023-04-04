@@ -383,7 +383,7 @@ def together_p_ee(state, e_introduced_binding, e_target_binding):
 @Predication(vocabulary, names=["_together_p"])
 def together_p(state, e_introduced_binding, x_target_binding):
     for _, x_target_value in discrete_variable_set_generator(x_target_binding, VariableValueSetSize.more_than_one):
-        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set)
+        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set, used_collective=True)
 
 
 @Predication(vocabulary, names=["_together_p_state"])

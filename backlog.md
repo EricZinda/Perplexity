@@ -5,11 +5,10 @@ Remaining work to be shown in the tutorial:
   
 Plurals work 
     - work through the tests and make them work in new regime 
-    - Make /show work with streaming
-        START HERE NEXT: /show should show answers grouped
-    - Bug: "which files are in folders": returns a crazy number of answers
-        - Report answers by group
     - Bug: we can't remove duplicates *before* running quantifiers and cardinals because they might need them
+        - Should simply remove from reported answers
+    - "which files are in folders": returns a crazy number of answers
+        including ones that are coll when it isn't used
     - Really slow: Example28
         a few files are in a folder together
             Need to walk this through
@@ -22,13 +21,7 @@ Plurals work
                 there are no duplicates, they are legit combinations
             solution_groups_helper() gets the list of solutions
             Really blows up on this line:                 for combination in itertools.combinations(variable_assignments, combination_size):
-            Could be easily streamed 
-                but: final_answer_groups() collects them all before returning
-                and: user_interface is designed to require all answers
-                    response_function could be designed to only pull as many as it needs
         Ideas:
-            If we stream it we can short circuit fast to answer yes or no
-                We can also start returning answers quickly
             If we look at the size of actor and location, we can optimize and check differently
     - Need to implement "only a few files are large" and have it fail when there are a lot
     - "a file is a few megabytes" doesn't work

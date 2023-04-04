@@ -138,7 +138,7 @@ class UserInterface(object):
                         duplicate_solutions.append(item)
 
                     pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
-                    duplicate_solutions = perplexity.cardinals2.remove_duplicates(duplicate_solutions)
+                    # duplicate_solutions = perplexity.cardinals2.remove_duplicates(duplicate_solutions)
                     pipeline_logger.debug(f"{len(duplicate_solutions)} unquantified solutions.")
                     if self.show_all_answers:
                         tree_record["SolutionGroups"] = list(perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions))
