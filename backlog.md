@@ -5,10 +5,7 @@ Remaining work to be shown in the tutorial:
   
 Plurals work 
     - work through the tests and make them work in new regime 
-    - Bug: we can't remove duplicates *before* running quantifiers and cardinals because they might need them
-        - Should simply remove from reported answers
-    - "which files are in folders": returns a crazy number of answers
-        including ones that are coll when it isn't used
+    - Should remove duplicates before reporting answers
     - Really slow: Example28
         a few files are in a folder together
             Need to walk this through
@@ -16,6 +13,7 @@ Plurals work
         Returns an *enormous* number of items
             Are they all really legit?
         Start with "which files are in folders?"
+            includes ones that are coll when it isn't used
             "in_p_loc" receives two combinatoric variables very quickly
             Then it tries every combination, returns pretty fast
                 there are no duplicates, they are legit combinations

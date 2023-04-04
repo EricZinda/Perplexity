@@ -325,7 +325,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # handles size only
 # loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
-@Predication(vocabulary, names=["loc_nonsp"], handles=[("CardinalLimiter", EventOption.optional)])
+@Predication(vocabulary, names=["loc_nonsp"], handles=[("CardinalSetLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):
@@ -357,8 +357,8 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
         if x_size_binding.value is not None:
             # If a cardinal limiter like "together" is acting on this verb, it is unclear
             # if it is for x_actor or x_size, so we have to try both
-            if e_introduced_binding.value is not None and "CardinalLimiter" in e_introduced_binding.value:
-                set_size = e_introduced_binding.value["CardinalLimiter"]["Value"]["ValueSetSize"]
+            if e_introduced_binding.value is not None and "CardinalSetLimiter" in e_introduced_binding.value:
+                set_size = e_introduced_binding.value["CardinalSetLimiter"]["Value"]["ValueSetSize"]
             else:
                 set_size = VariableValueSetSize.all
 
@@ -367,11 +367,11 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
 
 
 # Used for prepositions like "together" or "separately" that modify how a verb should handle cardinality
-def default_cardinal_limiter_norm(state, e_introduced_binding, e_target_binding, set_size):
+def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_binding, set_size):
     info = {
         "ValueSetSize": set_size
     }
-    yield state.add_to_e(e_target_binding.variable.name, "CardinalLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
+    yield state.add_to_e(e_target_binding.variable.name, "CardinalSetLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
 # Needed for "together, which 3 files are 3 mb?"
@@ -388,6 +388,6 @@ def together_p(state, e_introduced_binding, x_target_binding):
 
 @Predication(vocabulary, names=["_together_p_state"])
 def together_p_state(state, e_introduced_binding, e_target_binding):
-    yield from default_cardinal_limiter_norm(state, e_introduced_binding, e_target_binding, VariableValueSetSize.more_than_one)
+    yield from default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_binding, VariableValueSetSize.more_than_one)
 
 
