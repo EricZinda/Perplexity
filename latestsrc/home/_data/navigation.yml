@@ -1,8 +1,8 @@
 main:
   - title: "Home"
-    url: https://blog.inductorsoftware.com/Perplexity/home/devhowtoOverview
+    url: https://blog.inductorsoftware.com/Perplexity/home/docs/devhowto/devhowtoOverview
 toc:
   - title: "How-To"
     children:
       - title: "Overview"
-        url: "/devhowtoOverview/"
+        url: "/docs/devhowto/devhowtoOverview/"
