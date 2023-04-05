@@ -1,6 +1,7 @@
 Remaining work to be shown in the tutorial:
  
-Plurals work 
+Plurals work
+    - Get a command to work
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives

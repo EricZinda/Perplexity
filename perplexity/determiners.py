@@ -1,7 +1,6 @@
 import copy
 import itertools
 import sys
-from perplexity.execution import report_error
 from perplexity.set_utilities import all_nonempty_subsets, all_combinations_with_elements_from_all, append_if_unique, \
     count_set
 from perplexity.utilities import is_plural
