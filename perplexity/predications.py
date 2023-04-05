@@ -59,6 +59,7 @@ def individual_only_style_predication_1(state, binding, prediction_function):
     if binding.variable.value_type == VariableValueType.set:
         # Pass sets through, if it is > 1 item the predication_function should fail
         iterator = [binding.value]
+
     else:
         # If it is combinatoric, only pass through individuals
         iterator = [[value] for value in binding.value]

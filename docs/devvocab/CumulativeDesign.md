@@ -30,7 +30,7 @@ Brute force:
         But what about the first one?
             The first one just selects solutions that match and has to be combinatorial since nothing has been restricted yet
         Now dist, dist doesn't work because it requires file() to send along 4 answers
-
+    Issue: To make commands work we don't need *all* the potential answers, just the ones that are 
     Optimizations:
         Starting with the cardinal that generated the smallest set is probably best
         You can rule out everything if there aren't even card(rstr(x)) available at all for the first one (but maybe not for child cards because the rstr could depend on the first?)

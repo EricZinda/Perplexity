@@ -23,6 +23,10 @@ def udef_q_impl(execution_context, variable_name, h_body, solution_group):
     yield solution_group
 
 
+def pronoun_q_impl(execution_context, variable_name, h_body, solution_group):
+    yield solution_group
+
+
 # Several meanings:
 # 1. Means "this" which only succeeds for rstrs that are the single in scope x set and there are no others that are in scope
 #       "put the two keys in the lock": should only work if there are only two keys in scope:

@@ -168,8 +168,10 @@ class UserInterface(object):
 
                         # This worked, apply the results to the current world state if it was a command
                         if sentence_force(tree_info["Variables"]) == "comm":
+                            tree_record["SolutionGroups"] = [[solution for solution in group] for group in tree_record["SolutionGroups"]]
+
                             try:
-                                self.apply_solutions_to_state(tree_record["SolutionGroups"])
+                                self.apply_solutions_to_state([solution for group in tree_record["SolutionGroups"] for solution in group])
 
                             except MessageException as error:
                                 response = self.response_function(tree_info, [], [0, error.message_object()])

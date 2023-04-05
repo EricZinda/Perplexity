@@ -2,7 +2,6 @@ import sys
 from perplexity.determiners import determiner_from_binding
 from perplexity.tree import find_quantifier_from_variable
 
-
 # Filter the unquantified solutions by recursively filtering them by each quantified variable
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(execution_context, solutions):
@@ -18,15 +17,14 @@ def filter_solutions_for_next_quantifier(execution_context, quantifier_list, sol
 
     else:
         variable_name = quantifier_list[0][0]
-        cardinal = quantifier_list[0][1]
+        determiner = quantifier_list[0][1]
         quantifier = quantifier_list[0][2]
         quantifier_predication = quantifier_list[0][3]
 
-        # Call that cardinal to get groups of solutions that meet it
-        for cardinal_solution_group in cardinal.solution_groups(execution_context, solutions, initial_cardinal):
+        for determiner_solution_group in determiner.solution_groups(execution_context, solutions, initial_cardinal):
             # Then call the quantifier to further filter those groups into quantified groups that meet it
             #   The quantifier needs to yield groups of the solution that match it.  For example "a_q" needs to yield every one.
-            for quantified_cardinal_solution_group in quantifier(execution_context, variable_name, quantifier_predication.args[2], cardinal_solution_group):
+            for quantified_cardinal_solution_group in quantifier(execution_context, variable_name, quantifier_predication.args[2], determiner_solution_group):
                 # Pass the filtered groups down to the next one
                 yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list[1:], quantified_cardinal_solution_group)
 

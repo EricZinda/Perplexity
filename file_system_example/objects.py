@@ -272,8 +272,8 @@ class FileSystemMock(FileSystem):
         return path != "" and path in self.items and isinstance(self.items[path], File if is_file else Folder)
 
     def delete_item(self, delete_binding):
-        path = self.add_current_directory(delete_binding.value.name)
-        if self.exists(path, is_file=isinstance(delete_binding.value, File)):
+        path = self.add_current_directory(delete_binding.value[0].name)
+        if self.exists(path, is_file=isinstance(delete_binding.value[0], File)):
             self.items.pop(path)
 
         else:

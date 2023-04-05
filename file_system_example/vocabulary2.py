@@ -1,4 +1,5 @@
-from file_system_example.objects import File, Folder, Megabyte, Measurement
+from file_system_example.objects import File, Folder, Megabyte, Measurement, Actor
+from file_system_example.state import DeleteOperation
 from perplexity.quantifiers import quantifier_raw
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
@@ -12,7 +13,7 @@ vocabulary = Vocabulary()
 
 
 # The default quantifier just passes through all answers
-@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "_a_q", "_the_q"])
+@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "_a_q", "_the_q", "pronoun_q"])
 def default_quantifier(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -234,3 +235,38 @@ def together_p_state(state, e_introduced_binding, e_target_binding):
     yield from default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_binding, VariableValueSetSize.more_than_one)
 
 
+# Delete only works on distributive values: i.e. there is no semantic for deleting
+# things "together" which would probably imply
+@Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
+def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    # We only know how to delete things from the
+    # computer's perspective
+    if x_actor_binding.value[0].name == "Computer":
+        def criteria(value):
+            if len(value) > 1:
+                report_error(["cantDeleteSet", x_what_binding.variable.name])
+
+            else:
+                # Only allow deleting files and folders
+                if isinstance(value[0], (File, Folder)):
+                    print(f"deleting: {value[0]}")
+                    return True
+
+                else:
+                    report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+        for new_state in individual_only_style_predication_1(state, x_what_binding, criteria):
+            yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
+
+    else:
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+
+@Predication(vocabulary, names=["pron"])
+def pron(state, x_who_binding):
+    person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
+
+    def criteria(value):
+        return isinstance(value, Actor) and value.person == person
+
+    yield from combinatorial_style_predication(state, x_who_binding, state.all_individuals(), criteria)

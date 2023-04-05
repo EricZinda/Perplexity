@@ -78,11 +78,11 @@ def respond_to_mrs_tree(tree, solution_groups, error):
     elif sentence_force_type == "comm":
         # This was a command so, if it works, just say so
         # We'll get better errors and messages in upcoming sections
-        if len(solution_groups) > 0:
-            return "Done!"
+        if solution_groups is not None:
+            yield "Done!"
         else:
             message = generate_message(tree, error)
-            return message
+            yield message
 
 
 # Generates all the responses that predications can return when an error

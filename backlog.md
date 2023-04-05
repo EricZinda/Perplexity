@@ -1,10 +1,22 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
-    - BUG: all the baselines are missing from the tests
     - Get a command to work
+        - a command has to work in two phases:
+            1. queue up what would happen if it succeeded
+            2. actually do it later
         - "a file is large" returns all of them so they will all get deleted
-            - theory: when a solution group succeeds we are done because that group fulfils the 
+            - theory: when a solution group succeeds we are done because that group fulfils the query
+                doesn't seem to work with "which"
+                - Theory: which files are large: "files" should return the solution that is "the maximum set" first? i.e. all rstrs that are in the body
+                    Quantifiers are choosing combinations of solutions that make them true because downstream children might need a particular group
+                    They should always start with the maximum set?
+                - Theory: Which should look through all answers and pick the maximal one?
+                - Theory: Run the determiner *after* the quantifier?
+                - Theory: Quantifier needs to be able to say "stop". "a" should say stop after one works.  "udef" should stop after 1 solution
+                - Theory: commands should stop after the first solution group.
+                - Theory: There is an implicit "uber quantifier" on the front of all phrases that tells you how many of the solutions to return? 
+                    All should just return 1, except for which?
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives
