@@ -3,23 +3,18 @@ from perplexity.determiners import determiner_from_binding
 from perplexity.tree import find_quantifier_from_variable
 
 
-def final_answer_groups(execution_context, solutions):
-    for group in solution_groups(execution_context, [[solution, []] for solution in solutions]):
-        yield [solution_info[0] for solution_info in group]
-
-
 # Filter the unquantified solutions by recursively filtering them by each quantified variable
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(execution_context, solutions_with_rstr):
-    if len(solutions_with_rstr) > 0:
+def solution_groups(execution_context, solutions):
+    if len(solutions) > 0:
         # Go through each variable that has a quantifier in any order.
-        quantifier_list = [data for data in variable_determiner_quantifier_predication(solutions_with_rstr[0][0])]
-        yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions_with_rstr, True)
+        quantifier_list = [data for data in variable_determiner_quantifier_predication(solutions[0])]
+        yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions, True)
 
 
-def filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions_with_rstr, initial_cardinal=False):
+def filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions, initial_cardinal=False):
     if len(quantifier_list) == 0:
-        yield solutions_with_rstr
+        yield solutions
 
     else:
         variable_name = quantifier_list[0][0]
@@ -28,13 +23,12 @@ def filter_solutions_for_next_quantifier(execution_context, quantifier_list, sol
         quantifier_predication = quantifier_list[0][3]
 
         # Call that cardinal to get groups of solutions that meet it
-        for cardinal_solution_group in cardinal.solution_groups(execution_context, solutions_with_rstr, initial_cardinal):
+        for cardinal_solution_group in cardinal.solution_groups(execution_context, solutions, initial_cardinal):
             # Then call the quantifier to further filter those groups into quantified groups that meet it
             #   The quantifier needs to yield groups of the solution that match it.  For example "a_q" needs to yield every one.
             for quantified_cardinal_solution_group in quantifier(execution_context, variable_name, quantifier_predication.args[2], cardinal_solution_group):
                 # Pass the filtered groups down to the next one
                 yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list[1:], quantified_cardinal_solution_group)
-
 
 
 # Return each quantified variable, along with its cardinal and quantifier

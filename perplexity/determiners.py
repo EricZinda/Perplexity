@@ -39,7 +39,7 @@ def determiner_from_binding(state, h_body, binding):
 #   So, for "2 boys", it should be 2 since it must be no more than 2
 #   but for "boys" it has to be None since it could be a huge set of boys
 # combinatorial is True when any combination of the solutions can be used, otherwise, the exact set must be true
-def determiner_solution_groups_helper(variable_name, max_answer_count, solutions_with_rstr_orig, cardinal_criteria, solution_group_combinatorial=False):
+def determiner_solution_groups_helper(variable_name, max_answer_count, solutions_orig, cardinal_criteria, solution_group_combinatorial=False):
     # First: Build a list of the set values variable_name has, and which solutions go with each set
     # If variable_name is a combinatorial variable it means that any combination of values in it are true, so as long as one
     #   remains at the end, the solution group is still valid.
@@ -51,12 +51,12 @@ def determiner_solution_groups_helper(variable_name, max_answer_count, solutions
     set_solution_alternatives_list = []
     # If not, it gets added, as is, to set_solution_list
     set_solution_list = []
-    for solution in solutions_with_rstr_orig:
-        binding = solution[0].get_binding(variable_name)
+    for solution in solutions_orig:
+        binding = solution.get_binding(variable_name)
         if binding.variable.value_type == VariableValueType.combinatoric:
             binding_alternatives = []
             for subset in all_nonempty_subsets(binding.value):
-                binding_alternatives.append([solution[0].set_x(variable_name, subset, VariableValueType.set), solution[1]])
+                binding_alternatives.append(solution.set_x(variable_name, subset, VariableValueType.set))
             set_solution_alternatives_list.append(binding_alternatives)
         else:
             set_solution_list.append(solution)
@@ -84,13 +84,13 @@ def determiner_solution_groups_helper(variable_name, max_answer_count, solutions
                 final_alternatives_list.append(alternative)
 
         if len(final_alternatives_list) == 0:
-            final_alternatives_list = [solutions_with_rstr_orig]
+            final_alternatives_list = [solutions_orig]
 
-    for solutions_with_rstr in final_alternatives_list:
+    for solutions in final_alternatives_list:
         # Get all the unique values assigned to this variable, and collect the solutions that go with them
         variable_assignments = []
-        for solution_index in range(len(solutions_with_rstr)):
-            binding_value = solutions_with_rstr[solution_index][0].get_binding(variable_name).value
+        for solution_index in range(len(solutions)):
+            binding_value = solutions[solution_index].get_binding(variable_name).value
             # TODO: find a better way to remove duplicates, support hashing objects and use set?
             unique = True
             for variable_assignment in variable_assignments:
@@ -117,6 +117,7 @@ def determiner_solution_groups_helper(variable_name, max_answer_count, solutions
                         for item in lst:
                             if item not in unique_values:
                                 unique_values.append(item)
+
                     if cardinal_criteria(unique_values):
                         # # Finally, return all possible combinations of solutions that contained the assignments
                         # # which means returning all combinations of every non-empty subset of all the lists
@@ -129,7 +130,7 @@ def determiner_solution_groups_helper(variable_name, max_answer_count, solutions
                             combination_solutions = []
                             for index in possible_solution:
                                 # print(f"   {solutions_with_rstr[index][0]}")
-                                combination_solutions.append(solutions_with_rstr[index])
+                                combination_solutions.append(solutions[index])
 
                             yield combination_solutions
 
@@ -141,7 +142,7 @@ def determiner_solution_groups_helper(variable_name, max_answer_count, solutions
                         unique_values.append(item)
 
             if cardinal_criteria(unique_values):
-                yield solutions_with_rstr
+                yield solutions
 
             else:
                 continue
@@ -152,11 +153,11 @@ class SingularDeterminer(object):
         self.variable_name = variable_name
         self.h_body = h_body
 
-    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False):
+    def solution_groups(self, execution_context, solutions, combinatorial=False):
         def criteria(rstr_value_list):
             return count_set(rstr_value_list) == 1
 
-        yield from determiner_solution_groups_helper(self.variable_name, None, solutions_with_rstr, criteria, combinatorial)
+        yield from determiner_solution_groups_helper(self.variable_name, None, solutions, criteria, combinatorial)
 
 
 class PluralDeterminer(object):
@@ -164,11 +165,11 @@ class PluralDeterminer(object):
         self.variable_name = variable_name
         self.h_body = h_body
 
-    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False):
+    def solution_groups(self, execution_context, solutions, combinatorial=False):
         def criteria(rstr_value_list):
             return count_set(rstr_value_list) > 0
 
-        yield from determiner_solution_groups_helper(self.variable_name, None, solutions_with_rstr, criteria, combinatorial)
+        yield from determiner_solution_groups_helper(self.variable_name, None, solutions, criteria, combinatorial)
 
 
 class CardinalDeterminer(object):
@@ -181,7 +182,7 @@ class CardinalDeterminer(object):
     # If combinatorial is False then this solution group *must* be true for all the
     # solutions passed in in order to keep the solution group true for the previous
     # quantifier
-    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
+    def solution_groups(self, execution_context, solutions, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
         def criteria(rstr_value_list):
             cardinal_group_values_count = count_set(rstr_value_list)
             error_location = ["AtPredication", self.h_body,
@@ -211,7 +212,7 @@ class CardinalDeterminer(object):
             group_rstr = []
             unique_rstrs = []
             groups = []
-            for group in determiner_solution_groups_helper(self.variable_name, self.count, solutions_with_rstr, criteria, combinatorial):
+            for group in determiner_solution_groups_helper(self.variable_name, self.count, solutions, criteria, combinatorial):
                 for item in group_rstr:
                     append_if_unique(unique_rstrs, item)
 
@@ -230,7 +231,7 @@ class CardinalDeterminer(object):
                 yield from groups
 
         else:
-            yield from determiner_solution_groups_helper(self.variable_name, self.count, solutions_with_rstr, criteria, combinatorial)
+            yield from determiner_solution_groups_helper(self.variable_name, self.count, solutions, criteria, combinatorial)
 
 
 # For implementing things like "a few" where there is a number
@@ -245,7 +246,7 @@ class BetweenDeterminer(object):
     # If combinatorial is False then this solution group *must* be true for all the
     # solutions passed in in order to keep the solution group true for the previous
     # quantifier
-    def solution_groups(self, execution_context, solutions_with_rstr, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
+    def solution_groups(self, execution_context, solutions, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
         def criteria(rstr_value_list):
             cardinal_group_values_count = count_set(rstr_value_list)
             error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
@@ -261,5 +262,5 @@ class BetweenDeterminer(object):
             else:
                 return True
 
-        yield from determiner_solution_groups_helper(self.variable_name, self.max_count, solutions_with_rstr, criteria, combinatorial)
+        yield from determiner_solution_groups_helper(self.variable_name, self.max_count, solutions, criteria, combinatorial)
 

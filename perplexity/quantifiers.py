@@ -33,8 +33,8 @@ def _the_q_impl(execution_context, variable_name, h_body, cardinal_solution_grou
     all_unique_values = execution_context.get_variable_execution_data(variable_name)["AllRstrValues"]
     is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
     used_unique_values = []
-    for solution_rstr in cardinal_solution_group:
-        binding = solution_rstr[0].get_binding(variable_name)
+    for solution in cardinal_solution_group:
+        binding = solution.get_binding(variable_name)
         append_if_unique(used_unique_values, binding.value)
 
     if not is_plural and len(all_unique_values) > 1:
@@ -51,8 +51,8 @@ def _the_q_impl(execution_context, variable_name, h_body, cardinal_solution_grou
 # so we can just see if there is more than one "a"
 def _a_q_impl(execution_context, variable_name, h_body, cardinal_solution_group):
     found_item = None
-    for solution_rstr in cardinal_solution_group:
-        binding = solution_rstr[0].get_binding(variable_name)
+    for solution in cardinal_solution_group:
+        binding = solution.get_binding(variable_name)
         if found_item is None:
             found_item = binding.value
 

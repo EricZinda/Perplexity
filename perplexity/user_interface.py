@@ -139,10 +139,10 @@ class UserInterface(object):
                     # duplicate_solutions = perplexity.determiners.remove_duplicates(duplicate_solutions)
                     pipeline_logger.debug(f"{len(duplicate_solutions)} unquantified solutions.")
                     if self.show_all_answers:
-                        tree_record["SolutionGroups"] = list(perplexity.determiners.final_answer_groups(self.execution_context, duplicate_solutions))
+                        tree_record["SolutionGroups"] = list(perplexity.determiners.solution_groups(self.execution_context, duplicate_solutions))
                         tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
                     else:
-                        tree_record["SolutionGroups"] = at_least_one_generator(perplexity.solution_groups.final_answer_groups(self.execution_context, duplicate_solutions))
+                        tree_record["SolutionGroups"] = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions))
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()
