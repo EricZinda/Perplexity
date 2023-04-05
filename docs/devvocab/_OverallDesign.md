@@ -2,11 +2,14 @@
 Variables are sets that are treated as items
 yield all alternatives that make you true
 empty variable means "everything"
+
 optimization: combinatorial variables
 
 ## Quantifiers
+Go through unquantified solutions as they are generated an create groups
 
 ## Plurals and Determiners
+Plurals are treated as a default determiner
 
 ## Plural Solutions
 Solutions to an MRS are a list of assignments to variables
