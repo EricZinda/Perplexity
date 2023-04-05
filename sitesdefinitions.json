@@ -17,7 +17,7 @@
     },
   "Sites":
   [
-    {"SiteFullName": "Perplexity", "SiteNavigationName": "Home", "Site": "home"}
+    {"SiteFullName": "Perplexity", "SiteNavigationName": "Home", "Site": "home", "HomePage":  "devhowtoOverview.md"}
   ],
   "Pages":
   {
