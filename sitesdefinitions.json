@@ -1,0 +1,30 @@
+{
+  "Comments": [
+    "This comments section is solely for comments that describe this json file",
+
+    "EVERYTHING is case sensitive!",
+      "If a broken link is reported that doesn't seem broken, look at the casing of all the worlds in the entire page definition.",
+      "OR look at the link that is calling it, it may not be cased properly",
+
+    "If you add a new site, or change the name of it, you must add entries to .github/workflows/BuildDocs.yml to get jekyll to run on it and upload it",
+    "If you add new SourceRepositories, you must add entries to .github/workflows/BuildDocs.yml.",
+
+    "Then: Update the SourceRepositories and Sites sections. They must always be in sync with whatever is in the BuildDocs.yml file"
+  ],
+  "SourceRepositories":
+    {
+      "main": {"Repository": "EricZinda/Perplexity"}
+    },
+  "Sites":
+  [
+    {"SiteFullName": "Perplexity", "SiteNavigationName": "Home", "Site": "home"}
+  ],
+  "Pages":
+  {
+    "home": [
+      {"Section": "How-To", "Pages": [
+        {"Page": "Overview", "SrcDir": "main", "SrcFile": "/docs/devhowto/devhowtoOverview.md"}
+      ]}
+    ]
+  }
+}
