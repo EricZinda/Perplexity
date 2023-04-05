@@ -1,0 +1,25 @@
+  {
+    "home": [
+      {"Section": "How-To", "Pages": [
+        {"Page": "devhowtoChoosingWhichFailure", "SrcDir": "devhowto", "SrcFile": "devhowtoChoosingWhichFailure.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoSimplePropositions.md"},
+        {"Page": "devhowtoConceptualFailures", "SrcDir": "devhowto", "SrcFile": "devhowtoConceptualFailures.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoMRS.md"},
+        {"Page": "devhowtoConjunctions", "SrcDir": "devhowto", "SrcFile": "devhowtoConjunctions.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoMRSToPython.md"},
+        {"Page": "devhowtoEvents", "SrcDir": "devhowto", "SrcFile": "devhowtoEvents.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoPredicationContract.md"},
+        {"Page": "devhowtoGenerateMRSAndTrees", "SrcDir": "devhowto", "SrcFile": "devhowtoGenerateMRSAndTrees.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoWhichParseAndTree.md"},
+        {"Page": "devhowtoImplementPredication", "SrcDir": "devhowto", "SrcFile": "devhowtoImplementPredication.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoMRSToPython.md"},
+        {"Page": "devhowtoMRS", "SrcDir": "devhowto", "SrcFile": "devhowtoMRS.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoOverview.md"},
+        {"Page": "devhowtoMRSToPython", "SrcDir": "devhowto", "SrcFile": "devhowtoMRSToPython.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoGenerateMRSAndTrees.md"},
+        {"Page": "devhowtoParsePredication", "SrcDir": "devhowto", "SrcFile": "devhowtoParsePredication.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoConceptualFailures.md"},
+        {"Page": "devhowtoPredicationContract", "SrcDir": "devhowto", "SrcFile": "devhowtoPredicationContract.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoWellFormedTree.md"},
+        {"Page": "devhowtoPythonBasics", "SrcDir": "devhowto", "SrcFile": "devhowtoPythonBasics.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoImplementPredication.md"},
+        {"Page": "devhowtoPythonDecorators", "SrcDir": "devhowto", "SrcFile": "devhowtoPythonDecorators.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoMRSToPython.md"},
+        {"Page": "devhowtoReportingAFailure", "SrcDir": "devhowto", "SrcFile": "devhowtoReportingAFailure.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoChoosingWhichFailure.md"},
+        {"Page": "devhowtoScopalArguments", "SrcDir": "devhowto", "SrcFile": "devhowtoScopalArguments.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoConjunctions.md"},
+        {"Page": "devhowtoSentenceForce", "SrcDir": "devhowto", "SrcFile": "devhowtoSentenceForce.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoSimpleQuestions.md"},
+        {"Page": "devhowtoSimplePropositions", "SrcDir": "devhowto", "SrcFile": "devhowtoSimplePropositions.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoSentenceForce.md"},
+        {"Page": "devhowtoSimpleQuestions", "SrcDir": "devhowto", "SrcFile": "devhowtoSimpleQuestions.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoConceptualFailures.md"},
+        {"Page": "devhowtoWellFormedTree", "SrcDir": "devhowto", "SrcFile": "devhowtoWellFormedTree.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoWhichParseAndTree.md"},
+        {"Page": "devhowtoWhichParseAndTree", "SrcDir": "devhowto", "SrcFile": "devhowtoWhichParseAndTree.md", "BaseReferrer": "home/devhowtoOverview.md", "Referrer": "home/devhowtoMRS.md"}
+      ]}
+    ]
+  }
