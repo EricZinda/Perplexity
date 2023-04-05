@@ -450,6 +450,27 @@
             "Tree": "udef_q(x3,[_file_n_of(x3,i11), _only_x_deg(e5,e6), card(2,e6,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "29ebc2f2-3fe3-4e9e-b62b-58050d28a0ad"
+        },
+        {
+            "Command": "/new examples.Example21_reset",
+            "Expected": "State reset using examples.Example21_reset().",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "44ceda3b-5d3d-437e-9efb-e53caeb06e44"
+        },
+        {
+            "Command": "delete a large file",
+            "Expected": "Done!",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_file_n_of(x8,i14), _large_a_1(e13,x8)],_delete_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "aa254b8d-5139-4e99-8ecf-7272008c18f4"
+        },
+        {
+            "Command": "which files are large?",
+            "Expected": "",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "15e2683a-1847-462d-97b8-7e8ef2bb02fc"
         }
     ]
 }

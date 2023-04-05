@@ -182,10 +182,13 @@ class TestManager(object):
     def _add_to_test(self, test, interaction_records):
         if interaction_records is not None:
             test_items = test["TestItems"]
-            for record in interaction_records:
-                test_items.append({"Command": record["UserInput"],
-                                   "Expected": record["ResponseMessage"],
-                                   "Tree": None if (record["ChosenTreeIndex"] == -1 or record["ChosenTreeIndex"] is None) else str(record["Mrss"][record["ChosenMrsIndex"]]["Trees"][record["ChosenTreeIndex"]]["Tree"]),
+            for interaction_record in interaction_records:
+                chosen_mrs_index = interaction_record["ChosenMrsIndex"]
+                chosen_tree_index = interaction_record["ChosenTreeIndex"]
+                tree_record = interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
+                test_items.append({"Command": interaction_record["UserInput"],
+                                   "Expected": tree_record["ResponseMessage"],
+                                   "Tree": str(tree_record["Tree"]),
                                    "Enabled": True,
                                    "ID": str(uuid.uuid4())
                                    })
