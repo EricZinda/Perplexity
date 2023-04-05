@@ -15,12 +15,12 @@ def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
     set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
 
 
-def _which_q_impl(execution_context, variable_name, h_body, cardinal_solution_group):
-    yield cardinal_solution_group
+def _which_q_impl(execution_context, variable_name, h_body, solution_group):
+    yield solution_group
 
 
-def udef_q_impl(execution_context, variable_name, h_body, cardinal_solution_group):
-    yield cardinal_solution_group
+def udef_q_impl(execution_context, variable_name, h_body, solution_group):
+    yield solution_group
 
 
 # Several meanings:
@@ -29,11 +29,11 @@ def udef_q_impl(execution_context, variable_name, h_body, cardinal_solution_grou
 #       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
 # 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
 #       same approach
-def _the_q_impl(execution_context, variable_name, h_body, cardinal_solution_group):
+def _the_q_impl(execution_context, variable_name, h_body, solution_group):
     all_unique_values = execution_context.get_variable_execution_data(variable_name)["AllRstrValues"]
     is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
     used_unique_values = []
-    for solution in cardinal_solution_group:
+    for solution in solution_group:
         binding = solution.get_binding(variable_name)
         append_if_unique(used_unique_values, binding.value)
 
@@ -44,14 +44,14 @@ def _the_q_impl(execution_context, variable_name, h_body, cardinal_solution_grou
         execution_context.report_error(["notTrueForAll", ["AtPredication", h_body, variable_name]], force=True)
 
     else:
-        yield cardinal_solution_group
+        yield solution_group
 
 
 # Solution groups are never combinatoric due to the solution_groups_helper
 # so we can just see if there is more than one "a"
-def _a_q_impl(execution_context, variable_name, h_body, cardinal_solution_group):
+def _a_q_impl(execution_context, variable_name, h_body, solution_group):
     found_item = None
-    for solution in cardinal_solution_group:
+    for solution in solution_group:
         binding = solution.get_binding(variable_name)
         if found_item is None:
             found_item = binding.value
@@ -63,5 +63,5 @@ def _a_q_impl(execution_context, variable_name, h_body, cardinal_solution_group)
             # More than one "a", so fails
             return
 
-    yield cardinal_solution_group
+    yield solution_group
 

@@ -20,13 +20,14 @@ Plurals work
                 there are no duplicates, they are legit combinations
             solution_groups_helper() gets the list of solutions
             Really blows up on this line:                 for combination in itertools.combinations(variable_assignments, combination_size):
-        Ideas:
-            If nobody cares about sets, don't generate them
-                What are the real terms for "don't care"
-                each_q(x), every_q(x) forces distributive of x
-                met(x) forces collective of x
-                dance(x) could be anything (and means different things)
-                in(x, y) could be anything (and means the same things)
+    Performance Ideas:
+        We could stream answers from unquantified MRS to the solution groups
+        If nobody cares about sets, don't generate them
+            What are the real terms for "don't care"
+            each_q(x), every_q(x) forces distributive of x
+            met(x) forces collective of x
+            dance(x) could be anything (and means different things)
+            in(x, y) could be anything (and means the same things)
 
             If we look at the size of actor and location, we can optimize and check differently
     - all 3 boys carried all 3
