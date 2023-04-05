@@ -47,7 +47,7 @@ def _the_q_impl(execution_context, variable_name, h_body, solution_group):
         yield solution_group
 
 
-# Solution groups are never combinatoric due to the solution_groups_helper
+# Solution groups are never combinatoric due to the determiner
 # so we can just see if there is more than one "a"
 def _a_q_impl(execution_context, variable_name, h_body, solution_group):
     found_item = None

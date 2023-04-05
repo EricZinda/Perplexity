@@ -1,7 +1,10 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+    - BUG: all the baselines are missing from the tests
     - Get a command to work
+        - "a file is large" returns all of them so they will all get deleted
+            - theory: when a solution group succeeds we are done because that group fulfils the 
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives
@@ -23,6 +26,7 @@ Plurals work
             Really blows up on this line:                 for combination in itertools.combinations(variable_assignments, combination_size):
     Performance Ideas:
         We could stream answers from unquantified MRS to the solution groups
+            I don't think this will work because we need to know all of the answers for "the", for example
         If nobody cares about sets, don't generate them
             What are the real terms for "don't care"
             each_q(x), every_q(x) forces distributive of x
