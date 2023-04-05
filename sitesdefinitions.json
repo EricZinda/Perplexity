@@ -23,7 +23,7 @@
   {
     "home": [
       {"Section": "How-To", "Pages": [
-        {"Page": "Overview", "SrcDir": "devhowto", "SrcFile": "devhowtoOverview.md"}
+        {"Page": "Overview", "SrcDir": "docs", "SrcFile": "devhowto/devhowtoOverview.md"}
       ]}
     ]
   }
