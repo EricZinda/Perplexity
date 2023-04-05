@@ -249,7 +249,6 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
             else:
                 # Only allow deleting files and folders
                 if isinstance(value[0], (File, Folder)):
-                    print(f"deleting: {value[0]}")
                     return True
 
                 else:

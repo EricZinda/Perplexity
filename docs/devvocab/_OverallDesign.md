@@ -37,6 +37,8 @@ x3(VariableValueType.set)=(Actor(name=Computer, person=2),), x8(VariableValueTyp
 x3(VariableValueType.set)=(Actor(name=Computer, person=2),), x8(VariableValueType.set)=[File(name=/Desktop/file3.txt, size=1000)]
 ~~~
 
+### Which is special
+All other items only look for one solution group.  Which wants them all
 
 List of quantifiers:
   _a+bit_q : ARG0 x { NUM sg }, RSTR h, BODY h.

@@ -2,13 +2,19 @@ import sys
 from perplexity.determiners import determiner_from_binding
 from perplexity.tree import find_quantifier_from_variable
 
+
 # Filter the unquantified solutions by recursively filtering them by each quantified variable
+# There is an implicit "uber quantifier" on the front of all phrases that tells you how many of the solutions to return
+# All should just return 1, except for which
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(execution_context, solutions):
+def solution_groups(execution_context, solutions, all_solutions):
     if len(solutions) > 0:
         # Go through each variable that has a quantifier in any order.
         quantifier_list = [data for data in variable_determiner_quantifier_predication(solutions[0])]
-        yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions, True)
+        for group in filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions, True):
+            yield group
+            if not all_solutions:
+                return
 
 
 def filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions, initial_cardinal=False):
