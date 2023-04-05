@@ -116,6 +116,25 @@ jobs:
           path: main/latestsites/
 
 
+      # Now commit and push all the changes to record this version of the docs
+      # As long as we are in main, otherwise don't do this because it makes merges a bear
+      - run: echo ${{ github.ref }}
+      - name: Commit files
+        if: ${{ github.ref == 'refs/heads/main'}}
+        run: |
+          cd $GITHUB_WORKSPACE/main
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "[BOT] Automatic documentation build" -a
+
+      - name: Push changes
+        if: ${{ github.ref == 'refs/heads/main'}}
+        uses: ad-m/github-push-action@master
+        with:
+          directory: main
+          branch: ${{ github.ref }}
+
           
   # Deploy the pages to github pages
   deploy:
