@@ -17,13 +17,13 @@
     },
   "Sites":
   [
-    {"SiteFullName": "Perplexity", "SiteNavigationName": "Home", "Site": "home", "HomePage":  "devhowtoOverview.md"}
+    {"SiteFullName": "Perplexity", "SiteNavigationName": "Home", "Site": "home", "HomePage": "devhowto/devhowtoOverview.md"}
   ],
   "Pages":
   {
     "home": [
       {"Section": "How-To", "Pages": [
-        {"Page": "Home", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoOverview.md", "DstFile": "devhowtoOverview.md"}
+        {"Page": "Home", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoOverview.md", "DstFile": "devhowto/devhowtoOverview.md"}
       ]}
     ]
   }
