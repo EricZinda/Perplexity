@@ -1,3 +1,14 @@
+## Basic solver approach
+Variables are sets that are treated as items
+yield all alternatives that make you true
+empty variable means "everything"
+optimization: combinatorial variables
+
+## Quantifiers
+
+## Plurals and Determiners
+
+## Plural Solutions
 Solutions to an MRS are a list of assignments to variables
 
 ~~~

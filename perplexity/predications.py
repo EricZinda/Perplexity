@@ -54,7 +54,7 @@ def discrete_variable_individual_generator(binding):
 
 
 # Ensures that solutions are sets (not combinatoric) and only passes through
-# individual sets if it is given a combinatoric
+# individuals if it is given a combinatoric
 def individual_only_style_predication_1(state, binding, prediction_function):
     if binding.variable.value_type == VariableValueType.set:
         # Pass sets through, if it is > 1 item the predication_function should fail

@@ -1,15 +1,6 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
-    - Get a command to work
-        - a command has to work in two phases:
-            1. queue up what would happen if it succeeded
-            2. actually do it later
-        - "a file is large" returns all of them so they will all get deleted
-            - when a solution group succeeds we are done because that group fulfils the query. doesn't work with "which"
-            - Answer: There is an implicit "uber quantifier" on the front of all phrases that tells you how many of the solutions to return
-                All should just return 1, except for which
-
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives

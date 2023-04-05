@@ -3,7 +3,7 @@ from perplexity.set_utilities import append_if_unique
 from perplexity.utilities import is_plural_from_tree_info
 
 
-# Get all undetermined, unquantified answers
+# Yield all undetermined, unquantified answers
 def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
     variable_name = x_variable_binding.variable.name
     rstr_values = []
