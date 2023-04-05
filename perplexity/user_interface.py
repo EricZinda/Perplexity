@@ -1,16 +1,14 @@
-import importlib
 import logging
 import os
 import platform
 import sys
-import perplexity.cardinals
-import perplexity.cardinals2
+import perplexity.solution_groups
 from delphin import ace
 from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import find_predication, tree_from_assignments, find_predications, find_predications_with_arg_types
+from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator
 
@@ -138,13 +136,13 @@ class UserInterface(object):
                         duplicate_solutions.append(item)
 
                     pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
-                    # duplicate_solutions = perplexity.cardinals2.remove_duplicates(duplicate_solutions)
+                    # duplicate_solutions = perplexity.determiners.remove_duplicates(duplicate_solutions)
                     pipeline_logger.debug(f"{len(duplicate_solutions)} unquantified solutions.")
                     if self.show_all_answers:
-                        tree_record["SolutionGroups"] = list(perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions))
+                        tree_record["SolutionGroups"] = list(perplexity.determiners.final_answer_groups(self.execution_context, duplicate_solutions))
                         tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
                     else:
-                        tree_record["SolutionGroups"] = at_least_one_generator(perplexity.cardinals2.final_answer_groups(self.execution_context, duplicate_solutions))
+                        tree_record["SolutionGroups"] = at_least_one_generator(perplexity.solution_groups.final_answer_groups(self.execution_context, duplicate_solutions))
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()

@@ -1,11 +1,10 @@
 Remaining work to be shown in the tutorial:
-
-- This new model will *change* the rstr in a child predication to filter it down. 
-  - Basically the state at any given node of the tree represents the restricted values of the variables at that point
-  
+ 
 Plurals work 
-    - Need to implement "only 2 files are large" and have it fail when there are a lot
-        which are the only 2 files?
+    - Figure out a way to make "in" be efficient for "which files are in folders"?
+        - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
+            in case downstream predications need those alternatives
+        - If they are declared then we can optimize *some* cases
     - work through the tests and make them work in new regime 
     - Should remove duplicates before reporting answers
     - Really slow: Example28
@@ -22,6 +21,13 @@ Plurals work
             solution_groups_helper() gets the list of solutions
             Really blows up on this line:                 for combination in itertools.combinations(variable_assignments, combination_size):
         Ideas:
+            If nobody cares about sets, don't generate them
+                What are the real terms for "don't care"
+                each_q(x), every_q(x) forces distributive of x
+                met(x) forces collective of x
+                dance(x) could be anything (and means different things)
+                in(x, y) could be anything (and means the same things)
+
             If we look at the size of actor and location, we can optimize and check differently
     - all 3 boys carried all 3
     - The girls told the boys two stories each

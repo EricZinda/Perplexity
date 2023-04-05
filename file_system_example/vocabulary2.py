@@ -1,11 +1,9 @@
 from file_system_example.objects import File, Folder, Megabyte, Measurement
-from perplexity.cardinals import cardinal_from_binding, yield_all, CardinalGroup
-from perplexity.cardinals2 import quantifier_raw
+from perplexity.quantifiers import quantifier_raw
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator
-from perplexity.tree import find_predication_from_introduced, is_index_predication
-from perplexity.utilities import is_plural
+from perplexity.tree import is_index_predication
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import Vocabulary, Predication, EventOption
 
@@ -13,178 +11,10 @@ from perplexity.vocabulary import Vocabulary, Predication, EventOption
 vocabulary = Vocabulary()
 
 
-# Several meanings:
-# 1. Means "this" which only succeeds for rstrs that are the single in scope x set and there are no others that are in scope
-#       "put the two keys in the lock": should only work if there are only two keys in scope:
-#       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
-# 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
-#       same approach
-# @Predication(vocabulary, names=["_the_q"])
-# def the_q(state, x_variable_binding, h_rstr, h_body):
-#     def the_behavior(cardinal_group_solutions_combined):
-#         # "the" could work for both coll and dist, so first break solutions into coll or dist sets
-#         coll_cardinal_group_solutions = []
-#         dist_cardinal_group_solutions = []
-#         for cardinal_group in cardinal_group_solutions_combined:
-#             if cardinal_group.is_collective:
-#                 coll_cardinal_group_solutions.append(cardinal_group)
-#             else:
-#                 dist_cardinal_group_solutions.append(cardinal_group)
-#
-#         for cardinal_group_solutions in [coll_cardinal_group_solutions, dist_cardinal_group_solutions]:
-#             single_cardinal_group = None
-#             if len(cardinal_group_solutions) > 1:
-#                 report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-#                 return
-#
-#             for cardinal_group in cardinal_group_solutions:
-#                 # The file is large should fail if there is more than one "the file"
-#                 # "The 2 files are large" should fail if there are more than 2 files but only 2 are large
-#                 if len(cardinal_group.cardinal_group_values()) != len(cardinal_group.original_rstr_set):
-#                     # There was not a single "the"
-#                     report_error(["notTrueForAll", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-#                     return
-#
-#                 elif single_cardinal_group is not None:
-#                     report_error(["moreThan1", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
-#                     return
-#
-#                 else:
-#                     single_cardinal_group = cardinal_group
-#
-#             if single_cardinal_group is not None:
-#                 yield from yield_all(single_cardinal_group.solutions)
-#
-#     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, the_behavior, cardinal_scoped_to_initial_rstr=True)
-
-
-# "a" stops returning answers after a single solution works
-# @Predication(vocabulary, names=["_a_q"])
-# def a_q(state, x_variable_binding, h_rstr, h_body):
-#     def a_behavior(cardinal_group_solutions):
-#         # Return "a" (arbitrary) item, then stop
-#         if len(cardinal_group_solutions) > 0:
-#             yield from yield_all(cardinal_group_solutions[0].solutions)
-#
-#     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, a_behavior)
-
-
 # The default quantifier just passes through all answers
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "_a_q", "_the_q"])
 def default_quantifier(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
-
-# @Predication(vocabulary, names=["udef_q", "which_q", "_which_q"])
-# def default_quantifier(state, x_variable_binding, h_rstr, h_body):
-#     def default_quantifier_behavior(cardinal_group_solutions):
-#         for cardinal_group_solution in cardinal_group_solutions:
-#             yield from yield_all(cardinal_group_solution.solutions)
-#
-#     yield from quantifier_collector(state, x_variable_binding, h_rstr, h_body, default_quantifier_behavior)
-
-
-# Implementation of all quantifiers that take cardinals and plurals into account
-def quantifier_collector(state, x_variable_binding, h_rstr, h_body, quantifier_function, cardinal_scoped_to_initial_rstr=False):
-    variable_name = x_variable_binding.variable.name
-
-    # Run in both collective and distributive if it is plural
-    modes = [True, False] if is_plural(state, x_variable_binding.variable.name) else [False]
-
-    raw_group_solutions = []
-    cardinal = None
-    for is_collective in modes:
-        # Get a rstr set value.
-        # This defines the cardinal group that needs to be checked in
-        # collective and distributive mode.
-        rstr_found = True
-
-        # Set the type (coll or dist) of the binding before calling the RSTR so that
-        # predications like "together" can fail there
-        # Since this is the quantifier, nothing should have set the type yet
-        assert x_variable_binding.variable.value_type == VariableValueType.none
-        value_type = VariableValueType.combinatoric_collective if is_collective else VariableValueType.combinatoric_distributive
-        if is_plural(state, variable_name) and not is_collective:
-            # If this is plural, all distributive answers *together* are a cardinal group
-            cardinal_group_set = []
-            dist_cardinal_group_solutions = []
-            for rstr_solution in call(state.set_x(x_variable_binding.variable.name, x_variable_binding.value, value_type), h_rstr):
-                rstr_found = True
-                rstr_binding = rstr_solution.get_binding(variable_name)
-                if cardinal is None:
-                    cardinal = cardinal_from_binding(state, h_body, rstr_binding)
-                    assert cardinal is not None
-
-                x_variable_values = [[value] for value in rstr_binding.value]
-                for x_variable_value in x_variable_values:
-                    cardinal_group_item = None
-                    for x_variable_solution in call(rstr_solution.set_x(variable_name, x_variable_value, VariableValueType.distributive), h_body):
-                        cardinal_group_item = x_variable_value
-                        dist_cardinal_group_solutions.append(x_variable_solution)
-
-                    if cardinal_group_item is not None:
-                        cardinal_group_set.append(x_variable_value)
-
-            if len(dist_cardinal_group_solutions) > 0:
-                raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
-                                                         is_collective=is_collective,
-                                                         original_rstr_set=rstr_binding.value,
-                                                         cardinal_group_set=cardinal_group_set,
-                                                         solutions=dist_cardinal_group_solutions))
-
-        else:
-            for rstr_solution in call(state.set_x(x_variable_binding.variable.name, x_variable_binding.value, value_type), h_rstr):
-                rstr_found = True
-                rstr_binding = rstr_solution.get_binding(variable_name)
-
-                # Assume the cardinal is the same for all rstr values
-                if cardinal is None:
-                    cardinal = cardinal_from_binding(state, h_body, rstr_binding)
-                    assert cardinal is not None
-
-                if is_collective:
-                    for x_variable_solution in call(rstr_solution, h_body):
-                        # Every collective answer is a different cardinal group
-                        raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
-                                                                 is_collective=is_collective,
-                                                                 original_rstr_set=rstr_binding.value,
-                                                                 cardinal_group_set=x_variable_solution.get_binding(variable_name).value,
-                                                                 solutions=[x_variable_solution]))
-
-                else:
-                    # If it is singular, each distributive answer is a cardinal group
-                    x_variable_values = [[value] for value in rstr_binding.value]
-                    for x_variable_value in x_variable_values:
-                        singular_item_solutions = []
-                        for x_variable_solution in call(rstr_solution, h_body):
-                            singular_item_solutions.append(x_variable_solution)
-
-                        if len(singular_item_solutions) > 0:
-                            raw_group_solutions.append(CardinalGroup(variable_name=variable_name,
-                                                                     is_collective=is_collective,
-                                                                     original_rstr_set=rstr_binding.value,
-                                                                     cardinal_group_set=x_variable_value,
-                                                                     solutions=singular_item_solutions))
-
-    if not rstr_found:
-        report_error(["doesntExist", ["AtPredication", h_body, variable_name]], force=True)
-        return
-
-    if len(raw_group_solutions) == 0:
-        return
-
-    else:
-        # The cardinal tests if each set of cardinal group solutions meets a criteria like "a few x" or "2 x" or "more than a few x"
-        # Its criteria must be true across all the values in the cardinal group
-
-        # Run the cardinal over all the values in a cardinal group
-        cardinal_group_solutions = []
-        for cardinal_group in raw_group_solutions:
-            if cardinal.meets_criteria(cardinal_group, cardinal_scoped_to_initial_rstr):
-                cardinal_group_solutions.append(cardinal_group)
-
-        # Evaluate the quantifier. It should quantify at the level of the cardinal group
-        # So, "the 2 babies" can be true because it is a single "set of 2 babies" even in dist mode
-        yield from quantifier_function(cardinal_group_solutions)
 
 
 def variable_is_megabyte(binding):
@@ -205,22 +35,22 @@ def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
                           value_type=VariableValueType.set)
 
 
-@Predication(vocabulary, names=["card"], handles=[("CardinalDegreeLimiter", EventOption.optional)])
+@Predication(vocabulary, names=["card"], handles=[("DeterminerDegreeLimiter", EventOption.optional)])
 def card_normal(state, c_count, e_introduced_binding, x_target_binding):
     if not variable_is_megabyte(x_target_binding):
-        if e_introduced_binding.value is not None and "CardinalDegreeLimiter" in e_introduced_binding.value:
-            card_is_exactly = e_introduced_binding.value["CardinalDegreeLimiter"]["Value"]["Only"]
+        if e_introduced_binding.value is not None and "DeterminerDegreeLimiter" in e_introduced_binding.value:
+            card_is_exactly = e_introduced_binding.value["DeterminerDegreeLimiter"]["Value"]["Only"]
         else:
             card_is_exactly = False
 
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      cardinal=["cardinals.CardCardinal", [int(c_count), card_is_exactly]])
+                                      determiner=["determiners.CardinalDeterminer", [int(c_count), card_is_exactly]])
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
-                                  cardinal=["cardinals.BetweenCardinal", [3, 5]])
+                                  determiner=["determiners.BetweenDeterminer", [3, 5]])
 
 
 # true for both sets and individuals as long as everything
@@ -330,7 +160,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # handles size only
 # loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
-@Predication(vocabulary, names=["loc_nonsp"], handles=[("CardinalSetLimiter", EventOption.optional)])
+@Predication(vocabulary, names=["loc_nonsp"], handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):
@@ -362,8 +192,8 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
         if x_size_binding.value is not None:
             # If a cardinal limiter like "together" is acting on this verb, it is unclear
             # if it is for x_actor or x_size, so we have to try both
-            if e_introduced_binding.value is not None and "CardinalSetLimiter" in e_introduced_binding.value:
-                set_size = e_introduced_binding.value["CardinalSetLimiter"]["Value"]["ValueSetSize"]
+            if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
+                set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
             else:
                 set_size = VariableValueSetSize.all
 
@@ -376,7 +206,7 @@ def only_x_deg_ee(state, e_introduced_binding, e_target_binding):
     info = {
         "Only": True
     }
-    yield state.add_to_e(e_target_binding.variable.name, "CardinalDegreeLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
+    yield state.add_to_e(e_target_binding.variable.name, "DeterminerDegreeLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
 # Used for prepositions like "together" or "separately" that modify how a verb should handle cardinality
@@ -384,7 +214,7 @@ def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_bind
     info = {
         "ValueSetSize": set_size
     }
-    yield state.add_to_e(e_target_binding.variable.name, "CardinalSetLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
+    yield state.add_to_e(e_target_binding.variable.name, "DeterminerSetLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
 # Needed for "together, which 3 files are 3 mb?"

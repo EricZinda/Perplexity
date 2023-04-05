@@ -48,14 +48,14 @@ class State(object):
         # like "null"
         return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
 
-    def set_variable_data(self, variable_name, cardinal=None, used_collective=None):
+    def set_variable_data(self, variable_name, determiner=None, used_collective=None):
         binding = self.get_binding(variable_name)
-        return self.set_x(variable_name, binding.value, binding.variable.value_type, cardinal=cardinal, used_collective=used_collective)
+        return self.set_x(variable_name, binding.value, binding.variable.value_type, determiner=determiner, used_collective=used_collective)
 
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, value_type, cardinal=None, used_collective=None):
+    def set_x(self, variable_name, item, value_type, determiner=None, used_collective=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -72,7 +72,7 @@ class State(object):
             initial_variable_data = VariableData(variable_name, value_type)
 
         variable_data = initial_variable_data.copy_with_changes(value_type=value_type,
-                                                                cardinal=cardinal,
+                                                                determiner=determiner,
                                                                 used_collective=used_collective)
 
         # Need to copy the item so that if the list is changed it won't affect

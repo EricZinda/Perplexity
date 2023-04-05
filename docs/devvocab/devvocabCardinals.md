@@ -6,7 +6,13 @@ Really useful info from Hobbs: https://www.isi.edu/~hobbs/metsyn/metsyn.html
 From: https://www.isi.edu/~hobbs/metsyn/node9.html
 - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3819043/
 - http://www.lingref.com/cpp/wccfl/35/paper3417.pdf
-- 
+
+Terms:
+distributive, collective, or mixed (allowing for other interpretation) ((Link 1983, 1987, Dowty
+1986, Lasersohn 1995)
+
+determiners (https://en.wikipedia.org/wiki/Determiner, https://en.wikipedia.org/wiki/English_determiners): include all quantifiers AND "cardinals" (except pronouns)
+
 ### Plurals and Cardinals Background
 10 children eating a cake: 10 (distributive) or 1 (collective)
 Link (1983) approach

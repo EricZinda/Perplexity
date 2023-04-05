@@ -1,7 +1,6 @@
 import enum
 import itertools
-
-from perplexity.cardinals import count_set
+from perplexity.set_utilities import count_set
 from perplexity.variable_binding import VariableValueType
 
 

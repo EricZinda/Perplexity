@@ -139,4 +139,12 @@ def at_least_one_generator(generator):
     return wrapper()
 
 
+def yield_all(set_or_answer):
+    if isinstance(set_or_answer, (list, tuple)):
+        for item in set_or_answer:
+            yield from yield_all(item)
+    else:
+        yield set_or_answer
+
+
 pipeline_logger = logging.getLogger('Pipeline')

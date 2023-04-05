@@ -2,6 +2,9 @@ import itertools
 
 
 # returns nonempty subsets of list items
+from file_system_example.objects import Measurement
+
+
 def all_nonempty_subsets(items):
     subsets = []
     n = len(items)
@@ -31,6 +34,21 @@ def in_equals(existing_values, new_value):
 def append_if_unique(existing_values, new_value):
     if not in_equals(existing_values, new_value):
         existing_values.append(new_value)
+
+
+# Special cases things like Measurement that are a single object that represents a set
+def count_set(rstr_value):
+    if isinstance(rstr_value, (list, tuple)):
+        if len(rstr_value) == 1 and isinstance(rstr_value[0], Measurement):
+            return rstr_value[0].count
+        else:
+            return len(rstr_value)
+
+    else:
+        if isinstance(rstr_value, Measurement):
+            return rstr_value.count
+        else:
+            return 1
 
 
 if __name__ == '__main__':
