@@ -117,8 +117,12 @@ class TestManager(object):
                 break
         print("\n**** Testing Complete.\n")
 
-    def check_result(self, test_iterator, test_item, interaction_record):
-        if test_item["Expected"] != interaction_record["ChosenResponse"]:
+    def check_result(self, test_iterator, test_item, interaction_mrs_record):
+        chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
+        chosen_tree_index = interaction_mrs_record["ChosenTreeIndex"]
+        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
+
+        if test_item["Expected"] != interaction_record["ResponseMessage"]:
             print(f"\nExpected: {test_item['Expected']}")
 
             while True:
@@ -128,7 +132,7 @@ class TestManager(object):
 
                 elif answer == "u":
                     updated_test = copy.deepcopy(test_item)
-                    updated_test["Expected"] = interaction_record['ChosenResponse']
+                    updated_test["Expected"] = interaction_record['ResponseMessage']
                     test_iterator.update_test(updated_test["ID"], updated_test)
                     return True
 
@@ -180,7 +184,7 @@ class TestManager(object):
             test_items = test["TestItems"]
             for record in interaction_records:
                 test_items.append({"Command": record["UserInput"],
-                                   "Expected": record["ChosenResponse"],
+                                   "Expected": record["ResponseMessage"],
                                    "Tree": None if (record["ChosenTreeIndex"] == -1 or record["ChosenTreeIndex"] is None) else str(record["Mrss"][record["ChosenMrsIndex"]]["Trees"][record["ChosenTreeIndex"]]["Tree"]),
                                    "Enabled": True,
                                    "ID": str(uuid.uuid4())

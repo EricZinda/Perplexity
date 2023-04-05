@@ -37,6 +37,27 @@ class UserInterface(object):
         self.run_tree_index = None
         self.show_all_answers = False
 
+    def chosen_tree_record(self):
+        chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
+        chosen_tree_index = self.interaction_record["ChosenTreeIndex"]
+        if chosen_mrs_index is None:
+            return None
+        else:
+            return self.interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
+
+    def new_tree_record(self, tree=None, error=None, response_generator=None, response_message=None):
+        return {"Tree": tree,
+                "SolutionGroups": None,
+                "Solutions": [],
+                "Error": error,
+                "ResponseGenerator": [] if response_generator is None else response_generator,
+                "ResponseMessage": "" if response_message is None else response_message}
+
+    def new_mrs_record(self, mrs=None, unknown_words=None):
+        return {"Mrs": mrs,
+                "UnknownWords": unknown_words,
+                "Trees": []}
+
     # response_function gets passed three arguments:
     #   response_function(mrs, solutions, error)
     # It must use them to return a string to say to the user
@@ -60,15 +81,21 @@ class UserInterface(object):
         self.interaction_record = {"UserInput": self.user_input,
                                    "Mrss": [],
                                    "ChosenMrsIndex": None,
-                                   "ChosenTreeIndex": None,
-                                   "ChosenResponse": None,
-                                   "ResponseGenerator": None,
-                                   "ChosenError": None}
+                                   "ChosenTreeIndex": None}
+            # ,
+            #                        "ChosenResponse": None,
+            #                        "ResponseGenerator": None,
+            #                        "ChosenError": None}
 
         if command_result is not None:
             self.test_manager.record_session_data("last_system_command", self.user_input)
+            mrs_record = self.new_mrs_record()
+            self.interaction_record["Mrss"].append(mrs_record)
+            tree_record = self.new_tree_record(response_message=command_result)
+            mrs_record["Trees"].append(tree_record)
+            self.interaction_record["ChosenMrsIndex"] = 0
+            self.interaction_record["ChosenTreeIndex"] = 0
             print(command_result)
-            self.interaction_record["ChosenResponse"] = command_result
 
         else:
             self.test_manager.record_session_data("last_phrase", self.user_input)
@@ -94,20 +121,12 @@ class UserInterface(object):
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 continue
 
-            # print(simplemrs.encode(mrs, indent=True))
-            mrs_record = {"Mrs": mrs,
-                          "UnknownWords": self.unknown_words(mrs),
-                          "Trees": []}
+            mrs_record = self.new_mrs_record(mrs=mrs, unknown_words= self.unknown_words(mrs))
             self.interaction_record["Mrss"].append(mrs_record)
 
             if len(mrs_record["UnknownWords"]) > 0:
                 unknown_words_error = [0, ["unknownWords", mrs_record["UnknownWords"]]]
-                tree_record = {"Tree": None,
-                               "SolutionGroups": None,
-                               "Solutions": [],
-                               "Error": unknown_words_error,
-                               "ResponseGenerator": self.response_function(None, [], unknown_words_error),
-                               "ResponseMessage": ""}
+                tree_record = self.new_tree_record(error=unknown_words_error, response_generator=self.response_function(None, [], unknown_words_error))
                 mrs_record["Trees"].append(tree_record)
                 self.evaluate_best_response()
 
@@ -116,12 +135,7 @@ class UserInterface(object):
                     tree_index += 1
                     if self.run_tree_index is not None and self.run_tree_index != tree_index:
                         continue
-
-                    tree_record = {"Tree": tree,
-                                   "Solutions": [],
-                                   "Error": None,
-                                   "ResponseGenerator": [],
-                                   "ResponseMessage": ""}
+                    tree_record = self.new_tree_record(tree=tree)
                     mrs_record["Trees"].append(tree_record)
 
                     # Collect all the solutions for this tree against the
@@ -173,8 +187,9 @@ class UserInterface(object):
                         self.evaluate_best_response()
 
         # If we got here, nothing worked: print out the best failure
-        for response in self.interaction_record["ChosenResponseGenerator"]:
-            tree_record["ResponseMessage"] += response
+        chosen_record = self.chosen_tree_record()
+        for response in chosen_record["ResponseGenerator"]:
+            chosen_record["ResponseMessage"] += response
             print(response)
 
     # WORKAROUND: ERG doesn't properly quote all strings with "/" so convert to "\"
@@ -214,14 +229,13 @@ class UserInterface(object):
         current_mrs_index = len(self.interaction_record["Mrss"]) - 1
         current_tree_index = len(self.interaction_record["Mrss"][current_mrs_index]["Trees"]) - 1
         tree_record = self.interaction_record["Mrss"][current_mrs_index]["Trees"][current_tree_index]
-
+        chosen_record = self.chosen_tree_record()
+        chosen_error = chosen_record["Error"] if chosen_record is not None else None
         # If there was a success, return it as the best answer
         if tree_record["SolutionGroups"] is not None or \
-                (self.error_priority_function(tree_record["Error"]) > self.error_priority_function(self.interaction_record["ChosenError"])):
+                (self.error_priority_function(tree_record["Error"]) > self.error_priority_function(chosen_error)):
             self.interaction_record["ChosenMrsIndex"] = current_mrs_index
             self.interaction_record["ChosenTreeIndex"] = current_tree_index
-            self.interaction_record["ChosenError"] = tree_record["Error"]
-            self.interaction_record["ChosenResponseGenerator"] = tree_record["ResponseGenerator"]
             pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_tree_index}")
 
     # Commands always start with "/", followed by a string of characters and then
