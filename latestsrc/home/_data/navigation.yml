@@ -4,5 +4,5 @@ main:
 toc:
   - title: "How-To"
     children:
-      - title: "Overview"
-        url: "/docs/devhowto/devhowtoOverview/"
+      - title: "Home"
+        url: "/devhowtoOverview/"
