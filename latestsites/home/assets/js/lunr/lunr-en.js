@@ -1,6 +1,3 @@
----
-layout: none
----
 // This replaces the default lunr indexing logic by using the same filename as the template uses
 // It needs to be replaced because we can pregenerate the index and vastly improve the speed. But,
 // in pregenerating we need to change the logic for how the file gets loaded.
@@ -60,7 +57,7 @@ $(document).ready(function() {
         })
       });
     resultdiv.empty();
-    resultdiv.prepend('<p class="results__found">'+result.length+' {{ site.data.ui-text[site.locale].results_found | default: "Result(s) found" }}</p>');
+    resultdiv.prepend('<p class="results__found">'+result.length+' Result(s) found</p>');
     for (var item in result) {
         var ref = result[item].ref;
         var searchitem =
