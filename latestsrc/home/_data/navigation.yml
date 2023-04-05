@@ -4,5 +4,9 @@ main:
 toc:
   - title: "How-To"
     children:
-      - title: "Home"
+      - title: "Overview"
         url: "/devhowto/devhowtoOverview/"
+      - title: "Minimal Recursion Semantics (MRS)"
+        url: "/devhowto/devhowtoMRS/"
+      - title: "Well-Formed Trees"
+        url: "/devhowto/devhowtoWellFormedTree/"
