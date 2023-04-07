@@ -45,13 +45,22 @@ class UserInterface(object):
         else:
             return self.interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
 
-    def new_tree_record(self, tree=None, error=None, response_generator=None, response_message=None):
-        return {"Tree": tree,
-                "SolutionGroups": None,
-                "Solutions": [],
-                "Error": error,
-                "ResponseGenerator": [] if response_generator is None else response_generator,
-                "ResponseMessage": "" if response_message is None else response_message}
+    # Errors are encoded in a fake tree
+    def new_error_tree_record(self, error=None, response_generator=None):
+        return self.new_tree_record(error=error, response_generator=response_generator, error_tree=True)
+
+    def new_tree_record(self, tree=None, error=None, response_generator=None, response_message=None, error_tree=False):
+        value = {"Tree": tree,
+                 "SolutionGroups": None,
+                 "Solutions": [],
+                 "Error": error,
+                 "ResponseGenerator": [] if response_generator is None else response_generator,
+                 "ResponseMessage": "" if response_message is None else response_message}
+
+        if error_tree:
+            value["ErrorTree"] = True
+
+        return value
 
     def new_mrs_record(self, mrs=None, unknown_words=None):
         return {"Mrs": mrs,
@@ -82,16 +91,12 @@ class UserInterface(object):
                                    "Mrss": [],
                                    "ChosenMrsIndex": None,
                                    "ChosenTreeIndex": None}
-            # ,
-            #                        "ChosenResponse": None,
-            #                        "ResponseGenerator": None,
-            #                        "ChosenError": None}
 
         if command_result is not None:
             self.test_manager.record_session_data("last_system_command", self.user_input)
             mrs_record = self.new_mrs_record()
             self.interaction_record["Mrss"].append(mrs_record)
-            tree_record = self.new_tree_record(response_message=command_result)
+            tree_record = self.new_error_tree_record(response_generator=[command_result])
             mrs_record["Trees"].append(tree_record)
             self.interaction_record["ChosenMrsIndex"] = 0
             self.interaction_record["ChosenTreeIndex"] = 0
@@ -121,12 +126,12 @@ class UserInterface(object):
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 continue
 
-            mrs_record = self.new_mrs_record(mrs=mrs, unknown_words= self.unknown_words(mrs))
+            mrs_record = self.new_mrs_record(mrs=mrs, unknown_words=self.unknown_words(mrs))
             self.interaction_record["Mrss"].append(mrs_record)
 
             if len(mrs_record["UnknownWords"]) > 0:
                 unknown_words_error = [0, ["unknownWords", mrs_record["UnknownWords"]]]
-                tree_record = self.new_tree_record(error=unknown_words_error, response_generator=self.response_function(None, [], unknown_words_error))
+                tree_record = self.new_error_tree_record(error=unknown_words_error, response_generator=self.response_function(None, [], unknown_words_error))
                 mrs_record["Trees"].append(tree_record)
                 self.evaluate_best_response()
 
@@ -295,13 +300,12 @@ class UserInterface(object):
                     self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record, first_tree_only)
 
     def print_diagnostics_trees(self, all, parse_number, chosen_tree, mrs_record, first_tree_only):
-        if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
+        if len(mrs_record["Trees"]) == 1 and "ErrorTree" not in mrs_record["Trees"][0]:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
-            # tree_generator = self.new_tree_record(tree=tre)
             tree_generator = []
             for tree in self.trees_from_mrs(mrs_record["Mrs"]):
-                tree_generator.append(self.new_tree_record(tree=tree))
+                tree_generator.append(self.new_tree_record(tree=tree, error="<not executed>", response_message="<not executed>"))
 
         else:
             tree_generator = mrs_record["Trees"]
@@ -328,6 +332,10 @@ class UserInterface(object):
                 else:
                     print(f"Error: {tree_info['Error']}")
 
+                if tree_info['ResponseMessage'] == "" and tree_info['ResponseGenerator'] is not None:
+                    tree_info['ResponseMessage'] = ""
+                    for response in tree_info['ResponseGenerator']:
+                        tree_info['ResponseMessage'] += response
                 print(f"Response:\n{tree_info['ResponseMessage']}")
 
             tree_index += 1
