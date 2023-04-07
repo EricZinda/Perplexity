@@ -649,7 +649,7 @@ def Example32():
 
 
 def Example33_reset():
-    return FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000}),
+    return FileSystemState(FileSystemMock([(True, "/documents/file2.txt", {"size": 10000000}),
                                            (True, "/documents/file5.txt", {"size": 10000000}),
                                            (True, "/documents/file6.txt", {"size": 10000000}),
                                            (True, "/documents/file7.txt", {"size": 10000000}),
@@ -715,8 +715,9 @@ if __name__ == '__main__':
     # Example25()
     # Example26()
     # Example27()
-    Example28()
+    # Example28()
     # Example29()
     # Example30()
     # Example31()
     # Example32()
+    Example33()

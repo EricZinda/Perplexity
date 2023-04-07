@@ -5,10 +5,14 @@ import itertools
 from file_system_example.objects import Measurement
 
 
-def all_nonempty_subsets(items):
+def all_nonempty_subsets(items, min_size=1, max_size=None):
     subsets = []
-    n = len(items)
-    for i in range(1, n + 1):
+    if max_size is None:
+        n = len(items)
+    else:
+        n = min(max_size, len(items))
+
+    for i in range(min_size, n + 1):
         subsets.extend(itertools.combinations(items, i))
 
     return subsets

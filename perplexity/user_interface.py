@@ -300,12 +300,14 @@ class UserInterface(object):
                     self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record, first_tree_only)
 
     def print_diagnostics_trees(self, all, parse_number, chosen_tree, mrs_record, first_tree_only):
-        if len(mrs_record["Trees"]) == 0:
+        # is_system_command_record = len(mrs_record["Trees"]) == 1 and mrs_record["Mrs"] is None and "ErrorTree" in mrs_record["Trees"][0]
+        is_ungenerated_tree = len(mrs_record["Trees"]) == 1 and mrs_record["Mrs"] is not None and "ErrorTree" in mrs_record["Trees"][0]
+        if is_ungenerated_tree:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
             tree_generator = []
             for tree in self.trees_from_mrs(mrs_record["Mrs"]):
-                tree_generator.append(self.new_tree_record(tree=tree, error="<not executed>", response_message="<not executed>"))
+                tree_generator.append(self.new_tree_record(tree=tree, error=mrs_record["Trees"][0]["Error"], response_generator=mrs_record["Trees"][0]["ResponseGenerator"], response_message=mrs_record["Trees"][0]["ResponseMessage"]))
 
         else:
             tree_generator = mrs_record["Trees"]

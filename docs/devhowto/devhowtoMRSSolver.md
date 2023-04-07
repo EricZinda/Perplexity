@@ -201,7 +201,7 @@ solution group 2:
 |---|---|
 |x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
 
-Now each *solution group* properly represents the fact that "students" is *plural* by having more than one student in the solution. Thus, solution groups are needed to properly represent plural semantics in this solver.
+Now each *solution group* properly represents the fact that "students" is *plural* by having more than one student in the solution. Thus, solution groups are needed to properly represent plural semantics in this solver.  This is how *distributive* ad *cumulative* readings are represented.
 
 One way for our solver to group solutions is by performing a second pass over the individual solutions and grouping them, just like we just did. The algorithm is:
 
@@ -369,8 +369,30 @@ To do this, the solver needs to keep track of what the original `RSTR` values we
 ## Optimizations
 ### Streaming
 ### combinatoric variables
+
 ### predications optimized for combinatoric variables (like in)
-### If nobody cares about sets, don't generate them
+### Phase 1 If nobody cares about collective values, don't generate them
+If no predicate is collective aware, generating them wastes time.
+
+So, if the predications declare up front what they *might* use, we can rule out some scenarios.
+
+Predications declare in their arguments what they are distributive aware, collective aware, or both. 
+
+If they, like `met` are collective *only*
+
+In: coll neutral, dist aware
+met: coll aware, dist unsupported
+ran/large: coll unsupported, dist aware
+loc_nonsp: coll aware, dist aware
+
+two boys ran in a room together 
+the running boys lifted the table
+
+### Phase 2: 
+"files are in folders"
+    For phase 2 we generate all combinations of potential answers for the plural determiners
+        Because nothing in "files are in folders" is collective aware, we shouldn't bother to generate those alternatives, and just stick to the distributive sets. We might need a distributive set for "files are in 2 folders": we need alternatives that mix the answers enough to find the "2 folders"
+We can do this the same was as we did in 1: If there is nothing that needs
 ### If we look at the size of the variables, we might call in a different order
 
 ## Plurals and Predication Behavior

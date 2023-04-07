@@ -1,18 +1,14 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
-                                           ┌── _file_n_of(x3,i9)
-                               ┌────── and(0,1)
-           ┌────── _folder_n_of│x10,i15)     └ _a+few_a_1(e8,x3)
-_a_q(x10,RSTR,BODY)            │
-                └─ udef_q(x3,RSTR,BODY)
-                                    │      ┌── _together_p(e16,x3)
-                                    └─ and(0,1)
-                                             └ _in_p_loc(e2,x3,x10)
-    
+    - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
     - Figure out a way to make "in" be efficient for "which files are in folders"?
-        - how to declare variable types for ee predicates?            
-        - First: Find efficient way to create 
+        - Gets initial answers quickly but lags at end
+            For phase 2 we generate all combinations of potential answers for the plural determiners
+            Really we should allow it to stay combinatorial for the next determiner
+            But then how does "boys ate pizza" work?
+                Or boys ate 3 pizzas (where one group at 1 and the other group ate 2)
+            Because nothing in "files are in folders" is collective aware, we shouldn't bother to generate those alternatives, and just stick to the distributive sets.
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives
             - If they are declared then we can optimize *some* cases

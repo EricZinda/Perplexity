@@ -1,6 +1,8 @@
 import copy
 import itertools
 import sys
+
+from perplexity.execution import get_variable_metadata
 from perplexity.set_utilities import all_nonempty_subsets, all_combinations_with_elements_from_all, append_if_unique, \
     count_set
 from perplexity.utilities import is_plural
@@ -12,6 +14,9 @@ from perplexity.variable_binding import VariableValueType
 # the quantifier that only returns answers if they meet some criteria
 # Note that the thing being counted is the actual rstr values,
 # so rstr_x = [a, b] would count as 2
+from perplexity.vocabulary import PluralType
+
+
 def determiner_from_binding(state, h_body, binding):
     if binding.variable.determiner is not None:
         module_class_name = binding.variable.determiner[0]
@@ -38,7 +43,7 @@ def determiner_from_binding(state, h_body, binding):
 #   So, for "2 boys", it should be 2 since it must be no more than 2
 #   but for "boys" it has to be None since it could be a huge set of boys
 # combinatorial is True when any combination of the solutions can be used, otherwise, the exact set must be true
-def determiner_solution_groups_helper(variable_name, max_answer_count, solutions_orig, cardinal_criteria, solution_group_combinatorial=False):
+def determiner_solution_groups_helper(execution_context, variable_name, max_answer_count, solutions_orig, cardinal_criteria, solution_group_combinatorial=False):
     # First: Build a list of the set values variable_name has, and which solutions go with each set
     # If variable_name is a combinatorial variable it means that any combination of values in it are true, so as long as one
     #   remains at the end, the solution group is still valid.
@@ -46,17 +51,32 @@ def determiner_solution_groups_helper(variable_name, max_answer_count, solutions
     #           solutions with each solution having one of the combinations of possible values
     #       For solution_group_combinatorial=false, it means as long as one of the values in the final answer it is valid
 
-    # If variable_name is combinatoric, all of its alternative combinations get added to set_solution_alternatives_list
+    variable_metadata = execution_context.get_variable_metadata(variable_name)
+    variable_plural_type = variable_metadata["PluralType"]
+
     set_solution_alternatives_list = []
     # If not, it gets added, as is, to set_solution_list
     set_solution_list = []
     for solution in solutions_orig:
         binding = solution.get_binding(variable_name)
         if binding.variable.value_type == VariableValueType.combinatoric:
+            # If variable_name is combinatoric, all of its appropriate alternative combinations
+            # get added to set_solution_alternatives_list
+            # Thus, if the variable_plural_type is collective, we only add sets > 1, etc
+            min_size = 1
+            max_size = None
+            if variable_plural_type == PluralType.distributive:
+                max_size = 1
+            elif variable_plural_type == PluralType.collective:
+                min_size = 2
+            else:
+                assert variable_plural_type == PluralType.all
+
             binding_alternatives = []
-            for subset in all_nonempty_subsets(binding.value):
+            for subset in all_nonempty_subsets(binding.value, min_size=min_size, max_size=max_size):
                 binding_alternatives.append(solution.set_x(variable_name, subset, VariableValueType.set))
             set_solution_alternatives_list.append(binding_alternatives)
+
         else:
             set_solution_list.append(solution)
 
@@ -156,9 +176,10 @@ class SingularDeterminer(object):
         def criteria(rstr_value_list):
             return count_set(rstr_value_list) == 1
 
-        yield from determiner_solution_groups_helper(self.variable_name, None, solutions, criteria, combinatorial)
+        yield from determiner_solution_groups_helper(execution_context, self.variable_name, None, solutions, criteria, combinatorial)
 
 
+# Every combination of solutions > 1 will still be plural, so we can leave this combinatorial
 class PluralDeterminer(object):
     def __init__(self, variable_name, h_body):
         self.variable_name = variable_name
@@ -168,7 +189,7 @@ class PluralDeterminer(object):
         def criteria(rstr_value_list):
             return count_set(rstr_value_list) > 0
 
-        yield from determiner_solution_groups_helper(self.variable_name, None, solutions, criteria, combinatorial)
+        yield from determiner_solution_groups_helper(execution_context, self.variable_name, None, solutions, criteria, combinatorial)
 
 
 class CardinalDeterminer(object):
@@ -211,7 +232,7 @@ class CardinalDeterminer(object):
             group_rstr = []
             unique_rstrs = []
             groups = []
-            for group in determiner_solution_groups_helper(self.variable_name, self.count, solutions, criteria, combinatorial):
+            for group in determiner_solution_groups_helper(execution_context, self.variable_name, self.count, solutions, criteria, combinatorial):
                 for item in group_rstr:
                     append_if_unique(unique_rstrs, item)
 
@@ -230,7 +251,7 @@ class CardinalDeterminer(object):
                 yield from groups
 
         else:
-            yield from determiner_solution_groups_helper(self.variable_name, self.count, solutions, criteria, combinatorial)
+            yield from determiner_solution_groups_helper(execution_context, self.variable_name, self.count, solutions, criteria, combinatorial)
 
 
 # For implementing things like "a few" where there is a number
@@ -261,5 +282,5 @@ class BetweenDeterminer(object):
             else:
                 return True
 
-        yield from determiner_solution_groups_helper(self.variable_name, self.max_count, solutions, criteria, combinatorial)
+        yield from determiner_solution_groups_helper(execution_context, self.variable_name, self.max_count, solutions, criteria, combinatorial)
 
