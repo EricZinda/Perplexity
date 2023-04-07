@@ -1,12 +1,12 @@
 ## Basic solver approach
 Variables are sets that are treated as items
-yield all alternatives that make you true
+yield all alternatives that make you true (introduce plurals here)
 empty variable means "everything"
 
 optimization: combinatorial variables
 
 ## Quantifiers
-Go through unquantified solutions as they are generated an create groups
+Go through unquantified solutions as they are generated and create groups
 
 ## Plurals and Determiners
 Plurals are treated as a default determiner

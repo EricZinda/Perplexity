@@ -21,6 +21,29 @@ Plurals work
             solution_groups_helper() gets the list of solutions
             Really blows up on this line:                 for combination in itertools.combinations(variable_assignments, combination_size):
     Performance Ideas:
+        Related to the Boolean Satisfiability Problem (SAT): Find an assignment to the propositional variables of the formula such that the formula evaluates to TRUE, or prove that no such assignment exists.
+            SAT is an NP-complete decision problem
+            - SAT was the first problem to be shown NP-complete.
+            - There are no known polynomial time algorithms for SAT.
+        https://link.springer.com/article/10.1007/s10601-016-9257-7
+        Resolution: http://web.stanford.edu/class/linguist289/robinson65.pdf
+        Tree is in Conjunctive Normal Form?
+            https://haslab.github.io/MFES/2122/PL+SAT-handout.pdf
+        Solving quantifiers in raw mode reduces them from a(x, b, c) to b, c
+            SAT solvers based on a stochastic local search
+            I the solver guesses a full assignment, and then, if the formula is
+            evaluated to false under this assignment, starts to flip values of
+            variables according to some heuristic.
+            SAT solvers based on the DPLL framework
+            I optimizations to the Davis-Putnam-Logemann-Loveland algorithm
+            (DPLL) which corresponds to backtrack search through the space of
+            possible variable assignments.
+            DPLL-based SAT solvers, however, are considered better in most cases.
+
+
+        What we are doing is not resolution because that involves axioms of the form a -> b:
+            Research related to resolution: https://www.semanticscholar.org/paper/A-Machine-Oriented-Logic-Based-on-the-Resolution-Robinson/d2109eba4f160755f0b9a7497b6b691c2fa2d5d8
+        We now do pass 1 without quantifiers.  Could we use SMT or Constraint logic programming or Answer Set Programming to solve that phase?
         We could stream answers from unquantified MRS to the solution groups
             I don't think this will work because we need to know all of the answers for "the", for example
         If nobody cares about sets, don't generate them

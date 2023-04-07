@@ -79,11 +79,10 @@ Need another design:
     Variables are always sets, could be a set of 1
     They have metadata, much like events do, that are stored in the variable binding.
         set_type = how the set of values should be interpreted: 
-            collective: single collective answer, 
-            distributive: single distributive answer, 
+            set: single answer of a set of 1 or more. 1 is distributive, more is collective
             combinatorial: a set that represents "all combinations" of the values in the set
     The basic model is about *restriction of variables*. As variable values go through the system, they get restricted to the maximum set that makes a predicate true
-        A predication can only restrict the incoming variables, never grow them. 
+        A predication can only restrict a combinatorial value, never grow them. 
         A predication yields a state that has the variables are set such that they have been restricted to be true
         If they are unset it means "anything in the world"
         We have a "combinatorial set" *optimization* that says a variable set can mean "any combination of these will be true for me" 
@@ -93,19 +92,14 @@ Need another design:
         By the time we are done at the end, if there are variables that are left combinatorial, it means all combinations will work, 
             we just need to choose how to give these responses to the user
         If a predication *does* have meaningful set behavior, then it has to yield all the sets that work individually (unless they all do)
-            And mark the binding as being collective. Same is true for distributive.
+            And mark the binding as being a set. Same is true for distributive.
     So, for a given predication, it needs to look at the incoming variables and act accordingly
-        if a binding is marked as collective, the group needs to be kept as a whole, or fail
-        if a binding is marked as interpret_collective, the predication must only generate sets that can be interpret_collective (or is_collective)
-        For distributive, it is analagous
+        if a binding is marked as a set, the group needs to be kept as a whole, or fail
     What is the contract? If an comb set comes in, can you yield 3 different comb subsets of it?
         This must be true because this is what "in" does. "a", "b", "c" and "x", "y" come in and "a", b : x and c:y go out
             But would it be OK to return a:x, b:x and c:y?
-                I think no because it limits downstream predication's ability to form groups
-                It has to be the "maximum subsets"
-                And it can't just be "all combinations of the original comb checked for 'in'" because some could generate duplicates
-    At the end, the engine can look at the binding.  If it is comb, it can (by convention) be listed as dist
-    A given predication should be able to create a "check" routine that just takes two arguments and we do the right thing outside of it
+                no because it limits downstream predication's ability to form groups, so it effectively has to return all combinations, but it can make them comb (i.e. "maximum subsets")
+                It can also be "all combinations of the original comb checked for 'in'" but some could generate duplicates
 
 Questions:
     If in(x, y) has x as comb(a, b, c) and they are all "in" (x), it is true that all the combinations are in x, and they do 
