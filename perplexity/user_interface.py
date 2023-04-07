@@ -273,7 +273,7 @@ class UserInterface(object):
 
         return None
 
-    def print_diagnostics(self, all):
+    def print_diagnostics(self, all, first_tree_only):
         if self.interaction_record is not None:
             print(f"User Input: {self.interaction_record['UserInput']}")
             print(f"{len(self.interaction_record['Mrss'])} Parses")
@@ -292,9 +292,9 @@ class UserInterface(object):
                     else:
                         chosen_tree = self.interaction_record["ChosenTreeIndex"]
 
-                    self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record)
+                    self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record, first_tree_only)
 
-    def print_diagnostics_trees(self, all, parse_number, chosen_tree, mrs_record):
+    def print_diagnostics_trees(self, all, parse_number, chosen_tree, mrs_record, first_tree_only):
         if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
@@ -308,6 +308,9 @@ class UserInterface(object):
 
         tree_index = 0
         for tree_info in tree_generator:
+            if first_tree_only and tree_index > 0:
+                return
+
             if all or chosen_tree == tree_index:
                 extra = "CHOSEN " if chosen_tree == tree_index else ""
                 print(f"\n-- {extra}Parse #{parse_number}, {extra}Tree #{tree_index}: \n")
@@ -430,8 +433,21 @@ class UserInterface(object):
 
 
 def command_show(ui, arg):
-    all = arg.lower() == "all"
-    ui.print_diagnostics(all)
+    parts = arg.split(",")
+    all = False
+    first_tree_only = False
+
+    if len(parts) >= 1:
+        all = parts[0].lower() == "all"
+
+    if len(parts) >= 2:
+        first_tree_only = bool(parts[1])
+
+    if len(parts) >= 3:
+        print("Don't know that argument set")
+        return True
+
+    ui.print_diagnostics(all, first_tree_only)
     return True
 
 
@@ -647,8 +663,8 @@ command_data = {
               "Description": "Resets to the initial state",
               "Example": "/reset"},
     "show": {"Function": command_show, "Category": "Parsing",
-             "Description": "Shows tracing information from last command. Add 'all' to see all interpretations",
-             "Example": "/show or /show all"},
+             "Description": "Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first trees",
+             "Example": "/show or /show all or /show all, 1"},
     "soln": {"Function": command_soln, "Category": "Parsing",
              "Description": "Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else to only see what is required",
              "Example": "/soln or /soln all"},
