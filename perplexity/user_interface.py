@@ -251,25 +251,25 @@ class UserInterface(object):
     # None: Was not a command
     # Str: The string that should be recorded for the command
     def handle_command(self, text):
-        try:
-            text = text.strip()
-            if len(text) > 0:
-                if text[0] == "/":
-                    text = text[1:]
-                    items = text.split()
-                    if len(items) > 0:
-                        command = items[0].strip().lower()
-                        command_info = command_data.get(command, None)
-                        if command_info is not None:
-                            return command_info["Function"](self, " ".join(text.split()[1:]))
+        # try:
+        text = text.strip()
+        if len(text) > 0:
+            if text[0] == "/":
+                text = text[1:]
+                items = text.split()
+                if len(items) > 0:
+                    command = items[0].strip().lower()
+                    command_info = command_data.get(command, None)
+                    if command_info is not None:
+                        return command_info["Function"](self, " ".join(text.split()[1:]))
 
-                        else:
-                            print("Don't know that command ...")
-                            return True
+                    else:
+                        print("Don't know that command ...")
+                        return True
 
-        except Exception as error:
-            print(str(error))
-            return True
+        # except Exception as error:
+        #     print(str(error))
+        #     return True
 
         return None
 
@@ -298,10 +298,11 @@ class UserInterface(object):
         if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
-            tree_generator = [{"Tree": tree,
-                               "Solutions": [],
-                               "Error": None,
-                               "ResponseMessage": None} for tree in self.trees_from_mrs(mrs_record["Mrs"])]
+            # tree_generator = self.new_tree_record(tree=tre)
+            tree_generator = []
+            for tree in self.trees_from_mrs(mrs_record["Mrs"]):
+                tree_generator.append(self.new_tree_record(tree=tree))
+
         else:
             tree_generator = mrs_record["Trees"]
 
