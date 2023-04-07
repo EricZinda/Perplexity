@@ -1,6 +1,7 @@
 import contextvars
 import logging
 import sys
+import perplexity.tree
 from perplexity.utilities import sentence_force
 
 
@@ -27,6 +28,7 @@ class ExecutionContext(object):
         self._phrase_type = None
         self._variable_execution_data = {}
         self.tree_info = None
+        self._variable_metadata = None
 
     def __enter__(self):
         self.old_context_token = set_execution_context(self)
@@ -41,7 +43,12 @@ class ExecutionContext(object):
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
             self.tree_info = tree_info
+            self.gather_tree_metadata()
+
             yield from self.call(state.set_x("tree", [tree_info], VariableValueType.set), tree_info["Tree"])
+
+    def gather_tree_metadata(self):
+        self._variable_metadata = perplexity.tree.gather_predication_metadata(self.vocabulary, self.tree_info)
 
     def call(self, state, term, normalize=False):
         # See if the term is actually a list
@@ -179,6 +186,9 @@ class ExecutionContext(object):
     def get_variable_execution_data(self, variable_name):
         return self._variable_execution_data.get(variable_name, {})
 
+    def get_variable_metadata(self, variable_name):
+        return self._variable_metadata.get(variable_name, {})
+
 
 # ContextVars is a thread-safe way to set the execution context
 # used by the predications
@@ -219,6 +229,10 @@ def set_variable_execution_data(variable_name, key, value):
 
 def get_variable_execution_data(variable_name):
     return execution_context().get_variable_execution_data(variable_name)
+
+
+def get_variable_metadata(variable_name):
+    return execution_context().get_variable_metadata(variable_name)
 
 
 logger = logging.getLogger('Execution')

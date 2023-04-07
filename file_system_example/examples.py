@@ -648,11 +648,37 @@ def Example32():
         print()
 
 
+def Example33_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/documents/file5.txt", {"size": 10000000}),
+                                           (True, "/documents/file6.txt", {"size": 10000000}),
+                                           (True, "/documents/file7.txt", {"size": 10000000}),
+                                           (True, "/documents/file8.txt", {"size": 10000000}),
+                                           (True, "/documents/file9.txt", {"size": 10000000}),
+                                           (True, "/documents/file10.txt", {"size": 10000000}),
+                                           (True, "/documents/file11.txt", {"size": 10000000}),
+                                           (True, "/documents/file12.txt", {"size": 10000000}),
+                                           (True, "/documents/file13.txt", {"size": 10000000}),
+                                           (True, "/documents/file14.txt", {"size": 10000000}),
+                                           (True, "/documents/file15.txt", {"size": 10000000}),
+                                           (True, "/documents/file16.txt", {"size": 10000000})
+                                           ],
+                                           "/Desktop"))
+
+
+def Example33():
+    user_interface = UserInterface(Example33_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
-    # ShowLogging("Execution")
-    # ShowLogging("Generation")
-    # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Execution")
+    ShowLogging("Generation")
+    ShowLogging("UserInterface")
+    ShowLogging("Pipeline")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -683,7 +709,7 @@ if __name__ == '__main__':
     # Example18()
     # Example19()
     # Example20()
-    Example21()
+    Example33()
     # Example22()
     # Example24()
     # Example25()

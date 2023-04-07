@@ -2,9 +2,11 @@ Remaining work to be shown in the tutorial:
  
 Plurals work
     - Figure out a way to make "in" be efficient for "which files are in folders"?
+        -             
+        - First: Find efficient way to create 
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives
-        - If they are declared then we can optimize *some* cases
+            - If they are declared then we can optimize *some* cases
     - work through the tests and make them work in new regime 
     - Should remove duplicates before reporting answers
     - Really slow: Example28

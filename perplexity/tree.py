@@ -3,6 +3,7 @@ import logging
 from collections import defaultdict
 from perplexity.execution import execution_context
 from perplexity.utilities import parse_predication_name
+from perplexity.vocabulary import PluralType
 
 
 class TreePredication(object):
@@ -355,6 +356,38 @@ def find_quantifier_from_variable(term, variable_name):
             return None
 
     return walk_tree_predications_until(term, match_variable)
+
+
+# Walk the tree represented by "term" and
+# return the predication that matches
+# "predicate_name" or "None" if none is found
+def gather_predication_metadata(vocabulary, tree_info):
+    def gather_metadata(predication):
+        metadata_list = vocabulary.metadata(predication.name)
+        for metadata in metadata_list:
+            for arg_index in range(len(metadata.args_metadata)):
+                if predication.arg_types[arg_index] == "h":
+                    continue
+
+                arg_name = predication.args[arg_index]
+                arg_metadata = metadata.args_metadata[arg_index]
+
+                if arg_name not in variable_metadata:
+                    variable_metadata[arg_name] = {}
+
+                if arg_metadata["VariableType"] == "x":
+                    if "PluralType" not in variable_metadata[arg_name]:
+                        variable_metadata[arg_name]["PluralType"] = None
+
+                    if variable_metadata[arg_name]["PluralType"] is None:
+                        variable_metadata[arg_name]["PluralType"] = arg_metadata["PluralType"]
+                    elif variable_metadata[arg_name]["PluralType"] != PluralType.all:
+                        if variable_metadata[arg_name]["PluralType"] != arg_metadata["PluralType"]:
+                            variable_metadata[arg_name]["PluralType"] = PluralType.all
+
+    variable_metadata = {}
+    walk_tree_predications_until(tree_info["Tree"], gather_metadata)
+    return variable_metadata
 
 
 # Walk the tree represented by "term" and

@@ -399,7 +399,7 @@ Furthermore, some words just don't work with sets or individuals. Two examples:
 
 When talking about plurals in linguistics, sets of 1 are called `distributive` and sets of > 1 are called `collective`. So, `met` requires a collective argument, and `ran` requires a `distributive` argument.
 
-We'll call predications like `in` that allow a collective argument but don't mean anything different by it a "collective indifferent" predication. Words like `lift` are "collective aware".
+We'll call predications like `in` that allow a collective argument but don't mean anything different by it a "collective neutral" predication. Words like `lift` are "collective aware".
 [todo: is there a linguistic term for this that I should be using?]
 
 So, now we have a solver that can deal with plurals properly, and allows predications to distinguish the various plural cases they encounter. There are a few more scenarios that need handling.

@@ -6,8 +6,7 @@ from perplexity.predications import combinatorial_style_predication, lift_style_
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator
 from perplexity.tree import is_index_predication
 from perplexity.variable_binding import VariableValueType
-from perplexity.vocabulary import Vocabulary, Predication, EventOption
-
+from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralType
 
 vocabulary = Vocabulary()
 
@@ -161,7 +160,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # handles size only
 # loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
-@Predication(vocabulary, names=["loc_nonsp"], handles=[("DeterminerSetLimiter", EventOption.optional)])
+@Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", PluralType.all), ("x", PluralType.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):

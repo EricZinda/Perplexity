@@ -11,6 +11,13 @@ class EventOption(enum.Enum):
     required = 2
 
 
+# Determines what should be generated
+class PluralType(enum.Enum):
+    distributive = 1
+    collective = 1
+    all = 2
+
+
 def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[], virtual_args=[]):
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
@@ -37,7 +44,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
         return True
 
-    def arguments_from_function(function):
+    def arg_types_from_function(function):
         arg_spec = inspect.getfullargspec(function)
 
         # Skip the first arg since it should always be "state"
@@ -53,6 +60,26 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
                     raise Exception(f"Argument {arg_index} of predication {function.__name__} has an unknown argument type of {arg_type}'")
 
                 arg_list.append(arg_type)
+
+        return arg_list
+
+    def argument_metadata(function_to_decorate, arg_spec_list):
+        arg_list = []
+        if arguments is None:
+            arg_types = arg_types_from_function(function_to_decorate)
+            for arg_type in arg_types:
+                arg_metadata = {}
+                arg_list.append(arg_metadata)
+                arg_metadata["VariableType"] = arg_type
+                if arg_type == "x":
+                    arg_metadata["PluralType"] = PluralType.distributive
+
+        else:
+            for arg_spec in arg_spec_list:
+                arg_metadata = {}
+                arg_list.append(arg_metadata)
+                arg_metadata["VariableType"] = arg_spec[0]
+                arg_metadata["PluralType"] = arg_spec[1] if len(arg_spec) > 1 else PluralType.distributive
 
         return arg_list
 
@@ -103,14 +130,23 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
             if ensure_handles_event(args[0], handles, args[1]):
                 yield from function_to_decorate(*args, **kwargs)
 
+        metadata = PredicationMetadata(argument_metadata(function_to_decorate, arguments))
         predication_names = names if names is not None else [function_to_decorate.__name__]
-        final_arguments = arguments if arguments is not None else arguments_from_function(function_to_decorate)
+        final_arg_types = metadata.arg_types()
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
-        vocabulary.add_predication(function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arguments, final_phrase_types)
+        vocabulary.add_predication(metadata, function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arg_types, final_phrase_types)
 
         return wrapper_function
 
     return PredicationDecorator
+
+
+class PredicationMetadata(object):
+    def __init__(self, args_metadata):
+        self.args_metadata = args_metadata
+
+    def arg_types(self):
+        return [arg_metadata["VariableType"] for arg_metadata in self.args_metadata]
 
 
 # The structure of self.all is:
@@ -122,6 +158,12 @@ class Vocabulary(object):
     def __init__(self):
         self.all = dict()
         self.words = dict()
+        # index each DELPH-IN predication by name
+        # then have a list of Metadata objects for each implementation of it
+        self._metadata = dict()
+
+    def metadata(self, delphin_name):
+        return self._metadata[delphin_name]
 
     def name_key(self, delphin_name, arg_types, phrase_type):
         return f"{delphin_name}__{''.join(arg_types)}__{phrase_type}"
@@ -130,16 +172,20 @@ class Vocabulary(object):
         name_parts = parse_predication_name(delphin_name)
         return name_parts["Lemma"] in self.words
 
-    def add_predication(self, module, function, delphin_names, arguments, phrase_types, first=False):
+    def add_predication(self, predication_metadata, module, function, delphin_names, arg_types, phrase_types, first=False):
         if len(phrase_types) == 0:
             phrase_types = ["comm", "ques", "prop", "norm"]
 
         for delphin_name in delphin_names:
+            if delphin_name not in self._metadata:
+                self._metadata[delphin_name] = []
+            self._metadata[delphin_name].append(predication_metadata)
+
             name_parts = parse_predication_name(delphin_name)
             self.words[name_parts["Lemma"]] = delphin_name
 
             for phrase_type in phrase_types:
-                name_key = self.name_key(delphin_name, arguments, phrase_type)
+                name_key = self.name_key(delphin_name, arg_types, phrase_type)
                 if name_key not in self.all:
                     type_list = []
                     self.all[name_key] = type_list
