@@ -1,7 +1,10 @@
 import enum
 import itertools
+
+from perplexity.execution import get_variable_metadata
 from perplexity.set_utilities import count_set
 from perplexity.variable_binding import VariableValueType
+from perplexity.vocabulary import PluralType
 
 
 class VariableValueSetSize(enum.Enum):
@@ -93,6 +96,15 @@ def lift_style_predication(state, binding1, binding2, prediction_function, bindi
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
 # - that the any combinatoric terms will be turned into single set terms (coll or dist)
 def in_style_predication(state, binding1, binding2, prediction_function, binding1_set_size=VariableValueSetSize.all, binding2_set_size=VariableValueSetSize.all):
+    # If nobody needs collective don't do it since it is expensive
+    binding1_metadata = get_variable_metadata(binding1.variable.name)
+    if binding1_metadata["PluralType"] == PluralType.distributive:
+        binding1_set_size = VariableValueSetSize.exactly_one
+
+    binding2_metadata = get_variable_metadata(binding2.variable.name)
+    if binding2_metadata["PluralType"] == PluralType.distributive:
+        binding2_set_size = VariableValueSetSize.exactly_one
+
     # See if everything in binding1_set has the
     # prediction_function relationship to binding2_set
     for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
