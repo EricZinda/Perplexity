@@ -14,8 +14,8 @@ class EventOption(enum.Enum):
 # Determines what should be generated
 class PluralType(enum.Enum):
     distributive = 1
-    collective = 1
-    all = 2
+    collective = 2
+    all = 3
 
 
 def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=[], virtual_args=[]):
@@ -65,7 +65,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
     def argument_metadata(function_to_decorate, arg_spec_list):
         arg_list = []
-        if arguments is None:
+        if arg_spec_list is None:
             arg_types = arg_types_from_function(function_to_decorate)
             for arg_type in arg_types:
                 arg_metadata = {}
@@ -162,8 +162,8 @@ class Vocabulary(object):
         # then have a list of Metadata objects for each implementation of it
         self._metadata = dict()
 
-    def metadata(self, delphin_name):
-        return self._metadata[delphin_name]
+    def metadata(self, delphin_name, arg_types):
+        return self._metadata[self.name_key(delphin_name, arg_types, "")]
 
     def name_key(self, delphin_name, arg_types, phrase_type):
         return f"{delphin_name}__{''.join(arg_types)}__{phrase_type}"
@@ -177,9 +177,11 @@ class Vocabulary(object):
             phrase_types = ["comm", "ques", "prop", "norm"]
 
         for delphin_name in delphin_names:
-            if delphin_name not in self._metadata:
-                self._metadata[delphin_name] = []
-            self._metadata[delphin_name].append(predication_metadata)
+            metadata_key = self.name_key(delphin_name, arg_types, "")
+            if metadata_key not in self._metadata:
+                self._metadata[metadata_key] = []
+
+            self._metadata[metadata_key].append(predication_metadata)
 
             name_parts = parse_predication_name(delphin_name)
             self.words[name_parts["Lemma"]] = delphin_name

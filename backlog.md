@@ -1,8 +1,17 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+                                           ┌── _file_n_of(x3,i9)
+                               ┌────── and(0,1)
+           ┌────── _folder_n_of│x10,i15)     └ _a+few_a_1(e8,x3)
+_a_q(x10,RSTR,BODY)            │
+                └─ udef_q(x3,RSTR,BODY)
+                                    │      ┌── _together_p(e16,x3)
+                                    └─ and(0,1)
+                                             └ _in_p_loc(e2,x3,x10)
+    
     - Figure out a way to make "in" be efficient for "which files are in folders"?
-        -             
+        - how to declare variable types for ee predicates?            
         - First: Find efficient way to create 
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives

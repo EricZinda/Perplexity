@@ -185,6 +185,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             else:
                 report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
                 return False, None, None
+
         else:
             return False, None, None
 
@@ -217,16 +218,16 @@ def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_bind
     yield state.add_to_e(e_target_binding.variable.name, "DeterminerSetLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
+@Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", PluralType.collective)])
+def together_p(state, e_introduced_binding, x_target_binding):
+    for _, x_target_value in discrete_variable_set_generator(x_target_binding, VariableValueSetSize.more_than_one):
+        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set, used_collective=True)
+
+
 # Needed for "together, which 3 files are 3 mb?"
 @Predication(vocabulary, names=["_together_p"])
 def together_p_ee(state, e_introduced_binding, e_target_binding):
     yield from together_p_state(state, e_introduced_binding, e_target_binding)
-
-
-@Predication(vocabulary, names=["_together_p"])
-def together_p(state, e_introduced_binding, x_target_binding):
-    for _, x_target_value in discrete_variable_set_generator(x_target_binding, VariableValueSetSize.more_than_one):
-        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set, used_collective=True)
 
 
 @Predication(vocabulary, names=["_together_p_state"])

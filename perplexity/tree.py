@@ -363,7 +363,7 @@ def find_quantifier_from_variable(term, variable_name):
 # "predicate_name" or "None" if none is found
 def gather_predication_metadata(vocabulary, tree_info):
     def gather_metadata(predication):
-        metadata_list = vocabulary.metadata(predication.name)
+        metadata_list = vocabulary.metadata(predication.name, predication.arg_types)
         for metadata in metadata_list:
             for arg_index in range(len(metadata.args_metadata)):
                 if predication.arg_types[arg_index] == "h":

@@ -88,7 +88,7 @@ def lift_style_predication(state, binding1, binding2, prediction_function, bindi
                 set2_used_collective = set2_used_collective if len(binding2_set) > 1 else False
 
                 yield state.set_x(binding1.variable.name, binding1_set, binding1_set_type, used_collective=set1_used_collective) \
-                    .set_x(binding2.variable.name,binding2_set,binding2_set_type, used_collective=set2_used_collective)
+                    .set_x(binding2.variable.name, binding2_set, binding2_set_type, used_collective=set2_used_collective)
 
 
 # "'in' style" means that:

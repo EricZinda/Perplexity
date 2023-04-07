@@ -4,7 +4,7 @@
     "TestItems": [
         {
             "Command": "/new examples.Example24_reset",
-            "Expected": "State reset using examples.Example24_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "265a5921-b404-4896-9d8f-59305081820d"
@@ -25,7 +25,7 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "c362a5d4-7616-4f5e-a327-aea5ff140c85"
@@ -46,7 +46,7 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "586671ad-5fd6-45e5-8236-64d521eb3faa"
@@ -60,7 +60,7 @@
         },
         {
             "Command": "/new examples.Example20_reset",
-            "Expected": "State reset using examples.Example20_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "5ab6cda0-d667-498e-84fe-6fbd59be14ab"
@@ -74,7 +74,7 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "51c1f3fc-2555-407d-bb5b-29778adb2b22"
@@ -109,7 +109,7 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "f20bff30-b68d-4781-8f04-3ad518a29ac5"
@@ -130,7 +130,7 @@
         },
         {
             "Command": "/new examples.Example26_reset",
-            "Expected": "State reset using examples.Example26_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "15382971-96f6-4a6e-ab2f-5db8672642d4"
@@ -159,7 +159,7 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "2cb61ffe-acb3-47ad-8cf5-1d3936c188ad"
@@ -173,7 +173,7 @@
         },
         {
             "Command": "/new examples.Example26_reset",
-            "Expected": "State reset using examples.Example26_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "2de5cbb2-de44-4857-bb0a-c1ece19cd4fc"
@@ -187,7 +187,7 @@
         },
         {
             "Command": "/new examples.Example27_reset",
-            "Expected": "State reset using examples.Example27_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "b3665d6c-d098-4bce-86c3-031a9c04d67a"
@@ -201,7 +201,7 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "110a3b3d-6725-448b-aed5-2b4ef2b6c0eb"
@@ -243,7 +243,7 @@
         },
         {
             "Command": "/new examples.Example28_reset",
-            "Expected": "State reset using examples.Example28_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "dc9cc1ac-40cd-4ea5-8cff-d620cd99f7a7"
@@ -264,42 +264,42 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "64f3b027-5ae2-43cb-aaee-98b2fff80a4e"
         },
         {
             "Command": "which files are in folders",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "c412fa91-5229-4186-989f-f3513d5410f3"
         },
         {
             "Command": "which files are in a folder?",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
         },
         {
             "Command": "/new examples.Example26_reset",
-            "Expected": "State reset using examples.Example26_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "d6f55030-75f1-43a5-a8fc-7a913b503490"
         },
         {
             "Command": "which 2 files are in a folder?",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/bigfile.txt, size=20000000))(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/bigfile2.txt, size=20000000))(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))(File(name=/Desktop/bigfile.txt, size=20000000), File(name=/Desktop/bigfile2.txt, size=20000000))(File(name=/Desktop/bigfile.txt, size=20000000), File(name=/Desktop/blue, size=10000000))(File(name=/Desktop/bigfile2.txt, size=20000000), File(name=/Desktop/blue, size=10000000))(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "_a_q(x11,_folder_n_of(x11,i16),_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "3a9b446e-1a73-49c6-a5c7-7a7d1847b359"
         },
         {
             "Command": "/new examples.Example26_reset",
-            "Expected": "State reset using examples.Example26_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "df3dd43d-a0cf-4063-bf05-803d768a5e56"
@@ -320,7 +320,7 @@
         },
         {
             "Command": "/new examples.Example25_reset",
-            "Expected": "State reset using examples.Example25_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "540d92f2-9561-43f9-9756-6e17f12d9bee"
@@ -334,28 +334,28 @@
         },
         {
             "Command": "/new examples.Example31_reset",
-            "Expected": "State reset using examples.Example31_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "e022e4fc-2b86-4f4f-ac51-8a800414672f"
         },
         {
             "Command": "which files are in 2 folders?",
-            "Expected": "(File(name=/Desktop/file4.txt, size=10000000),)(File(name=/Desktop/file5.txt, size=10000000),)(File(name=/Desktop/file4.txt, size=10000000), File(name=/Desktop/file5.txt, size=10000000))",
+            "Expected": "(File(name=/Desktop/file4.txt, size=10000000),)(File(name=/Desktop/file5.txt, size=10000000),)",
             "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(2,e15,x9)],_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "55cb41a3-eb62-4162-aa8f-123a1cfacc8c"
         },
         {
             "Command": "1 file is in a folder together",
-            "Expected": "There are more than 1 file in a folder together",
+            "Expected": "1 file is not in a folder together",
             "Tree": "_a_q(x11,[_folder_n_of(x11,i16), _together_p(e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "61c8885b-063a-460e-9b8a-a25c01f31df4"
         },
         {
             "Command": "/new examples.Example26_reset",
-            "Expected": "State reset using examples.Example26_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "20df35cc-f31e-45d7-8380-4c65ae1c3a2a"
@@ -376,7 +376,7 @@
         },
         {
             "Command": "/new examples.Example30_reset",
-            "Expected": "State reset using examples.Example30_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "021c1bd5-fb80-45fb-9782-9faabb8aaae0"
@@ -390,14 +390,14 @@
         },
         {
             "Command": "/new examples.Example31_reset",
-            "Expected": "State reset using examples.Example31_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "9ea1e81f-8dae-483e-b78a-787301ef6866"
         },
         {
             "Command": "which 2 files are in 2 folders",
-            "Expected": "(File(name=/Desktop/file4.txt, size=10000000), File(name=/Desktop/file5.txt, size=10000000))(File(name=/Desktop/file4.txt, size=10000000),)(File(name=/Desktop/file5.txt, size=10000000),)",
+            "Expected": "(File(name=/Desktop/file4.txt, size=10000000),)(File(name=/Desktop/file5.txt, size=10000000),)",
             "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "e94d4a20-05d6-4242-bbc5-d16657e67374"
@@ -411,7 +411,7 @@
         },
         {
             "Command": "/new examples.Example28_reset",
-            "Expected": "State reset using examples.Example28_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "c7d38990-0372-4a5f-b1a5-20f8002e032c"
@@ -432,7 +432,7 @@
         },
         {
             "Command": "/new examples.Example26_reset",
-            "Expected": "State reset using examples.Example26_reset().",
+            "Expected": "",
             "Tree": null,
             "Enabled": true,
             "ID": "3bf6bd45-a9a1-44e9-be7d-336ac320952b"
@@ -453,7 +453,7 @@
         },
         {
             "Command": "/new examples.Example21_reset",
-            "Expected": "State reset using examples.Example21_reset().",
+            "Expected": "",
             "Tree": "None",
             "Enabled": true,
             "ID": "44ceda3b-5d3d-437e-9efb-e53caeb06e44"
