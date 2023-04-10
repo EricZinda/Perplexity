@@ -202,12 +202,10 @@ class CardinalDeterminer(object):
     # If combinatorial is False then this solution group *must* be true for all the
     # solutions passed in in order to keep the solution group true for the previous
     # quantifier
-    def solution_groups(self, execution_context, solutions, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
+    def solution_groups(self, execution_context, solutions, combinatorial=False):
         def criteria(rstr_value_list):
             cardinal_group_values_count = count_set(rstr_value_list)
-            error_location = ["AtPredication", self.h_body,
-                              self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase",
-                                                                                           self.variable_name]
+            error_location = ["AfterFullPhrase", self.variable_name]
 
             if cardinal_group_values_count > self.count:
                 execution_context.report_error_for_index(0, ["moreThan", error_location, self.count], force=True)
@@ -223,9 +221,7 @@ class CardinalDeterminer(object):
                 return True
 
         if self.exactly:
-            error_location = ["AtPredication", self.h_body,
-                              self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase",
-                                                                                           self.variable_name]
+            error_location = ["AfterFullPhrase", self.variable_name]
 
             # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups ("only 2 files are in the folder")
             # it also limits *all* the solutions to that number. So we need to go to the bitter end before we know that that are "only 2"
@@ -266,10 +262,10 @@ class BetweenDeterminer(object):
     # If combinatorial is False then this solution group *must* be true for all the
     # solutions passed in in order to keep the solution group true for the previous
     # quantifier
-    def solution_groups(self, execution_context, solutions, combinatorial=False, cardinal_scoped_to_initial_rstr=False):
+    def solution_groups(self, execution_context, solutions, combinatorial=False):
         def criteria(rstr_value_list):
             cardinal_group_values_count = count_set(rstr_value_list)
-            error_location = ["AtPredication", self.h_body, self.variable_name] if cardinal_scoped_to_initial_rstr else ["AfterFullPhrase", self.variable_name]
+            error_location = ["AfterFullPhrase", self.variable_name]
 
             if cardinal_group_values_count > self.max_count:
                 execution_context.report_error_for_index(0, ["moreThan", error_location, self.max_count], force=True)
