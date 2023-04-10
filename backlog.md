@@ -1,14 +1,40 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+    - implement hashing so that sets work and use sets for duplicates
     - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
+    - Make quantifiers and determiners use the same helpers?
+        - adding a quantifier to the default quantifier means it is supported
+        - Then they should be called with quant_group(x_variable_binding, h_rstr, h_body, all_rstr, solutions)
+        - Determiners don't need to be a class
+
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - Gets initial answers quickly but lags at end
             For phase 2 we generate all combinations of potential answers for the plural determiners
-            Really we should allow it to stay combinatorial for the next determiner
+                Even when we stick to combinations of just distributive we have 2^n combinations
+                (good one) Don't build all the alternatives up front because we might only use one.  Stream them
+                (good one) Optimization 2: Don't bother generating combinations that won't work for downstream determiners
+                    "files are in 2 folders": We generate all combinations of N files, but there will at most 2 rows in the group at the end, so many are wasted
+                    If we ignore the fact that collective exists, we could generate criteria based simply on counts and we will know it is *at most* that many rows
+                    Key: Phase 2 is really about counting (or arbitrary criteria) on variable values
+                        Should be able to somehow avoid generating whole classes of groups of solutions that can't work
+                        It seems like we should be able to say "all groups where x13 < 2 and x15 > 1"
+                        Constraint solver: https://mlabonne.github.io/blog/constraintprogramming/
+                                           https://developers.google.com/optimization/cp/cp_solver
+                        knapsack problem? https://developers.google.com/optimization/pack/multiple_knapsack
+                        Should be easy to calculate a range of numbers that the rows must be in
+                        For yes/no we only need to prove one answer, for wh we want to get the smallest set of answers?
+                        This approach can stream
+                (good one?) Optimization 4: Really we should allow it to stay combinatorial for the next determiner
+                Use solvers to generate answers to knapsack problem
+                Optimization 1: If there are no more determiners, no need to do combinations, just return the smallest set of groups that meet the criteria
+                Optimization 3: determiner_solution_groups_helper() is called by the determiner. It should be told the criteria so it only generates groups that match it?
+                What is the goal? The goal is to return all groups of solutions that meet the criteria
+                Scenario 1: files are in folders: files > 1, folders > 1
+                Scenario 2: which 2 files are large? files = 2
+                3: which folders have at most 3 files
             But then how does "boys ate pizza" work?
                 Or boys ate 3 pizzas (where one group at 1 and the other group ate 2)
-            Because nothing in "files are in folders" is collective aware, we shouldn't bother to generate those alternatives, and just stick to the distributive sets.
         - If we don't know what predications require (must have) and support (can have), they have to do all alternatives 
             in case downstream predications need those alternatives
             - If they are declared then we can optimize *some* cases

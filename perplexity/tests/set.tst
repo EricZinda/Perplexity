@@ -369,7 +369,7 @@
         },
         {
             "Command": "the 4 large files are 20 mb",
-            "Expected": "That isn't true for all the large 4 file",
+            "Expected": "Yes, that is true.",
             "Tree": "_the_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(4,e9,x3)],udef_q(x12,[_megabyte_n_1(x12,u19), card(20,e18,x12)],loc_nonsp(e2,x3,x12)))",
             "Enabled": true,
             "ID": "feb7f6d9-c583-4afc-b7d8-6614885db415"

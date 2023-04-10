@@ -1,5 +1,6 @@
+from perplexity.determiners import determiner_solution_groups_helper
 from perplexity.execution import set_variable_execution_data, call
-from perplexity.set_utilities import append_if_unique
+from perplexity.set_utilities import append_if_unique, count_set
 from perplexity.utilities import is_plural_from_tree_info
 
 
@@ -15,15 +16,15 @@ def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
     set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
 
 
-def _which_q_impl(execution_context, variable_name, h_body, solution_group):
+def _which_q_group(execution_context, variable_name, h_rstr, h_body, all_rstr, solution_group, combinatorial=False):
     yield solution_group
 
 
-def udef_q_impl(execution_context, variable_name, h_body, solution_group):
+def udef_q_group(execution_context, variable_name, h_rstr, h_body, all_rstr, solution_group, combinatorial=False):
     yield solution_group
 
 
-def pronoun_q_impl(execution_context, variable_name, h_body, solution_group):
+def pronoun_q_group(execution_context, variable_name, h_rstr, h_body, all_rstr, solution_group, combinatorial=False):
     yield solution_group
 
 
@@ -33,39 +34,26 @@ def pronoun_q_impl(execution_context, variable_name, h_body, solution_group):
 #       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
 # 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
 #       same approach
-def _the_q_impl(execution_context, variable_name, h_body, solution_group):
-    all_unique_values = execution_context.get_variable_execution_data(variable_name)["AllRstrValues"]
+def _the_q_group(execution_context, variable_name, h_rstr, h_body, all_rstr, solution_group, combinatorial=False):
     is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
-    used_unique_values = []
-    for solution in solution_group:
-        binding = solution.get_binding(variable_name)
-        append_if_unique(used_unique_values, binding.value)
 
-    if not is_plural and len(all_unique_values) > 1:
-        execution_context.report_error(["moreThan1", ["AtPredication", h_body, variable_name]], force=True)
+    def criteria(rstr_value_list):
+        if not is_plural and len(all_rstr) > 1:
+            execution_context.report_error(["moreThan1", ["AtPredication", h_body, variable_name]], force=True)
+            return False
 
-    elif len(all_unique_values) != len(used_unique_values):
-        execution_context.report_error(["notTrueForAll", ["AtPredication", h_body, variable_name]], force=True)
-
-    else:
-        yield solution_group
-
-
-# Solution groups are never combinatoric due to the determiner
-# so we can just see if there is more than one "a"
-def _a_q_impl(execution_context, variable_name, h_body, solution_group):
-    found_item = None
-    for solution in solution_group:
-        binding = solution.get_binding(variable_name)
-        if found_item is None:
-            found_item = binding.value
-
-        elif found_item == binding.value:
-            continue
+        elif len(all_rstr) != len(rstr_value_list):
+            execution_context.report_error(["notTrueForAll", ["AtPredication", h_body, variable_name]], force=True)
+            return False
 
         else:
-            # More than one "a", so fails
-            return
+            return True
 
-    yield solution_group
+    yield from determiner_solution_groups_helper(execution_context, variable_name, None, solution_group, criteria, combinatorial)
 
+
+def _a_q_group(execution_context, variable_name, h_rstr, h_body, all_rstr, solution_group, combinatorial=False):
+    def criteria(rstr_value_list):
+        return count_set(rstr_value_list) == 1
+
+    yield from determiner_solution_groups_helper(execution_context, variable_name, None, solution_group, criteria, combinatorial)

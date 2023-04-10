@@ -367,6 +367,65 @@ To do this, the solver needs to keep track of what the original `RSTR` values we
 ## Add scopal arguments
 
 ## Optimizations
+I'm trying to find algorithms for grouping solutions to an equation with n variables, The variable assignments are sets and the criterion are simple expressions involving `=><` and only one variable, although the grouping criteria may have a criterion on more than one variable. More detail below.
+
+## Background:
+I have a Python predicate-logic-like program that generates solutions to the variables in an equation, where the variable values are always a set of > 0:
+- The elements of a set are always Python objects that support __eq__ and __hash__
+- A set assigned to a variable always contains unique values (i.e. no duplicates)
+- A given object can be repeated between variables in the same solution (i.e. the same object could be a member of another set that is assigned to another variable). 
+- A given value can be repeated in the same variable in another solution to the same equation
+
+Each equation contains an arbitarily long list of variables, but in practice this is no more than 10ish variables. A single solution is a list of assignments of sets to the variables, like this:
+~~~
+solution 1: x=[a, b], y=[c], z=[d, e, f, g]
+~~~
+
+The program generates all the solutions to the equation, like this:
+
+~~~
+solution 1: x=[a, b], y=[c], z=[d, e, f, g]
+solution 2: x=[a, b], y=[a], z=[a]
+...
+solution n: x=[m], y=[n, o, p], z=[o, p]
+~~~
+
+The list of solutions to the equation can be quite large and can be generated in a "stream", meaning: conceptually there is a Python generator that can generate a new solution each time it is asked to and will stop when there are no more.
+
+## Problem:
+I need to generate efficient *groupings* of the solutions using a set of criterion.  
+- Each criterion is a simple constraint about the total number of items assigned to a variable in a group. 
+- Each criterion uses simple numeric rules involving `<,>,=` such as "at least n", "no more than y", "exactly n", etc. 
+- The grouping criteria may contain multiple criterion, each about a different variable, so there may be constraints on several (or all) of the variables. 
+- *efficient* means: Get the first answer quickly (sometimes I can stop after 1 answer) as well as get *all* answers quickly.
+
+When counting items in a variable across a group, only unique items are counted. So a group that contains 2 solutions: 
+~~~
+x=[a]
+x=[a,b]
+~~~
+... would only add up to 2 items since `a` is duplicated.
+
+Some examples:
+~~~
+at_least_3(x), exactly_2(y) would be true for this group:
+x=[a], y[a]
+x=[b, c], y[a, b]
+
+no_more_than_1(x), between_3_and_5(y) would be true for this group:
+x=[a], y[a]
+x=[a], y[b, c]
+x=[a], y[d]
+~~~
+
+## My Questions:
+What is the name of the problem I have (if there is one)? I *believe* that finding a group for a single variable that meets its criterion is a "Knapsack Problem" (specifically the Subset-Sum Problem (SSP)), but I'm not sure what the name is for the full problem since the set of items for each "knapsack" (i.e. variable) is different and constrained to what the group of solutions contains.  I would love to know that if anyone knows it.
+
+Does anyone know of efficient ways to get the first answer and eventually of them? Preferrably in a way that takes advantage of the streaming nature of the answers. Meaning: start returning groups before all of the answers are generated.
+
+The approach I'm using currently is: Start with the first variable `x` and iteratively find each group of solutions that meets the criterion on `x`. Take each set of solutions and see if it also meets the criterion on `y`, `z`, etc. without changing the group. If you get to the end successfully, you have a group that meets all the constraints.
+
+
 ### Streaming
 ### combinatoric variables
 
@@ -394,6 +453,8 @@ the running boys lifted the table
         Because nothing in "files are in folders" is collective aware, we shouldn't bother to generate those alternatives, and just stick to the distributive sets. We might need a distributive set for "files are in 2 folders": we need alternatives that mix the answers enough to find the "2 folders"
 We can do this the same was as we did in 1: If there is nothing that needs
 ### If we look at the size of the variables, we might call in a different order
+
+### For yes/no we only need to prove one answer, for wh we want to get the smallest set of answers?
 
 ## Plurals and Predication Behavior
 Above, we've seen how `to lift` means something different when people are doing it *together* vs. *separately* and the predication needs to check for that distinction when deciding if the variable assignments mean `true`.

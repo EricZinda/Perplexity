@@ -45,17 +45,17 @@ def determiner_from_binding(state, h_body, binding):
 # combinatorial is True when any combination of the solutions can be used, otherwise, the exact set must be true
 def determiner_solution_groups_helper(execution_context, variable_name, max_answer_count, solutions_orig, cardinal_criteria, solution_group_combinatorial=False):
     # First: Build a list of the set values variable_name has, and which solutions go with each set
-    # If variable_name is a combinatorial variable it means that any combination of values in it are true, so as long as one
+    # If variable_name is a combinatorial variable it means that any combination of values in it are true, so as long as one from the group
     #   remains at the end, the solution group is still valid.
     #       For solution_group_combinatorial=true, it is the equivalent of breaking it into N more alternative
     #           solutions with each solution having one of the combinations of possible values
     #       For solution_group_combinatorial=false, it means as long as one of the values in the final answer it is valid
+    # If not, it gets added, as is, to set_solution_list
 
     variable_metadata = execution_context.get_variable_metadata(variable_name)
     variable_plural_type = variable_metadata["PluralType"]
 
     set_solution_alternatives_list = []
-    # If not, it gets added, as is, to set_solution_list
     set_solution_list = []
     for solution in solutions_orig:
         binding = solution.get_binding(variable_name)
