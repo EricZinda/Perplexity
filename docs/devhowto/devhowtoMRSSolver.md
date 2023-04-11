@@ -462,8 +462,9 @@ more_than_1(x), more_than_1(y)
 
 The determiners are literally only counting things so we should be able to do some numeric optimizations
 
-Option 1: Do special purpose optimization
+Option 1: Do special purpose optimizations
 If the next determiner is > 1 with nothing after it, return the max group
+
 If we assume we are really just putting constraints on the number of rows then:
 
 Anything with no upper bound has to have them all:

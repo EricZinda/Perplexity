@@ -30,7 +30,6 @@ def determiner_from_binding(state, h_body, binding):
     elif is_plural(state, binding.variable.name):
         # Plural determiner
         return BetweenDeterminer(binding.variable.name, h_body, 1, float('inf'), False)
-        # return PluralDeterminer(binding.variable.name, h_body)
 
     else:
         # Singular determiner
