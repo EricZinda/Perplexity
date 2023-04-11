@@ -428,9 +428,11 @@ The approach I'm using currently is: Start with the first variable `x` and itera
 
 ### Streaming
 Because yes/no questions just need one answer, streaming means we only have to find one
+
 ### combinatoric variables
 
 ### predications optimized for combinatoric variables (like in)
+
 ### Phase 1 If nobody cares about collective values, don't generate them
 If no predicate is collective aware, generating them wastes time.
 
@@ -453,6 +455,40 @@ the running boys lifted the table
     For phase 2 we generate all combinations of potential answers for the plural determiners
         Because nothing in "files are in folders" is collective aware, we shouldn't bother to generate those alternatives, and just stick to the distributive sets. We might need a distributive set for "files are in 2 folders": we need alternatives that mix the answers enough to find the "2 folders"
 We can do this the same was as we did in 1: If there is nothing that needs
+
+### Don't generate alternatives that won't be used
+"files are in folders": If there are 10 files, "files" generates all combinations of files when really they are almost all ignored
+more_than_1(x), more_than_1(y)
+
+The determiners are literally only counting things so we should be able to do some numeric optimizations
+
+Option 1: Do special purpose optimization
+If the next determiner is > 1 with nothing after it, return the max group
+If we assume we are really just putting constraints on the number of rows then:
+
+Anything with no upper bound has to have them all:
+- n_or_more: could be any number of rows
+- at_least_n: could be any number of row
+- more_than_n: ditto
+
+Upper bounds have a limit:
+- exactly_n: can't be more than n individual rows 
+- less_than_n: can't be more than n individual rows
+
+Could be combinatorial:
+1_or_more
+at least 1
+
+If we have the engine generate *ranges* that the row count must be in it will reduce the solution space
+    Only the first one gets to select the sets of solutions
+    [allowing combinatorial will only help more_than_0 (which might be a lot of cases)]
+
+If we count the actual values we can discard some combinations exactly
+
+Implementation:
+quantifiers and determiners should also use the same function, they just have a bit flipped to pass them different arguments
+all counting determiners should use the same function then we can optimize by looking through the whole list and modifying it
+
 ### If we look at the size of the variables, we might call in a different order
 
 ### For yes/no we only need to prove one answer, for wh we want to get the smallest set of answers?

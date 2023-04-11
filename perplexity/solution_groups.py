@@ -1,3 +1,4 @@
+import logging
 import sys
 from perplexity.determiners import determiner_from_binding
 from perplexity.tree import find_quantifier_from_variable
@@ -12,6 +13,7 @@ def solution_groups(execution_context, solutions, all_solutions):
         # Go through each variable that has a quantifier in any order.
         quantifier_list = [data for data in variable_determiner_quantifier_predication_rstr(execution_context, solutions[0])]
         for group in filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions, True):
+            groups_logger.debug(f"Found answer: {group}")
             yield group
             if not all_solutions:
                 return
@@ -19,6 +21,7 @@ def solution_groups(execution_context, solutions, all_solutions):
 
 def filter_solutions_for_next_quantifier(execution_context, quantifier_list, solutions, initial_cardinal=False):
     if len(quantifier_list) == 0:
+        groups_logger.debug(f"Success: Final solutions: {solutions}")
         yield solutions
 
     else:
@@ -29,9 +32,13 @@ def filter_solutions_for_next_quantifier(execution_context, quantifier_list, sol
         all_rstr_values = quantifier_list[0][4]
 
         for determiner_solution_group in determiner.solution_groups(execution_context, solutions, initial_cardinal):
+            groups_logger.debug(f"Success: Determiner: {determiner}")
+
             # Then call the quantifier to further filter those groups into quantified groups that meet it
             #   The quantifier needs to yield groups of the solution that match it.  For example "a_q" needs to yield every one.
             for quantified_cardinal_solution_group in quantifier(execution_context, variable_name, quantifier_predication.args[1], quantifier_predication.args[2], all_rstr_values, determiner_solution_group):
+                groups_logger.debug(f"Success: Quantifier: {quantifier}")
+
                 # Pass the filtered groups down to the next one
                 yield from filter_solutions_for_next_quantifier(execution_context, quantifier_list[1:], quantified_cardinal_solution_group)
 
@@ -52,3 +59,6 @@ def variable_determiner_quantifier_predication_rstr(execution_context, state):
             module = sys.modules["perplexity.quantifiers"]
             quantifier_function = getattr(module, quantifier_predication.name + "_group")
             yield variable_name, cardinal, quantifier_function, quantifier_predication, all_rstr_values
+
+
+groups_logger = logging.getLogger('SolutionGroups')

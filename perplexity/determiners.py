@@ -1,5 +1,6 @@
 import copy
 import itertools
+import logging
 import sys
 from perplexity.set_utilities import all_nonempty_subsets, all_combinations_with_elements_from_all, append_if_unique, \
     count_set, all_nonempty_subsets_stream
@@ -52,6 +53,7 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
     # a combinatoric variable. set_solution_list contains all values that were not combinatoric
     set_solution_alternatives_list = []
     set_solution_list = []
+
     for solution in solutions_orig:
         binding = solution.get_binding(variable_name)
         if binding.variable.value_type == VariableValueType.combinatoric:
@@ -80,17 +82,24 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
             set_solution_list.append(solution)
 
     # Flatten out the list of lists
-    set_solution_alternatives_list = itertools.chain.from_iterable(set_solution_alternatives_list)
+    if len(set_solution_alternatives_list) > 0:
+        determiner_logger.debug(f"Found {len(set_solution_alternatives_list)} combinatoric answers")
+        set_solution_alternatives_list = itertools.chain.from_iterable(set_solution_alternatives_list)
 
     # Now the combination of set_solution_alternatives_list together with set_solution_list contain
     # all the alternative assignments of variable_name. Next, yield each combined alternative
     if solution_group_combinatorial:
+
         def combinatorial_solution_group_generator():
-            yield from itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list])
+            for item in itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list]):
+                determiner_logger.debug(f"Combinatorial answer: {item}")
+                yield item
+            # yield from itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list])
 
         yield combinatorial_solution_group_generator()
 
     else:
+        determiner_logger.debug(f"Answers are not combinatorial")
         # See comments at top of function for what this is doing
         set_solution_alternatives_list = at_least_one_generator(set_solution_alternatives_list)
         alternative_yielded = False
@@ -141,6 +150,7 @@ def determiner_solution_groups_helper(execution_context, variable_name, solution
     for solutions_list_generator in solution_list_alternatives_without_combinatorial_variables(execution_context, variable_name, max_answer_count, solutions_orig, determiner_criteria, solution_group_combinatorial):
         # Unfortunately, we need to materialize each solutions list to find all the duplicates
         solutions_list = list(solutions_list_generator)
+        determiner_logger.debug(f"Creating determiner solution list size: {len(solutions_list)}:")
 
         # Get all the unique values assigned to this variable, and collect the solutions that go with them
         unique_variable_assignments_generator = unique_rstr_solution_list_generator(variable_name, solutions_list)
@@ -305,3 +315,5 @@ class BetweenDeterminer(object):
 
         yield from determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.max_count)
 
+
+determiner_logger = logging.getLogger('Determiners')

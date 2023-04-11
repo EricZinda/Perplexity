@@ -3,9 +3,8 @@ Remaining work to be shown in the tutorial:
 Plurals work
     - implement hashing so that sets work and use sets for duplicates
     - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
-    
-    - It doesn't seem like turning combinatoric variables into a different set of solutions is right.  If the
-        predicate wasn't combinatoric, it would have yielded a different answer for each alternative and they'd just be in a giant single list
+    - "which files are in folders" -> The problem is that it generates all combinations of 13 files and finds a ton of duplicate answers
+        
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - Gets initial answers quickly but lags at end
             For phase 2 we generate all combinations of potential answers for the plural determiners
