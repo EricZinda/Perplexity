@@ -486,7 +486,7 @@ If we have the engine generate *ranges* that the row count must be in it will re
 If we count the actual values we can discard some combinations exactly
 
 Implementation:
-quantifiers and determiners should also use the same function, they just have a bit flipped to pass them different arguments
+(done) quantifiers and determiners should also use the same function, they just have a bit flipped to pass them different arguments
 all counting determiners should use the same function then we can optimize by looking through the whole list and modifying it
 
 ### If we look at the size of the variables, we might call in a different order

@@ -71,8 +71,7 @@ def respond_to_mrs_tree(tree, solution_groups, error):
                             if not in_equals(answer_items, binding.value):
                                 answer_items.append(binding.value)
                                 yield generate_message(tree, [-1, ["answerWithList", index_predication, [binding.value]]])
-                            else:
-                                print("duplicate")
+
             else:
                 message = generate_message(tree, error)
                 return message
