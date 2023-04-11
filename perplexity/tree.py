@@ -1,7 +1,7 @@
 import copy
 import logging
 from collections import defaultdict
-from perplexity.execution import execution_context
+import perplexity.execution
 from perplexity.utilities import parse_predication_name
 from perplexity.vocabulary import PluralType
 
@@ -281,13 +281,13 @@ def walk_tree_args_until(term, predication_func, arg_func):
 # because that means it is the final one
 def is_this_last_fw_seq(state):
     this_tree = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
+    this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
 def is_index_predication(state):
     this_tree = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(this_tree, execution_context().current_predication_index())
+    this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
     return this_predication.introduced_variable() == this_tree["Index"]
 
 

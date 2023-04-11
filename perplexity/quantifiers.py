@@ -49,11 +49,11 @@ def _the_q_group(execution_context, variable_name, h_rstr, h_body, all_rstr, sol
         else:
             return True
 
-    yield from determiner_solution_groups_helper(execution_context, variable_name, None, solution_group, criteria, combinatorial)
+    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial)
 
 
 def _a_q_group(execution_context, variable_name, h_rstr, h_body, all_rstr, solution_group, combinatorial=False):
     def criteria(rstr_value_list):
         return count_set(rstr_value_list) == 1
 
-    yield from determiner_solution_groups_helper(execution_context, variable_name, None, solution_group, criteria, combinatorial)
+    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial)

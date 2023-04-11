@@ -163,7 +163,8 @@ class UserInterface(object):
                         tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, is_wh_phrase))
                         tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
                     else:
-                        tree_record["SolutionGroups"] = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, is_wh_phrase))
+                        temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, is_wh_phrase)
+                        tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
                     # Determine the response to it
                     tree_record["Error"] = self.execution_context.error()

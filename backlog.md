@@ -3,16 +3,12 @@ Remaining work to be shown in the tutorial:
 Plurals work
     - implement hashing so that sets work and use sets for duplicates
     - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
-    - Make quantifiers and determiners use the same helpers?
-        - adding a quantifier to the default quantifier means it is supported
-        - Then they should be called with quant_group(x_variable_binding, h_rstr, h_body, all_rstr, solutions)
-        - Determiners don't need to be a class
+    (good one) Don't build all the alternatives up front because we might only use one.  Stream them
 
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - Gets initial answers quickly but lags at end
             For phase 2 we generate all combinations of potential answers for the plural determiners
                 Even when we stick to combinations of just distributive we have 2^n combinations
-                (good one) Don't build all the alternatives up front because we might only use one.  Stream them
                 (good one) Optimization 2: Don't bother generating combinations that won't work for downstream determiners
                     "files are in 2 folders": We generate all combinations of N files, but there will at most 2 rows in the group at the end, so many are wasted
                     If we ignore the fact that collective exists, we could generate criteria based simply on counts and we will know it is *at most* that many rows

@@ -427,6 +427,7 @@ The approach I'm using currently is: Start with the first variable `x` and itera
 
 
 ### Streaming
+Because yes/no questions just need one answer, streaming means we only have to find one
 ### combinatoric variables
 
 ### predications optimized for combinatoric variables (like in)

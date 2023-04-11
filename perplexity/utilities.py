@@ -118,25 +118,40 @@ def import_function_from_names(module_name, function_name):
     function = getattr(module, function_name)
     return function
 
-
 # This takes a generator and, if the generator returns at least
 # one item, returns a generator that will return that item and any others
 # If the passed generator does not return any items, it returns None
 def at_least_one_generator(generator):
-    def wrapper():
-        yield first_item
-        while True:
-            try:
-                yield next(generator)
-            except StopIteration:
-                return None
+    if isinstance(generator, (list, tuple)):
+        if len(generator) > 0:
+            return iter(generator)
 
-    try:
-        first_item = next(generator)
-    except StopIteration:
-        return None
+    else:
+        try:
+            first_item = next(generator)
 
-    return wrapper()
+        except StopIteration:
+            return None
+
+        return AtLeastOneIterator(first_item, generator)
+
+
+class AtLeastOneIterator(object):
+    def __init__(self, first_item, generator):
+        self.first_item = first_item
+        self.generator = generator
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.first_item is not None:
+            item = self.first_item
+            self.first_item = None
+            return item
+
+        else:
+            return next(self.generator)
 
 
 def yield_all(set_or_answer):

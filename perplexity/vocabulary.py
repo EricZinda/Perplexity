@@ -1,6 +1,7 @@
 import enum
 import inspect
 import logging
+
 from perplexity.execution import report_error
 from perplexity.utilities import parse_predication_name
 from perplexity.variable_binding import VariableBinding

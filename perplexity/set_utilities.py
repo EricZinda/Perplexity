@@ -18,13 +18,35 @@ def all_nonempty_subsets(items, min_size=1, max_size=None):
     return subsets
 
 
+# iteratively returns lists that are all nonempty subsets of s
+# From https://stackoverflow.com/questions/1482308/how-to-get-all-subsets-of-a-set-powerset
+#  Doesn't require len(s) and can stream its answers without materializing the whole list up front.
+#  It also builds the combinations in a way that only pulls new items from s after all combinations
+#  of previous answers are generated -- also good for streaming!
+# float('inf') will be greater than any number since python can compare floats and ints
+def all_nonempty_subsets_stream(s, min_size=1, max_size=float('inf')):
+    sets = [[]]
+    for i in s:
+        new_sets = []
+        for k in sets:
+            new_set = k+[i]
+            if min_size <= len(new_set) <= max_size:
+                yield new_set
+            new_sets.append(new_set)
+        sets += new_sets
+
+
 # Given a list of lists, returns another list of lists
 # with all combinations of items from the original lists
 # ensuring there is always one item from every list
 def all_combinations_with_elements_from_all(list_of_lists):
-    all_combinations_of_each_list = [all_nonempty_subsets(items) for items in list_of_lists]
-    combs = [list(itertools.chain(*answer)) for answer in itertools.product(*all_combinations_of_each_list)]
-    return combs
+    def nonempty_subsets_of_list_of_lists():
+        for items in list_of_lists:
+            yield all_nonempty_subsets_stream(items)
+
+    all_combinations_of_each_list = nonempty_subsets_of_list_of_lists()
+    for answer in itertools.product(*all_combinations_of_each_list):
+        yield list(itertools.chain(*answer))
 
 
 def in_equals(existing_values, new_value):
@@ -56,4 +78,4 @@ def count_set(rstr_value):
 
 
 if __name__ == '__main__':
-    print(list(all_combinations_with_elements_from_all([[[1], [2], [3]]])))
+    print(list(all_combinations_with_elements_from_all([[0, 2], [1]])))
