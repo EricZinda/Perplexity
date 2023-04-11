@@ -44,7 +44,7 @@ def card_normal(state, c_count, e_introduced_binding, x_target_binding):
             card_is_exactly = False
 
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      determiner=["determiners.CardinalDeterminer", [int(c_count), card_is_exactly]])
+                                      determiner=["determiners.BetweenDeterminer", [int(c_count), int(c_count), card_is_exactly]])
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])

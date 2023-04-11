@@ -348,7 +348,7 @@
         },
         {
             "Command": "1 file is in a folder together",
-            "Expected": "1 file is not in a folder together",
+            "Expected": "There are more than a folder together",
             "Tree": "_a_q(x11,[_folder_n_of(x11,i16), _together_p(e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "61c8885b-063a-460e-9b8a-a25c01f31df4"

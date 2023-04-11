@@ -155,9 +155,9 @@ class UserInterface(object):
                         pipeline_logger.debug(f"solution: {item}")
                         duplicate_solutions.append(item)
 
-                    pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
+                    # pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
                     # duplicate_solutions = perplexity.determiners.remove_duplicates(duplicate_solutions)
-                    pipeline_logger.debug(f"{len(duplicate_solutions)} unquantified solutions.")
+                    pipeline_logger.debug(f"{len(duplicate_solutions)} undetermined solutions.")
                     is_wh_phrase = sentence_force(tree_info["Variables"]) == "ques" and find_predication(tree_info["Tree"], "_which_q")
                     if self.show_all_answers:
                         tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, is_wh_phrase))
@@ -246,7 +246,7 @@ class UserInterface(object):
                 (self.error_priority_function(tree_record["Error"]) > self.error_priority_function(chosen_error)):
             self.interaction_record["ChosenMrsIndex"] = current_mrs_index
             self.interaction_record["ChosenTreeIndex"] = current_tree_index
-            pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_tree_index}")
+            pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_tree_index}, Error: {tree_record['Error'] if tree_record['SolutionGroups'] is None else 'none'}")
 
     # Commands always start with "/", followed by a string of characters and then
     # a space. Any arguments are after the space and their format is command specific.

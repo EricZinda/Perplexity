@@ -28,10 +28,13 @@ def determiner_from_binding(state, h_body, binding):
         return class_constructor(*([binding.variable.name, h_body] + binding.variable.determiner[1]))
 
     elif is_plural(state, binding.variable.name):
-        return PluralDeterminer(binding.variable.name, h_body)
+        # Plural determiner
+        return BetweenDeterminer(binding.variable.name, h_body, 1, float('inf'), False)
+        # return PluralDeterminer(binding.variable.name, h_body)
 
     else:
-        return SingularDeterminer(binding.variable.name, h_body)
+        # Singular determiner
+        return BetweenDeterminer(binding.variable.name, h_body, 1, 1, False)
 
 
 # Return an iterator that yields lists of solutions ("a solution list") without combinatorial variables.
@@ -202,37 +205,14 @@ def determiner_solution_groups_helper(execution_context, variable_name, solution
                 continue
 
 
-class SingularDeterminer(object):
-    def __init__(self, variable_name, h_body):
+class BetweenDeterminer(object):
+    # Set max to float('inf') to mean "no maximum"
+    def __init__(self, variable_name, h_body, min_count, max_count, exactly=False):
         self.variable_name = variable_name
         self.h_body = h_body
-
-    def solution_groups(self, execution_context, solutions, combinatorial=False):
-        def criteria(rstr_value_list):
-            return count_set(rstr_value_list) == 1
-
-        yield from determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial)
-
-
-# Every combination of solutions > 1 will still be plural, so we can leave this combinatorial
-class PluralDeterminer(object):
-    def __init__(self, variable_name, h_body):
-        self.variable_name = variable_name
-        self.h_body = h_body
-
-    def solution_groups(self, execution_context, solutions, combinatorial=False):
-        def criteria(rstr_value_list):
-            return count_set(rstr_value_list) > 0
-
-        yield from determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial)
-
-
-class CardinalDeterminer(object):
-    def __init__(self, variable_name, h_body, count, card_is_exactly):
-        self.variable_name = variable_name
-        self.h_body = h_body
-        self.count = count
-        self.exactly = card_is_exactly
+        self.min_count = min_count
+        self.max_count = max_count
+        self.exactly = exactly
 
     # If combinatorial is False then this solution group *must* be true for all the
     # solutions passed in in order to keep the solution group true for the previous
@@ -242,12 +222,14 @@ class CardinalDeterminer(object):
             cardinal_group_values_count = count_set(rstr_value_list)
             error_location = ["AfterFullPhrase", self.variable_name]
 
-            if cardinal_group_values_count > self.count:
-                execution_context.report_error_for_index(0, ["moreThan", error_location, self.count], force=True)
+            # Even though this *looks* like exactly, it is picking out solutions where there just happen to be
+            # N files, so it isn't really
+            if cardinal_group_values_count > self.max_count:
+                execution_context.report_error_for_index(0, ["moreThan", error_location, self.max_count], force=True)
                 return False
 
-            elif cardinal_group_values_count < self.count:
-                execution_context.report_error_for_index(0, ["lessThan", error_location, self.count], force=True)
+            elif cardinal_group_values_count < self.min_count:
+                execution_context.report_error_for_index(0, ["lessThan", error_location, self.min_count], force=True)
                 return False
 
             else:
@@ -260,60 +242,30 @@ class CardinalDeterminer(object):
 
             # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups ("only 2 files are in the folder")
             # it also limits *all* the solutions to that number. So we need to go to the bitter end before we know that that are "only 2"
+            # group_rstr is set in the criteria each time a rstr is checked
             group_rstr = []
             unique_rstrs = []
             groups = []
-            for group in determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.count):
+            for group in determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.max_count):
                 for item in group_rstr:
                     append_if_unique(unique_rstrs, item)
 
-                if len(unique_rstrs) > self.count:
-                    execution_context.report_error_for_index(0, ["moreThan", error_location, self.count], force=True)
+                if len(unique_rstrs) > self.max_count:
+                    execution_context.report_error_for_index(0, ["moreThan", error_location, self.max_count], force=True)
                     return
 
                 else:
                     groups.append(group)
 
-            if len(unique_rstrs) < self.count:
-                execution_context.report_error_for_index(0, ["lessThan", error_location, self.count], force=True)
+            if len(unique_rstrs) < self.min_count:
+                execution_context.report_error_for_index(0, ["lessThan", error_location, self.min_count], force=True)
                 return
 
             else:
                 yield from groups
 
         else:
-            yield from determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.count)
-
-
-# For implementing things like "a few" where there is a number
-# between 3 and, say 5
-class BetweenDeterminer(object):
-    def __init__(self, variable_name, h_body, min_count, max_count):
-        self.variable_name = variable_name
-        self.h_body = h_body
-        self.min_count = min_count
-        self.max_count = max_count
-
-    # If combinatorial is False then this solution group *must* be true for all the
-    # solutions passed in in order to keep the solution group true for the previous
-    # quantifier
-    def solution_groups(self, execution_context, solutions, combinatorial=False):
-        def criteria(rstr_value_list):
-            cardinal_group_values_count = count_set(rstr_value_list)
-            error_location = ["AfterFullPhrase", self.variable_name]
-
-            if cardinal_group_values_count > self.max_count:
-                execution_context.report_error_for_index(0, ["moreThan", error_location, self.max_count], force=True)
-                return False
-
-            elif cardinal_group_values_count < self.min_count:
-                execution_context.report_error_for_index(0, ["lessThan", error_location, self.min_count], force=True)
-                return False
-
-            else:
-                return True
-
-        yield from determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.max_count)
+            yield from determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.max_count)
 
 
 determiner_logger = logging.getLogger('Determiners')
