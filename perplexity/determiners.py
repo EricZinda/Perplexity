@@ -33,22 +33,24 @@ def determiner_from_binding(state, h_body, binding):
         return SingularDeterminer(binding.variable.name, h_body)
 
 
-# Return an iterator that yields lists of solutions ("solution list") without combinatorial variables
-# If variable_name is a combinatorial variable it means that any combination of values in it are true, so as long as one from the group
-#   remains at the end, the solution group is still valid.
+# Return an iterator that yields lists of solutions ("a solution list") without combinatorial variables.
+# These are lists of solutions because: If variable_name is a combinatorial variable it means that any combination
+#   of values in it are true, so as long as one from the group remains at the end, the solution group is still valid.
 #       For solution_group_combinatorial=true, it is the equivalent of breaking it into N more alternative
 #           solutions with each solution having one of the combinations of possible values
-#       For solution_group_combinatorial=false, it means as long as one of the values in the final answer it is valid
-# If not, it gets added, as is, to set_solution_list
-def solution_list_alternatives(execution_context, variable_name, max_answer_count, solutions_orig,
-                               cardinal_criteria, solution_group_combinatorial=False):
+#       For solution_group_combinatorial=false, it means that the solutions can't be broken up and must all be true.
+#           But: the combinatorial variable means that *any* of the combinations for that variable can be true
+#           if we just include all combinations in the non-combinatorial list, it will require them all to be true which isn't right
+#           so instead we have to try every alternative by generating an entire new answer list for each alternative
+# If it is not a combinatorial value, it gets added, as is, to set_solution_list
+def solution_list_alternatives_without_combinatorial_variables(execution_context, variable_name, max_answer_count, solutions_orig,
+                                                               cardinal_criteria, solution_group_combinatorial=False):
     variable_metadata = execution_context.get_variable_metadata(variable_name)
     variable_plural_type = variable_metadata["PluralType"]
 
     # set_solution_alternatives_list contains all the alternatives for
-    # a combinatoric variable
+    # a combinatoric variable. set_solution_list contains all values that were not combinatoric
     set_solution_alternatives_list = []
-    # set_solution_list contains all values that were not combinatoric
     set_solution_list = []
     for solution in solutions_orig:
         binding = solution.get_binding(variable_name)
@@ -81,8 +83,7 @@ def solution_list_alternatives(execution_context, variable_name, max_answer_coun
     set_solution_alternatives_list = itertools.chain.from_iterable(set_solution_alternatives_list)
 
     # Now the combination of set_solution_alternatives_list together with set_solution_list contain
-    # all the alternative assignments of variable_name.
-    # Next, yield each combined alternative
+    # all the alternative assignments of variable_name. Next, yield each combined alternative
     if solution_group_combinatorial:
         def combinatorial_solution_group_generator():
             yield from itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list])
@@ -90,6 +91,7 @@ def solution_list_alternatives(execution_context, variable_name, max_answer_coun
         yield combinatorial_solution_group_generator()
 
     else:
+        # See comments at top of function for what this is doing
         set_solution_alternatives_list = at_least_one_generator(set_solution_alternatives_list)
         alternative_yielded = False
         if set_solution_alternatives_list is not None:
@@ -99,6 +101,7 @@ def solution_list_alternatives(execution_context, variable_name, max_answer_coun
                 # Then add this combinatorial alternative
                 def combinatorial_solution_group_generator():
                     yield from itertools.chain.from_iterable([copy.deepcopy(set_solution_list), alternative_list])
+
                 yield combinatorial_solution_group_generator()
                 alternative_yielded = True
 
@@ -106,11 +109,10 @@ def solution_list_alternatives(execution_context, variable_name, max_answer_coun
             yield solutions_orig
 
 
-# Convert each list of solutions into a list of (binding_value, [solutions])
-# pairs where binding_value has one rstr value set and [solutions] is a list of
+# Convert each list of solutions into a list of (binding_value, [solutions]) pairs
+# where binding_value has one rstr value and [solutions] is a list of
 # all solutions that have that value.
 def unique_rstr_solution_list_generator(variable_name, solutions_list):
-    # Get all the unique values assigned to this variable, and collect the solutions that go with them
     variable_assignments = []
     for solution_index in range(len(solutions_list)):
         binding_value = solutions_list[solution_index].get_binding(variable_name).value
@@ -130,12 +132,13 @@ def unique_rstr_solution_list_generator(variable_name, solutions_list):
 
 # Ensure that solutions_orig is broken up into a set of solution groups that are not combinatoric
 # in any way
-# max_answer_count is the maximum number of individual items that will ever be used. None means all
+# max_answer_count is the maximum number of individual items that will ever be used.
 #   So, for "2 boys", it should be 2 since it must be no more than 2
 #   but for "boys" it has to be None since it could be a huge set of boys
 # combinatorial is True when any combination of the solutions can be used, otherwise, the exact set must be true
 def determiner_solution_groups_helper(execution_context, variable_name, solutions_orig, determiner_criteria, solution_group_combinatorial=False, max_answer_count=float('inf')):
-    for solutions_list_generator in solution_list_alternatives(execution_context, variable_name, max_answer_count, solutions_orig, determiner_criteria, solution_group_combinatorial):
+    # Loop through solution lists that don't contain combinatorial variables
+    for solutions_list_generator in solution_list_alternatives_without_combinatorial_variables(execution_context, variable_name, max_answer_count, solutions_orig, determiner_criteria, solution_group_combinatorial):
         # Unfortunately, we need to materialize each solutions list to find all the duplicates
         solutions_list = list(solutions_list_generator)
 
