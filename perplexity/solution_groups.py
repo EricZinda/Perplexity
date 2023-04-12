@@ -1,5 +1,8 @@
 import logging
 import sys
+from importlib import import_module
+from math import inf
+
 from perplexity.determiners import determiner_from_binding, quantifier_from_binding, between_determiner
 from perplexity.tree import find_quantifier_from_variable
 
@@ -11,15 +14,18 @@ from perplexity.tree import find_quantifier_from_variable
 def solution_groups(execution_context, solutions, all_solutions):
     if len(solutions) > 0:
         # Go through each variable that has a quantifier in any order.
-        determiner_info_list = [data for data in all_determiner_infos(execution_context, solutions[0])]
-        for group in filter_solutions_for_next_determiner(execution_context, determiner_info_list, solutions, True):
+        declared_determiner_info_list = [data for data in declared_determiner_infos(execution_context, solutions[0])]
+        optimized_determiner_info_list = optimize_determiner_infos(declared_determiner_info_list)
+        compiled_determiner_info_list = compile_determiner_infos(optimized_determiner_info_list)
+
+        for group in filter_solutions_for_next_determiner(execution_context, compiled_determiner_info_list, solutions, True):
             groups_logger.debug(f"Found answer: {group}")
             yield group
             if not all_solutions:
                 return
 
 
-def all_determiner_infos(execution_context, state):
+def declared_determiner_infos(execution_context, state):
     tree_info = state.get_binding("tree").value[0]
     variables = tree_info["Variables"]
     tree = tree_info["Tree"]
@@ -27,21 +33,65 @@ def all_determiner_infos(execution_context, state):
     for variable_name in variables.keys():
         if variable_name[0] == "x":
             binding = state.get_binding(variable_name)
-            determiner_type, determiner_args = determiner_from_binding(state, binding)
-            if determiner_type == "number_constraint":
-                yield [determiner_type, determiner_args], variable_name, between_determiner, determiner_args, None, None
 
-            else:
-                assert False
+            # First get the determiner
+            determiner_constraint, determiner_type, determiner_constraint_args = determiner_from_binding(state, binding)
+            yield [determiner_constraint, determiner_type, determiner_constraint_args], variable_name, None, None
 
-            all_rstr_values = execution_context.get_variable_execution_data(variable_name)["AllRstrValues"]
+            # Then get the quantifier
+            quantifier_constraint, quantifier_type, quantifier_constraint_args = quantifier_from_binding(state, binding)
             quantifier_predication = find_quantifier_from_variable(tree, variable_name)
-            quantifier_constraint, quantifier_function, quantifier_args = quantifier_from_binding(state, binding)
-            if quantifier_constraint[0] == "number_constraint":
-                yield quantifier_constraint, variable_name, quantifier_function, quantifier_args, quantifier_predication, all_rstr_values
+            all_rstr_values = execution_context.get_variable_execution_data(variable_name)["AllRstrValues"]
+            yield [quantifier_constraint, quantifier_type, quantifier_constraint_args], variable_name, quantifier_predication, all_rstr_values
+
+
+def optimize_determiner_infos(determiner_info_list):
+    # new_info_list = []
+    # remove_determiners = True
+    # for determiner_info in reversed(determiner_info_list):
+    #     if remove_determiners and determiner_info[0][0] == "number_constraint" and determiner_info[0][1] == [1, float(inf), False]:
+    #         continue
+    #
+    #     else:
+    #         remove_determiners = False
+    #         new_info_list.append(determiner_info)
+    #
+    # return new_info_list
+    return determiner_info_list
+
+
+# Converts from:
+#   [[constraint_name, constraint_type, constraint_args], variable_name, predication, all_rstr]
+# to:
+#   [[function, extra_args], variable_name, predication, all_rstr]
+def compile_determiner_infos(determiner_info_list):
+    # Now we have an optimized list, actually compile it down to functions
+    final_list = []
+    for determiner_info in determiner_info_list:
+        constraint_info = determiner_info[0]
+        constraint_name = constraint_info[0]
+        constraint_type = constraint_info[1]
+        constraint_args = constraint_info[2]
+
+        if constraint_name == "number_constraint" and constraint_type == "default":
+            function = between_determiner
+            extra_args = constraint_args
+
+        else:
+            # constraint_type must be in the form "module.function_name"
+            module_path, function_name = constraint_type.rsplit('.', 1)
+            if module_path != "solution_groups":
+                module = import_module(module_path)
 
             else:
-                assert False
+                module = sys.modules[__name__]
+
+            function = getattr(module, function_name)
+            extra_args = []
+
+        final_list.append([[function, extra_args], determiner_info[1], determiner_info[2], determiner_info[3]])
+
+    return final_list
 
 
 def filter_solutions_for_next_determiner(execution_context, determiner_info_list, solutions, initial_determiner=False):
@@ -50,16 +100,17 @@ def filter_solutions_for_next_determiner(execution_context, determiner_info_list
         yield solutions
 
     else:
-        determiner_info = determiner_info_list[0]
-        variable_name = determiner_info[1]
-        determiner_function = determiner_info[2]
-        determiner_args = determiner_info[3]
-        predication = determiner_info[4]
-        all_rstr_values = determiner_info[5]
+        function_info = determiner_info_list[0][0]
+        variable_name = determiner_info_list[0][1]
+        predication = determiner_info_list[0][2]
+        all_rstr_values = determiner_info_list[0][3]
 
-        determiner_args = (execution_context, variable_name, predication, all_rstr_values, solutions, initial_determiner) + tuple(determiner_args)
-        for determined_solution_group in determiner_function(*determiner_args):
-            groups_logger.debug(f"Success: Determiner: {determiner_function}")
+        function = function_info[0]
+        function_extra_args = function_info[1]
+
+        function_args = (execution_context, variable_name, predication, all_rstr_values, solutions, initial_determiner) + tuple(function_extra_args)
+        for determined_solution_group in function(*function_args):
+            groups_logger.debug(f"Success: Determiner: {function}")
             yield from filter_solutions_for_next_determiner(execution_context, determiner_info_list[1:], determined_solution_group)
 
 

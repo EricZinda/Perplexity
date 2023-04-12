@@ -463,6 +463,7 @@ more_than_1(x), more_than_1(y)
 The determiners are literally only counting things so we should be able to do some numeric optimizations
 
 Option 1: Do special purpose optimizations
+Walking back from the end: all constraint(1, inf, False) should be
 If the next determiner is > 1 with nothing after it, return the max group
 
 If we assume we are really just putting constraints on the number of rows then:
@@ -489,9 +490,9 @@ If we count the actual values we can discard some combinations exactly
 Implementation:
 (done) quantifiers and determiners should also use the same function, they just have a bit flipped to pass them different arguments
 (done) all counting determiners should use the same function then we can optimize by looking through the whole list and modifying it
-Make all determiners take the same arguments
+(done) Make all determiners take the same arguments
     determiner(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, (extra args)
-Make them specify it using an abstract expression:
+(done) Make them specify it using an abstract expression:
     number_constraint(min_count, max_count, exactly)
     or
     custom_constraint(function, args) that can't be optimized

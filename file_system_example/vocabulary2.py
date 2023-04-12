@@ -24,7 +24,7 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
         max_rstr = 1
 
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["vocabulary2.the_q_group", [], ["number_constraint", [1, max_rstr, False]]])
+                                    quantifier=["number_constraint", "vocabulary2.the_q_group", [1, max_rstr, False]])
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -56,7 +56,7 @@ def the_q_group(execution_context, variable_name, predication, all_rstr, solutio
 @Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["vocabulary2.a_q_group", [], ["number_constraint", [1, 1, False]]])
+                                    quantifier=["number_constraint", "vocabulary2.a_q_group", [1, 1, False]])
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -71,7 +71,7 @@ def a_q_group(execution_context, variable_name, predication, all_rstr, solution_
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "pronoun_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["perplexity.predications.pass_thru_group", [], ["number_constraint", [1, float('inf'), False]]])
+                                    quantifier=["number_constraint", "perplexity.predications.pass_thru_group", [1, float('inf'), False]])
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -103,13 +103,13 @@ def card_normal(state, c_count, e_introduced_binding, x_target_binding):
             card_is_exactly = False
 
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      determiner=["number_constraint", [int(c_count), int(c_count), card_is_exactly]])
+                                      determiner=["number_constraint", "default", [int(c_count), int(c_count), card_is_exactly]])
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
-                                  determiner=["number_constraint", [3, 5, False]])
+                                  determiner=["number_constraint", "default", [3, 5, False]])
 
 
 # true for both sets and individuals as long as everything

@@ -16,33 +16,39 @@ from perplexity.vocabulary import PluralType
 # so rstr_x = [a, b] would count as 2
 def determiner_from_binding(state, binding):
     if binding.variable.determiner is not None:
-        determiner_type = binding.variable.determiner[0]
-        determiner_args = binding.variable.determiner[1]
-        return [determiner_type, determiner_args]
+        determiner_constraint = binding.variable.determiner[0]
+        determiner_type = binding.variable.determiner[1]
+        determiner_constraint_args = binding.variable.determiner[2]
+        return [determiner_constraint, determiner_type, determiner_constraint_args]
 
     elif is_plural(state, binding.variable.name):
         # Plural determiner
-        return ["number_constraint", [1, float('inf'), False]]
+        return ["number_constraint", "default", [1, float('inf'), False]]
 
     else:
         # Singular determiner
-        return ["number_constraint", [1, 1, False]]
+        return ["number_constraint", "default", [1, 1, False]]
 
 
 def quantifier_from_binding(state, binding):
     if binding.variable.quantifier is not None:
-        module_function_name = binding.variable.quantifier[0]
-        module_path, function_name = module_function_name.rsplit('.', 1)
-        if module_path != "quantifiers":
-            module = import_module(module_path)
+        quantifier_constraint = binding.variable.quantifier[0]
+        quantifier_type = binding.variable.quantifier[1]
+        quantifier_constraint_args = binding.variable.quantifier[2]
+        return [quantifier_constraint, quantifier_type, quantifier_constraint_args]
 
-        else:
-            module = sys.modules[__name__]
-
-        quantifier_function = getattr(module, function_name)
-        quantifier_args = binding.variable.quantifier[1]
-        quantifier_constraint = binding.variable.quantifier[2]
-        return [quantifier_constraint, quantifier_function, quantifier_args]
+        # module_function_name = binding.variable.quantifier[0]
+        # module_path, function_name = module_function_name.rsplit('.', 1)
+        # if module_path != "quantifiers":
+        #     module = import_module(module_path)
+        #
+        # else:
+        #     module = sys.modules[__name__]
+        #
+        # quantifier_function = getattr(module, function_name)
+        # quantifier_args = binding.variable.quantifier[1]
+        # quantifier_constraint = binding.variable.quantifier[2]
+        # return [quantifier_constraint, quantifier_function, quantifier_args]
 
     else:
         return None
