@@ -1,19 +1,78 @@
 from file_system_example.objects import File, Folder, Megabyte, Measurement, Actor
 from file_system_example.state import DeleteOperation
-from perplexity.quantifiers import quantifier_raw
+from perplexity.determiners import determiner_solution_groups_helper
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
-    individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator
+    individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
+from perplexity.set_utilities import count_set
 from perplexity.tree import is_index_predication
+from perplexity.utilities import is_plural_from_tree_info
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralType
 
 vocabulary = Vocabulary()
 
 
-# The default quantifier just passes through all answers
-@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "_a_q", "_the_q", "pronoun_q"])
-def default_quantifier(state, x_variable_binding, h_rstr, h_body):
+@Predication(vocabulary, names=["_the_q"])
+def the_q(state, x_variable_binding, h_rstr, h_body):
+    is_plural = is_plural_from_tree_info(execution_context().tree_info, x_variable_binding.variable.name)
+    if is_plural:
+        # Phrases like "the children" could be any number of rstr values
+        max_rstr = float('inf')
+
+    else:
+        max_rstr = 1
+
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=["vocabulary2.the_q_group", [], ["number_constraint", [1, max_rstr, False]]])
+
+    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+
+
+# Several meanings:
+# 1. Means "this" which only succeeds for rstrs that are the single in scope x set and there are no others that are in scope
+#       "put the two keys in the lock": should only work if there are only two keys in scope:
+#       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
+# 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
+#       same approach
+def the_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial):
+    is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
+
+    def criteria(rstr_value_list):
+        if not is_plural and len(all_rstr) > 1:
+            execution_context.report_error(["moreThan1", ["AtPredication", predication.args[2], variable_name]], force=True)
+            return False
+
+        elif len(all_rstr) != len(rstr_value_list):
+            execution_context.report_error(["notTrueForAll", ["AtPredication", predication.args[2], variable_name]], force=True)
+            return False
+
+        else:
+            return True
+
+    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial)
+
+
+@Predication(vocabulary, names=["_a_q"])
+def a_q(state, x_variable_binding, h_rstr, h_body):
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=["vocabulary2.a_q_group", [], ["number_constraint", [1, 1, False]]])
+
+    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+
+
+def a_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial):
+    def criteria(rstr_value_list):
+        return count_set(rstr_value_list) == 1
+
+    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial)
+
+
+@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "pronoun_q"])
+def generic_q(state, x_variable_binding, h_rstr, h_body):
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=["perplexity.predications.pass_thru_group", [], ["number_constraint", [1, float('inf'), False]]])
+
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
@@ -44,13 +103,13 @@ def card_normal(state, c_count, e_introduced_binding, x_target_binding):
             card_is_exactly = False
 
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      determiner=["determiners.BetweenDeterminer", [int(c_count), int(c_count), card_is_exactly]])
+                                      determiner=["number_constraint", [int(c_count), int(c_count), card_is_exactly]])
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
-                                  determiner=["determiners.BetweenDeterminer", [3, 5]])
+                                  determiner=["number_constraint", [3, 5, False]])
 
 
 # true for both sets and individuals as long as everything

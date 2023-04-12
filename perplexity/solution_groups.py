@@ -1,6 +1,6 @@
 import logging
 import sys
-from perplexity.determiners import determiner_from_binding
+from perplexity.determiners import determiner_from_binding, quantifier_from_binding, between_determiner
 from perplexity.tree import find_quantifier_from_variable
 
 
@@ -11,15 +11,15 @@ from perplexity.tree import find_quantifier_from_variable
 def solution_groups(execution_context, solutions, all_solutions):
     if len(solutions) > 0:
         # Go through each variable that has a quantifier in any order.
-        determiner_list = [data for data in determiner_generator(execution_context, solutions[0])]
-        for group in filter_solutions_for_next_determiner(execution_context, determiner_list, solutions, True):
+        determiner_info_list = [data for data in all_determiner_infos(execution_context, solutions[0])]
+        for group in filter_solutions_for_next_determiner(execution_context, determiner_info_list, solutions, True):
             groups_logger.debug(f"Found answer: {group}")
             yield group
             if not all_solutions:
                 return
 
 
-def determiner_generator(execution_context, state):
+def all_determiner_infos(execution_context, state):
     tree_info = state.get_binding("tree").value[0]
     variables = tree_info["Variables"]
     tree = tree_info["Tree"]
@@ -27,37 +27,40 @@ def determiner_generator(execution_context, state):
     for variable_name in variables.keys():
         if variable_name[0] == "x":
             binding = state.get_binding(variable_name)
-            cardinal = determiner_from_binding(state, None, binding)
-            yield variable_name, cardinal, None, None
+            determiner_type, determiner_args = determiner_from_binding(state, binding)
+            if determiner_type == "number_constraint":
+                yield [determiner_type, determiner_args], variable_name, between_determiner, determiner_args, None, None
+
+            else:
+                assert False
 
             all_rstr_values = execution_context.get_variable_execution_data(variable_name)["AllRstrValues"]
             quantifier_predication = find_quantifier_from_variable(tree, variable_name)
-            module = sys.modules["perplexity.quantifiers"]
-            quantifier_function = getattr(module, quantifier_predication.name + "_group")
-            yield variable_name, quantifier_function, quantifier_predication, all_rstr_values
+            quantifier_constraint, quantifier_function, quantifier_args = quantifier_from_binding(state, binding)
+            if quantifier_constraint[0] == "number_constraint":
+                yield quantifier_constraint, variable_name, quantifier_function, quantifier_args, quantifier_predication, all_rstr_values
+
+            else:
+                assert False
 
 
-def filter_solutions_for_next_determiner(execution_context, determiner_list, solutions, initial_determiner=False):
-    if len(determiner_list) == 0:
+def filter_solutions_for_next_determiner(execution_context, determiner_info_list, solutions, initial_determiner=False):
+    if len(determiner_info_list) == 0:
         groups_logger.debug(f"Success: Final solutions: {solutions}")
         yield solutions
 
     else:
-        variable_name = determiner_list[0][0]
-        determiner = determiner_list[0][1]
-        quantifier_predication = determiner_list[0][2]
-        all_rstr_values = determiner_list[0][3]
+        determiner_info = determiner_info_list[0]
+        variable_name = determiner_info[1]
+        determiner_function = determiner_info[2]
+        determiner_args = determiner_info[3]
+        predication = determiner_info[4]
+        all_rstr_values = determiner_info[5]
 
-        # Quantifiers take slightly different arguments
-        if quantifier_predication is not None:
-            for quantified_cardinal_solution_group in determiner(execution_context, variable_name, quantifier_predication.args[1], quantifier_predication.args[2], all_rstr_values, solutions, initial_determiner):
-                groups_logger.debug(f"Success: Quantifier: {determiner}")
-                yield from filter_solutions_for_next_determiner(execution_context, determiner_list[1:], quantified_cardinal_solution_group)
-
-        else:
-            for determiner_solution_group in determiner.solution_groups(execution_context, solutions, initial_determiner):
-                groups_logger.debug(f"Success: Determiner: {determiner}")
-                yield from filter_solutions_for_next_determiner(execution_context, determiner_list[1:], determiner_solution_group)
+        determiner_args = (execution_context, variable_name, predication, all_rstr_values, solutions, initial_determiner) + tuple(determiner_args)
+        for determined_solution_group in determiner_function(*determiner_args):
+            groups_logger.debug(f"Success: Determiner: {determiner_function}")
+            yield from filter_solutions_for_next_determiner(execution_context, determiner_info_list[1:], determined_solution_group)
 
 
 groups_logger = logging.getLogger('SolutionGroups')

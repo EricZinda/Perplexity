@@ -14,26 +14,38 @@ from perplexity.vocabulary import PluralType
 # the quantifier that only returns answers if they meet some criteria
 # Note that the thing being counted is the actual rstr values,
 # so rstr_x = [a, b] would count as 2
-def determiner_from_binding(state, h_body, binding):
+def determiner_from_binding(state, binding):
     if binding.variable.determiner is not None:
-        module_class_name = binding.variable.determiner[0]
-        module_path, class_name = module_class_name.rsplit('.', 1)
-        if module_path != "determiners":
+        determiner_type = binding.variable.determiner[0]
+        determiner_args = binding.variable.determiner[1]
+        return [determiner_type, determiner_args]
+
+    elif is_plural(state, binding.variable.name):
+        # Plural determiner
+        return ["number_constraint", [1, float('inf'), False]]
+
+    else:
+        # Singular determiner
+        return ["number_constraint", [1, 1, False]]
+
+
+def quantifier_from_binding(state, binding):
+    if binding.variable.quantifier is not None:
+        module_function_name = binding.variable.quantifier[0]
+        module_path, function_name = module_function_name.rsplit('.', 1)
+        if module_path != "quantifiers":
             module = import_module(module_path)
 
         else:
             module = sys.modules[__name__]
 
-        class_constructor = getattr(module, class_name)
-        return class_constructor(*([binding.variable.name, h_body] + binding.variable.determiner[1]))
-
-    elif is_plural(state, binding.variable.name):
-        # Plural determiner
-        return BetweenDeterminer(binding.variable.name, h_body, 1, float('inf'), False)
+        quantifier_function = getattr(module, function_name)
+        quantifier_args = binding.variable.quantifier[1]
+        quantifier_constraint = binding.variable.quantifier[2]
+        return [quantifier_constraint, quantifier_function, quantifier_args]
 
     else:
-        # Singular determiner
-        return BetweenDeterminer(binding.variable.name, h_body, 1, 1, False)
+        return None
 
 
 # Return an iterator that yields lists of solutions ("a solution list") without combinatorial variables.
@@ -204,67 +216,56 @@ def determiner_solution_groups_helper(execution_context, variable_name, solution
                 continue
 
 
-class BetweenDeterminer(object):
-    # Set max to float('inf') to mean "no maximum"
-    def __init__(self, variable_name, h_body, min_count, max_count, exactly=False):
-        self.variable_name = variable_name
-        self.h_body = h_body
-        self.min_count = min_count
-        self.max_count = max_count
-        self.exactly = exactly
+# Set max to float('inf') to mean "no maximum"
+def between_determiner(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, min_count, max_count, exactly):
+    def criteria(rstr_value_list):
+        cardinal_group_values_count = count_set(rstr_value_list)
+        error_location = ["AfterFullPhrase", variable_name]
 
-    # If combinatorial is False then this solution group *must* be true for all the
-    # solutions passed in in order to keep the solution group true for the previous
-    # quantifier
-    def solution_groups(self, execution_context, solutions, combinatorial=False):
-        def criteria(rstr_value_list):
-            cardinal_group_values_count = count_set(rstr_value_list)
-            error_location = ["AfterFullPhrase", self.variable_name]
+        # Even though this *looks* like exactly, it is picking out solutions where there just happen to be
+        # N files, so it isn't really
+        if cardinal_group_values_count > max_count:
+            execution_context.report_error_for_index(0, ["moreThan", error_location, max_count], force=True)
+            return False
 
-            # Even though this *looks* like exactly, it is picking out solutions where there just happen to be
-            # N files, so it isn't really
-            if cardinal_group_values_count > self.max_count:
-                execution_context.report_error_for_index(0, ["moreThan", error_location, self.max_count], force=True)
-                return False
+        elif cardinal_group_values_count < min_count:
+            execution_context.report_error_for_index(0, ["lessThan", error_location, min_count], force=True)
+            return False
 
-            elif cardinal_group_values_count < self.min_count:
-                execution_context.report_error_for_index(0, ["lessThan", error_location, self.min_count], force=True)
-                return False
+        else:
+            nonlocal group_rstr
+            group_rstr = rstr_value_list
+            return True
 
-            else:
-                nonlocal group_rstr
-                group_rstr = rstr_value_list
-                return True
+    if exactly:
+        error_location = ["AfterFullPhrase", variable_name]
 
-        if self.exactly:
-            error_location = ["AfterFullPhrase", self.variable_name]
+        # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups ("only 2 files are in the folder")
+        # it also limits *all* the solutions to that number. So we need to go to the bitter end before we know that that are "only 2"
+        # group_rstr is set in the criteria each time a rstr is checked
+        group_rstr = []
+        unique_rstrs = []
+        groups = []
+        for group in determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, max_count):
+            for item in group_rstr:
+                append_if_unique(unique_rstrs, item)
 
-            # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups ("only 2 files are in the folder")
-            # it also limits *all* the solutions to that number. So we need to go to the bitter end before we know that that are "only 2"
-            # group_rstr is set in the criteria each time a rstr is checked
-            group_rstr = []
-            unique_rstrs = []
-            groups = []
-            for group in determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.max_count):
-                for item in group_rstr:
-                    append_if_unique(unique_rstrs, item)
-
-                if len(unique_rstrs) > self.max_count:
-                    execution_context.report_error_for_index(0, ["moreThan", error_location, self.max_count], force=True)
-                    return
-
-                else:
-                    groups.append(group)
-
-            if len(unique_rstrs) < self.min_count:
-                execution_context.report_error_for_index(0, ["lessThan", error_location, self.min_count], force=True)
+            if len(unique_rstrs) > max_count:
+                execution_context.report_error_for_index(0, ["moreThan", error_location, max_count], force=True)
                 return
 
             else:
-                yield from groups
+                groups.append(group)
+
+        if len(unique_rstrs) < min_count:
+            execution_context.report_error_for_index(0, ["lessThan", error_location, min_count], force=True)
+            return
 
         else:
-            yield from determiner_solution_groups_helper(execution_context, self.variable_name, solutions, criteria, combinatorial, self.max_count)
+            yield from groups
+
+    else:
+        yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, max_count)
 
 
 determiner_logger = logging.getLogger('Determiners')

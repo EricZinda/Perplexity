@@ -1,7 +1,7 @@
 import enum
 import itertools
 
-from perplexity.execution import get_variable_metadata
+from perplexity.execution import get_variable_metadata, call, set_variable_execution_data
 from perplexity.set_utilities import count_set
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import PluralType
@@ -158,3 +158,19 @@ def combinatorial_style_predication(state, binding, all_individuals_generator, p
 
     if len(values) > 0:
         yield state.set_x(binding.variable.name, values, value_type)
+
+
+# Yield all undetermined, unquantified answers
+def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
+    variable_name = x_variable_binding.variable.name
+    rstr_values = []
+    for rstr_solution in call(state, h_rstr):
+        rstr_values.extend(rstr_solution.get_binding(variable_name).value)
+        for body_solution in call(rstr_solution, h_body):
+            yield body_solution
+
+    set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
+
+
+def pass_thru_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial):
+    yield solution_group
