@@ -171,6 +171,3 @@ def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
 
     set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
 
-
-def pass_thru_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial):
-    yield solution_group

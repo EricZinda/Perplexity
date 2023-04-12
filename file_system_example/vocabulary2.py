@@ -56,22 +56,15 @@ def the_q_group(execution_context, variable_name, predication, all_rstr, solutio
 @Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["number_constraint", "vocabulary2.a_q_group", [1, 1, False]])
+                                    quantifier=["number_constraint", "default", [1, 1, False]])
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
-
-
-def a_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial):
-    def criteria(rstr_value_list):
-        return count_set(rstr_value_list) == 1
-
-    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial)
 
 
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "pronoun_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["number_constraint", "perplexity.predications.pass_thru_group", [1, float('inf'), False]])
+                                    quantifier=["number_constraint", "default", [1, float('inf'), False]])
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
