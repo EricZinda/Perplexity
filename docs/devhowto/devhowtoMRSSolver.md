@@ -464,7 +464,8 @@ The determiners are literally only counting things so we should be able to do so
 
 Option 1: Do special purpose optimizations
 Walking back from the end: all constraint(1, inf, False) should be
-If the next determiner is > 1 with nothing after it, return the max group
+    If the last determiner is > 1 delete it
+The last determiner does not need to create groups outside of what it needs
 
 If we assume we are really just putting constraints on the number of rows then:
 

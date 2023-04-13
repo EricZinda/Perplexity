@@ -4,7 +4,7 @@ from importlib import import_module
 from math import inf
 
 from perplexity.determiners import determiner_from_binding, quantifier_from_binding, between_determiner
-from perplexity.tree import find_quantifier_from_variable
+from perplexity.tree import find_quantifier_from_variable, gather_quantifier_order
 
 
 # Filter the unquantified solutions by recursively filtering them by each quantified variable
@@ -25,18 +25,21 @@ def solution_groups(execution_context, solutions, all_solutions):
                 return
 
 
+# Return the infos in the order they will be executed in
 def declared_determiner_infos(execution_context, state):
     tree_info = state.get_binding("tree").value[0]
-    variables = tree_info["Variables"]
     tree = tree_info["Tree"]
 
-    for variable_name in variables.keys():
+    variables = gather_quantifier_order(tree_info)
+    for variable_name in variables:
         if variable_name[0] == "x":
             binding = state.get_binding(variable_name)
 
             # First get the determiner
-            determiner_constraint, determiner_type, determiner_constraint_args = determiner_from_binding(state, binding)
-            yield [determiner_constraint, determiner_type, determiner_constraint_args], variable_name, None, None
+            determiner_all = determiner_from_binding(state, binding)
+            if determiner_all is not None:
+                determiner_constraint, determiner_type, determiner_constraint_args = determiner_all
+                yield [determiner_constraint, determiner_type, determiner_constraint_args], variable_name, None, None
 
             # Then get the quantifier
             quantifier_constraint, quantifier_type, quantifier_constraint_args = quantifier_from_binding(state, binding)
@@ -46,18 +49,26 @@ def declared_determiner_infos(execution_context, state):
 
 
 def optimize_determiner_infos(determiner_info_list):
-    # new_info_list = []
-    # remove_determiners = True
-    # for determiner_info in reversed(determiner_info_list):
-    #     if remove_determiners and determiner_info[0][0] == "number_constraint" and determiner_info[0][1] == [1, float(inf), False]:
-    #         continue
-    #
-    #     else:
-    #         remove_determiners = False
-    #         new_info_list.append(determiner_info)
-    #
-    # return new_info_list
-    return determiner_info_list
+    new_info_list = []
+
+    # First optimization: Walking back from the end:
+    #     delete all last determiners in a row that are number_constraint(1, inf, False)
+    remove_determiners = True
+    for determiner_info in reversed(determiner_info_list):
+        constraint_info = determiner_info[0]
+        constraint_name = constraint_info[0]
+        constraint_type = constraint_info[1]
+        constraint_args = constraint_info[2]
+
+        if remove_determiners and constraint_name == "number_constraint" and constraint_type == "default" and constraint_args == [1, float(inf), False]:
+            continue
+
+        else:
+            remove_determiners = False
+            new_info_list.append(determiner_info)
+
+    return new_info_list
+    # return determiner_info_list
 
 
 # Converts from:
@@ -108,7 +119,7 @@ def filter_solutions_for_next_determiner(execution_context, determiner_info_list
         function = function_info[0]
         function_extra_args = function_info[1]
 
-        function_args = (execution_context, variable_name, predication, all_rstr_values, solutions, initial_determiner) + tuple(function_extra_args)
+        function_args = (execution_context, variable_name, predication, all_rstr_values, solutions, initial_determiner, len(determiner_info_list) == 1) + tuple(function_extra_args)
         for determined_solution_group in function(*function_args):
             groups_logger.debug(f"Success: Determiner: {function}")
             yield from filter_solutions_for_next_determiner(execution_context, determiner_info_list[1:], determined_solution_group)

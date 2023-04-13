@@ -35,7 +35,7 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 #       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
 # 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
 #       same approach
-def the_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial):
+def the_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, is_last_determiner):
     is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
 
     def criteria(rstr_value_list):
@@ -50,7 +50,7 @@ def the_q_group(execution_context, variable_name, predication, all_rstr, solutio
         else:
             return True
 
-    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial)
+    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, is_last_determiner)
 
 
 @Predication(vocabulary, names=["_a_q"])

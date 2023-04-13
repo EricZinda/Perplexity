@@ -37,19 +37,6 @@ def quantifier_from_binding(state, binding):
         quantifier_constraint_args = binding.variable.quantifier[2]
         return [quantifier_constraint, quantifier_type, quantifier_constraint_args]
 
-        # module_function_name = binding.variable.quantifier[0]
-        # module_path, function_name = module_function_name.rsplit('.', 1)
-        # if module_path != "quantifiers":
-        #     module = import_module(module_path)
-        #
-        # else:
-        #     module = sys.modules[__name__]
-        #
-        # quantifier_function = getattr(module, function_name)
-        # quantifier_args = binding.variable.quantifier[1]
-        # quantifier_constraint = binding.variable.quantifier[2]
-        # return [quantifier_constraint, quantifier_function, quantifier_args]
-
     else:
         return None
 
@@ -101,15 +88,15 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
         else:
             set_solution_list.append(solution)
 
-    # Flatten out the list of lists
+    # Flatten out the list of lists since they are all alternatives of the same variable
     if len(set_solution_alternatives_list) > 0:
         determiner_logger.debug(f"Found {len(set_solution_alternatives_list)} combinatoric answers")
-        set_solution_alternatives_list = itertools.chain.from_iterable(set_solution_alternatives_list)
+        temp = [item for item in itertools.chain.from_iterable(set_solution_alternatives_list)]
+        set_solution_alternatives_list = temp
 
     # Now the combination of set_solution_alternatives_list together with set_solution_list contain
     # all the alternative assignments of variable_name. Next, yield each combined alternative
     if solution_group_combinatorial:
-
         def combinatorial_solution_group_generator():
             for item in itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list]):
                 determiner_logger.debug(f"Combinatorial answer: {item}")
@@ -124,7 +111,7 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
         set_solution_alternatives_list = at_least_one_generator(set_solution_alternatives_list)
         alternative_yielded = False
         if set_solution_alternatives_list is not None:
-            for alternative_list in all_combinations_with_elements_from_all(set_solution_alternatives_list):
+            for alternative_list in all_nonempty_subsets_stream(set_solution_alternatives_list):
                 # First add all the solutions that are shared between the alternatives
                 # because they weren't combinatorial
                 # Then add this combinatorial alternative
@@ -138,6 +125,8 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
             yield solutions_orig
 
 
+# TODO: Bug in this code: it returns an answer before it is done iterating and
+#  thus doesn't know the full list of solutions that go with it
 # Convert each list of solutions into a list of (binding_value, [solutions]) pairs
 # where binding_value has one rstr value and [solutions] is a list of
 # all solutions that have that value.
@@ -165,7 +154,7 @@ def unique_rstr_solution_list_generator(variable_name, solutions_list):
 #   So, for "2 boys", it should be 2 since it must be no more than 2
 #   but for "boys" it has to be None since it could be a huge set of boys
 # combinatorial is True when any combination of the solutions can be used, otherwise, the exact set must be true
-def determiner_solution_groups_helper(execution_context, variable_name, solutions_orig, determiner_criteria, solution_group_combinatorial=False, max_answer_count=float('inf')):
+def determiner_solution_groups_helper(execution_context, variable_name, solutions_orig, determiner_criteria, solution_group_combinatorial=False, is_last_determiner=False, max_answer_count=float('inf')):
     # Loop through solution lists that don't contain combinatorial variables
     for solutions_list_generator in solution_list_alternatives_without_combinatorial_variables(execution_context, variable_name, max_answer_count, solutions_orig, determiner_criteria, solution_group_combinatorial):
         # Unfortunately, we need to materialize each solutions list to find all the duplicates
@@ -175,10 +164,13 @@ def determiner_solution_groups_helper(execution_context, variable_name, solution
         # Get all the unique values assigned to this variable, and collect the solutions that go with them
         unique_variable_assignments_generator = unique_rstr_solution_list_generator(variable_name, solutions_list)
 
+        # Workaround: generate the list since it isn't properly formed lazily. It returns an answer before it is done iterating and
+        # thus doesn't know the full list of solutions that go with it
+        workaround_temp = list(unique_variable_assignments_generator)
         if solution_group_combinatorial:
             # Get all the combinations of the variable assignments that meet the criteria
             # largest set of lists that can add up to self.count is where every list is 1 item long
-            for combination in all_nonempty_subsets_stream(unique_variable_assignments_generator, min_size=1, max_size=max_answer_count):
+            for combination in all_nonempty_subsets_stream(workaround_temp, min_size=1, max_size=max_answer_count):
                 # The variable assignments in a combination could have duplicates
                 # Need to deduplicate them
                 # combination is a list of 2 element lists
@@ -192,25 +184,32 @@ def determiner_solution_groups_helper(execution_context, variable_name, solution
                 # But each set of values might have multiple solutions that go with it, so this means
                 # Any combination of them will also work
                 if determiner_criteria(unique_values):
-                    # Now we need to return all possible combinations of solutions that contained the assignments
-                    # which means returning all combinations of the list of solutions that go with each rstr answer
-                    # as long as there is at least one element from each
-                    #
-                    # 'combination' is a list of 2 element lists:
-                    #   0 is a list of variable assignments
-                    #   1 is a list of solutions that had that assignment
-                    for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
-                        combination_solutions = []
-                        for index in possible_solution:
-                            combination_solutions.append(solutions_list[index])
+                    # If we are not the last determiner, we need to return all possible combinations of solutions that contained the assignments
+                    # in case later determiners need them
+                    if not is_last_determiner:
+                        # ... which means returning all combinations of the list of solutions that go with each rstr answer
+                        # as long as there is at least one element from each
+                        #
+                        # 'combination' is a list of 2 element lists:
+                        #   0 is a list of variable assignments
+                        #   1 is a list of solutions that had that assignment
+                        for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
+                            combination_solutions = []
+                            for index in possible_solution:
+                                combination_solutions.append(solutions_list[index])
 
-                        yield combination_solutions
+                            yield combination_solutions
+
+                    else:
+                        # The last determiner does not need to create groups outside of what it needs
+                        # to do its job. Just return all the solutions combined together
+                        yield itertools.chain([solutions_list[solution_index] for combination_item in combination for solution_index in combination_item[1]])
 
         else:
             # The variable assignments in a combination could have duplicates
             # Need to deduplicate them
             unique_values = []
-            for lst in [item[0] for item in unique_variable_assignments_generator]:
+            for lst in [item[0] for item in workaround_temp]:
                 for item in lst:
                     if item not in unique_values:
                         unique_values.append(item)
@@ -223,7 +222,7 @@ def determiner_solution_groups_helper(execution_context, variable_name, solution
 
 
 # Set max to float('inf') to mean "no maximum"
-def between_determiner(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, min_count, max_count, exactly):
+def between_determiner(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, is_last_determiner, min_count, max_count, exactly):
     def criteria(rstr_value_list):
         cardinal_group_values_count = count_set(rstr_value_list)
         error_location = ["AfterFullPhrase", variable_name]
@@ -252,7 +251,7 @@ def between_determiner(execution_context, variable_name, predication, all_rstr, 
         group_rstr = []
         unique_rstrs = []
         groups = []
-        for group in determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, max_count):
+        for group in determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, is_last_determiner, max_count):
             for item in group_rstr:
                 append_if_unique(unique_rstrs, item)
 
@@ -271,7 +270,7 @@ def between_determiner(execution_context, variable_name, predication, all_rstr, 
             yield from groups
 
     else:
-        yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, max_count)
+        yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, is_last_determiner, max_count)
 
 
 determiner_logger = logging.getLogger('Determiners')

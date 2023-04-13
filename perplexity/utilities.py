@@ -118,6 +118,7 @@ def import_function_from_names(module_name, function_name):
     function = getattr(module, function_name)
     return function
 
+
 # This takes a generator and, if the generator returns at least
 # one item, returns a generator that will return that item and any others
 # If the passed generator does not return any items, it returns None

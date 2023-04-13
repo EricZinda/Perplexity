@@ -1,10 +1,16 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+    - which files are in a folder(): really does need to exhaust all the options
+        files are in a folder(): does not
+        So, we want to keep the ability to quickly check but also get the right answer when it is exhaustive
     - implement hashing so that sets work and use sets for duplicates
     - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
     - "which files are in folders" -> The problem is that it generates all combinations of 13 files and finds a ton of duplicate answers
-        
+        First attempt: just generate them all
+        Later: optimize
+        - Don't add a determiner for the singular quantifier it breaks optimization and ?? isn't necessary ??
+
     - Figure out a way to make "in" be efficient for "which files are in folders"?
         - Gets initial answers quickly but lags at end
             For phase 2 we generate all combinations of potential answers for the plural determiners

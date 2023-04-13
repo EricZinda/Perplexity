@@ -358,6 +358,18 @@ def find_quantifier_from_variable(term, variable_name):
     return walk_tree_predications_until(term, match_variable)
 
 
+def gather_quantifier_order(tree_info):
+    def gather_metadata(predication):
+        if predication.arg_types[0] == "x":
+            predication_info = parse_predication_name(predication.name)
+            if predication_info["Pos"] == "q":
+                quantifier_order.append(predication.args[0])
+
+    quantifier_order = []
+    walk_tree_predications_until(tree_info["Tree"], gather_metadata)
+    return quantifier_order
+
+
 # Walk the tree represented by "term" and
 # return the predication that matches
 # "predicate_name" or "None" if none is found
