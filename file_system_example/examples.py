@@ -649,25 +649,30 @@ def Example32():
 
 
 def Example33_reset():
-    return FileSystemState(FileSystemMock([(True, "/documents/file2.txt", {"size": 10000000}),
-                                           (True, "/documents/file5.txt", {"size": 10000000}),
-                                           (True, "/documents/file6.txt", {"size": 10000000}),
-                                           (True, "/documents/file7.txt", {"size": 10000000}),
-                                           (True, "/documents/file8.txt", {"size": 10000000}),
-                                           (True, "/documents/file9.txt", {"size": 10000000}),
-                                           (True, "/documents/file10.txt", {"size": 10000000}),
-                                           (True, "/documents/file11.txt", {"size": 10000000}),
-                                           (True, "/documents/file12.txt", {"size": 10000000}),
-                                           (True, "/documents/file13.txt", {"size": 10000000}),
-                                           (True, "/documents/file14.txt", {"size": 10000000}),
-                                           (True, "/documents/file15.txt", {"size": 10000000}),
-                                           (True, "/documents/file16.txt", {"size": 10000000})
-                                           ],
+    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(200)]
+    return FileSystemState(FileSystemMock(file_list,
                                            "/Desktop"))
 
 
 def Example33():
     user_interface = UserInterface(Example33_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
+def Example34_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/file1.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/documents/file3.txt", {"size": 10000000}),
+                                           (True, "/documents/file4.txt", {"size": 10000000})
+                                           ],
+                                           "/Desktop"))
+
+
+def Example34():
+    user_interface = UserInterface(Example34_reset, vocabulary, respond_to_mrs_tree, error_priority)
 
     while True:
         user_interface.interact_once()
@@ -722,4 +727,5 @@ if __name__ == '__main__':
     # Example30()
     # Example31()
     # Example32()
-    Example33()
+    # Example33()
+    Example34()

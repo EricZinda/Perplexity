@@ -1,17 +1,18 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
-    - which files are in a folder(): really does need to exhaust all the options
-        files are in a folder(): does not
-        So, we want to keep the ability to quickly check but also get the right answer when it is exhaustive
     - implement hashing so that sets work and use sets for duplicates
     - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
     - "which files are in folders" -> The problem is that it generates all combinations of 13 files and finds a ton of duplicate answers
         First attempt: just generate them all
         Later: optimize
-        - Don't add a determiner for the singular quantifier it breaks optimization and ?? isn't necessary ??
+        - which files are in a folder(): really does need to exhaust all the options
+            files are in a folder(): does not
+            So, we want to keep the ability to quickly check but also get the right answer when it is exhaustive
 
     - Figure out a way to make "in" be efficient for "which files are in folders"?
+        - still slow for 1000 files, but now it appears to be all in phase 1 for that phrase
+            - which 2 files are in a folder is that *plus* phase 2
         - Gets initial answers quickly but lags at end
             For phase 2 we generate all combinations of potential answers for the plural determiners
                 Even when we stick to combinations of just distributive we have 2^n combinations
@@ -30,7 +31,7 @@ Plurals work
                         This approach can stream
                 (good one?) Optimization 4: Really we should allow it to stay combinatorial for the next determiner
                 Use solvers to generate answers to knapsack problem
-                Optimization 1: If there are no more determiners, no need to do combinations, just return the smallest set of groups that meet the criteria
+                (done) Optimization 1: If there are no more determiners, no need to do combinations, just return the smallest set of groups that meet the criteria
                 Optimization 3: determiner_solution_groups_helper() is called by the determiner. It should be told the criteria so it only generates groups that match it?
                 What is the goal? The goal is to return all groups of solutions that meet the criteria
                 Scenario 1: files are in folders: files > 1, folders > 1

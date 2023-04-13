@@ -35,7 +35,7 @@ a large file
 
 To make the simple algorithm work we need to introduce a notion of "variable scope" to the formula. Variable scope shows where a variable is introduced and which predications can use it. 
 
-Scope is represented by a function: `scope(variable, predication_list)`. The function states that `variable` can be used by all the predications in `predication_list`. And, since `scope()` itself is a predication, more variables can be defined in `predication_list`. This allows us to represent our formula using scoping, like this:
+We'll represent scope by a function for now: `scope(variable, predication_list)`. The function states that `variable` can be used by all the predications in `predication_list`. And, since `scope()` itself is a predication, more variables can be defined in `predication_list` using another `scope()`. This allows us to represent our formula using scoping, like this:
 
 ~~~
 formula: scope(x, [large(x), file(x), 
@@ -44,13 +44,13 @@ formula: scope(x, [large(x), file(x),
 ~~~
 The formula is formatted to make it easier to see the nesting.
 
-The basic algorithm is to recursively evaluate the `scope()` predications:
+The solver algorithm we'll explore here recursively evaluates the `scope()` predications:
 
 > Evaluating a `scope()` means:
 > - Assign a world value to the scope's variable
 > - Evaluate its `predication_list` using that value (see below for how)
-> - If the list is `false`, try the next world value
-> - If `true`, the `scope()` predication is `true`
+> - If the list is `false`, restart the list using the next world value
+> - If the list is `true`, the `scope()` predication is `true`
 > 
 > Evaluating a `predication_list` means:
 > - Evaluate the first predication in the list using the current values of all variables in scope
@@ -76,14 +76,34 @@ So, working through the example:
 |thus: `scope(y, ...)` is `true` for y='a folder'|    ...  scope('a folder', [folder('a folder'), in('a large file', 'a folder')])|
 |thus: `scope(x, ...)` is `true` for x='a large file' and y='a folder'|scope('a large file', [large('a large file'), file('a large file'), scope('a folder', [folder('a folder'), in('a large file', 'a folder')])])|
 
-This example shows how iteratively assigning values to each variable in a scope,  recursively evaluating the predication lists within a scope, backtracking when there is a failure, will eventually find all the solutions to the formula (or prove that there are none). 
+This example shows how:
 
-It works because we are effectively trying all values in all variables. It is better than literally just assigning all values to all variables, one by one, until we find the answer because backtracking eliminates whole branches in the search space. There are other optimizations that can be done, and we will do more as we go.
+- Iteratively assigning values to each variable in a scope
+- Evaluating the predication list within a scope
+- Backtracking when there is a failure
+
+... will eventually find all the solutions to the formula (or prove that there are none). 
+
+It works because we are effectively trying all values in all variables. But, it is better than literally just assigning all values to all variables, one by one, until we find the answer because backtracking eliminates whole branches in the search space. There are other optimizations that can be done, and we will do more as we go, but the basic approach is straightforward.
 
 Before we can solve a real well-formed MRS tree, we need to account for more of the features that it has.
 
 ## Add Plurals To the Solver
-If there were multiple large files in folders in the above example, the current approach would find them all as different solutions. So, using that approach, we could look at the formula as representing "large files in folders" since it will find multiple if they exist. But this only works because of how "in" behaves. If `a` and `b` are "in" a folder, `a` is in the folder and `b` is in the folder. There is no sense of them being in the folder "together" that needs to be represented.
+If there were multiple large files in folders, the above formula:
+
+~~~
+formula: large(x), file(x), folder(y), in(x, y)
+~~~
+
+... would find them all as different "solutions". A "solution" is an assignment of a single value to all variables, such as:
+
+~~~
+solution 1: x=file1, y=folder1
+solution 2: x=file2, y=folder2
+...
+~~~
+
+So, using that approach, we could look at the formula as representing "large files in folders" since it will find multiple if they exist. But this only works because of how "in" behaves. If `a` and `b` are "in" a folder, `a` is in the folder and `b` is in the folder. There is no sense of them being in the folder "together" that needs to be represented.
 
 This isn't true of all verbs, however. The verb "to lift" can distinguish the cases and mean very different things.  For example:
 
@@ -91,17 +111,20 @@ This isn't true of all verbs, however. The verb "to lift" can distinguish the ca
 students lifted tables
 ~~~
 ...could mean: 
-- Each student lifted a different table
-- Two students lifted the same table
-- Some combinations of students lifted some combinations of tables
+1. Two students lifted the same table
+2. Each student lifted a different table
+3. 2 students (together) lifted 2 tables (together) and 1 student lifted a different table.
 
-To truly represent the semantics of the world properly, the algorithm needs to model when things are happening *together* or *separately*.
+To truly represent the semantics of the world properly, the algorithm needs to model when things are happening *together* or *separately*. In linguistics:
+- Items purely operating together are called *collective*: #1 has collective students.
+- Items purely operating "separately" are called *distributive*: #2 has distributive students and tables. 
+- Items doing a combination of both are called *cumulative*: #3 has cumulative students and tables.
 
-We can make a simple extension to the algorithm by assuming variables always contain a *set* of values, which are one or more things from the world. Predications must interpret a set that is > 1 as meaning "together".  A set of 1 item means "separately" or "alone".
+To handle these cases, we can make a simple extension to the algorithm: require that variables always contain a *set* of one or more things from the world. Predications must interpret a set of greater than one element as meaning "together" (*collective*).  A set of one item means "separately" or "alone" (*distributive*). We'll get to cumulative in the next section.
 
-Furthermore, the `scope()` predication now needs to assign *all possible sets of values* to its variable in order to explore the solution tree and find all the solutions. This can quickly become quite expensive, but there are optimizations we will explore. For now, we'll use the direct approach to understand the algorithm.
+With this change, a `scope()` predication now needs to assign *all possible sets of values* to its variable in order to explore the solution tree and find all the solutions. This can quickly become quite expensive, but there are optimizations we will explore. For now, we'll use the direct approach to understand the algorithm.
 
-Let's work through the example, with a world where two students are lifting a table *together*:
+Let's work through an example of a world where two students are lifting a table *together* (collective):
 
 ~~~
 formula: student(x), table(y), lift(x, y)
@@ -142,20 +165,21 @@ In the new form, the solutions we get back are shown below, along with their mea
 |x=[bob], y=[table1]| Bob lifted a table|
 |x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
 
-Thus, the algorithm gives us all the assignments of variables that make the formula true in the world. Note that it will successfully find all the interesting combinations in more complex scenarios, such as:
-1. 5 students are all lifting the same tables
-2. 5 students are all lifting different tables
-3. 2 students are lifting one table and 2 are lifting another
-4. 1 student is lifting one table and 1 is lifting another
+Thus, the algorithm gives us all the assignments of variables that make the formula true in the world. Note that it will successfully find all the interesting combinations (collective, distributive, or cumulative) in more complex scenarios, such as:
+1. 5 students are all lifting the same tables (collective students, collective tables)
+2. 5 students are all lifting different tables (distributive students, distributive tables)
+3. 2 students are lifting one table and 2 are lifting another (cumulative students, distributive tables)
 
 etc.
 
-But: Note that, except for situation #1 above, situations #2 through #4 are only properly represented by a *group* of solutions. There isn't a way to represent them as a single solution (i.e. a single row in the above table) in this model. In addition, while each solution (i.e. row) *does* represent a set of variable assignments that make the formula true, this is only because we aren't encoding any plurality of the nouns from the original phrase.  Currently, we are allowing both plural and singular in the formula. 
+Note that, situations #2 and #3 are only properly represented by a *group* of solutions. There isn't a way to represent them as a single solution (i.e. a single set of variable assignments) in this model. To see why, look at #2. Since each student is lifting a different table, both `x` and `y` must be assigned a set of a single student and table (respectively). But we need to represent 5 students and 5 tables. We can't use a set to do this: a set represents objects doing something *together* which isn't right for this scenario. Thus, distributive or cumulative scenarios will require a group of solutions to represent the answer.
 
-We'll address these issues next.
+In addition, while each solution *does* represent a set of variable assignments that make the formula true, this is only because of *the way we've defined truth so far*. The current model for formula truth doesn't put any constraints on plurality. So far, a single formula can represent both "alice lifted a table" and "Alice and Bob lifted a table together". This isn't good enough since we need to capture natural language with these formulas and natural language *does* encode constraints on plurality.
+
+We'll address both of these issues next.
 
 ## Solution Groups
-The above example glossed over an important point in the formula used. Plurality wasn't encoded in the formula:
+The above example didn't encode any constraints about plurality in the formula:
 
 ~~~
 student(x), table(y), lift(x, y)
@@ -169,9 +193,15 @@ student(x), table(y), lift(x, y)
 |x=[bob], y=[table1]| Bob lifted a table|
 |x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
 
-If the original phrase really was: "a student lifted a table", then the last solution where Bob and Alice (together) lifted a table shouldn't be there.  On the other hand, if it was "students lifted a table", the first a second answers can't stand alone because they each only represent one student, not "students". Furthermore, if it was "students lifted tables", none of the answers should be there since there is only one table. Encoding the plurality in the formula and representing it properly in the answers is essential for properly capturing meaning.
+If the original phrase really was: "a student lifted a table", then the last solution where Bob and Alice (together) lifted a table shouldn't be there since "Bob and Alice" are not "a student".  
 
-In MRS, plurality is encoded as a property of the variable, as described in the [MRS topic](devhowtoMRS#variable-properties). So, to encode plural students, a `[ x NUM: pl]` fragment would be in the MRS. We'll just put that at the top of our pseudo MRS in these simple examples to capture it from here on out:
+On the other hand, if it was "students lifted a table", the first and second answers can't stand alone because they each only represent one student, not "students". 
+
+Finally, if it was "students lifted tables", none of the answers should be there since there is only one table. 
+
+So, we really didn't have a "formula language" that could capture the sematics of the phrase enough to distinguish these cases. Encoding the plurality in the formula and representing it properly in the answers is essential for properly capturing meaning.
+
+In the MRS "formula language", plurality *is* encoded using a property of the variable, as described in the [MRS topic](devhowtoMRS#variable-properties). So, to encode plural students, a `[ x NUM: pl]` fragment would be in the MRS. We'll just put that at the top of our pseudo MRS in these simple examples to capture it for now:
 
 ~~~
 [ x NUM: pl]
@@ -186,32 +216,39 @@ Now we need to deal with the fact that our list of solutions don't always stand 
 |x=[bob], y=[table1]| Bob lifted a table|
 |x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
 
-However, if we change our solver algorithm to allow *grouping*, and interpret a *group* of variable assignments as a solution (called a "solution group"), it does work:
+However, if we change our solver algorithm to allow *grouping*, and interpret a *group* of solutions as a complete answer (called a "solution group"), it does work:
 
-solution group 1:
+Solution group 1:
 
 |assignment|formula result|
 |---|---|
 |x=[alice], y=[table1]| Alice lifted a table|
 |x=[bob], y=[table1]| Bob lifted a table|
 
-solution group 2:
+Solution group 2:
 
 |assignment|formula result|
 |---|---|
 |x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
 
-Now each *solution group* properly represents the fact that "students" is *plural* by having more than one student in the solution. Thus, solution groups are needed to properly represent plural semantics in this solver.  This is how *distributive* ad *cumulative* readings are represented.
+Now each *solution group* properly represents the fact that "students" is *plural* by having more than one student in the solution. Collective answers can be represented by a single solution, but distributive and cumulative answers need solution *groups* to properly represent them in this solver.  
 
-One way for our solver to group solutions is by performing a second pass over the individual solutions and grouping them, just like we just did. The algorithm is:
+### Solution Group Algorithm
+The solver can group solutions by performing a second "grouping" pass over the initial set of individual solutions, like we just did above. 
 
-> Start with the flat list of solutions generated by the formula and a list of only the plural variables:
-> - Pick the first plural variable
-> - For each combination of the solutions where the list of items in the variable add up to more than 1, do the following:
->   - Recursively do the algorithm again with the next variable using the selected smaller set of solutions
-> - After all variables have been tested, the group of solutions remaining is one solution group
+The algorithm is:
 
-Note that this does mean the list of solution groups can get quite large. If there were 3 students lifting a table, the solution groups would be:
+> Evaluate the formula to get all individual solutions regardless of whether they are singular or plural. This will generate some (i.e. collective), but not all, plural answers due to the fact that variables can contain sets > 1. Using that flat list of solutions:
+> - Pick a plural variable:
+>   - For every combination of the solutions where the set of items assigned to that variable in the combination add up to more than 1, do the following:
+>     - Recursively do the algorithm again with the next plural variable, using only the just selected set of solutions
+> - After all plural variables have been tested, if they all succeeded, the group of solutions remaining is one solution group that represents a correct plural answer to the formula.
+> 
+> After all possible combinations of solutions have been tested, all plural answers to the formula have been found.
+
+Note that this does mean the list of solution groups can be quite large but that is only because there can be many true solutions to a formula. 
+
+For example, if there were 3 students (Alice, Bob, Sasha) lifting a table, the solution groups would be:
 
 |assignment|formula result|
 |---|---|
@@ -250,40 +287,45 @@ Note that this does mean the list of solution groups can get quite large. If the
 |---|---|
 |x=[alice, bob, sasha], y=[table1]| Alice, Bob and Sasha lifted a table together|
 
-This represents all the different variable assignments that would make the formula true. Again, there are ways we can help to control the combinatorics, but keeping it simple helps in understanding the algorithm.
+This represents all the different variable assignments that would make the formula true. Any of them *could be* what a speaker meant by "Students lifted a table" in that world. Again, there are ways we can help to control the combinatorics, but keeping it unoptimized makes the algorithm simpler to understand.
 
 We're not done yet, however. Raw plurals like "students" are just one way plurals are encoded in language. There's a whole class of words that add nuance to the plurals that we need to handle next.
 
-## Determiners (many, few, no, 2 or more, ...)
-"Determiners" in linguistics classify number or quantity of a noun ("2 students", "a few students"), specificity of a noun ("the student", "a student", "this student"), along with other characteristics like possessiveness ("my student"), "interrogativeness" ("which student"), and forced "distributiveness" ("each student").  All determiners (except the possessive) are true or false based on the count of a particular noun. Because solutions come in a group in the solver, the determiners need to run in the second phase where they have access to a whole group. [todo: Need to describe better why possessives aren't a problem]
+## Determiners (many, few, no, 2 or more, etc.)
+"Determiners" in linguistics classify number or quantity of a noun ("2 students", "a few students"), specificity of a noun ("the student", "a student", "this student"), along with other characteristics like possessiveness ("my student?"), "interrogativeness" ("which student"), and forced "distributiveness" ("each student").  
 
-In the ERG, these predications come in two shapes:
-- Quantifiers: always have the shape: `quantifier(variable, RSTR, SCOPE)`
-- Adjectives: always have at least one `x` argument that will also be the `x` argument of a noun of some kind: `predicate(x)` 
-[todo: is there a linguistic term for these non-quantifier determiners that I should be using?]
+All determiners (except the possessive) are `true` or `false` based on the *count* of a particular noun (and potentially other criteria). So, to properly group solutions, the determiners need to run in the second phase where they have access to all solutions. 
 
-While they both operate at the solution group level and manipulate counts of nouns, they have different arguments because their semantics require them, as we'll see as we walk through each group.
+In the ERG, determiner predications come in two shapes:
+- *Quantifiers* always have the shape: `quantifier(variable, RSTR, SCOPE)`. They perform the `scope()` function we've been doing explicitly so far, in addition to counting.
+- *Adjectives* always have at least one `x` argument: `predicate(x)`. `x` will also be the `x` argument of a noun of some kind.
+
+While they have different arguments, they both operate at the solution group level and manipulate counts of nouns. From the counting perspective they can be treated the same.
 
 ### Adjective Determiners
-Adjective determiners like "a few": `_a+few_a_1(e8,x3)`, "many": `much-many_a(e8,x3)`, "2, 3, ...": `card(2,e9,x3)`, all take a single `x` argument and are true based on some quantity-based criteria.  To see if they are true or not, they need to see "how many" of the variable there are, so they need access to a whole solution group.
+Adjective determiners like "a few": `_a+few_a_1(e8,x3)`, "many": `much-many_a(e8,x3)`, "2, 3, ...": `card(2,e9,x3)`, all take a single `x` argument and are `true` based on some quantity-based criteria.  To see if they are `true` or not, they need to see "how many" of their variable exist. Thus, they need access to a group of solutions.
 
-To do this, they, along with predications that modify their behavior like "very" in "very few": `_very_x_deg(e8,e9), little-few_a(e9,x3)`, are pulled from the formula and evaluated on the second pass. We can do this by a simple adjustment to our second pass algorithm. Here it is, along with the modified part ~~struck through~~, and the replacement ***in bold italic***
+To do this, they are pulled from the formula and only evaluated on the second pass. We can do this by a simple adjustment to our second pass algorithm. Here it is, along with the modified part ~~struck through~~, and the replacement ***in bold italic***
 
-> Start with the flat list of solutions generated by the formula and a list of only the plural variables:
-> - Pick the first plural variable
-> - For each combination of the solutions where the list of items in the variable ~~add up to more than 1~~***meet the criteria of the determiner***, do the following:
->   - Recursively do the algorithm again with the next variable using the selected smaller set of solutions
-> - After all variables have been tested, the group of solutions remaining is one solution group
+> Evaluate the formula to get all individual solutions regardless of whether they are singular or plural. This will generate some, but not all, plural answers due to the fact that variables can contain sets > 1. Using that flat list of solutions:
+> - Pick a plural variable:
+>   - For every combination of the solutions where the set of items assigned in the combination ~~add up to more than 1~~***meet the criteria of the determiner***, do the following:
+>     - Recursively do the algorithm again, with the next plural variable, using only the just selected set of solutions
+> - After all plural variables have been tested, if they all succeeded, the group of solutions remaining is one solution group that represents a correct plural answer to the formula.
+> 
+> After all possible combinations of solutions have been tested, all plural answers to the formula have been found.
 
-So, in effect, a bare plural like plain old "students" is really just an implicit `plural` determiner that has the criteria `> 1`.
+So, in effect, a bare plural like plain old "students" is really just an implicit `plural(x)` determiner that means `> 1`. That is, in fact, how the solver will implement it.
 
-Even though they are represented as having a regular `x` variable in the MRS, the solver needs to handle it specially by:
-- Setting its variable to the union of its values across each solution group
-- Calling it in phase 2 when it actually has a group.
+Even though they are represented as having a regular `x` variable in the MRS, the solver actually handles them differently than other predications, by:
+- Calling them in phase 2 when groups of solutions are available.
+- Setting their `x` variable to the union of its values across each solution group being tested
 
-That way, the adjective determiner can decide if the solution group meets its criteria or not. If it is false, the solution group is removed from the final list of solution groups.
+That way, the adjective determiner can decide if a group of solutions meets its criteria or not. If so, the solution group is added to the final list of solution groups by the pass 2 code.
 
-Let's work this through with an example: "2 students ate 2 pizzas":
+So, determiners get run in pass 2 and have slightly different arguments than are represented in the MRS.
+
+Let's work through an example: "2 students ate 2 pizzas":
 
 ~~~
 [ x NUM: pl]
@@ -291,8 +333,8 @@ Let's work this through with an example: "2 students ate 2 pizzas":
 formula: card(2,x), pizza(x), card(2,y), student(y), eat(x,y)
 ~~~
 
-#### Collective/Collective example:
-Given this world of pizzas and students:
+#### Collective/Collective example
+Given the following world of pizzas and students:
 
 ~~~
 s1
@@ -301,21 +343,74 @@ p1
 p2
 [s1, s2] eat [p1, p2]
 ~~~
-For phase 1: The solver will first remove the adjective determiners and actually run the following formula which will return "student(s) that ate pizza(s)" in all combinations that are true in the world:
+
+##### Phase 1:
+The solver will first remove the adjective determiners representing "2" and run the following modified formula:
+
 ~~~
 formula: pizza(x), student(y), eat(x,y)
 ~~~
-Which results in 1 solution group:
-- x=[s1, s2], y=[p1, p2]
 
-For phase 2: the solver will run the phase 1 algorithm using the appropriate adjective determiner with each variable, like this:
+... which will return all combinations of "student(s) that ate pizza(s)" in this world. In this world,  `eat()` was only `true` for `s1` and `s2` *together* eating `p1` and `p2` *together* (presumably this means as a pizza sandwich?), so only results in one solution:
+~~~
+Solution 1: x=[s1, s2], y=[p1, p2]
+~~~
 
-- call `card(2, [s1, s2])` -> `true` since there are two students
-- call `card(2, [p1, p2])` -> `true` since there are two pizzas
+##### Phase 2:
+The solver will run the phase 2 algorithm using the appropriate adjective determiner with each variable:
 
-Thus, the 1 solution group is returned as a solution.
+First, find all groups where `card(2, x)` is `true`:
+~~~
+Group 1:
+Solution 9: x=[s1, s2], y=[p1, p2]
+~~~
+
+Take each of those groups and see if `card(2, y)` is also `true`:
+
+~~~
+Group 1:
+Solution 9: x=[s1, s2], y=[p1, p2]
+~~~
+
+Thus, Group 1 is returned as the only solution group.
 
 #### Distributive/Distributive example:
+Given this world of pizzas and students:
+
+~~~
+s1
+s2
+p1
+p2
+p3
+p4
+[s1] eat [p1]
+[s1] eat [p2]
+[s2] eat [p3]
+[s2] eat [p4]
+~~~
+This is a distributive example since each of 2 students separately is eating each of 2 pizzas separately.
+
+Phase 1 solutions:
+
+~~~
+Solution 1: x=[s1], y[p1]
+Solution 2: x=[s1], y[p2]
+Solution 3: x=[s2], y[p3]
+Solution 4: x=[s2], y[p4]
+~~~
+
+Phase 2 solution groups:
+
+~~~
+Group 1:
+Solution 1: x=[s1], y[p1]
+Solution 2: x=[s1], y[p2]
+Solution 3: x=[s2], y[p3]
+Solution 4: x=[s2], y[p4]
+~~~
+
+#### Distributive/Cumulative example:
 Given this world of pizzas and students:
 
 ~~~
@@ -326,15 +421,26 @@ p2
 [s1] eat [p1]
 [s2] eat [p2]
 ~~~
-Phase 1 Solution Groups:
-- x=[s1], y=[p1]
-- x=[s2], y=[p2]
+This is a cumulative example since "students" adds up to 2, and "pizzas" add up to 2, but there isn't 2 of everything.
 
-Phase 2 Solution Groups:
-- call `card(2, [s1, s2]])` -> `true` since there are two students
-- call `card(2, [p1, p2])` -> `true` since there are two pizzas
+Phase 1 solutions:
 
-You can see how any combination of pizzas and students in groups or not will be solutions, as long as they add up to 2 for each.
+~~~
+Solution 1: x=[s1], y[p1]
+Solution 2: x=[s2], y[p2]
+~~~
+
+Phase 2 solution groups:
+
+~~~
+Group 1:
+Solution 1: x=[s1], y[p1]
+Solution 2: x=[s2], y[p2]
+~~~
+
+One group is returned as the answer since it is the only set of answers where  there are 2 `x` values and 2 `y` values.
+
+You can see how any combination of pizzas and students in sets of 1 or 2 will form a solution group, as long as they add up to 2 for each.
 
 ### Quantifier Determiners
 Just like adjective determiners, the solver runs quantifier determiners in phase 2, for exactly the same reason: they operate across the whole solution group. So, like adjective determiner example, even though they are represented as having a regular `x` variable in the MRS, the solver needs to handle it specially by:

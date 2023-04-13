@@ -170,6 +170,7 @@ def determiner_solution_groups_helper(execution_context, variable_name, solution
         # Workaround: generate the list since it isn't properly formed lazily. It returns an answer before it is done iterating and
         # thus doesn't know the full list of solutions that go with it
         workaround_temp = list(unique_variable_assignments_generator)
+        # workaround_temp = unique_variable_assignments_generator
         if solution_group_combinatorial:
             # Get all the combinations of the variable assignments that meet the criteria
             # largest set of lists that can add up to self.count is where every list is 1 item long
