@@ -26,8 +26,11 @@ def determiner_from_binding(state, binding):
         return ["number_constraint", "default", [1, float('inf'), False]]
 
     else:
-        # Singular determiner
-        return ["number_constraint", "default", [1, 1, False]]
+        # A default singular determiner is not necessary because the quantifiers that
+        # distinguish singular (like "the" and "only 1") already check for it.
+        # Furthermore, adding it as ["number_constraint", "default", [1, 1, False]]
+        # unnecessarily breaks optimizations that are possible in optimize_determiner_infos
+        return
 
 
 def quantifier_from_binding(state, binding):
