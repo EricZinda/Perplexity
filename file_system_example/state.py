@@ -66,6 +66,8 @@ class State(object):
 
         # Find a common mistakes early
         assert not isinstance(item, VariableBinding)
+        if not (item is None or isinstance(item, tuple)):
+            assert item is None or isinstance(item, tuple)
         if variable_name in new_state.variables:
             initial_variable_data = new_state.variables[variable_name].variable
         else:

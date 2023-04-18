@@ -104,7 +104,6 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
             for item in itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list]):
                 determiner_logger.debug(f"Combinatorial answer: {item}")
                 yield item
-            # yield from itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list])
 
         yield combinatorial_solution_group_generator()
 
@@ -134,51 +133,34 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
 # where binding_value has one rstr value and [solutions] is a list of
 # all solutions that have that value.
 def unique_rstr_solution_list_generator(variable_name, solutions_list):
-    variable_assignments = []
+    variable_assignments = set()
     for solution_index in range(len(solutions_list)):
         binding_value = solutions_list[solution_index].get_binding(variable_name).value
-        # TODO: find a better way to remove duplicates, support hashing objects and use set?
-        unique = True
-        for variable_assignment in variable_assignments:
-            if binding_value == variable_assignment[0]:
-                variable_assignment[1].append(solution_index)
-                unique = False
-                break
-
-        if unique:
+        if binding_value in variable_assignments:
+            variable_assignments[binding_value][1].append(solution_index)
+        else:
             unique_solution = (binding_value, [solution_index])
-            variable_assignments.append(unique_solution)
+            variable_assignments.add(unique_solution)
             yield unique_solution
 
 
 def unique_rstr_solution_list_generator2(previous_variable_name, variable_name, solutions_list):
-    variable_assignments_by_previous = []
+    variable_assignments_by_previous = {}
     for solution_index in range(len(solutions_list)):
         previous_binding_value = solutions_list[solution_index].get_binding(previous_variable_name).value
         binding_value = solutions_list[solution_index].get_binding(variable_name).value
-        found_item = None
-        for item in variable_assignments_by_previous:
-            if item[0] == previous_binding_value:
-                found_item = item
-                break
+        if previous_binding_value in variable_assignments_by_previous:
+            variable_assignments = variable_assignments_by_previous[previous_binding_value]
+        else:
+            variable_assignments = {}
+            variable_assignments_by_previous[previous_binding_value] = variable_assignments
 
-        if found_item is None:
-            found_item = [previous_binding_value, []]
-            variable_assignments_by_previous.append(found_item)
+        if binding_value not in variable_assignments:
+            variable_assignments[binding_value] = []
 
-        variable_assignments = found_item[1]
-        unique = True
-        for variable_assignment in variable_assignments:
-            if binding_value == variable_assignment[0]:
-                variable_assignment[1].append(solution_index)
-                unique = False
-                break
+        variable_assignments[binding_value].append(solution_index)
 
-        if unique:
-            unique_solution = (binding_value, [solution_index])
-            variable_assignments.append(unique_solution)
-
-    yield from [item[1] for item in variable_assignments_by_previous]
+    yield from [item.items() for item in variable_assignments_by_previous.values()]
 
 
 # Ensure that solutions_orig is broken up into a set of solution groups that are not combinatoric in any way
@@ -237,11 +219,7 @@ def solve(variable_assignments, solutions_list, determiner_criteria, solution_gr
         for combination in all_nonempty_subsets_stream(variable_assignments, min_size=1, max_size=max_answer_count):
             # The variable assignments in a combination could have duplicates: need to deduplicate them
             # combination is a list of 2 element lists
-            unique_values = []
-            for lst in [item[0] for item in combination]:
-                for item in lst:
-                    if item not in unique_values:
-                        unique_values.append(item)
+            unique_values = set([inner_item for item in combination for inner_item in item[0]])
 
             # Now see if it works for the determiner, which means the *values* meet the determiner
             # But each set of values might have multiple solutions that go with it, so this means
@@ -271,12 +249,7 @@ def solve(variable_assignments, solutions_list, determiner_criteria, solution_gr
     else:
         # The variable assignments in a combination could have duplicates
         # Need to deduplicate them
-        unique_values = []
-        for lst in [item[0] for item in variable_assignments]:
-            for item in lst:
-                if item not in unique_values:
-                    unique_values.append(item)
-
+        unique_values = set([inner_item for item in variable_assignments for inner_item in item[0]])
         if determiner_criteria(unique_values):
             yield solutions_list
 
@@ -309,7 +282,7 @@ def between_determiner(execution_context, previous_variable_name, variable_name,
         # it also limits *all* the solutions to that number. So we need to go to the bitter end before we know that that are "only 2"
         # group_rstr is set in the criteria each time a rstr is checked
         group_rstr = []
-        unique_rstrs = []
+        unique_rstrs = set()
         groups = []
         for group in determiner_solution_groups_helper(execution_context, previous_variable_name, variable_name, solution_group, criteria, combinatorial, is_last_determiner, max_count):
             for item in group_rstr:

@@ -65,7 +65,7 @@ def individual_only_style_predication_1(state, binding, prediction_function):
 
     else:
         # If it is combinatoric, only pass through individuals
-        iterator = [[value] for value in binding.value]
+        iterator = [(value, ) for value in binding.value]
 
     for value in iterator:
         if prediction_function(value):
@@ -157,7 +157,7 @@ def combinatorial_style_predication(state, binding, all_individuals_generator, p
             return
 
     if len(values) > 0:
-        yield state.set_x(binding.variable.name, values, value_type)
+        yield state.set_x(binding.variable.name, tuple(values), value_type)
 
 
 # Yield all undetermined, unquantified answers

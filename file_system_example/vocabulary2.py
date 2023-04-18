@@ -56,7 +56,7 @@ def the_q_group(execution_context, previous_variable_name, variable_name, predic
 @Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["number_constraint", "default", [1, 1, False]])
+                                    quantifier=("number_constraint", "default", (1, 1, False)))
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -64,7 +64,7 @@ def a_q(state, x_variable_binding, h_rstr, h_body):
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "pronoun_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["number_constraint", "default", [1, float('inf'), False]])
+                                    quantifier=("number_constraint", "default", (1, float('inf'), False)))
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -83,7 +83,7 @@ def value_is_measure(value):
 def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
     if variable_is_megabyte(x_target_binding):
         yield state.set_x(x_target_binding.variable.name,
-                          [Measurement(x_target_binding.value[0], int(c_count))],
+                          (Measurement(x_target_binding.value[0], int(c_count)), ),
                           value_type=VariableValueType.set)
 
 
@@ -96,13 +96,13 @@ def card_normal(state, c_count, e_introduced_binding, x_target_binding):
             card_is_exactly = False
 
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      determiner=["number_constraint", "default", [int(c_count), int(c_count), card_is_exactly]])
+                                      determiner=("number_constraint", "default", (int(c_count), int(c_count), card_is_exactly)))
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
-                                  determiner=["number_constraint", "default", [3, 5, False]])
+                                  determiner=("number_constraint", "default", (3, 5, False)))
 
 
 # true for both sets and individuals as long as everything

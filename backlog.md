@@ -1,7 +1,8 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
-
+- Make everything support a hash
+- 
 3 students are eating 2 pizzas
     - the 2 pizzas can be the same, it just needs to be 2 against the same
 To find fully distributive: 

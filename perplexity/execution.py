@@ -45,7 +45,7 @@ class ExecutionContext(object):
             self.tree_info = tree_info
             self.gather_tree_metadata()
 
-            yield from self.call(state.set_x("tree", [tree_info], VariableValueType.set), tree_info["Tree"])
+            yield from self.call(state.set_x("tree", (tree_info, ), VariableValueType.set), tree_info["Tree"])
 
     def gather_tree_metadata(self):
         self._variable_metadata = perplexity.tree.gather_predication_metadata(self.vocabulary, self.tree_info)

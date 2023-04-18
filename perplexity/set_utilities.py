@@ -5,13 +5,20 @@ class Measurement(object):
     def __init__(self, measurement_type, count):
         self.measurement_type = measurement_type
         self.count = count
+        self._hash = hash((self.measurement_type, self.count))
+
+    def __hash__(self):
+        return self._hash
 
     def __eq__(self, other):
-        if isinstance(other, Measurement):
+        if isinstance(other, Measurement) and self._hash == other._hash:
             return self.measurement_type == other.measurement_type and self.count == other.count
 
         else:
             return False
+
+    def __ne__(self, other):
+        return not self == other
 
     def __repr__(self):
         return "Measure:" + str(self.count) + " " + str(self.measurement_type)
@@ -38,11 +45,11 @@ def all_nonempty_subsets(items, min_size=1, max_size=None):
 #  of previous answers are generated -- also good for streaming!
 # float('inf') will be greater than any number since python can compare floats and ints
 def all_nonempty_subsets_stream(s, min_size=1, max_size=float('inf')):
-    sets = [[]]
+    sets = [()]
     for i in s:
         new_sets = []
         for k in sets:
-            new_set = k+[i]
+            new_set = k+(i,)
             if min_size <= len(new_set) <= max_size:
                 yield new_set
             new_sets.append(new_set)
@@ -117,7 +124,7 @@ def product_stream(*args, repeat=1):
 def all_combinations_with_elements_from_all(list_of_lists):
     all_combinations_of_each_list = all_nonempty_subsets_of_list_of_lists_stream(list_of_lists)
     for answer in product_stream(*all_combinations_of_each_list):
-        yield list(itertools.chain(*answer))
+        yield itertools.chain(*answer)
 
 
 def in_equals(existing_values, new_value):
@@ -128,14 +135,21 @@ def in_equals(existing_values, new_value):
     return False
 
 
-def append_if_unique(existing_values, new_value):
-    if not in_equals(existing_values, new_value):
-        existing_values.append(new_value)
+def append_if_unique(existing_values_set, new_value):
+    if new_value not in existing_values_set:
+        existing_values_set.add(new_value)
 
 
 # Special cases things like Measurement that are a single object that represents a set
 def count_set(rstr_value):
-    if isinstance(rstr_value, (list, tuple)):
+    if isinstance(rstr_value, set):
+        if len(rstr_value) == 1:
+            value = next(iter(rstr_value))
+            if isinstance(value, Measurement):
+                return value.count
+        return len(rstr_value)
+
+    elif isinstance(rstr_value, (list, tuple)):
         if len(rstr_value) == 1 and isinstance(rstr_value[0], Measurement):
             return rstr_value[0].count
         else:

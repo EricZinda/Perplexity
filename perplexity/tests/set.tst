@@ -18,7 +18,7 @@
         },
         {
             "Command": "which files are large",
-            "Expected": "[File(name=/Desktop/the yearly budget.txt, size=10000000)]",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "aa892111-3d4a-477e-8ae2-858d95d9074c"
@@ -39,7 +39,7 @@
         },
         {
             "Command": "which files are large",
-            "Expected": "[File(name=/Desktop/the yearly budget.txt, size=10000000)][File(name=/Desktop/blue, size=10000000)]",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "321bb542-a3bc-4cb1-b4f4-065aad48dce7"
@@ -95,7 +95,7 @@
         },
         {
             "Command": "which 2 files are large",
-            "Expected": "[File(name=/Desktop/the yearly budget.txt, size=10000000)][File(name=/Desktop/blue, size=10000000)]",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "19a53d3f-931d-40c4-85d2-389d76719410"

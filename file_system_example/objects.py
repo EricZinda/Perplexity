@@ -31,6 +31,10 @@ class Container(UniqueObject):
 class Megabyte(object):
     def __init__(self):
         self.units = "mb"
+        self._hash = hash(self.units)
+
+    def __hash__(self):
+        return self._hash
 
     def __repr__(self):
         return self.units
@@ -51,6 +55,10 @@ class Folder(Container):
         self.name = name
         self.size = size
         self.file_system = file_system
+        self._hash = hash(self.name)
+
+    def __hash__(self):
+        return self._hash
 
     def __repr__(self):
         return f"Folder(name={self.name}, size={self.size})"
@@ -88,18 +96,37 @@ class File(Container):
         self.file_system = file_system
         self.link = link
 
+        # If we assume link objects always have the same name, then if we only hash the name
+        # link objects will have the same hash, but so will anything else with that name (which is OK)
+        # Any other files in the system with the same name (including raw file specifiers) will
+        # hash to the same value too.
+        # This means that there could be collisions if there are lots of files with the same name
+        # but it is unclear how else to do this
+        self._hash = hash(self.file_name())
+
     def __repr__(self):
         return f"File(name={self.name}, size={self.size})"
 
+    # The only required property is that objects which compare equal have the same hash value
+    # But: objects with the same hash aren't required to be equal
+    # It must remain the same for the lifetime of the object
+    def __hash__(self):
+        return self._hash
+
     def __eq__(self, obj):
-        if isinstance(obj, File):
+        if isinstance(obj, File) and self._hash == obj._hash:
             if self.has_path() and obj.has_path():
+                # If they both have a path, then the entire path must be ==
+                # to make them ==
+                # Unless there is a symbolic link, in which case the links must match
                 self_name = self.name if self.link is None else self.link
                 obj_name = obj.name if obj.link is None else obj.link
                 return self_name == obj_name
 
             else:
-                return pathlib.PurePath(self.name).parts[-1] == pathlib.PurePath(obj.name).parts[-1]
+                # If one or both of them doesn't have a path specified then it is a pure filename
+                # which means it == the other object if the file name alone matches
+                return self.file_name() == obj.file_name()
 
     def __ne__(self, obj):
         return not self == obj
@@ -122,11 +149,14 @@ class File(Container):
     def exists(self):
         return self.file_system.exists(self.name, is_file=True)
 
-    # True if there is no path specified at all
+    # False if there is no path specified at all
     # including "./". Indicates the object is a raw
     # file specifier
     def has_path(self):
         return os.path.dirname(self.name) != ""
+
+    def file_name(self):
+        return pathlib.PurePath(self.name).parts[-1]
 
     def size_measurement(self):
         return Measurement(Megabyte(), self.size/1000000)
@@ -140,6 +170,17 @@ class Actor(UniqueObject):
         self.name = name
         self.person = person
         self.file_system = file_system
+        self._hash = hash((self.name, self.person))
+
+    def __hash__(self):
+        return self._hash
+
+    def __eq__(self, other):
+        if isinstance(other, Actor):
+            return self._hash == other._hash
+
+    def __ne__(self, other):
+        return not self == other
 
     def __repr__(self):
         return f"Actor(name={self.name}, person={self.person})"
@@ -197,7 +238,21 @@ class FileSystemMock(FileSystem):
                 if new_path not in self.items:
                     self.items[new_path] = Folder(new_path, file_system=self)
 
+            self._check_links()
+
         self.current = self.item_from_path(current, is_file=False)
+
+    # Everything with the same link property must have the same file name
+    # or else File.hash won't work
+    def _check_links(self):
+        links = {}
+        for item in self.items.items():
+            if hasattr(item[1], "link") and item[1].link is not None:
+                if item[1].link in links:
+                    assert item[1].file_name() == links[item[1].link].file_name()
+                    continue
+                else:
+                    links[item[1].link] = item[1]
 
     def set_properties(self, obj, props):
         for prop in props.items():
