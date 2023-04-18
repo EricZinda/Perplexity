@@ -653,7 +653,7 @@ def Example32():
 
 
 def Example33_reset():
-    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(13)]
+    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(200)]
     return FileSystemState(FileSystemMock(file_list,
                                            "/Desktop"))
 
@@ -752,10 +752,10 @@ if __name__ == '__main__':
     # Example30()
     # Example31()
     # Example32()
-    # Example33()
+    Example33()
     # Example33_performance_test()
     # Example34()
-    Example35()
+    # Example35()
 
     # import cProfile
     # cProfile.run('Example33_performance_test()', '/Users/ericzinda/Enlistments/perf.bin')
