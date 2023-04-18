@@ -3,6 +3,8 @@ import logging
 import os
 import pathlib
 import uuid
+
+from perplexity.set_utilities import Measurement
 from perplexity.variable_binding import VariableBinding
 
 
@@ -38,22 +40,6 @@ class Megabyte(object):
 
     def measurement_type(self):
         return self.units
-
-
-class Measurement(object):
-    def __init__(self, measurement_type, count):
-        self.measurement_type = measurement_type
-        self.count = count
-
-    def __eq__(self, other):
-        if isinstance(other, Measurement):
-            return self.measurement_type == other.measurement_type and self.count == other.count
-
-        else:
-            return False
-
-    def __repr__(self):
-        return "Measure:" + str(self.count) + " " + str(self.measurement_type)
 
 
 # Derive from UniqueObject and call

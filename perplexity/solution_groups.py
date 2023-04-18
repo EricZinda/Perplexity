@@ -18,7 +18,7 @@ def solution_groups(execution_context, solutions, all_solutions):
         optimized_determiner_info_list = optimize_determiner_infos(declared_determiner_info_list)
         compiled_determiner_info_list = compile_determiner_infos(optimized_determiner_info_list)
 
-        for group in filter_solutions_for_next_determiner(execution_context, compiled_determiner_info_list, solutions, True):
+        for group in filter_solutions_for_next_determiner(execution_context, None, compiled_determiner_info_list, solutions, True):
             groups_logger.debug(f"Found answer: {group}")
             yield group
             if not all_solutions:
@@ -67,7 +67,7 @@ def optimize_determiner_infos(determiner_info_list):
             remove_determiners = False
             new_info_list.append(determiner_info)
 
-    return new_info_list
+    return reversed(new_info_list)
     # return determiner_info_list
 
 
@@ -105,7 +105,7 @@ def compile_determiner_infos(determiner_info_list):
     return final_list
 
 
-def filter_solutions_for_next_determiner(execution_context, determiner_info_list, solutions, initial_determiner=False):
+def filter_solutions_for_next_determiner(execution_context, previous_variable_name, determiner_info_list, solutions, initial_determiner=False):
     if len(determiner_info_list) == 0:
         groups_logger.debug(f"Success: Final solutions: {solutions}")
         yield solutions
@@ -119,10 +119,10 @@ def filter_solutions_for_next_determiner(execution_context, determiner_info_list
         function = function_info[0]
         function_extra_args = function_info[1]
 
-        function_args = (execution_context, variable_name, predication, all_rstr_values, solutions, initial_determiner, len(determiner_info_list) == 1) + tuple(function_extra_args)
+        function_args = (execution_context, previous_variable_name, variable_name, predication, all_rstr_values, solutions, initial_determiner, len(determiner_info_list) == 1) + tuple(function_extra_args)
         for determined_solution_group in function(*function_args):
             groups_logger.debug(f"Success: Determiner: {function}")
-            yield from filter_solutions_for_next_determiner(execution_context, determiner_info_list[1:], determined_solution_group)
+            yield from filter_solutions_for_next_determiner(execution_context, variable_name, determiner_info_list[1:], determined_solution_group)
 
 
 groups_logger = logging.getLogger('SolutionGroups')

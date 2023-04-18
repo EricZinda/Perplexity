@@ -1,10 +1,10 @@
-from file_system_example.objects import File, Folder, Megabyte, Measurement, Actor
+from file_system_example.objects import File, Folder, Megabyte, Actor
 from file_system_example.state import DeleteOperation
 from perplexity.determiners import determiner_solution_groups_helper
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
-from perplexity.set_utilities import count_set
+from perplexity.set_utilities import count_set, Measurement
 from perplexity.tree import is_index_predication
 from perplexity.utilities import is_plural_from_tree_info
 from perplexity.variable_binding import VariableValueType
@@ -35,7 +35,7 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 #       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
 # 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
 #       same approach
-def the_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, is_last_determiner):
+def the_q_group(execution_context, previous_variable_name, variable_name, predication, all_rstr, solution_group, combinatorial, is_last_determiner):
     is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
 
     def criteria(rstr_value_list):
@@ -50,7 +50,7 @@ def the_q_group(execution_context, variable_name, predication, all_rstr, solutio
         else:
             return True
 
-    yield from determiner_solution_groups_helper(execution_context, variable_name, solution_group, criteria, combinatorial, is_last_determiner)
+    yield from determiner_solution_groups_helper(execution_context, previous_variable_name, variable_name, solution_group, criteria, combinatorial, is_last_determiner)
 
 
 @Predication(vocabulary, names=["_a_q"])

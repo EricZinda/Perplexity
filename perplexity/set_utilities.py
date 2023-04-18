@@ -1,10 +1,23 @@
 import itertools
 
 
+class Measurement(object):
+    def __init__(self, measurement_type, count):
+        self.measurement_type = measurement_type
+        self.count = count
+
+    def __eq__(self, other):
+        if isinstance(other, Measurement):
+            return self.measurement_type == other.measurement_type and self.count == other.count
+
+        else:
+            return False
+
+    def __repr__(self):
+        return "Measure:" + str(self.count) + " " + str(self.measurement_type)
+
+
 # returns nonempty subsets of list items
-from file_system_example.objects import Measurement
-
-
 def all_nonempty_subsets(items, min_size=1, max_size=None):
     subsets = []
     if max_size is None:
@@ -36,16 +49,74 @@ def all_nonempty_subsets_stream(s, min_size=1, max_size=float('inf')):
         sets += new_sets
 
 
+def all_nonempty_subsets_of_list_of_lists_stream(list_of_lists):
+    for items in list_of_lists:
+        yield all_nonempty_subsets_stream(items)
+
+
+def product_stream(*args, repeat=1):
+    """Find the Cartesian product of the arguments.
+
+    The interface is identical to itertools.product.
+    """
+    def index_from_stream(array_stream, index):
+        try:
+            while index >= len(array_stream[0]):
+                next_element = next(array_stream[1])
+                array_stream[0].append(next_element)
+
+            return True, array_stream[0][index]
+
+        except StopIteration:
+            return False, None
+
+    # Initialize data structures and handle bad input
+    if len(args) == 0:
+        # Match behavior of itertools.product
+        yield ()
+        return
+
+    gears = [([], arg) for arg in args] * repeat
+    for gear in gears:
+        if not index_from_stream(gear, 0)[0]:
+            return
+
+    tooth_numbers = [0] * len(gears)
+    result = [index_from_stream(gear, 0)[1] for gear in gears]
+
+    # Rotate through all gears
+    last_gear_number = len(gears) - 1
+    finished = False
+    while not finished:
+        yield tuple(result)
+
+        # Get next result
+        gear_number = last_gear_number
+        while gear_number >= 0:
+            gear = gears[gear_number]
+            tooth_number = tooth_numbers[gear_number] + 1
+            has_tooth, gear_tooth_value = index_from_stream(gear, tooth_number)
+            if has_tooth:
+                # No gear change is necessary, so exit the loop
+                result[gear_number] = gear_tooth_value
+                tooth_numbers[gear_number] = tooth_number
+                break
+
+            _, result[gear_number] = index_from_stream(gear, 0)
+            tooth_numbers[gear_number] = 0
+            gear_number -= 1
+
+        else:
+            # We changed all the gears, so we are back at the beginning
+            finished = True
+
+
 # Given a list of lists, returns another list of lists
 # with all combinations of items from the original lists
 # ensuring there is always one item from every list
 def all_combinations_with_elements_from_all(list_of_lists):
-    def nonempty_subsets_of_list_of_lists():
-        for items in list_of_lists:
-            yield all_nonempty_subsets_stream(items)
-
-    all_combinations_of_each_list = nonempty_subsets_of_list_of_lists()
-    for answer in itertools.product(*all_combinations_of_each_list):
+    all_combinations_of_each_list = all_nonempty_subsets_of_list_of_lists_stream(list_of_lists)
+    for answer in product_stream(*all_combinations_of_each_list):
         yield list(itertools.chain(*answer))
 
 
@@ -78,4 +149,7 @@ def count_set(rstr_value):
 
 
 if __name__ == '__main__':
-    print(list(all_combinations_with_elements_from_all([[0, 2], [1]])))
+    for l1 in all_combinations_with_elements_from_all([[0, 1], [2, 3]]):
+        print("start")
+        for l2 in l1:
+            print(l2)

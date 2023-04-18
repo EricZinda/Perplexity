@@ -374,42 +374,6 @@ Solution 9: x=[s1, s2], y=[p1, p2]
 
 Thus, Group 1 is returned as the only solution group.
 
-#### Distributive/Distributive example:
-Given this world of pizzas and students:
-
-~~~
-s1
-s2
-p1
-p2
-p3
-p4
-[s1] eat [p1]
-[s1] eat [p2]
-[s2] eat [p3]
-[s2] eat [p4]
-~~~
-This is a distributive example since each of 2 students separately is eating each of 2 pizzas separately.
-
-Phase 1 solutions:
-
-~~~
-Solution 1: x=[s1], y[p1]
-Solution 2: x=[s1], y[p2]
-Solution 3: x=[s2], y[p3]
-Solution 4: x=[s2], y[p4]
-~~~
-
-Phase 2 solution groups:
-
-~~~
-Group 1:
-Solution 1: x=[s1], y[p1]
-Solution 2: x=[s1], y[p2]
-Solution 3: x=[s2], y[p3]
-Solution 4: x=[s2], y[p4]
-~~~
-
 #### Distributive/Cumulative example:
 Given this world of pizzas and students:
 
@@ -440,6 +404,59 @@ Solution 2: x=[s2], y[p2]
 
 One group is returned as the answer since it is the only set of answers where  there are 2 `x` values and 2 `y` values.
 
+#### Distributive/Distributive example:
+Given this world of pizzas and students:
+
+~~~
+s1
+s2
+p1
+p2
+p3
+p4
+[s1] eat [p1]
+[s1] eat [p2]
+[s2] eat [p3]
+[s2] eat [p4]
+~~~
+This is a distributive example since each of 2 students separately is eating each of 2 pizzas separately.
+
+Phase 1 solutions:
+
+~~~
+Solution 1: x=[s1], y[p1]
+Solution 2: x=[s1], y[p2]
+Solution 3: x=[s2], y[p3]
+Solution 4: x=[s2], y[p4]
+~~~
+
+Phase 2 solution groups:
+
+card(2, x) generates one solution which is:
+Solution 1: x=[s1], y[p1]
+Solution 2: x=[s1], y[p2]
+Solution 3: x=[s2], y[p3]
+Solution 4: x=[s2], y[p4]
+
+~~~
+Group 1:
+Solution 1: x=[s1], y[p1]
+Solution 3: x=[s2], y[p3]
+
+Group 2:
+Solution 2: x=[s1], y[p2]
+Solution 4: x=[s2], y[p4]
+~~~
+
+To properly capture distributive/distributive modes we need to think of the determiner as meaning "count per other plural".
+
+"2 students ate 2 pizzas in 2 rooms"
+
+4 students ate 4 pizzas
+3 students ate 3 pizzas
+1 student  ate 
+
+Good background: https://champollion.com/wp-content/uploads/2018/07/champollion_lsa2015.pdf
 You can see how any combination of pizzas and students in sets of 1 or 2 will form a solution group, as long as they add up to 2 for each.
 
 ### Quantifier Determiners
@@ -611,6 +628,147 @@ Make quantifiers declare what they are doing
 ### If we look at the size of the variables, we might call in a different order
 
 ### For yes/no we only need to prove one answer, for wh we want to get the smallest set of answers?
+
+## Basic model for coll/dist/cumul
+A given quantifier is said to be coll/dist/cumul, not the sentence.
+
+
+One way to think about how numeric determiners compose is that you can read a phrase like `determiner1(x), noun1(x), determiner2(y), noun2(y)` from left to right like this:
+> For each x in a group of x's where: noun1(x) and the total of all x individuals is determiner1(x), 
+>   there is a group of y's where: noun2(y) and the total of all y individuals is determiner2(y)
+
+For example:
+
+~~~
+3 children ate 4 pizzas
+for each x in a group of x's where: children(x) and the total of all x individuals is card(3, x), 
+    there is a group of y's where: pizza(y) and the total of all y individuals is card(4, y).
+
+a few students lifted more than 2 tables
+for each x in a group of x's where: students(x) and the total of all x individuals is a _a+few_a_1(e, x),
+    there is a group of y's where: table(y) and the total of all y individuals is _more+than_a_1(e,e10), card(2,e10,y)
+~~~
+Collective mode is when the `variable` is 1 set-based value of N elements that satisfies the determiner - i.e. its single value collectively satisfies the determiner. In the first example, `[[child1, child2, child3]]` is collective.
+
+Distributive mode is when it takes N set-based values of 1 element to satisfy the determiner -- i.e. the values that satisfy the determiner are distributed across several values. In the first example `[[child1], [child2], [child3]]` is distributive.
+
+But what about a world where 1 child is eating 1 pizza and another child is eating 1 pizza and someone says "2 children are eating 2 pizzas"? Clearly the answer is "correct!", but this is neither distributive for the children (because that would need each child to be eating 2 pizzas) nor collective for the children (because that would require the two children *together* eating 2 pizzas). This is a third scenario, called "cumulative":
+
+> For a group of x's where: noun1(x) and the total of all x individuals is determiner1(x),
+>   there is a group of y's where noun2(y) and the total of all y individuals is determiner2(y)
+
+Cumulative mode just requires that there are `determiner1(x)` x's doing something, and `determiner2(y)` y's having something being done to them, in any combination.
+
+Cumulative mode happens when there is arbitrary combination, not strictly collective or distributive, that satisfies the determiner: in the first example `[[child1, child2], [child3]]` is cumulative.
+
+
+
+Definitions:
+- A *adjective determiner* is an adjective that creates a numeric constraint on a particular `x` variable, such as `card(2,e,x)` or `much-many_a(e8,x3)`.
+- A *quantifier determiner* is a quantifier that creates a numeric constraint on a particular `x` variable, such as `_all_q(x3,RSTR,BODY)` or `_the_q(x3,RSTR,BODY)`
+- An *undetermined MRS* is formed by: 1) removing all determiner adjectives (and their modifiers), 2) converting all determiner quantifiers to "udef_q", 3) ignoring the pl/sg constraint on any variable.
+- An *undetermined solution* is formed by assigning a single non-empty set to every `x` variable in an undetermined MRS such that it is true.
+- A *determiner group* for a determiner `determiner(x)` is a group of undetermined solutions where the count of unique individuals across all `x` values in the group satisfies the determiner. It contains *subsets*, see next definition.
+- A *determiner group subset* is a subset of undetermined solutions in a determiner group. Except for the first time through, the solutions in a subset all contain the same `x` value.
+
+Algorithm: 
+Start with an ordered list of numeric determiners (adjective and quantifier) and a "previous determiner group" that is the set of all undetermined solutions for an MRS. The previous determiner group has a single subset that contains all the solutions. 
+
+Using the next determiner in the ordered list: `determiner(variable)` and the previous determiner group:
+    Find collective and distributive: For each previous determiner group subset:
+        Group all the solutions in the previous subset by unique `variable` values (where "value" means the entire variable value as a set, not the individuals in it). These form the *new subsets*.
+        Find a set of the unique `variable` values just found that satisfies `determiner(variable)`.
+        Form a new determiner group using the new subsets that go with these unique variable values
+        Run the algorithm again after removing this determiner from the list and using the new determiner group
+    Find cumulative: Do the same but across all subsets
+
+If all determiners are successful, the determiner group that remains at the end is a solution.
+
+
+
+
+
+if we have `q_1(x), q_2(y)` in a world where:
+
+~~~
+[x1], [x2], [x3], [x1, x2], [x1, x2, x3], ... (i.e. all combinations of x1, x2, x3)
+[y1], [y2, [y3], [y1, y2], [y1, y2, y3], ... (i.e. all combinations of y1, y2, y3)
+~~~
+
+For a given determiner quantifier like "all" or a determiner adjective like "2 (i.e. card(2, x))":
+
+A distributive reading of `x` must only include a set of sets of single individuals in `x` that add up to the determiner count of N. So for "2 students": `x=[[x1], [x2]]` or `x=[[x2], [x3]]` is a valid distributive reading, but `x=[[x1, x2]]` is not, nor is `x=[[x1], [x2], [x3]]`.
+
+A collective reading of `x` must only ever include a single set of the determiner count of N individuals. So for "2 students": `x=[[x1, x2]]` is a valid collective reading, but `x=[[x1]]` is not, nor is `x=[[x1, x2], [x2, x3]]`
+
+A cumulative reading of `x` is any combination of values that add up to the determiner count of N individuals that isn't distributive or collective. So for "3 students": `x=[[x1, x2], [x3]]` or `x=[[x1], [x2, x3]]` are valid cumulative readings but any set of sets where the individuals add up to > N are not
+
+Take the first determiner, `determiner1(x)`. 
+Group all solutions by unique values of `x`.
+Find a set of unique values that meet the determiner.
+Call the group of solutions that go with these unique values a "determiner group"
+Pass the determiner group to the next determiner
+
+
+
+
+To determine the valid variable assignments in an MRS that uses plurals: Work out the fully-resolved trees for the MRS, and go through the following algorithm using pre-order traversal of each tree.
+
+
+Going from left to right, `card(3)(x), card(2)(y)`, take the first value in the set generated by `x` and apply it to the set generated by `y`:
+~~~
+(distributive x, distributive y)
+[x=[x1], y=[[y1], [y2], [y3]]], 
+    [x=[x2], y=[[y4], [y5], [y6]]], 
+        [x=[x3], y=[[y7], [y8], [y9]]]]
+
+(distributive x, collective y)
+[x=[x1], y=[[y1, y2, y3]], 
+    [x=[x2], y=[[y4, y5, y6]], 
+        [x=[x3], y=[[y7, y8, y9]]]
+
+(distributive x, cumulative y)
+[x=[x1], y=[[y1, y2], [y3]], 
+    [x=[x2], y=[[y4], [y5, y6]], 
+        [x=[x3], y=[[y7, y8, y9]]]
+
+
+(collective x, distributive y)
+[x=[x1, x2, x3], y=[[y1], [y2], [y3]]]
+
+(collective x, collective y)
+[x=[x1, x2, x3], y=[[y1, y2, y3]]]
+
+(collective x, cumulative y)
+[x=[x1, x2, x3], y=[[y1], [y2, y3]]]
+
+
+(cumulative x, distributive y)
+[x=[x1, x2], y=[[y1], [y2], [y3]],
+    x=[x3], y=[[y1], [y2], [y3]]]
+
+(cumulative x, collective y)
+[x=[x1, x2], y=[[y1, y2, y3]], 
+    [x=[x3], y=[[y4, y5, y6]] ]
+
+(cumulative x, cumulative y)
+[x=[x1, x2], y=[[y1], [y2, y3]], 
+    [x=[x3], y=[[y4, y5, y6]]] ]
+
+etc.
+~~~
+
+
+x=[[x1, x2, x3]] (collective)
+x=[[x1], [x2, x3]] (cumulative)
+
+y=[[y1], [y2], [y3]] (distributive)
+y=[[y1, y2, y3]] (collective)
+y=[[y1], [y2, y3]] (cumulative)
+~~~
+
+
+
 
 ## Plurals and Predication Behavior
 Above, we've seen how `to lift` means something different when people are doing it *together* vs. *separately* and the predication needs to check for that distinction when deciding if the variable assignments mean `true`.

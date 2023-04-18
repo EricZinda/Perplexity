@@ -229,7 +229,7 @@
         },
         {
             "Command": "the 3 files are large",
-            "Expected": "That isn't true for all the 3 file",
+            "Expected": "There are less than the 3 large file",
             "Tree": "_the_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d5ea50ee-c182-4db4-b2d8-83e1cf19b254"
@@ -383,7 +383,7 @@
         },
         {
             "Command": "which 2 files are in 2 folders?",
-            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(File(name=/Desktop/file3.txt, size=10000000),)(File(name=/documents/file5.txt, size=10000000),)",
+            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(File(name=/documents/file5.txt, size=10000000),)(File(name=/Desktop/file3.txt, size=10000000),)",
             "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "86773c14-37d1-4ace-9906-eea776f6b402"

@@ -679,6 +679,22 @@ def Example34():
         print()
 
 
+def Example35_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/file4.txt", {"size": 10000000, "link": 1}),
+                                           (True, "/foo/file4.txt", {"size": 10000000, "link": 1}),
+                                           (True, "/bar/file5.txt", {"size": 10000000, "link": 2}),
+                                           (True, "/go/file5.txt", {"size": 10000000, "link": 2})],
+                                           "/Desktop"))
+
+
+def Example35():
+    user_interface = UserInterface(Example35_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
@@ -727,5 +743,6 @@ if __name__ == '__main__':
     # Example30()
     # Example31()
     # Example32()
-    # Example33()
-    Example34()
+    Example33()
+    # Example34()
+    # Example35()

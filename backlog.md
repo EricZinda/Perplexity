@@ -1,6 +1,24 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+
+3 students are eating 2 pizzas
+    - the 2 pizzas can be the same, it just needs to be 2 against the same
+To find fully distributive: 
+    go from right to left and see: find groups of y pizzas, then group into x students
+    go from left to right: find group of x students, then p
+    for a given solution group we are testing: y is distributive over x if there are determiner(Y) for every x, lets say you only have to check the previous one? because the MRS will do the alternative orders?
+    If we pass along which unique x value generated the y, then we can count them
+    We need to remember which solutions went with which value of x when we pass to y
+    Algorithm is: go through each previous determiner unique value and count the current determiner count
+    Attempt 1: brute force: after you've tested the criteria for coll:
+        go through the whole solution list and run the test for each unique value of previous determiner
+    Attempt 2: go backward through the list for y
+        Group all values of x but pass all groups to the next item in the list. Only need to chec
+Go through each plural    
+- Test: 
+        - https://aclanthology.org/P88-1003.pdf
+        - https://aclanthology.org/W13-0202.pdf
     - implement hashing so that sets work and use sets for duplicates
     - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
     - "which files are in folders" -> The problem is that it generates all combinations of 13 files and finds a ton of duplicate answers
