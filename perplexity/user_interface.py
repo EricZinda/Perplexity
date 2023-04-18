@@ -152,7 +152,8 @@ class UserInterface(object):
 
                     duplicate_solutions = []
                     for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
-                        pipeline_logger.debug(f"solution: {item}")
+                        if logger.isEnabledFor(logging.DEBUG):
+                            pipeline_logger.debug(f"solution: {item}")
                         duplicate_solutions.append(item)
 
                     # pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")

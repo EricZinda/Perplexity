@@ -1,3 +1,7 @@
+import pstats
+import sys
+from contextlib import redirect_stdout
+
 from file_system_example.messages import respond_to_mrs_tree, error_priority
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
@@ -649,7 +653,7 @@ def Example32():
 
 
 def Example33_reset():
-    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(200)]
+    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(13)]
     return FileSystemState(FileSystemMock(file_list,
                                            "/Desktop"))
 
@@ -660,6 +664,11 @@ def Example33():
     while True:
         user_interface.interact_once()
         print()
+
+
+def Example33_performance_test():
+    user_interface = UserInterface(Example33_reset, vocabulary, respond_to_mrs_tree, error_priority)
+    user_interface.interact_once(force_input="which files are large?")
 
 
 def Example34_reset():
@@ -735,7 +744,7 @@ if __name__ == '__main__':
     # Example21()
     # Example22()
     # Example24()
-    Example25()
+    # Example25()
     # Example26()
     # Example27()
     # Example28()
@@ -744,5 +753,18 @@ if __name__ == '__main__':
     # Example31()
     # Example32()
     # Example33()
+    # Example33_performance_test()
     # Example34()
-    # Example35()
+    Example35()
+
+    # import cProfile
+    # cProfile.run('Example33_performance_test()', '/Users/ericzinda/Enlistments/perf.bin')
+    # stats = pstats.Stats('/Users/ericzinda/Enlistments/perf.bin')
+    # stats.sort_stats("tottime")
+    # stats.print_stats(.05)
+
+    # with open('/Users/ericzinda/Enlistments/perf.txt', 'w') as f:
+    #     stats = pstats.Stats('/Users/ericzinda/Enlistments/perf.bin', stream=f)
+    #     stats.get_stats_profile()
+    #     stats.print_stats()
+

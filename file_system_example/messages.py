@@ -57,19 +57,19 @@ def respond_to_mrs_tree(tree, solution_groups, error):
                 wh_variable = wh_predication.introduced_variable()
 
                 # Get unique items from all solutions
-                answer_items = []
+                answer_items = set()
                 for solution_group in solution_groups:
                     for solution in solution_group:
                         binding = solution.get_binding(wh_variable)
                         if binding.variable.value_type == VariableValueType.combinatoric:
-                            value_set = [[value] for value in binding.value]
-                            if not in_equals(answer_items, value_set):
-                                answer_items.append(value_set)
+                            value_set = ((value, ) for value in binding.value)
+                            if value_set not in answer_items:
+                                answer_items.add(value_set)
                                 yield generate_message(tree, [-1, ["answerWithList", index_predication, [value_set]]])
 
                         else:
-                            if not in_equals(answer_items, binding.value):
-                                answer_items.append(binding.value)
+                            if binding.value not in answer_items:
+                                answer_items.add(binding.value)
                                 yield generate_message(tree, [-1, ["answerWithList", index_predication, [binding.value]]])
 
             else:

@@ -19,7 +19,8 @@ def solution_groups(execution_context, solutions, all_solutions):
         compiled_determiner_info_list = compile_determiner_infos(optimized_determiner_info_list)
 
         for group in filter_solutions_for_next_determiner(execution_context, None, compiled_determiner_info_list, solutions, True):
-            groups_logger.debug(f"Found answer: {group}")
+            if groups_logger.isEnabledFor(logging.DEBUG):
+                groups_logger.debug(f"Found answer: {group}")
             yield group
             if not all_solutions:
                 return
@@ -107,7 +108,8 @@ def compile_determiner_infos(determiner_info_list):
 
 def filter_solutions_for_next_determiner(execution_context, previous_variable_name, determiner_info_list, solutions, initial_determiner=False):
     if len(determiner_info_list) == 0:
-        groups_logger.debug(f"Success: Final solutions: {solutions}")
+        if groups_logger.isEnabledFor(logging.DEBUG):
+            groups_logger.debug(f"Success: Final solutions: {solutions}")
         yield solutions
 
     else:

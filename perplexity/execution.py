@@ -93,7 +93,8 @@ class ExecutionContext(object):
     #   The first item is the predication name
     #   The rest of the items are the arguments
     def _call_predication(self, state, predication, normalize=False):
-        logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
 
         bindings = []
         for arg_index in range(0, len(predication.args)):

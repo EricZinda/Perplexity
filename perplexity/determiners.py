@@ -102,7 +102,8 @@ def solution_list_alternatives_without_combinatorial_variables(execution_context
     if solution_group_combinatorial:
         def combinatorial_solution_group_generator():
             for item in itertools.chain.from_iterable([set_solution_list, set_solution_alternatives_list]):
-                determiner_logger.debug(f"Combinatorial answer: {item}")
+                if determiner_logger.isEnabledFor(logging.DEBUG):
+                    determiner_logger.debug(f"Combinatorial answer: {item}")
                 yield item
 
         yield combinatorial_solution_group_generator()

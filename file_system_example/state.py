@@ -46,7 +46,11 @@ class State(object):
         # The second argument, "None", is what to return if the
         # key doesn't exist.  "None" is a built-in value in Python
         # like "null"
-        return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
+        value = self.variables.get(variable_name, None)
+        if value is None:
+            return VariableBinding(VariableData(variable_name), None)
+        else:
+            return value
 
     def set_variable_data(self, variable_name, determiner=None, used_collective=None, quantifier=None):
         binding = self.get_binding(variable_name)
@@ -66,8 +70,7 @@ class State(object):
 
         # Find a common mistakes early
         assert not isinstance(item, VariableBinding)
-        if not (item is None or isinstance(item, tuple)):
-            assert item is None or isinstance(item, tuple)
+        assert item is None or isinstance(item, tuple)
         if variable_name in new_state.variables:
             initial_variable_data = new_state.variables[variable_name].variable
         else:
