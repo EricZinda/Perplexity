@@ -181,8 +181,7 @@ def unique_rstr_solution_list_generator2(previous_variable_name, variable_name, 
     yield from [item[1] for item in variable_assignments_by_previous]
 
 
-# Ensure that solutions_orig is broken up into a set of solution groups that are not combinatoric
-# in any way
+# Ensure that solutions_orig is broken up into a set of solution groups that are not combinatoric in any way
 # max_answer_count is the maximum number of individual items that will ever be used.
 #   So, for "2 boys", it should be 2 since it must be no more than 2
 #   but for "boys" it has to be None since it could be a huge set of boys
@@ -196,18 +195,16 @@ def determiner_solution_groups_helper(execution_context, previous_variable_name,
 
         if previous_variable_name is None:
             alternative_variable_names = [None]
-
         else:
             alternative_variable_names = [None, previous_variable_name]
 
         for distributive_previous_variable_name in alternative_variable_names:
             determiner_logger.debug(f"distributive_previous_variable_name: {distributive_previous_variable_name}:")
 
-            previous_variable_success_list_of_lists = []
-
             # Get all the unique values assigned to this variable, and collect the solutions that go with them
             # Workaround: generate the list since it isn't properly formed lazily. It returns an answer before it is done iterating and
             # thus doesn't know the full list of solutions that go with it
+            previous_variable_success_list_of_lists = []
             for variable_assignments in unique_rstr_solution_list_generator2(distributive_previous_variable_name, variable_name, solutions_list):
                 # returns a set of solutions for this previous variable name
                 previous_value_success_lists = []
@@ -217,7 +214,6 @@ def determiner_solution_groups_helper(execution_context, previous_variable_name,
                     if distributive_previous_variable_name is None:
                         # Not distributive so we can yield immediately
                         yield success_list
-
                     else:
                         # distributive: need to make sure all previous variables work distributively
                         previous_value_success_lists.append(success_list)
@@ -226,7 +222,6 @@ def determiner_solution_groups_helper(execution_context, previous_variable_name,
                     # distributive must succeed at least once for each previous value, so fail if one fails
                     # other modes will only have one list so that fails too
                     break
-
                 else:
                     previous_variable_success_list_of_lists.append(previous_value_success_lists)
 
@@ -240,8 +235,7 @@ def solve(variable_assignments, solutions_list, determiner_criteria, solution_gr
         # Get all the combinations of the variable assignments that meet the criteria
         # largest set of lists that can add up to self.count is where every list is 1 item long
         for combination in all_nonempty_subsets_stream(variable_assignments, min_size=1, max_size=max_answer_count):
-            # The variable assignments in a combination could have duplicates
-            # Need to deduplicate them
+            # The variable assignments in a combination could have duplicates: need to deduplicate them
             # combination is a list of 2 element lists
             unique_values = []
             for lst in [item[0] for item in combination]:
@@ -262,8 +256,7 @@ def solve(variable_assignments, solutions_list, determiner_criteria, solution_gr
                     # 'combination' is a list of 2 element lists:
                     #   0 is a list of variable assignments
                     #   1 is a list of solutions that had that assignment
-                    for possible_solution in all_combinations_with_elements_from_all(
-                            [combination_item[1] for combination_item in combination]):
+                    for possible_solution in all_combinations_with_elements_from_all([combination_item[1] for combination_item in combination]):
                         combination_solutions = []
                         for index in possible_solution:
                             combination_solutions.append(solutions_list[index])
@@ -273,9 +266,7 @@ def solve(variable_assignments, solutions_list, determiner_criteria, solution_gr
                 else:
                     # The last determiner does not need to create groups outside of what it needs
                     # to do its job. Just return all the solutions combined together
-                    yield itertools.chain(
-                        [solutions_list[solution_index] for combination_item in combination for solution_index in
-                         combination_item[1]])
+                    yield itertools.chain([solutions_list[solution_index] for combination_item in combination for solution_index in combination_item[1]])
 
     else:
         # The variable assignments in a combination could have duplicates
@@ -288,16 +279,6 @@ def solve(variable_assignments, solutions_list, determiner_criteria, solution_gr
 
         if determiner_criteria(unique_values):
             yield solutions_list
-
-
-# def distributive(execution_context, variable_name, solutions_orig, determiner_criteria, solution_group_combinatorial=False, is_last_determiner=False, max_answer_count=float('inf')):
-#     # Group all the solutions by the unique previous determiner value
-#     # test the criteria against that list
-#     unique_variable_assignments_by_previous_generator = unique_rstr_solution_list_generator2(previous_variable_name, variable_name, solutions_orig)
-#     for previous_grouped_variable_assignments in unique_variable_assignments_by_previous_generator:
-#         if solution_group_combinatorial:
-#             # Get all the combinations of the variable assignments that meet the criteria
-#             # largest set of lists that can add up to self.count is where every list is 1 item long
 
 
 # Set max to float('inf') to mean "no maximum"

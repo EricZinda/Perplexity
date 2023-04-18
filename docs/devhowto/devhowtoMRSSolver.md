@@ -652,7 +652,7 @@ Collective mode is when the `variable` is 1 set-based value of N elements that s
 
 Distributive mode is when it takes N set-based values of 1 element to satisfy the determiner -- i.e. the values that satisfy the determiner are distributed across several values. In the first example `[[child1], [child2], [child3]]` is distributive.
 
-But what about a world where 1 child is eating 1 pizza and another child is eating 1 pizza and someone says "2 children are eating 2 pizzas"? Clearly the answer is "correct!", but this is neither distributive for the children (because that would need each child to be eating 2 pizzas) nor collective for the children (because that would require the two children *together* eating 2 pizzas). This is a third scenario, called "cumulative":
+But what about a world where 1 child is eating 1 pizza and another child is eating a different pizza and someone says "2 children are eating 2 pizzas"? Clearly the answer is "correct!", but this is neither distributive for the children (because that would need each child to be eating 2 pizzas) nor collective for the children (because that would require the two children *together* eating 2 pizzas). This is a third scenario, called "cumulative". Putting it in the same form as above for a phrase like `determiner1(x), noun1(x), determiner2(y), noun2(y)`:
 
 > For a group of x's where: noun1(x) and the total of all x individuals is determiner1(x),
 >   there is a group of y's where noun2(y) and the total of all y individuals is determiner2(y)
@@ -666,21 +666,21 @@ Cumulative mode happens when there is arbitrary combination, not strictly collec
 Definitions:
 - A *adjective determiner* is an adjective that creates a numeric constraint on a particular `x` variable, such as `card(2,e,x)` or `much-many_a(e8,x3)`.
 - A *quantifier determiner* is a quantifier that creates a numeric constraint on a particular `x` variable, such as `_all_q(x3,RSTR,BODY)` or `_the_q(x3,RSTR,BODY)`
-- An *undetermined MRS* is formed by: 1) removing all determiner adjectives (and their modifiers), 2) converting all determiner quantifiers to "udef_q", 3) ignoring the pl/sg constraint on any variable.
+- An *undetermined MRS* is formed by: 1) removing all determiner adjectives (and their modifiers), 2) converting all determiner quantifiers to "udef_q", 3) ignoring the `pl/sg` constraint on any variable.
 - An *undetermined solution* is formed by assigning a single non-empty set to every `x` variable in an undetermined MRS such that it is true.
-- A *determiner group* for a determiner `determiner(x)` is a group of undetermined solutions where the count of unique individuals across all `x` values in the group satisfies the determiner. It contains *subsets*, see next definition.
+- A *determiner group* for `determiner(x)` is a group of undetermined solutions where the count of unique individuals across all `x` values in the group satisfies the determiner. It contains *subsets* (see next definition).
 - A *determiner group subset* is a subset of undetermined solutions in a determiner group. Except for the first time through, the solutions in a subset all contain the same `x` value.
 
 Algorithm: 
-Start with an ordered list of numeric determiners (adjective and quantifier) and a "previous determiner group" that is the set of all undetermined solutions for an MRS. The previous determiner group has a single subset that contains all the solutions. 
+Start with an `ordered_determiner_list` of numeric determiners (adjective and quantifier) and a `previous_determiner_group` that starts as the set of all undetermined solutions. `previous_determiner_group` starts with a single subset that contains all the solutions. 
 
-Using the next determiner in the ordered list: `determiner(variable)` and the previous determiner group:
-    Find collective and distributive: For each previous determiner group subset:
-        Group all the solutions in the previous subset by unique `variable` values (where "value" means the entire variable value as a set, not the individuals in it). These form the *new subsets*.
+Using the next determiner in `ordered_determiner_list` (`determiner(variable)`) and `previous_determiner_group`:
+    Find collective and distributive: For each subset in `previous_determiner_group`:
+        Group all the solutions in `previous_determiner_group` by unique `variable` values (where "value" means the entire variable value as a set, not the individuals in it). These form the `new_subsets`.
         Find a set of the unique `variable` values just found that satisfies `determiner(variable)`.
-        Form a new determiner group using the new subsets that go with these unique variable values
-        Run the algorithm again after removing this determiner from the list and using the new determiner group
-    Find cumulative: Do the same but across all subsets
+        Form `new_determiner_group` using `new_subsets` that go with these unique variable values
+        Run the algorithm again after removing `determiner(variable)` from the list and using `new_determiner_group`
+    Find cumulative: Do the same but merge all subsets instead of iterating over each subset
 
 If all determiners are successful, the determiner group that remains at the end is a solution.
 
