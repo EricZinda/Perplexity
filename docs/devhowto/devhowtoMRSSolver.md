@@ -676,8 +676,11 @@ Start with an `ordered_determiner_list` of numeric determiners (adjective and qu
 
 Using the next determiner in `ordered_determiner_list` (`determiner(variable)`) and `previous_determiner_group`:
     Find collective and distributive: For each `previous_subset` in `previous_determiner_group`:
-        Group all the solutions in `previous_subset` by unique `variable` values (where "value" means the entire variable value as a set, not the individuals in it). These form the `new_subsets`.
-        Find a group of the unique `variable` values just found that satisfies `determiner(variable)`.
+        Group all the solutions in `previous_subset` by unique `variable` values (where "value" means the entire variable value as a set, not the individuals in it). 
+            These form the `new_subsets`.
+        Find each combination of the unique `variable` values just found
+            Merge them into a unique list (removing duplicates)
+            See if this combination satisfies `determiner(variable)`.
         Form `new_determiner_group` using `new_subsets` that go with these unique variable values
         Run the algorithm again after removing `determiner(variable)` from the list and using `new_determiner_group`
     Find cumulative: Do the same but merge all subsets instead of iterating over each subset
