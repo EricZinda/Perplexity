@@ -337,6 +337,7 @@ udef_q(x3,RSTR,BODY)
 ~~~
 
 ## Tests
+https://sites.rutgers.edu/kristen-syrett/wp-content/uploads/sites/40/2018/09/Distributivity_Syrett.pdf
 each/all/every
 3 boys each carried for piaons (forces boys to dist)
 ) A group of three boys carried a group of four pianos. (forces both collective)

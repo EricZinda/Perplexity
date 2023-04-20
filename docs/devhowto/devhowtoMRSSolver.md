@@ -807,17 +807,6 @@ So, now we have a solver that can deal with plurals properly, and allows predica
 
 # Email
 
-Overall, I'm trying to describe a relatively comprehensive approach for evaluating the truth of an MRS against a world state. I feel like the lack of one written down (that I've been able to find, at least) is going to block developers from building systems with MRS. They simply won't know where to start.  I'm just focused on the mechanics of predication evaluation, not on how to code up the underlying semantics of a given predication. I'll definitely post links to the different parts as I write them up.
-
-The algorithm I've been developing is the part of the system that deals with properly handling plurals. A *really* brief summary of the main theory I'm working through is:
-
-> The fully resolved tree for an MRS can be evaluated against a world state in two stages:
-> 
-> *Stage 1:* Remove all the numeric determiner semantics ("many", "2 or more", "all", "some", "the", etc.) from the fully-resolved tree and solve it. This involves literally removing the numeric *adjective* determiners and their modifiers (e.g. `card(2,e,x)` or `much-many_a(e8,x3)`) and converting the numeric *quantifier determiners* (e.g. `_all_q(x3,RSTR,BODY)` or `_the_q(x3,RSTR,BODY)`) to `udef_q`. This creates a set of "undetermined solutions".
-> 
-> *Stage 2:* Create groups out of the undetermined solutions that satisfy the first determiner and run each group recursively (left to right) through the rest of the numeric determiners in order. The groups that succeed are solutions.  Forward and reverse readings happen via different fully-resolved trees.
-
-So far, this approach has simplified the logic for dealing with plurals and allows for some interesting optimizations.  Below I go through it in more detail, with examples.
 
 
 # Archive

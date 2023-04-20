@@ -1,11 +1,25 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+- Stream the undetermined solutions
+  - Phase 2 requires AllRstrValues to be generated for things like "the" and maybe "all"
+    - The entire MRS must be finished in the current model to get these
+    - Instead, we could *maybe* generate them up front if needed
+  - (fixed) Doing Phase 2 collective forces an entire group to be materialized
+  - solution_list_alternatives_without_combinatorial_variables forces the entire group to be materialized
+    - The only time we really do solution_group_combinatorial is for the first one
+      - Should we break apart the distinction between  solution_group_combinatorial and variable?
 - Figure out where the scaling problems are: where combinatorics are exploding
-  - Make sure that yes/no questions can be answered quickly
-  - can determiners start running without materializing the entire undetermined solution set?
-  - maybe name everything "_stream" that can properly stream answers
-  - 
+    Issue: Example 33: A few files are in a folder together
+        Also slow: A few files are in a folder
+        In fact: files are in a folder is ridiculously slow
+            Problem 1: the undetermined solutions aren't streamed
+- 
+
+    - Make sure that yes/no questions can be answered quickly
+    - can determiners start running without materializing the entire undetermined solution set?
+    - maybe name everything "_stream" that can properly stream answers
+    - 
 3 students are eating 2 pizzas
     - the 2 pizzas can be the same, it just needs to be 2 against the same
 
@@ -13,7 +27,6 @@ Go through each plural
 - Test: 
         - https://aclanthology.org/P88-1003.pdf
         - https://aclanthology.org/W13-0202.pdf
-    - implement hashing so that sets work and use sets for duplicates
     - when large() is applied to a set, it is unclear how to declare it. Figure this out later.
     - "which files are in folders" -> The problem is that it generates all combinations of 13 files and finds a ton of duplicate answers
         First attempt: just generate them all

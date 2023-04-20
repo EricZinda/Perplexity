@@ -103,7 +103,7 @@ Then, stage 2 tests the next determiner against each generated determiner group.
 ### Test 1
 Test 1 is the new one (not used by the initial determiner) and tests if the total *for each previous determiner variable value* satisfies its determiner. It will find distributive answers (among others).
 
-So, If you take each incoming `some_q(x3, ...)` determiner group like `Group 1`, and evaluate `card(2,e14,x10)` against the solutions that go with unique *x3* values and they *all* succeed, you get these results:
+So, If you take each incoming `some_q(x3, ...)` determiner group like `Group 1`, and evaluate `card(2,e14,x10)` against the solutions that go with unique *x3* values, you get these results:
 
 ~~~
 Group 1: (FAIL: each unique x3 doesn't have 2 x10 pizzas)
@@ -144,9 +144,9 @@ Test 1 succeeds when the count of individuals in its characteristic variable per
 - *Some* `cumulative readings` (e.g. `Group 4`) But, since it checks the "per `x3` total", it will miss those where the sum of all `x10` is 2 (e.g. `Group 1`)
 
 ### Test 2
-Test 2 is the test used by the initial determiner: it tests if the total *across the whole determiner group* satisfies its determiner. But, while the initial group *creates* all combinations of solutions that meet the test, determiners after it just *test* if the given group does. 
+Test 2 is the test used by the initial determiner: it tests if the total *across the whole determiner group* satisfies its determiner. 
 
-For Test 2: If you take `Group 1` from `some_q(x3, ...)` and test the `card(2,e14,x10)` determiner against it *across the whole group* (i.e. *ignoring* its `x3` subsets), you've done one group. If you do them all, you'll get:
+For Test 2: If you take `Group 1` from `some_q(x3, ...)` and test the `card(2,e14,x10)` determiner *across the whole group* (i.e. *ignoring* its `x3` subsets), you've done one group. If you do them all, you'll get:
 ~~~
 Group 1: (cumulative over x3: count of all unique x10 is 2)
     Solution 1: x3=[man1], x10=[pizza1]
