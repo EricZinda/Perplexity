@@ -4,7 +4,8 @@ Plurals work
 - Figure out where the scaling problems are: where combinatorics are exploding
   - Make sure that yes/no questions can be answered quickly
   - can determiners start running without materializing the entire undetermined solution set?
-
+  - maybe name everything "_stream" that can properly stream answers
+  - 
 3 students are eating 2 pizzas
     - the 2 pizzas can be the same, it just needs to be 2 against the same
 

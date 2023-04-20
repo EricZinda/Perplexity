@@ -86,12 +86,26 @@ def unique_objects_from_variables(variable_value_list):
 #
 # If all determiners are successful, the determiner group that remains at the end is a solution.
 def determiner_solution_groups(execution_context, previous_determiner_group, determiner_variable_name, determiner_criteria, solution_group_combinatorial, is_last_determiner, max_answer_count=float('inf')):
-    # Find collective and distributive:
     # For each `previous_subset` in `previous_determiner_group`
-    for previous_subset in previous_determiner_group.items():
-        yield from new_determiner_groups_helper(execution_context, previous_subset[1], determiner_variable_name, determiner_criteria, solution_group_combinatorial, is_last_determiner, max_answer_count)
+    # The first group is special since there are no "previous subsets" so we skip this step
+    is_first_determiner_group = len(previous_determiner_group) == 1 and None in previous_determiner_group
+    if not is_first_determiner_group:
+        whole_group_solutions = {}
+        for previous_subset in previous_determiner_group.items():
+            subset_solutions = {}
+            for subset_solution in new_determiner_groups_helper(execution_context, previous_subset[1], determiner_variable_name, determiner_criteria, solution_group_combinatorial, is_last_determiner, max_answer_count):
+                subset_solutions.update(subset_solution)
 
-    # Find cumulative:
+            if len(subset_solutions) == 0:
+                whole_group_solutions = {}
+                break
+
+            else:
+                whole_group_solutions.update(subset_solutions)
+
+        if len(whole_group_solutions) > 0:
+            yield subset_solutions
+
     # Do the same but merge all subsets instead of iterating over each subset
     solutions = []
     for solution_list in previous_determiner_group.values():
