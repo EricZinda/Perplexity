@@ -1,0 +1,499 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Perplexity</title>
+<meta name="description" content="An amazing website.">
+
+
+  <meta name="author" content="Your Name">
+  
+
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Perplexity">
+<meta property="og:title" content="Perplexity">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoPlurals/">
+
+
+  <meta property="og:description" content="An amazing website.">
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoPlurals/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Your Name",
+      "url": "http://blog.inductorsoftware.com/Perplexity/home/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/Perplexity/home/feed.xml" type="application/atom+xml" rel="alternate" title="Perplexity Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/Perplexity/home/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--delphin_page wide">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+          <a class="site-logo" href="/Perplexity/home/"><img src="/Perplexity/home/assets/images/Delph-In.png" alt="Perplexity"></a>
+        
+        <a class="site-title" href="/Perplexity/home/">
+          Perplexity
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview">Home</a>
+            </li></ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox" />
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">How-To</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowtoOverview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowtoWellFormedTree/">Well-Formed Trees</a></li>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowtoPlurals/" class="active">Plural Algorithm</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    
+    
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+        
+<h1 id="algorithm-for-dealing-with-plurals-in-mrs">Algorithm for Dealing with Plurals in MRS</h1>
+<h2 id="overview">Overview</h2>
+<p>A <em>really</em> brief summary of one possible approach for properly resolving plurals in an MRS against a world state is:</p>
+
+<blockquote>
+  <p>The fully resolved tree for an MRS can be evaluated against a world state in two stages:</p>
+
+  <p><em>Stage 1:</em> Remove all the numeric determiner semantics (“many”, “2 or more”, “all”, “some”, “the”, etc.) from the fully-resolved tree and solve it. This involves literally removing the numeric <em>adjective</em> determiners and their modifiers (e.g. <code class="language-plaintext highlighter-rouge">card(2,e,x)</code> or <code class="language-plaintext highlighter-rouge">much-many_a(e8,x3)</code>) and converting the numeric <em>quantifier determiners</em> (e.g. <code class="language-plaintext highlighter-rouge">_all_q(x3,RSTR,BODY)</code> or <code class="language-plaintext highlighter-rouge">_the_q(x3,RSTR,BODY)</code>) to <code class="language-plaintext highlighter-rouge">udef_q</code>. This creates a set of “undetermined solutions”.</p>
+
+  <p><em>Stage 2:</em> Create groups out of the undetermined solutions that satisfy the first determiner and run each group recursively (left to right) through the rest of the numeric determiners in order. The groups that succeed are solutions.  Forward and reverse readings happen via different fully-resolved trees.</p>
+</blockquote>
+
+<p>Below I walk through this in much more detail, with examples.</p>
+
+<h2 id="stage-1">Stage 1</h2>
+<p>Definitions:</p>
+<ul>
+  <li>A <em>numeric determiner</em> creates a numeric constraint on a particular <code class="language-plaintext highlighter-rouge">x</code> variable</li>
+  <li>A <em>numeric adjective determiner</em> is an adjective that creates a numeric constraint on a particular <code class="language-plaintext highlighter-rouge">x</code> variable, such as <code class="language-plaintext highlighter-rouge">card(2,e,x)</code> or <code class="language-plaintext highlighter-rouge">much-many_a(e8,x3)</code>.</li>
+  <li>A <em>numeric quantifier determiner</em> is a quantifier that creates a numeric constraint on a particular <code class="language-plaintext highlighter-rouge">x</code> variable, such as <code class="language-plaintext highlighter-rouge">_all_q(x3,RSTR,BODY)</code> or <code class="language-plaintext highlighter-rouge">_the_q(x3,RSTR,BODY)</code></li>
+</ul>
+
+<p>Stage 1 is done by removing all the numeric determiner semantics from a fully-resolved MRS tree and then evaluating it. For example, here’s a forward reading (with respect to word order) of: “some men are eating two pizzas”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_some_q(x3,_man_n_1(x3),udef_q(x10,[_pizza_n_1(x10), card(2,e14,x10)],_eat_v_1(e2,x3,x10)))
+</code></pre></div></div>
+
+<p>In stage 1, <code class="language-plaintext highlighter-rouge">_some_q</code> is converted to <code class="language-plaintext highlighter-rouge">udef_q</code> (which seems like the most “NOOP” quantifier) and <code class="language-plaintext highlighter-rouge">card</code> is removed, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>udef_q(x3,_man_n_1(x3),udef_q(x10,_pizza_n_1(x10),_eat_v_1(e2,x3,x10)))
+</code></pre></div></div>
+
+<p>… which gets you something like “men are eating pizzas”, but, I evaluate it ignoring the plural as well, so, it is really more like: “man/men is/are eating pizza(s)”.  Solving that gives you a flat set of solutions that I’m calling “undetermined solutions”.</p>
+
+<p>For example, imagine a world where a bunch of men are eating pizzas and we solve the “undetermined MRS” above for all values of <code class="language-plaintext highlighter-rouge">x3</code> and <code class="language-plaintext highlighter-rouge">x10</code>. Below, solutions are represented as assignments of values (which are always a set but can be a set of 1) to variables in the MRS that make it true. The set of variable assignments in 1 solution makes the MRS true, and the MRS is true for each of the solutions. Within a solution: If a variable is assigned a set of &gt; 1, it means those individuals are doing something “together”.</p>
+
+<p>Using that approach, here is a list of all the true states of the “undetermined MRS” in this world, found by resolving the tree (how <em>that</em> is done is described elsewhere, to be written):</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Solution 1: x3=[man1], x10=[pizza1]                 "man1 is eating pizza1"
+Solution 2: x3=[man2], x10=[pizza2]
+Solution 3: x3=[man3], x10=[pizza3]
+Solution 4: x3=[man3], x10=[pizza4]
+Solution 5: x3=[man4], x10=[pizza5]
+Solution 6: x3=[man4], x10=[pizza6]
+Solution 7: x3=[man5,man6], x10=[pizza7]            "man5 and man6, together, are eating pizza7"
+Solution 8: x3=[man5,man6], x10=[pizza8]
+Solution 9: x3=[man7,man8], x10=[pizza9, pizza10]   "man7 and man8, together are eating pizza9 and pizza10 at the same time"
+Solution 10: x3=[man9], x10=[pizza11, pizza12]      "man9 is eating pizza11 and pizza12 at the same time"
+Solution 11: x3=[man10,man11], x10=[pizza13]
+Solution 12: x3=[man12], x10=[pizza14]
+</code></pre></div></div>
+
+<p>At the end of Stage 1, we have just the flat list of undetermined solutions.</p>
+<h2 id="stage-2">Stage 2</h2>
+<p>Summary: Stage 2 recursively (left to right in execution order) runs each numeric determiner that has been removed over a group of solutions generated by the previous determiner.</p>
+<ul>
+  <li>The first determiner creates a “determiner group” for every combination of solutions that satisfy it and sends each determiner group forward to the next.</li>
+  <li>The next determiner checks to see if the entire provided determiner group satisfies it. If so, it passes it forward to the next.</li>
+  <li>etc.</li>
+  <li>Any groups that make it all the way to the end are a valid interpretation</li>
+</ul>
+
+<p>So, the first determiner, <code class="language-plaintext highlighter-rouge">some_q(x3, ...)</code>, has the special job of creating all the determiner groups that will be tested by the rest of the determiners. It groups the incoming initial solutions (the flat list of undetermined solutions, above) into <em>all possible groups</em> where there are, lets say, at least two <code class="language-plaintext highlighter-rouge">x3</code> individuals (meaning “some &gt;= 2”), like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>some_q(x3, ...) determiner groups
+-------------------------------
+
+Group 1: (created since 2 men)
+    x3=[man1]:
+        Solution 1: x3=[man1], x10=[pizza1]
+    x3=[man2]:
+        Solution 2: x3=[man2], x10=[pizza2]
+
+Group 2: (created since 2 men - only unique values matter)
+    x3=[man3]:
+        Solution 3: x3=[man3], x10=[pizza3]
+        Solution 4: x3=[man3], x10=[pizza4]
+    x3=[man4]:
+        Solution 5: x3=[man4], x10=[pizza5]
+        Solution 6: x3=[man4], x10=[pizza6]
+
+Group 3: (created since 2 men - unique *individuals* are counted)
+    x3=[man5,man6]:
+        Solution 7: x3=[man5,man6], x10=[pizza7]
+        Solution 8: x3=[man5,man6], x10=[pizza8]
+    
+Group 4: (created since 3 men is still "some")
+    x3=[man7,man8]:
+        Solution 9: x3=[man7,man8], x10=[pizza9, pizza10]
+    x3=[man9]:
+        Solution 10: x3=[man9], x10=[pizza11, pizza12]
+
+Group 5: (created since 3 men is still "some")
+    x3=[man10,man11]:
+        Solution 11: x3=[man10,man11], x10=[pizza13]
+    x3=[man12]:
+        Solution 12: x3=[man12], x10=[pizza14]
+
+... etc. (there are *many* more solutions not listed)
+</code></pre></div></div>
+
+<p>Then, stage 2 tests the next determiner against each generated determiner group. Now that we’re going beyond the initial determiner, stage 2 evaluation no longer generates new groups, it just tests them. It also has to use one additional test to find all the collective, distributive and cumulative answers. So, there are <em>two</em> tests used by every determiner beyond the first.</p>
+
+<h3 id="test-1">Test 1</h3>
+<p>Test 1 is the new one (not used by the initial determiner) and tests if the total <em>for each previous determiner variable value</em> satisfies its determiner. It will find distributive answers (among others).</p>
+
+<p>So, If you take each incoming <code class="language-plaintext highlighter-rouge">some_q(x3, ...)</code> determiner group like <code class="language-plaintext highlighter-rouge">Group 1</code>, and evaluate <code class="language-plaintext highlighter-rouge">card(2,e14,x10)</code> against the solutions that go with unique <em>x3</em> values and they <em>all</em> succeed, you get these results:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1: (FAIL: each unique x3 doesn't have 2 x10 pizzas)
+    x3=[man1]:
+        Solution 1: x3=[man1], x10=[pizza1]
+    x3=[man2]:
+        Solution 2: x3=[man2], x10=[pizza2]
+
+Group 2: (distributive over x3: each unique x3 has 2 x10 pizzas)
+    x3=[man3]:
+        Solution 3: x3=[man3], x10=[pizza3]
+        Solution 4: x3=[man3], x10=[pizza4]
+    x3=[man4]:
+        Solution 5: x3=[man4], x10=[pizza5]
+        Solution 6: x3=[man4], x10=[pizza6]
+
+Group 3: (collective over x3: each unique x3 has 2 x10 pizzas)
+    x3=[man5,man6]:
+        Solution 7: x3=[man5,man6], x10=[pizza7]
+        Solution 8: x3=[man5,man6], x10=[pizza8]
+    
+Group 4: (cumulative? over x3: each unique x3 has 2 x10 pizzas)
+    x3=[man7,man8]:
+        Solution 9: x3=[man7,man8], x10=[pizza9, pizza10]
+    x3=[man9]:
+        Solution 10: x3=[man9], x10=[pizza11, pizza12]
+
+Group 5: (FAIL: each unique x3 doesn't have 2 x10 pizzas)
+    x3=[man10,man11]:
+        Solution 11: x3=[man10,man11], x10=[pizza13]
+    x3=[man12]:
+        Solution 12: x3=[man12], x10=[pizza14]
+</code></pre></div></div>
+
+<p>Test 1 succeeds when the count of individuals in its characteristic variable per previous determiner group <em>x3 subset</em> satisfy its determiner. Thus, in general, it finds the following readings over the previous quantifier:</p>
+<ul>
+  <li><em>All</em> <code class="language-plaintext highlighter-rouge">distributive readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 2</code>) since it checks the “per <code class="language-plaintext highlighter-rouge">x3</code> total”, and when all the <code class="language-plaintext highlighter-rouge">x3</code> values are a single individual, that’s the definition of distributive.</li>
+  <li><em>All</em> <code class="language-plaintext highlighter-rouge">collective readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 3</code>) since it will test a “per <code class="language-plaintext highlighter-rouge">x3</code> total” for a single <code class="language-plaintext highlighter-rouge">x3</code> set &gt; 1</li>
+  <li><em>Some</em> <code class="language-plaintext highlighter-rouge">cumulative readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 4</code>) But, since it checks the “per <code class="language-plaintext highlighter-rouge">x3</code> total”, it will miss those where the sum of all <code class="language-plaintext highlighter-rouge">x10</code> is 2 (e.g. <code class="language-plaintext highlighter-rouge">Group 1</code>)</li>
+</ul>
+
+<h3 id="test-2">Test 2</h3>
+<p>Test 2 is the test used by the initial determiner: it tests if the total <em>across the whole determiner group</em> satisfies its determiner. But, while the initial group <em>creates</em> all combinations of solutions that meet the test, determiners after it just <em>test</em> if the given group does.</p>
+
+<p>For Test 2: If you take <code class="language-plaintext highlighter-rouge">Group 1</code> from <code class="language-plaintext highlighter-rouge">some_q(x3, ...)</code> and test the <code class="language-plaintext highlighter-rouge">card(2,e14,x10)</code> determiner against it <em>across the whole group</em> (i.e. <em>ignoring</em> its <code class="language-plaintext highlighter-rouge">x3</code> subsets), you’ve done one group. If you do them all, you’ll get:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1: (cumulative over x3: count of all unique x10 is 2)
+    Solution 1: x3=[man1], x10=[pizza1]
+    Solution 2: x3=[man2], x10=[pizza2]
+
+Group 2: (FAIL: count of all unique x10 is &gt; 2)
+    Solution 3: x3=[man3], x10=[pizza3]
+    Solution 4: x3=[man3], x10=[pizza4]
+    Solution 5: x3=[man4], x10=[pizza5]
+    Solution 6: x3=[man4], x10=[pizza6]
+
+Group 3: (collective over x3: count of all unique x10 is 2)
+    Solution 7: x3=[man5,man6], x10=[pizza7]
+    Solution 8: x3=[man5,man6], x10=[pizza8]
+    
+Group 4: (FAIL: count of all unique x10 is &gt; 2)
+    Solution 9: x3=[man7,man8], x10=[pizza9, pizza10]
+    Solution 10: x3=[man9], x10=[pizza11, pizza12]
+
+Group 5: (cumulative over x3: count of all unique x10 is 2)
+    Solution 11: x3=[man10,man11], x10=[pizza13]
+    Solution 12: x3=[man12], x10=[pizza14]
+</code></pre></div></div>
+
+<p>Test 2 finds the following readings over the previous quantifier:</p>
+<ul>
+  <li><em>All</em> <code class="language-plaintext highlighter-rouge">collective readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 3</code>). In a collective reading like <code class="language-plaintext highlighter-rouge">Group 3</code>, there is only one value of <code class="language-plaintext highlighter-rouge">x3</code> (that happens to be a set &gt; 1) and thus there is no distinction between “per <code class="language-plaintext highlighter-rouge">x3</code> value” and “across all <code class="language-plaintext highlighter-rouge">x3</code> values”, so this test duplicates all collective groups from Test 1.</li>
+  <li><em>Some</em> <code class="language-plaintext highlighter-rouge">cumulative readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group1</code> and <code class="language-plaintext highlighter-rouge">Group 5</code>). These are different ones than Test 1. Between the two tests, all cumulative readings are covered.</li>
+  <li><em>Some (very small set of)</em> <code class="language-plaintext highlighter-rouge">distributive readings</code>. Namely, ones where each <code class="language-plaintext highlighter-rouge">x3</code> meets the determiner test <em>with the exact same values</em>. These will be duplicates of Test 1.</li>
+</ul>
+
+<p>After running through both Phase 1 and Phase 2 for each determiner, in order, the groups that remain represent all the collective, distributive and cumulative solutions, with some duplication.</p>
+
+<p>Last update: 2023-04-20 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoPlurals.md">edit</a>]</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+
+      </footer>
+
+      
+
+      
+    </div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+<!--Scroll the navbar to the current page-->
+<script type="text/javascript">
+  let el = document.querySelector('.nav__list .active');
+  if(el){
+    el.scrollIntoView({block: "center", inline: "start"});
+  }
+</script>
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
+  </form>
+  <div id="results" class="results"></div></div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+
+    
+      <li><a href="/Perplexity/home/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2023 Your Name. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/Perplexity/home/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/Perplexity/home/assets/js/lunr/lunr.min.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-store.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+
+
+
+  </body>
+</html>
