@@ -11,13 +11,29 @@ A *really* brief summary of one possible approach for properly resolving plurals
 
 Below I walk through this in much more detail, with examples.
 
-## Stage 1
-Definitions:
+## Collective/Distributive/Cumulative Definitions
+For “two firefighters carried two hoses”:
+
+When referring to a fully-resolved tree (which means that forward and reverse readings with respect to word order are just different trees and aren’t included in the definition):
+
+“The distributive reading”
+- Firefighters: 2 or more subgroups, each of size > 0, where every individual in question is in exactly one group (the definition above).
+- Hoses: All subgroups must have two hoses each. Individual hoses may be repeated in subgroups.
+
+“The collective reading”
+- Firefighters: Exactly 1 subgroup that contains the entire set of individuals in question
+- Hoses: Identical to distributive
+
+“The cumulative reading”
+- Firefighters: Identical to distributive
+- Hoses: The total of unique individual hoses across all subgroups adds up to two.
+
+## Determiner Definitions
 - A *numeric determiner* creates a numeric constraint on a particular `x` variable
 - A *numeric adjective determiner* is an adjective that creates a numeric constraint on a particular `x` variable, such as `card(2,e,x)` or `much-many_a(e8,x3)`.
 - A *numeric quantifier determiner* is a quantifier that creates a numeric constraint on a particular `x` variable, such as `_all_q(x3,RSTR,BODY)` or `_the_q(x3,RSTR,BODY)`
 
-
+## Stage 1
 Stage 1 is done by removing all the numeric determiner semantics from a fully-resolved MRS tree and then evaluating it. For example, here's a forward reading (with respect to word order) of: "some men are eating two pizzas":
 
 ~~~
@@ -125,7 +141,7 @@ Group 3: (collective over x3: each unique x3 has 2 x10 pizzas)
         Solution 7: x3=[man5,man6], x10=[pizza7]
         Solution 8: x3=[man5,man6], x10=[pizza8]
     
-Group 4: (cumulative? over x3: each unique x3 has 2 x10 pizzas)
+Group 4: (distributive over x3: each unique x3 has 2 x10 pizzas)
     x3=[man7,man8]:
         Solution 9: x3=[man7,man8], x10=[pizza9, pizza10]
     x3=[man9]:
@@ -141,10 +157,10 @@ Group 5: (FAIL: each unique x3 doesn't have 2 x10 pizzas)
 Test 1 succeeds when the count of individuals in its characteristic variable per previous determiner group *x3 subset* satisfy its determiner. Thus, in general, it finds the following readings over the previous quantifier:
 - *All* `distributive readings` (e.g. `Group 2`) since it checks the "per `x3` total", and when all the `x3` values are a single individual, that's the definition of distributive.
 - *All* `collective readings` (e.g. `Group 3`) since it will test a "per `x3` total" for a single `x3` set > 1 
-- *Some* `cumulative readings` (e.g. `Group 4`) But, since it checks the "per `x3` total", it will miss those where the sum of all `x10` is 2 (e.g. `Group 1`)
+- *Some tiny number of technically* `cumulative readings` where the `x10` individuals are the same for each `x3`
 
 ### Test 2
-Test 2 is the test used by the initial determiner: it tests if the total *across the whole determiner group* satisfies its determiner. 
+Test 2 is the test used by the initial determiner and is the "cumulative" test: it tests if the total *across the whole determiner group* satisfies its determiner. 
 
 For Test 2: If you take `Group 1` from `some_q(x3, ...)` and test the `card(2,e14,x10)` determiner *across the whole group* (i.e. *ignoring* its `x3` subsets), you've done one group. If you do them all, you'll get:
 ~~~
@@ -173,8 +189,9 @@ Group 5: (cumulative over x3: count of all unique x10 is 2)
 
 Test 2 finds the following readings over the previous quantifier:
 - *All* `collective readings` (e.g. `Group 3`). In a collective reading like `Group 3`, there is only one value of `x3` (that happens to be a set > 1) and thus there is no distinction between "per `x3` value" and "across all `x3` values", so this test duplicates all collective groups from Test 1.
-- *Some* `cumulative readings` (e.g. `Group1` and `Group 5`). These are different ones than Test 1. Between the two tests, all cumulative readings are covered.
-- *Some (very small set of)* `distributive readings`. Namely, ones where each `x3` meets the determiner test *with the exact same values*. These will be duplicates of Test 1.
+- *All* `cumulative readings` (e.g. `Group1` and `Group 5`).
+- *Some (tiny number of technically)* `distributive readings`. Namely, ones where each `x3` meets the determiner test *with the exact same values*. These will be duplicates of Test 1.
 
+Note that, if you limit test 2 to only groups that have exactly 1 unique `x3` assignment, then the only duplication that happens is the distributive one listed, with no loss of generality.
 
 After running through both Phase 1 and Phase 2 for each determiner, in order, the groups that remain represent all the collective, distributive and cumulative solutions, with some duplication.
