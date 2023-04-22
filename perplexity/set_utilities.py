@@ -1,3 +1,5 @@
+import copy
+import enum
 import itertools
 
 
@@ -54,6 +56,159 @@ def all_nonempty_subsets_stream(s, min_size=1, max_size=float('inf')):
                 yield new_set
             new_sets.append(new_set)
         sets += new_sets
+
+
+class CriteriaResult(enum.Enum):
+    meets = 0
+    contender = 1
+    fail = 2
+
+
+class VariableCriteria(object):
+    def __init__(self, variable_name, min_size=1, max_size=float('inf')):
+        self.variable_name = variable_name
+        self.min_size = min_size
+        self.max_size = max_size
+
+    # Numbers can only increase so ...
+    def meets_criteria(self, count):
+        if count > self.max_size:
+            # It'll never get smaller so it fails forever
+            return CriteriaResult.fail
+
+        elif count < self.min_size:
+            return CriteriaResult.contender
+
+        else:
+            # count >= self.min_size and count <= self.max_size
+            return CriteriaResult.meets
+
+
+class GroupVariableStats(object):
+    def __init__(self, variable_name):
+        self.variable_name = variable_name
+        self.whole_group_unique_individuals = set()
+        self.whole_group_unique_values = {}
+        self.prev_variable_stats = None
+        self.next_variable_stats = None
+
+    def __repr__(self):
+        return f"values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
+
+    def add_solution(self, variable_criteria, solution):
+        binding_value = solution.get_binding(self.variable_name).value
+        self.whole_group_unique_individuals.update(binding_value)
+        next_value = None if self.next_variable_stats is None else solution.get_binding(self.next_variable_stats.variable_name).value
+        if binding_value not in self.whole_group_unique_values:
+            self.whole_group_unique_values[binding_value] = [set(next_value if next_value is not None else []), [solution]]
+        else:
+            self.whole_group_unique_values[binding_value][0].update(next_value if next_value is not None else [])
+            self.whole_group_unique_values[binding_value][1].append(solution)
+
+        prev_unique_value_count = None if self.prev_variable_stats is None else len(self.prev_variable_stats.whole_group_unique_values)
+        if prev_unique_value_count is not None and prev_unique_value_count > 1:
+            # Cumulative
+            cumulative_state = variable_criteria.meets_criteria(count_set(self.whole_group_unique_individuals))
+            if cumulative_state == CriteriaResult.meets:
+                return CriteriaResult.meets
+
+            # Distributive
+            # for each prev_unique_value: len(unique_values) meets criteria
+            distributive_state = CriteriaResult.meets
+            for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
+                distributive_value_state = variable_criteria.meets_criteria(count_set(prev_unique_value_item[1][0]))
+                distributive_state = criteria_transitions[distributive_state][distributive_value_state]
+                if distributive_state == CriteriaResult.fail:
+                    break
+
+            if distributive_state == CriteriaResult.meets:
+                return CriteriaResult.meets
+
+            return CriteriaResult.contender if cumulative_state == CriteriaResult.contender or distributive_state == CriteriaResult.contender else CriteriaResult.fail
+
+        elif prev_unique_value_count is None or prev_unique_value_count == 1:
+            # Collective
+            return variable_criteria.meets_criteria(count_set(self.whole_group_unique_individuals))
+
+
+# Distributive needs to create groups by unique variable value
+# Every set needs set[0] to be a dict that tracks the shape of the set when a new row is added
+# we yield a set when its shape is a valid coll/dist/cuml shape
+# for each level, the shape needs to track:
+#   How many unique values of x across the whole set
+#   How many unique individuals of x across the whole set
+#   How many unique individuals of x per previous variable unique value
+#
+#   So this means that each variable tracks:
+#       whole_group_unique_individuals
+#       whole_group_unique_values
+#           solutions that go with each unique_value
+#
+#   A given set is a solution if every variable is a cum/dst/col solution
+#   A given x is a cum/dst/col solution if:
+#       collective if len(prev_unique_values) == 1 and len(unique_values) meets criteria
+#       distributive if len(prev_unique_values) > 1 and for each prev_unique_value: len(unique_values) meets criteria
+#       cumulative if len(prev_unique_values) > 1 and len(unique_values) meets criteria
+#
+def check_criteria_all(var_criteria, current_set_stats, new_solution):
+    new_set_state = CriteriaResult.meets
+    for index in range(len(var_criteria)):
+        variable_stats = current_set_stats[index]
+        criteria = var_criteria[index]
+        state = variable_stats.add_solution(criteria, new_solution)
+        new_set_state = criteria_transitions[new_set_state][state]
+        if new_set_state == CriteriaResult.fail:
+            return CriteriaResult.fail
+
+    return new_set_state
+
+
+def all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+    initial_stats = []
+    for criteria in var_criteria:
+        var_stats = GroupVariableStats(criteria.variable_name)
+        initial_stats.append(var_stats)
+
+    for stat_index in range(len(initial_stats)):
+        prev_stat = None if stat_index == 0 else initial_stats[stat_index - 1]
+        next_stat = None if stat_index + 1 == len(initial_stats) else initial_stats[stat_index + 1]
+        initial_stats[stat_index].prev_variable_stats = prev_stat
+        initial_stats[stat_index].next_variable_stats = next_stat
+
+    sets = [(initial_stats, ())]
+    for i in solutions:
+        new_sets = []
+        for k in sets:
+            new_set_criteria = copy.deepcopy(k[0])
+            state = check_criteria_all(var_criteria,  new_set_criteria, i)
+            if state == CriteriaResult.meets:
+                #   - meets criteria: yield it
+                new_set = (new_set_criteria, k[1] + (i,))
+                yield new_set[1]
+                new_sets.append(new_set)
+
+            elif state == CriteriaResult.contender:
+                # - contender (but doesn't meet yet): add to the set but don't yield
+                new_set = (new_set_criteria, k[1] + (i,))
+                new_sets.append(new_set)
+
+            elif state == CriteriaResult.fail:
+                #   - fail (doesn't meet ): don't add don't yield
+                continue
+
+        sets += new_sets
+
+
+criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaResult.meets,
+                                               CriteriaResult.contender: CriteriaResult.contender,
+                                               CriteriaResult.fail: CriteriaResult.fail},
+                        CriteriaResult.contender: {CriteriaResult.meets: CriteriaResult.contender,
+                                                   CriteriaResult.contender: CriteriaResult.contender,
+                                                   CriteriaResult.fail: CriteriaResult.fail},
+                        CriteriaResult.fail: {CriteriaResult.meets: CriteriaResult.fail,
+                                              CriteriaResult.contender: CriteriaResult.fail,
+                                              CriteriaResult.fail: CriteriaResult.fail}
+                        }
 
 
 def all_nonempty_subsets_of_list_of_lists_stream(list_of_lists):
@@ -163,7 +318,4 @@ def count_set(rstr_value):
 
 
 if __name__ == '__main__':
-    for l1 in all_combinations_with_elements_from_all([[0, 1], [2, 3]]):
-        print("start")
-        for l2 in l1:
-            print(l2)
+    pass

@@ -1,6 +1,22 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+- Do we really need to do all combinations of solutions?
+    - Is there a better way to
+      - Streaming algorithm
+      - online algorithms
+      - Integer programming: https://stackoverflow.com/questions/62622312/algorithm-to-find-some-rows-from-a-matrix-whose-sum-is-equal-to-a-given-row
+      - Algorithm for everything is between(): 
+        - start collecting answers and tracking when you finally get a match
+        - when you do, then return that answer ?and all combinations so far?
+        - every answer after that is added generates N combinations with the previous ones
+        - One solution seems like it should be just like product_stream
+          - 
+      - Scenarios:
+        - files are large: >1(x)
+        - which file is large: =1(x)
+        - 2 files are large: 2(x)
+        - which 3 files are in 2 folders: 3(x), 2(y)
 - Stream the undetermined solutions
   - Phase 2 requires AllRstrValues to be generated for things like "the" and maybe "all"
     - The entire MRS must be finished in the current model to get these

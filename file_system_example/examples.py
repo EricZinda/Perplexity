@@ -13,9 +13,11 @@ from perplexity.generation import english_for_delphin_variable
 # Helpers that allow the examples to use
 # old interfaces in the early parts of the docs
 ##########################
+from perplexity.set_utilities import all_nonempty_subsets_var_all_stream, VariableCriteria
 from perplexity.tree import TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
+from perplexity.variable_binding import VariableValueType
 
 
 def solve_and_respond(state, mrs):
@@ -704,6 +706,79 @@ def Example35():
         print()
 
 
+def build_solutions(spec):
+    solutions = []
+    for item in spec:
+        state = State([])
+        for var_item in item.items():
+            state = state.set_x(var_item[0], var_item[1], VariableValueType.none)
+        solutions.append(state)
+
+    return solutions
+
+
+def state_test():
+    # # 1 collective
+    # solutions = build_solutions([{"x1": ("a",), "x2": ("a",)}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 1)]
+    # for foo in all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+    #     print(str(foo) + "\n")
+    # print("=============")
+    #
+    # # 1 collective
+    # solutions = build_solutions([{"x1": ("a",), "x2": ("a",)},
+    #                              {"x1": ("b",), "x2": ("c",)},
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 1)]
+    # for foo in all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+    #     print(str(foo) + "\n")
+    # print("=============")
+
+    # # 2 students eat 2 pizzas only distributive
+    # solutions = build_solutions([{"x1": ("a",), "x2": ("w", "x")},
+    #                              {"x1": ("b",), "x2": ("y", "z")},
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 2, 2), VariableCriteria("x2", 2, 2)]
+    # for foo in all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
+
+    # # 2 students eat 2 pizzas only collective
+    # solutions = build_solutions([{"x1": ("a", "b"), "x2": ("w", "x")}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 2, 2), VariableCriteria("x2", 2, 2)]
+    # for foo in all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
+
+    # 2 students eat 2 pizzas only cumulative
+    solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
+                                 {"x1": ("b", ), "x2": ("x",)}
+                                 ])
+    var_criteria = [VariableCriteria("x1", 2, 2), VariableCriteria("x2", 2, 2)]
+    for foo in all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+        for solution in foo:
+            print(solution)
+        print()
+    print("=============")
+
+    # files are in folders (each file in the same folder)
+    # Issue: (by design) returns the smallest combinations first
+    # specs = []
+    # for i in range(1000):
+    #     specs.append({"x1": ("file" + str(i),), "x2": ("folder",)})
+    # solutions = build_solutions(specs)
+    # var_criteria = [VariableCriteria("x1", 1), VariableCriteria("x2", 1)]
+    # for foo in all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+    #     print(str(foo) + "\n")
+    # print("=============")
+
+
 if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
@@ -747,7 +822,7 @@ if __name__ == '__main__':
     # Example25()
     # Example26()
     # Example27()
-    Example28()
+    # Example28()
     # Example29()
     # Example30()
     # Example31()
@@ -756,6 +831,8 @@ if __name__ == '__main__':
     # Example33_performance_test()
     # Example34()
     # Example35()
+
+    state_test()
 
     # import cProfile
     # cProfile.run('Example33_performance_test()', '/Users/ericzinda/Enlistments/perf.bin')
