@@ -226,14 +226,37 @@
 
 <p>Below I walk through this in much more detail, with examples.</p>
 
-<h2 id="stage-1">Stage 1</h2>
-<p>Definitions:</p>
+<h2 id="collectivedistributivecumulative-definitions">Collective/Distributive/Cumulative Definitions</h2>
+<p>For “two firefighters carried two hoses”:</p>
+
+<p>When referring to a fully-resolved tree (which means that forward and reverse readings with respect to word order are just different trees and aren’t included in the definition):</p>
+
+<p>“The distributive reading”</p>
+<ul>
+  <li>Firefighters: 2 or more subgroups, each of size &gt; 0, where every individual in question is in exactly one group (the definition above).</li>
+  <li>Hoses: All subgroups must have two hoses each. Individual hoses may be repeated in subgroups.</li>
+</ul>
+
+<p>“The collective reading”</p>
+<ul>
+  <li>Firefighters: Exactly 1 subgroup that contains the entire set of individuals in question</li>
+  <li>Hoses: Identical to distributive</li>
+</ul>
+
+<p>“The cumulative reading”</p>
+<ul>
+  <li>Firefighters: Identical to distributive</li>
+  <li>Hoses: The total of unique individual hoses across all subgroups adds up to two.</li>
+</ul>
+
+<h2 id="determiner-definitions">Determiner Definitions</h2>
 <ul>
   <li>A <em>numeric determiner</em> creates a numeric constraint on a particular <code class="language-plaintext highlighter-rouge">x</code> variable</li>
   <li>A <em>numeric adjective determiner</em> is an adjective that creates a numeric constraint on a particular <code class="language-plaintext highlighter-rouge">x</code> variable, such as <code class="language-plaintext highlighter-rouge">card(2,e,x)</code> or <code class="language-plaintext highlighter-rouge">much-many_a(e8,x3)</code>.</li>
   <li>A <em>numeric quantifier determiner</em> is a quantifier that creates a numeric constraint on a particular <code class="language-plaintext highlighter-rouge">x</code> variable, such as <code class="language-plaintext highlighter-rouge">_all_q(x3,RSTR,BODY)</code> or <code class="language-plaintext highlighter-rouge">_the_q(x3,RSTR,BODY)</code></li>
 </ul>
 
+<h2 id="stage-1">Stage 1</h2>
 <p>Stage 1 is done by removing all the numeric determiner semantics from a fully-resolved MRS tree and then evaluating it. For example, here’s a forward reading (with respect to word order) of: “some men are eating two pizzas”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_some_q(x3,_man_n_1(x3),udef_q(x10,[_pizza_n_1(x10), card(2,e14,x10)],_eat_v_1(e2,x3,x10)))
@@ -317,7 +340,7 @@ Group 5: (created since 3 men is still "some")
 <h3 id="test-1">Test 1</h3>
 <p>Test 1 is the new one (not used by the initial determiner) and tests if the total <em>for each previous determiner variable value</em> satisfies its determiner. It will find distributive answers (among others).</p>
 
-<p>So, If you take each incoming <code class="language-plaintext highlighter-rouge">some_q(x3, ...)</code> determiner group like <code class="language-plaintext highlighter-rouge">Group 1</code>, and evaluate <code class="language-plaintext highlighter-rouge">card(2,e14,x10)</code> against the solutions that go with unique <em>x3</em> values and they <em>all</em> succeed, you get these results:</p>
+<p>So, If you take each incoming <code class="language-plaintext highlighter-rouge">some_q(x3, ...)</code> determiner group like <code class="language-plaintext highlighter-rouge">Group 1</code>, and evaluate <code class="language-plaintext highlighter-rouge">card(2,e14,x10)</code> against the solutions that go with unique <em>x3</em> values, you get these results:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1: (FAIL: each unique x3 doesn't have 2 x10 pizzas)
     x3=[man1]:
@@ -338,7 +361,7 @@ Group 3: (collective over x3: each unique x3 has 2 x10 pizzas)
         Solution 7: x3=[man5,man6], x10=[pizza7]
         Solution 8: x3=[man5,man6], x10=[pizza8]
     
-Group 4: (cumulative? over x3: each unique x3 has 2 x10 pizzas)
+Group 4: (distributive over x3: each unique x3 has 2 x10 pizzas)
     x3=[man7,man8]:
         Solution 9: x3=[man7,man8], x10=[pizza9, pizza10]
     x3=[man9]:
@@ -355,13 +378,13 @@ Group 5: (FAIL: each unique x3 doesn't have 2 x10 pizzas)
 <ul>
   <li><em>All</em> <code class="language-plaintext highlighter-rouge">distributive readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 2</code>) since it checks the “per <code class="language-plaintext highlighter-rouge">x3</code> total”, and when all the <code class="language-plaintext highlighter-rouge">x3</code> values are a single individual, that’s the definition of distributive.</li>
   <li><em>All</em> <code class="language-plaintext highlighter-rouge">collective readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 3</code>) since it will test a “per <code class="language-plaintext highlighter-rouge">x3</code> total” for a single <code class="language-plaintext highlighter-rouge">x3</code> set &gt; 1</li>
-  <li><em>Some</em> <code class="language-plaintext highlighter-rouge">cumulative readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 4</code>) But, since it checks the “per <code class="language-plaintext highlighter-rouge">x3</code> total”, it will miss those where the sum of all <code class="language-plaintext highlighter-rouge">x10</code> is 2 (e.g. <code class="language-plaintext highlighter-rouge">Group 1</code>)</li>
+  <li><em>Some tiny number of technically</em> <code class="language-plaintext highlighter-rouge">cumulative readings</code> where the <code class="language-plaintext highlighter-rouge">x10</code> individuals are the same for each <code class="language-plaintext highlighter-rouge">x3</code></li>
 </ul>
 
 <h3 id="test-2">Test 2</h3>
-<p>Test 2 is the test used by the initial determiner: it tests if the total <em>across the whole determiner group</em> satisfies its determiner. But, while the initial group <em>creates</em> all combinations of solutions that meet the test, determiners after it just <em>test</em> if the given group does.</p>
+<p>Test 2 is the test used by the initial determiner and is the “cumulative” test: it tests if the total <em>across the whole determiner group</em> satisfies its determiner.</p>
 
-<p>For Test 2: If you take <code class="language-plaintext highlighter-rouge">Group 1</code> from <code class="language-plaintext highlighter-rouge">some_q(x3, ...)</code> and test the <code class="language-plaintext highlighter-rouge">card(2,e14,x10)</code> determiner against it <em>across the whole group</em> (i.e. <em>ignoring</em> its <code class="language-plaintext highlighter-rouge">x3</code> subsets), you’ve done one group. If you do them all, you’ll get:</p>
+<p>For Test 2: If you take <code class="language-plaintext highlighter-rouge">Group 1</code> from <code class="language-plaintext highlighter-rouge">some_q(x3, ...)</code> and test the <code class="language-plaintext highlighter-rouge">card(2,e14,x10)</code> determiner <em>across the whole group</em> (i.e. <em>ignoring</em> its <code class="language-plaintext highlighter-rouge">x3</code> subsets), you’ve done one group. If you do them all, you’ll get:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1: (cumulative over x3: count of all unique x10 is 2)
     Solution 1: x3=[man1], x10=[pizza1]
     Solution 2: x3=[man2], x10=[pizza2]
@@ -388,13 +411,15 @@ Group 5: (cumulative over x3: count of all unique x10 is 2)
 <p>Test 2 finds the following readings over the previous quantifier:</p>
 <ul>
   <li><em>All</em> <code class="language-plaintext highlighter-rouge">collective readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group 3</code>). In a collective reading like <code class="language-plaintext highlighter-rouge">Group 3</code>, there is only one value of <code class="language-plaintext highlighter-rouge">x3</code> (that happens to be a set &gt; 1) and thus there is no distinction between “per <code class="language-plaintext highlighter-rouge">x3</code> value” and “across all <code class="language-plaintext highlighter-rouge">x3</code> values”, so this test duplicates all collective groups from Test 1.</li>
-  <li><em>Some</em> <code class="language-plaintext highlighter-rouge">cumulative readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group1</code> and <code class="language-plaintext highlighter-rouge">Group 5</code>). These are different ones than Test 1. Between the two tests, all cumulative readings are covered.</li>
-  <li><em>Some (very small set of)</em> <code class="language-plaintext highlighter-rouge">distributive readings</code>. Namely, ones where each <code class="language-plaintext highlighter-rouge">x3</code> meets the determiner test <em>with the exact same values</em>. These will be duplicates of Test 1.</li>
+  <li><em>All</em> <code class="language-plaintext highlighter-rouge">cumulative readings</code> (e.g. <code class="language-plaintext highlighter-rouge">Group1</code> and <code class="language-plaintext highlighter-rouge">Group 5</code>).</li>
+  <li><em>Some (tiny number of technically)</em> <code class="language-plaintext highlighter-rouge">distributive readings</code>. Namely, ones where each <code class="language-plaintext highlighter-rouge">x3</code> meets the determiner test <em>with the exact same values</em>. These will be duplicates of Test 1.</li>
 </ul>
+
+<p>Note that, if you limit test 2 to only groups that have exactly 1 unique <code class="language-plaintext highlighter-rouge">x3</code> assignment, then the only duplication that happens is the distributive one listed, with no loss of generality.</p>
 
 <p>After running through both Phase 1 and Phase 2 for each determiner, in order, the groups that remain represent all the collective, distributive and cumulative solutions, with some duplication.</p>
 
-<p>Last update: 2023-04-20 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoPlurals.md">edit</a>]</p>
+<p>Last update: 2023-04-21 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoPlurals.md">edit</a>]</p>
 
         
       </section>
