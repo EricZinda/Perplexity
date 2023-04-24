@@ -1,10 +1,13 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+- errors need to be reported with the right index
+  - Need to create an object instead of arg lists
 - Replace old approach with new approach
   - (done) Properly implement exactly
-  - Properly implement logic for "the"
+  - (done) Properly implement logic for "the"
     - "the" needs to know what the values of all_rstrs are AND compare it to the length of rows in the solution
+  - (done) Replace old approach
 - Do we really need to do all combinations of solutions?
     - Is there a better way?
       - Streaming algorithm

@@ -805,16 +805,16 @@ def state_test():
     #     print()
     # print("=============")
 
-    # # Plural where not all succeed
-    # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
-    #                              {"x1": ("b",), "x2": ("w",)}
-    #                              ])
-    # var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
-    # for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "pl")], {"x1": {"AllRstrValues": ["a", "b", "c"]}}), solutions, var_criteria):
-    #     for solution in foo:
-    #         print(solution)
-    #     print()
-    # print("=============")
+    # Plural where not all succeed
+    solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
+                                 {"x1": ("b",), "x2": ("w",)}
+                                 ])
+    var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
+    for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "pl")], {"x1": {"AllRstrValues": ["a", "b", "c"]}}), solutions, var_criteria):
+        for solution in foo:
+            print(solution)
+        print()
+    print("=============")
 
     # # Singular where plural objects
     # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
@@ -828,15 +828,15 @@ def state_test():
     # print("=============")
 
 
-    # Singular where single objects
-    solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)}
-                                 ])
-    var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
-    for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "sg")], {"x1": {"AllRstrValues": ["a"]}}), solutions, var_criteria):
-        for solution in foo:
-            print(solution)
-        print()
-    print("=============")
+    # # Singular where single objects
+    # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
+    # for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "sg")], {"x1": {"AllRstrValues": ["a"]}}), solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
 
     # files are in folders (each file in the same folder)
     # Issue: (by design) returns the smallest combinations first
@@ -896,14 +896,14 @@ if __name__ == '__main__':
     # Example28()
     # Example29()
     # Example30()
-    # Example31()
+    Example31()
     # Example32()
     # Example33()
     # Example33_performance_test()
     # Example34()
     # Example35()
     #
-    state_test()
+    # state_test()
 
     # import cProfile
     # cProfile.run('Example33_performance_test()', '/Users/ericzinda/Enlistments/perf.bin')

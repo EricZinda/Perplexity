@@ -3,9 +3,39 @@ import enum
 import itertools
 import logging
 from perplexity.set_utilities import all_nonempty_subsets_stream, count_set
-from perplexity.utilities import is_plural_from_tree_info
+from perplexity.utilities import is_plural_from_tree_info, is_plural
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import PluralType
+
+
+def determiner_from_binding(state, binding):
+    if binding.variable.determiner is not None:
+        determiner_constraint = binding.variable.determiner[0]
+        determiner_type = binding.variable.determiner[1]
+        determiner_constraint_args = binding.variable.determiner[2]
+        return [determiner_constraint, determiner_type, determiner_constraint_args]
+
+    elif is_plural(state, binding.variable.name):
+        # Plural determiner
+        return ["number_constraint", "default", [1, float('inf'), None]]
+
+    else:
+        # A default singular determiner is not necessary because the quantifiers that
+        # distinguish singular (like "the" and "only 1") already check for it.
+        # Furthermore, adding it as ["number_constraint", "default", [1, 1, False]]
+        # unnecessarily breaks optimizations that are possible in optimize_determiner_infos
+        return
+
+
+def quantifier_from_binding(state, binding):
+    if binding.variable.quantifier is not None:
+        quantifier_constraint = binding.variable.quantifier[0]
+        quantifier_type = binding.variable.quantifier[1]
+        quantifier_constraint_args = binding.variable.quantifier[2]
+        return [quantifier_constraint, quantifier_type, quantifier_constraint_args]
+
+    else:
+        return None
 
 
 class CriteriaResult(enum.Enum):
@@ -30,7 +60,7 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
                                                CriteriaResult.contender: CriteriaResult.contender,
                                                CriteriaResult.fail_one: CriteriaResult.fail_one,
                                                CriteriaResult.fail_all: CriteriaResult.fail_all},
-                        CriteriaResult.meets_pending_global: {CriteriaResult.meets: CriteriaResult.meets,
+                        CriteriaResult.meets_pending_global: {CriteriaResult.meets: CriteriaResult.meets_pending_global,
                                                               CriteriaResult.meets_pending_global: CriteriaResult.meets_pending_global,
                                                               CriteriaResult.contender: CriteriaResult.contender,
                                                               CriteriaResult.fail_one: CriteriaResult.fail_one,
@@ -53,37 +83,44 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
 
 
 class VariableCriteria(object):
-    def __init__(self, variable_name, min_size=1, max_size=float('inf'), global_criteria=None):
+    def __init__(self, predication, variable_name, min_size=1, max_size=float('inf'), global_criteria=None):
+        self.predication = predication
         self.variable_name = variable_name
         self.global_criteria = global_criteria
         self.min_size = min_size
         self.max_size = max_size
         self._unique_rstrs = set()
+        self._after_phrase_error_location = ["AfterFullPhrase", self.variable_name]
+        if predication is not None:
+            self._predication_error_location = ["AtPredication", predication.args[2], variable_name]
+        else:
+            self._predication_error_location = self._after_phrase_error_location
 
     # Numbers can only increase so ...
-    def meets_criteria(self, value_list):
+    def meets_criteria(self, execution_context, value_list):
         values_count = count_set(value_list)
+
+        if self.global_criteria:
+            # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups
+            # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
+            # So we need to track unique values across all answers in this case
+            self._unique_rstrs.update(value_list)
 
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
+            execution_context.report_error_for_index(0, ["moreThan", self._after_phrase_error_location, self.max_size], force=True)
             return CriteriaResult.fail_one
 
         elif values_count < self.min_size:
+            execution_context.report_error_for_index(0, ["lessThan", self._after_phrase_error_location, self.min_size], force=True)
             return CriteriaResult.contender
 
         else:
             # values_count >= self.min_size and values_count <= self.max_size
-            if self.global_criteria:
-                # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups
-                # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
-                # So we need to track unique values across all answers in this case
-                self._unique_rstrs.update(value_list)
-
-            if self.global_criteria == GlobalCriteria.exactly:
+            if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
                 # We can fail immediately if we have too many
                 if len(self._unique_rstrs) > self.max_size:
-                    # execution_context.report_error_for_index(0, ["moreThan", error_location, max_count], force=True)
-                    # return
+                    execution_context.report_error_for_index(0, ["moreThan", self._after_phrase_error_location, self.max_size], force=True)
                     return CriteriaResult.fail_all
 
                 else:
@@ -95,35 +132,45 @@ class VariableCriteria(object):
             else:
                 return CriteriaResult.meets
 
+    # Only called at the very end after all solutions have been generated
     def meets_global_criteria(self, execution_context):
         if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+            # If there are more or less than the number the user said "the" of, return that error
+            # For "the" singular there must be only one
             is_plural = is_plural_from_tree_info(execution_context.tree_info, self.variable_name)
             all_rstr_values = execution_context.get_variable_execution_data(self.variable_name)["AllRstrValues"]
 
             if not is_plural and len(all_rstr_values) > 1:
-                # execution_context.report_error(["moreThan1", ["AtPredication", predication.args[2], variable_name]],
-                #                                force=True)
+                execution_context.report_error(["moreThan1", ["AtPredication", self.predication.args[2], self.variable_name]], force=True)
+                return False
+
+            if len(all_rstr_values) < self.min_size:
+                execution_context.report_error_for_index(0, ["lessThan", self._predication_error_location, self.min_size],
+                                                         force=True)
+                return False
+
+            elif len(all_rstr_values) > self.max_size:
+                execution_context.report_error_for_index(0, ["moreThan", self._predication_error_location, self.max_size],
+                                                         force=True)
                 return False
 
             elif len(all_rstr_values) != len(self._unique_rstrs):
-                # execution_context.report_error(["notTrueForAll", ["AtPredication", predication.args[2], variable_name]],
-                #                                force=True)
+                execution_context.report_error(["notTrueForAll", self._predication_error_location], force=True)
                 return False
 
-            else:
-                return True
-
-        if self.global_criteria == GlobalCriteria.exactly:
+        if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+            # Then check to make sure there wer as many in the solution as the user specified
             if len(self._unique_rstrs) < self.min_size:
-                # execution_context.report_error_for_index(0, ["lessThan", error_location, min_count], force=True)
-                # return
+                execution_context.report_error_for_index(0, ["lessThan", self._after_phrase_error_location, self.min_size],
+                                                         force=True)
                 return False
 
-            else:
-                return True
+            elif len(self._unique_rstrs) > self.max_size:
+                execution_context.report_error_for_index(0, ["moreThan", self._after_phrase_error_location, self.max_size],
+                                                         force=True)
+                return False
 
-        else:
-            return True
+        return True
 
 
 class GroupVariableStats(object):
@@ -137,7 +184,7 @@ class GroupVariableStats(object):
     def __repr__(self):
         return f"values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
 
-    def add_solution(self, variable_criteria, solution):
+    def add_solution(self, execution_context, variable_criteria, solution):
         binding_value = solution.get_binding(self.variable_name).value
         self.whole_group_unique_individuals.update(binding_value)
         next_value = None if self.next_variable_stats is None else solution.get_binding(self.next_variable_stats.variable_name).value
@@ -150,7 +197,7 @@ class GroupVariableStats(object):
         prev_unique_value_count = None if self.prev_variable_stats is None else len(self.prev_variable_stats.whole_group_unique_values)
         if prev_unique_value_count is not None and prev_unique_value_count > 1:
             # Cumulative
-            cumulative_state = variable_criteria.meets_criteria(self.whole_group_unique_individuals)
+            cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
             if cumulative_state == CriteriaResult.meets:
                 return CriteriaResult.meets
 
@@ -158,7 +205,7 @@ class GroupVariableStats(object):
             # for each prev_unique_value: len(unique_values) meets criteria
             distributive_state = CriteriaResult.meets
             for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
-                distributive_value_state = variable_criteria.meets_criteria(prev_unique_value_item[1][0])
+                distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0])
                 distributive_state = criteria_transitions[distributive_state][distributive_value_state]
                 if distributive_state == CriteriaResult.fail_one:
                     break
@@ -170,7 +217,7 @@ class GroupVariableStats(object):
 
         elif prev_unique_value_count is None or prev_unique_value_count == 1:
             # Collective
-            return variable_criteria.meets_criteria(self.whole_group_unique_individuals)
+            return variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
 
 
 # Distributive needs to create groups by unique variable value
@@ -192,12 +239,12 @@ class GroupVariableStats(object):
 #       distributive if len(prev_unique_values) > 1 and for each prev_unique_value: len(unique_values) meets criteria
 #       cumulative if len(prev_unique_values) > 1 and len(unique_values) meets criteria
 #
-def check_criteria_all(var_criteria, current_set_stats, new_solution):
+def check_criteria_all(execution_context, var_criteria, current_set_stats, new_solution):
     new_set_state = CriteriaResult.meets
     for index in range(len(var_criteria)):
         variable_stats = current_set_stats[index]
         criteria = var_criteria[index]
-        state = variable_stats.add_solution(criteria, new_solution)
+        state = variable_stats.add_solution(execution_context, criteria, new_solution)
         new_set_state = criteria_transitions[new_set_state][state]
         if new_set_state == CriteriaResult.fail_one:
             return CriteriaResult.fail_one
@@ -214,8 +261,11 @@ def check_criteria_all(var_criteria, current_set_stats, new_solution):
 # since it is reused across the sets
 def all_plural_groups_stream(execution_context, solutions, var_criteria):
     # Create the initial stats
+    has_global_constraint = False
     initial_stats = []
     for criteria in var_criteria:
+        if criteria.global_criteria is not None:
+            has_global_constraint = True
         var_stats = GroupVariableStats(criteria.variable_name)
         initial_stats.append(var_stats)
 
@@ -232,7 +282,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
         new_sets = []
         for k in sets:
             new_set_criteria = copy.deepcopy(k[0])
-            state = check_criteria_all(var_criteria,  new_set_criteria, i)
+            state = check_criteria_all(execution_context, var_criteria,  new_set_criteria, i)
             if state == CriteriaResult.meets:
                 #   - meets criteria: yield it
                 new_set = (new_set_criteria, k[1] + (i,))
@@ -261,7 +311,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
 
         sets += new_sets
 
-    if len(pending_global_criteria) > 0:
+    if has_global_constraint:
         for criteria in var_criteria:
             if not criteria.meets_global_criteria(execution_context):
                 return

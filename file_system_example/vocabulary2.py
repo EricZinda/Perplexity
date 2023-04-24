@@ -1,6 +1,6 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor
 from file_system_example.state import DeleteOperation
-from perplexity.determiners2 import determiner_solution_groups
+from perplexity.determiners3 import GlobalCriteria
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
@@ -13,6 +13,12 @@ from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralTy
 vocabulary = Vocabulary()
 
 
+# Several meanings:
+# 1. Means "this" which only succeeds for rstrs that are the single in scope x set and there are no others that are in scope
+#       "put the two keys in the lock": should only work if there are only two keys in scope:
+#       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
+# 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
+#       same approach
 @Predication(vocabulary, names=["_the_q"])
 def the_q(state, x_variable_binding, h_rstr, h_body):
     is_plural = is_plural_from_tree_info(execution_context().tree_info, x_variable_binding.variable.name)
@@ -24,33 +30,27 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
         max_rstr = 1
 
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["number_constraint", "vocabulary2.the_q_group", [1, max_rstr, False]])
+                                    quantifier=["number_constraint", "default", [1, max_rstr, GlobalCriteria.all_rstr_meet_criteria]])
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-# Several meanings:
-# 1. Means "this" which only succeeds for rstrs that are the single in scope x set and there are no others that are in scope
-#       "put the two keys in the lock": should only work if there are only two keys in scope:
-#       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
-# 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
-#       same approach
-def the_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, is_last_determiner):
-    is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
-
-    def criteria(rstr_value_list):
-        if not is_plural and len(all_rstr) > 1:
-            execution_context.report_error(["moreThan1", ["AtPredication", predication.args[2], variable_name]], force=True)
-            return False
-
-        elif len(all_rstr) != len(rstr_value_list):
-            execution_context.report_error(["notTrueForAll", ["AtPredication", predication.args[2], variable_name]], force=True)
-            return False
-
-        else:
-            return True
-
-    yield from determiner_solution_groups(execution_context, solution_group, variable_name, criteria, combinatorial, is_last_determiner)
+# def the_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, is_last_determiner):
+#     is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
+#
+#     def criteria(rstr_value_list):
+#         if not is_plural and len(all_rstr) > 1:
+#             execution_context.report_error(["moreThan1", ["AtPredication", predication.args[2], variable_name]], force=True)
+#             return False
+#
+#         elif len(all_rstr) != len(rstr_value_list):
+#             execution_context.report_error(["notTrueForAll", ["AtPredication", predication.args[2], variable_name]], force=True)
+#             return False
+#
+#         else:
+#             return True
+#
+#     yield from determiner_solution_groups(execution_context, solution_group, variable_name, criteria, combinatorial, is_last_determiner)
 
 
 @Predication(vocabulary, names=["_a_q"])
@@ -96,13 +96,13 @@ def card_normal(state, c_count, e_introduced_binding, x_target_binding):
             card_is_exactly = False
 
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      determiner=("number_constraint", "default", (int(c_count), int(c_count), card_is_exactly)))
+                                      determiner=("number_constraint", "default", (int(c_count), int(c_count), GlobalCriteria.exactly if card_is_exactly else None)))
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
-                                  determiner=("number_constraint", "default", (3, 5, False)))
+                                  determiner=("number_constraint", "default", (3, 5, None)))
 
 
 # true for both sets and individuals as long as everything
