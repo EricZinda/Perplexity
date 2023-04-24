@@ -3,6 +3,7 @@ import enum
 import itertools
 import logging
 from perplexity.set_utilities import all_nonempty_subsets_stream, count_set
+from perplexity.utilities import is_plural_from_tree_info
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import PluralType
 
@@ -19,29 +20,42 @@ class CriteriaResult(enum.Enum):
     fail_all = 4
 
 
+class GlobalCriteria(enum.Enum):
+    exactly = 0
+    all_rstr_meet_criteria = 1
+
+
 criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaResult.meets,
                                                CriteriaResult.meets_pending_global: CriteriaResult.meets_pending_global,
                                                CriteriaResult.contender: CriteriaResult.contender,
-                                               CriteriaResult.fail_one: CriteriaResult.fail_one},
+                                               CriteriaResult.fail_one: CriteriaResult.fail_one,
+                                               CriteriaResult.fail_all: CriteriaResult.fail_all},
                         CriteriaResult.meets_pending_global: {CriteriaResult.meets: CriteriaResult.meets,
                                                               CriteriaResult.meets_pending_global: CriteriaResult.meets_pending_global,
                                                               CriteriaResult.contender: CriteriaResult.contender,
-                                                              CriteriaResult.fail_one: CriteriaResult.fail_one},
+                                                              CriteriaResult.fail_one: CriteriaResult.fail_one,
+                                                              CriteriaResult.fail_all: CriteriaResult.fail_all},
                         CriteriaResult.contender: {CriteriaResult.meets: CriteriaResult.contender,
                                                    CriteriaResult.meets_pending_global: CriteriaResult.meets_pending_global,
                                                    CriteriaResult.contender: CriteriaResult.contender,
-                                                   CriteriaResult.fail_one: CriteriaResult.fail_one},
+                                                   CriteriaResult.fail_one: CriteriaResult.fail_one,
+                                                   CriteriaResult.fail_all: CriteriaResult.fail_all},
                         CriteriaResult.fail_one: {CriteriaResult.meets: CriteriaResult.fail_one,
                                                   CriteriaResult.meets_pending_global: CriteriaResult.fail_one,
                                                   CriteriaResult.contender: CriteriaResult.fail_one,
-                                                  CriteriaResult.fail_one: CriteriaResult.fail_one}
+                                                  CriteriaResult.fail_one: CriteriaResult.fail_one,
+                                                  CriteriaResult.fail_all: CriteriaResult.fail_all},
+                        CriteriaResult.fail_all: {CriteriaResult.meets: CriteriaResult.fail_all,
+                                                  CriteriaResult.meets_pending_global: CriteriaResult.fail_all,
+                                                  CriteriaResult.contender: CriteriaResult.fail_all,
+                                                  CriteriaResult.fail_one: CriteriaResult.fail_all}
                         }
 
 
 class VariableCriteria(object):
-    def __init__(self, variable_name, exactly, min_size=1, max_size=float('inf')):
+    def __init__(self, variable_name, min_size=1, max_size=float('inf'), global_criteria=None):
         self.variable_name = variable_name
-        self.exactly = exactly
+        self.global_criteria = global_criteria
         self.min_size = min_size
         self.max_size = max_size
         self._unique_rstrs = set()
@@ -59,12 +73,13 @@ class VariableCriteria(object):
 
         else:
             # values_count >= self.min_size and values_count <= self.max_size
-            if self.exactly:
+            if self.global_criteria:
                 # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups
                 # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
                 # So we need to track unique values across all answers in this case
                 self._unique_rstrs.update(value_list)
 
+            if self.global_criteria == GlobalCriteria.exactly:
                 # We can fail immediately if we have too many
                 if len(self._unique_rstrs) > self.max_size:
                     # execution_context.report_error_for_index(0, ["moreThan", error_location, max_count], force=True)
@@ -74,11 +89,31 @@ class VariableCriteria(object):
                 else:
                     return CriteriaResult.meets_pending_global
 
+            elif self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+                return CriteriaResult.meets_pending_global
+
             else:
                 return CriteriaResult.meets
 
-    def meets_global_criteria(self):
-        if self.exactly:
+    def meets_global_criteria(self, execution_context):
+        if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+            is_plural = is_plural_from_tree_info(execution_context.tree_info, self.variable_name)
+            all_rstr_values = execution_context.get_variable_execution_data(self.variable_name)["AllRstrValues"]
+
+            if not is_plural and len(all_rstr_values) > 1:
+                # execution_context.report_error(["moreThan1", ["AtPredication", predication.args[2], variable_name]],
+                #                                force=True)
+                return False
+
+            elif len(all_rstr_values) != len(self._unique_rstrs):
+                # execution_context.report_error(["notTrueForAll", ["AtPredication", predication.args[2], variable_name]],
+                #                                force=True)
+                return False
+
+            else:
+                return True
+
+        if self.global_criteria == GlobalCriteria.exactly:
             if len(self._unique_rstrs) < self.min_size:
                 # execution_context.report_error_for_index(0, ["lessThan", error_location, min_count], force=True)
                 # return
@@ -177,7 +212,7 @@ def check_criteria_all(var_criteria, current_set_stats, new_solution):
 # Criteria like "the" and "only" (as in "only 2") also need to track information *across groups*
 # to ensure there is "only 2" solutions generated. This is tracked in the criteria object itself
 # since it is reused across the sets
-def all_plural_groups_stream(solutions, var_criteria):
+def all_plural_groups_stream(execution_context, solutions, var_criteria):
     # Create the initial stats
     initial_stats = []
     for criteria in var_criteria:
@@ -228,7 +263,7 @@ def all_plural_groups_stream(solutions, var_criteria):
 
     if len(pending_global_criteria) > 0:
         for criteria in var_criteria:
-            if not criteria.meets_global_criteria():
+            if not criteria.meets_global_criteria(execution_context):
                 return
 
         yield from pending_global_criteria

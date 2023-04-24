@@ -58,7 +58,6 @@ def all_nonempty_subsets_stream(s, min_size=1, max_size=float('inf')):
         sets += new_sets
 
 
-
 def all_nonempty_subsets_of_list_of_lists_stream(list_of_lists):
     for items in list_of_lists:
         yield all_nonempty_subsets_stream(items)

@@ -13,7 +13,7 @@ from perplexity.generation import english_for_delphin_variable
 # Helpers that allow the examples to use
 # old interfaces in the early parts of the docs
 ##########################
-from perplexity.determiners3 import all_plural_groups_stream, VariableCriteria
+from perplexity.determiners3 import all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.tree import TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
@@ -717,6 +717,22 @@ def build_solutions(spec):
     return solutions
 
 
+def execution_context_for_num_variables(var_nums, variable_execution_data):
+    tree_info = {"Variables": {}}
+    for lst in var_nums:
+        tree_info["Variables"][lst[0]] = {"NUM": lst[1]}
+    return ExecutionContextMock(tree_info, variable_execution_data)
+
+
+class ExecutionContextMock(object):
+    def __init__(self, tree_info, variable_execution_data):
+        self.tree_info = tree_info
+        self.variable_execution_data = variable_execution_data
+
+    def get_variable_execution_data(self, variable_name):
+        return self.variable_execution_data[variable_name]
+
+
 def state_test():
     # # 1 collective
     # solutions = build_solutions([{"x1": ("a",), "x2": ("a",)}
@@ -767,10 +783,56 @@ def state_test():
     #     print()
     # print("=============")
 
+    # # Exactly 1 that has multiple (so fails)
+    # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
+    #                              {"x1": ("b",), "x2": ("w",)}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.exactly)]
+    # for foo in all_plural_groups_stream(None, solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
+
+    # # Plural where all succeed
+    # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
+    #                              {"x1": ("b",), "x2": ("w",)}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
+    # for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "pl")], {"x1": {"AllRstrValues": ["a", "b"]}}), solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
+
+    # # Plural where not all succeed
+    # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
+    #                              {"x1": ("b",), "x2": ("w",)}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
+    # for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "pl")], {"x1": {"AllRstrValues": ["a", "b", "c"]}}), solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
+
+    # # Singular where plural objects
+    # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
+    #                              {"x1": ("b",), "x2": ("w",)}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
+    # for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "sg")], {"x1": {"AllRstrValues": ["a", "b"]}}), solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
+
+
+    # Singular where single objects
     solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)}
                                  ])
-    var_criteria = [VariableCriteria("x1", True, 1)]
-    for foo in all_plural_groups_stream(solutions, var_criteria):
+    var_criteria = [VariableCriteria("x1", 1, 1, GlobalCriteria.all_rstr_meet_criteria)]
+    for foo in all_plural_groups_stream(execution_context_for_num_variables([("x1", "sg")], {"x1": {"AllRstrValues": ["a"]}}), solutions, var_criteria):
         for solution in foo:
             print(solution)
         print()

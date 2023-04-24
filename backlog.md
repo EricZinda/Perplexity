@@ -2,7 +2,9 @@ Remaining work to be shown in the tutorial:
  
 Plurals work
 - Replace old approach with new approach
-  - Properly implement exactly
+  - (done) Properly implement exactly
+  - Properly implement logic for "the"
+    - "the" needs to know what the values of all_rstrs are AND compare it to the length of rows in the solution
 - Do we really need to do all combinations of solutions?
     - Is there a better way?
       - Streaming algorithm
