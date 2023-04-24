@@ -236,7 +236,7 @@
         },
         {
             "Command": "the file is large",
-            "Expected": "There are more than the large file",
+            "Expected": "There is more than one the file",
             "Tree": "_the_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "02284161-0af3-45de-b4ba-8b6fbf67012a"

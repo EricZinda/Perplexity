@@ -39,8 +39,7 @@ class ExecutionContext(object):
 
     def solve_mrs_tree(self, state, tree_info):
         with self:
-            self._error = None
-            self._error_predication_index = -1
+            self.clear_error()
             self._predication_index = 0
             self._phrase_type = sentence_force(tree_info["Variables"])
             self.tree_info = tree_info
@@ -167,6 +166,10 @@ class ExecutionContext(object):
                     arg_types.append("h")
 
         return arg_types
+
+    def clear_error(self):
+        self._error = None
+        self._error_predication_index = -1
 
     def report_error_for_index(self, predication_index, error, force=False):
         if force or self._error_predication_index < predication_index:

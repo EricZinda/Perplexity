@@ -104,11 +104,11 @@ class VariableCriteria(object):
 
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
-            execution_context.report_error_for_index(0, ["moreThan", self._after_phrase_error_location, self.max_size], force=True)
+            execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size])
             return CriteriaResult.fail_one
 
         elif values_count < self.min_size:
-            execution_context.report_error_for_index(0, ["lessThan", self._after_phrase_error_location, self.min_size], force=True)
+            execution_context.report_error_for_index(self.predication_index, ["lessThan", self._after_phrase_error_location, self.min_size])
             return CriteriaResult.contender
 
         else:
@@ -116,7 +116,7 @@ class VariableCriteria(object):
             if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
                 # We can fail immediately if we have too many
                 if len(self._unique_rstrs) > self.max_size:
-                    execution_context.report_error_for_index(0, ["moreThan", self._after_phrase_error_location, self.max_size], force=True)
+                    execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size])
                     return CriteriaResult.fail_all
 
                 else:
@@ -137,33 +137,29 @@ class VariableCriteria(object):
             all_rstr_values = execution_context.get_variable_execution_data(self.variable_name)["AllRstrValues"]
 
             if not is_plural and len(all_rstr_values) > 1:
-                execution_context.report_error(["moreThan1", ["AtPredication", self.predication.args[2], self.variable_name]], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["moreThan1", ["AtPredication", self.predication.args[2], self.variable_name]], force=True)
                 return False
 
             if len(all_rstr_values) < self.min_size:
-                execution_context.report_error_for_index(0, ["lessThan", self._predication_error_location, self.min_size],
-                                                         force=True)
+                execution_context.report_error_for_index(self.predication_index, ["lessThan", self._predication_error_location, self.min_size, ], force=True)
                 return False
 
             elif len(all_rstr_values) > self.max_size:
-                execution_context.report_error_for_index(0, ["moreThan", self._predication_error_location, self.max_size],
-                                                         force=True)
+                execution_context.report_error_for_index(self.predication_index, ["moreThan", self._predication_error_location, self.max_size], force=True)
                 return False
 
             elif len(all_rstr_values) != len(self._unique_rstrs):
-                execution_context.report_error(["notTrueForAll", self._predication_error_location], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["notTrueForAll", self._predication_error_location], force=True)
                 return False
 
         if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
             # Then check to make sure there wer as many in the solution as the user specified
             if len(self._unique_rstrs) < self.min_size:
-                execution_context.report_error_for_index(0, ["lessThan", self._after_phrase_error_location, self.min_size],
-                                                         force=True)
+                execution_context.report_error_for_index(self.predication_index, ["lessThan", self._after_phrase_error_location, self.min_size], force=True)
                 return False
 
             elif len(self._unique_rstrs) > self.max_size:
-                execution_context.report_error_for_index(0, ["moreThan", self._after_phrase_error_location, self.max_size],
-                                                         force=True)
+                execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size], force=True)
                 return False
 
         return True
@@ -274,7 +270,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
     # Generate alternatives
     sets = [(initial_stats, ())]
     pending_global_criteria = []
+    abort = False
     for i in solutions:
+        if abort:
+            break
         new_sets = []
         for k in sets:
             new_set_criteria = copy.deepcopy(k[0])
@@ -303,7 +302,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
 
             elif state == CriteriaResult.fail_all:
                 # A global criteria wasn't met so none will work
-                return
+                # Still run global constraints to get a good error
+                abort = True
+                break
 
         sets += new_sets
 

@@ -15,6 +15,8 @@ from perplexity.tree import find_quantifier_from_variable, gather_quantifier_ord
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(execution_context, solutions, all_solutions):
     if len(solutions) > 0:
+        execution_context.clear_error()
+
         # Go through each variable that has a quantifier in order
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions[0])]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list))
