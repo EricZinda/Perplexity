@@ -1,6 +1,6 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor
 from file_system_example.state import DeleteOperation
-from perplexity.determiners3 import GlobalCriteria
+from perplexity.determiners3 import GlobalCriteria, VariableCriteria
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
@@ -30,7 +30,11 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
         max_rstr = 1
 
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=["number_constraint", "default", [1, max_rstr, GlobalCriteria.all_rstr_meet_criteria]])
+                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=max_rstr,
+                                                                global_criteria=GlobalCriteria.all_rstr_meet_criteria))
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -56,7 +60,10 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 @Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=("number_constraint", "default", (1, 1, False)))
+                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=1))
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -64,7 +71,10 @@ def a_q(state, x_variable_binding, h_rstr, h_body):
 @Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "pronoun_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=("number_constraint", "default", (1, float('inf'), False)))
+                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=float('inf')))
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
@@ -96,13 +106,20 @@ def card_normal(state, c_count, e_introduced_binding, x_target_binding):
             card_is_exactly = False
 
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      determiner=("number_constraint", "default", (int(c_count), int(c_count), GlobalCriteria.exactly if card_is_exactly else None)))
+                                      determiner=VariableCriteria(execution_context().current_predication(),
+                                                                  x_target_binding.variable.name,
+                                                                  min_size=int(c_count),
+                                                                  max_size=int(c_count),
+                                                                  global_criteria=GlobalCriteria.exactly if card_is_exactly else None))
 
 
 @Predication(vocabulary, names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
-                                  determiner=("number_constraint", "default", (3, 5, None)))
+                                  determiner=VariableCriteria(execution_context().current_predication(),
+                                                              x_target_binding.variable.name,
+                                                              min_size=3,
+                                                              max_size=5))
 
 
 # true for both sets and individuals as long as everything

@@ -25,6 +25,7 @@ class ExecutionContext(object):
         self._error = None
         self._error_predication_index = -1
         self._predication_index = -1
+        self._predication = None
         self._phrase_type = None
         self._variable_execution_data = {}
         self.tree_info = None
@@ -75,7 +76,9 @@ class ExecutionContext(object):
             # Keep track of how deep in the tree this
             # predication is
             last_predication_index = self._predication_index
+            last_predication = self._predication
             self._predication_index = term.index
+            self._predication = term
 
             # The first thing in the list was not a list
             # so we assume it is just a term like
@@ -85,6 +88,7 @@ class ExecutionContext(object):
 
             # Restore it since we are recursing
             self._predication_index = last_predication_index
+            self._predication = last_predication
 
     # Do not use directly.
     # Use Call() instead so that the predication index is set properly
@@ -177,6 +181,9 @@ class ExecutionContext(object):
 
     def current_predication_index(self):
         return self._predication_index
+
+    def current_predication(self):
+        return self._predication
 
     def set_variable_execution_data(self, variable_name, key, value):
         if variable_name not in self._variable_execution_data:

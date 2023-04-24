@@ -3,21 +3,23 @@ import enum
 import itertools
 import logging
 from perplexity.set_utilities import all_nonempty_subsets_stream, count_set
-from perplexity.utilities import is_plural_from_tree_info, is_plural
+from perplexity.tree import find_quantifier_from_variable
+from perplexity.utilities import is_plural_from_tree_info, is_plural, parse_predication_name
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import PluralType
 
 
 def determiner_from_binding(state, binding):
     if binding.variable.determiner is not None:
-        determiner_constraint = binding.variable.determiner[0]
-        determiner_type = binding.variable.determiner[1]
-        determiner_constraint_args = binding.variable.determiner[2]
-        return [determiner_constraint, determiner_type, determiner_constraint_args]
+        return binding.variable.determiner
 
     elif is_plural(state, binding.variable.name):
-        # Plural determiner
-        return ["number_constraint", "default", [1, float('inf'), None]]
+        # Plural determiner, mark this as coming from the quantifier for error reporting purposes
+        quantifier = find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
+        return VariableCriteria(quantifier,
+                                binding.variable.name,
+                                min_size=1,
+                                max_size=float('inf'))
 
     else:
         # A default singular determiner is not necessary because the quantifiers that
@@ -28,14 +30,7 @@ def determiner_from_binding(state, binding):
 
 
 def quantifier_from_binding(state, binding):
-    if binding.variable.quantifier is not None:
-        quantifier_constraint = binding.variable.quantifier[0]
-        quantifier_type = binding.variable.quantifier[1]
-        quantifier_constraint_args = binding.variable.quantifier[2]
-        return [quantifier_constraint, quantifier_type, quantifier_constraint_args]
-
-    else:
-        return None
+    return binding.variable.quantifier
 
 
 class CriteriaResult(enum.Enum):
@@ -84,6 +79,7 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
 
 class VariableCriteria(object):
     def __init__(self, predication, variable_name, min_size=1, max_size=float('inf'), global_criteria=None):
+        self.predication_index = predication.index
         self.predication = predication
         self.variable_name = variable_name
         self.global_criteria = global_criteria
@@ -91,10 +87,10 @@ class VariableCriteria(object):
         self.max_size = max_size
         self._unique_rstrs = set()
         self._after_phrase_error_location = ["AfterFullPhrase", self.variable_name]
-        if predication is not None:
+        if parse_predication_name(predication.name)["Pos"] == "q":
             self._predication_error_location = ["AtPredication", predication.args[2], variable_name]
         else:
-            self._predication_error_location = self._after_phrase_error_location
+            self._predication_error_location = ["AtPredication", predication, variable_name]
 
     # Numbers can only increase so ...
     def meets_criteria(self, execution_context, value_list):
