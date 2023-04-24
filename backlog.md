@@ -1,17 +1,13 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+- Replace old approach with new approach
+  - Properly implement exactly
 - Do we really need to do all combinations of solutions?
-    - Is there a better way to
+    - Is there a better way?
       - Streaming algorithm
       - online algorithms
       - Integer programming: https://stackoverflow.com/questions/62622312/algorithm-to-find-some-rows-from-a-matrix-whose-sum-is-equal-to-a-given-row
-      - Algorithm for everything is between(): 
-        - start collecting answers and tracking when you finally get a match
-        - when you do, then return that answer ?and all combinations so far?
-        - every answer after that is added generates N combinations with the previous ones
-        - One solution seems like it should be just like product_stream
-          - 
       - Scenarios:
         - files are large: >1(x)
         - which file is large: =1(x)

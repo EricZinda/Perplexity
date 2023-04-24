@@ -13,7 +13,7 @@ from perplexity.generation import english_for_delphin_variable
 # Helpers that allow the examples to use
 # old interfaces in the early parts of the docs
 ##########################
-from perplexity.set_utilities import all_nonempty_subsets_var_all_stream, VariableCriteria
+from perplexity.determiners3 import all_plural_groups_stream, VariableCriteria
 from perplexity.tree import TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
@@ -756,12 +756,21 @@ def state_test():
     #     print()
     # print("=============")
 
-    # 2 students eat 2 pizzas only cumulative
-    solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
-                                 {"x1": ("b", ), "x2": ("x",)}
+    # # 2 students eat 2 pizzas only cumulative
+    # solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)},
+    #                              {"x1": ("b", ), "x2": ("x",)}
+    #                              ])
+    # var_criteria = [VariableCriteria("x1", 2, 2), VariableCriteria("x2", 2, 2)]
+    # for foo in all_plural_groups_stream(solutions, var_criteria):
+    #     for solution in foo:
+    #         print(solution)
+    #     print()
+    # print("=============")
+
+    solutions = build_solutions([{"x1": ("a", ), "x2": ("w",)}
                                  ])
-    var_criteria = [VariableCriteria("x1", 2, 2), VariableCriteria("x2", 2, 2)]
-    for foo in all_nonempty_subsets_var_all_stream(solutions, var_criteria):
+    var_criteria = [VariableCriteria("x1", True, 1)]
+    for foo in all_plural_groups_stream(solutions, var_criteria):
         for solution in foo:
             print(solution)
         print()
@@ -831,7 +840,7 @@ if __name__ == '__main__':
     # Example33_performance_test()
     # Example34()
     # Example35()
-
+    #
     state_test()
 
     # import cProfile
