@@ -150,15 +150,15 @@ class UserInterface(object):
                                  "Variables": mrs.variables,
                                  "Tree": tree}
 
-                    duplicate_solutions = []
-                    for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
-                        if logger.isEnabledFor(logging.DEBUG):
-                            pipeline_logger.debug(f"solution: {item}")
-                        duplicate_solutions.append(item)
+                    duplicate_solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
+                    # for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
+                    #     if logger.isEnabledFor(logging.DEBUG):
+                    #         pipeline_logger.debug(f"solution: {item}")
+                    #     duplicate_solutions.append(item)
 
                     # pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
                     # duplicate_solutions = perplexity.determiners.remove_duplicates(duplicate_solutions)
-                    pipeline_logger.debug(f"{len(duplicate_solutions)} undetermined solutions.")
+                    # pipeline_logger.debug(f"{len(duplicate_solutions)} undetermined solutions.")
                     is_wh_phrase = sentence_force(tree_info["Variables"]) == "ques" and find_predication(tree_info["Tree"], "_which_q")
                     if self.show_all_answers:
                         tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, is_wh_phrase))

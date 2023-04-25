@@ -1,6 +1,15 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+- 
+- Figure out where the scaling problems are: where combinatorics are exploding
+    Issue: Example 33: A few files are in a folder together
+        Also slow: A few files are in a folder
+        In fact: files are in a folder is ridiculously slow
+            Problem 1: the undetermined solutions aren't streamed
+    - Make sure that yes/no questions can be answered quickly
+    - can determiners start running without materializing the entire undetermined solution set?
+
 - Do we really need to do all combinations of solutions?
     - Is there a better way?
       - Streaming algorithm
@@ -19,19 +28,10 @@ Plurals work
   - solution_list_alternatives_without_combinatorial_variables forces the entire group to be materialized
     - The only time we really do solution_group_combinatorial is for the first one
       - Should we break apart the distinction between  solution_group_combinatorial and variable?
-- Figure out where the scaling problems are: where combinatorics are exploding
-    Issue: Example 33: A few files are in a folder together
-        Also slow: A few files are in a folder
-        In fact: files are in a folder is ridiculously slow
-            Problem 1: the undetermined solutions aren't streamed
-- 
-
-    - Make sure that yes/no questions can be answered quickly
-    - can determiners start running without materializing the entire undetermined solution set?
-    - maybe name everything "_stream" that can properly stream answers
-    - 
 3 students are eating 2 pizzas
     - the 2 pizzas can be the same, it just needs to be 2 against the same
+
+- TODO: Still need to do combinatorial variables
 
 Go through each plural    
 - Test: 

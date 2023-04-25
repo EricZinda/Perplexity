@@ -102,7 +102,7 @@
         },
         {
             "Command": "3 files are large",
-            "Expected": "There are less than 3 large file",
+            "Expected": "3 file is not large",
             "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "907f6e7b-4924-46d7-8555-263f9bf041ff"
@@ -123,7 +123,7 @@
         },
         {
             "Command": "1 file is 20 megabytes",
-            "Expected": "There are more than 1 file",
+            "Expected": "1 file is not 20 megabyte",
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],loc_nonsp(e2,x3,x11)))",
             "Enabled": true,
             "ID": "883c4f0e-5d43-4ab5-86a8-7aa2ebc1a46d"
@@ -166,7 +166,7 @@
         },
         {
             "Command": "a few files are large",
-            "Expected": "There are less than a few large file",
+            "Expected": "a few file is not large",
             "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "c4d1b82e-8be5-4b58-810d-97de24716ac5"
@@ -348,7 +348,7 @@
         },
         {
             "Command": "1 file is in a folder together",
-            "Expected": "There are more than a folder together",
+            "Expected": "1 file is not in a folder together",
             "Tree": "_a_q(x11,[_folder_n_of(x11,i16), _together_p(e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "61c8885b-063a-460e-9b8a-a25c01f31df4"
@@ -404,13 +404,13 @@
         },
         {
             "Command": "4 files are in a folder",
-            "Expected": "There are less than 4 file in a folder",
+            "Expected": "4 file is not in a folder",
             "Tree": "_a_q(x11,_folder_n_of(x11,i16),udef_q(x3,[_file_n_of(x3,i10), card(4,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "526a5445-c826-40cc-8fbc-33a574b36461"
         },
         {
-            "Command": "/new examples.Example28_reset",
+            "Command": "/new examples.Example33_reset",
             "Expected": "",
             "Tree": null,
             "Enabled": true,

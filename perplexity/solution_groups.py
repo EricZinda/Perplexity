@@ -13,12 +13,17 @@ from perplexity.tree import find_quantifier_from_variable, gather_quantifier_ord
 # There is an implicit "uber quantifier" on the front of all phrases that tells you how many of the solutions to return
 # All should just return 1, except for which
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(execution_context, solutions, all_solutions):
-    if len(solutions) > 0:
-        execution_context.clear_error()
+from perplexity.utilities import at_least_one_generator
+
+
+def solution_groups(execution_context, solutions_orig, all_solutions):
+    solutions = at_least_one_generator(solutions_orig)
+
+    if solutions:
+        # execution_context.clear_error()
 
         # Go through each variable that has a quantifier in order
-        declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions[0])]
+        declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list))
 
         for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list):

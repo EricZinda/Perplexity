@@ -39,24 +39,6 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-# def the_q_group(execution_context, variable_name, predication, all_rstr, solution_group, combinatorial, is_last_determiner):
-#     is_plural = is_plural_from_tree_info(execution_context.tree_info, variable_name)
-#
-#     def criteria(rstr_value_list):
-#         if not is_plural and len(all_rstr) > 1:
-#             execution_context.report_error(["moreThan1", ["AtPredication", predication.args[2], variable_name]], force=True)
-#             return False
-#
-#         elif len(all_rstr) != len(rstr_value_list):
-#             execution_context.report_error(["notTrueForAll", ["AtPredication", predication.args[2], variable_name]], force=True)
-#             return False
-#
-#         else:
-#             return True
-#
-#     yield from determiner_solution_groups(execution_context, solution_group, variable_name, criteria, combinatorial, is_last_determiner)
-
-
 @Predication(vocabulary, names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
