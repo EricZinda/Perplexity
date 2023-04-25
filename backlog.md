@@ -15,12 +15,6 @@ Future optimizations:
       - We don't need to generate all combinations at this point since we are really only trying to meet the numeric criteria
         - generating combinations that have already been seen is not useful since, with a wh-type question, we are looking for new, unique values
       - Maybe the generator should 
-        - option 1
-          - assume every row is going to have a new value?
-          - optimize for returning new values faster
-        - option 2
-          - Only sets that meet all criteria will be returned
-          - if the second criteria is (1, 1) then we know only single unique values of that variable will match
         - (seems key) option 3
           - Is it true that, as far as wh-questions, statements and commands go: 
             - we don't care about getting the right solution groups, only about the actual individuals? 
@@ -34,10 +28,10 @@ Future optimizations:
             - we've already run the undetermined MRS, 
             - there is no reason to return different subsets of it unless they are needed for other criteria
             - i.e. we don't need *all possible* solutions at this point
-          - maybe: treat each set that is created as the "maximal solution". i.e. use a greedy algorithm unless we prove another set is needed
+          - treat each set that is created as the "maximal solution". i.e. use a greedy algorithm unless we prove another set is needed
             - as long as a single group still meets the criteria or is a contender, keep adding to it until it doesn't, and then form new groups
               - theory: if a set is a contender, we are done. Don't add more sets
-          - maybe: we are building up the smallest set of solutions
+          - we are building up the smallest set of solutions
             
 - Do we really need to do all combinations of solutions?
     - Is there a better way?

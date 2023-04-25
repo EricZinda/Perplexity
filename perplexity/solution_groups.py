@@ -4,7 +4,7 @@ import logging
 import sys
 from importlib import import_module
 from math import inf
-from perplexity.determiners3 import determiner_from_binding, quantifier_from_binding, \
+from perplexity.determiners4 import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.tree import find_quantifier_from_variable, gather_quantifier_order
 

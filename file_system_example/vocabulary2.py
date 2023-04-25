@@ -1,6 +1,6 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor
 from file_system_example.state import DeleteOperation
-from perplexity.determiners3 import GlobalCriteria, VariableCriteria
+from perplexity.determiners4 import GlobalCriteria, VariableCriteria
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
