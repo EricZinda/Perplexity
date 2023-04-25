@@ -1,15 +1,44 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
-- 
-- Figure out where the scaling problems are: where combinatorics are exploding
-    Issue: Example 33: A few files are in a folder together
-        Also slow: A few files are in a folder
-        In fact: files are in a folder is ridiculously slow
-            Problem 1: the undetermined solutions aren't streamed
-    - Make sure that yes/no questions can be answered quickly
-    - can determiners start running without materializing the entire undetermined solution set?
 
+Future optimizations:
+- Delete sets that can't work. Anything where one variable is at the upper limit can never work again since every add adds at least one item
+- We really don't need to return *all combinations that are solutions*, just the *unique* solutions that meet the criteria, all the rest are just duplicates
+  - Therefore:
+    - Any criteria that has only (1, inf) (in any number) means: return all answers
+
+- Figure out where the scaling problems are: where combinatorics are exploding
+    - Example 33: which files are in a folder: logarithmically slow
+      - files(1, inf), folder(1,1)
+      - Each new row generates every combination of previous items
+      - We don't need to generate all combinations at this point since we are really only trying to meet the numeric criteria
+        - generating combinations that have already been seen is not useful since, with a wh-type question, we are looking for new, unique values
+      - Maybe the generator should 
+        - option 1
+          - assume every row is going to have a new value?
+          - optimize for returning new values faster
+        - option 2
+          - Only sets that meet all criteria will be returned
+          - if the second criteria is (1, 1) then we know only single unique values of that variable will match
+        - (seems key) option 3
+          - Is it true that, as far as wh-questions, statements and commands go: 
+            - we don't care about getting the right solution groups, only about the actual individuals? 
+            - I.e. solution groups are an implementation detail
+            - Which means that we should only return single solutions, one by one, if they go in a group that meets the criteria
+            - Which means that how a question was modelled internally is a black box.  
+              - It is certainly true that right now the *output* is not grouped in any way that would allow you to distinguish the cases
+                - If it just so happens that the answers I give you come from a distributive *and* collective solution group you'll figure that out and ask a more specific question?
+                - Or maybe it is that they need to be
+          - there is no further grouping of files(1, inf) needed since:
+            - we've already run the undetermined MRS, 
+            - there is no reason to return different subsets of it unless they are needed for other criteria
+            - i.e. we don't need *all possible* solutions at this point
+          - maybe: treat each set that is created as the "maximal solution". i.e. use a greedy algorithm unless we prove another set is needed
+            - as long as a single group still meets the criteria or is a contender, keep adding to it until it doesn't, and then form new groups
+              - theory: if a set is a contender, we are done. Don't add more sets
+          - maybe: we are building up the smallest set of solutions
+            
 - Do we really need to do all combinations of solutions?
     - Is there a better way?
       - Streaming algorithm

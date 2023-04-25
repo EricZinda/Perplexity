@@ -39,6 +39,7 @@ class CriteriaResult(enum.Enum):
     # criteria (like "only 2") for this variable is met
     meets_pending_global = 1
     contender = 2
+    # This set does not meet the criteria, and never will again (since all additions only increase)
     fail_one = 3
     # In some cases like "only 2" we can fail everything because
     # a global criteria wasn't met
@@ -77,6 +78,8 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
                         }
 
 
+# if global_criteria is not set, then this only guarantees that the min and max size will be retained
+# within a particular solution group. The count of that item *across* groups could be bigger.
 class VariableCriteria(object):
     def __init__(self, predication, variable_name, min_size=1, max_size=float('inf'), global_criteria=None):
         self.predication_index = predication.index
@@ -176,12 +179,17 @@ class GroupVariableStats(object):
     def __repr__(self):
         return f"values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
 
+    # Check if this variable will be a valid coll/dist/cuml variable after
+    # adding this solution to the set this stats is tracking
+    # Succeeds if the set, only considering this variable, can be interpreted as any (or multiple) of
+    # cumulative/collective/distributive across all variables
     def add_solution(self, execution_context, variable_criteria, solution):
         binding_value = solution.get_binding(self.variable_name).value
         self.whole_group_unique_individuals.update(binding_value)
         next_value = None if self.next_variable_stats is None else solution.get_binding(self.next_variable_stats.variable_name).value
         if binding_value not in self.whole_group_unique_values:
             self.whole_group_unique_values[binding_value] = [set(next_value if next_value is not None else []), [solution]]
+
         else:
             self.whole_group_unique_values[binding_value][0].update(next_value if next_value is not None else [])
             self.whole_group_unique_values[binding_value][1].append(solution)
@@ -274,6 +282,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
     for i in solutions:
         if abort:
             break
+
         new_sets = []
         for k in sets:
             new_set_criteria = copy.deepcopy(k[0])

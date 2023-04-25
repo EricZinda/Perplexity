@@ -82,6 +82,7 @@ def optimize_determiner_infos(determiner_info_list_orig):
 
     # Optimization: Walking back from the end:
     #     delete all last determiners in a row that are number_constraint(1, inf, False)
+    # if they are all that, then there are no constraints
     new_info_list = []
     remove_determiners = True
     for determiner_info in reversed(determiner_info_list):
