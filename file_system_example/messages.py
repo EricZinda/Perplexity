@@ -74,7 +74,7 @@ def respond_to_mrs_tree(tree, solution_groups, error):
 
             else:
                 message = generate_message(tree, error)
-                return message
+                yield message
 
     elif sentence_force_type == "comm":
         # This was a command so, if it works, just say so

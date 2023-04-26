@@ -1,6 +1,8 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+- "which 2 files in the folder are large?" -> very slow
+
 - potential optimizations:
   - if it isn't a wh-question, we don't need to return the actual answers, don't keep them, just the stats. Saves a little space.
   - Get rid of sets that can't possibly be right so we don't keep checking them
