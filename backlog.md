@@ -1,8 +1,6 @@
 Remaining work to be shown in the tutorial:
  
-Plurals work
-- "which 2 files in the folder are large?" -> very slow
-
+Plurals work 
 - potential optimizations:
   - if it isn't a wh-question, we don't need to return the actual answers, don't keep them, just the stats. Saves a little space.
   - Get rid of sets that can't possibly be right so we don't keep checking them
@@ -21,6 +19,9 @@ Plurals work
       - still VERY slow
       - Still need to generate all combinations of 3 x 2 to find out that none are in 2 folders
       - all combinations of 3 of 100 is 4950, for 1000 it is 499500, 3 of 200 is 1313400
+  - "which 2 files in the folder are large?"
+    - very slow
+    - because the second folder doesn't show up until the very end and we are checking for "the folder"
 
 - Stream the undetermined solutions
   - Phase 2 requires AllRstrValues to be generated for things like "the" and maybe "all"
