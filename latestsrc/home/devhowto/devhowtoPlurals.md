@@ -29,6 +29,11 @@ When referring to a fully-resolved tree (which means that forward and reverse re
 - Firefighters: Identical to distributive
 - Hoses: The total of unique individual hoses across all subgroups adds up to two.
 
+So:
+
+Distributive and collective group the first variable differently, but do the same math problem across the group(s) for the second variable.
+Cumulative does the same first variable grouping as distributive, but a different math problem across the groups for the second variable.
+
 ## Determiner Definitions
 - A *numeric determiner* creates a numeric constraint on a particular `x` variable
 - A *numeric adjective determiner* is an adjective that creates a numeric constraint on a particular `x` variable, such as `card(2,e,x)` or `much-many_a(e8,x3)`.
