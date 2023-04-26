@@ -1,3 +1,4 @@
+## Solving an MRS
 > It is important to understand [what MRS is](devhowtoMRS) and what [a well-formed MRS tree is](devhowtoWellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
 A [well-formed MRS tree](devhowtoWellFormedTree) can be thought of as an *equation* that is `true` or `false` depending on the values of its variables. Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are `true` when their arguments are set to values that *are* or *mean* what the predication means. 
@@ -21,9 +22,9 @@ a folder
 a small file
 a large file
 ~~~
-`x` variables in an MRS represent "individuals" or "things in the world". So, we need to find the values of `x` that make both the predications in `large(x), file(x)` be `true`. 
+`x` variables in an MRS represent "individuals" or "things in the world". So, we need to find which individuals from the world that, when put into `x`, make both the predications in `large(x), file(x)` be `true`. 
 
-While this is trivial to solve by looking at it, once the world contains a million objects, we need a more systematic approach.
+While this is trivial to solve by looking at it, once the world contains a million objects we will need a more systematic approach.
 
 ## A Backtracking MRS Solver
 We can look at solving an MRS as a [constraint satisfaction problem](https://en.wikipedia.org/wiki/Constraint_satisfaction_problem) which is a well-studied class of problems that have a finite set of constraints over variables. In the MRS case, the constraints are the predications:
@@ -31,9 +32,9 @@ We can look at solving an MRS as a [constraint satisfaction problem](https://en.
 - `file(x)` constrains `x` to only be those objects that are a `file`
 - `large(x), file(x)` constrains `x` to be a `large file`
 
-One simple approach to solving constraint satisfaction problems (like the solutions to an MRS) is to use "backtracking". The simplest backtracking algorithm is to:
+One simple approach to solving constraint satisfaction problems (like finding the solutions to an MRS) is to use ["backtracking"](https://en.wikipedia.org/wiki/Backtracking). The simplest backtracking algorithm is to:
 
-- Traverse the predications from the well-formed MRS tree, depth first
+- Traverse the predications from the well-formed MRS tree, depth-first
 - When we encounter a variable in a predication that is unassigned we: 
   1) Assign it the first item in the world
   2) Mark it as a `backtrack point`
@@ -59,11 +60,11 @@ world facts:
 ~~~
 The "world individuals" above are the only objects that exist in the world. `x` values in MRS will hold these as values.
 
-The "world facts" above are facts about the relationships between things in the world that predications (such as `in(x, y)`) can refer to to see if they are `true`.
+The "world facts" above are facts about the relationships between things in the world that predications such as `in(x, y)` can refer to to see if they are `true`.
 
 As above, it doesn't matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We'll be building an example of such a system in this tutorial.
 
-To make the backgracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of "variable scope" to the formula. Variable scope shows where a variable is introduced and which predications can use it. 
+To make the backgracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of "variable scope". Variable scope shows where a variable is introduced and which predications can use it. 
 
 We'll represent scope by a function for now: `scope(variable, [predication_list])`. The function states that `variable` can be used by all the predications in `[predication_list]`. And, since `scope()` itself is a predication, more variables can be defined in `predication_list` using another `scope()`. This allows us to represent our formula using scoping, like this:
 
@@ -129,6 +130,6 @@ This example shows how:
 
 It works because we are effectively trying all values in all variables. But, it is better than literally just assigning all values to all variables, one by one, until we find the answer, because backtracking eliminates whole branches in the search space. There are other optimizations that can be done, and we will do more as we go, but the basic approach is straightforward.
 
-At this point it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and solved using other algorithms. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We'll work through some of those and find optimizations for some of the most aggregious problems.
+At this point it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using even different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We'll work through some of those and find optimizations for some of the most aggregious problems.
 
-Before we can solve a real well-formed MRS tree, we need to account for more of the features that it has.
+But, before we can solve a real well-formed MRS tree, we need to account for more of the features that it has. First up is [plurals](devhowtoMRSSolverPlurals).
