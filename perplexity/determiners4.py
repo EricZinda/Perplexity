@@ -38,10 +38,11 @@ def quantifier_from_binding(state, binding):
 # since it is reused across the sets
 def all_plural_groups_stream(execution_context, solutions, var_criteria):
     # Create the initial stats
-    initial_stats, has_global_constraint, sets_are_open = build_initial_stats(var_criteria)
+    initial_stats_group = StatsGroup()
+    has_global_constraint, sets_are_open = initial_stats_group.initialize(var_criteria)
 
     # Generate alternatives
-    sets = [[initial_stats, []]]
+    sets = [[initial_stats_group, []]]
     pending_global_criteria = []
     abort = False
     for i in solutions:
@@ -57,8 +58,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
                 k[1].append(i)
                 continue
 
-            new_set_criteria = copy.deepcopy(k[0])
-            state = check_criteria_all(execution_context, var_criteria,  new_set_criteria, i)
+            new_set_stats_group = k[0].copy()
+            state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, i)
 
             if state == CriteriaResult.fail_one:
                 #   - fail (doesn't meet criteria): don't add, don't yield
@@ -78,7 +79,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
                     new_set = [None, None]
                     new_sets.append(new_set)
 
-                new_set[0] = new_set_criteria
+                new_set[0] = new_set_stats_group
                 new_set[1] = k[1] + [i]
 
                 if state == CriteriaResult.meets:
@@ -101,29 +102,6 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
         yield from pending_global_criteria
 
 
-def build_initial_stats(var_criteria):
-    has_global_constraint = False
-    sets_are_open = True
-    initial_stats = []
-    for criteria in var_criteria:
-        if criteria.global_criteria is not None:
-            has_global_constraint = True
-
-        if criteria.max_size != float('inf'):
-            sets_are_open = False
-
-        var_stats = GroupVariableStats(criteria.variable_name)
-        initial_stats.append(var_stats)
-
-    for stat_index in range(len(initial_stats)):
-        prev_stat = None if stat_index == 0 else initial_stats[stat_index - 1]
-        next_stat = None if stat_index + 1 == len(initial_stats) else initial_stats[stat_index + 1]
-        initial_stats[stat_index].prev_variable_stats = prev_stat
-        initial_stats[stat_index].next_variable_stats = next_stat
-
-    return initial_stats, has_global_constraint, sets_are_open
-
-
 # See if the constrained variable values are already in the set
 #     - Yes: this is a "merge": Simply add the item into the set. Because it changes neither the unique individuals nor the unique values:
 #       - This can *only* happen when there are variables without constraints on them because otherwise the entire set of values can't already exist
@@ -134,7 +112,7 @@ def exists_in_solution(all_criteria, current_set_stats, current_set, new_solutio
 
     else:
         for index in range(len(all_criteria)):
-            variable_stats = current_set_stats[index]
+            variable_stats = current_set_stats.variable_stats[index]
             variable_criteria = all_criteria[index]
             variable_value = new_solution.get_binding(variable_criteria.variable_name).value
             if variable_value not in variable_stats.whole_group_unique_values:
@@ -144,11 +122,50 @@ def exists_in_solution(all_criteria, current_set_stats, current_set, new_solutio
         return True
 
 
-class GroupVariableStats(object):
-    def __init__(self, variable_name):
+class StatsGroup(object):
+    def __init__(self):
+        self.variable_stats = []
+
+    def initialize(self, var_criteria):
+        has_global_constraint = False
+        sets_are_open = True
+        previous_variable_stats = None
+        for criteria in var_criteria:
+            if criteria.global_criteria is not None:
+                has_global_constraint = True
+
+            if criteria.max_size != float('inf'):
+                sets_are_open = False
+
+            var_stats = VariableStats(criteria.variable_name)
+            var_stats.prev_variable_stats = previous_variable_stats
+            if previous_variable_stats is not None:
+                previous_variable_stats.next_variable_stats = var_stats
+
+            previous_variable_stats = var_stats
+            self.variable_stats.append(var_stats)
+
+        return has_global_constraint, sets_are_open
+
+    def copy(self):
+        new_group = StatsGroup()
+        previous_new_stat = None
+        for stat in self.variable_stats:
+            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy())
+            new_stat.prev_variable_stats = previous_new_stat
+            if previous_new_stat is not None:
+                previous_new_stat.next_variable_stats = new_stat
+            new_group.variable_stats.append(new_stat)
+            previous_new_stat = new_stat
+
+        return new_group
+
+
+class VariableStats(object):
+    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None):
         self.variable_name = variable_name
-        self.whole_group_unique_individuals = set()
-        self.whole_group_unique_values = {}
+        self.whole_group_unique_individuals = set() if whole_group_unique_individuals is None else whole_group_unique_individuals
+        self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
         self.prev_variable_stats = None
         self.next_variable_stats = None
 
@@ -218,7 +235,7 @@ class GroupVariableStats(object):
 def check_criteria_all(execution_context, var_criteria, current_set_stats, new_solution):
     new_set_state = CriteriaResult.meets
     for index in range(len(var_criteria)):
-        variable_stats = current_set_stats[index]
+        variable_stats = current_set_stats.variable_stats[index]
         criteria = var_criteria[index]
         state = variable_stats.add_solution(execution_context, criteria, new_solution)
         new_set_state = criteria_transitions[new_set_state][state]
@@ -244,6 +261,9 @@ class VariableCriteria(object):
             self._predication_error_location = ["AtPredication", predication.args[2], variable_name]
         else:
             self._predication_error_location = ["AtPredication", predication, variable_name]
+
+    def __repr__(self):
+        return f"{{{self.variable_name}: min={self.min_size}, max={self.max_size}, global={self.global_criteria}, pred={self.predication.name}({self.predication.args[0]})}}"
 
     # Numbers can only increase so ...
     def meets_criteria(self, execution_context, value_list):
