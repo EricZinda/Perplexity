@@ -10,5 +10,7 @@ toc:
         url: "/devhowto/devhowtoMRS/"
       - title: "Well-Formed Trees"
         url: "/devhowto/devhowtoWellFormedTree/"
+      - title: "Solving an MRS"
+        url: "/devhowto/devhowtoMRSSolver/"
       - title: "Plural Algorithm"
         url: "/devhowto/devhowtoPlurals/"
