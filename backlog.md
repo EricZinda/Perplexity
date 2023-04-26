@@ -1,10 +1,6 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
-- "the 2 files are in 3 folders" -> crash
-  - When we abort, we still run the constraint at the end even though we don't have all the answers
-    - aborting should set the error
-
 - potential optimizations:
   - if it isn't a wh-question, we don't need to return the actual answers, don't keep them, just the stats. Saves a little space.
   - Get rid of sets that can't possibly be right so we don't keep checking them
