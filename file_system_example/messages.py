@@ -135,6 +135,11 @@ def generate_message(tree_info, error_term):
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
         return f"There is more than one {arg1}"
 
+    elif error_constant == "moreThanN":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        arg2 = error_arguments[2]
+        return f"There is more than {arg2} {arg1}"
+
     elif error_constant == "adjectiveDoesntApply":
         arg1 = error_arguments[1]
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)

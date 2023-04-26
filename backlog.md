@@ -1,36 +1,37 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work
+- "the 2 files are in 3 folders" -> crash
+  - When we abort, we still run the constraint at the end even though we don't have all the answers
+    - aborting should set the error
+
 - potential optimizations:
   - if it isn't a wh-question, we don't need to return the actual answers, don't keep them, just the stats. Saves a little space.
-  - Get rid of sets that can't possibly be right
-- 
-- which 3 files are in 2 folders: 3(x), 2(y)
-    - still VERY slow
-      - (done) fix copy performance
-      - Still need to generate all combinations of 3 x 2 to find out that none are
-      - all combinations of 3 of 100 is 4950, for 1000 it is 499500
-      - 3 of 200 is 1313400
+  - Get rid of sets that can't possibly be right so we don't keep checking them
+    - which 3 files are in a folder: have to keep around all the old ones in case there are duplicates. Faster way to check them?
+  
 - Do we really need to do all combinations of solutions?
-    - Is there a better way?
-      - Streaming algorithm
-      - online algorithms
-      - Integer programming: https://stackoverflow.com/questions/62622312/algorithm-to-find-some-rows-from-a-matrix-whose-sum-is-equal-to-a-given-row
-      - Scenarios:
-        - files are large: >1(x)
-        - which file is large: =1(x)
-        - 2 files are large: 2(x)
-        - which 3 files are in 2 folders: 3(x), 2(y)
+  - Options:
+    - Use a tree structure to quickly add a solution to the right groups
+      - Build a data structure like the one they use in 3d games to divide the world?
+    - Only return the first N
+    - Streaming algorithm
+    - online algorithms
+    - Integer programming: https://stackoverflow.com/questions/62622312/algorithm-to-find-some-rows-from-a-matrix-whose-sum-is-equal-to-a-given-row
+  - Scenarios:
+    - which 3 files are in 2 folders: 3(x), 2(y)
+      - still VERY slow
+      - Still need to generate all combinations of 3 x 2 to find out that none are in 2 folders
+      - all combinations of 3 of 100 is 4950, for 1000 it is 499500, 3 of 200 is 1313400
+
 - Stream the undetermined solutions
   - Phase 2 requires AllRstrValues to be generated for things like "the" and maybe "all"
     - The entire MRS must be finished in the current model to get these
-    - Instead, we could *maybe* generate them up front if needed
-  - (fixed) Doing Phase 2 collective forces an entire group to be materialized
+      - In some cases that may be quicker since we'll know it isn't possible and not have to do the combinatorics 
+        - We could *maybe* generate them up front if needed
   - solution_list_alternatives_without_combinatorial_variables forces the entire group to be materialized
     - The only time we really do solution_group_combinatorial is for the first one
       - Should we break apart the distinction between  solution_group_combinatorial and variable?
-3 students are eating 2 pizzas
-    - the 2 pizzas can be the same, it just needs to be 2 against the same
 
 - TODO: Still need to do combinatorial variables
 

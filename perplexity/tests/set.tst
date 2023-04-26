@@ -236,7 +236,7 @@
         },
         {
             "Command": "the file is large",
-            "Expected": "There is more than one the file",
+            "Expected": "There is more than 1 the large file",
             "Tree": "_the_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "02284161-0af3-45de-b4ba-8b6fbf67012a"
@@ -438,6 +438,13 @@
             "ID": "6f118fcc-9f49-46b9-9703-bbcd95ca84d8"
         },
         {
+            "Command": "the 2 files are in 3 folders",
+            "Expected": "There is more than 2 the 2 file in 3 folder",
+            "Tree": "_a_q(x11,_folder_n_of(x11,i16),udef_q(x3,[_file_n_of(x3,i10), card(4,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "1a81e3da-b22d-4a11-b61e-4eb21ec94b34"
+        },
+        {
             "Command": "/new examples.Example26_reset",
             "Expected": "",
             "Tree": null,
@@ -453,7 +460,7 @@
         },
         {
             "Command": "only 2 files are large",
-            "Expected": "There are more than 2 large file",
+            "Expected": "There is more than 2 2 large file",
             "Tree": "udef_q(x3,[_file_n_of(x3,i11), _only_x_deg(e5,e6), card(2,e6,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "29ebc2f2-3fe3-4e9e-b62b-58050d28a0ad"

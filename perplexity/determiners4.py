@@ -1,4 +1,3 @@
-import copy
 import enum
 from perplexity.set_utilities import count_set
 from perplexity.tree import find_quantifier_from_variable
@@ -46,9 +45,6 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
     pending_global_criteria = []
     abort = False
     for i in solutions:
-        if abort:
-            break
-
         new_sets = []
         for k in sets:
             if exists_in_solution(var_criteria, k[0], k[1], i):
@@ -93,8 +89,11 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
                     pass
 
         sets += new_sets
+        if abort:
+            break
 
-    if has_global_constraint:
+    # If we aborted, the error should already be set
+    if not abort and has_global_constraint:
         for criteria in var_criteria:
             if not criteria.meets_global_criteria(execution_context):
                 return
@@ -239,8 +238,8 @@ def check_criteria_all(execution_context, var_criteria, current_set_stats, new_s
         criteria = var_criteria[index]
         state = variable_stats.add_solution(execution_context, criteria, new_solution)
         new_set_state = criteria_transitions[new_set_state][state]
-        if new_set_state == CriteriaResult.fail_one:
-            return CriteriaResult.fail_one
+        if new_set_state == CriteriaResult.fail_one or new_set_state == CriteriaResult.fail_all:
+            return new_set_state
 
     return new_set_state
 
@@ -289,7 +288,8 @@ class VariableCriteria(object):
             if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
                 # We can fail immediately if we have too many
                 if len(self._unique_rstrs) > self.max_size:
-                    execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size])
+                    # This is definitely the reason why something failed (since we are failing it here), so force=True
+                    execution_context.report_error_for_index(self.predication_index, ["moreThanN", self._after_phrase_error_location, self.max_size], force=True)
                     return CriteriaResult.fail_all
 
                 else:
