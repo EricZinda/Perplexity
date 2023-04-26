@@ -26,6 +26,7 @@
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoOverview.md", "DstFile": "devhowto/devhowtoOverview.md"},
         {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRS.md", "DstFile": "devhowto/devhowtoMRS.md"},
         {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoWellFormedTree.md", "DstFile": "devhowto/devhowtoWellFormedTree.md"},
+        {"Page": "Solving an MRS", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolver.md", "DstFile": "devhowto/devhowtoMRSSolver.md"},
         {"Page": "Plural Algorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoPlurals.md", "DstFile": "devhowto/devhowtoPlurals.md"}
       ]}
     ]

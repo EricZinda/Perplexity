@@ -337,9 +337,12 @@ udef_q(x3,RSTR,BODY)
 ~~~
 
 ## Tests
+Go through wikipedia examples: many more, less than 5, not very many, both the x, all the y
+the 2 folders have 1 file each
+https://en.wikipedia.org/wiki/List_of_English_determiners
 https://sites.rutgers.edu/kristen-syrett/wp-content/uploads/sites/40/2018/09/Distributivity_Syrett.pdf
 each/all/every
-3 boys each carried for piaons (forces boys to dist)
+3 boys each carried for pianos (forces boys to dist)
 ) A group of three boys carried a group of four pianos. (forces both collective)
 all 3 boys carried all 3
 The cards below 7 and the cards from 7 up were separated.
