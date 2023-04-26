@@ -1,7 +1,11 @@
 import enum
-from perplexity.set_utilities import count_set
+import itertools
+
+from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
 from perplexity.tree import find_quantifier_from_variable
 from perplexity.utilities import is_plural_from_tree_info, parse_predication_name, is_plural
+from perplexity.variable_binding import VariableValueType
+from perplexity.vocabulary import PluralType
 
 
 def determiner_from_binding(state, binding):
@@ -28,6 +32,40 @@ def quantifier_from_binding(state, binding):
     return binding.variable.quantifier
 
 
+def expand_combinatorial_variables(variable_metadata, solution):
+    alternatives = {}
+    for variable_item in variable_metadata.items():
+        binding = solution.get_binding(variable_item[0])
+        variable_plural_type = variable_item[1]["PluralType"]
+        if binding.variable.value_type == VariableValueType.combinatoric:
+            # If variable_name is combinatoric, all of its appropriate alternative combinations
+            # have to be used. Thus, if the variable_plural_type is collective, we only add sets > 1, etc
+            min_size = 1
+            max_size = None
+            if variable_plural_type == PluralType.distributive:
+                max_size = 1
+
+            elif variable_plural_type == PluralType.collective:
+                min_size = 2
+
+            else:
+                assert variable_plural_type == PluralType.all
+
+            alternatives[binding.variable.name] = all_nonempty_subsets_stream(binding.value, min_size=min_size, max_size=max_size)
+
+    if len(alternatives) == 0:
+        yield solution
+
+    else:
+        # create combinations by picking one from each
+        variable_names = list(alternatives.keys())
+        for assignment in product_stream(iter(alternatives.values())):
+            new_solution = solution
+            for variable_index in range(len(variable_names)):
+                new_solution.set_x(variable_names[variable_index], tuple(assignment[variable_index]), VariableValueType.set)
+            yield new_solution
+
+
 # Every set that is generated has a GroupVariableStats object that does all
 # the counting that we need to see if it meets the criteria
 # New groups are created by copying an existing set and adding a new solution into it
@@ -36,6 +74,11 @@ def quantifier_from_binding(state, binding):
 # to ensure there is "only 2" solutions generated. This is tracked in the criteria object itself
 # since it is reused across the sets
 def all_plural_groups_stream(execution_context, solutions, var_criteria):
+    # Get metadata for use later
+    variable_metadata = {}
+    for criteria in var_criteria:
+        variable_metadata[criteria.variable_name] = execution_context.get_variable_metadata(criteria.variable_name)
+
     # Create the initial stats
     initial_stats_group = StatsGroup()
     has_global_constraint, sets_are_open = initial_stats_group.initialize(var_criteria)
@@ -44,51 +87,56 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
     sets = [[initial_stats_group, []]]
     pending_global_criteria = []
     abort = False
-    for i in solutions:
-        new_sets = []
-        for k in sets:
-            if exists_in_solution(var_criteria, k[0], k[1], i):
-                # The variable values already existed in this set,
-                # just add it. Don't return it as a solution since
-                # the unique variable assignments have already been returned
-                k[1].append(i)
-                continue
+    for combinatorial_solution in solutions:
+        for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
+            new_sets = []
+            for existing_set in sets:
+                if exists_in_solution(var_criteria, existing_set[0], existing_set[1], next_solution):
+                    # The variable values already existed in this set,
+                    # just add it. Don't return it as a solution since
+                    # the unique variable assignments have already been returned
+                    existing_set[1].append(next_solution)
+                    continue
 
-            new_set_stats_group = k[0].copy()
-            state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, i)
+                new_set_stats_group = existing_set[0].copy()
+                state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
 
-            if state == CriteriaResult.fail_one:
-                #   - fail (doesn't meet criteria): don't add, don't yield
-                continue
+                if state == CriteriaResult.fail_one:
+                    #   - fail (doesn't meet criteria): don't add, don't yield
+                    continue
 
-            elif state == CriteriaResult.fail_all:
-                # A global criteria wasn't met so none will work
-                # Still run global constraints to get a good error
-                abort = True
+                elif state == CriteriaResult.fail_all:
+                    # A global criteria wasn't met so none will work
+                    # Still run global constraints to get a good error
+                    abort = True
+                    break
+
+                else:
+                    # Doesn't fail
+                    if sets_are_open:
+                        new_set = existing_set
+                    else:
+                        new_set = [None, None]
+                        new_sets.append(new_set)
+
+                    new_set[0] = new_set_stats_group
+                    new_set[1] = existing_set[1] + [next_solution]
+
+                    if state == CriteriaResult.meets:
+                        yield new_set[1]
+
+                    elif state == CriteriaResult.meets_pending_global:
+                        pending_global_criteria.append(new_set[1])
+
+                    elif state == CriteriaResult.contender:
+                        # Not yet a solution, don't track it as one
+                        pass
+
+            sets += new_sets
+
+            if abort:
                 break
 
-            else:
-                # Doesn't fail
-                if sets_are_open:
-                    new_set = k
-                else:
-                    new_set = [None, None]
-                    new_sets.append(new_set)
-
-                new_set[0] = new_set_stats_group
-                new_set[1] = k[1] + [i]
-
-                if state == CriteriaResult.meets:
-                    yield new_set[1]
-
-                elif state == CriteriaResult.meets_pending_global:
-                    pending_global_criteria.append(new_set[1])
-
-                elif state == CriteriaResult.contender:
-                    # Not yet a solution, don't track it as one
-                    pass
-
-        sets += new_sets
         if abort:
             break
 

@@ -14,7 +14,7 @@ Plurals work
     - Streaming algorithm
     - online algorithms
     - Integer programming: https://stackoverflow.com/questions/62622312/algorithm-to-find-some-rows-from-a-matrix-whose-sum-is-equal-to-a-given-row
-  - Scenarios:
+  - Slow Scenarios:
     - which 3 files are in 2 folders: 3(x), 2(y)
       - still VERY slow
       - Still need to generate all combinations of 3 x 2 to find out that none are in 2 folders
@@ -31,9 +31,7 @@ Plurals work
   - solution_list_alternatives_without_combinatorial_variables forces the entire group to be materialized
     - The only time we really do solution_group_combinatorial is for the first one
       - Should we break apart the distinction between  solution_group_combinatorial and variable?
-
-- TODO: Still need to do combinatorial variables
-
+      
 Go through each plural    
 - Test: 
         - https://aclanthology.org/P88-1003.pdf
