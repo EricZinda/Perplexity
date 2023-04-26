@@ -213,7 +213,8 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <blockquote>
+        <h2 id="solving-an-mrs">Solving an MRS</h2>
+<blockquote>
   <p>It is important to understand <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">what MRS is</a> and what <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoWellFormedTree">a well-formed MRS tree is</a> before reading this section. Visit those links first to understand the basic concepts.</p>
 </blockquote>
 
@@ -239,9 +240,9 @@
 a small file
 a large file
 </code></pre></div></div>
-<p><code class="language-plaintext highlighter-rouge">x</code> variables in an MRS represent “individuals” or “things in the world”. So, we need to find the values of <code class="language-plaintext highlighter-rouge">x</code> that make both the predications in <code class="language-plaintext highlighter-rouge">large(x), file(x)</code> be <code class="language-plaintext highlighter-rouge">true</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">x</code> variables in an MRS represent “individuals” or “things in the world”. So, we need to find which individuals from the world that, when put into <code class="language-plaintext highlighter-rouge">x</code>, make both the predications in <code class="language-plaintext highlighter-rouge">large(x), file(x)</code> be <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
-<p>While this is trivial to solve by looking at it, once the world contains a million objects, we need a more systematic approach.</p>
+<p>While this is trivial to solve by looking at it, once the world contains a million objects we will need a more systematic approach.</p>
 
 <h2 id="a-backtracking-mrs-solver">A Backtracking MRS Solver</h2>
 <p>We can look at solving an MRS as a <a href="https://en.wikipedia.org/wiki/Constraint_satisfaction_problem">constraint satisfaction problem</a> which is a well-studied class of problems that have a finite set of constraints over variables. In the MRS case, the constraints are the predications:</p>
@@ -251,10 +252,10 @@ a large file
   <li><code class="language-plaintext highlighter-rouge">large(x), file(x)</code> constrains <code class="language-plaintext highlighter-rouge">x</code> to be a <code class="language-plaintext highlighter-rouge">large file</code></li>
 </ul>
 
-<p>One simple approach to solving constraint satisfaction problems (like the solutions to an MRS) is to use “backtracking”. The simplest backtracking algorithm is to:</p>
+<p>One simple approach to solving constraint satisfaction problems (like finding the solutions to an MRS) is to use <a href="https://en.wikipedia.org/wiki/Backtracking">“backtracking”</a>. The simplest backtracking algorithm is to:</p>
 
 <ul>
-  <li>Traverse the predications from the well-formed MRS tree, depth first</li>
+  <li>Traverse the predications from the well-formed MRS tree, depth-first</li>
   <li>When we encounter a variable in a predication that is unassigned we:
     <ol>
       <li>Assign it the first item in the world</li>
@@ -286,11 +287,11 @@ world facts:
 </code></pre></div></div>
 <p>The “world individuals” above are the only objects that exist in the world. <code class="language-plaintext highlighter-rouge">x</code> values in MRS will hold these as values.</p>
 
-<p>The “world facts” above are facts about the relationships between things in the world that predications (such as <code class="language-plaintext highlighter-rouge">in(x, y)</code>) can refer to to see if they are <code class="language-plaintext highlighter-rouge">true</code>.</p>
+<p>The “world facts” above are facts about the relationships between things in the world that predications such as <code class="language-plaintext highlighter-rouge">in(x, y)</code> can refer to to see if they are <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
 <p>As above, it doesn’t matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We’ll be building an example of such a system in this tutorial.</p>
 
-<p>To make the backgracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of “variable scope” to the formula. Variable scope shows where a variable is introduced and which predications can use it.</p>
+<p>To make the backgracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of “variable scope”. Variable scope shows where a variable is introduced and which predications can use it.</p>
 
 <p>We’ll represent scope by a function for now: <code class="language-plaintext highlighter-rouge">scope(variable, [predication_list])</code>. The function states that <code class="language-plaintext highlighter-rouge">variable</code> can be used by all the predications in <code class="language-plaintext highlighter-rouge">[predication_list]</code>. And, since <code class="language-plaintext highlighter-rouge">scope()</code> itself is a predication, more variables can be defined in <code class="language-plaintext highlighter-rouge">predication_list</code> using another <code class="language-plaintext highlighter-rouge">scope()</code>. This allows us to represent our formula using scoping, like this:</p>
 
@@ -404,9 +405,9 @@ scope(x, predication_list)                          │
 
 <p>It works because we are effectively trying all values in all variables. But, it is better than literally just assigning all values to all variables, one by one, until we find the answer, because backtracking eliminates whole branches in the search space. There are other optimizations that can be done, and we will do more as we go, but the basic approach is straightforward.</p>
 
-<p>At this point it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and solved using other algorithms. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We’ll work through some of those and find optimizations for some of the most aggregious problems.</p>
+<p>At this point it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using even different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We’ll work through some of those and find optimizations for some of the most aggregious problems.</p>
 
-<p>Before we can solve a real well-formed MRS tree, we need to account for more of the features that it has.</p>
+<p>But, before we can solve a real well-formed MRS tree, we need to account for more of the features that it has. First up is plurals.</p>
 
 <p>Last update: 2023-04-26 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolver.md">edit</a>]</p>
 
