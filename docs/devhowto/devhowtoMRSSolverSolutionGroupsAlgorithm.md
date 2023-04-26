@@ -1,150 +1,4 @@
-
-## Add Plurals To the Solver
-If there were multiple large files in folders, the above formula:
-
-~~~
-formula: large(x), file(x), folder(y), in(x, y)
-~~~
-
-... would find them all as different "solutions". A "solution" is an assignment of a single value to all variables, such as:
-
-~~~
-solution 1: x=file1, y=folder1
-solution 2: x=file2, y=folder2
-...
-~~~
-
-So, using that approach, we could look at the formula as representing "large files in folders" since it will find multiple if they exist. But this only works because of how "in" behaves. If `a` and `b` are "in" a folder, `a` is in the folder and `b` is in the folder. There is no sense of them being in the folder "together" that needs to be represented.
-
-This isn't true of all verbs, however. The verb "to lift" can distinguish the cases and mean very different things.  For example:
-
-~~~
-students lifted tables
-~~~
-...could mean: 
-1. Two students lifted the same table
-2. Each student lifted a different table
-3. 2 students (together) lifted 2 tables (together) and 1 student lifted a different table.
-
-To truly represent the semantics of the world properly, the algorithm needs to model when things are happening *together* or *separately*. In linguistics:
-- Items purely operating together are called *collective*: #1 has collective students.
-- Items purely operating "separately" are called *distributive*: #2 has distributive students and tables. 
-- Items doing a combination of both are called *cumulative*: #3 has cumulative students and tables.
-
-To handle these cases, we can make a simple extension to the algorithm: require that variables always contain a *set* of one or more things from the world. Predications must interpret a set of greater than one element as meaning "together" (*collective*).  A set of one item means "separately" or "alone" (*distributive*). We'll get to cumulative in the next section.
-
-With this change, a `scope()` predication now needs to assign *all possible sets of values* to its variable in order to explore the solution tree and find all the solutions. This can quickly become quite expensive, but there are optimizations we will explore. For now, we'll use the direct approach to understand the algorithm.
-
-Let's work through an example of a world where two students are lifting a table *together* (collective):
-
-~~~
-formula: student(x), table(y), lift(x, y)
-scoped formula: scope(x, [student(x), scope(y, [table(y), lift(x, y)])])
-
-world:
-  alice
-  bob
-  table1
-  [alice, bob] lift [table1]
-~~~
-In the new approach, `x` and `y` are iteratively assigned all combinations of things in the world by their `scope()` predication, but the rest of the algorithm proceeds as before. Unlike `in()`, when `lift()` encounters a set of more than one item in either of its arguments, it has to check the world to see if the actors are lifting *together*, or if tables are being lifted *together*.
-
-Summarizing the results in truth table form:
-
-|assignment|formula result|
-|---|---|
-|x=[alice], y=[alice]| false|
-|x=[alice], y=[bob]| false|
-|x=[alice], y=[table1]| true|
-|x=[alice], y=[alice, bob]| false|
-|x=[alice], y=[alice, bob, table1]| false|
-|x=[bob], y=[alice]| false|
-|x=[bob], y=[bob]| false|
-|x=[bob], y=[table1]| true|
-|x=[bob], y=[alice, bob]| false|
-|x=[bob], y=[alice, bob, table1]| false|
-|x=[alice, bob], y=[alice]| false|
-|x=[alice, bob], y=[bob]| false|
-|x=[alice, bob], y=[table1]| true|
-|...| etc.|
-
-In the new form, the solutions we get back are shown below, along with their meaning:
-
-|assignment|formula result|
-|---|---|
-|x=[alice], y=[table1]| Alice lifted a table|
-|x=[bob], y=[table1]| Bob lifted a table|
-|x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
-
-Thus, the algorithm gives us all the assignments of variables that make the formula true in the world. Note that it will successfully find all the interesting combinations (collective, distributive, or cumulative) in more complex scenarios, such as:
-1. 5 students are all lifting the same tables (collective students, collective tables)
-2. 5 students are all lifting different tables (distributive students, distributive tables)
-3. 2 students are lifting one table and 2 are lifting another (cumulative students, distributive tables)
-
-etc.
-
-Note that, situations #2 and #3 are only properly represented by a *group* of solutions. There isn't a way to represent them as a single solution (i.e. a single set of variable assignments) in this model. To see why, look at #2. Since each student is lifting a different table, both `x` and `y` must be assigned a set of a single student and table (respectively). But we need to represent 5 students and 5 tables. We can't use a set to do this: a set represents objects doing something *together* which isn't right for this scenario. Thus, distributive or cumulative scenarios will require a group of solutions to represent the answer.
-
-In addition, while each solution *does* represent a set of variable assignments that make the formula true, this is only because of *the way we've defined truth so far*. The current model for formula truth doesn't put any constraints on plurality. So far, a single formula can represent both "alice lifted a table" and "Alice and Bob lifted a table together". This isn't good enough since we need to capture natural language with these formulas and natural language *does* encode constraints on plurality.
-
-We'll address both of these issues next.
-
-## Solution Groups
-The above example didn't encode any constraints about plurality in the formula:
-
-~~~
-student(x), table(y), lift(x, y)
-~~~
-
-... and so we really didn't have a formula that represented how English works. Given these solutions:
-
-|assignment|formula result|
-|---|---|
-|x=[alice], y=[table1]| Alice lifted a table|
-|x=[bob], y=[table1]| Bob lifted a table|
-|x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
-
-If the original phrase really was: "a student lifted a table", then the last solution where Bob and Alice (together) lifted a table shouldn't be there since "Bob and Alice" are not "a student".  
-
-On the other hand, if it was "students lifted a table", the first and second answers can't stand alone because they each only represent one student, not "students". 
-
-Finally, if it was "students lifted tables", none of the answers should be there since there is only one table. 
-
-So, we really didn't have a "formula language" that could capture the sematics of the phrase enough to distinguish these cases. Encoding the plurality in the formula and representing it properly in the answers is essential for properly capturing meaning.
-
-In the MRS "formula language", plurality *is* encoded using a property of the variable, as described in the [MRS topic](devhowtoMRS#variable-properties). So, to encode plural students, a `[ x NUM: pl]` fragment would be in the MRS. We'll just put that at the top of our pseudo MRS in these simple examples to capture it for now:
-
-~~~
-[ x NUM: pl]
-student(x), table(y), lift(x, y)
-~~~
-
-Now we need to deal with the fact that our list of solutions don't always stand alone. The first answer alone is *not* a solution to "students lifted a table" since Alice is only one student:
-
-|assignment|formula result|
-|---|---|
-|x=[alice], y=[table1]| Alice lifted a table|
-|x=[bob], y=[table1]| Bob lifted a table|
-|x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
-
-However, if we change our solver algorithm to allow *grouping*, and interpret a *group* of solutions as a complete answer (called a "solution group"), it does work:
-
-Solution group 1:
-
-|assignment|formula result|
-|---|---|
-|x=[alice], y=[table1]| Alice lifted a table|
-|x=[bob], y=[table1]| Bob lifted a table|
-
-Solution group 2:
-
-|assignment|formula result|
-|---|---|
-|x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
-
-Now each *solution group* properly represents the fact that "students" is *plural* by having more than one student in the solution. Collective answers can be represented by a single solution, but distributive and cumulative answers need solution *groups* to properly represent them in this solver.  
-
-### Solution Group Algorithm
+### Solution Group Algorithm for Simple Plurals
 The solver can group solutions by performing a second "grouping" pass over the initial set of individual solutions, like we just did above. 
 
 The algorithm is:
@@ -397,6 +251,35 @@ To do this, the solver needs to keep track of what the original `RSTR` values we
 
 #### `the(x, student(x), study(x))`: There is 1 "obvious student we are talking about", and they are studying
 
+## Plurals
+The above example didn't encode any constraints about plurality in the formula:
+
+~~~
+student(x), table(y), lift(x, y)
+~~~
+
+... and so we really didn't have a formula that represented how English works. Given these solutions:
+
+|assignment|formula result|
+|---|---|
+|x=[alice], y=[table1]| Alice lifted a table|
+|x=[bob], y=[table1]| Bob lifted a table|
+|x=[alice, bob], y=[table1]| Alice and Bob lifted a table together|
+
+If the original phrase really was: "a student lifted a table", then the last solution where Bob and Alice (together) lifted a table shouldn't be there since "Bob and Alice" are not "a student".  
+
+On the other hand, if it was "students lifted a table", the first and second answers can't stand alone because they each only represent one student, not "students". 
+
+Finally, if it was "students lifted tables", none of the answers should be there since there is only one table. 
+
+So, we really didn't have a "formula language" that could capture the sematics of the phrase enough to distinguish these cases. Encoding the plurality in the formula and representing it properly in the answers is essential for properly capturing meaning.
+
+In the MRS "formula language", plurality *is* encoded using a property of the variable, as described in the [MRS topic](devhowtoMRS#variable-properties). So, to encode plural students, a `[ x NUM: pl]` fragment would be in the MRS. We'll just put that at the top of our pseudo MRS in these simple examples to capture it for now:
+
+~~~
+[ x NUM: pl]
+student(x), table(y), lift(x, y)
+~~~
 
 ## Add scopal arguments
 
