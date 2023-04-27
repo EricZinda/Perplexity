@@ -1,6 +1,6 @@
   {
     "home": [
-      {"Section": "Background", "Pages": [
+      {"Section": "MRS Conceptual", "Pages": [
         {"Page": "devhowtoConceptualFailures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoConceptualFailures.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "devhowtoEvents", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoEvents.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "devhowtoPredicationContract", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoPredicationContract.md", "BaseReferrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "Referrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "FileMissing": true},

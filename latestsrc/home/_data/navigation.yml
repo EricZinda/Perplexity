@@ -2,15 +2,17 @@ main:
   - title: "Home"
     url: https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview
 toc:
-  - title: "Background"
+  - title: "Developer Tutorial Overview"
     children:
       - title: "Overview"
         url: "/devhowto/devhowtoOverview/"
+  - title: "MRS Conceptual"
+    children:
       - title: "Minimal Recursion Semantics (MRS)"
         url: "/devhowto/devhowtoMRS/"
       - title: "Well-Formed Trees"
         url: "/devhowto/devhowtoWellFormedTree/"
-  - title: "Solving MRS"
+  - title: "MRS Solver Conceptual"
     children:
       - title: "Backtracking"
         url: "/devhowto/devhowtoMRSSolver/"
