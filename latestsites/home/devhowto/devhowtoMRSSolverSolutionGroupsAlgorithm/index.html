@@ -325,10 +325,10 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 <p>With that covered, let’s walk through how to get the numeric constraints from the above MRS.</p>
 
 <h4 id="order-of-variables">Order of Variables</h4>
-<p>First, notice that the variable order in this MRS is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x11</code>] (read left to right) since that is the order the quantifiers that scope these variables occur in when evaluating the tree.</p>
+<p>First, notice that the variable order in this tree is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x11</code>] (read left to right) since that is the order the quantifiers that scope these variables occur in when evaluating the tree.</p>
 
 <h4 id="quantifer-constraints">Quantifer Constraints</h4>
-<p>Each variable in an MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">must have a quantifier that scopes it</a> (just like we always used a <code class="language-plaintext highlighter-rouge">scope()</code> predication in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like <code class="language-plaintext highlighter-rouge">udef_q</code> in our example, add the default criteria <code class="language-plaintext highlighter-rouge">between(1, inf)</code> which simply means “at least one”. <code class="language-plaintext highlighter-rouge">_a_q</code> means “a single thing” so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>. Thus, the quantifiers in this example add these constraints:</p>
+<p>Each variable in an MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">must have a quantifier that scopes it</a> (the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like <code class="language-plaintext highlighter-rouge">udef_q</code> in our example, add the default criteria <code class="language-plaintext highlighter-rouge">between(1, inf)</code> which simply means “at least one”. <code class="language-plaintext highlighter-rouge">_a_q</code> means “a single thing” so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>. Thus, the quantifiers in this example add these constraints:</p>
 
 <table>
   <thead>
@@ -382,12 +382,30 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 
 <p>…  so it gets <code class="language-plaintext highlighter-rouge">between(1, 1)</code>:</p>
 
-<p>Thus, our final list of constraints is:
-|<code class="language-plaintext highlighter-rouge">x3</code> (students)|<code class="language-plaintext highlighter-rouge">x11</code>(table)|
-|—|—|
-|<code class="language-plaintext highlighter-rouge">udef</code>: <code class="language-plaintext highlighter-rouge">between(1, inf)</code>| <code class="language-plaintext highlighter-rouge">_a_q</code>: <code class="language-plaintext highlighter-rouge">between(1, 1)</code>|
-|<code class="language-plaintext highlighter-rouge">card</code>: <code class="language-plaintext highlighter-rouge">between(2, 2)</code>| <code class="language-plaintext highlighter-rouge">[NUM: sg]</code>: <code class="language-plaintext highlighter-rouge">between(1, 1)</code> |
-|<code class="language-plaintext highlighter-rouge">[NUM: pl]</code>: <code class="language-plaintext highlighter-rouge">between(2, inf)</code>| |</p>
+<p>Thus, our final list of constraints is:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><code class="language-plaintext highlighter-rouge">x3</code> (students)</th>
+      <th><code class="language-plaintext highlighter-rouge">x11</code>(table)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">udef</code>: <code class="language-plaintext highlighter-rouge">between(1, inf)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">_a_q</code>: <code class="language-plaintext highlighter-rouge">between(1, 1)</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">card</code>: <code class="language-plaintext highlighter-rouge">between(2, 2)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">[NUM: sg]</code>: <code class="language-plaintext highlighter-rouge">between(1, 1)</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[NUM: pl]</code>: <code class="language-plaintext highlighter-rouge">between(2, inf)</code></td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
 
 <h4 id="combining-constraints">Combining Constraints</h4>
 <p>The final constraints from the example can be combined.  If <code class="language-plaintext highlighter-rouge">x3</code> must be:</p>
@@ -396,12 +414,24 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
   <li>“between 2 and infinity” <em>and</em> “between 2 and 2 (i.e. exactly 2)” then saying “between 2 and 2” is enough.</li>
 </ul>
 
-<p>Using this logic, the final list of constraints above can be reduced to:
-|<code class="language-plaintext highlighter-rouge">x3</code> (students)|<code class="language-plaintext highlighter-rouge">x11</code>(table)|
-|—|—|
-|<code class="language-plaintext highlighter-rouge">between(2, 2)</code>| <code class="language-plaintext highlighter-rouge">between(1, 1)</code>|</p>
+<p>Using this logic, the final list of constraints above can be reduced to:</p>
 
-<p>Which matches the intuition you’d have that there should be exactly two students and exacty one table (possibly for each student) in “two students lifted a table”.</p>
+<table>
+  <thead>
+    <tr>
+      <th><code class="language-plaintext highlighter-rouge">x3</code> (students)</th>
+      <th><code class="language-plaintext highlighter-rouge">x11</code>(table)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">between(2, 2)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">between(1, 1)</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Which matches the intuition that there should be exactly two students and exacty one table (possibly for each student) in “two students lifted a table”.</p>
 
 <h4 id="mrs-constraints-summary">MRS Constraints Summary</h4>
 <p>So, now we have an approach to gathering the constraints from the MRS:</p>
@@ -515,11 +545,11 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
 
 <h4 id="phase-0-setup">Phase 0: Setup</h4>
 <blockquote>
-  <ol>
+  <ul>
     <li>Start with a well-formed MRS Tree</li>
     <li>Determine the list of <code class="language-plaintext highlighter-rouge">x</code> variables in the tree and the order they will be evaluated in</li>
     <li>Determine the constraints placed on each <code class="language-plaintext highlighter-rouge">x</code> variable by predications that modify it.</li>
-  </ol>
+  </ul>
 </blockquote>
 
 <p>Using the approach described above, the evaluation order of variables is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x10</code>] and the found constraints for the variables are:</p>
@@ -543,20 +573,32 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
   </tbody>
 </table>
 
-<p>When simplified, they are:
-|<code class="language-plaintext highlighter-rouge">x3</code> (students)|<code class="language-plaintext highlighter-rouge">x10</code>(table)|
-|—|—|
-|<code class="language-plaintext highlighter-rouge">between(2, inf)</code>| <code class="language-plaintext highlighter-rouge">between(1, 1)</code> |</p>
+<p>When simplified, they are:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><code class="language-plaintext highlighter-rouge">x3</code> (students)</th>
+      <th><code class="language-plaintext highlighter-rouge">x10</code>(table)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">between(2, inf)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">between(1, 1)</code></td>
+    </tr>
+  </tbody>
+</table>
 
 <blockquote>
-  <ol>
+  <ul>
     <li>Create a modified tree by:
       <ul>
         <li>Removing adjective predications that added numeric constraints</li>
         <li>Changing quantifiers that added numeric constraints to <code class="language-plaintext highlighter-rouge">udef_q</code></li>
       </ul>
     </li>
-  </ol>
+  </ul>
 </blockquote>
 
 <p>The modified tree is:</p>
@@ -570,12 +612,12 @@ udef_q(x3,RSTR,BODY)             ┌────── _table_n_1(x10)
 <h4 id="phase-1-solution-generation">Phase 1: Solution Generation</h4>
 
 <blockquote>
-  <ol>
+  <ul>
     <li>Generate the list of solutions to the modified tree using the approach described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets">previous section</a></li>
-  </ol>
+  </ul>
 </blockquote>
 
-<p>Using a (unshown) world state, and using the approach described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets">previous section</a>, the solutions to the modified tree are:</p>
+<p>Using a (unshown) world state, and using the approach described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets">previous section</a>, the solutions to the modified tree are (let’s say):</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>"students lifted a table"
 
 Tree: udef_q(x3,_student_n_of(x3,i8),udef_q(x10,_table_n_1(x10),_lift_v_cause(e2,x3,x10)))
@@ -601,7 +643,7 @@ Solution 12: x3=[student12], x10=[table14]
   </ol>
 </blockquote>
 
-<p>Start by generating groups that are all combinations of the above solutions, like this partial list:</p>
+<p>Start by generating (as yet untested) groups that are all combinations of the above solutions, like this partial list:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1:
   Solution 1: x3=[student1], x10=[table1]                     "student1 is lifting table1"
@@ -619,7 +661,8 @@ Group 3:
 </code></pre></div></div>
 
 <blockquote>
-  <ol>
+  <p>For each group:</p>
+  <ul>
     <li>For each <code class="language-plaintext highlighter-rouge">x</code> variable: Count individuals in the solutions two different ways:
       <ul>
         <li>Cumulatively: Total the variable individuals across all solutions</li>
@@ -636,13 +679,25 @@ Group 3:
       </ul>
     </li>
     <li>If the end of the variables is reached and all succeeded, this is a valid solution group</li>
-  </ol>
+  </ul>
 </blockquote>
 
-<p>Using the constraints we determined:
-|<code class="language-plaintext highlighter-rouge">x3</code> (students)|<code class="language-plaintext highlighter-rouge">x10</code>(table)|
-|—|—|
-|<code class="language-plaintext highlighter-rouge">between(2, inf)</code>| <code class="language-plaintext highlighter-rouge">between(1, 1)</code> |</p>
+<p>Using the constraints we determined:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><code class="language-plaintext highlighter-rouge">x3</code> (students)</th>
+      <th><code class="language-plaintext highlighter-rouge">x10</code>(table)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">between(2, inf)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">between(1, 1)</code></td>
+    </tr>
+  </tbody>
+</table>
 
 <p>… let’s analyze each group:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1:
@@ -659,7 +714,7 @@ Group 3:
 
 <p><code class="language-plaintext highlighter-rouge">x10</code> gets both kinds of count:</p>
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">cumulative_count=2</code></li>
+  <li><code class="language-plaintext highlighter-rouge">cumulative_count=2</code>. This fails the <code class="language-plaintext highlighter-rouge">between(1, 1)</code> constraint, but we have one more try…</li>
   <li><code class="language-plaintext highlighter-rouge">dist_coll_count(student1)=1</code>, <code class="language-plaintext highlighter-rouge">dist_coll_count(student2)=1</code>. Both counts are the same so <code class="language-plaintext highlighter-rouge">dist_coll_count=1</code> The constraint on <code class="language-plaintext highlighter-rouge">x10</code> is <code class="language-plaintext highlighter-rouge">between(1, 1)</code>. Thus: this variable succeeds.</li>
 </ul>
 

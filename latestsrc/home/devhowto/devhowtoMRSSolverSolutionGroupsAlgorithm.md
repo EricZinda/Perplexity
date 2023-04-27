@@ -79,10 +79,10 @@ Two points to note as we transition to using real MRS instead of simplified tree
 With that covered, let's walk through how to get the numeric constraints from the above MRS.
 
 #### Order of Variables
-First, notice that the variable order in this MRS is [`x3`, `x11`] (read left to right) since that is the order the quantifiers that scope these variables occur in when evaluating the tree.
+First, notice that the variable order in this tree is [`x3`, `x11`] (read left to right) since that is the order the quantifiers that scope these variables occur in when evaluating the tree.
 
 #### Quantifer Constraints
-Each variable in an MRS [must have a quantifier that scopes it](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS) (just like we always used a `scope()` predication in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like `udef_q` in our example, add the default criteria `between(1, inf)` which simply means "at least one". `_a_q` means "a single thing" so it adds `between(1, 1)`. Thus, the quantifiers in this example add these constraints:
+Each variable in an MRS [must have a quantifier that scopes it](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS) (the artificial `scope()` predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like `udef_q` in our example, add the default criteria `between(1, inf)` which simply means "at least one". `_a_q` means "a single thing" so it adds `between(1, 1)`. Thus, the quantifiers in this example add these constraints:
 
 |`x3` (students)|`x11`(table)|
 |---|---|
@@ -114,6 +114,7 @@ This adds the constraint `between(2, inf)` to `x3`.
 ...  so it gets `between(1, 1)`:
 
 Thus, our final list of constraints is:
+
 |`x3` (students)|`x11`(table)|
 |---|---|
 |`udef`: `between(1, inf)`| `_a_q`: `between(1, 1)`|
@@ -126,11 +127,12 @@ The final constraints from the example can be combined.  If `x3` must be:
 - "between 2 and infinity" *and* "between 2 and 2 (i.e. exactly 2)" then saying "between 2 and 2" is enough.
 
 Using this logic, the final list of constraints above can be reduced to:
+
 |`x3` (students)|`x11`(table)|
 |---|---|
 |`between(2, 2)`| `between(1, 1)`|
 
-Which matches the intuition you'd have that there should be exactly two students and exacty one table (possibly for each student) in "two students lifted a table".
+Which matches the intuition that there should be exactly two students and exacty one table (possibly for each student) in "two students lifted a table".
 
 #### MRS Constraints Summary
 So, now we have an approach to gathering the constraints from the MRS:
@@ -222,9 +224,9 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
 ```
 
 #### Phase 0: Setup
-> 1. Start with a well-formed MRS Tree
-> 2. Determine the list of `x` variables in the tree and the order they will be evaluated in
-> 3. Determine the constraints placed on each `x` variable by predications that modify it.
+> - Start with a well-formed MRS Tree
+> - Determine the list of `x` variables in the tree and the order they will be evaluated in
+> - Determine the constraints placed on each `x` variable by predications that modify it.
 
 
 Using the approach described above, the evaluation order of variables is [`x3`, `x10`] and the found constraints for the variables are:
@@ -235,13 +237,14 @@ Using the approach described above, the evaluation order of variables is [`x3`, 
 |`[NUM: pl]`: `between(2, inf)`| `[NUM: sg]`: `between(1, 1)` |
 
 When simplified, they are:
+
 |`x3` (students)|`x10`(table)|
 |---|---|
 |`between(2, inf)`| `between(1, 1)` |
 
-> 4. Create a modified tree by:
->    - Removing adjective predications that added numeric constraints
->    - Changing quantifiers that added numeric constraints to `udef_q`
+> - Create a modified tree by:
+>   - Removing adjective predications that added numeric constraints
+>   - Changing quantifiers that added numeric constraints to `udef_q`
 
 
 The modified tree is:
@@ -255,10 +258,10 @@ udef_q(x3,RSTR,BODY)             ┌────── _table_n_1(x10)
 
 #### Phase 1: Solution Generation
 
-> 5. Generate the list of solutions to the modified tree using the approach described in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets)
+> - Generate the list of solutions to the modified tree using the approach described in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets)
 
 
-Using a (unshown) world state, and using the approach described in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets), the solutions to the modified tree are:
+Using a (unshown) world state, and using the approach described in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets), the solutions to the modified tree are (let's say):
 ```
 "students lifted a table"
 
@@ -282,7 +285,7 @@ Solution 12: x3=[student12], x10=[table14]
 > 6. For each possible combination of solutions from Phase 1: Walk the `x` variables in evaluation order. 
 
 
-Start by generating groups that are all combinations of the above solutions, like this partial list:
+Start by generating (as yet untested) groups that are all combinations of the above solutions, like this partial list:
 
 ```
 Group 1:
@@ -300,16 +303,18 @@ Group 3:
 ... etc. (there are *many* more groups not listed)
 ```
 
-> 7. For each `x` variable: Count individuals in the solutions two different ways:
->    - Cumulatively: Total the variable individuals across all solutions
->    - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the values are all the same, that is the count. If not, this count fails and has no value.
->      - If this is the first variable, there is no "previous value" to use in the "total per previous value" definition of distributive/collective. Therefore, the first can only be totalled cumulatively
-> 8. If either count meets the variable constraints: it succeeds and the next variable in the order is tried
->    - If not: this group fails and the next group starts at step #5
-> 9. If the end of the variables is reached and all succeeded, this is a valid solution group
+> For each group:
+> - For each `x` variable: Count individuals in the solutions two different ways:
+>   - Cumulatively: Total the variable individuals across all solutions
+>   - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the values are all the same, that is the count. If not, this count fails and has no value.
+>     - If this is the first variable, there is no "previous value" to use in the "total per previous value" definition of distributive/collective. Therefore, the first can only be totalled cumulatively
+> - If either count meets the variable constraints: it succeeds and the next variable in the order is tried
+>   - If not: this group fails and the next group starts at step #5
+> - If the end of the variables is reached and all succeeded, this is a valid solution group
 
 
 Using the constraints we determined:
+
 |`x3` (students)|`x10`(table)|
 |---|---|
 |`between(2, inf)`| `between(1, 1)` |
@@ -330,7 +335,7 @@ Group 2:
 `x3` is the first variable so we only do the cumulative count for it: `cumulative_count=2` which passes the constraint `between(2, inf)`. Try the next variable.  
 
 `x10` gets both kinds of count: 
-- `cumulative_count=2`
+- `cumulative_count=2`. This fails the `between(1, 1)` constraint, but we have one more try...
 - `dist_coll_count(student1)=1`, `dist_coll_count(student2)=1`. Both counts are the same so `dist_coll_count=1` The constraint on `x10` is `between(1, 1)`. Thus: this variable succeeds.
 
 There are no more variables, thus this group is an answer: a *distributive* answer.
