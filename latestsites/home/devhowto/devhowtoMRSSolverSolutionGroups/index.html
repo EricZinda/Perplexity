@@ -251,10 +251,10 @@
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Two students lifted one table
 </code></pre></div></div>
 <p>…<em>could</em> mean:</p>
-<ol>
-  <li>Two students [together] lifted one table [at the same time]</li>
-  <li>Two students [separately] lifted one [different] table</li>
-</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1. Two students [together] lifted one table [at the same time]
+2. Two students [separately] lifted one [different] table
+</code></pre></div></div>
 
 <p>So, in addition to representing things working together or separately by using sets as we did in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets">previous section</a>, we need to deal with the fact that terms representing sets in language create a new layer of ambiguity: it isn’t always clear if you are talking about the whole group of “two students” working together, or subsets of the group working separately. The solver needs to be able to find either solution properly.</p>
 
@@ -302,9 +302,8 @@
 
 <p>… language lets in one more possible interpretation … by counting <em>total</em> tables (not <em>per group</em>):</p>
 
-<ol>
-  <li>One student lifted one table and another student lifted a different table.</li>
-</ol>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>3. One student lifted one table and another student lifted a different table.
+</code></pre></div></div>
 
 <p>This interpretation distributively groups the students, but <em>counts the tables differently</em>.  This can be confusing, so let’s do the three definitions at once:</p>
 
@@ -338,6 +337,8 @@
 </blockquote>
 
 <p>Note how the math for the cumulative reading is different than the math for collective and distributive readings. Collective and distributive readings require <code class="language-plaintext highlighter-rouge">M</code> tables <em>per student subgroup</em>, whereas cumulative requires <code class="language-plaintext highlighter-rouge">M</code> tables, total, <em>across all student subgroups</em>.</p>
+
+<p>It is important to note that this is not some DELPH-IN feature or artifact, this is how human language works. We are just trying to build an algorithm that does it like a human would.</p>
 
 <h3 id="algorithm-fixes-for-collective-distributive-and-cumulative">Algorithm Fixes for Collective, Distributive and Cumulative</h3>
 <p>The algorithm we’ve defined so far will actually find the collective, distributive, and cumulative solutions to an MRS, if they exist, because it will find <em>all</em> solutions to the MRS. The problem is the way we’re defining “solution”. To see why, let’s bring back the three readings:</p>
@@ -509,7 +510,7 @@ world facts:
 
 <p><a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm">Next up</a> is a description of how the solver can actually <em>do</em> the grouping and arrive at those answers.</p>
 
-<p>Last update: 2023-04-26 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroups.md">edit</a>]</p>
+<p>Last update: 2023-04-27 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroups.md">edit</a>]</p>
 
         
       </section>
