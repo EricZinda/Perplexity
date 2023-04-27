@@ -192,6 +192,6 @@ The *solution group* that represents this also requires multiple solutions in th
 ## Summary
 With the addition of solution groups, the solver can now properly represent the meaning of plural sentences across collective, distributive and cumulative readings.
 
-Next up is a description of how the solver can actually *do* the grouping and arrive at those answers.
+[Next up](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm) is a description of how the solver can actually *do* the grouping and arrive at those answers.
 
 Last update: 2023-04-26 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroups.md)]{% endraw %}

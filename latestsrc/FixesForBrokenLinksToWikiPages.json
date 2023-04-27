@@ -1,9 +1,8 @@
   {
     "home": [
-      {"Section": "How-To", "Pages": [
+      {"Section": "Background", "Pages": [
         {"Page": "devhowtoConceptualFailures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoConceptualFailures.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "devhowtoEvents", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoEvents.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
-        {"Page": "devhowtoMRSSolverSolutionGroupsAlgorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "Referrer": "home/docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "FileMissing": true},
         {"Page": "devhowtoPredicationContract", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoPredicationContract.md", "BaseReferrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "Referrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "FileMissing": true},
         {"Page": "devhowtoScopalArguments", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoScopalArguments.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "devhowtoSentenceForce", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoSentenceForce.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
