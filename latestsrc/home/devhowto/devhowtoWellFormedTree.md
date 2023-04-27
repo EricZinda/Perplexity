@@ -120,12 +120,12 @@ The rules for MRS say that any variable in the MRS is "globally defined" (or "ex
 
 So, while the predications can be in any order in the tree with respect to their `e`  (or `i` or `u` if it had them) arguments, the tree must be checked to make sure all of the `x` arguments have an eventual parent which is a quantifier which puts them in scope (i.e. has the `x` variable as its first argument: `ARG0`). This is an additional constraint that has to be checked to build a "well-formed" tree.
 
-If the quantifiers are all in (exactly) one place, the built tree passes all `qeq` constraints, and the `x` variables are all properly scoped, then it is a "well-formed" tree that we can now attempt to solve.  That's what we're going for here.
+If the labels from the MRS are all in (exactly) one place, the built tree passes all `qeq` constraints, and the `x` variables are all properly scoped, then it is a "well-formed" tree that we can now attempt to solve.  That's what we're going for here.
 
 ## Resolving the tree
 Finding ways to efficiently create these trees is an area of active research because natural language can easily create MRS structures that have a ton of holes.  `n` holes, in the worst case, can require `n!` checks to resolve, if done exhaustively.  So, an MRS structure with 12 holes (which is easy to generate) could require up to 480,000,000 checks before finding a valid solution if you just try every combination.  
 
-To generate the well-formed trees, you could simply try all possible combinations of holes and predications, do the `qeq` and `x` scoping checks on each, and only keep the valid ones. This will only be practical for the simplest possible trees.
+To generate the well-formed trees, you could simply try all possible combinations of holes and labels, do the `qeq` and `x` scoping checks on each, and only keep the valid ones. This will only be practical for the simplest possible trees.
 
 Another algorithm, the one we'll use in the tutorial, is able to prune the search space and works much faster.  The Python implementation can usually generate all trees for an MRS with 12 holes in around 1.5s (with some outliers being slower) on a 2013-era MacBook Pro.  This will be sufficient for the purposes of this tutorial.  Something like "put the diamond on the table where the safe is and the book is" generates MRS structures with up to 14 holes and could take up to 30 seconds to generate *all* the valid interpretations (1500+ valid interpretations in some cases!) for each MRS.  It turns out it is very rarely necessary to generate all the interpretations, but regardless: because it scales factorially, things slow down fast after 12 holes.
 
@@ -236,4 +236,4 @@ def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, node
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-01-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoWellFormedTree.md)]{% endraw %}
+Last update: 2023-04-27 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoWellFormedTree.md)]{% endraw %}
