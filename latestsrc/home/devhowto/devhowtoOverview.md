@@ -7,9 +7,9 @@ The tutorial will use the [DELPH-IN English Resource Grammar (ERG)](https://blog
 
 Python was chosen as a simple, popular, open-source language available on many platforms. However, the examples and approach shown here could be implemented in any language. There is not much code in the core solver and associated helper functions that would need to be translated. The overwhelming majority of code will be in the implementation of the terms you implement for your own domain.
 
-It is designed to be read in order, but the most important background is in the first two sections, [The Minimal Recursion Semantics (MRS) Format](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS) and [Building Well-Formed MRS Trees](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoWellFormedTree). These should definitely be read before moving on to the rest of the topics. 
+It is designed to be read in order, but the most important background is in the first two sections, [The Minimal Recursion Semantics (MRS) Format](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS) and [Building Well-Formed MRS Trees](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoWellFormedTree). These should definitely be read before moving on to the rest of the topics. The rest of the topics broadly break down into *conceptual topics* which cover the algorithms and concepts needed to implement a system and *how-to topics* which walk through writing the Python code to implement them.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-01-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoOverview.md)]{% endraw %}
+Last update: 2023-04-27 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoOverview.md)]{% endraw %}

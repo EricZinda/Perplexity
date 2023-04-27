@@ -167,13 +167,25 @@
     
       <li>
         
-          <span class="nav__sub-title">Background</span>
+          <span class="nav__sub-title">Developer Tutorial Overview</span>
         
 
         
         <ul>
           
             <li><a href="/Perplexity/home/devhowto/devhowtoOverview/">Overview</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Conceptual</span>
+        
+
+        
+        <ul>
           
             <li><a href="/Perplexity/home/devhowto/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
           
@@ -185,7 +197,7 @@
     
       <li>
         
-          <span class="nav__sub-title">Solving MRS</span>
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
         
 
         
@@ -240,14 +252,17 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 
 <p>… is to have the solver create groups of solutions (“solution groups”) that are the “real” answers. This section describes how.</p>
 
-<p>The approach is to generate the solutions exactly like we’ve been doing so far, but then add a new “grouping pass” afterward. This grouping pass will find the groups of solutions that represent actual answers. Solution groups must meet all the <em>numeric constraints</em> that the words in the phrase put on the  variables. For example, for “students lifted a table”:</p>
+<h3 id="overview">Overview</h3>
+<p>The basic approach is to generate the solutions, exactly like we’ve been doing so far, but then add a new “grouping pass” afterward. This grouping pass will find the groups of solutions that meet all the <em>numeric constraints</em> that the words in the phrase put on the variables. The groups found represent the answers to the MRS.</p>
+
+<p>To illustrate what “numeric constraint” means, take “students lifted a table”:</p>
 <ul>
   <li>“students …” is plural, which means the contraint is: <code class="language-plaintext highlighter-rouge">count(students) &gt; 2</code></li>
   <li>“… a table” means the constraint is: <code class="language-plaintext highlighter-rouge">count(tables) = 1</code></li>
   <li>etc.</li>
 </ul>
 
-<p>If we simply do the counts across all the solutions in a group and return those where <code class="language-plaintext highlighter-rouge">count(students) &gt; 2</code> and <code class="language-plaintext highlighter-rouge">count(tables) = 1</code>, we will get a bunch of valid groups, but miss all of those that use a “per previous value” interpretation. So, we’ll miss the distributive ones. To get those, we need to do a slightly more complicated counting algorithm that is “per previous value”.</p>
+<p>To determine <code class="language-plaintext highlighter-rouge">count(students)</code> in the above example, we could simply count the students across all the solutions in a given group and return those groups where <code class="language-plaintext highlighter-rouge">count(students) &gt; 2</code> and <code class="language-plaintext highlighter-rouge">count(tables) = 1</code>. That will produce groups which <em>are</em> valid, but will miss any answers that require a “per previous value” count. So, we’ll miss the distributive ones. We need to do a slightly more complicated counting algorithm that is “per previous value” to get <em>all</em> the readings</p>
 
 <p>Here’s an overview of the how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:</p>
 <blockquote>
@@ -273,7 +288,7 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 <p>Figuring out the contraints on the variables is a longer story, which the next few sections will cover.</p>
 
 <h3 id="variable-constraints-overview">Variable Constraints Overview</h3>
-<p>Notice that every <code class="language-plaintext highlighter-rouge">x</code> variable used in a tree has <em>some kind of</em> numeric constraint applied to it, even if implied. We can model them all using a <code class="language-plaintext highlighter-rouge">between</code> (inclusive) constraint with a lower bound and an upper bound (which could be “inf” meaning “infinity”), like this: <code class="language-plaintext highlighter-rouge">between(min, max)</code>.</p>
+<p>Notice that every <code class="language-plaintext highlighter-rouge">x</code> variable used in a tree has <em>some kind of</em> numeric constraint applied to it, even if implied. We can model them all using a <code class="language-plaintext highlighter-rouge">between(min, max)</code> (inclusive) constraint with a lower bound and an upper bound. The upper bound can be “inf”, meaning “infinity”.</p>
 
 <p>For “students lifted a table”:</p>
 <ul>
@@ -287,12 +302,14 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
   <li>“… 2 tables …” specifies two, so: <code class="language-plaintext highlighter-rouge">between(2, 2)</code></li>
 </ul>
 
-<p><code class="language-plaintext highlighter-rouge">between(1, inf)</code> is the default constraint meaning: “anything”. Variables with no other constraint get this one, it is implied.</p>
+<p><code class="language-plaintext highlighter-rouge">between(1, inf)</code> is the default constraint, meaning: “anything”. Variables with no other constraint get this one – it is implied.</p>
 
 <p>The next section talks about how to extract these constraints from the tree itself.</p>
 
 <h3 id="determining-constraints-from-the-mrs-tree">Determining Constraints From the MRS Tree</h3>
-<p>Numeric constraints can come from 3 places in an MRS: Quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments using the made-up <code class="language-plaintext highlighter-rouge">scope()</code> predication. So, let’s start with “two students lifted a table”. Here’s one MRS reading of it, along with one well-formed tree:</p>
+<p>Numeric constraints can come from 3 places in an MRS: quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments that use the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication.</p>
+
+<p>Let’s start with “two students lifted a table”. Here’s one MRS reading of it, along with one well-formed tree:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ "two students lifted a table"
   TOP: h0
@@ -318,17 +335,19 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 <p>Two points to note as we transition to using real MRS instead of simplified trees:</p>
 
 <ol>
-  <li>At this point, we can dispense with the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication we’ve been using  because the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">quantifier predications</a> (those with <code class="language-plaintext highlighter-rouge">_q</code> at the end) in the MRS fulfill the same variable scoping role as <code class="language-plaintext highlighter-rouge">scope()</code>: they declare where in the tree a variable can be used.  They <em>also</em> can add numeric constraints to the variable, as we’ll see below.</li>
+  <li>At this point, we can dispense with the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication because the MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">quantifier predications</a> (those with <code class="language-plaintext highlighter-rouge">_q</code> at the end) fulfill the same variable scoping role as <code class="language-plaintext highlighter-rouge">scope()</code>. They declare where in the tree a variable can be used.  They <em>also</em> can add numeric constraints to the variable, as we’ll see below.</li>
   <li>Predications in MRS have <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">variable types</a> beyond the <code class="language-plaintext highlighter-rouge">x</code>-type variables we’ve been using. For the examples we’ll see here, these can be safely ignored. We’ll handle those in a later section.</li>
 </ol>
 
 <p>With that covered, let’s walk through how to get the numeric constraints from the above MRS.</p>
 
 <h4 id="order-of-variables">Order of Variables</h4>
-<p>First, notice that the variable order in this tree is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x11</code>] (read left to right) since that is the order the quantifiers that scope these variables occur in when evaluating the tree.</p>
+<p>First, notice that the variable order in this tree is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x11</code>] (read left to right) since that is the order of the variable quantifiers when evaluating the tree.</p>
 
-<h4 id="quantifer-constraints">Quantifer Constraints</h4>
-<p>Each variable in an MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">must have a quantifier that scopes it</a> (the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like <code class="language-plaintext highlighter-rouge">udef_q</code> in our example, add the default criteria <code class="language-plaintext highlighter-rouge">between(1, inf)</code> which simply means “at least one”. <code class="language-plaintext highlighter-rouge">_a_q</code> means “a single thing” so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>. Thus, the quantifiers in this example add these constraints:</p>
+<h4 id="quantifier-constraints">Quantifier Constraints</h4>
+<p>Each variable in an MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">must have a quantifier that scopes it</a> (the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like <code class="language-plaintext highlighter-rouge">udef_q</code> in our example, add the default criteria <code class="language-plaintext highlighter-rouge">between(1, inf)</code>. This simply means: “at least one”. The <code class="language-plaintext highlighter-rouge">_a_q</code> quantifier means “a single thing”, so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>.</p>
+
+<p>Thus, the quantifiers in this example add these constraints:</p>
 
 <table>
   <thead>
@@ -346,7 +365,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 </table>
 
 <h4 id="adjective-constraints">Adjective Constraints</h4>
-<p>Some adjectives also add numeric constraints. In our example, the adjective “two” gets converted to <code class="language-plaintext highlighter-rouge">card(2,e9,x3)</code> in the MRS. This predication adds the constraint <code class="language-plaintext highlighter-rouge">between(2, 2)</code> to <code class="language-plaintext highlighter-rouge">x3</code>. Now we have these:</p>
+<p>Some adjectives also add numeric constraints. In our example, the adjective “two” gets converted to the predication: <code class="language-plaintext highlighter-rouge">card(2,e9,x3)</code> in the MRS. This predication adds the constraint <code class="language-plaintext highlighter-rouge">between(2, 2)</code> to <code class="language-plaintext highlighter-rouge">x3</code>. Now we have these:</p>
 
 <table>
   <thead>
@@ -375,12 +394,12 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 
 <p>This adds the constraint <code class="language-plaintext highlighter-rouge">between(2, inf)</code> to <code class="language-plaintext highlighter-rouge">x3</code>.</p>
 
-<p><code class="language-plaintext highlighter-rouge">x11</code> from <code class="language-plaintext highlighter-rouge">_table_n_1(x11)</code> is singular from its variable properties:</p>
+<p><code class="language-plaintext highlighter-rouge">x11</code> from <code class="language-plaintext highlighter-rouge">_table_n_1(x11)</code> is singular based on its variable properties:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ _lift_v_cause&lt;13:19&gt; LBL: h1 ARG0: e2 ARG1: x3 ARG2: x11 [ x PERS: 3 NUM: sg IND: + ] ]
 </code></pre></div></div>
 
-<p>…  so it gets <code class="language-plaintext highlighter-rouge">between(1, 1)</code>:</p>
+<p>…  so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>:</p>
 
 <p>Thus, our final list of constraints is:</p>
 
@@ -447,15 +466,15 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 </blockquote>
 
 <h3 id="the-final-algorithm-introducing-phase-0">The Final Algorithm: Introducing Phase 0</h3>
-<p>This section started by describing the solver algorithm as having two phases:</p>
+<p>This section started by describing the two phases of the solver algorithm:</p>
 <ul>
-  <li>Phase 1: Evaluate the MRS to get the solutions</li>
-  <li>Phase 2: Group the solutions into solution groups that meet the numeric criteria</li>
+  <li>Phase 1: Evaluate the MRS tree to get the solutions</li>
+  <li>Phase 2: Group the solutions into solution groups that meet the phrase’s numeric constraints</li>
 </ul>
 
-<p>Turns out that the (just described) process of building the numeric criteria is really a “Phase 0”. And, if you think about what adjectives like “two” (or “a few” or “many”) actually <em>do</em>, their entire contribution happens during Phase 2 … they have nothing to do in Phase 1. So, after we extract the criteria from them in Phase 0, they should be <em>removed from the tree</em> and Phase 1 should be solved using the modified tree.</p>
+<p>It turns out that the (just described) process of building the numeric constraints is really a “Phase 0”. And, if you think about what adjectives like “two” (or “a few” or “many”) actually <em>do</em>, their entire contribution is to act as a numeric constraint. Their work happens during Phase 2 … they have nothing to do in Phase 1. So, after we extract the criteria from them in Phase 0, they should be <em>removed from the tree</em> and Phase 1 should be solved using the modified tree.</p>
 
-<p>Furthermore, recall that quantifiers do two things: scope a variable and add numeric criteria to the variable. So, after you extract the numeric contribution of quantifiers like <code class="language-plaintext highlighter-rouge">_a_q</code> or <code class="language-plaintext highlighter-rouge">_some_q</code>, you’ve also removed all of their contribution to Phase 1 <em>except for variable scoping</em>. So, we don’t <em>remove</em> them, but we do <em>replace</em> them with the most generic quantifier: <code class="language-plaintext highlighter-rouge">udef_q</code>.</p>
+<p>Furthermore, recall that quantifiers do two things: scope a variable and add a numeric constraint to the variable. So, after you extract the numeric constraint from quantifiers like <code class="language-plaintext highlighter-rouge">_a_q</code> or <code class="language-plaintext highlighter-rouge">_some_q</code>, you’ve also removed all of their contribution to Phase 1 <em>except for variable scoping</em>. So, we don’t <em>remove</em> them, but we do <em>replace</em> them with the most generic quantifier: <code class="language-plaintext highlighter-rouge">udef_q</code>.</p>
 
 <p>Thus, Phase 0 analyzes the full tree for “2 students lifted a table”, which is this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                        ┌── _student_n_of(x3,i10)
@@ -466,7 +485,7 @@ udef_q(x3,RSTR,BODY)
                  └─ _a_q(x11,RSTR,BODY)
                                     └─ _lift_v_cause(e2,x3,x11)
 </code></pre></div></div>
-<p>… but then, after extracting numeric constraints, converts it to a tree without the numeric constraints it it (since those will run in Phase 2), and provides this modified tree to Phase 1:</p>
+<p>… but then, after extracting numeric constraints, converts it to a tree without the numeric constraints in it (since those will run in Phase 2), and provides this modified tree to Phase 1:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>            ┌────── _student_n_of(x3,i10)
             │             
