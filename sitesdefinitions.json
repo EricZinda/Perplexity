@@ -28,7 +28,7 @@
         {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoWellFormedTree.md", "DstFile": "devhowto/devhowtoWellFormedTree.md"},
         {"Page": "Solving an MRS", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolver.md", "DstFile": "devhowto/devhowtoMRSSolver.md"},
         {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSets.md", "DstFile": "devhowto/devhowtoMRSSolverSets.md"},
-        {"Page": "Collective and Distributive Readings", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroups.md"}
+        {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroups.md"}
       ]}
     ]
   }

@@ -1,4 +1,6 @@
 ## Collective and Distributive Readings
+TODO: talk about forward and reverse readings with respect to word order being a function of the tree that is generated.
+
 If we change the "students lifted a table" example from the [previous section](devhowtoMRSSolverSets) slightly, we can uncover another layer of meaning we need to represent in the solver. 
 
 For example:

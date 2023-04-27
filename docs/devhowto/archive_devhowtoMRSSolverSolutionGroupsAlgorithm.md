@@ -3,7 +3,7 @@ The solver can group solutions by performing a second "grouping" pass over the i
 
 The algorithm is:
 
-> Evaluate the formula to get all individual solutions regardless of whether they are singular or plural. This will generate some (i.e. collective), but not all, plural answers due to the fact that variables can contain sets > 1. Using that flat list of solutions:
+> Evaluate the formula to get all individual solutions regardless of whether they are singular or plural. This will generate some (i.e. collective), but not all, plural answers due to the fact that variables can contain sets larger than 1. Using that flat list of solutions:
 > - Pick a plural variable:
 >   - For every combination of the solutions where the set of items assigned to that variable in the combination add up to more than 1, do the following:
 >     - Recursively do the algorithm again with the next plural variable, using only the just selected set of solutions

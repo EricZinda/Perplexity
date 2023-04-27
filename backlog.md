@@ -1,6 +1,7 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work 
+- need to update which() to do between(1, inf) and plural to be between(2, inf)?
   - Test that this approach works by going through examples. Scenarios to try:
     - not
       - Anything that converts to between(x, y) should work
