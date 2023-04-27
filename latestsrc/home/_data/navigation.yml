@@ -2,7 +2,7 @@ main:
   - title: "Home"
     url: https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview
 toc:
-  - title: "How-To"
+  - title: "Background"
     children:
       - title: "Overview"
         url: "/devhowto/devhowtoOverview/"
@@ -10,9 +10,13 @@ toc:
         url: "/devhowto/devhowtoMRS/"
       - title: "Well-Formed Trees"
         url: "/devhowto/devhowtoWellFormedTree/"
-      - title: "Solving an MRS"
+  - title: "Solving MRS"
+    children:
+      - title: "Backtracking"
         url: "/devhowto/devhowtoMRSSolver/"
       - title: "Representing 'Together'"
         url: "/devhowto/devhowtoMRSSolverSets/"
       - title: "Collective, Distributive, Cumulative"
         url: "/devhowto/devhowtoMRSSolverSolutionGroups/"
+      - title: "Coll/Dist/Cuml Algorithm"
+        url: "/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm/"
