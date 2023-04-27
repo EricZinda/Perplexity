@@ -22,7 +22,7 @@ a folder
 a small file
 a large file
 ~~~
-`x` variables in an MRS represent "individuals" or "things in the world". So, we need to find which individuals from the world that, when put into `x`, make both the predications in `large(x), file(x)` be `true`. 
+`x` variables in an MRS represent "individuals" or "things in the world". So, we need to find which are the individuals from the world that, when put into `x`, make both the predications in `large(x), file(x)` be `true`. 
 
 While this is trivial to solve by looking at it, once the world contains a million objects we will need a more systematic approach.
 
