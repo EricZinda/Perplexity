@@ -297,9 +297,9 @@ pronoun_q(x3,RSTR,BODY)            ┌────── _table_n_1(x9)
 <h2 id="underspecification">Underspecification</h2>
 <p>A DELPH-IN parser like <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> will usually generate more than one MRS document representing the various high-level interpretations of a phrase. Each one contains a <em>list</em> of predicate-logic-like predications and not a <em>tree</em> like you’ll see in many natural language systems.  That’s because it is <em>underspecified</em>.  Even though the parser has already done one level of interpretation on the phrase, there are still (usually) multiple ways to interpret <em>that</em>.</p>
 
-<p>The final interpretations of a phrase are called “well-formed MRS trees”. The MRS document doesn’t pick a primary interpretation by choosing a specific tree, it provides the rules for building <em>all of them</em>. That’s what “underspecified” means. <code class="language-plaintext highlighter-rouge">Every book is in a cave</code> could mean “all books are in the same cave” or “every book is in a (possibly different) cave”. Given just the phrase, it isn’t clear which the use intended, so the MRS provides all the alternatives. Context (which the MRS doesn’t have) usually helps to decide which is meant.</p>
+<p>The final interpretations of a phrase are called “well-formed MRS trees”. The MRS document doesn’t pick a primary interpretation by choosing a specific tree, it provides the rules for building <em>all of them</em>. That’s what “underspecified” means. <code class="language-plaintext highlighter-rouge">Every book is in a cave</code> could mean “all books are in the same cave” or “every book is in a (possibly different) cave”. Given just the phrase, it isn’t clear which the speaker intended, so the MRS provides all the alternatives. Context (which the MRS doesn’t have) usually helps to decide which is meant.</p>
 
-<p>This section will go through the entire MRS document in detail, but as an overview: The list of predicate-logic-like predications in provided in the <code class="language-plaintext highlighter-rouge">RELS</code> section of the MRS document:</p>
+<p>This section will go through the entire MRS document in detail, but as a navigational guide to the format itself: The list of predicate-logic-like predications in provided in the <code class="language-plaintext highlighter-rouge">RELS</code> section of the MRS document:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
 
 RELS: &lt; 
@@ -342,7 +342,7 @@ RELS: &lt;
 
 <p>Predications are “predicate-logic-like” in that they state a relation or a fact about their arguments that must be true in order for the MRS to be true. The arguments are most often variables and, if you find values for all the variables that make all the predications in the MRS true in a given world, then you have “solved” or “resolved” the MRS. You have figured out (in a sense) the meaning of the sentence. So, predications do the work in an MRS by providing constraints or restrictions on the variables they are passed.</p>
 
-<p>For example: the predication <code class="language-plaintext highlighter-rouge">_table_n_1(x9)</code> in the example above is saying “restrict the set of things in the variable <code class="language-plaintext highlighter-rouge">x9</code> to be only those which are a ‘table’” or, alternatively: “ensure that <code class="language-plaintext highlighter-rouge">x9</code> contains a ‘table’”.  Depending on how you ultimately solve the MRS, you might look at these variables as containing sets or individual items. Our approach will iteratively solve the MRS using individual items, so we’ll be describing predications as restricting to individual items for the rest of the tutorial.</p>
+<p>For example: the predication <code class="language-plaintext highlighter-rouge">_table_n_1(x9)</code> in the example above is saying “restrict the set of things in the variable <code class="language-plaintext highlighter-rouge">x9</code> to be only those which are a ‘table’” or, alternatively: “ensure that <code class="language-plaintext highlighter-rouge">x9</code> contains a ‘table’”.  Depending on how you ultimately solve the MRS, you might look at these variables as containing sets or individual items. Our approach will start by iteratively solving the MRS using individual items, so we’ll be describing predications as restricting to individual items for the rest of the tutorial.</p>
 
 <p>If we evaluated a different predication such as <code class="language-plaintext highlighter-rouge">_large_a_1(x9)</code> immediately afterward, it would mean “also make sure the thing in <code class="language-plaintext highlighter-rouge">x9</code> is ‘large’”.  An MRS that contains both predications like that is saying, “restrict <code class="language-plaintext highlighter-rouge">x9</code> to be a ‘large table’ from the world we are talking about”.</p>
 
@@ -351,7 +351,7 @@ RELS: &lt;
 <h3 id="predication-labels">Predication Labels</h3>
 <p>Each predication has a label in the MRS, indicated by <code class="language-plaintext highlighter-rouge">LBL:</code>. The label serves as an ID or a pointer to the predication. Note that predications <em>can</em> share the same label. In fact, this is how the MRS indicates they are “in conjunction” (i.e. should be interpreted together using a logical “and”, as in the above example).</p>
 
-<p>Look at the labels for the different predications in an MRS for “Look under the <em>large</em> table” and note that <code class="language-plaintext highlighter-rouge">_large_a_1</code> and <code class="language-plaintext highlighter-rouge">_table_n_1</code> share the same label, indicating they are “in conjunction”:</p>
+<p>Look at the labels for the different predications in an MRS for “Look under the large table” and note that <code class="language-plaintext highlighter-rouge">_large_a_1</code> and <code class="language-plaintext highlighter-rouge">_table_n_1</code> share the same label, indicating they are “in conjunction”:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
 INDEX: e2
 RELS: &lt; [ _the_q LBL: h10 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] RSTR: h11 BODY: h12 ]
@@ -440,7 +440,7 @@ _the_q(x3,RSTR,BODY)
 <h4 id="x-instance-variables">X (Instance) Variables</h4>
 <p>Instance (<code class="language-plaintext highlighter-rouge">x</code>) variables are just like normal First Order Logic variables, or like variables in popular programming languages. The types of things they can contain are “individuals”, which is another name for a “thing in the world”.  They hold the things the speaker is talking about.</p>
 
-<p>In the MRS for “Look under the table”:</p>
+<p>In the MRS for “Look under the large table”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
 INDEX: e2
@@ -459,7 +459,7 @@ HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 <p>… there are only two instance variables that represent the “things in the world being talked about”:</p>
 <ul>
   <li><code class="language-plaintext highlighter-rouge">x9</code>: “the large table”</li>
-  <li><code class="language-plaintext highlighter-rouge">x3</code>: “you”. This is implied since it is a command. I.e. “(You) look at the table”. You can tell it wasn’t in the original phrase because the predication doesn’t start with <code class="language-plaintext highlighter-rouge">_</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">x3</code>: “you”. This is implied since it is a command. I.e. “[You] look under the large table”. You can tell it wasn’t in the original phrase because the predication doesn’t start with <code class="language-plaintext highlighter-rouge">_</code>.</li>
 </ul>
 
 <p>The other variables in the MRS are there to help build up the tree (<code class="language-plaintext highlighter-rouge">h</code> variables, described previously) or allow predications to refer to each other (<code class="language-plaintext highlighter-rouge">e</code> variables, described next).  <code class="language-plaintext highlighter-rouge">x</code> variables are the most concrete type of variable that maps most obviously to what is being said in the phrase.</p>
@@ -564,13 +564,7 @@ e   x   h
 </ul>
 
 <h2 id="quantifier-predications">Quantifier Predications</h2>
-<p>Quantifiers fill a special role in the MRS (and linguistics in general).  <a href="https://en.wikipedia.org/wiki/Quantifier_(linguistics)">According to Wikipedia</a>:</p>
-
-<blockquote>
-  <p>“a <em>quantifier</em> is a type of <a href="https://en.wikipedia.org/wiki/Determiner_(class)" title="Determiner (class)">determiner</a>, such as <em>all</em>, <em>some</em>, <em>many</em>, <em>few</em>, <em>a lot</em>, and <em>no</em> that indicates quantity”.</p>
-</blockquote>
-
-<p>“The” and “a” are also really common examples.  That’s the kind of description you’d get in a normal “Learning English” grammar course, but DELPH-IN uses a much broader definition that includes those examples but adds some more.</p>
+<p>Quantifiers in DELPH-IN are the primary predications that glue a tree together. They provide two functions: they show where in the tree certain variables can be used (i.e. provide <em>scope</em> to the variable) and they often also constrain “how much” of the variable can be used. “The”, “a”, “some” and “all” are really common examples.</p>
 
 <p>Quantifier predications in DELPH-IN always have a specific argument signature:</p>
 
@@ -602,9 +596,9 @@ def_implicit_q(x9,RSTR,BODY)
                                                 └─ and(0,1)
                                                          └ _go_v_1(e2,x3)
 </code></pre></div></div>
-<p>The variable <code class="language-plaintext highlighter-rouge">x9</code> represents <code class="language-plaintext highlighter-rouge">north</code> but nothing in the phrase is “quantifying” direction in any way.  Since the rules for MRS require <code class="language-plaintext highlighter-rouge">x</code> variables to be quantified, an abstract quantifier called <code class="language-plaintext highlighter-rouge">def_implicit_q</code> is used to do the scoping of the variable.</p>
+<p>The variable <code class="language-plaintext highlighter-rouge">x9</code> represents <code class="language-plaintext highlighter-rouge">north</code> but nothing in the phrase is “quantifying” direction in any way.  Since the rules for MRS require <code class="language-plaintext highlighter-rouge">x</code> variables to be quantified (among other reasons), an abstract quantifier called <code class="language-plaintext highlighter-rouge">def_implicit_q</code> is used to do the scoping of the variable.</p>
 
-<p>Note that, unlike non-quantifier predications, the first (<code class="language-plaintext highlighter-rouge">ARG0</code>) argument of a quantifier <em>does not</em> “introduce” an “intrinsic variable” (as described in the variables section), they just scope and optionally quantify it.</p>
+<p>Note that, unlike non-quantifier predications, the first (<code class="language-plaintext highlighter-rouge">ARG0</code>) argument of a quantifier <em>does not</em> “introduce” an “intrinsic variable” (as described in the variables section), quantifiers just scope and optionally quantify their <code class="language-plaintext highlighter-rouge">ARG0</code>.</p>
 
 <h2 id="constraints">Constraints</h2>
 <p>The <code class="language-plaintext highlighter-rouge">HCONS</code> section of the MRS is used when building a well-formed tree. It puts <em>CONS</em>traints on where the <em>H</em>andles for predications can be validly placed and still be a legal interpretation of the phrase. The only constraints used in “modern” MRS are <code class="language-plaintext highlighter-rouge">qeq</code> constraints so that’s all you’ll see in this section.</p>
@@ -658,7 +652,7 @@ _the_q(x3,RSTR,BODY)
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-01-06 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRS.md">edit</a>]</p>
+<p>Last update: 2023-04-27 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRS.md">edit</a>]</p>
 
         
       </section>
