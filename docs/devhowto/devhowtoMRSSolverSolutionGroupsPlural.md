@@ -8,29 +8,30 @@ formula: student(x3), table(x10), lift(x3, x10)
 scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 ~~~
 
-... is to have the solver create groups of solutions (called "solution groups") that are the "real" solutions. This section describe how.
+... is to have the solver create groups of solutions (called "solution groups") that are the "real" solutions. This section describes how.
 
-The basic approach is to generate the solutions exactly like we've been doing so far, but add a second "grouping pass" to the solver. This grouping pass will find the groups of solutions that represent actually answers. This involves deciding what the phrase says the total should be *constrained to*  for each variable, and finding groups that match *all* the constraints.  For example, for "students lifted a table":
+The approach is to generate the solutions exactly like we've been doing so far, but add a second "grouping pass" to the solver. This grouping pass will find the groups of solutions that represent actually answers.
+
+Groups are created that meet all the *numeric constraints* that the words in the phrase put on the  variables. For example, for "students lifted a table":
 - "students ..." is plural, which means the contraint is: `count(students) > 2`
 - "... a table" means the constraint is: `count(tables) = 1`
 - etc.
 
-If we simply return all groups where `count(students) > 2` and `count(tables) = 1`, we will get a bunch of valid groups, but miss all of those that use a "per previous value" interpretation. So, we'll miss the distributive ones. To get them all, we need to:
-- determine the order variables appear
-- walk them left to right. For each variable:
-    - count the individuals in the set of solutions two different ways:
-        - cumulatively: total the variable individuals across all rows
-        - distributive/collectively: Group the variable individuals by the value of the previous variable in
-            - If this is the first variable: there is no "previous value" to use in the `total per previous value` definition of coll and dist. Therefore, the first can only be totalled as cumulative. 
-    - if either "count" meets the variable constraint, it succeeds and the next variable in the order is tried. If not, this group fails 
-    - If the end is reached and all succeeded, this is a valid solution group
+If we simply return all groups where `count(students) > 2` and `count(tables) = 1`, we will get a bunch of valid groups, but miss all of those that use a "per previous value" interpretation. So, we'll miss the distributive ones. To get them all, we need to also count "per previous value". So, here's the full algorithm:
+>1. Determine the order variables appear when evaluating the tree.
+>2. Walk them in order. For each variable: count individuals in the solutions two different ways:
+>    - cumulatively: total the variable individuals across all rows
+>    - distributive/collectively: Group the individuals by the value of the previous variable in the order, and do the total per previous value.
+>        - If this is the first variable: there is no "previous value" to use in the `total per previous value` definition of coll and dist. Therefore, the first can only be totalled as cumulative. 
+>3. If either "count" meets the variable constraint, it succeeds and the next variable in the order is tried. If not, this group fails.
+>4. If the end is reached and all succeeded, this is a valid solution group.
 
 To get the groups that should be checked, we (you guessed it...) try every combination of solutions from the first pass. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach, which can be quite expensive: try all `(2^n - 1)` combinations as described in the previous section. 
 
 Figuring out what the contraints are on variables is a longer story, which the next few sections will cover.
 
 ### Variable Constraints
-Notice that every variable in an MRS has *some kind of* count applied to it, even if implied. Let's call this count a "constraint", and give each variable a `between` constraint with a lower bound and an upper bound (which could be "inf" meaning "infinity). We can represent them like `between(min, max)`.
+Notice that every variable in an MRS has *some kind of* count constraint applied to it, even if implied. We can model them all using a `between` (inclusive) constraint with a lower bound and an upper bound (which could be "inf" meaning "infinity"), like this: `between(min, max)`.
 
 For "students lifted a table":
 - "students ..." is plural, which means: `between(2, inf)`
@@ -40,9 +41,9 @@ For "which file is under 2 tables?":
 - "... file ..." is singular, which means: `between(1, 1)`
 - "... 2 tables ..." specifies two, so: `between(2, 2)`
 
-`between(1, inf)` is the default constraint meaning: "anything". Variables that have only the default constraint are not included in the list of variables to process. 
+`between(1, inf)` is the default constraint meaning: "anything". Variables with no other constraint get this one. Variables that have only the default constraint are not included in the list of variables to process. 
 
-In that way, we can create a `between()` constraint for every variable, and decide which can be ignored.
+In that way, we can create a `between()` constraint for every variable and decide which can be ignored.
 
 
 ### Advanced Variable constraints: more than one constraint
