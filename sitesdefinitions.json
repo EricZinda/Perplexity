@@ -22,12 +22,14 @@
   "Pages":
   {
     "home": [
-      {"Section": "Background", "Pages": [
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoOverview.md", "DstFile": "devhowto/devhowtoOverview.md"},
+      {"Section": "Developer Tutorial Overview", "Pages": [
+        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoOverview.md", "DstFile": "devhowto/devhowtoOverview.md"}
+      ]},
+      {"Section": "MRS Conceptual", "Pages": [
         {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRS.md", "DstFile": "devhowto/devhowtoMRS.md"},
         {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoWellFormedTree.md", "DstFile": "devhowto/devhowtoWellFormedTree.md"}
       ]},
-      {"Section": "Solving MRS", "Pages": [
+      {"Section": "MRS Solver Conceptual", "Pages": [
         {"Page": "Backtracking", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolver.md", "DstFile": "devhowto/devhowtoMRSSolver.md"},
         {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSets.md", "DstFile": "devhowto/devhowtoMRSSolverSets.md"},
         {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroups.md"},
