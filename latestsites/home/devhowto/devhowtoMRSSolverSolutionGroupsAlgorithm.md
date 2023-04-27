@@ -8,29 +8,29 @@ formula: student(x3), table(x10), lift(x3, x10)
 scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 ```
 
-... is to have the solver create groups of solutions ("solution groups") that are the "real" answers. This section describes how.
+... is to have the solver create groups of solutions ("solution groups") that are the complete answers -- a single solution to the MRS is not enough. This section describes one algorithm that can accomplish this.
 
 ### Overview
-The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. This grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase put on the variables. The groups found represent the answers to the MRS.  
+The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. This grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase has placed on the variables. The groups found represent the complete answers to the MRS.  
 
 To illustrate what "numeric constraint" means, take "students lifted a table":
 - "students ..." is plural, which means the contraint is: `count(students) > 2`
 - "... a table" means the constraint is: `count(tables) = 1`
 - etc.
 
-To determine `count(students)` in the above example, we could simply count the students across all the solutions in a given group and return those groups where `count(students) > 2` and `count(tables) = 1`. That will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive ones. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings
+To determine `count(students)` in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for `count(tables)` and return those groups where `count(students) > 2` and `count(tables) = 1`, we will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive ones. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings.
 
 Here's an overview of the how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:
 > 1. Determine the order variables appear when evaluating the tree
 > 2. Walk the variables in order. For each variable: count individuals in the solutions two different ways:
 >    - Cumulatively: Total the variable individuals across all rows (as above)
->    - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and then do the total *per previous value*. If the totals are all the same, that is the count. If not, this count fails and has no value.
+>    - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and then do the total *per previous value*. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
 >      - If this is the first variable: there is no "previous value" to use in the "total per previous value" definition of collective and distributive. Therefore, the first can only be totalled as cumulative. 
 > 3. If either count meets the variable constraint, it succeeds and the next variable in the order is tried. If not, this group fails.
-> 4. If the end is reached and all succeeded, this is a valid solution group.
+> 4. If the end is reached and all variables succeeded, this is a valid solution group.
 
 
-To get the groups that should be checked, we (you guessed it...) try every combination of solutions that started the process. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
+To get the groups that should be checked in the process above, we (you guessed it...) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
 
 Figuring out the contraints on the variables is a longer story, which the next few sections will cover.
 
@@ -84,7 +84,7 @@ Two points to note as we transition to using real MRS instead of simplified tree
 With that covered, let's walk through how to get the numeric constraints from the above MRS.
 
 #### Order of Variables
-First, notice that the variable order in this tree is [`x3`, `x11`] (read left to right) since that is the order of the variable quantifiers when evaluating the tree.
+First, notice that the variable order in this tree is [`x3`, `x11`] (read left to right) since that is the order of the variable quantifiers when evaluating the tree depth-first.
 
 #### Quantifier Constraints
 Each variable in an MRS [must have a quantifier that scopes it](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS) (the artificial `scope()` predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like `udef_q` in our example, add the default criteria `between(1, inf)`. This simply means: "at least one". The `_a_q` quantifier means "a single thing", so it adds `between(1, 1)`. 
@@ -156,7 +156,7 @@ This section started by describing the two phases of the solver algorithm:
 - Phase 1: Evaluate the MRS tree to get the solutions
 - Phase 2: Group the solutions into solution groups that meet the phrase's numeric constraints
 
-It turns out that the (just described) process of building the numeric constraints is really a "Phase 0". And, if you think about what adjectives like "two" (or "a few" or "many") actually *do*, their entire contribution is to act as a numeric constraint. Their work happens during Phase 2 ... they have nothing to do in Phase 1. So, after we extract the criteria from them in Phase 0, they should be *removed from the tree* and Phase 1 should be solved using the modified tree.
+It turns out that the (just described) process of building the numeric constraints is really a "Phase 0". And, if you think about what adjectives like "two" (or "a few" or "many") actually *do*, their entire contribution is to act as a numeric constraint. Their work happens during Phase 2 ... they have nothing to do in Phase 1. So, after we extract the criteria from them in Phase 0, they should be *removed from the tree* and Phase 1 should be solved using the modified tree without them.
 
 Furthermore, recall that quantifiers do two things: scope a variable and add a numeric constraint to the variable. So, after you extract the numeric constraint from quantifiers like `_a_q` or `_some_q`, you've also removed all of their contribution to Phase 1 *except for variable scoping*. So, we don't *remove* them, but we do *replace* them with the most generic quantifier: `udef_q`.
 
@@ -202,7 +202,7 @@ Here's the full algorithm all in one place:
 > 6. For each possible combination of solutions from Phase 1: Walk the `x` variables in evaluation order. 
 > 7. For each `x` variable: Count individuals in the solutions two different ways:
 >    - Cumulatively: Total the variable individuals across all solutions
->    - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the totals are all the same, that is the count. If not, this count fails and has no value.
+>    - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
 >      - If this is the first variable, there is no "previous value" to use in the "total per previous value" definition of distributive/collective. Therefore, the first can only be totalled cumulatively
 > 8. If either count meets the variable constraints: it succeeds and the next variable in the order is tried
 >    - If not: this group fails and the next group starts at step #5
@@ -236,7 +236,7 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
 > - Determine the constraints placed on each `x` variable by predications that modify it.
 
 
-Using the approach described above, the evaluation order of variables is [`x3`, `x10`] and the found constraints for the variables are:
+Using the approach described above, the evaluation order of variables is [`x3`, `x10`] in a depth-first traversal and the found constraints for the variables are:
 
 |`x3` (students)|`x10`(table)|
 |---|---|
@@ -292,7 +292,7 @@ Solution 12: x3=[student12], x10=[table14]
 > 6. For each possible combination of solutions from Phase 1: Walk the `x` variables in evaluation order. 
 
 
-Start by generating (as yet untested) groups that are all combinations of the above solutions, like this partial list:
+Start by generating (as yet untested) groups that are all combinations of the above solutions. These may or may not be solution groups, we don't know yet. We need to test each one:
 
 ```
 Group 1:
@@ -349,7 +349,7 @@ There are no more variables, thus this group is an answer: a *distributive* answ
 
 etc. 
 
-All of the groups that succeed will be valid collective, distributive or cumulative readings of the phrase in that world.
+All of the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
 
 There are a couple of subtleties that need to be address with this algorithm. Namely the special handling of "which" and "the". That is described in the next section.
 

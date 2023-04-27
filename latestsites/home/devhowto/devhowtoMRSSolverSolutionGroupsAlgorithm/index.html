@@ -250,10 +250,10 @@ formula: student(x3), table(x10), lift(x3, x10)
 scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 </code></pre></div></div>
 
-<p>… is to have the solver create groups of solutions (“solution groups”) that are the “real” answers. This section describes how.</p>
+<p>… is to have the solver create groups of solutions (“solution groups”) that are the complete answers – a single solution to the MRS is not enough. This section describes one algorithm that can accomplish this.</p>
 
 <h3 id="overview">Overview</h3>
-<p>The basic approach is to generate the solutions, exactly like we’ve been doing so far, but then add a new “grouping pass” afterward. This grouping pass will find the groups of solutions that meet all the <em>numeric constraints</em> that the words in the phrase put on the variables. The groups found represent the answers to the MRS.</p>
+<p>The basic approach is to generate the solutions, exactly like we’ve been doing so far, but then add a new “grouping pass” afterward. This grouping pass will find the groups of solutions that meet all the <em>numeric constraints</em> that the words in the phrase has placed on the variables. The groups found represent the complete answers to the MRS.</p>
 
 <p>To illustrate what “numeric constraint” means, take “students lifted a table”:</p>
 <ul>
@@ -262,7 +262,7 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
   <li>etc.</li>
 </ul>
 
-<p>To determine <code class="language-plaintext highlighter-rouge">count(students)</code> in the above example, we could simply count the students across all the solutions in a given group and return those groups where <code class="language-plaintext highlighter-rouge">count(students) &gt; 2</code> and <code class="language-plaintext highlighter-rouge">count(tables) = 1</code>. That will produce groups which <em>are</em> valid, but will miss any answers that require a “per previous value” count. So, we’ll miss the distributive ones. We need to do a slightly more complicated counting algorithm that is “per previous value” to get <em>all</em> the readings</p>
+<p>To determine <code class="language-plaintext highlighter-rouge">count(students)</code> in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for <code class="language-plaintext highlighter-rouge">count(tables)</code> and return those groups where <code class="language-plaintext highlighter-rouge">count(students) &gt; 2</code> and <code class="language-plaintext highlighter-rouge">count(tables) = 1</code>, we will produce groups which <em>are</em> valid, but will miss any answers that require a “per previous value” count. So, we’ll miss the distributive ones. We need to do a slightly more complicated counting algorithm that is “per previous value” to get <em>all</em> the readings.</p>
 
 <p>Here’s an overview of the how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:</p>
 <blockquote>
@@ -271,7 +271,7 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
     <li>Walk the variables in order. For each variable: count individuals in the solutions two different ways:
       <ul>
         <li>Cumulatively: Total the variable individuals across all rows (as above)</li>
-        <li>Distributive/collectively: Group the individuals by the value of the previous variable in the order, and then do the total <em>per previous value</em>. If the totals are all the same, that is the count. If not, this count fails and has no value.
+        <li>Distributive/collectively: Group the individuals by the value of the previous variable in the order, and then do the total <em>per previous value</em>. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
           <ul>
             <li>If this is the first variable: there is no “previous value” to use in the “total per previous value” definition of collective and distributive. Therefore, the first can only be totalled as cumulative.</li>
           </ul>
@@ -279,11 +279,11 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
       </ul>
     </li>
     <li>If either count meets the variable constraint, it succeeds and the next variable in the order is tried. If not, this group fails.</li>
-    <li>If the end is reached and all succeeded, this is a valid solution group.</li>
+    <li>If the end is reached and all variables succeeded, this is a valid solution group.</li>
   </ol>
 </blockquote>
 
-<p>To get the groups that should be checked, we (you guessed it…) try every combination of solutions that started the process. We will end this entire section with ways of efficiently doing this, but we’ll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could.</p>
+<p>To get the groups that should be checked in the process above, we (you guessed it…) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we’ll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could.</p>
 
 <p>Figuring out the contraints on the variables is a longer story, which the next few sections will cover.</p>
 
@@ -342,7 +342,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 <p>With that covered, let’s walk through how to get the numeric constraints from the above MRS.</p>
 
 <h4 id="order-of-variables">Order of Variables</h4>
-<p>First, notice that the variable order in this tree is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x11</code>] (read left to right) since that is the order of the variable quantifiers when evaluating the tree.</p>
+<p>First, notice that the variable order in this tree is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x11</code>] (read left to right) since that is the order of the variable quantifiers when evaluating the tree depth-first.</p>
 
 <h4 id="quantifier-constraints">Quantifier Constraints</h4>
 <p>Each variable in an MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">must have a quantifier that scopes it</a> (the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like <code class="language-plaintext highlighter-rouge">udef_q</code> in our example, add the default criteria <code class="language-plaintext highlighter-rouge">between(1, inf)</code>. This simply means: “at least one”. The <code class="language-plaintext highlighter-rouge">_a_q</code> quantifier means “a single thing”, so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>.</p>
@@ -472,7 +472,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
   <li>Phase 2: Group the solutions into solution groups that meet the phrase’s numeric constraints</li>
 </ul>
 
-<p>It turns out that the (just described) process of building the numeric constraints is really a “Phase 0”. And, if you think about what adjectives like “two” (or “a few” or “many”) actually <em>do</em>, their entire contribution is to act as a numeric constraint. Their work happens during Phase 2 … they have nothing to do in Phase 1. So, after we extract the criteria from them in Phase 0, they should be <em>removed from the tree</em> and Phase 1 should be solved using the modified tree.</p>
+<p>It turns out that the (just described) process of building the numeric constraints is really a “Phase 0”. And, if you think about what adjectives like “two” (or “a few” or “many”) actually <em>do</em>, their entire contribution is to act as a numeric constraint. Their work happens during Phase 2 … they have nothing to do in Phase 1. So, after we extract the criteria from them in Phase 0, they should be <em>removed from the tree</em> and Phase 1 should be solved using the modified tree without them.</p>
 
 <p>Furthermore, recall that quantifiers do two things: scope a variable and add a numeric constraint to the variable. So, after you extract the numeric constraint from quantifiers like <code class="language-plaintext highlighter-rouge">_a_q</code> or <code class="language-plaintext highlighter-rouge">_some_q</code>, you’ve also removed all of their contribution to Phase 1 <em>except for variable scoping</em>. So, we don’t <em>remove</em> them, but we do <em>replace</em> them with the most generic quantifier: <code class="language-plaintext highlighter-rouge">udef_q</code>.</p>
 
@@ -526,7 +526,7 @@ udef_q(x3,RSTR,BODY)
     <li>For each <code class="language-plaintext highlighter-rouge">x</code> variable: Count individuals in the solutions two different ways:
       <ul>
         <li>Cumulatively: Total the variable individuals across all solutions</li>
-        <li>Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the totals are all the same, that is the count. If not, this count fails and has no value.
+        <li>Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
           <ul>
             <li>If this is the first variable, there is no “previous value” to use in the “total per previous value” definition of distributive/collective. Therefore, the first can only be totalled cumulatively</li>
           </ul>
@@ -571,7 +571,7 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
   </ul>
 </blockquote>
 
-<p>Using the approach described above, the evaluation order of variables is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x10</code>] and the found constraints for the variables are:</p>
+<p>Using the approach described above, the evaluation order of variables is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x10</code>] in a depth-first traversal and the found constraints for the variables are:</p>
 
 <table>
   <thead>
@@ -662,7 +662,7 @@ Solution 12: x3=[student12], x10=[table14]
   </ol>
 </blockquote>
 
-<p>Start by generating (as yet untested) groups that are all combinations of the above solutions, like this partial list:</p>
+<p>Start by generating (as yet untested) groups that are all combinations of the above solutions. These may or may not be solution groups, we don’t know yet. We need to test each one:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1:
   Solution 1: x3=[student1], x10=[table1]                     "student1 is lifting table1"
@@ -741,7 +741,7 @@ Group 3:
 
 <p>etc.</p>
 
-<p>All of the groups that succeed will be valid collective, distributive or cumulative readings of the phrase in that world.</p>
+<p>All of the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.</p>
 
 <p>There are a couple of subtleties that need to be address with this algorithm. Namely the special handling of “which” and “the”. That is described in the next section.</p>
 
