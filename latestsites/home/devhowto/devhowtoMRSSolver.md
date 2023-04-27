@@ -23,7 +23,7 @@ a folder
 a small file
 a large file
 ```
-`x` variables in an MRS represent "individuals" or "things in the world". So, we need to find which individuals from the world that, when put into `x`, make both the predications in `large(x), file(x)` be `true`. 
+`x` variables in an MRS represent "individuals" or "things in the world". So, we need to find which are the individuals from the world that, when put into `x`, make both the predications in `large(x), file(x)` be `true`. 
 
 While this is trivial to solve by looking at it, once the world contains a million objects we will need a more systematic approach.
 
@@ -134,4 +134,4 @@ At this point it should be noted that there are other algorithms for solving con
 
 But, before we can solve a real well-formed MRS tree, we need to account for more of the features that it has. First up is allowing the solver to represent things operating ["together"](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets).
 
-Last update: 2023-04-26 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolver.md)]{% endraw %}
+Last update: 2023-04-27 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolver.md)]{% endraw %}

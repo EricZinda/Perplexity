@@ -9,8 +9,11 @@ For example:
 Two students lifted one table
 ```
 ...*could* mean: 
+
+```
 1. Two students [together] lifted one table [at the same time]
 2. Two students [separately] lifted one [different] table
+```
 
 So, in addition to representing things working together or separately by using sets as we did in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets), we need to deal with the fact that terms representing sets in language create a new layer of ambiguity: it isn't always clear if you are talking about the whole group of "two students" working together, or subsets of the group working separately. The solver needs to be able to find either solution properly.
 
@@ -46,7 +49,9 @@ Two students lifted two tables
 
 ... language lets in one more possible interpretation ... by counting *total* tables (not *per group*):
 
+```
 3. One student lifted one table and another student lifted a different table.
+```
 
 This interpretation distributively groups the students, but *counts the tables differently*.  This can be confusing, so let's do the three definitions at once:
 
@@ -70,6 +75,8 @@ This interpretation distributively groups the students, but *counts the tables d
 
 
 Note how the math for the cumulative reading is different than the math for collective and distributive readings. Collective and distributive readings require `M` tables *per student subgroup*, whereas cumulative requires `M` tables, total, *across all student subgroups*.
+
+It is important to note that this is not some DELPH-IN feature or artifact, this is how human language works. We are just trying to build an algorithm that does it like a human would.
 
 ### Algorithm Fixes for Collective, Distributive and Cumulative
 The algorithm we've defined so far will actually find the collective, distributive, and cumulative solutions to an MRS, if they exist, because it will find *all* solutions to the MRS. The problem is the way we're defining "solution". To see why, let's bring back the three readings:
@@ -194,4 +201,4 @@ With the addition of solution groups, the solver can now properly represent the 
 
 [Next up](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm) is a description of how the solver can actually *do* the grouping and arrive at those answers.
 
-Last update: 2023-04-26 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroups.md)]{% endraw %}
+Last update: 2023-04-27 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroups.md)]{% endraw %}
