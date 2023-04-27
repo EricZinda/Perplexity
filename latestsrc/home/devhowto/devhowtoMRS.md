@@ -53,9 +53,9 @@ The rest of this section will give you a base understanding of the MRS format so
 ## Underspecification
 A DELPH-IN parser like [ACE](http://sweaglesw.org/linguistics/ace/) will usually generate more than one MRS document representing the various high-level interpretations of a phrase. Each one contains a *list* of predicate-logic-like predications and not a *tree* like you'll see in many natural language systems.  That's because it is *underspecified*.  Even though the parser has already done one level of interpretation on the phrase, there are still (usually) multiple ways to interpret *that*.  
 
-The final interpretations of a phrase are called "well-formed MRS trees". The MRS document doesn't pick a primary interpretation by choosing a specific tree, it provides the rules for building *all of them*. That's what "underspecified" means. `Every book is in a cave` could mean "all books are in the same cave" or "every book is in a (possibly different) cave". Given just the phrase, it isn't clear which the use intended, so the MRS provides all the alternatives. Context (which the MRS doesn't have) usually helps to decide which is meant.
+The final interpretations of a phrase are called "well-formed MRS trees". The MRS document doesn't pick a primary interpretation by choosing a specific tree, it provides the rules for building *all of them*. That's what "underspecified" means. `Every book is in a cave` could mean "all books are in the same cave" or "every book is in a (possibly different) cave". Given just the phrase, it isn't clear which the speaker intended, so the MRS provides all the alternatives. Context (which the MRS doesn't have) usually helps to decide which is meant.
 
-This section will go through the entire MRS document in detail, but as an overview: The list of predicate-logic-like predications in provided in the `RELS` section of the MRS document:
+This section will go through the entire MRS document in detail, but as a navigational guide to the format itself: The list of predicate-logic-like predications in provided in the `RELS` section of the MRS document:
 ```
 ...
 
@@ -101,7 +101,7 @@ RELS: <
 
 Predications are "predicate-logic-like" in that they state a relation or a fact about their arguments that must be true in order for the MRS to be true. The arguments are most often variables and, if you find values for all the variables that make all the predications in the MRS true in a given world, then you have "solved" or "resolved" the MRS. You have figured out (in a sense) the meaning of the sentence. So, predications do the work in an MRS by providing constraints or restrictions on the variables they are passed. 
 
-For example: the predication `_table_n_1(x9)` in the example above is saying "restrict the set of things in the variable `x9` to be only those which are a 'table'" or, alternatively: "ensure that `x9` contains a 'table'".  Depending on how you ultimately solve the MRS, you might look at these variables as containing sets or individual items. Our approach will iteratively solve the MRS using individual items, so we'll be describing predications as restricting to individual items for the rest of the tutorial.
+For example: the predication `_table_n_1(x9)` in the example above is saying "restrict the set of things in the variable `x9` to be only those which are a 'table'" or, alternatively: "ensure that `x9` contains a 'table'".  Depending on how you ultimately solve the MRS, you might look at these variables as containing sets or individual items. Our approach will start by iteratively solving the MRS using individual items, so we'll be describing predications as restricting to individual items for the rest of the tutorial.
 
 If we evaluated a different predication such as `_large_a_1(x9)` immediately afterward, it would mean "also make sure the thing in `x9` is 'large'".  An MRS that contains both predications like that is saying, "restrict `x9` to be a 'large table' from the world we are talking about".
 
@@ -110,7 +110,7 @@ We'll get into the other examples later after we've covered more basics.
 ### Predication Labels
 Each predication has a label in the MRS, indicated by `LBL:`. The label serves as an ID or a pointer to the predication. Note that predications *can* share the same label. In fact, this is how the MRS indicates they are "in conjunction" (i.e. should be interpreted together using a logical "and", as in the above example).
 
-Look at the labels for the different predications in an MRS for "Look under the *large* table" and note that `_large_a_1` and `_table_n_1` share the same label, indicating they are "in conjunction":
+Look at the labels for the different predications in an MRS for "Look under the large table" and note that `_large_a_1` and `_table_n_1` share the same label, indicating they are "in conjunction":
 ```
 [ TOP: h0
 INDEX: e2
@@ -200,7 +200,7 @@ Because the MRS is underspecified, it usually doesn't directly list which predic
 #### X (Instance) Variables
 Instance (`x`) variables are just like normal First Order Logic variables, or like variables in popular programming languages. The types of things they can contain are "individuals", which is another name for a "thing in the world".  They hold the things the speaker is talking about.
 
-In the MRS for "Look under the table":
+In the MRS for "Look under the large table":
 
 ```
 [ TOP: h0
@@ -219,7 +219,7 @@ HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 
 ... there are only two instance variables that represent the "things in the world being talked about":
 - `x9`: "the large table"
-- `x3`: "you". This is implied since it is a command. I.e. "(You) look at the table". You can tell it wasn't in the original phrase because the predication doesn't start with `_`.
+- `x3`: "you". This is implied since it is a command. I.e. "[You] look under the large table". You can tell it wasn't in the original phrase because the predication doesn't start with `_`.
 
 The other variables in the MRS are there to help build up the tree (`h` variables, described previously) or allow predications to refer to each other (`e` variables, described next).  `x` variables are the most concrete type of variable that maps most obviously to what is being said in the phrase.
 
@@ -317,12 +317,7 @@ Event (`e`) variables can have these properties:
 - Mood (`MOOD`): Roughly describes the opinions or attitudes of the speaker, with most common values being: `subjunctive` and `indicative`
 
 ## Quantifier Predications
-Quantifiers fill a special role in the MRS (and linguistics in general).  [According to Wikipedia](https://en.wikipedia.org/wiki/Quantifier_(linguistics)):
-
-> "a *quantifier* is a type of [determiner](https://en.wikipedia.org/wiki/Determiner_(class) "Determiner (class)"), such as *all*, *some*, *many*, *few*, *a lot*, and *no* that indicates quantity". 
-
-
-"The" and "a" are also really common examples.  That's the kind of description you'd get in a normal "Learning English" grammar course, but DELPH-IN uses a much broader definition that includes those examples but adds some more.
+Quantifiers in DELPH-IN are the primary predications that glue a tree together. They provide two functions: they show where in the tree certain variables can be used (i.e. provide *scope* to the variable) and they often also constrain "how much" of the variable can be used. "The", "a", "some" and "all" are really common examples. 
 
 Quantifier predications in DELPH-IN always have a specific argument signature: 
 
@@ -356,9 +351,9 @@ def_implicit_q(x9,RSTR,BODY)
                                                 └─ and(0,1)
                                                          └ _go_v_1(e2,x3)
 ```
-The variable `x9` represents `north` but nothing in the phrase is "quantifying" direction in any way.  Since the rules for MRS require `x` variables to be quantified, an abstract quantifier called `def_implicit_q` is used to do the scoping of the variable.
+The variable `x9` represents `north` but nothing in the phrase is "quantifying" direction in any way.  Since the rules for MRS require `x` variables to be quantified (among other reasons), an abstract quantifier called `def_implicit_q` is used to do the scoping of the variable.
 
-Note that, unlike non-quantifier predications, the first (`ARG0`) argument of a quantifier *does not* "introduce" an "intrinsic variable" (as described in the variables section), they just scope and optionally quantify it.
+Note that, unlike non-quantifier predications, the first (`ARG0`) argument of a quantifier *does not* "introduce" an "intrinsic variable" (as described in the variables section), quantifiers just scope and optionally quantify their `ARG0`.
 
 ## Constraints
 The `HCONS` section of the MRS is used when building a well-formed tree. It puts *CONS*traints on where the *H*andles for predications can be validly placed and still be a legal interpretation of the phrase. The only constraints used in "modern" MRS are `qeq` constraints so that's all you'll see in this section.  
@@ -412,4 +407,4 @@ The [next topic](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devh
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-01-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRS.md)]{% endraw %}
+Last update: 2023-04-27 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRS.md)]{% endraw %}
