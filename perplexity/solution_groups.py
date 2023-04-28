@@ -51,34 +51,83 @@ def declared_determiner_infos(execution_context, state):
             yield quantifier_from_binding(state, binding)
 
 
-# Is passed a list of VariableCriteria
-def optimize_determiner_infos(determiner_info_list_orig):
-    determiner_info_list = copy.deepcopy(determiner_info_list_orig)
+def reduce_variable_determiners(variable_info_list):
+    min = 0
+    max = float(inf)
+    global_constraint = None
+    exactly_constraint = None
+    all_rstr_constraint = None
+    for constraint in variable_info_list:
+        if constraint.global_criteria == GlobalCriteria.exactly:
+            # If there is more than one "only" ... that should never happen. Unclear what words would cause it
+            assert exactly_constraint is None
+            exactly_constraint = constraint
 
-    # Not an optimization but semantic
-    # convert "the 2" into a single constraint so it can ensure there are really only 2
-    # Assume that the dict will retain ordering
-    new_info_list = []
+        elif constraint.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+            # ditto
+            assert all_rstr_constraint is None
+            all_rstr_constraint = constraint
+
+        else:
+            # Constraints with no global criteria just get merged to most restrictive
+            if constraint.min_size > min:
+                min = constraint.min_size
+                predication = constraint.predication
+
+            if constraint.max_size < max:
+                max = constraint.max_size
+                predication = constraint.predication
+
+    if exactly_constraint is not None:
+        assert exactly_constraint.min_size >= min and exactly_constraint.max_size <= max
+        min = exactly_constraint.min_size
+        max = exactly_constraint.max_size
+        global_constraint = GlobalCriteria.exactly
+
+    if all_rstr_constraint is not None:
+        if len(variable_info_list) > 1:
+            # convert "the 2" into a single constraint so it can ensure there are really only 2
+            # Should only ever be "the"
+            assert all_rstr_constraint.min_size == 1 and all_rstr_constraint.max_size == float(inf)
+            global_constraint = GlobalCriteria.all_rstr_meet_criteria
+            predication = all_rstr_constraint.predication
+
+        else:
+            # This was the only constraint, use it
+            return [all_rstr_constraint]
+
+    if predication is None:
+        predication = variable_info_list[0].predication
+
+    return [VariableCriteria(predication, variable_info_list[0].variable_name, min, max, global_criteria=global_constraint)]
+
+
+def reduce_determiner_infos(determiner_info_list_orig):
+    determiner_info_list = copy.deepcopy(determiner_info_list_orig)
+    info_by_variable = determiner_info_by_variable(determiner_info_list)
+    reduced_determiner_infos = []
+    for variable_info_list in info_by_variable.values():
+        reduced_determiner_infos += reduce_variable_determiners(variable_info_list)
+
+    return reduced_determiner_infos
+
+
+def determiner_info_by_variable(determiner_info_list):
     info_by_variable = {}
     for determiner_info in determiner_info_list:
         if determiner_info.variable_name not in info_by_variable:
             info_by_variable[determiner_info.variable_name] = []
         info_by_variable[determiner_info.variable_name].append(determiner_info)
 
-    for variable_info_list in info_by_variable.values():
-        if len(variable_info_list) == 2:
-            first_info = variable_info_list[0]
-            second_info = variable_info_list[1]
-            if second_info.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-                assert second_info.min_size == 1 and second_info.max_size == float(inf)
-                combined_info = copy.deepcopy(second_info)
-                combined_info.min_size = first_info.min_size
-                combined_info.max_size = first_info.max_size
-                new_info_list.append(combined_info)
-                continue
+    return info_by_variable
 
-        new_info_list.extend(variable_info_list)
-    determiner_info_list = new_info_list
+
+# Is passed a list of VariableCriteria
+def optimize_determiner_infos(determiner_info_list_orig):
+    determiner_info_list = copy.deepcopy(determiner_info_list_orig)
+
+    # First combine the determiners into 1 if possible
+    determiner_info_list = reduce_determiner_infos(determiner_info_list)
 
     # Optimization: Walking back from the end:
     #     delete all last determiners in a row that are number_constraint(1, inf, False)
