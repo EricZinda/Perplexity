@@ -11,10 +11,17 @@ which files are in a folder
 It is key to remember that between(1, 1) means *at least* it it isn't set to exactly.
 So, we should transform it to between(1, inf)
 
+
 ### Implied Outer Quantifier
+If you say "2 children are eating" it is between(2, 2), but you really mean "at least"
+    This is kind of an outer quantifier example...
+
 which files are large?
     just returning 2 of N large files is correct, but not right
 Theory: really people mean "(give me all answers to) which files are large?"
+
+If you say "which 2 children are eating" it is exactly(2).
+    if there are more than 2 you should return an error
 
 delete large files
     (all)
