@@ -11,14 +11,14 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 ... is to have the solver create groups of solutions ("solution groups") that are the complete answers -- a single solution to the MRS is not enough. This section describes one algorithm that can accomplish this.
 
 ### Overview
-The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. This grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase has placed on the variables. The groups found represent the complete answers to the MRS.  
+The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. This grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase have placed on the variables. The groups found represent the complete answers to the MRS.  
 
 To illustrate what "numeric constraint" means, take "students lifted a table":
 - "students ..." is plural, which means the contraint is: `count(students) > 2`
 - "... a table" means the constraint is: `count(tables) = 1`
 - etc.
 
-To determine `count(students)` in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for `count(tables)` and return those groups where `count(students) > 2` and `count(tables) = 1`, we will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive ones. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings.
+To determine `count(students)` in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for `count(tables)`, and return those groups where `count(students) > 2` and `count(tables) = 1`, we will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive groups. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings.
 
 Here's an overview of the how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:
 >1. Determine the order variables appear when evaluating the tree
@@ -29,7 +29,7 @@ Here's an overview of the how the algorithm can determine groups that properly a
 >3. If either count meets the variable constraint, it succeeds and the next variable in the order is tried. If not, this group fails.
 >4. If the end is reached and all variables succeeded, this is a valid solution group.
 
-To get the groups that should be checked in the process above, we (you guessed it...) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
+To get the groups that should be checked using the process above, we (you guessed it...) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
 
 Figuring out the contraints on the variables is a longer story, which the next few sections will cover.
 

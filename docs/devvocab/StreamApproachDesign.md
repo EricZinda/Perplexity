@@ -12,12 +12,18 @@ Note: We really don't need to return *all combinations that are solutions*, just
 
 Algorithm for just returning maximal solutions that meet the criteria: only create sets that represent unique answers, or partial sets ("contenders") that will be used to generate alternatives
 
-Basic algorithm: we are building up a list of potential solution groups.  Constraints
+Goal: Return solution groups
+Basic algorithm: each row that comes in gets combined with all the groups that exist to create new groups. 
+    Any that can't possibly combine with another row (because it is monotonically increasing) should be removed from the set so we don't keep trying. That prunes some of the search space
+    keep track of a list of potential solution groups - that is: groups from the set of all possible groups that.  
+    the only variables considered when making groups are those with non-default constraints, 
+    because the whole point of groups is dealing with plurals
+
 - Start with a list of a single empty set
 - When a new solution comes in, for each set in the list:
   - See if the constrained variable values are already in the set
     - Yes: this is a "merge": Simply add the item into the set. Because it changes neither the unique individuals nor the unique values:
-      - This can *only* happen when there are variables without constraints on them because otherwise the entire set of values can't already exist
+      - This can *only* happen when there are variables without constraints on them because otherwise the entire set of values can't already exist (since solutions are always unique from the phase 1 solver)
       - Nothing in the stats needs to be updated and the criteria must be the same as before. The state of the set is the same as before.
       - No new sets need to be created because the set that represented this has already been added
         - This does mean, however, that return approach a) below could return different sets depending on the order of new solution groups?
@@ -39,6 +45,14 @@ Basic algorithm: we are building up a list of potential solution groups.  Constr
 
 NOTE: see TODO above
 NOTE: 
+This notion of open is problematic. It was meant to create "maximal" solutions. But for "which files are 20mb" it stops 2 10mb files from working and more than 1 20mb file from working
+    - it builds up the set but doesn't return it
+    - Theory: because it is sticking all answers into a single bucket?
+        - It is converting it to the equivalent of "which files are big". This is a case where the combinations matter and things can't just be grouped into a big group
+        - which files are large returns 4 groups, each one just adding another item
+
+open constraint set means: there is no reason to build multiple sets, there will only be one at the end. It is open because we just keep adding to it
+
 open/closed constraint sets: a constraint set is "open" if all of its constraints are open. Otherwise, it is closed:
     (no constraint) Open. If there are no constraints at all, the set is open.
     (1, inf) Open. By itself never needs to build another set, it just means "any"

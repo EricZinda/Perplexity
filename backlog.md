@@ -1,7 +1,31 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work 
-- need to update which() to do between(1, inf) and plural to be between(2, inf)?
+- why does "which files are in a folder" work but "which files are 20 mb" does not
+  - If you pick the other parse for which files are in a folder it is not fast
+  - One version gives 11 sets, the other gives 1024 sets
+  - It seems to be the "per previous" logic? It depends on order of variables
+    - they both use the same criteria(x9)
+    - 
+- delete files that are 20 mb: really slow
+- which files are 20 mb ends up with plural megabytes but only one object. But: this should work because we special-case "measure"
+- which files are 20 mb? no longer returns two 10 meg files
+  - And it doesn't return more than one 20 mb file
+    - Because sets_are_open = True 
+    - Need to get clear about what this is for and comment it
+  
+- need to update which() to do between(1, inf) and plural default to be between(2, inf)?
+  Need to do better optimization, then
+  - Option 1:
+    - Need to make the quantifier itself take the plural restriction into account
+      - Then: which_q() can handle plurals as it likes
+  - Option 2:
+    - Have rules for composing quantifier constraints with adjective constraints
+      - which()  composes with plural to make between(1, inf)
+      - the() composes with plur
+
+- And the other constraints get added as per the docs
+
   - Test that this approach works by going through examples. Scenarios to try:
     - not
       - Anything that converts to between(x, y) should work
@@ -13,6 +37,7 @@ Plurals work
     - all 3 boys carried all 3
     - The girls told the boys two stories each
             The boys are building a raft each. (operator fixex)
+    - 
     - Tests: 
             - https://aclanthology.org/P88-1003.pdf
             - https://aclanthology.org/W13-0202.pdf
