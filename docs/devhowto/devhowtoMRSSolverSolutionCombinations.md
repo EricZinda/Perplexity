@@ -25,6 +25,7 @@ Theory: commands just need to have a different default to *exactly*
 ### Implied Outer Quantifier
 If you say "2 children are eating" it is between(2, 2), but you really mean "at least"
     This is kind of an outer quantifier example...
+Ditto for "are 2 children eating?"
 
 which files are large?
     just returning 2 of N large files is correct, but not right
@@ -32,6 +33,8 @@ Theory: really people mean "(give me all answers to) which files are large?"
 
 If you say "which 2 children are eating" it is exactly(2).
     if there are more than 2 you should return an error
+
+But if you say "which 2 children in a room are eating?" returning more than one is ok? hmm.
 
 delete large files
     (all)
@@ -41,7 +44,7 @@ delete 2 files
     (not all, just two)
 
 Theory: delete should just do the *first answer*. Only works like above if we get the maximal answer
-Theory: commands should always be "only", and you have to specify for something else
+Theory: commands should always be "only" (but this only makes sense if max isn't inf), and you have to specify for something else
 
 2 files are large
 
@@ -85,14 +88,14 @@ files are 20 mb:
 This trims the search space
 
 
-### Which files are in a folder analysis
+### Scenario: "Which files are in a folder"
 There are no global constraints -- there is nothing that means "exactly"
-file between(1, inf) (because of which): means any file
+files between(1, inf) (not between(2, inf) because of which): means any file
 folder between(1, 1) ("at least" because it is not a command): means any file 
 
 Wh-question: thus asking for only unique values of (files), or maximal answers (not all combinations)
 
-Issue: 
-So 
-Just needs to return unique files that are in a folder (which is all of them)
+If we transform between(1, 1) to be between(1, inf), then they all go away.
+
+SoJust needs to return unique files that are in a folder (which is all of them)
 Really this is just unique(x3)?

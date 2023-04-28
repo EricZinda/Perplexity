@@ -1,13 +1,20 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work 
+- "which 2 files in a folder are 20 mb"
+  - Fails because there are more than 2 files in a folder
+- convert some constraints to be exactly, depending on scenario
+
 - why does "which files are in a folder" work but "which files are 20 mb" does not
   - If you pick the other parse for which files are in a folder it is not fast
   - One version gives 11 sets, the other gives 1024 sets
   - It seems to be the "per previous" logic? It depends on order of variables
     - they both use the same criteria(x9)
     - The problem is that we don't optimize away the constraint for 1 variable for parse but we do for the other
-    - 
+
+- which 2 files are in a folder? (in a folder with more than 2): There is more than 2 2 file in a folder
+  - Need a better error message
+  
 - delete files that are 20 mb: really slow
 - which files are 20 mb ends up with plural megabytes but only one object. But: this should work because we special-case "measure"
 - which files are 20 mb? no longer returns two 10 meg files

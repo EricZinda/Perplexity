@@ -1,6 +1,4 @@
 import enum
-import itertools
-
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
 from perplexity.tree import find_quantifier_from_variable
 from perplexity.utilities import is_plural_from_tree_info, parse_predication_name, is_plural

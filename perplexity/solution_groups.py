@@ -16,21 +16,19 @@ from perplexity.tree import find_quantifier_from_variable, gather_quantifier_ord
 from perplexity.utilities import at_least_one_generator
 
 
-def solution_groups(execution_context, solutions_orig, all_solutions):
+def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable):
     solutions = at_least_one_generator(solutions_orig)
 
     if solutions:
-        # execution_context.clear_error()
-
         # Go through each variable that has a quantifier in order
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
-        optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list))
+        optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
         for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list):
             if groups_logger.isEnabledFor(logging.DEBUG):
                 groups_logger.debug(f"Found answer: {group}")
             yield group
-            if not all_solutions:
+            if not wh_question_variable:
                 return
 
 
@@ -51,14 +49,26 @@ def declared_determiner_infos(execution_context, state):
             yield quantifier_from_binding(state, binding)
 
 
-def reduce_variable_determiners(variable_info_list):
+def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_question_variable):
     min = 0
     max = float(inf)
     global_constraint = None
     exactly_constraint = None
     all_rstr_constraint = None
+    predication = None
     for constraint in variable_info_list:
-        if constraint.global_criteria == GlobalCriteria.exactly:
+        # prop: "2 files are large"
+        # ques: "are 2 files large?"
+        #   means "at least two files are large"
+        # comm: "delete 2 files"
+        #   means "delete exactly two files"
+        # wh-ques: "which 2 files are large?" should behave like the and error out if there are more than 2
+        #   BUT: this only is true for the variable that wh-question is referring to
+        #   But if you say "which 2 children in a room are eating?" returning more than one is ok? hmm.
+        #   leave wh-questions out of this for now
+        # So, convert some constraints to be exactly, depending on scenario
+        exactly_default = constraint.max_size != float('inf') and (this_sentence_force == "comm")
+        if exactly_default or constraint.global_criteria == GlobalCriteria.exactly:
             # If there is more than one "only" ... that should never happen. Unclear what words would cause it
             assert exactly_constraint is None
             exactly_constraint = constraint
@@ -83,6 +93,7 @@ def reduce_variable_determiners(variable_info_list):
         min = exactly_constraint.min_size
         max = exactly_constraint.max_size
         global_constraint = GlobalCriteria.exactly
+        predication = exactly_constraint.predication
 
     if all_rstr_constraint is not None:
         if len(variable_info_list) > 1:
@@ -102,12 +113,12 @@ def reduce_variable_determiners(variable_info_list):
     return [VariableCriteria(predication, variable_info_list[0].variable_name, min, max, global_criteria=global_constraint)]
 
 
-def reduce_determiner_infos(determiner_info_list_orig):
+def reduce_determiner_infos(determiner_info_list_orig, this_sentence_force, wh_question_variable):
     determiner_info_list = copy.deepcopy(determiner_info_list_orig)
     info_by_variable = determiner_info_by_variable(determiner_info_list)
     reduced_determiner_infos = []
     for variable_info_list in info_by_variable.values():
-        reduced_determiner_infos += reduce_variable_determiners(variable_info_list)
+        reduced_determiner_infos += reduce_variable_determiners(variable_info_list, this_sentence_force, wh_question_variable)
 
     return reduced_determiner_infos
 
@@ -123,11 +134,11 @@ def determiner_info_by_variable(determiner_info_list):
 
 
 # Is passed a list of VariableCriteria
-def optimize_determiner_infos(determiner_info_list_orig):
+def optimize_determiner_infos(determiner_info_list_orig, this_sentence_force, wh_question_variable):
     determiner_info_list = copy.deepcopy(determiner_info_list_orig)
 
     # First combine the determiners into 1 if possible
-    determiner_info_list = reduce_determiner_infos(determiner_info_list)
+    determiner_info_list = reduce_determiner_infos(determiner_info_list, this_sentence_force, wh_question_variable)
 
     # Optimization: Walking back from the end:
     #     delete all last determiners in a row that are number_constraint(1, inf, False)

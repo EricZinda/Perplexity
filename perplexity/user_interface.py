@@ -159,12 +159,18 @@ class UserInterface(object):
                     # pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
                     # duplicate_solutions = perplexity.determiners.remove_duplicates(duplicate_solutions)
                     # pipeline_logger.debug(f"{len(duplicate_solutions)} undetermined solutions.")
-                    is_wh_phrase = sentence_force(tree_info["Variables"]) == "ques" and find_predication(tree_info["Tree"], "_which_q")
+                    this_sentence_force = sentence_force(tree_info["Variables"])
+                    wh_phrase_variable = None
+                    if this_sentence_force == "ques":
+                        predication = find_predication(tree_info["Tree"], "_which_q")
+                        if predication is not None:
+                            wh_phrase_variable = predication.args[0]
+
                     if self.show_all_answers:
-                        tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, is_wh_phrase))
+                        tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable))
                         tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
                     else:
-                        temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, is_wh_phrase)
+                        temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable)
                         tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
                     # Determine the response to it
@@ -176,7 +182,7 @@ class UserInterface(object):
                         self.evaluate_best_response()
 
                         # This worked, apply the results to the current world state if it was a command
-                        if sentence_force(tree_info["Variables"]) == "comm":
+                        if this_sentence_force == "comm":
                             tree_record["SolutionGroups"] = [[solution for solution in group] for group in tree_record["SolutionGroups"]]
 
                             try:
