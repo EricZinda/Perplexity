@@ -1,10 +1,6 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work 
-- "which 2 files in a folder are 20 mb"
-  - Fails because there are more than 2 files in a folder
-- convert some constraints to be exactly, depending on scenario
-
 - why does "which files are in a folder" work but "which files are 20 mb" does not
   - If you pick the other parse for which files are in a folder it is not fast
   - One version gives 11 sets, the other gives 1024 sets

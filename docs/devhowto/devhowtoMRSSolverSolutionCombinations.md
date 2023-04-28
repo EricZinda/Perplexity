@@ -1,4 +1,8 @@
 ## Title
+Key model points:
+    - constraints are *per solution group*.  Global constraints say "across solution groups x must be true"
+
+##
 Even 1 plural variable in an MRS will require grouping to represent the complete solution if they are acting alone: "men walk".   (the collective can be one solution). In this case you'd just expect one group. But: subsets of that group would also be true.
 
 With two variables: men are walking a dog you'd still only expect one group in any world (the maximal solution). But again, subsets would work.
@@ -13,7 +17,12 @@ Dials we have:
 
 ### Criteria Optimizations
 It is key to remember that between(1, 1) means *at least* if it isn't set to exactly.
-So, we should transform it to between(1, inf)?
+    So, we should transform it to between(1, inf)?
+But then how do we represent "less than 3"?
+    between(0, 3, exactly)
+What about between 4 and 6: use exactly
+But: 1 file is 20 mb, doesn't mean "at least 1 file is 20 mb" because we might be adding them up and adding 2 up to get 20mb is not right
+
 But: delete 2 files
     (not all, just two)
     So in this case between(2, 2) doesn't mean "at least" it means exactly.
@@ -35,6 +44,7 @@ If you say "which 2 children are eating" it is exactly(2).
     if there are more than 2 you should return an error
 
 But if you say "which 2 children in a room are eating?" returning more than one is ok? hmm.
+Unclear how wh should go...
 
 delete large files
     (all)
@@ -89,9 +99,9 @@ This trims the search space
 
 
 ### Scenario: "Which files are in a folder"
-There are no global constraints -- there is nothing that means "exactly"
+There are no global constraints so we can have more than one solution (but these constraints must be met per solution!)
 files between(1, inf) (not between(2, inf) because of which): means any file
-folder between(1, 1) ("at least" because it is not a command): means any file 
+folder between(1, 1) ("at least" because it is not a command): means any one folder per any group of files... 
 
 Wh-question: thus asking for only unique values of (files), or maximal answers (not all combinations)
 
