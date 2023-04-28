@@ -6,6 +6,7 @@ Plurals work
   - One version gives 11 sets, the other gives 1024 sets
   - It seems to be the "per previous" logic? It depends on order of variables
     - they both use the same criteria(x9)
+    - The problem is that we don't optimize away the constraint for 1 variable for parse but we do for the other
     - 
 - delete files that are 20 mb: really slow
 - which files are 20 mb ends up with plural megabytes but only one object. But: this should work because we special-case "measure"
