@@ -91,9 +91,11 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
             for existing_set in sets:
                 if exists_in_solution(var_criteria, existing_set[0], existing_set[1], next_solution):
                     # The variable values already existed in this set,
-                    # just add it. Don't return it as a solution since
-                    # the unique variable assignments have already been returned
+                    # just add it. Return it as a solution since it is a unique solution
+                    # TODO: make it somehow that the unique variable assignments have already been returned
+                    # and that this is just a more complete solution
                     existing_set[1].append(next_solution)
+                    yield existing_set[1]
                     continue
 
                 new_set_stats_group = existing_set[0].copy()
