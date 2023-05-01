@@ -50,7 +50,20 @@ def a_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["udef_q", "which_q", "_which_q", "pronoun_q"])
+@Predication(vocabulary, names=["which_q", "_which_q"])
+def which_q(state, x_variable_binding, h_rstr, h_body):
+    current_predication = execution_context().current_predication()
+
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=VariableCriteria(current_predication,
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=float('inf')))
+
+    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+
+
+@Predication(vocabulary, names=["udef_q", "pronoun_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(execution_context().current_predication(),
@@ -246,11 +259,11 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             # if it is for x_actor or x_size, so we have to try both
             if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
                 set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
+                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, set_size, VariableValueSetSize.all)
+                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, set_size)
             else:
-                set_size = VariableValueSetSize.all
+                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, VariableValueSetSize.all)
 
-            yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, set_size, VariableValueSetSize.all)
-            yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, set_size)
 
 
 @Predication(vocabulary, names=["_only_x_deg"])

@@ -1,24 +1,74 @@
 Remaining work to be shown in the tutorial:
  
 Plurals work 
-- why does "which files are in a folder" work but "which files are 20 mb" does not
-  - If you pick the other parse for which files are in a folder it is not fast
-  - One version gives 11 sets, the other gives 1024 sets
-  - It seems to be the "per previous" logic? It depends on order of variables
-    - they both use the same criteria(x9)
-    - The problem is that we don't optimize away the constraint for 1 variable for parse but we do for the other
+Need to make these right
+    - delete the only two files in the folder -> should fail
+    - delete only two files in the folder -> (are you sure, this will be random?)
+
+- Dial in proper semantics for which
+  - Example33: a few files are in a folder together
+    - a few file is not in a folder together
+    - why do we stop after one tree?
+      - Because we are checking if response_generator is not None and it won't every be because there is always a response
+  - (fixed) Example26: which 2 files in a folder are 20 mb?
+    - Returns: (File(name=/Desktop/bigfile.txt, size=20000000),)
+               (there are more)
+    - Problem is that bigfile.txt looks like it is already in a set so it gets added, and then yielded
+      - somehow all answers are being duplicated
+      - loc_nonsp_size() gets each file twice
+  - Example 25: "which files are in a folder" -> when there are 2 files in one folder, and then a single in two other folders
+    - The tree that has folder first can't return the singles because we say "files" and there is only 1
+      - So, the two files in the same folder are the only answer returned
+      - when files is first, it can get them all
+      - Is it possible we need to return all answers for all trees for a given parse to make sense?
+  - Need to give a good error when "(which) files are large" fails because there is only one file.
+  - Need to handle the scenario where there is an open set and keep adding to the answer and getting answers
+    - Example26: "which files are 20 mb" is a good example
+    - Example25, parse 1 also: :which files are in a folder
+    - If the solution group is open, need to go to the very end (potentially returning answers as they come) to get the maximal answer
+  - 
+
+      
+  - make all_plural_groups_stream() return maximal answers
+    - Perhaps the open set feature allows us to do this right? I.e. notify the caller when something is a growth of a set as opposed to a full answer
+    - Need to:
+      - Let caller know there are open sets
+      - yield the answers when they are added, but indicate they are extensions of a previous answer
+      
+  - which files are large? -> a file is not large
+    - Bad error message, should be "less than 2 files are large"
+
+  - Example 30: which 2 files are in 2 folders? -> There is more than 2 2 file in 2 folder
+    - There are only 2 files in 2 folders!
+    - Should not fail
+    - Bug: "only" is not paying attention to distributive
+  
+  - Bad error message: which 2 files in a folder are 20 mb -> There is more than 2 2 file in a folder
+    - should be: there are more than 2 files in a folder that are 20 mb
+  
+
+- Optimization for "which files are in a folder" no longer works and is disabled
+  - which files are 20 mb? no longer returns two 10 meg files
+    - And it doesn't return more than one 20 mb file
+      - Because sets_are_open = True 
+      - Need to get clear about what this is for and comment it
+
+  - why does "which files are in a folder" work but "which files are 20 mb" does not
+    - If you pick the other parse for which files are in a folder it is not fast
+    - One version gives 11 sets, the other gives 1024 sets
+    - It seems to be the "per previous" logic? It depends on order of variables
+      - they both use the same criteria(x9)
+      - The problem is that we don't optimize away the constraint for 1 variable for parse but we do for the other
+
+- 
+
 
 - which 2 files are in a folder? (in a folder with more than 2): There is more than 2 2 file in a folder
   - Need a better error message
   
 - delete files that are 20 mb: really slow
 - which files are 20 mb ends up with plural megabytes but only one object. But: this should work because we special-case "measure"
-- which files are 20 mb? no longer returns two 10 meg files
-  - And it doesn't return more than one 20 mb file
-    - Because sets_are_open = True 
-    - Need to get clear about what this is for and comment it
   
-- need to update which() to do between(1, inf) and plural default to be between(2, inf)?
   Need to do better optimization, then
   - Option 1:
     - Need to make the quantifier itself take the plural restriction into account

@@ -57,18 +57,7 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
     all_rstr_constraint = None
     predication = None
     for constraint in variable_info_list:
-        # prop: "2 files are large"
-        # ques: "are 2 files large?"
-        #   means "at least two files are large"
-        # comm: "delete 2 files"
-        #   means "delete exactly two files"
-        # wh-ques: "which 2 files are large?" should behave like the and error out if there are more than 2
-        #   BUT: this only is true for the variable that wh-question is referring to
-        #   But if you say "which 2 children in a room are eating?" returning more than one is ok? hmm.
-        #   leave wh-questions out of this for now
-        # So, convert some constraints to be exactly, depending on scenario
-        exactly_default = constraint.max_size != float('inf') and (this_sentence_force == "comm")
-        if exactly_default or constraint.global_criteria == GlobalCriteria.exactly:
+        if constraint.global_criteria == GlobalCriteria.exactly:
             # If there is more than one "only" ... that should never happen. Unclear what words would cause it
             assert exactly_constraint is None
             exactly_constraint = constraint

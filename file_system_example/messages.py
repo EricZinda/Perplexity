@@ -9,12 +9,13 @@ from perplexity.utilities import parse_predication_name, sentence_force, at_leas
 from perplexity.variable_binding import VariableValueType
 
 
+# yields: response, solution_group that generated the response
 def respond_to_mrs_tree(tree, solution_groups, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary
     if tree is None:
         message = generate_message(None, error)
-        yield message
+        yield message, None
         return
 
     sentence_force_type = sentence_force(tree["Variables"])
@@ -23,11 +24,11 @@ def respond_to_mrs_tree(tree, solution_groups, error):
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
         if solution_groups is not None:
-            yield "Yes, that is true."
+            yield "Yes, that is true.", next(solution_groups)
 
         else:
             message = generate_message(tree, error)
-            yield message
+            yield message, None
 
     elif sentence_force_type == "ques":
         # See if this is a "WH" type question
@@ -40,11 +41,11 @@ def respond_to_mrs_tree(tree, solution_groups, error):
             # a yes or no.
             # The phrase was "true" if there was at least one answer
             if solution_groups is not None:
-                yield "Yes."
+                yield "Yes.", next(solution_groups)
 
             else:
                 message = generate_message(tree, error)
-                yield message
+                yield message, None
 
         else:
             # This was a "WH" question. Return the values of the variable
@@ -58,32 +59,36 @@ def respond_to_mrs_tree(tree, solution_groups, error):
 
                 # Get unique items from all solutions
                 answer_items = set()
-                for solution_group in solution_groups:
-                    for solution in solution_group:
-                        binding = solution.get_binding(wh_variable)
-                        if binding.variable.value_type == VariableValueType.combinatoric:
-                            value_set = ((value, ) for value in binding.value)
-                            if value_set not in answer_items:
-                                answer_items.add(value_set)
-                                yield generate_message(tree, [-1, ["answerWithList", index_predication, [value_set]]])
+                solution_group = next(solution_groups)
+                response = ""
+                for solution in solution_group:
+                    binding = solution.get_binding(wh_variable)
+                    if binding.variable.value_type == VariableValueType.combinatoric:
+                        value_set = ((value, ) for value in binding.value)
+                        if value_set not in answer_items:
+                            answer_items.add(value_set)
+                            response += generate_message(tree, [-1, ["answerWithList", index_predication, [value_set]]])
 
-                        else:
-                            if binding.value not in answer_items:
-                                answer_items.add(binding.value)
-                                yield generate_message(tree, [-1, ["answerWithList", index_predication, [binding.value]]])
+                    else:
+                        if binding.value not in answer_items:
+                            answer_items.add(binding.value)
+                            response += generate_message(tree, [-1, ["answerWithList", index_predication, [binding.value]]])
+
+                yield response, solution_group
 
             else:
                 message = generate_message(tree, error)
-                yield message
+                yield message, None
 
     elif sentence_force_type == "comm":
         # This was a command so, if it works, just say so
         # We'll get better errors and messages in upcoming sections
         if solution_groups is not None:
-            yield "Done!"
+            yield "Done!", next(solution_groups)
+
         else:
             message = generate_message(tree, error)
-            yield message
+            yield message, None
 
 
 # Generates all the responses that predications can return when an error

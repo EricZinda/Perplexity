@@ -15,7 +15,7 @@ def determiner_from_binding(state, binding):
         quantifier = find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
         return VariableCriteria(quantifier,
                                 binding.variable.name,
-                                min_size=1,
+                                min_size=2,
                                 max_size=float('inf'))
 
     else:
@@ -89,7 +89,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
         for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
             new_sets = []
             for existing_set in sets:
-                if exists_in_solution(var_criteria, existing_set[0], existing_set[1], next_solution):
+                # This is an *optimization* to reduce the number of sets being created
+                # for scenarios like "which files are in a folder?"
+                if exists_in_group(var_criteria, existing_set[0], existing_set[1], next_solution):
                     # The variable values already existed in this set,
                     # just add it. Return it as a solution since it is a unique solution
                     # TODO: make it somehow that the unique variable assignments have already been returned
@@ -97,6 +99,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
                     existing_set[1].append(next_solution)
                     yield existing_set[1]
                     continue
+                else:
+                    pass
 
                 new_set_stats_group = existing_set[0].copy()
                 state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
@@ -115,6 +119,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
                     # Doesn't fail
                     if sets_are_open:
                         new_set = existing_set
+
                     else:
                         new_set = [None, None]
                         new_sets.append(new_set)
@@ -153,7 +158,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
 #     - Yes: this is a "merge": Simply add the item into the set. Because it changes neither the unique individuals nor the unique values:
 #       - This can *only* happen when there are variables without constraints on them because otherwise the entire set of values can't already exist
 #       - Nothing in the stats needs to be updated and the criteria must be the same as before. The state of the set is the same as before.
-def exists_in_solution(all_criteria, current_set_stats, current_set, new_solution):
+def exists_in_group(all_criteria, current_set_stats, current_set, new_solution):
     if len(all_criteria) == 0:
         return False
 

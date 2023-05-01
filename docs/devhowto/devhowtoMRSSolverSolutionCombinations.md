@@ -2,49 +2,30 @@
 Key model points:
     - constraints are *per solution group*.  Global constraints say "across solution groups x must be true"
 
-##
 Even 1 plural variable in an MRS will require grouping to represent the complete solution if they are acting alone: "men walk".   (the collective can be one solution). In this case you'd just expect one group. But: subsets of that group would also be true.
 
 With two variables: men are walking a dog you'd still only expect one group in any world (the maximal solution). But again, subsets would work.
 
 So, some scenarios have a maximal answer that in one group represents all objects in any other answer. i.e. it is combinatorial
 
-which files are in a folder
-
 Dials we have:
     - for some answers: there is a range. Sometimes we want min, sometimes max
     - 
 
 ### Criteria Optimizations
-It is key to remember that between(1, 1) means *at least* if it isn't set to exactly.
-    So, we should transform it to between(1, inf)?
-But then how do we represent "less than 3"?
-    between(0, 3, exactly)
-What about between 4 and 6: use exactly
-But: 1 file is 20 mb, doesn't mean "at least 1 file is 20 mb" because we might be adding them up and adding 2 up to get 20mb is not right
-
 But: delete 2 files
     (not all, just two)
-    So in this case between(2, 2) doesn't mean "at least" it means exactly.
-    delete files in 1 (or a) folder
-    again means exactly 1
+    This *doesn't mean* "delete but only if there are only 2 files"
+    It does mean: only pick one of the solutions where there are 2 files and delete it
+    Thus, it isn't the same as setting to exactly 2
+    Conclusion: commands should just pick the first solution
 
-Theory: commands just need to have a different default to *exactly*
-
-### Implied Outer Quantifier
 If you say "2 children are eating" it is between(2, 2), but you really mean "at least"
     This is kind of an outer quantifier example...
-Ditto for "are 2 children eating?"
+    Ditto for "are 2 children eating?"
+    BUT: this *isn't* the same as saying between(2, inf), because it still has to be exactly 2 per solution
+    It matters because if you say "1 file is 20 mb" you *don't* mean "at least 1 file is 20 mb" because that would allow 2 files that add up to 20 mb.
 
-which files are large?
-    just returning 2 of N large files is correct, but not right
-Theory: really people mean "(give me all answers to) which files are large?"
-
-If you say "which 2 children are eating" it is exactly(2).
-    if there are more than 2 you should return an error
-
-But if you say "which 2 children in a room are eating?" returning more than one is ok? hmm.
-Unclear how wh should go...
 
 delete large files
     (all)
@@ -80,6 +61,8 @@ Commands: ? Unique values of all arguments ?
 
 # There is no reason to return all combinations at the end because nothing will use them?
 This seems right
+
+
 
 ### Archive
 When numeric constraints are removed from an MRS we are left with a relatively straightforward constraint satisfaction problem that should be able to return solutions quickly, but there still may be *many* solutions.

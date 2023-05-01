@@ -133,7 +133,7 @@ class UserInterface(object):
                 unknown_words_error = [0, ["unknownWords", mrs_record["UnknownWords"]]]
                 tree_record = self.new_error_tree_record(error=unknown_words_error, response_generator=self.response_function(None, [], unknown_words_error))
                 mrs_record["Trees"].append(tree_record)
-                self.evaluate_best_response()
+                self.evaluate_best_response(None)
 
             else:
                 for tree in self.trees_from_mrs(mrs):
@@ -150,15 +150,7 @@ class UserInterface(object):
                                  "Variables": mrs.variables,
                                  "Tree": tree}
 
-                    duplicate_solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
-                    # for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
-                    #     if logger.isEnabledFor(logging.DEBUG):
-                    #         pipeline_logger.debug(f"solution: {item}")
-                    #     duplicate_solutions.append(item)
-
-                    # pipeline_logger.debug(f"Removing duplicates from {len(duplicate_solutions)} solutions ...")
-                    # duplicate_solutions = perplexity.determiners.remove_duplicates(duplicate_solutions)
-                    # pipeline_logger.debug(f"{len(duplicate_solutions)} undetermined solutions.")
+                    solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
                     this_sentence_force = sentence_force(tree_info["Variables"])
                     wh_phrase_variable = None
                     if this_sentence_force == "ques":
@@ -166,25 +158,30 @@ class UserInterface(object):
                         if predication is not None:
                             wh_phrase_variable = predication.args[0]
 
-                    if self.show_all_answers:
-                        tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable))
-                        tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
-                    else:
-                        temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable)
-                        tree_record["SolutionGroups"] = at_least_one_generator(temp)
+                    # if self.show_all_answers:
+                    #     tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable))
+                    #     tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
+                    #
+                    # else:
+                    #     temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable)
+                    #     tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
                     # Determine the response to it
+                    solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable))
+
+                    # Collect any error that might have occurred from the first solution group
                     tree_record["Error"] = self.execution_context.error()
-                    tree_record["ResponseGenerator"] = self.response_function(tree_info, tree_record["SolutionGroups"], tree_record["Error"])
-                    if tree_record["SolutionGroups"] is not None:
+                    tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(tree_info, solution_group_generator, tree_record["Error"]))
+                    if solution_group_generator is not None:
                         # If there were solutions, this is our answer,
                         # return it and stop looking
-                        self.evaluate_best_response()
+                        self.evaluate_best_response(solution_group_generator)
+
+                        response, solution_group = next(tree_record["ResponseGenerator"])
+                        tree_record["SolutionGroups"] = [solution_group]
 
                         # This worked, apply the results to the current world state if it was a command
                         if this_sentence_force == "comm":
-                            tree_record["SolutionGroups"] = [[solution for solution in group] for group in tree_record["SolutionGroups"]]
-
                             try:
                                 self.apply_solutions_to_state([solution for group in tree_record["SolutionGroups"] for solution in group])
 
@@ -192,22 +189,34 @@ class UserInterface(object):
                                 response = self.response_function(tree_info, [], [0, error.message_object()])
                                 tree_record["ResponseMessage"] += f"\n{str(response)}"
 
-                        for response in tree_record["ResponseGenerator"]:
-                            tree_record["ResponseMessage"] += response
-                            print(response)
-
+                        tree_record["ResponseMessage"] += response
+                        print(response)
+                        more_message = self.generate_more_message(tree_info, solution_group_generator)
+                        if more_message is not None:
+                            print(more_message)
                         return
 
                     else:
                         # This failed, remember it if it is the "best" failure
                         # which we currently define as the first one
-                        self.evaluate_best_response()
+                        self.evaluate_best_response(solution_group_generator)
 
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_tree_record()
-        for response in chosen_record["ResponseGenerator"]:
+        for response, _ in chosen_record["ResponseGenerator"]:
             chosen_record["ResponseMessage"] += response
             print(response)
+
+    def generate_more_message(self, tree, solution_groups):
+        if solution_groups is None:
+            return
+        else:
+            try:
+                if next(solution_groups):
+                    return "(there are more)"
+
+            except StopIteration:
+                pass
 
     # WORKAROUND: ERG doesn't properly quote all strings with "/" so convert to "\"
     def convert_slashes_until(self, stop_char, start_index, phrase):
@@ -242,18 +251,18 @@ class UserInterface(object):
 
         return final_phrase
 
-    def evaluate_best_response(self):
+    def evaluate_best_response(self, solution_group_generator):
         current_mrs_index = len(self.interaction_record["Mrss"]) - 1
         current_tree_index = len(self.interaction_record["Mrss"][current_mrs_index]["Trees"]) - 1
         tree_record = self.interaction_record["Mrss"][current_mrs_index]["Trees"][current_tree_index]
         chosen_record = self.chosen_tree_record()
         chosen_error = chosen_record["Error"] if chosen_record is not None else None
         # If there was a success, return it as the best answer
-        if tree_record["SolutionGroups"] is not None or \
+        if solution_group_generator is not None or \
                 (self.error_priority_function(tree_record["Error"]) > self.error_priority_function(chosen_error)):
             self.interaction_record["ChosenMrsIndex"] = current_mrs_index
             self.interaction_record["ChosenTreeIndex"] = current_tree_index
-            pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_tree_index}, Error: {tree_record['Error'] if tree_record['SolutionGroups'] is None else 'none'}")
+            pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_tree_index}, Error: {tree_record['Error'] if solution_group_generator is None else 'none'}")
 
     # Commands always start with "/", followed by a string of characters and then
     # a space. Any arguments are after the space and their format is command specific.
