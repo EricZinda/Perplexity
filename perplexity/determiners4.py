@@ -213,6 +213,13 @@ class StatsGroup(object):
             var_stats.prev_variable_stats = previous_variable_stats
             if previous_variable_stats is not None:
                 previous_variable_stats.next_variable_stats = var_stats
+                var_stats.distributive_state = CriteriaResult.contender
+                var_stats.collective_state = CriteriaResult.contender
+                var_stats.cumulative_state = CriteriaResult.contender
+            else:
+                var_stats.distributive_state = CriteriaResult.fail_one
+                var_stats.collective_state = CriteriaResult.contender
+                var_stats.cumulative_state = CriteriaResult.fail_one
 
             previous_variable_stats = var_stats
             self.variable_stats.append(var_stats)
@@ -223,7 +230,7 @@ class StatsGroup(object):
         new_group = StatsGroup()
         previous_new_stat = None
         for stat in self.variable_stats:
-            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy())
+            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state)
             new_stat.prev_variable_stats = previous_new_stat
             if previous_new_stat is not None:
                 previous_new_stat.next_variable_stats = new_stat
@@ -234,13 +241,16 @@ class StatsGroup(object):
 
 
 class VariableStats(object):
-    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None):
+    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None):
         self.variable_name = variable_name
         self.whole_group_unique_individuals = set() if whole_group_unique_individuals is None else whole_group_unique_individuals
         self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
         self.prev_variable_stats = None
         self.next_variable_stats = None
         self.current_state = None
+        self.distributive_state = None if distributive_state is None else distributive_state
+        self.collective_state = None if collective_state is None else collective_state
+        self.cumulative_state = None if cumulative_state is None else cumulative_state
 
     def __repr__(self):
         return f"values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
@@ -260,34 +270,53 @@ class VariableStats(object):
             self.whole_group_unique_values[binding_value][0].update(next_value if next_value is not None else [])
             self.whole_group_unique_values[binding_value][1].append(solution)
 
-        prev_unique_value_count = None if self.prev_variable_stats is None else len(self.prev_variable_stats.whole_group_unique_values)
+        if self.prev_variable_stats is None:
+            prev_unique_value_count = None
+
+        else:
+            prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
+
         if prev_unique_value_count is not None and prev_unique_value_count > 1:
             # Cumulative
-            cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
-            if cumulative_state == CriteriaResult.meets:
-                self.current_state = CriteriaResult.meets
-                return self.current_state
+            if self.cumulative_state != CriteriaResult.fail_one:
+                self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
 
             # Distributive
             # for each prev_unique_value: len(unique_values) meets criteria
-            distributive_state = CriteriaResult.meets
-            for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
-                distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0])
-                distributive_state = criteria_transitions[distributive_state][distributive_value_state]
-                if distributive_state == CriteriaResult.fail_one:
-                    break
+            if self.distributive_state != CriteriaResult.fail_one:
+                self.distributive_state = CriteriaResult.meets
+                for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
+                    distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0])
+                    self.distributive_state = criteria_transitions[self.distributive_state][distributive_value_state]
+                    if self.distributive_state == CriteriaResult.fail_one:
+                        break
 
-            if distributive_state == CriteriaResult.meets:
-                self.current_state = CriteriaResult.meets
-                return self.current_state
+        if prev_unique_value_count is None or prev_unique_value_count == 1:
+            if self.collective_state != CriteriaResult.fail_one:
+                # Collective
+                self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
 
-            self.current_state = CriteriaResult.contender if cumulative_state == CriteriaResult.contender or distributive_state == CriteriaResult.contender else CriteriaResult.fail_one
-            return self.current_state
+        # Now figure out what to return
+        if self.collective_state == CriteriaResult.meets_pending_global or \
+           self.distributive_state == CriteriaResult.meets_pending_global or \
+           self.cumulative_state == CriteriaResult.meets_pending_global:
+            self.current_state = CriteriaResult.meets_pending_global
 
-        elif prev_unique_value_count is None or prev_unique_value_count == 1:
-            # Collective
-            self.current_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
-            return self.current_state
+        elif self.collective_state == CriteriaResult.meets or \
+                self.distributive_state == CriteriaResult.meets or \
+                self.cumulative_state == CriteriaResult.meets:
+            self.current_state = CriteriaResult.meets
+
+        elif self.collective_state == CriteriaResult.contender or \
+                self.distributive_state == CriteriaResult.contender or \
+                self.cumulative_state == CriteriaResult.contender:
+            self.current_state = CriteriaResult.contender
+
+        else:
+            self.current_state = CriteriaResult.fail_one
+
+        return self.current_state
+
 
 # Distributive needs to create groups by unique variable value
 # Every set needs set[0] to be a dict that tracks the shape of the set when a new row is added

@@ -655,7 +655,7 @@ def Example32():
 
 
 def Example33_reset():
-    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(100)]
+    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(10)]
     return FileSystemState(FileSystemMock(file_list,
                                            "/Desktop"))
 
