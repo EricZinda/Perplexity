@@ -15,11 +15,14 @@ Need to make these right
       - Any variable that has (N, inf) on it means that it could generate more groups where the only change is set membership in that variable
         - It seems like we could model groups like that as "open", and just update them, while at the same time returning each iteration
           - Groups need to stay separate if they can combine with new solutions to form new groups
-          - it might be the case that a variable has a 1,inf constraint on it so that variable would only generate new groups which aren't semantically differnt
+          - it might be the case that a variable has a 1,inf constraint on it so that variable would only generate new groups which aren't semantically different
           - , but other variables like (2,2) would want the combinations
           - It might be safe to say that any group where the last remaining variable that can be changed is 1,inf could be open?
       - Design:
+        - Loop through each criterion. If a value is not yet in that set, the set is not open unless:
+           - The criteria has met its lower limit and the upper limit is inf
         - If a variable cannot change from its current value, it gets marked
+        - If, across all criteria variables, the only values not yet in the sets are
         - If the only variables left unmarked have met their lower limit and have an upper limit of inf, then there is no reason to keep every alternative
         - 
   - Need to give a good error when "(which) files are large" or "files are large" fails because there is only one file.

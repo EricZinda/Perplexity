@@ -71,9 +71,9 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 
     # Create the initial stats
     initial_stats_group = StatsGroup()
-    has_global_constraint, constraints_are_open = initial_stats_group.initialize(var_criteria)
+    has_global_constraint, variable_has_inf_max, constraints_are_open = initial_stats_group.initialize(var_criteria)
 
-    return variable_metadata, initial_stats_group, has_global_constraint, constraints_are_open
+    return variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max, constraints_are_open
 
 
 # Every set that is generated has a GroupVariableStats object that does all
@@ -175,9 +175,18 @@ def can_merge_into_group(all_criteria, current_set_stats, current_set, new_solut
             variable_criteria = all_criteria[index]
             variable_value = new_solution.get_binding(variable_criteria.variable_name).value
             if variable_value not in variable_stats.whole_group_unique_values:
+                # Any variable that has (N, inf) on it and has met the criteria means that, if it generates more groups,
+                # the only change is set membership in that variable so we don't need to remember this as a separate group
+                if (variable_stats.current_state == CriteriaResult.meets or variable_stats.current_state == CriteriaResult.meets_pending_global) and \
+                   variable_criteria.max_size == float('inf'):
+                    continue
+
                 return False
 
-        # It already exists
+        # Either the values for variables with criteria already exist or
+        # the ones that don't are already in the "meets" state for this solution
+        # Either way, new_solution should be added to this set, a new set doesn't
+        # need to be created
         return True
 
 
@@ -188,12 +197,15 @@ class StatsGroup(object):
     def initialize(self, var_criteria):
         has_global_constraint = False
         constraints_are_open = True
+        variable_has_inf_max = False
         previous_variable_stats = None
         for criteria in var_criteria:
             if criteria.global_criteria is not None:
                 has_global_constraint = True
 
-            if criteria.max_size != float('inf'):
+            if criteria.max_size == float('inf'):
+                variable_has_inf_max = True
+            else:
                 constraints_are_open = False
 
             var_stats = VariableStats(criteria.variable_name)
@@ -204,7 +216,7 @@ class StatsGroup(object):
             previous_variable_stats = var_stats
             self.variable_stats.append(var_stats)
 
-        return has_global_constraint, constraints_are_open
+        return has_global_constraint, variable_has_inf_max, constraints_are_open
 
     def copy(self):
         new_group = StatsGroup()
@@ -227,6 +239,7 @@ class VariableStats(object):
         self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
         self.prev_variable_stats = None
         self.next_variable_stats = None
+        self.current_state = None
 
     def __repr__(self):
         return f"values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
@@ -251,7 +264,8 @@ class VariableStats(object):
             # Cumulative
             cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
             if cumulative_state == CriteriaResult.meets:
-                return CriteriaResult.meets
+                self.current_state = CriteriaResult.meets
+                return self.current_state
 
             # Distributive
             # for each prev_unique_value: len(unique_values) meets criteria
@@ -263,14 +277,16 @@ class VariableStats(object):
                     break
 
             if distributive_state == CriteriaResult.meets:
-                return CriteriaResult.meets
+                self.current_state = CriteriaResult.meets
+                return self.current_state
 
-            return CriteriaResult.contender if cumulative_state == CriteriaResult.contender or distributive_state == CriteriaResult.contender else CriteriaResult.fail_one
+            self.current_state = CriteriaResult.contender if cumulative_state == CriteriaResult.contender or distributive_state == CriteriaResult.contender else CriteriaResult.fail_one
+            return self.current_state
 
         elif prev_unique_value_count is None or prev_unique_value_count == 1:
             # Collective
-            return variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
-
+            self.current_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+            return self.current_state
 
 # Distributive needs to create groups by unique variable value
 # Every set needs set[0] to be a dict that tracks the shape of the set when a new row is added

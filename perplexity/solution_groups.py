@@ -26,9 +26,9 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
         # Get the statistics for the stream so we can tell if we have open sets
         x_variables = gather_quantifier_order(tree_info)
-        variable_metadata, initial_stats_group, has_global_constraint, constraints_are_open = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
+        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max, constraints_are_open = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
         has_unconstrained_x_variables = len(x_variables) != len(variable_metadata)
-        groups_are_open = constraints_are_open or has_unconstrained_x_variables
+        groups_are_open = constraints_are_open or has_unconstrained_x_variables or variable_has_inf_max
         if groups_are_open:
             # if the group that is returned is "open" meaning that it is something like "which files ..." and thus has a between(1, inf)
             # constraint, then the groups that get returned are (potentially) minimal solutions (i.e. 2 files for this example) but more might be returned as
