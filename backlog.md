@@ -20,6 +20,26 @@ Need to make these right
           - It might be safe to say that any group where the last remaining variable that can be changed is 1,inf could be open?
       - Really, we want to merge in a solution if it couldn't be used to create other groups that are solution groups by adding a row
       - Design:
+        - Really, we want to merge in a solution if it
+          a) doesn't invalidate this as a solution group and 
+          b) ? couldn't be used to create other solution groups by adding a row?
+          - This means that we are creating maximal solution groups?
+        - when do we want *different* solution groups in this world?
+          - We want a solution group to be only one mode of coll/dist/cuml. If it switches modes, it should be a new group
+          - So, if it can only be one mode and it stays in the same mode, it should be added
+          - This means that we need to check all three modes each time, which will hurt perf...
+          - Really it means that any given set has a unique identifier with coll/dist/cuml bitwise options for every variable?
+          - When a set is returned, if it can bitwise and with each variable then it is the same solution?
+            - Is it really true that there are never more than one disjoint readings of coll or dist or cumul? Yes?
+        - Design:
+          - IF a variable meets, then it tracks which of the modes (maybe more than 1) it is a solution for 
+          - IF they all meet, then the collection of modes is a signature that gets returned with the answer
+          - IF the signature can only be one set of things, then it becomes open
+          - Depends on:
+            - Once a group is uniquely one mode it can't transition to another
+            - That there are never more than one disjoint readings of coll or dist or cumul. Because: a group could happen to get built as uniquely one mode and never find the other because it is disjoint
+          - Problem: VERY much slower 
+      - Alternative Design:
         - Loop through each criterion. If a value is not yet in that set, the set is not open unless:
            - The criteria has met its lower limit and the upper limit is inf
         - If a variable cannot change from its current value, it gets marked
