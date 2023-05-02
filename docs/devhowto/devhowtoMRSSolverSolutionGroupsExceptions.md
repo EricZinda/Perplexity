@@ -64,7 +64,8 @@ Must work this way:
     
     For sure: which files are in a folder? 
         should return all files that are in folders
-        Should return 2 files from one folder and a singular one from another
+        for the reverse reading: Should return 2 files from one folder and a singular one from another?
+            It doesn't because "files" is plural and so the singular one doesn't match
 
     For sure: which 2 files are in 2 folders? when there is two folders with two files each
         should work. 

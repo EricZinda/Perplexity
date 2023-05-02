@@ -166,6 +166,9 @@ class UserInterface(object):
                     #     temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable)
                     #     tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
+                    # test1 = list(solutions)
+                    # test = list(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force,
+                    #                                            wh_phrase_variable, tree_info))
                     # Determine the response to it
                     solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
 

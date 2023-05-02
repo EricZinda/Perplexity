@@ -31,8 +31,9 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         groups_are_open = constraints_are_open or has_unconstrained_x_variables
         if groups_are_open:
             # if the group that is returned is "open" meaning that it is something like "which files ..." and thus has a between(1, inf)
-            # constraint, then the first group that gets returned is a minimal solution (i.e. 2 files) but more will be returned as
+            # constraint, then the groups that get returned are (potentially) minimal solutions (i.e. 2 files for this example) but more might be returned as
             # a new file gets added. combine_one_solution_group() just picks one solution group and iteratively returns it
+            # and makes sure we go all the way to the end
             has_multiple_groups = False
 
             def combine_one_solution_group():
@@ -63,10 +64,9 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                     yield True
 
         else:
-            # Sets are not open, so just return the first group
+            # groups are not open, so just return them as they come
             for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata, initial_stats_group, has_global_constraint, constraints_are_open):
                 yield group[0]
-                return
 
 
 # Return the infos in the order they will be executed in
@@ -166,20 +166,17 @@ def optimize_determiner_infos(determiner_info_list_orig, this_sentence_force, wh
     # First combine the determiners into 1 if possible
     determiner_info_list = reduce_determiner_infos(determiner_info_list, this_sentence_force, wh_question_variable)
 
-    # Optimization: Walking back from the end:
-    #     delete all last determiners in a row that are number_constraint(1, inf, False)
-    # if they are all that, then there are no constraints
+    # Any constraint on a variable that is 1,inf is meaningless since it means "a value exists" which means that it has a value
+    # but every variable must have a value, so it doesn't do anything, remove it
     new_info_list = []
-    remove_determiners = True
-    for determiner_info in reversed(determiner_info_list):
-        if remove_determiners and determiner_info.min_size == 1 and determiner_info.max_size == float(inf) and determiner_info.global_criteria is None:
+    for determiner_info in determiner_info_list:
+        if determiner_info.min_size == 1 and determiner_info.max_size == float(inf) and determiner_info.global_criteria is None:
             continue
 
         else:
-            remove_determiners = False
             new_info_list.append(determiner_info)
 
-    determiner_info_list = reversed(new_info_list)
+    determiner_info_list = new_info_list
 
     return determiner_info_list
 

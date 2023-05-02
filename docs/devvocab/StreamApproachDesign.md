@@ -52,6 +52,9 @@ This notion of open is problematic. It was meant to create "maximal" solutions. 
         - which files are large returns 4 groups, each one just adding another item
 
 open constraint set means: there is no reason to build multiple sets, there will only be one at the end. It is open because we just keep adding to it
+  - What is the difference between sets_are_open and exists_in_group()? 
+    - An open constraint set says there will only be one answer group.  exists_in_group() will modify existing groups with answers that
+      don't change them (since the constrained variables are not modified)
 
 open/closed constraint sets: a constraint set is "open" if all of its constraints are open. Otherwise, it is closed:
     (no constraint) Open. If there are no constraints at all, the set is open.

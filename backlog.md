@@ -5,18 +5,20 @@ Need to make these right
     - delete the only two files in the folder -> should fail
     - delete only two files in the folder -> (are you sure, this will be random?)
 
+- Theory: Forward readings of trees are better
 - Dial in proper semantics for which
-  - What is the difference between sets_are_open and exists_in_group()? 
-    - An open constraint set says there will only be one answer group.  exists_in_group() will modify existing groups with answers that
-      don't change them (since the constrained variables are not modified)
   
-    - Need to handle the scenario where there is an open set and keep adding to the answer and getting answers
-      - Example25, parse 1 also: :which files are in a folder (better example is example26)
   - Example 25: "which files are in a folder" -> when there are 2 files in one folder, and then a single in two other folders
     - The tree that has folder first can't return the singles because we say "files" and there is only 1
       - So, the two files in the same folder are the only answer returned
       - when files is first, it can get them all
-      - Is it possible we need to return all answers for all trees for a given parse to make sense?
+      - Any variable that has (N, inf) on it means that it could generate more groups where the only change is set membership in that group
+        - It seems like we could model groups like that as "open", and just update them, while at the same time returning each iteration
+          - Groups need to stay separate if they can combine with new solutions to form new groups
+          - it might be the case that a variable has a 1,inf constraint on it so that variable would only generate new groups which aren't semantically differnt
+          - , but other variables like (2,2) would want the combinations
+          - It might be safe to say that any group where the last remaining variable that can be changed is 1,inf could be open?
+
   - Need to give a good error when "(which) files are large" or "files are large" fails because there is only one file.
     
   - make all_plural_groups_stream() return maximal answers
