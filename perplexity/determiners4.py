@@ -179,6 +179,7 @@ def can_merge_into_group(all_criteria, current_set_stats, current_set, new_solut
                 # the only change is set membership in that variable so we don't need to remember this as a separate group
                 if (variable_stats.current_state == CriteriaResult.meets or variable_stats.current_state == CriteriaResult.meets_pending_global) and \
                    variable_criteria.max_size == float('inf'):
+                    # todo: we should probably update the stats too, but it doesn't really matter since they won't be used at this point
                     continue
 
                 return False

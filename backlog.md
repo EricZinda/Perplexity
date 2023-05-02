@@ -18,6 +18,7 @@ Need to make these right
           - it might be the case that a variable has a 1,inf constraint on it so that variable would only generate new groups which aren't semantically different
           - , but other variables like (2,2) would want the combinations
           - It might be safe to say that any group where the last remaining variable that can be changed is 1,inf could be open?
+      - Really, we want to merge in a solution if it couldn't be used to create other groups that are solution groups by adding a row
       - Design:
         - Loop through each criterion. If a value is not yet in that set, the set is not open unless:
            - The criteria has met its lower limit and the upper limit is inf
