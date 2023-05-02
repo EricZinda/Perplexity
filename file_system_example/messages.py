@@ -10,6 +10,8 @@ from perplexity.variable_binding import VariableValueType
 
 
 # yields: response, solution_group that generated the response
+# In scenarios where there is an open solution group (meaning like "files are ..." where there is an initial solution that will
+# grow), this will yield once for every additional solution
 def respond_to_mrs_tree(tree, solution_groups, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary
@@ -25,10 +27,12 @@ def respond_to_mrs_tree(tree, solution_groups, error):
         # The phrase was "true" if there was at least one answer
         if solution_groups is not None:
             yield "Yes, that is true.", next(solution_groups)
+            return
 
         else:
             message = generate_message(tree, error)
             yield message, None
+            return
 
     elif sentence_force_type == "ques":
         # See if this is a "WH" type question
@@ -42,10 +46,12 @@ def respond_to_mrs_tree(tree, solution_groups, error):
             # The phrase was "true" if there was at least one answer
             if solution_groups is not None:
                 yield "Yes.", next(solution_groups)
+                return
 
             else:
                 message = generate_message(tree, error)
                 yield message, None
+                return
 
         else:
             # This was a "WH" question. Return the values of the variable
@@ -67,18 +73,17 @@ def respond_to_mrs_tree(tree, solution_groups, error):
                         value_set = ((value, ) for value in binding.value)
                         if value_set not in answer_items:
                             answer_items.add(value_set)
-                            response += generate_message(tree, [-1, ["answerWithList", index_predication, [value_set]]])
+                            yield generate_message(tree, [-1, ["answerWithList", index_predication, [value_set]]]), [solution]
 
                     else:
                         if binding.value not in answer_items:
                             answer_items.add(binding.value)
-                            response += generate_message(tree, [-1, ["answerWithList", index_predication, [binding.value]]])
-
-                yield response, solution_group
+                            yield generate_message(tree, [-1, ["answerWithList", index_predication, [binding.value]]]), [solution]
 
             else:
                 message = generate_message(tree, error)
                 yield message, None
+                return
 
     elif sentence_force_type == "comm":
         # This was a command so, if it works, just say so

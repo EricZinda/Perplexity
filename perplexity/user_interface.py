@@ -167,7 +167,7 @@ class UserInterface(object):
                     #     tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
                     # Determine the response to it
-                    solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable))
+                    solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
 
                     # Collect any error that might have occurred from the first solution group
                     tree_record["Error"] = self.execution_context.error()
@@ -177,23 +177,29 @@ class UserInterface(object):
                         # return it and stop looking
                         self.evaluate_best_response(solution_group_generator)
 
-                        response, solution_group = next(tree_record["ResponseGenerator"])
-                        tree_record["SolutionGroups"] = [solution_group]
+                        # Go through all the responses in this solution group
+                        solution_group_combined = []
+                        for response, solution_group in tree_record["ResponseGenerator"]:
+                            solution_group_combined += solution_group
 
-                        # This worked, apply the results to the current world state if it was a command
-                        if this_sentence_force == "comm":
-                            try:
-                                self.apply_solutions_to_state([solution for group in tree_record["SolutionGroups"] for solution in group])
+                            # This worked, apply the results to the current world state if it was a command
+                            if this_sentence_force == "comm":
+                                try:
+                                    self.apply_solutions_to_state([solution for solution in solution_group])
 
-                            except MessageException as error:
-                                response = self.response_function(tree_info, [], [0, error.message_object()])
-                                tree_record["ResponseMessage"] += f"\n{str(response)}"
+                                except MessageException as error:
+                                    response = self.response_function(tree_info, [], [0, error.message_object()])
+                                    tree_record["ResponseMessage"] += f"\n{str(response)}"
 
-                        tree_record["ResponseMessage"] += response
-                        print(response)
+                            tree_record["ResponseMessage"] += response
+                            print(response)
+
+                        tree_record["SolutionGroups"] = [solution_group_combined]
+
                         more_message = self.generate_more_message(tree_info, solution_group_generator)
                         if more_message is not None:
                             print(more_message)
+
                         return
 
                     else:

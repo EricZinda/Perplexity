@@ -5,7 +5,7 @@ import sys
 from importlib import import_module
 from math import inf
 from perplexity.determiners4 import determiner_from_binding, quantifier_from_binding, \
-    all_plural_groups_stream, VariableCriteria, GlobalCriteria
+    all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
 from perplexity.tree import find_quantifier_from_variable, gather_quantifier_order
 
 
@@ -16,7 +16,7 @@ from perplexity.tree import find_quantifier_from_variable, gather_quantifier_ord
 from perplexity.utilities import at_least_one_generator
 
 
-def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable):
+def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info):
     solutions = at_least_one_generator(solutions_orig)
 
     if solutions:
@@ -24,11 +24,48 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
-        for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list):
-            if groups_logger.isEnabledFor(logging.DEBUG):
-                groups_logger.debug(f"Found answer: {group}")
-            yield group
-            if not wh_question_variable:
+        # Get the statistics for the stream so we can tell if we have open sets
+        x_variables = gather_quantifier_order(tree_info)
+        variable_metadata, initial_stats_group, has_global_constraint, constraints_are_open = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
+        has_unconstrained_x_variables = len(x_variables) != len(variable_metadata)
+        groups_are_open = constraints_are_open or has_unconstrained_x_variables
+        if groups_are_open:
+            # if the group that is returned is "open" meaning that it is something like "which files ..." and thus has a between(1, inf)
+            # constraint, then the first group that gets returned is a minimal solution (i.e. 2 files) but more will be returned as
+            # a new file gets added. combine_one_solution_group() just picks one solution group and iteratively returns it
+            has_multiple_groups = False
+
+            def combine_one_solution_group():
+                nonlocal has_multiple_groups
+                chosen_set_id = None
+                for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list,
+                                                      variable_metadata, initial_stats_group, has_global_constraint,
+                                                      constraints_are_open):
+                    if chosen_set_id is None:
+                        chosen_set_id = group[1]
+                        for solution in group[0]:
+                            yield solution
+
+                    elif group[1] == chosen_set_id:
+                        yield group[0][-1]
+
+                    else:
+                        has_multiple_groups = True
+
+            one_group = at_least_one_generator(combine_one_solution_group())
+            if one_group is not None:
+                yield one_group
+
+                # If there are multiple solution groups, we need to add one more (fake) group
+                # and yield it so that the caller thinks there are multiple answers and will give a message
+                # to the user
+                if has_multiple_groups:
+                    yield True
+
+        else:
+            # Sets are not open, so just return the first group
+            for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata, initial_stats_group, has_global_constraint, constraints_are_open):
+                yield group[0]
                 return
 
 

@@ -139,7 +139,7 @@
             "Command": "which files are 20 mb?",
             "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))",
             "Tree": "udef_q(x9,[_megabyte_n_1(x9,u16), card(20,e15,x9)],_which_q(x3,_file_n_of(x3,i8),loc_nonsp(e2,x3,x9)))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "05f835da-64f9-4c95-aabe-2dc8ba26bf73"
         },
         {
@@ -147,7 +147,7 @@
             "Comments": "Correctly returns single files in dist mode because it treats 'mb' as the collective that together is forcing",
             "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)",
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],_which_q(x6,_file_n_of(x6,i10),[_together_p(e4,e2), loc_nonsp(e2,x6,x11)]))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "d4a1b97d-9fcf-448e-a429-4356eb3e171d"
         },
         {
@@ -273,14 +273,14 @@
             "Command": "which files are in folders",
             "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "c412fa91-5229-4186-989f-f3513d5410f3"
         },
         {
             "Command": "which files are in a folder?",
             "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
         },
         {

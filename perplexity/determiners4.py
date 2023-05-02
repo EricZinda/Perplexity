@@ -10,20 +10,20 @@ def determiner_from_binding(state, binding):
     if binding.variable.determiner is not None:
         return binding.variable.determiner
 
-    elif is_plural(state, binding.variable.name):
-        # Plural determiner, mark this as coming from the quantifier for error reporting purposes
-        quantifier = find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
-        return VariableCriteria(quantifier,
-                                binding.variable.name,
-                                min_size=2,
-                                max_size=float('inf'))
-
     else:
-        # A default singular determiner is not necessary because the quantifiers that
-        # distinguish singular (like "the" and "only 1") already check for it.
-        # Furthermore, adding it as ["number_constraint", "default", [1, 1, False]]
-        # unnecessarily breaks optimizations that are possible in optimize_determiner_infos
-        return
+        quantifier = find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
+        if is_plural(state, binding.variable.name):
+            # Plural determiner, mark this as coming from the quantifier for error reporting purposes
+            return VariableCriteria(quantifier,
+                                    binding.variable.name,
+                                    min_size=2,
+                                    max_size=float('inf'))
+
+        else:
+            return VariableCriteria(quantifier,
+                                    binding.variable.name,
+                                    min_size=1,
+                                    max_size=1)
 
 
 def quantifier_from_binding(state, binding):
@@ -64,6 +64,18 @@ def expand_combinatorial_variables(variable_metadata, solution):
             yield new_solution
 
 
+def plural_groups_stream_initial_stats(execution_context, var_criteria):
+    variable_metadata = {}
+    for criteria in var_criteria:
+        variable_metadata[criteria.variable_name] = execution_context.get_variable_metadata(criteria.variable_name)
+
+    # Create the initial stats
+    initial_stats_group = StatsGroup()
+    has_global_constraint, constraints_are_open = initial_stats_group.initialize(var_criteria)
+
+    return variable_metadata, initial_stats_group, has_global_constraint, constraints_are_open
+
+
 # Every set that is generated has a GroupVariableStats object that does all
 # the counting that we need to see if it meets the criteria
 # New groups are created by copying an existing set and adding a new solution into it
@@ -71,18 +83,14 @@ def expand_combinatorial_variables(variable_metadata, solution):
 # Criteria like "the" and "only" (as in "only 2") also need to track information *across groups*
 # to ensure there is "only 2" solutions generated. This is tracked in the criteria object itself
 # since it is reused across the sets
-def all_plural_groups_stream(execution_context, solutions, var_criteria):
-    # Get metadata for use later
-    variable_metadata = {}
-    for criteria in var_criteria:
-        variable_metadata[criteria.variable_name] = execution_context.get_variable_metadata(criteria.variable_name)
-
-    # Create the initial stats
-    initial_stats_group = StatsGroup()
-    has_global_constraint, sets_are_open = initial_stats_group.initialize(var_criteria)
-
+#
+# yields: solution_group, set_id
+# so that the caller can detect when a solution is just more rows in an existing set_id
+def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint, sets_are_open):
     # Generate alternatives
-    sets = [[initial_stats_group, []]]
+    set_id = 0
+    sets = [[initial_stats_group, [], set_id]]
+    set_id += 1
     pending_global_criteria = []
     abort = False
     for combinatorial_solution in solutions:
@@ -94,13 +102,11 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
                 if exists_in_group(var_criteria, existing_set[0], existing_set[1], next_solution):
                     # The variable values already existed in this set,
                     # just add it. Return it as a solution since it is a unique solution
-                    # TODO: make it somehow that the unique variable assignments have already been returned
+                    # TODO: mark it somehow that the unique variable assignments have already been returned
                     # and that this is just a more complete solution
                     existing_set[1].append(next_solution)
-                    yield existing_set[1]
+                    yield existing_set[1], existing_set[2]
                     continue
-                else:
-                    pass
 
                 new_set_stats_group = existing_set[0].copy()
                 state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
@@ -121,17 +127,18 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria):
                         new_set = existing_set
 
                     else:
-                        new_set = [None, None]
+                        new_set = [None, None, set_id]
+                        set_id += 1
                         new_sets.append(new_set)
 
                     new_set[0] = new_set_stats_group
                     new_set[1] = existing_set[1] + [next_solution]
 
                     if state == CriteriaResult.meets:
-                        yield new_set[1]
+                        yield new_set[1], new_set[2]
 
                     elif state == CriteriaResult.meets_pending_global:
-                        pending_global_criteria.append(new_set[1])
+                        pending_global_criteria.append([new_set[1], new_set[2]])
 
                     elif state == CriteriaResult.contender:
                         # Not yet a solution, don't track it as one
@@ -180,14 +187,14 @@ class StatsGroup(object):
 
     def initialize(self, var_criteria):
         has_global_constraint = False
-        sets_are_open = True
+        constraints_are_open = True
         previous_variable_stats = None
         for criteria in var_criteria:
             if criteria.global_criteria is not None:
                 has_global_constraint = True
 
             if criteria.max_size != float('inf'):
-                sets_are_open = False
+                constraints_are_open = False
 
             var_stats = VariableStats(criteria.variable_name)
             var_stats.prev_variable_stats = previous_variable_stats
@@ -197,7 +204,7 @@ class StatsGroup(object):
             previous_variable_stats = var_stats
             self.variable_stats.append(var_stats)
 
-        return has_global_constraint, sets_are_open
+        return has_global_constraint, constraints_are_open
 
     def copy(self):
         new_group = StatsGroup()

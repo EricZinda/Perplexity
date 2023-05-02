@@ -6,29 +6,19 @@ Need to make these right
     - delete only two files in the folder -> (are you sure, this will be random?)
 
 - Dial in proper semantics for which
-  - Example33: a few files are in a folder together
-    - a few file is not in a folder together
-    - why do we stop after one tree?
-      - Because we are checking if response_generator is not None and it won't every be because there is always a response
-  - (fixed) Example26: which 2 files in a folder are 20 mb?
-    - Returns: (File(name=/Desktop/bigfile.txt, size=20000000),)
-               (there are more)
-    - Problem is that bigfile.txt looks like it is already in a set so it gets added, and then yielded
-      - somehow all answers are being duplicated
-      - loc_nonsp_size() gets each file twice
+  - What is the difference between sets_are_open and exists_in_group()? 
+    - An open constraint set says there will only be one answer group.  exists_in_group() will modify existing groups with answers that
+      don't change them (since the constrained variables are not modified)
+  
+    - Need to handle the scenario where there is an open set and keep adding to the answer and getting answers
+      - Example25, parse 1 also: :which files are in a folder (better example is example26)
   - Example 25: "which files are in a folder" -> when there are 2 files in one folder, and then a single in two other folders
     - The tree that has folder first can't return the singles because we say "files" and there is only 1
       - So, the two files in the same folder are the only answer returned
       - when files is first, it can get them all
       - Is it possible we need to return all answers for all trees for a given parse to make sense?
-  - Need to give a good error when "(which) files are large" fails because there is only one file.
-  - Need to handle the scenario where there is an open set and keep adding to the answer and getting answers
-    - Example26: "which files are 20 mb" is a good example
-    - Example25, parse 1 also: :which files are in a folder
-    - If the solution group is open, need to go to the very end (potentially returning answers as they come) to get the maximal answer
-  - 
-
-      
+  - Need to give a good error when "(which) files are large" or "files are large" fails because there is only one file.
+    
   - make all_plural_groups_stream() return maximal answers
     - Perhaps the open set feature allows us to do this right? I.e. notify the caller when something is a growth of a set as opposed to a full answer
     - Need to:

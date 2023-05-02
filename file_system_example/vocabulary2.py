@@ -21,19 +21,13 @@ vocabulary = Vocabulary()
 #       same approach
 @Predication(vocabulary, names=["_the_q"])
 def the_q(state, x_variable_binding, h_rstr, h_body):
-    is_plural = is_plural_from_tree_info(execution_context().tree_info, x_variable_binding.variable.name)
-    if is_plural:
-        # Phrases like "the children" could be any number of rstr values
-        max_rstr = float('inf')
-
-    else:
-        max_rstr = 1
-
+    # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
+    # whatever the determiner constraint gets set to will replace these
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(execution_context().current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
-                                                                max_size=max_rstr,
+                                                                max_size=float('inf'),
                                                                 global_criteria=GlobalCriteria.all_rstr_meet_criteria))
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
@@ -263,7 +257,6 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
                 yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, set_size)
             else:
                 yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, VariableValueSetSize.all)
-
 
 
 @Predication(vocabulary, names=["_only_x_deg"])

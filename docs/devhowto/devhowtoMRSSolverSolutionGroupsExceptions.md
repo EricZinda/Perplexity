@@ -43,7 +43,13 @@ Option 3 (This seems like the right answer): If we make them both not have "exac
     - Design:
         - by default, all types of phrases (comm, prop, ques) are "reply with just one answer, but notify me if there are more". 
             - It could be as simple as "always saying 'there might be more', or doing that if things get expensive to calculate
-            - The problem is that we return "minimal" answers iteratively from all_plural_groups_stream() so "which files are in a folder" will return "these 2, but there are more" Theory: people expect maximal answers
+            - The problem is that we return "minimal" answers iteratively from all_plural_groups_stream() so "which files are in a folder" will return "these 2, but there are more" 
+                - Theory: people expect maximal answers
+                - So, we need to go wall the way to the end, which means we'll really have all of the answers, which should we return?
+                - Option 1: Just pick one and keep updating it as we get more from the generator, when it is done return it
+                - Option 1a: return new answers as they come in
+                - Option 2: collect and return them all
+                - Option 3: just return the minimal set and say "there are more"
         - If the user puts "only" or "the" in front of something it puts a global constraint that ensure there are only that many and fails if not
             - the "notify me if not" will not kick in if there really is only that many, because there won't be more
         - commands work slightly differently though:
