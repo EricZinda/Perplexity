@@ -12,13 +12,16 @@ Need to make these right
     - The tree that has folder first can't return the singles because we say "files" and there is only 1
       - So, the two files in the same folder are the only answer returned
       - when files is first, it can get them all
-      - Any variable that has (N, inf) on it means that it could generate more groups where the only change is set membership in that group
+      - Any variable that has (N, inf) on it means that it could generate more groups where the only change is set membership in that variable
         - It seems like we could model groups like that as "open", and just update them, while at the same time returning each iteration
           - Groups need to stay separate if they can combine with new solutions to form new groups
           - it might be the case that a variable has a 1,inf constraint on it so that variable would only generate new groups which aren't semantically differnt
           - , but other variables like (2,2) would want the combinations
           - It might be safe to say that any group where the last remaining variable that can be changed is 1,inf could be open?
-
+      - Design:
+        - If a variable cannot change from its current value, it gets marked
+        - If the only variables left unmarked have met their lower limit and have an upper limit of inf, then there is no reason to keep every alternative
+        - 
   - Need to give a good error when "(which) files are large" or "files are large" fails because there is only one file.
     
   - make all_plural_groups_stream() return maximal answers

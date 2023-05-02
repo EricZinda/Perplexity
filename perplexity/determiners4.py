@@ -99,7 +99,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             for existing_set in sets:
                 # This is an *optimization* to reduce the number of sets being created
                 # for scenarios like "which files are in a folder?"
-                if exists_in_group(var_criteria, existing_set[0], existing_set[1], next_solution):
+                if can_merge_into_group(var_criteria, existing_set[0], existing_set[1], next_solution):
                     # The variable values already existed in this set,
                     # just add it. Return it as a solution since it is a unique solution
                     # TODO: mark it somehow that the unique variable assignments have already been returned
@@ -165,9 +165,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 #     - Yes: this is a "merge": Simply add the item into the set. Because it changes neither the unique individuals nor the unique values:
 #       - This can *only* happen when there are variables without constraints on them because otherwise the entire set of values can't already exist
 #       - Nothing in the stats needs to be updated and the criteria must be the same as before. The state of the set is the same as before.
-def exists_in_group(all_criteria, current_set_stats, current_set, new_solution):
+def can_merge_into_group(all_criteria, current_set_stats, current_set, new_solution):
     if len(all_criteria) == 0:
-        return False
+        return True
 
     else:
         for index in range(len(all_criteria)):
@@ -232,8 +232,8 @@ class VariableStats(object):
         return f"values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
 
     # Check if this variable will be a valid coll/dist/cuml variable after
-    # adding this solution to the set this stats is tracking
-    # Succeeds if the set, only considering this variable, can be interpreted as any (or multiple) of
+    # adding this solution to the group this stats is tracking
+    # Succeeds if the group, only considering this variable, can be interpreted as any (or multiple) of
     # cumulative/collective/distributive across all variables
     def add_solution(self, execution_context, variable_criteria, solution):
         binding_value = solution.get_binding(self.variable_name).value
@@ -355,9 +355,6 @@ class VariableCriteria(object):
                 else:
                     return CriteriaResult.meets_pending_global
 
-            elif self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-                return CriteriaResult.meets_pending_global
-
             else:
                 return CriteriaResult.meets
 
@@ -399,10 +396,12 @@ class VariableCriteria(object):
 
 
 class CriteriaResult(enum.Enum):
+    # Meets the criteria
     meets = 0,
     # Meets the criteria, as long as the global
     # criteria (like "only 2") for this variable is met
     meets_pending_global = 1
+    # has not yet exceeded the criteria, but hasn't meet it. It is a contender.
     contender = 2
     # This set does not meet the criteria, and never will again (since all additions only increase)
     fail_one = 3
