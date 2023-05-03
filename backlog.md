@@ -1,107 +1,43 @@
 Remaining work to be shown in the tutorial:
- 
+
+Bug: Test does not capture (there are more)
+Update the comments in the code and the docs
 Plurals work 
 Need to make these right
     - delete the only two files in the folder -> should fail
     - delete only two files in the folder -> (are you sure, this will be random?)
 
+- Example33: which 2 files in the folder are large?
+  - Very slow
+  - There are two folders but we have to exhaust all possibilities for 2 files first
+  
+- "which files are in a folder" (forward reading). How many solution groups should there be?
+  - In general:
+    - Different modes should always be different solutions
+    - Any constraints other than (n,inf) should be different solutions
+      - We *can* have multiple of any of dist/coll/cuml because: we can have multiple solution groups. What we are doing is amounting to just merging the solution groups together
+
+    - which means that the same mode with an (n,inf) should be a different solution
+
+  - files() has 2,inf so we build up different sets with different combinations of 2, but they will all be the same
+  - Instead, (n,inf) really isn't different solution groups.  It is just one solution group that must have at least n
+  - Really we should do the add() method and it should tell us if we need to create a new group or just add it
+    - If the only thing that changed are N, inf then we should not create a new group, which means each variable has to return if it is new
+    - so, return a value that says if this changed the number of unique *individuals*
+    
 - Theory: Forward readings of trees are better
-- Dial in proper semantics for which
-  
-  - Example 25: "which files are in a folder" -> when there are 2 files in one folder, and then a single in two other folders
-    - START HERE: We are successfully finding solution groups that are derived from each other, BUT: We think there are alternative solutions still
-      - files in a folder has files(2, inf), folder(1, 1). Is there a single solution that includes all alternatives?
-        - collective could be one if it was students(2, inf) lifting table(1, 1)
-        - dist could be another
-        - cuml could be another, although maybe not since cuml needs more than 1?
-      - So: there could be two answers. But: in this case are there?
-        - If the logic is right, if a solution is not a contender then it can't ever be that, so any sets that are a solution for one mode and not a contender for others are locked in
-      - If we can prove that two sets that have the same locked single mode must be the same solution group, then it might work. Because then, different solution groups would actually be different
-      - We might be able to say that: if a solution is returned to solution_groups() that is not locked_single_mode but does overlap with the one we are tracking, it should not count as a different group.
-        - The logic is that there is at least one mode that overlaps: that is both distributive and cumulative by those definitions: when the two hoses per firefighter group just happen to be the same:
-        - Think about it like this: if a mode bit is set, it just means that solution represents a (potentially) subset of the full answer for that mode. If two are set it represents a subset
-        - of both. If the initial solution has multiple modes, we just need to pick one arbitrarily
-        - It does mean we will get duplicate solutions coming through, though
-        - ? will it end up duplicating the solution since it will get added to the locked row first, and then get added to the row that had two different solutions but that will return a locked row so it will get added again?
-    
-    - The tree that has folder first can't return the singles because we say "files" and there is only 1
-      - So, the two files in the same folder are the only answer returned
-      - when files is first, it can get them all
-      - Any variable that has (N, inf) on it means that it could generate more groups where the only change is set membership in that variable
-        - It seems like we could model groups like that as "open", and just update them, while at the same time returning each iteration
-          - Groups need to stay separate if they can combine with new solutions to form new groups
-          - it might be the case that a variable has a 1,inf constraint on it so that variable would only generate new groups which aren't semantically different
-          - , but other variables like (2,2) would want the combinations
-          - It might be safe to say that any group where the last remaining variable that can be changed is 1,inf could be open?
-      - Really, we want to merge in a solution if it
-        a) doesn't invalidate this as a solution group and 
-        b) ? couldn't be used to create other solution groups by adding a row?
-        - This means that we are creating maximal solution groups?
-      - when do we want *different* solution groups in this world?
-        - We want a solution group to be only one mode of coll/dist/cuml. If it switches modes, it should be a new group
-        - So, if it can only be one mode and it stays in the same mode, it should be added
-        - This means that we need to check all three modes each time, which will hurt perf...
-        - Really it means that any given set has a unique identifier with coll/dist/cuml bitwise options for every variable?
-        - When a set is returned, if it can bitwise and with each variable then it is the same solution?
-          - Is it really true that there are never more than one disjoint readings of coll or dist or cumul? Yes?
-          - I don't think this is true
-      - Design:
-        - (done) IF a variable meets, then it tracks which of the modes (maybe more than 1) it is a solution for 
-        - IF they all meet, then the collection of modes is a signature that gets returned with the answer
-        - IF the signature can only be one set of things, then it becomes open
-        - Depends on:
-          - Once a group is uniquely one mode it can't transition to another
-          - That there are never more than one disjoint readings of coll or dist or cumul. Because: a group could happen to get built as uniquely one mode and never find the other because it is disjoint
-          - Also because: We are assuming that if a group is in a single mode, then 
-        - Problem: VERY much slower 
-      - Alternative design:
-        - When we get solution groups back from the stream, they indicate their lineage. Any group that came from the group we are tracking is still the same solution???
-      - Alternative Design:
-        - Loop through each criterion. If a value is not yet in that set, the set is not open unless:
-           - The criteria has met its lower limit and the upper limit is inf
-        - If a variable cannot change from its current value, it gets marked
-        - If, across all criteria variables, the only values not yet in the sets are
-        - If the only variables left unmarked have met their lower limit and have an upper limit of inf, then there is no reason to keep every alternative
-        - 
-  - Need to give a good error when "(which) files are large" or "files are large" fails because there is only one file.
-    
-  - make all_plural_groups_stream() return maximal answers
-    - Perhaps the open set feature allows us to do this right? I.e. notify the caller when something is a growth of a set as opposed to a full answer
-    - Need to:
-      - Let caller know there are open sets
-      - yield the answers when they are added, but indicate they are extensions of a previous answer
-      
-  - which files are large? -> a file is not large
+- Example 25: "which files are in a folder" -> when there are 2 files in one folder, and then a single in two other folders -> only returns the two files in one folder
+  - Theory: Forward readings of trees are better
+  - The tree that has folder first can't return the singles because we say "files" and there is only 1
+    - So, the two files in the same folder are the only answer returned
+    - when files is first, it can get them all
+- Need to give a good error when "(which) files are large" or "files are large" fails because there is only one file.
     - Bad error message, should be "less than 2 files are large"
-
-  - Example 30: which 2 files are in 2 folders? -> There is more than 2 2 file in 2 folder
-    - There are only 2 files in 2 folders!
-    - Should not fail
-    - Bug: "only" is not paying attention to distributive
-  
-  - Bad error message: which 2 files in a folder are 20 mb -> There is more than 2 2 file in a folder
-    - should be: there are more than 2 files in a folder that are 20 mb
-  
-
-- Optimization for "which files are in a folder" no longer works and is disabled
-  - which files are 20 mb? no longer returns two 10 meg files
-    - And it doesn't return more than one 20 mb file
-      - Because sets_are_open = True 
-      - Need to get clear about what this is for and comment it
-
-  - why does "which files are in a folder" work but "which files are 20 mb" does not
-    - If you pick the other parse for which files are in a folder it is not fast
-    - One version gives 11 sets, the other gives 1024 sets
-    - It seems to be the "per previous" logic? It depends on order of variables
-      - they both use the same criteria(x9)
-      - The problem is that we don't optimize away the constraint for 1 variable for parse but we do for the other
-
-- 
-
-
 - which 2 files are in a folder? (in a folder with more than 2): There is more than 2 2 file in a folder
   - Need a better error message
-  
+
+- Dial in proper semantics for which 
+
 - delete files that are 20 mb: really slow
 - which files are 20 mb ends up with plural megabytes but only one object. But: this should work because we special-case "measure"
   

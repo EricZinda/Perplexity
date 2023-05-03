@@ -86,7 +86,7 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 #
 # yields: solution_group, set_id
 # so that the caller can detect when a solution is just more rows in an existing set_id
-def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint, sets_are_open):
+def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint):
     # Generate alternatives
     set_id = 0
     sets = [[initial_stats_group, [], str(set_id)]]
@@ -98,20 +98,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
         for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
             new_sets = []
             for existing_set in sets:
-                # This is an *optimization* to reduce the number of sets being created
-                # for scenarios like "which files are in a folder?"
-                if can_merge_into_group(var_criteria, existing_set[0], existing_set[1], next_solution):
-                    # The variable values already existed in this set,
-                    # just add it. Return it as a solution since it is a unique solution
-                    # TODO: mark it somehow that the unique variable assignments have already been returned
-                    # and that this is just a more complete solution
-                    existing_set[1].append(next_solution)
-                    _, variable_solution_modes = existing_set[0].variable_modes()
-                    yield existing_set[1], existing_set[2], variable_solution_modes
-                    continue
-
                 new_set_stats_group = existing_set[0].copy()
-                locked_single_mode, variable_solution_modes, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
+                force_new_group, locked_single_mode, variable_solution_modes, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
 
                 if state == CriteriaResult.fail_one:
                     #   - fail (doesn't meet criteria): don't add, don't yield
@@ -124,11 +112,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     break
 
                 else:
-                    # Doesn't fail
-                    if sets_are_open:
-                        new_set = existing_set
-
-                    elif locked_single_mode:
+                    # Doesn't fail, decide whether to add to the existing group or
+                    # create a new one
+                    if locked_single_mode and not force_new_group:
                         locked_single_mode_key = tuple(variable_solution_modes)
                         if locked_single_mode_key in locked_single_modes:
                             new_set = locked_single_modes[locked_single_mode_key]
@@ -139,10 +125,13 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                             new_sets.append(new_set)
                             locked_single_modes[locked_single_mode_key] = new_set
 
-                    else:
+                    elif force_new_group:
                         new_set = [None, None, existing_set[2] + ":" + str(set_id)]
                         set_id += 1
                         new_sets.append(new_set)
+
+                    else:
+                        new_set = existing_set
 
                     new_set[0] = new_set_stats_group
                     new_set[1] = existing_set[1] + [next_solution]
@@ -172,36 +161,6 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 return
 
         yield from pending_global_criteria
-
-
-# See if the constrained variable values are already in the set
-#     - Yes: this is a "merge": Simply add the item into the set. Because it changes neither the unique individuals nor the unique values:
-#       - This can *only* happen when there are variables without constraints on them because otherwise the entire set of values can't already exist
-#       - Nothing in the stats needs to be updated and the criteria must be the same as before. The state of the set is the same as before.
-def can_merge_into_group(all_criteria, current_set_stats, current_set, new_solution):
-    if len(all_criteria) == 0:
-        return True
-
-    else:
-        for index in range(len(all_criteria)):
-            variable_stats = current_set_stats.variable_stats[index]
-            variable_criteria = all_criteria[index]
-            variable_value = new_solution.get_binding(variable_criteria.variable_name).value
-            if variable_value not in variable_stats.whole_group_unique_values:
-                # Any variable that has (N, inf) on it and has met the criteria means that, if it generates more groups,
-                # the only change is set membership in that variable so we don't need to remember this as a separate group
-                if (variable_stats.current_state == CriteriaResult.meets or variable_stats.current_state == CriteriaResult.meets_pending_global) and \
-                   variable_criteria.max_size == float('inf'):
-                    # todo: we should probably update the stats too, but it doesn't really matter since they won't be used at this point
-                    continue
-
-                return False
-
-        # Either the values for variables with criteria already exist or
-        # the ones that don't are already in the "meets" state for this solution
-        # Either way, new_solution should be added to this set, a new set doesn't
-        # need to be created
-        return True
 
 
 class StatsGroup(object):
@@ -255,19 +214,6 @@ class StatsGroup(object):
 
         return new_group
 
-    def variable_modes(self):
-        locked_single_mode = True
-        variable_solution_modes = []
-        for variable_stats in self.variable_stats:
-            # Check whether the existing set is guaranteed to stay in single mode
-            # *after* we add this new row.
-            variable_solution_modes.append(variable_stats.solution_modes())
-            locked_single_mode_variable = variable_stats.locked_single_mode()
-            if not locked_single_mode_variable:
-                locked_single_mode = False
-
-        return locked_single_mode, variable_solution_modes
-
 
 class VariableStats(object):
     def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None):
@@ -320,7 +266,13 @@ class VariableStats(object):
     # cumulative/collective/distributive across all variables
     def add_solution(self, execution_context, variable_criteria, solution):
         binding_value = solution.get_binding(self.variable_name).value
-        self.whole_group_unique_individuals.update(binding_value)
+        new_individuals = None
+        if any([x not in self.whole_group_unique_individuals for x in binding_value]):
+            new_individuals = True
+            self.whole_group_unique_individuals.update(binding_value)
+        else:
+            new_individuals = False
+
         next_value = None if self.next_variable_stats is None else solution.get_binding(self.next_variable_stats.variable_name).value
 
         # Update the unique values mapping that is used for distributive readings
@@ -361,7 +313,12 @@ class VariableStats(object):
             self.collective_state = CriteriaResult.fail_one
 
         # Now figure out what to return
-        if self.collective_state == CriteriaResult.meets_pending_global or \
+        if self.collective_state == CriteriaResult.fail_all or \
+                self.distributive_state == CriteriaResult.fail_all or \
+                self.cumulative_state == CriteriaResult.fail_all:
+            self.current_state = CriteriaResult.fail_all
+
+        elif self.collective_state == CriteriaResult.meets_pending_global or \
            self.distributive_state == CriteriaResult.meets_pending_global or \
            self.cumulative_state == CriteriaResult.meets_pending_global:
             self.current_state = CriteriaResult.meets_pending_global
@@ -379,7 +336,7 @@ class VariableStats(object):
         else:
             self.current_state = CriteriaResult.fail_one
 
-        return self.current_state
+        return new_individuals, self.current_state
 
 
 # Distributive needs to create groups by unique variable value
@@ -404,14 +361,15 @@ class VariableStats(object):
 def check_criteria_all(execution_context, var_criteria, current_set_stats, new_solution):
     new_set_state = CriteriaResult.meets
     locked_single_mode = True
+    force_new_group = False
     variable_solution_modes = []
     for index in range(len(var_criteria)):
         variable_stats = current_set_stats.variable_stats[index]
         criteria = var_criteria[index]
-        state = variable_stats.add_solution(execution_context, criteria, new_solution)
+        new_individuals, state = variable_stats.add_solution(execution_context, criteria, new_solution)
         new_set_state = criteria_transitions[new_set_state][state]
         if new_set_state == CriteriaResult.fail_one or new_set_state == CriteriaResult.fail_all:
-            return None, None, new_set_state
+            return None, None, None, new_set_state
 
         # Check whether the existing set is guaranteed to stay in single mode
         # *after* we add this new row.
@@ -420,7 +378,11 @@ def check_criteria_all(execution_context, var_criteria, current_set_stats, new_s
         if not locked_single_mode_variable:
             locked_single_mode = False
 
-    return locked_single_mode, variable_solution_modes, new_set_state
+        # Check if this was a group that is not (n, inf) and this solution added individuals, if so we need a new group
+        if new_individuals and criteria.max_size != float('inf'):
+            force_new_group = True
+
+    return force_new_group, locked_single_mode, variable_solution_modes, new_set_state
 
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained
@@ -453,6 +415,20 @@ class VariableCriteria(object):
             # So we need to track unique values across all answers in this case
             self._unique_rstrs.update(value_list)
 
+        if self.global_criteria == GlobalCriteria.exactly:
+            # We can fail immediately if we have too many
+            if len(self._unique_rstrs) > self.max_size:
+                # This is definitely the reason why something failed (since we are failing it here), so force=True
+                execution_context.report_error_for_index(self.predication_index, ["moreThanN", self._after_phrase_error_location, self.max_size], force=True)
+                return CriteriaResult.fail_all
+
+        if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+            # We can fail immediately if we have too many
+            if len(self._unique_rstrs) > self.max_size:
+                # This is definitely the reason why something failed (since we are failing it here), so force=True
+                execution_context.report_error_for_index(self.predication_index, ["moreThanN", self._predication_error_location, self.max_size], force=True)
+                return CriteriaResult.fail_all
+
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
             execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size])
@@ -465,14 +441,7 @@ class VariableCriteria(object):
         else:
             # values_count >= self.min_size and values_count <= self.max_size
             if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-                # We can fail immediately if we have too many
-                if len(self._unique_rstrs) > self.max_size:
-                    # This is definitely the reason why something failed (since we are failing it here), so force=True
-                    execution_context.report_error_for_index(self.predication_index, ["moreThanN", self._after_phrase_error_location, self.max_size], force=True)
-                    return CriteriaResult.fail_all
-
-                else:
-                    return CriteriaResult.meets_pending_global
+                return CriteriaResult.meets_pending_global
 
             else:
                 return CriteriaResult.meets

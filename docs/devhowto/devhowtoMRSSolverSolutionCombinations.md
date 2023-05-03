@@ -1,6 +1,17 @@
 ## Title
 Key model points:
     - constraints are *per solution group*.  Global constraints say "across solution groups x must be true"
+  - Need an algorithm for maximal solutions
+    - Currently, the code is trying all combinations of solutions and returning those that are coherent coll/etc groups. Because we only return one solution group to the user, we need it to be maximal.
+    - The streaming engine will return sets as soon as they find an answer that meets the contraints, but then keep returning it as it gets updated
+
+  - Really, we want to merge in a solution if it
+    a) doesn't invalidate this or change its mode as a solution group and 
+    b) ? couldn't be used to create other solution groups by adding a row?
+    - This means that we are creating maximal solution groups?
+  - Depends on:
+    - Once a group is uniquely one mode it can't transition to another
+
 
 Even 1 plural variable in an MRS will require grouping to represent the complete solution if they are acting alone: "men walk".   (the collective can be one solution). In this case you'd just expect one group. But: subsets of that group would also be true.
 
