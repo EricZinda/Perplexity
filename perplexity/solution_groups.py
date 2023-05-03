@@ -16,11 +16,39 @@ from perplexity.tree import find_quantifier_from_variable, gather_quantifier_ord
 from perplexity.utilities import at_least_one_generator
 
 
+class SolutionModes(object):
+    def __init__(self, mode_list):
+        self.mode_list = mode_list
+
+    def make_single_mode(self):
+        new_list = []
+        for mode in self.mode_list:
+            if len(mode) == 1:
+                new_list.append(mode)
+            else:
+                new_list.append(mode[0])
+        self.mode_list = new_list
+
+    # As long as one mode from each position matches,
+    # it is equivalent
+    def is_equivalent(self, other_solution_modes_list):
+        for index in range(len(self.mode_list)):
+            found_mode = False
+            for mode in self.mode_list[index]:
+                if mode in other_solution_modes_list[index]:
+                    found_mode = True
+                    break
+            if not found_mode:
+                return False
+
+        return True
+
+
 def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info):
     solutions = at_least_one_generator(solutions_orig)
 
     if solutions:
-        # Go through each variable that has a quantifier in order
+        # Go through each variable that has a quantifier in order and gather and optimize the criteria list
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
@@ -38,16 +66,17 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
             def combine_one_solution_group():
                 nonlocal has_multiple_groups
-                chosen_set_id = None
+                chosen_solution_mode = None
                 for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list,
                                                       variable_metadata, initial_stats_group, has_global_constraint,
                                                       constraints_are_open):
-                    if chosen_set_id is None:
-                        chosen_set_id = group[1]
+                    if chosen_solution_mode is None:
+                        chosen_solution_mode = SolutionModes(group[2])
+                        chosen_solution_mode.make_single_mode()
                         for solution in group[0]:
                             yield solution
 
-                    elif group[1] == chosen_set_id:
+                    elif chosen_solution_mode.is_equivalent(group[2]):
                         yield group[0][-1]
 
                     else:

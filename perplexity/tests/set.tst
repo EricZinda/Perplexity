@@ -278,7 +278,7 @@
         },
         {
             "Command": "which files are in a folder?",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
@@ -306,7 +306,7 @@
         },
         {
             "Command": "which 2 files in a folder are 20 mb",
-            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)",
+            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))",
             "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],_which_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x18))))",
             "Enabled": true,
             "ID": "b20c612e-0359-48c8-b344-804c2144ed05"
@@ -362,7 +362,7 @@
         },
         {
             "Command": "which 2 large files are 20 mb",
-            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)",
+            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))",
             "Tree": "udef_q(x12,[_megabyte_n_1(x12,u19), card(20,e18,x12)],_which_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(2,e9,x3)],loc_nonsp(e2,x3,x12)))",
             "Enabled": true,
             "ID": "3b8c9772-1b9b-4636-894b-4e42f0b23159"

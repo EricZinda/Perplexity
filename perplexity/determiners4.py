@@ -89,10 +89,11 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint, sets_are_open):
     # Generate alternatives
     set_id = 0
-    sets = [[initial_stats_group, [], set_id]]
+    sets = [[initial_stats_group, [], str(set_id)]]
     set_id += 1
     pending_global_criteria = []
     abort = False
+    locked_single_modes = {}
     for combinatorial_solution in solutions:
         for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
             new_sets = []
@@ -105,11 +106,12 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     # TODO: mark it somehow that the unique variable assignments have already been returned
                     # and that this is just a more complete solution
                     existing_set[1].append(next_solution)
-                    yield existing_set[1], existing_set[2]
+                    _, variable_solution_modes = existing_set[0].variable_modes()
+                    yield existing_set[1], existing_set[2], variable_solution_modes
                     continue
 
                 new_set_stats_group = existing_set[0].copy()
-                state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
+                locked_single_mode, variable_solution_modes, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
 
                 if state == CriteriaResult.fail_one:
                     #   - fail (doesn't meet criteria): don't add, don't yield
@@ -126,8 +128,19 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     if sets_are_open:
                         new_set = existing_set
 
+                    elif locked_single_mode:
+                        locked_single_mode_key = tuple(variable_solution_modes)
+                        if locked_single_mode_key in locked_single_modes:
+                            new_set = locked_single_modes[locked_single_mode_key]
+
+                        else:
+                            new_set = [None, None, existing_set[2] + ":" + str(set_id)]
+                            set_id += 1
+                            new_sets.append(new_set)
+                            locked_single_modes[locked_single_mode_key] = new_set
+
                     else:
-                        new_set = [None, None, set_id]
+                        new_set = [None, None, existing_set[2] + ":" + str(set_id)]
                         set_id += 1
                         new_sets.append(new_set)
 
@@ -135,10 +148,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     new_set[1] = existing_set[1] + [next_solution]
 
                     if state == CriteriaResult.meets:
-                        yield new_set[1], new_set[2]
+                        yield new_set[1], new_set[2], variable_solution_modes
 
                     elif state == CriteriaResult.meets_pending_global:
-                        pending_global_criteria.append([new_set[1], new_set[2]])
+                        pending_global_criteria.append([new_set[1], new_set[2], variable_solution_modes])
 
                     elif state == CriteriaResult.contender:
                         # Not yet a solution, don't track it as one
@@ -195,6 +208,9 @@ class StatsGroup(object):
     def __init__(self):
         self.variable_stats = []
 
+    def __repr__(self):
+        return ",".join([f"({str(x)})" for x in self.variable_stats])
+
     def initialize(self, var_criteria):
         has_global_constraint = False
         constraints_are_open = True
@@ -239,6 +255,19 @@ class StatsGroup(object):
 
         return new_group
 
+    def variable_modes(self):
+        locked_single_mode = True
+        variable_solution_modes = []
+        for variable_stats in self.variable_stats:
+            # Check whether the existing set is guaranteed to stay in single mode
+            # *after* we add this new row.
+            variable_solution_modes.append(variable_stats.solution_modes())
+            locked_single_mode_variable = variable_stats.locked_single_mode()
+            if not locked_single_mode_variable:
+                locked_single_mode = False
+
+        return locked_single_mode, variable_solution_modes
+
 
 class VariableStats(object):
     def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None):
@@ -253,7 +282,37 @@ class VariableStats(object):
         self.cumulative_state = None if cumulative_state is None else cumulative_state
 
     def __repr__(self):
-        return f"values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
+        modes = self.solution_modes()
+
+        contenders = []
+        contenders += ["dist"] if self.distributive_state == CriteriaResult.contender else []
+        contenders += ["coll"] if self.collective_state == CriteriaResult.contender else []
+        contenders += ["cuml"] if self.cumulative_state == CriteriaResult.contender else []
+
+        return f"var={self.variable_name}, soln={','.join(modes)}, cont={','.join(contenders)}, values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
+
+    def solution_modes(self):
+        modes = []
+        modes += ["dist"] if (self.distributive_state == CriteriaResult.meets or self.distributive_state == CriteriaResult.meets_pending_global) else []
+        modes += ["coll"] if (self.collective_state == CriteriaResult.meets or self.collective_state == CriteriaResult.meets_pending_global) else []
+        modes += ["cuml"] if (self.cumulative_state == CriteriaResult.meets or self.cumulative_state == CriteriaResult.meets_pending_global) else []
+        return tuple(modes)
+
+    # True if this variable can never be in any mode except what it is (or is a contender for) now
+    def locked_single_mode(self):
+        dist_meets = self.distributive_state == CriteriaResult.meets or self.distributive_state == CriteriaResult.meets_pending_global
+        coll_meets = self.collective_state == CriteriaResult.meets or self.collective_state == CriteriaResult.meets_pending_global
+        cuml_meets = self.cumulative_state == CriteriaResult.meets or self.cumulative_state == CriteriaResult.meets_pending_global
+
+        dist_meets_or_contender = self.distributive_state == CriteriaResult.meets or self.distributive_state == CriteriaResult.meets_pending_global or self.distributive_state == CriteriaResult.contender
+        coll_meets_or_contender = self.collective_state == CriteriaResult.meets or self.collective_state == CriteriaResult.meets_pending_global or self.collective_state == CriteriaResult.contender
+        cuml_meets_or_contender = self.cumulative_state == CriteriaResult.meets or self.cumulative_state == CriteriaResult.meets_pending_global or self.cumulative_state == CriteriaResult.contender
+        if dist_meets and not (coll_meets_or_contender or cuml_meets_or_contender):
+            return "dist"
+        elif coll_meets and not (dist_meets_or_contender or cuml_meets_or_contender):
+            return "coll"
+        elif cuml_meets and not (coll_meets_or_contender or dist_meets_or_contender):
+            return "cuml"
 
     # Check if this variable will be a valid coll/dist/cuml variable after
     # adding this solution to the group this stats is tracking
@@ -263,6 +322,8 @@ class VariableStats(object):
         binding_value = solution.get_binding(self.variable_name).value
         self.whole_group_unique_individuals.update(binding_value)
         next_value = None if self.next_variable_stats is None else solution.get_binding(self.next_variable_stats.variable_name).value
+
+        # Update the unique values mapping that is used for distributive readings
         if binding_value not in self.whole_group_unique_values:
             self.whole_group_unique_values[binding_value] = [set(next_value if next_value is not None else []), [solution]]
 
@@ -295,6 +356,9 @@ class VariableStats(object):
             if self.collective_state != CriteriaResult.fail_one:
                 # Collective
                 self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+
+        else:
+            self.collective_state = CriteriaResult.fail_one
 
         # Now figure out what to return
         if self.collective_state == CriteriaResult.meets_pending_global or \
@@ -339,15 +403,24 @@ class VariableStats(object):
 #
 def check_criteria_all(execution_context, var_criteria, current_set_stats, new_solution):
     new_set_state = CriteriaResult.meets
+    locked_single_mode = True
+    variable_solution_modes = []
     for index in range(len(var_criteria)):
         variable_stats = current_set_stats.variable_stats[index]
         criteria = var_criteria[index]
         state = variable_stats.add_solution(execution_context, criteria, new_solution)
         new_set_state = criteria_transitions[new_set_state][state]
         if new_set_state == CriteriaResult.fail_one or new_set_state == CriteriaResult.fail_all:
-            return new_set_state
+            return None, None, new_set_state
 
-    return new_set_state
+        # Check whether the existing set is guaranteed to stay in single mode
+        # *after* we add this new row.
+        variable_solution_modes.append(variable_stats.solution_modes())
+        locked_single_mode_variable = variable_stats.locked_single_mode()
+        if not locked_single_mode_variable:
+            locked_single_mode = False
+
+    return locked_single_mode, variable_solution_modes, new_set_state
 
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained

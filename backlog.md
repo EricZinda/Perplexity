@@ -9,6 +9,21 @@ Need to make these right
 - Dial in proper semantics for which
   
   - Example 25: "which files are in a folder" -> when there are 2 files in one folder, and then a single in two other folders
+    - START HERE: We are successfully finding solution groups that are derived from each other, BUT: We think there are alternative solutions still
+      - files in a folder has files(2, inf), folder(1, 1). Is there a single solution that includes all alternatives?
+        - collective could be one if it was students(2, inf) lifting table(1, 1)
+        - dist could be another
+        - cuml could be another, although maybe not since cuml needs more than 1?
+      - So: there could be two answers. But: in this case are there?
+        - If the logic is right, if a solution is not a contender then it can't ever be that, so any sets that are a solution for one mode and not a contender for others are locked in
+      - If we can prove that two sets that have the same locked single mode must be the same solution group, then it might work. Because then, different solution groups would actually be different
+      - We might be able to say that: if a solution is returned to solution_groups() that is not locked_single_mode but does overlap with the one we are tracking, it should not count as a different group.
+        - The logic is that there is at least one mode that overlaps: that is both distributive and cumulative by those definitions: when the two hoses per firefighter group just happen to be the same:
+        - Think about it like this: if a mode bit is set, it just means that solution represents a (potentially) subset of the full answer for that mode. If two are set it represents a subset
+        - of both. If the initial solution has multiple modes, we just need to pick one arbitrarily
+        - It does mean we will get duplicate solutions coming through, though
+        - ? will it end up duplicating the solution since it will get added to the locked row first, and then get added to the row that had two different solutions but that will return a locked row so it will get added again?
+    
     - The tree that has folder first can't return the singles because we say "files" and there is only 1
       - So, the two files in the same folder are the only answer returned
       - when files is first, it can get them all
@@ -29,14 +44,18 @@ Need to make these right
         - Really it means that any given set has a unique identifier with coll/dist/cuml bitwise options for every variable?
         - When a set is returned, if it can bitwise and with each variable then it is the same solution?
           - Is it really true that there are never more than one disjoint readings of coll or dist or cumul? Yes?
+          - I don't think this is true
       - Design:
-        - IF a variable meets, then it tracks which of the modes (maybe more than 1) it is a solution for 
+        - (done) IF a variable meets, then it tracks which of the modes (maybe more than 1) it is a solution for 
         - IF they all meet, then the collection of modes is a signature that gets returned with the answer
         - IF the signature can only be one set of things, then it becomes open
         - Depends on:
           - Once a group is uniquely one mode it can't transition to another
           - That there are never more than one disjoint readings of coll or dist or cumul. Because: a group could happen to get built as uniquely one mode and never find the other because it is disjoint
+          - Also because: We are assuming that if a group is in a single mode, then 
         - Problem: VERY much slower 
+      - Alternative design:
+        - When we get solution groups back from the stream, they indicate their lineage. Any group that came from the group we are tracking is still the same solution???
       - Alternative Design:
         - Loop through each criterion. If a value is not yet in that set, the set is not open unless:
            - The criteria has met its lower limit and the upper limit is inf
