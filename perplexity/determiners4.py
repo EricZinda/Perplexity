@@ -87,7 +87,6 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 # yields: solution_group, set_id
 # so that the caller can detect when a solution is just more rows in an existing set_id
 def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint):
-    # Generate alternatives
     set_id = 0
     sets = [[initial_stats_group, [], str(set_id)]]
     set_id += 1
@@ -379,6 +378,7 @@ def check_criteria_all(execution_context, var_criteria, current_set_stats, new_s
             locked_single_mode = False
 
         # Check if this was a group that is not (n, inf) and this solution added individuals, if so we need a new group
+        # So that they old group can be there to recombine with new solutions
         if new_individuals and criteria.max_size != float('inf'):
             force_new_group = True
 

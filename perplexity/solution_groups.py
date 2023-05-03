@@ -1,21 +1,16 @@
 import copy
-import itertools
 import logging
-import sys
-from importlib import import_module
 from math import inf
 from perplexity.determiners4 import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
-from perplexity.tree import find_quantifier_from_variable, gather_quantifier_order
+from perplexity.tree import gather_quantifier_order
+from perplexity.utilities import at_least_one_generator
 
 
 # Filter the unquantified solutions by recursively filtering them by each quantified variable
 # There is an implicit "uber quantifier" on the front of all phrases that tells you how many of the solutions to return
 # All should just return 1, except for which
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-from perplexity.utilities import at_least_one_generator
-
-
 def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info):
     solutions = at_least_one_generator(solutions_orig)
 
