@@ -1,7 +1,21 @@
 Remaining work to be shown in the tutorial:
 
-Bug: Test does not capture (there are more)
+
 Update the comments in the code and the docs
+- TODO: For propositions, we need to respond with "there are more" if it is "at least" or "exactly" once we get above the level that a normal person would say "at least" for
+
+- Bug: a few files are in a folder together needs to materialize the entire set
+- variable_has_inf_max, constraints_are_open are just inverses of each other, get rid of one of them
+- We don't care anymore if a solution is "uniquely" one set of solutions
+- It seems like we don't care about "locked single modes" or not.  Really it is just: 
+  - Merge a solution in if it only updates max(inf) variables.
+  - Track lineage and if you see a solution that is a descendant of current lineage, use it and update the key 
+  - 
+Clean up code (i.e. not using modes returned from stream anymore)
+
+Bug: Example33 should be set to 100 but it is way too slow for some scenarios
+
+Bug: Test does not capture (there are more)
 Plurals work 
 Need to make these right
     - delete the only two files in the folder -> should fail

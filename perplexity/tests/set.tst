@@ -278,8 +278,8 @@
         },
         {
             "Command": "which files are in a folder?",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
-            "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),_a_q(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
         },
@@ -292,8 +292,8 @@
         },
         {
             "Command": "which 2 files are in a folder?",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)",
-            "Tree": "_a_q(x11,_folder_n_of(x11,i16),_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)",
+            "Tree": "_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_folder_n_of(x11,i16),_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "3a9b446e-1a73-49c6-a5c7-7a7d1847b359"
         },
@@ -383,7 +383,7 @@
         },
         {
             "Command": "which 2 files are in 2 folders?",
-            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)",
+            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)(File(name=/Desktop/file3.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(File(name=/documents/file5.txt, size=10000000),)",
             "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(2,e17,x11)],_which_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "86773c14-37d1-4ace-9906-eea776f6b402"

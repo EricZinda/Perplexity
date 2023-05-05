@@ -22,8 +22,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
         # solution. Otherwise, we can just stop when we have a solution
         # all_constraints_are_open means they are all that way
-        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max, all_constraints_are_open = plural_groups_stream_initial_stats(
-            execution_context, optimized_criteria_list)
+        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
         has_multiple_groups = False
 
         def combine_one_solution_group():
@@ -35,7 +34,8 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                     for solution in group[0]:
                         yield solution
 
-                elif chosen_solution_id == group[1]:
+                elif group[1].startswith(chosen_solution_id):
+                    chosen_solution_id = group[1]
                     yield group[0][-1]
 
                 else:
@@ -52,7 +52,6 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
             # to the user
             if has_multiple_groups:
                 yield True
-
 
 
 # Return the infos in the order they will be executed in
