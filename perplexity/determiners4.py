@@ -97,7 +97,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             new_sets = []
             for existing_set in sets:
                 new_set_stats_group = existing_set[0].copy()
-                added_non_max_inf_individuals, locked_single_modes, variable_solution_modes, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
+                added_non_max_inf_individuals, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
 
                 if state == CriteriaResult.fail_one:
                     #   - fail (doesn't meet criteria): don't add, don't yield
@@ -133,10 +133,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     new_set[1] = existing_set[1] + [next_solution]
 
                     if state == CriteriaResult.meets:
-                        yield new_set[1], new_set[2], variable_solution_modes
+                        yield new_set[1], new_set[2]
 
                     elif state == CriteriaResult.meets_pending_global:
-                        pending_global_criteria.append([new_set[1], new_set[2], variable_solution_modes])
+                        pending_global_criteria.append([new_set[1], new_set[2]])
 
                     elif state == CriteriaResult.contender:
                         # Not yet a solution, don't track it as one
@@ -359,9 +359,7 @@ class VariableStats(object):
 #
 def check_criteria_all(execution_context, var_criteria, current_set_stats, new_solution):
     current_set_state = CriteriaResult.meets
-    locked_single_modes = True
     force_new_group = False
-    variable_solution_modes = []
     for index in range(len(var_criteria)):
         # Get the existing statistics for the variable at this index
         # and the criteria for the variable as well
@@ -376,15 +374,7 @@ def check_criteria_all(execution_context, var_criteria, current_set_stats, new_s
         # state and the new state
         current_set_state = criteria_transitions[current_set_state][state]
         if current_set_state == CriteriaResult.fail_one or current_set_state == CriteriaResult.fail_all:
-            return None, None, None, current_set_state
-
-        # At this point, we know this group is still either a contender or a solution group:
-        # collect some statistics on it
-
-        # If any of the variables in the MRS are not locked to one coll/dist/cuml mode,
-        # locked_single_modes = False
-        if not variable_stats.locked_single_mode():
-            locked_single_modes = False
+            return None, current_set_state
 
         # If the value in new_solution for the current variable actually added a new value to the set of values
         # being tracked, and the criteria for this variable
@@ -392,10 +382,7 @@ def check_criteria_all(execution_context, var_criteria, current_set_stats, new_s
         if new_individuals and criteria.max_size != float('inf'):
             force_new_group = True
 
-        # Remember all the possible modes this variable can be interpreted as
-        variable_solution_modes.append(variable_stats.solution_modes())
-
-    return not force_new_group, locked_single_modes, variable_solution_modes, current_set_state
+    return not force_new_group, current_set_state
 
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained

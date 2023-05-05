@@ -3,8 +3,6 @@ Remaining work to be shown in the tutorial:
 
 Update the comments in the code and the docs
 - TODO: For propositions, we need to respond with "there are more" if it is "at least" or "exactly" once we get above the level that a normal person would say "at least" for
-
-- Bug: a few files are in a folder together needs to materialize the entire set
 - variable_has_inf_max, constraints_are_open are just inverses of each other, get rid of one of them
 - We don't care anymore if a solution is "uniquely" one set of solutions
 - It seems like we don't care about "locked single modes" or not.  Really it is just: 

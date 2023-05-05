@@ -20,8 +20,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
-        # solution. Otherwise, we can just stop when we have a solution
-        # all_constraints_are_open means they are all that way
+        # solution. Otherwise, we can just stop when we have a solution and return a minimal solution
         variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
         has_multiple_groups = False
 
@@ -35,11 +34,19 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                         yield solution
 
                 elif group[1].startswith(chosen_solution_id):
+                    # This group was created by adding a solution to our chosen solution group
+                    # so it is just "a little more". We need to use this as our new ID so we don't accidentally
+                    # return other alternative groups that have this same new solution added to them
                     chosen_solution_id = group[1]
                     yield group[0][-1]
 
                 else:
+                    # Remember that there are multiple solution groups so we can say "there are more"
                     has_multiple_groups = True
+
+                    # If no variable has a between(N, inf) constraint,
+                    # Just stop now and the caller will get a subset solution group for the answer they care about
+                    # If it does have an inf constraint, return them all
                     if not variable_has_inf_max:
                         return
 
@@ -49,7 +56,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
             # If there are multiple solution groups, we need to add one more (fake) group
             # and yield it so that the caller thinks there are multiple answers and will give a message
-            # to the user
+            # to the user. The answers aren't shown so it can be anything
             if has_multiple_groups:
                 yield True
 

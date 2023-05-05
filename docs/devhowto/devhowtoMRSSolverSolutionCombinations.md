@@ -157,15 +157,25 @@ Start with a list of sets, which initially is only the empty set.
 It is not final because, while it will produce all combinations that meet the criteria, it also produces the problematic "subset" or "minimal" solutions that we described above. 
 
 ### Algorithm Version 2
-We want *maximal groups* since we only show the user one answer and we don't want to show what seems like a "subset" answer as described above. We don't want groups where the union between it and another group forms a valid group, because then it isn't maximal.
+First a couple of definitions:
+- a "minimal solution group" is one where the constraints meet the minimum required to be a solution group. Since adding a new solution only ever increases variable counts (since they are always positive), The first solution will always be minimal (it may also be maximal!)
+- a "maximal solution group" is one where no more solutions can be added to the solution group and still have it meet the criteria. This could be because all the criteria are at their maximum, or it could be because there are no more solutions to add.
+- a "subset solution group" is anything that isn't maximal but is still a solution
 
-Thinking about the algorithm: The only time to create a new set in the set list is if we need that new set in the list so that it combines with new solutions to generate alternative solution groups with it. We only want alternative solution groups that are *maximal*. So, we should only add new sets into the list that won't become subsets. Any variable with a criteria that has an upper bound like "2 files" (between(2, 2)) or "less than 2" (between(1,2 )) will generate solution groups
+What we really want is to get the first minimal solution group that meets the criteria as quickly as possible. For yes/no questions and propositions, we just need to prove there is one solution, so this is enough. For wh-questions and commands, we want to start showing the answers as soon as we have them for responsiveness.  In any of the cases, we don't care if it is maximal for the initial response, we just want it quickly.
+
+To be done processing the command:
+- for wh-questions and commands, we do want "a" maximal response to either respond to the user or do the command. So, we'd like to continue getting additional solutions that below in that solution group as they become available.  We want *maximal groups* since we only show the user one answer and we don't want to show what seems like a "subset" answer as described above. We don't want groups where more answers could be added to the group and it would still be valid.
+
+Finally, in order to be able to say "there are more" (as described above), we simply need to know that there is at least one more solution group (for wh-questions and commands)
+
+Thinking about the algorithm: We only need to create a new set in the set list if we have a set that needs to be the base for more alternatives.  I.e. we want it in the list to combine with new solutions and generate alternative solution groups. We only want alternative solution groups that are *maximal*. So, we should only add new sets into the list that won't become subsets. Any variable with a criteria that has an upper bound like "2 files" (between(2, 2)) or "less than 2" (between(1,2 )) will generate solution groups
 
 Note that some of these *can* be merged together and still meet the criteria so the defintion above of "those that combines with new solutions to generate alternative solution " is wrong?
 
 For each variable in the criteria:
-- If the variable's upper bound is inf then it potentially isn't finished gathering solutions until they have all been seen. Furthermore, it means that any alternative arrangements of that variable can be merged back and still be valid. Therefore, that particular variable, on its own, should not force an alternative solution group.
-- If its upper bound is not inf this means it is a set number of items, and thus every combination is unique. Thus, it is an alternative and shouldn't be merged
+- If the variable's upper bound is inf then it potentially isn't finished gathering solutions until they have all been seen. Furthermore, it means that any alternative arrangements of that variable can be merged back and still be a valid solution group. Therefore, that particular variable, on its own, should not force an alternative solution group.
+- If its upper bound is not inf this means it is a set number of items, and thus every combination is unique. Thus, it is an alternative and shouldn't be merged.
 
 So: since the lower bound is always >= 1, and never inf, those are really the only two cases. 
 
@@ -173,19 +183,26 @@ This means that we do not need to generate all alternatives for variables with a
 
 Furthermore, if *all* variables with criteria have an upper bound of inf, then we can lock down to one solution group to collect the single answer.
 
-However, if we want to continue returning answers after the initial "minimal" solution, we need to only choose one of the newly generated combinations per new solution. To do this, we track the lineage of a solution group by giving it an ID.
+#### Returning Additional Solutions for a Minimal Solution Group
+In all scenarios we want at least one more answer beyond the minimal solution group, if it exists.  For commands and wh-questions, we want them all. The problem is that our algorithm only generates alternative groups, it doesn't say which are simply "updates". For the scenario where we are adding a solution that only updates variables that have an infinite upper bound, we *can* tell it is an update because we literally update it. However, a constraint like "less than 5": between(1,4) will generate 4 different solution groups, each simply adding a new solution, but *will not* be updating them in place because they really are alternatives that could generate truly different solutions.
+
+However, we *can* detect if a solution group was created by adding a solution to an existing group by adding a "lineage" to every group in the set. We'll simply give an ID to every set that is a "version history" like "0:3:5" indicating what set it was created from. When we get a new solution group back from the stream, we just see if it came from the one we have by comparing the ID prefixes. If so, we know it just "a little more" of that solution. Then, we have to use that new ID as the solution ID we are checking so we don't accidentally thing all the alternatives were also "a little more".
+
+TODO: Even better, we can have the stream to quit generating other alternatives, once we've got the 1 or 2 we want, and so it can just focus on the solutions we care about.
+- BUG: the bug is that we are requiring it to be a unique coll/etc. value. It is just that it is a solution is all that matters.
 
 Thoughts:
 - Once a solution group meets across all variables, we need to keep returning answers if new solutions get added to it.
   - After it has been initially returned as a solution that meets, the only answers that can possibly get added to it are those that only modify variables that have an upper bound of inf (because that is the criteria for merging).
-  - BUG: the bug is that we are requiring it to be a unique coll/etc. value. It is just that it is a solution is all that matters.
 - TODO: For propositions, we need to respond with "there are more" if it is "at least" or "exactly" once we get above the level that a normal person would say "at least" for.  So, sometimes we say "there are more" for when there is another solution group, but othertimes we say "there are more" for when "only" would have failed.  For example: "a few files ..." works for 100 files since it is "at least". but "only a few files" would fail.
-Potential bug: less than 10: between(1, 10), which solution groups will it generate?
-- because max != inf it will generate all combinations as different solutions, including those that are < 10.  
-- "Maximal" really means: the largest number for which the criteria is still true, that seems to be the better definition
+- "Maximal" really means: the largest number for which the criteria is still true. That seems to be the better definition
 Key: The real design here is that we want to get back answers when they meet the minimal constraints, that allows us to stop immediately for prop and ques and answer. But for comm and wh_ques, we then want to iterate to the maximal group
 - for prop and ques, we want to add "there are more" even if there are more *in the current solution group*. If the user says "a few files are in this folder" and there are 100, we'd like it to say "yes but there are more". For wh-ques and comm, we want it to say there are more if there is another *solution group*
 
+#### When Can We Stop
+If at least one variable has (N, inf) we need to go all the way to the end to get the maximal solution. If none do, we actually want the *minimal* solution (but tell the user there are more). For example:
+a few
+less than 4
 
 ### Criteria Optimizations
 
