@@ -7,9 +7,14 @@ from perplexity.tree import gather_quantifier_order
 from perplexity.utilities import at_least_one_generator
 
 
-# Filter the unquantified solutions by recursively filtering them by each quantified variable
-# There is an implicit "uber quantifier" on the front of all phrases that tells you how many of the solutions to return
-# All should just return 1, except for which
+# Group the unquantified solutions into "solution groups" that meet the criteria on each variable
+# Designed to return the minimal solution that meets the criteria as quickly as possible.
+#
+# If the criteria has any between(N, inf) criteria, it will keep streaming answers until the end
+# If not, it will stop after the first (minimal) solution is found
+#
+# A second solution group will be returned, if it exists, but will be bogus. It is just there so that the caller can see there is one. This is
+# to reduce the cost of generating the answer
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info):
     solutions = at_least_one_generator(solutions_orig)
@@ -46,7 +51,8 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
                     # If no variable has a between(N, inf) constraint,
                     # Just stop now and the caller will get a subset solution group for the answer they care about
-                    # If it does have an inf constraint, return them all
+                    # Note that it may not be *minimal*, might be a subset, and might be maximal.
+                    # If it does have an between(N, inf) constraint, return them all
                     if not variable_has_inf_max:
                         return
 

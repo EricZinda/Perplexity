@@ -78,6 +78,7 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 
 # Every set that is generated has a GroupVariableStats object that does all
 # the counting that we need to see if it meets the criteria
+#
 # New groups are created by copying an existing set and adding a new solution into it
 #
 # Criteria like "the" and "only" (as in "only 2") also need to track information *across groups*
@@ -85,7 +86,8 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 # since it is reused across the sets
 #
 # yields: solution_group, set_id
-# so that the caller can detect when a solution is just more rows in an existing set_id
+# set_id is a lineage like 1:3:5 ... so that the caller can detect when a solution is just more rows in an existing set_id by seeing
+# if it came from a previous group
 def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint):
     set_id = 0
     sets = [[initial_stats_group, [], str(set_id)]]
@@ -100,27 +102,20 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 added_non_max_inf_individuals, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
 
                 if state == CriteriaResult.fail_one:
-                    #   - fail (doesn't meet criteria): don't add, don't yield
+                    # Fail (doesn't meet criteria): don't add, don't yield
                     continue
 
                 elif state == CriteriaResult.fail_all:
-                    # A global criteria wasn't met so none will work
+                    # A global criteria wasn't met so none will ever work
                     # Still run global constraints to get a good error
                     abort = True
                     break
 
                 else:
-                    # BUG?: We can have more that one solution with the same modes?
-
-                    # Didn't fail, decide whether to add to the existing set or
+                    # Didn't fail, decide whether to merge into the existing set or
                     # create a new one
-                    # Merge it if:
-                    # - If the existing set can never be anything but the (coll/dist/cuml)
-                    # mode it is in (locked_single_mode == True),
-                    # - and the only variables that got updated had a criteria with an upper bound of inf,
-                    #
-                    # If this criteria is not (n, inf), then we need a new group
-                    # so that the old group can be there to recombine with new solutions that come in
+                    # Merge if the only variables that got updated had a criteria with an upper bound of inf
+                    # since alternatives won't be used anyway
                     if added_non_max_inf_individuals:
                         new_set = [None, None, existing_set[2] + ":" + str(set_id)]
                         set_id += 1
@@ -170,13 +165,13 @@ class StatsGroup(object):
     def initialize(self, var_criteria):
         has_global_constraint = False
         previous_variable_stats = None
-        variable_has_inf_max = False
+        self.variable_has_inf_max = False
         for criteria in var_criteria:
             if criteria.global_criteria is not None:
                 has_global_constraint = True
 
             if criteria.max_size == float('inf'):
-                variable_has_inf_max = True
+                self.variable_has_inf_max = True
 
             var_stats = VariableStats(criteria.variable_name)
             var_stats.prev_variable_stats = previous_variable_stats
@@ -193,9 +188,7 @@ class StatsGroup(object):
             previous_variable_stats = var_stats
             self.variable_stats.append(var_stats)
 
-        self.variable_has_inf_max = variable_has_inf_max
-
-        return has_global_constraint, variable_has_inf_max
+        return has_global_constraint, self.variable_has_inf_max
 
     def copy(self):
         new_group = StatsGroup(self.variable_has_inf_max)
@@ -219,45 +212,27 @@ class VariableStats(object):
         self.prev_variable_stats = None
         self.next_variable_stats = None
         self.current_state = None
+
         self.distributive_state = None if distributive_state is None else distributive_state
         self.collective_state = None if collective_state is None else collective_state
         self.cumulative_state = None if cumulative_state is None else cumulative_state
 
     def __repr__(self):
-        modes = self.solution_modes()
+        soln_modes = self.solution_modes()
 
-        contenders = []
-        contenders += ["dist"] if self.distributive_state == CriteriaResult.contender else []
-        contenders += ["coll"] if self.collective_state == CriteriaResult.contender else []
-        contenders += ["cuml"] if self.cumulative_state == CriteriaResult.contender else []
+        contenders_modes = []
+        contenders_modes += ["dist"] if self.distributive_state == CriteriaResult.contender else []
+        contenders_modes += ["coll"] if self.collective_state == CriteriaResult.contender else []
+        contenders_modes += ["cuml"] if self.cumulative_state == CriteriaResult.contender else []
 
-        return f"var={self.variable_name}, soln={','.join(modes)}, cont={','.join(contenders)}, values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
+        return f"var={self.variable_name}, soln={','.join(soln_modes)}, cont={','.join(contenders_modes)}, values={len(self.whole_group_unique_values)}, ind={len(self.whole_group_unique_individuals)}"
 
     def solution_modes(self):
-        modes = []
-        modes += ["dist"] if (self.distributive_state == CriteriaResult.meets or self.distributive_state == CriteriaResult.meets_pending_global) else []
-        modes += ["coll"] if (self.collective_state == CriteriaResult.meets or self.collective_state == CriteriaResult.meets_pending_global) else []
-        modes += ["cuml"] if (self.cumulative_state == CriteriaResult.meets or self.cumulative_state == CriteriaResult.meets_pending_global) else []
-        return tuple(modes)
-
-    # True if this variable can never be in any mode except what it is (or is a contender for) now
-    # "locked" means that once a variable can't be interpreted as more than one mode, it can't ever change back
-    # TODO: prove that once a solution group is exclusively one of coll/dist/cuml, adding a new row can never be interpreted another way
-    def locked_single_mode(self):
-        dist_meets = self.distributive_state == CriteriaResult.meets or self.distributive_state == CriteriaResult.meets_pending_global
-        coll_meets = self.collective_state == CriteriaResult.meets or self.collective_state == CriteriaResult.meets_pending_global
-        cuml_meets = self.cumulative_state == CriteriaResult.meets or self.cumulative_state == CriteriaResult.meets_pending_global
-
-        dist_meets_or_contender = self.distributive_state == CriteriaResult.meets or self.distributive_state == CriteriaResult.meets_pending_global or self.distributive_state == CriteriaResult.contender
-        coll_meets_or_contender = self.collective_state == CriteriaResult.meets or self.collective_state == CriteriaResult.meets_pending_global or self.collective_state == CriteriaResult.contender
-        cuml_meets_or_contender = self.cumulative_state == CriteriaResult.meets or self.cumulative_state == CriteriaResult.meets_pending_global or self.cumulative_state == CriteriaResult.contender
-
-        if dist_meets and not (coll_meets_or_contender or cuml_meets_or_contender):
-            return "dist"
-        elif coll_meets and not (dist_meets_or_contender or cuml_meets_or_contender):
-            return "coll"
-        elif cuml_meets and not (coll_meets_or_contender or dist_meets_or_contender):
-            return "cuml"
+        solution_modes = []
+        solution_modes += ["dist"] if (self.distributive_state == CriteriaResult.meets or self.distributive_state == CriteriaResult.meets_pending_global) else []
+        solution_modes += ["coll"] if (self.collective_state == CriteriaResult.meets or self.collective_state == CriteriaResult.meets_pending_global) else []
+        solution_modes += ["cuml"] if (self.cumulative_state == CriteriaResult.meets or self.cumulative_state == CriteriaResult.meets_pending_global) else []
+        return tuple(solution_modes)
 
     # Check if this variable will be a valid coll/dist/cuml variable after
     # adding this solution to the group this stats is tracking
