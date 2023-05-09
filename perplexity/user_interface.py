@@ -209,6 +209,7 @@ class UserInterface(object):
 
                         more_message = self.generate_more_message(tree_info, solution_group_generator)
                         if more_message is not None:
+                            tree_record["ResponseMessage"] += more_message
                             print(more_message)
 
                         return
@@ -229,19 +230,19 @@ class UserInterface(object):
         # propositions can be answered with the minimal solution group. Asking for next()
         # requires finishing this one and getting the next one which can be expensive.
         sentence_force_type = sentence_force(tree["Variables"])
-        if sentence_force_type == "ques" or sentence_force_type == "prop":
+        # if sentence_force_type == "ques" or sentence_force_type == "prop":
+        #     return
+        # else:
+        if solution_groups is None:
             return
+
         else:
-            if solution_groups is None:
-                return
+            try:
+                if next(solution_groups):
+                    return "(there are more)"
 
-            else:
-                try:
-                    if next(solution_groups):
-                        return "(there are more)"
-
-                except StopIteration:
-                    pass
+            except StopIteration:
+                pass
 
     # WORKAROUND: ERG doesn't properly quote all strings with "/" so convert to "\"
     def convert_slashes_until(self, stop_char, start_index, phrase):
