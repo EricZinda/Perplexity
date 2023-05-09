@@ -244,7 +244,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="solution-group-algorithm">Solution Group Algorithm</h2>
-<p>As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroups">previous section</a>, the only way to represent the semantics of cumulative and distributive readings of a sentence like:</p>
+<p>As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroups">previous section</a>, the only way to represent the semantics of collective, distributive and cumulative readings of a sentence like:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>students lifted a table
 
@@ -254,12 +254,8 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 
 <p>… is to have the solver create groups of solutions (“solution groups”) that are the complete answers – a single solution to the MRS is not enough. This section describes one algorithm that can accomplish this.</p>
 
-<p>Even 1 plural variable in an MRS will require grouping to represent the complete solution if they are acting alone: “men walk”.   (the collective can be one solution). In this case you’d just expect one group. But: subsets of that group would also be true.</p>
-
-<p>With two variables: men are walking a dog you’d still only expect one group in any world (the maximal solution). But again, subsets would work.</p>
-
 <h3 id="overview">Overview</h3>
-<p>The basic approach is to generate the solutions, exactly like we’ve been doing so far, but then add a new “grouping pass” afterward. This grouping pass will find the groups of solutions that meet all the <em>numeric constraints</em> that the words in the phrase have placed on the variables. The groups found represent the complete answers to the MRS.</p>
+<p>The basic approach is to generate the solutions, exactly like we’ve been doing so far, but then add a new “grouping pass” afterward. The grouping pass will find the groups of solutions that meet all the <em>numeric constraints</em> that the words in the phrase have placed on the variables. The groups found represent the complete answers to the MRS.</p>
 
 <p>To illustrate what “numeric constraint” means, take “students lifted a table”:</p>
 <ul>
@@ -268,7 +264,7 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
   <li>etc.</li>
 </ul>
 
-<p>To determine <code class="language-plaintext highlighter-rouge">count(students)</code> in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for <code class="language-plaintext highlighter-rouge">count(tables)</code>, and return those groups where <code class="language-plaintext highlighter-rouge">count(students) &gt; 2</code> and <code class="language-plaintext highlighter-rouge">count(tables) = 1</code>, we will produce groups which <em>are</em> valid, but will miss any answers that require a “per previous value” count. So, we’ll miss the distributive groups. We need to do a slightly more complicated counting algorithm that is “per previous value” to get <em>all</em> the readings.</p>
+<p>To generate solution groups from the flat list of solutions, we could start by generating all combinations of solutions and testing them. For a given combination from the above example: to determine <code class="language-plaintext highlighter-rouge">count(students)</code>, we could simply count the students across all the solutions in the combination. If we do this as well for <code class="language-plaintext highlighter-rouge">count(tables)</code>, and return those combinations where <code class="language-plaintext highlighter-rouge">count(students) &gt; 1</code> and <code class="language-plaintext highlighter-rouge">count(tables) = 1</code>, we will produce groups which <em>are</em> valid, but will miss any answers that require a “per previous value” count. So, we’ll miss the distributive groups. We need to do a slightly more complicated counting algorithm that is “per previous value” to get <em>all</em> the readings.</p>
 
 <p>Here’s an overview of how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:</p>
 <blockquote>
@@ -276,10 +272,10 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
     <li>Determine the order variables appear when evaluating the tree</li>
     <li>Walk the variables in order. For each variable: count individuals in the solutions two different ways:
       <ul>
-        <li>Cumulatively: Total the variable individuals across all rows (as above)</li>
-        <li>Distributive/collectively: Group the individuals by the value of the previous variable in the order, and then do the total <em>per previous value</em>. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
+        <li>Cumulatively: Total the variable individuals across all solutions in the group (as above)</li>
+        <li>Distributively/collectively: Group the individuals by the value of the previous variable in the order, and then do the total <em>per previous value</em>. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
           <ul>
-            <li>If this is the first variable: there is no “previous value” to use in the “total per previous value” definition of collective and distributive. Therefore, the first can only be totalled as cumulative.</li>
+            <li>If this is the first variable: there is no “previous variable” to use for the “total per previous value” definition of collective and distributive. Therefore, the first variable can only be totalled as cumulative.</li>
           </ul>
         </li>
       </ul>
@@ -291,7 +287,7 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 
 <p>To get the groups that should be checked using the process above, we (you guessed it…) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we’ll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could.</p>
 
-<p>Figuring out the constraints on the variables is a longer story, which the next few sections will cover.</p>
+<p>Figuring out which constraints are on the variables is a longer story, which the next few sections will cover.</p>
 
 <h3 id="variable-constraints-overview">Variable Constraints Overview</h3>
 <p>Notice that every <code class="language-plaintext highlighter-rouge">x</code> variable used in a tree has <em>some kind of</em> numeric constraint applied to it, even if implied. We can model them all using a <code class="language-plaintext highlighter-rouge">between(min, max)</code> (inclusive) constraint with a lower bound and an upper bound. The upper bound can be “inf”, meaning “infinity”.</p>
@@ -313,7 +309,7 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 <p>The next section talks about how to extract these constraints from the tree itself.</p>
 
 <h3 id="determining-constraints-from-the-mrs-tree">Determining Constraints From the MRS Tree</h3>
-<p>Numeric constraints can come from 3 places in an MRS: quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments that use the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication.</p>
+<p>Numeric constraints can come from 3 places in an MRS: quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments that use the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication we invented in the previous section.</p>
 
 <p>Let’s start with “two students lifted a table”. Here’s one MRS reading of it, along with one well-formed tree:</p>
 
@@ -338,7 +334,7 @@ udef_q(x3,RSTR,BODY)
 
 Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(x11),_lift_v_cause(e2,x3,x11)))
 </code></pre></div></div>
-<p>Two points to note as we transition to using real MRS instead of simplified trees:</p>
+<p>Two points to note as we transition to using real MRS trees instead of simplified trees:</p>
 
 <ol>
   <li>At this point, we can dispense with the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication because the MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">quantifier predications</a> (those with <code class="language-plaintext highlighter-rouge">_q</code> at the end) fulfill the same variable scoping role as <code class="language-plaintext highlighter-rouge">scope()</code>. They declare where in the tree a variable can be used.  They <em>also</em> can add numeric constraints to the variable, as we’ll see below.</li>
@@ -456,7 +452,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
   </tbody>
 </table>
 
-<p>Which matches the intuition that there should be exactly two students and exacty one table (possibly for each student) in “two students lifted a table”.</p>
+<p>Which matches the intuition that there should be exactly two students and exactly one table (possibly for each student) in “two students lifted a table”.</p>
 
 <h4 id="mrs-constraints-summary">MRS Constraints Summary</h4>
 <p>So, now we have an approach to gathering the constraints from the MRS:</p>
@@ -482,7 +478,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 
 <p>Furthermore, recall that quantifiers do two things: scope a variable and add a numeric constraint to the variable. So, after you extract the numeric constraint from quantifiers like <code class="language-plaintext highlighter-rouge">_a_q</code> or <code class="language-plaintext highlighter-rouge">_some_q</code>, you’ve also removed all of their contribution to Phase 1 <em>except for variable scoping</em>. So, we don’t <em>remove</em> them, but we do <em>replace</em> them with the most generic quantifier: <code class="language-plaintext highlighter-rouge">udef_q</code>.</p>
 
-<p>Thus, Phase 0 analyzes the full tree for “2 students lifted a table”, which is this:</p>
+<p>Thus, Phase 0 analyzes a full tree for “2 students lifted a table”, one of which is this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                        ┌── _student_n_of(x3,i10)
             ┌────── and(0,1)
             │             └ card(2,e9,x3)
@@ -510,7 +506,7 @@ udef_q(x3,RSTR,BODY)
   <ol>
     <li>Start with a well-formed MRS Tree</li>
     <li>Determine the list of <code class="language-plaintext highlighter-rouge">x</code> variables in the tree and the order they will be evaluated in</li>
-    <li>Determine the constraints placed on each <code class="language-plaintext highlighter-rouge">x</code> variable by predications that modify it.</li>
+    <li>Determine the constraints placed on each <code class="language-plaintext highlighter-rouge">x</code> variable by predications that modify it</li>
     <li>Create a modified tree by:
       <ul>
         <li>Removing adjective predications that added numeric constraints</li>
@@ -531,27 +527,27 @@ udef_q(x3,RSTR,BODY)
     <li>For each possible combination of solutions from Phase 1: Walk the <code class="language-plaintext highlighter-rouge">x</code> variables in evaluation order.</li>
     <li>For each <code class="language-plaintext highlighter-rouge">x</code> variable: Count individuals in the solutions two different ways:
       <ul>
-        <li>Cumulatively: Total the variable individuals across all solutions</li>
+        <li>Cumulatively: Total the variable individuals across all solutions in the combination</li>
         <li>Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
           <ul>
-            <li>If this is the first variable, there is no “previous value” to use in the “total per previous value” definition of distributive/collective. Therefore, the first can only be totalled cumulatively</li>
+            <li>If this is the first variable, there is no “previous variable” to use in the “total per previous value” definition of distributive/collective. Therefore, the first can only be totalled cumulatively</li>
           </ul>
         </li>
       </ul>
     </li>
     <li>If either count meets the variable constraints: it succeeds and the next variable in the order is tried
       <ul>
-        <li>If not: this group fails and the next group starts at step #5</li>
+        <li>If not: this group fails and the next combination group starts at step #5</li>
       </ul>
     </li>
-    <li>If the end of the variables is reached and all succeeded, this is a valid solution group</li>
+    <li>If the end of the variables is reached and all succeeded, this combination is a valid solution group</li>
   </ol>
 </blockquote>
 
 <p>When numeric constraints are removed from an MRS we are left with a relatively straightforward constraint satisfaction problem that should be able to return solutions quickly, but there still may be <em>many</em> solutions.</p>
 
 <h3 id="example">Example</h3>
-<p>That can be a lot to take in, so let’s go through an example: “students lifted a table”:</p>
+<p>That can be a lot to take in, so let’s go through an example, “students lifted a table”:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ "students lifted a table"
   TOP: h0
   INDEX: e2 [ e SF: prop TENSE: past MOOD: indicative PROG: - PERF: - ]
@@ -670,7 +666,7 @@ Solution 12: x3=[student12], x10=[table14]
   </ol>
 </blockquote>
 
-<p>Start by generating (as yet untested) groups that are all combinations of the above solutions. These may or may not be solution groups, we don’t know yet. We need to test each one:</p>
+<p>Start by generating (as yet untested) groups that are all combinations of the above solutions. These may or may not be solution groups, we don’t know yet: we need to test each one:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1:
   Solution 1: x3=[student1], x10=[table1]                     "student1 is lifting table1"
@@ -695,7 +691,7 @@ Group 3:
         <li>Cumulatively: Total the variable individuals across all solutions</li>
         <li>Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the values are all the same, that is the count. If not, this count fails and has no value.
           <ul>
-            <li>If this is the first variable, there is no “previous value” to use in the “total per previous value” definition of distributive/collective. Therefore, the first can only be totalled cumulatively</li>
+            <li>If this is the first variable, there is no “previous variable” to use in the “total per previous value” definition of distributive/collective. Therefore, the first can only be totalled cumulatively</li>
           </ul>
         </li>
       </ul>
@@ -705,7 +701,7 @@ Group 3:
         <li>If not: this group fails and the next group starts at step #5</li>
       </ul>
     </li>
-    <li>If the end of the variables is reached and all succeeded, this is a valid solution group</li>
+    <li>If the end of the variables is reached and all succeeded, this combination is a valid solution group</li>
   </ul>
 </blockquote>
 
@@ -751,9 +747,9 @@ Group 3:
 
 <p>All of the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.</p>
 
-<p>There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the next section) and global constraints from words like “the” (described in the section after that).</p>
+<p>There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionCombinations">next section</a>) and global constraints from words like “the” (described in the section after that).</p>
 
-<p>Last update: 2023-05-08 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md">edit</a>]</p>
+<p>Last update: 2023-05-09 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md">edit</a>]</p>
 
         
       </section>

@@ -1,5 +1,5 @@
 {% raw %}## Solution Group Algorithm
-As described in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroups), the only way to represent the semantics of cumulative and distributive readings of a sentence like:
+As described in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroups), the only way to represent the semantics of collective, distributive and cumulative readings of a sentence like:
 
 ```
 students lifted a table
@@ -10,33 +10,29 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 
 ... is to have the solver create groups of solutions ("solution groups") that are the complete answers -- a single solution to the MRS is not enough. This section describes one algorithm that can accomplish this.
 
-Even 1 plural variable in an MRS will require grouping to represent the complete solution if they are acting alone: "men walk".   (the collective can be one solution). In this case you'd just expect one group. But: subsets of that group would also be true.
-
-With two variables: men are walking a dog you'd still only expect one group in any world (the maximal solution). But again, subsets would work.
-
 ### Overview
-The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. This grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase have placed on the variables. The groups found represent the complete answers to the MRS.  
+The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. The grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase have placed on the variables. The groups found represent the complete answers to the MRS.  
 
 To illustrate what "numeric constraint" means, take "students lifted a table":
 - "students ..." is plural, which means the contraint is: `count(students) > 2`
 - "... a table" means the constraint is: `count(tables) = 1`
 - etc.
 
-To determine `count(students)` in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for `count(tables)`, and return those groups where `count(students) > 2` and `count(tables) = 1`, we will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive groups. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings.
+To generate solution groups from the flat list of solutions, we could start by generating all combinations of solutions and testing them. For a given combination from the above example: to determine `count(students)`, we could simply count the students across all the solutions in the combination. If we do this as well for `count(tables)`, and return those combinations where `count(students) > 1` and `count(tables) = 1`, we will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive groups. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings.
 
 Here's an overview of how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:
 > 1. Determine the order variables appear when evaluating the tree
 > 2. Walk the variables in order. For each variable: count individuals in the solutions two different ways:
->    - Cumulatively: Total the variable individuals across all rows (as above)
->    - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and then do the total *per previous value*. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
->      - If this is the first variable: there is no "previous value" to use in the "total per previous value" definition of collective and distributive. Therefore, the first can only be totalled as cumulative. 
+>    - Cumulatively: Total the variable individuals across all solutions in the group (as above)
+>    - Distributively/collectively: Group the individuals by the value of the previous variable in the order, and then do the total *per previous value*. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
+>      - If this is the first variable: there is no "previous variable" to use for the "total per previous value" definition of collective and distributive. Therefore, the first variable can only be totalled as cumulative. 
 > 3. If either count meets the variable constraint, it succeeds and the next variable in the order is tried. If not, this group fails.
 > 4. If the end is reached and all variables succeeded, this is a valid solution group.
 
 
 To get the groups that should be checked using the process above, we (you guessed it...) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
 
-Figuring out the constraints on the variables is a longer story, which the next few sections will cover.
+Figuring out which constraints are on the variables is a longer story, which the next few sections will cover.
 
 ### Variable Constraints Overview
 Notice that every `x` variable used in a tree has *some kind of* numeric constraint applied to it, even if implied. We can model them all using a `between(min, max)` (inclusive) constraint with a lower bound and an upper bound. The upper bound can be "inf", meaning "infinity".
@@ -54,7 +50,7 @@ For "which file is under 2 tables?":
 The next section talks about how to extract these constraints from the tree itself.
 
 ### Determining Constraints From the MRS Tree
-Numeric constraints can come from 3 places in an MRS: quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments that use the artificial `scope()` predication.
+Numeric constraints can come from 3 places in an MRS: quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments that use the artificial `scope()` predication we invented in the previous section.
 
 Let's start with "two students lifted a table". Here's one MRS reading of it, along with one well-formed tree:
 
@@ -80,7 +76,7 @@ udef_q(x3,RSTR,BODY)
 
 Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(x11),_lift_v_cause(e2,x3,x11)))
 ```
-Two points to note as we transition to using real MRS instead of simplified trees:
+Two points to note as we transition to using real MRS trees instead of simplified trees:
 
 1. At this point, we can dispense with the artificial `scope()` predication because the MRS [quantifier predications](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS) (those with `_q` at the end) fulfill the same variable scoping role as `scope()`. They declare where in the tree a variable can be used.  They *also* can add numeric constraints to the variable, as we'll see below.
 2. Predications in MRS have [variable types](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS) beyond the `x`-type variables we've been using. For the examples we'll see here, these can be safely ignored. We'll handle those in a later section.
@@ -143,7 +139,7 @@ Using this logic, the final list of constraints above can be reduced to:
 |---|---|
 |`between(2, 2)`| `between(1, 1)`|
 
-Which matches the intuition that there should be exactly two students and exacty one table (possibly for each student) in "two students lifted a table".
+Which matches the intuition that there should be exactly two students and exactly one table (possibly for each student) in "two students lifted a table".
 
 #### MRS Constraints Summary
 So, now we have an approach to gathering the constraints from the MRS:
@@ -164,7 +160,7 @@ It turns out that the (just described) process of building the numeric constrain
 
 Furthermore, recall that quantifiers do two things: scope a variable and add a numeric constraint to the variable. So, after you extract the numeric constraint from quantifiers like `_a_q` or `_some_q`, you've also removed all of their contribution to Phase 1 *except for variable scoping*. So, we don't *remove* them, but we do *replace* them with the most generic quantifier: `udef_q`.
 
-Thus, Phase 0 analyzes the full tree for "2 students lifted a table", which is this:
+Thus, Phase 0 analyzes a full tree for "2 students lifted a table", one of which is this:
 ```
                         ┌── _student_n_of(x3,i10)
             ┌────── and(0,1)
@@ -192,7 +188,7 @@ Here's the full algorithm all in one place:
 > Phase 0: Setup
 > 1. Start with a well-formed MRS Tree
 > 2. Determine the list of `x` variables in the tree and the order they will be evaluated in
-> 3. Determine the constraints placed on each `x` variable by predications that modify it.
+> 3. Determine the constraints placed on each `x` variable by predications that modify it
 > 4. Create a modified tree by:
 >    - Removing adjective predications that added numeric constraints
 >    - Changing quantifiers that added numeric constraints to `udef_q`
@@ -205,18 +201,18 @@ Here's the full algorithm all in one place:
 > 
 > 6. For each possible combination of solutions from Phase 1: Walk the `x` variables in evaluation order. 
 > 7. For each `x` variable: Count individuals in the solutions two different ways:
->    - Cumulatively: Total the variable individuals across all solutions
+>    - Cumulatively: Total the variable individuals across all solutions in the combination
 >    - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the totals are all the same, across all previous values, that is the count. If not, this count fails and has no value.
->      - If this is the first variable, there is no "previous value" to use in the "total per previous value" definition of distributive/collective. Therefore, the first can only be totalled cumulatively
+>      - If this is the first variable, there is no "previous variable" to use in the "total per previous value" definition of distributive/collective. Therefore, the first can only be totalled cumulatively
 > 8. If either count meets the variable constraints: it succeeds and the next variable in the order is tried
->    - If not: this group fails and the next group starts at step #5
-> 9. If the end of the variables is reached and all succeeded, this is a valid solution group
+>    - If not: this group fails and the next combination group starts at step #5
+> 9. If the end of the variables is reached and all succeeded, this combination is a valid solution group
 
 
 When numeric constraints are removed from an MRS we are left with a relatively straightforward constraint satisfaction problem that should be able to return solutions quickly, but there still may be *many* solutions.
 
 ### Example
-That can be a lot to take in, so let's go through an example: "students lifted a table":
+That can be a lot to take in, so let's go through an example, "students lifted a table":
 ```
 [ "students lifted a table"
   TOP: h0
@@ -298,7 +294,7 @@ Solution 12: x3=[student12], x10=[table14]
 > 6. For each possible combination of solutions from Phase 1: Walk the `x` variables in evaluation order. 
 
 
-Start by generating (as yet untested) groups that are all combinations of the above solutions. These may or may not be solution groups, we don't know yet. We need to test each one:
+Start by generating (as yet untested) groups that are all combinations of the above solutions. These may or may not be solution groups, we don't know yet: we need to test each one:
 
 ```
 Group 1:
@@ -320,10 +316,10 @@ Group 3:
 > - For each `x` variable: Count individuals in the solutions two different ways:
 >   - Cumulatively: Total the variable individuals across all solutions
 >   - Distributive/collectively: Group the individuals by the value of the previous variable in the order, and total individuals in this variable per previous value. If the values are all the same, that is the count. If not, this count fails and has no value.
->     - If this is the first variable, there is no "previous value" to use in the "total per previous value" definition of distributive/collective. Therefore, the first can only be totalled cumulatively
+>     - If this is the first variable, there is no "previous variable" to use in the "total per previous value" definition of distributive/collective. Therefore, the first can only be totalled cumulatively
 > - If either count meets the variable constraints: it succeeds and the next variable in the order is tried
 >   - If not: this group fails and the next group starts at step #5
-> - If the end of the variables is reached and all succeeded, this is a valid solution group
+> - If the end of the variables is reached and all succeeded, this combination is a valid solution group
 
 
 Using the constraints we determined:
@@ -357,6 +353,6 @@ etc.
 
 All of the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
 
-There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the next section) and global constraints from words like "the" (described in the section after that).
+There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the [next section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionCombinations)) and global constraints from words like "the" (described in the section after that).
 
-Last update: 2023-05-08 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}
+Last update: 2023-05-09 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}

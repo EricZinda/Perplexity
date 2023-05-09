@@ -250,13 +250,13 @@
   <p>For each possible combination of solutions from Phase 1 …</p>
 </blockquote>
 
-<p>And leaves how to generate them as an exercise for the reader. In this section, we’ll go through one approach to generating combinations of solutions that properly deals with what kinds of answers users expect when they say something and allows for some performance optimizations.</p>
+<p>And leaves how to generate them as an exercise for the reader. In this section, we’ll go through one approach to generating combinations of solutions that properly deals with the kinds of answers users expect and allows for some performance optimizations.</p>
 
 <h2 id="only-2-solution-groups-are-needed">Only 2 Solution Groups Are Needed</h2>
 <p>The number of solution groups for a tree in a given world can be quite large, but the system only needs 2 of them for any response (question, proposition or command). This allows for some nice performance optimizations. Let’s go through each type of phrase to see why.</p>
 
 <h3 id="wh-questions">WH-Questions</h3>
-<p>Let’s use this tree from the phase “which 2 files are in a folder?”:</p>
+<p>“WH-Questions” are “which/who/what/where” questions that expect a list as a response. Let’s use this tree from the phase “which 2 files are in a folder?”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                          ┌── _file_n_of(x3,i10)
               ┌────── and(0,1)
@@ -275,7 +275,7 @@ _which_q(x3,RSTR,BODY)
 \system\file4.txt
 </code></pre></div></div>
 
-<p>Some solutions to this are:</p>
+<p>Some solution groups for this are:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group:
   \desktop\file1.txt
@@ -297,13 +297,15 @@ Group:
   \desktop\file1.txt
   \system\file4.txt
   
-etc, there are more ...
+etc., there are more ...
 </code></pre></div></div>
 
-<p>How many of these solution groups does the system need in order to respond? 1 of them? all of them? If we want the system to respond in the way a user expects, we need to observe the way a human would respond. Here are some:</p>
+<p>How many of these solution groups does the system need in order to respond? 1 of them? all of them? If we want the system to respond in the way a user expects, we need to observe the way a human would respond.</p>
+
+<p>Here are some typical responses a human might make when asked questions about the world above:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Lin: Which 2 files are in a folder?
-Mila: Umm...there are way more than 2 files in a folder ... which do you mean?
+Mila: Umm...there are more than 2 files in a folder ... which do you mean?
 </code></pre></div></div>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Irene: Which 2 files are in a folder?
@@ -316,21 +318,21 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 
 <p>The first two explicitly or implicitly acknowledge that the question is implying there are <em>only</em> 2 files in a folder, but the participants are willing to respond to a phrase the user didn’t ask, giving them the benefit of the doubt. The last one interprets the phrase more broadly as something like “what are all the sets of 2 files in a folder”.  Carlos is probably a puzzle or math guy and thought it was a trick question.</p>
 
-<p>Another example: In a physics class of 20 students, where only one student got 100%, the professor is asked, “Which students aced the exam?” and responds with “Only Mariam.” Note that the question had “students” (plural) and the professor felt the need to say “only” to indicate that they weren’t really answering the question asked since they responded in singular. Saying simply “Mariam” just feels <em>slightly</em> wrong, but note that if 2 students aced it, saying “Mariam and Aron” would be just fine and not feel wrong at all. So, something is being acknowledged in the 1 student case.</p>
+<p>Another example: In a physics class of 20 students, where only one student got 100%, the professor is asked, “Which students aced the exam?” and responds with “Only Mariam.” Note that the question had “students” (plural) and the professor felt the need to say “only” to indicate that they weren’t really answering the question asked since they responded in singular. Saying simply “Mariam” feels <em>slightly</em> wrong, but note that if 2 students aced it, saying “Mariam and Aron” would be just fine and not feel wrong at all. So, something is being acknowledged in the one student case.</p>
 
-<p>So, building a system that is completely literal and responds to “Which 2 files are in a folder?” with “There are more than only 2 files in a folder.” (Mila’s response above), might be correct but will be annoying.  The Carlos answer is the most complete and generous, but could result in a huge (possibly expensive) answer when the user, who also understands that the question implicitly means “only”, probably misunderstood the world state. Hana’s answer is a good middle ground that gives an answer “just in case”, but acknowledges that the question was probably a misunderstanding of the world state. Hers doesn’t overload the questioner with a huge number of answers.</p>
+<p>So, building a system that is completely literal and responds to “Which 2 files are in a folder?” with “There are more than only 2 files in a folder.” (Mila’s response above), might be correct but will be annoying.  The Carlos answer is the most complete and generous, but could result in a huge (possibly expensive) answer when the user, who also understands that the question implicitly means “only”, probably misunderstood the world state. Hana’s answer is a good middle ground that gives an answer “just in case”, but acknowledges that the question was probably a misunderstanding of the world state. Hers also doesn’t overload the questioner with a huge number of answers.</p>
 
-<p>This implies that, for WH-questions (where, what, who, etc), we need to get one answer to respond and see if there is another to let the questioner know there are more. So, we need 2 answers.</p>
+<p>This implies that, for WH-questions (where, what, who, etc), we need to get one answer to respond and see if there is another to let the questioner know there are more. We need 2 answers.</p>
 
 <h3 id="yesno-questions">Yes/No Questions</h3>
-<p>What about (using the same examples from above): “Are there 2 files in a folder?” or “Did students ace the exam”? These act the same as WH-Questions:</p>
+<p>What about (using the same examples from above): “Are there 2 files in a folder?” or “Did students ace the exam”? These act the same as WH-questions:</p>
 
 <ul>
   <li>Responding to “Are there 2 files in a folder?” with “Yes.” is <em>technically</em> true for the above example, but would probably be considered a little misleading. So the answerer might respond with something like “<em>Technically</em> yes, but there are more.”</li>
   <li>Responding to “Did students ace the exam?” with “Yes.” would cause most people to be mildly annoyed later if they find out there was only one.</li>
 </ul>
 
-<p>This implies that, for Yes/No questions, we need to get one answer to respond and see if there is another answer to let the questioner know there are more. So, we also need 2 answers.</p>
+<p>This implies that, for Yes/No questions, we need to get one answer to respond and test if there is another answer to let the questioner know there are more. So, we also need 2 answers.</p>
 
 <h3 id="propositions">Propositions</h3>
 <p>Continuing with our example, this time as a proposition: “2 files are in a folder” or “students aced the exam”. These act just like Yes/No questions: The first is “technically true” the second is just wrong. So: 2 answers required.</p>
@@ -338,14 +340,14 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 <h3 id="commands">Commands</h3>
 <p>What should “delete 2 files in a folder” do? Deleting all examples of “2 files in a folder” feels wrong. There seems to be an implied “one instance of” after delete. A clearer example might be “delete a file in a folder”. There are 4 examples (solution groups) of “a file in a folder” in the world in question, but deleting them all due to that phrase would be certainly wrong.</p>
 
-<p>So, if we decide that we should only pick one of the solution groups to act on for commands, it should be noted that deleting “2 files” or “a file” when there is more than one solution group feels a bit random. For this example, a human might ask, “Do you mean a <em>random</em> 2 files?”. Certainly “delete files in a folder”, if there is only 1 file, feels wrong, just like “Talk to the students that aced the exam” when there is only one student feels wrong.  Either would probably get a response like “OK, but there is only one” to communicate that it isn’t <em>quite</em> the question asked or to clarify the intent.</p>
+<p>So, if we decide that we should only pick one of the solution groups to act on for commands, it should be noted that deleting “2 files” or “a file” when there is more than one solution group feels a bit random. For this example, a human might ask, “Do you mean a <em>random</em> 2 files?”. Certainly saying, “delete files in a folder”, if there is only 1 file, feels wrong, just like “Talk to the students that aced the exam” when there is only one student feels wrong.  Either would probably get a response like “OK, but there is only one” to communicate that the listener isn’t going to do <em>exactly</em> what was commanded.</p>
 
 <p>All this is to say that, again, commands should also retrieve 2 solution groups. The first is what will be “done”, the second is to see if some kind of clarifying response should be given.</p>
 
-<p>So, to summarize, we only need to return 2 solution groups in the algorithm we develop. This will give us some room for performance optimization.</p>
+<p>So, to summarize, we only need to return 2 solution groups in the algorithm we develop, across all types of phrases. This will give us some room for performance optimization.</p>
 
-<h2 id="maximal-minimal-subset-solution-groups">Maximal, Minimal, Subset Solution Groups</h2>
-<p>Based on the above analysis, we’re going to need to retrieve two solution groups (if they exist) when processing a user phrase and show the user (or do) the first group. The second group is just tested to see if it exists and then say “there are more answers here…”.</p>
+<h2 id="maximal-minimal-and-subset-solution-groups">Maximal, Minimal, and Subset Solution Groups</h2>
+<p>Based on the above analysis, we’re going to need to retrieve two solution groups (if they exist) when processing any user phrase and show the user (or do) the first group. The second group is just tested to see if it exists and then say “there are more answers here…” in some form.</p>
 
 <p>The problem is: as we’ve seen in previous sections, there can be many correct solution groups for a given answer which aren’t “maximal”.  To see what “maximal” means, take: “which files are in a folder?” when there are these files in a folder:</p>
 
@@ -370,18 +372,20 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 
 <p>etc.</p>
 
-<p>Basically, any combination of files in a folder is a “technically correct” answer so long as it is &gt; 1 (due to plural “files”). While it is technically correct, if you asked a person, “which files are in a folder” and they gave you one of those answers, you might be a bit annoyed and clarify with “can you give me the whole list?”</p>
+<p>Basically, any combination of files in a folder is a “technically correct” answer so long as it is &gt; 1 (due to plural “files”). While it is technically correct, if you asked a person, “which files are in a folder” and they gave you one of those answers, you might be a bit annoyed and clarify with “can you give me the whole list?”  Let’s call these “subset solution groups”.</p>
 
 <p>So, since we are only going to return one solution group, we really want to return the <em>maximal</em> solution group, the one where no more solutions can be added to the group while still keeping it a valid group. Keeping it a valid group means <em>all</em> solutions in the group conform to at least one type of answer (collective, distributive or cumulative). It is OK if they <em>all</em> conform to more than one, however.</p>
 
-<p>In general, subset solutions can be generated any time a criteria for a variable has a range of values that can be true. When the solution group is at the bottom of the range, for that variable it is a “minimal” solution, at the top is a “maximal” solution, anything in between is a “subset” solution. Two examples:</p>
+<p>In general, subset solution groups can be generated any time a criteria for a variable has a range of values that can be true. When the solution group is at the bottom of the range for that variable it is a “minimal” solution, at the top is a “maximal” solution, anything in between is a “subset” solution.</p>
+
+<p>Two examples:</p>
 
 <ul>
-  <li>Even one plural variable in an MRS can potentially generate multiple groups.  For example: “men are walking” (when talking about a specific group of men). The entire group of “men” can be represented in one solution group, so you’d just expect one group. But: subsets of that group would also be true, so other solution groups are also technically correct.</li>
-  <li>With two variables: “men(x) are walking a dog(y)” (when talking about one group of men walking a particular dog) you’d still only expect one solution group: the “maximal” solution. But again, subsets would be technically true, just not really telling the whole story.</li>
+  <li>Even one plural variable in an MRS can potentially generate multiple subset groups.  For example: “men are walking” (when talking about a specific group of men). The entire group of “men” can be represented in one solution group, so you’d just expect one group in answer to, “Which men are walking?”. But: subsets of that group would also be true, so other solution groups are also technically correct.</li>
+  <li>With two variables: “men(x) are walking a dog(y)” (when talking about one group of men walking a particular dog) you’d still only expect one solution group in answer to “Which men are walking a dog?”: the “maximal” solution. But again, subsets would be technically true, just not really telling the whole story.</li>
 </ul>
 
-<p>All this is to say: if you’re only going to give one answer (which we are), it should be a maximal one. To make the system responsive, though, it should start returning an answer as soon as one meets the constraints (i.e. a “minimal” answer), but then keep returning it as the set gets enlarged. That way, the user can see answers as they come.</p>
+<p>All this is to say: if you’re only going to give one answer (which we are), it should be a maximal one. To make the system responsive, though, it should start returning an answer as soon as one meets the constraints (i.e. when we have a “minimal” answer), but then keep returning answers as the set gets enlarged. That way, the user can see answers as they come.</p>
 
 <p>To sum up:</p>
 <ul>
@@ -399,23 +403,26 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 </ul>
 
 <p>We’ll use these terms as we develop the algorithm below.</p>
-<h2 id="global-constraints-the-and-only">Global Constraints: The and Only</h2>
+
+<p>It is important to note that these terms are all invented for this algorithm. They (or even the notion of “solution group”) are not DELPH-IN or even linguistic terms.  They are artifacts of the particular approach being used to solve MRS trees.</p>
 
 <h2 id="algorithm-version-1">Algorithm Version 1</h2>
-<p>This will be the skeleton of the algorithm we’re going to use:</p>
+<p>This will form the skeleton of the algorithm we’re going to eventually settle on. It is a general purpose algorithm that creates all combinations of items in a set:</p>
 
 <ol>
-  <li>Start with <code class="language-plaintext highlighter-rouge">set_list</code> (a list of sets), which initially is only a single empty set.</li>
-  <li>When a new solution is found, for each set in <code class="language-plaintext highlighter-rouge">set_list</code>:
+  <li>Start with a list of sets: <code class="language-plaintext highlighter-rouge">set_list</code>, which initially contains a single empty set.</li>
+  <li>When a new solution is found, for each <code class="language-plaintext highlighter-rouge">selected_set</code> in <code class="language-plaintext highlighter-rouge">set_list</code>:
     <ul>
-      <li>Build <code class="language-plaintext highlighter-rouge">new_set</code> by adding the solution to the selected set</li>
-      <li>If <code class="language-plaintext highlighter-rouge">new_set</code> meets or could meet the criteria (once more rows are added), add it to <code class="language-plaintext highlighter-rouge">set_list</code></li>
+      <li>Build a <code class="language-plaintext highlighter-rouge">new_set</code> by adding the solution to <code class="language-plaintext highlighter-rouge">selected_set</code></li>
+      <li>If <code class="language-plaintext highlighter-rouge">new_set</code> meets or could eventually meet the criteria (once more rows are added), add it to <code class="language-plaintext highlighter-rouge">set_list</code></li>
       <li>If <code class="language-plaintext highlighter-rouge">new_set</code> actually <em>did</em> meet the criteria, also return it as a solution group</li>
     </ul>
   </li>
 </ol>
 
-<p>This algorithm works because each set in <code class="language-plaintext highlighter-rouge">set_list</code> becomes a base for creating new combinations when a new solution comes in. And, when that new alternative is created, it also gets added to <code class="language-plaintext highlighter-rouge">set_list</code> so it can form new combinations. In this way, we generate all possible combinations.</p>
+<p>This algorithm works because each set in <code class="language-plaintext highlighter-rouge">set_list</code> becomes a base for creating new combinations when a new solution comes in. And, when that new alternative is created, it also gets added to <code class="language-plaintext highlighter-rouge">set_list</code> so it can also form new combinations. In this way, we generate all possible combinations.</p>
+
+<p>This algorithm for creating all possible combinations has a very useful property: it doesn’t require knowing the length of the flat list of solutions coming in, and it builds combinations out of the items it already has before retrieving another solution. This means it will allow us to efficiently stream solutions to it without having to calculate them all up front, which could be very expensive.</p>
 
 <p>This is not the final algorithm because, while it will produce all combinations that meet the criteria, it also produces the problematic “subset” or “minimal” solutions that we described above. But, it will form a good skeleton for an algorithm we can use with modifications.</p>
 
@@ -424,7 +431,7 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 
 <ul>
   <li><strong>(for all cases) Retrieve a minimal solution group as quickly as possible</strong>. For yes/no questions and propositions, we just need to prove there is one solution, so a minimal solution is enough to create the initial answer. For wh-questions and commands, we want to start showing the answers as soon as we have them for responsiveness.  So, in all cases, we don’t care if it is maximal for the initial response, we just want it quickly.</li>
-  <li><strong>(for wh-questions and commands) We want to stream the rest of the solutions until there is a maximal group</strong>. This is so we respond to the user or do the command with a full answer (as described above). After receiving the minimal solution group, we’d like to continue getting additional solutions that belong in that solution group as they become available.</li>
+  <li><strong>(for WH-questions and commands) We want to stream the rest of the solutions until there is a maximal group</strong>. This is so we respond to the user or do the command with a full answer (as described above). After receiving the minimal solution group, we’d like to continue getting additional solutions that belong in that solution group as they become available, until we have the maximal solution group.</li>
   <li><strong>(for all cases) Detect if there is more than one unique solution group.</strong> This allows us to say “there are more” (as described above). Importantly, it needs to be a <em>unique</em> solution group, not one that is a subset of another group.</li>
 </ul>
 
@@ -433,45 +440,43 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 <h3 id="retrieve-a-minimal-solution-group-quickly">Retrieve a Minimal Solution Group Quickly</h3>
 <p>Algorithm version 1 already does this. It returns a solution group as soon as it detects it is a valid collective, distributive or cumulative solution. No changes are needed to meet this requirement.</p>
 
-<h3 id="streaming-solutions-until-there-is-a-maximal-group">Streaming Solutions Until there is a Maximal Group</h3>
-<p>Algorithm version 1 only generates alternative solution groups – it doesn’t say which are simply enlarging a solution group with another solution.</p>
+<h3 id="streaming-solutions-until-there-is-a-maximal-group">Streaming Solutions Until There is a Maximal Group</h3>
+<p>Algorithm version 1 only generates alternative solution groups – it doesn’t say which are simply enlarging a previously returnedsolution group with another solution.</p>
 
 <p>To fix this, note that each returned solution group was generated by taking an existing group from the set list and adding a solution to it. So, the algorithm can give each set a unique ID and a “lineage” that tracks where it came from. For example, set id <code class="language-plaintext highlighter-rouge">5</code> might have a lineage of <code class="language-plaintext highlighter-rouge">0:3:5</code> indicating that it came directly from set <code class="language-plaintext highlighter-rouge">3</code>, and <code class="language-plaintext highlighter-rouge">3</code> came from <code class="language-plaintext highlighter-rouge">0</code>. The lineage shows the set history (which sets this set came from) for this set.</p>
 
-<p>If we include the lineage when we return a solution group, the caller can see if it is a simple update of a solution group it already has by comparing their lineages.  If they share a prefix, then the new one is a descendent – it is just “a little more” of that solution. The caller then must use that new lineage as its base to compare from. This is so it doesn’t think all the alternatives generated from its current solution group were also “a little more”. It is effectively following one set as it grows.</p>
+<p>If we include the lineage when we return a solution group, the caller can see if it is a simple update of a solution group they already have by comparing their lineages.  If they share a prefix, then the new one is a descendent – it is just “a little more” of that solution. The caller must then use that new lineage as its base to compare from. This last step is needed so it doesn’t think all the alternatives generated from its current solution group were also “a little more”. It is effectively following one set as it grows.</p>
 
 <p>In this way, we can get a minimal solution group first and slowly grow it over time by examining every solution group that comes from the algorithm and comparing the lineages to the solution we have. This allows us to stream the solutions as they get added to a solution group, eventually ending with the maximal solution group.</p>
 
 <p>If there are 5 unique solution groups for a given phrase, this means we will effectively be picking one at random to show the user. This is OK since, if there are many solutions, it really doesn’t matter which we show. [TODO: explain why].</p>
 
 <h3 id="detect-if-there-is-more-than-one-unique-solution-group">Detect If There Is More Than One Unique Solution Group</h3>
-<p>Algorithm Version 1 doesn’t indicate whether a returned solution group is a unique solution group – one that isn’t a subset of any other. It just returns solution groups that have 1 more solution than those it has generated before. This problem is really the inverse of the one above. In this case we want to see if there is a solution that <em>isn’t</em> a subset of the one we’ve selected.</p>
+<p>Algorithm Version 1 doesn’t indicate whether a returned solution group is a unique solution group – one that isn’t a subset of any other. It just returns solution groups that have 1 more solution than those it has generated before. This problem is really the inverse of the one above. In this case, we want to see if a new solution group <em>isn’t</em> a subset of the one we’ve selected.</p>
 
-<p>So, the lineage described above provides a way to determine this. A solution group can only be a subset of another if its lineage is a prefix of the other. Said another way: if group 1 is a subset of group 2, group 2 will have group 1’s exact lineage as the start of its lineage. This is because lineage shows a complete history of how a set came to be. If there is a solution that has a different lineage than the one we are tracking as “the chosen solution to show the user”, it must include at least one answer that is different than the chosen one, and thus it must be a different unique solution.</p>
+<p>The lineage described above provides a way to determine this. A solution group can only be a subset of another if its lineage is a prefix of the other. Said another way: if group 1 is a subset of group 2, group 2 will have group 1’s exact lineage as the start of its lineage. This is because lineage shows a complete history of how a set came to be. If there is a solution that has a different lineage than the one we are tracking as “the chosen solution to show the user”, it must include at least one answer that is different than the chosen one, and thus it must be a different unique solution.</p>
 
-<p>So, we will be able to detect if we have more than one unique solution group by picking the lineage that is “the answer” we’ll show the user, and then seeing if we can find another solution group that has a different lineage. If there is one, that is a second answer.</p>
+<p>So, we will be able to detect if we have more than one unique solution group by picking the lineage that is “the answer” we’ll show the user, and then seeing if we can find another solution group that has a different lineage. If there is one, that is a second unique solution group.</p>
 
 <h3 id="when-can-we-stop">When Can We Stop</h3>
-
 <p>If at least one variable has max=inf we need to go all the way to the end to get the maximal solution. If none do, we actually want the <em>minimal</em> solution (but tell the user there are more). So we can stop after we find two solutions</p>
 
 <p>TODO: finish this</p>
 
 <h3 id="algorithm-2-design">Algorithm 2 Design</h3>
-<p>We know have everything we need to design Algorithm 2, which will be more efficient than Algorithm 1, and also allow us to give the kinds of answers a user will expect. It uses the same skeleton as Algorithm 1, but has some extensions to meet the requirements above. It has two parts, a “combination generator” based on Algorithm 1, and a “solution group picker” which is new.</p>
+<p>We now have everything we need to design Algorithm 2. It will be more efficient than Algorithm 1 while also allowing us to give the kinds of answers a user will expect. It uses the same skeleton as Algorithm 1, but has some extensions to meet the requirements above. There are two parts: a “combination generator” based on Algorithm 1, and a “solution group picker” which is new.</p>
 
 <p><strong>Combination Generator</strong></p>
 
 <p>Start with:</p>
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">set_list</code> (a list of sets), which initially is only a single empty set.</li>
-  <li><code class="language-plaintext highlighter-rouge">unique_solution_groups</code></li>
+  <li><code class="language-plaintext highlighter-rouge">set_list</code> (a list of sets), which initially is only a single empty set</li>
 </ul>
 
 <p>When a new solution is found, for each <code class="language-plaintext highlighter-rouge">selected_set</code> in <code class="language-plaintext highlighter-rouge">set_list</code>:</p>
 
 <ol>
-  <li>Build <code class="language-plaintext highlighter-rouge">new_set</code> by adding the solution to <code class="language-plaintext highlighter-rouge">selected_set</code>.</li>
+  <li>Build <code class="language-plaintext highlighter-rouge">new_set</code> by adding the solution to <code class="language-plaintext highlighter-rouge">selected_set</code></li>
   <li>Generate a <code class="language-plaintext highlighter-rouge">unique_id</code>. Then, create a lineage for <code class="language-plaintext highlighter-rouge">new_set</code> by appending <code class="language-plaintext highlighter-rouge">unique_id</code> to the end of the <code class="language-plaintext highlighter-rouge">selected_set</code> lineage</li>
   <li>If <code class="language-plaintext highlighter-rouge">new_set</code> meets or could meet the criteria (once more rows are added), add it, along with its lineage, to <code class="language-plaintext highlighter-rouge">set_list</code></li>
   <li>If <code class="language-plaintext highlighter-rouge">new_set</code> actually <em>did</em> meet the criteria, also return it, and its lineage, as a solution group</li>
@@ -504,7 +509,7 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 <p>Given what we now know about what is needed from our combination generator, there are many optimizations that can be made to improve performance. Here are a couple:</p>
 <ul>
   <li><strong>Quit generating at 2</strong>: Since we only really care about 2 solution groups, the generator doesn’t need to keep track of all the sets to build all combinations.  Instead, once it has returned two unique solution groups, it only needs to generate iterations of those. In fact, it really only needs to generate iterations of the first. This eliminates a lot of work generating and testing sets that aren’t used.</li>
-  <li><strong>Merge answers</strong>: We can reduce the number of sets we have to consider in <code class="language-plaintext highlighter-rouge">set_list</code> by observing that we only need to add a new set to the set list if we have a set that needs to be the base for more alternatives. Variables that have constraints with an upper limit of inf don’t need to generate all the combinations since they will will just be subsets of the one maximal set. So, if a solution only introduces new individuals to variables that have an upper limit of inf, it can just be merged into that set, it doesn’t need to be added as a separate set to <code class="language-plaintext highlighter-rouge">set_list</code>.</li>
+  <li><strong>Merge answers</strong>: We can reduce the number of sets we have to consider in <code class="language-plaintext highlighter-rouge">set_list</code> by observing that we only need to add a new set to the set list if we have a set that needs to be the base for more alternatives. Variables that have constraints with an upper limit of <code class="language-plaintext highlighter-rouge">inf</code> don’t need to generate all the combinations since they will just be subsets of the one maximal set. So, if a solution only introduces new individuals to variables that have an upper limit of <code class="language-plaintext highlighter-rouge">inf</code>, it can just be merged into that set, it doesn’t need to be added as a separate set to <code class="language-plaintext highlighter-rouge">set_list</code>.</li>
 </ul>
 
 <h3 id="other-observations-still-being-developed">Other Observations Still Being Developed</h3>
@@ -513,7 +518,7 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
   <li>Any variable that has max=inf will end up with only 1 valid set of individuals in any solution group. If all variables have this, there will be only one unique solution group.  A variable that has a range such as between(2, 4), will generate a subset for each count until it gets to 4. For example, there will be a subset that has 2 items, one that has 3, and one that has 4. It will <em>also</em> generate alternatives that are unique for each set &lt; 4.</li>
 </ul>
 
-<p>Last update: 2023-05-08 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionCombinations.md">edit</a>]</p>
+<p>Last update: 2023-05-09 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionCombinations.md">edit</a>]</p>
 
         
       </section>

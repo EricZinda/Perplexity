@@ -36,18 +36,18 @@ We can look at solving an MRS as a [constraint satisfaction problem](https://en.
 One simple approach to solving constraint satisfaction problems (like finding the solutions to an MRS) is to use ["backtracking"](https://en.wikipedia.org/wiki/Backtracking). The simplest backtracking algorithm is to:
 
 - Traverse the predications from the well-formed MRS tree, depth-first
-- When we encounter a variable in a predication that is unassigned we: 
+- When an unassigned variable in a predication is encountered: 
   1. Assign it the first item in the world
   2. Mark it as a `backtrack point`
-- If a predication is `false`, we:
+- If a predication is `false`:
   1. "backtrack" to the nearest `backtrack point` and retry with the next item in the world
-  2. If we run out of items, we backtrack further to the next `backtrack point` and try again. 
+  2. If there are no more items to retry with, backtrack further to the next `backtrack point` and try again. 
 
-This will try all items in the world, in all variables, until it finds all solutions. Backtracking allows the search space to be pruned to avoid whole sets of assignments that can't possibly work, thus improving the performance.
+This will try all items in the world, in all variables, until it finds all solutions. Backtracking allows the search space to be pruned to avoid whole sets of assignments that can't possibly work, thus improving the performance vs. a full search of all possibilities.
 
 Let's use the backtracking algorithm to solve a slightly more interesting example, "large file in folder":
 
-[It is important to note that these are not real MRS or well-formed tree examples yet!  We are building up to that.]
+[It is important to note that these are not real MRS or well-formed tree examples yet!  That will come soon.]
 ```
 formula: large(x), file(x), folder(y), in(x, y)
 
@@ -59,15 +59,15 @@ a large file
 world facts:
 [a large file] is in [a folder]
 ```
-The "world individuals" above are the only objects that exist in the world. `x` values in MRS will hold these as values.
+The "world individuals" above are the only objects that exist in the world. `x` values in the MRS will hold these as values.
 
 The "world facts" above are facts about the relationships between things in the world that predications such as `in(x, y)` can refer to to see if they are `true`.
 
 As above, it doesn't matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We'll be building an example of such a system in this tutorial.
 
-To make the backgracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of "variable scope". Variable scope shows where a variable is introduced and which predications can use it. 
+To make the backtracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of "variable scope". Variable scope shows where a variable is introduced and which predications can use it. 
 
-We'll represent scope by a function for now: `scope(variable, [predication_list])`. The function states that `variable` can be used by all the predications in `[predication_list]`. And, since `scope()` itself is a predication, more variables can be defined in `predication_list` using another `scope()`. This allows us to represent our formula using scoping, like this:
+We'll represent scope by a made-up function for now: `scope(variable, [predication_list])`. The function states that `variable` can be used by all the predications in `[predication_list]`. And, since `scope()` itself is a predication, more variables can be defined in `predication_list` using another `scope()`. This allows us to represent our formula using scoping, like this:
 
 ```
 formula: scope(x, [large(x), file(x), 
@@ -105,33 +105,34 @@ The backtracking algorithm does its job by recursively "evaluating" the `scope()
 
 So, working through the example:
 
-|action|formula|
+|Action|Formula|
 |---|---|
-|Initial formula |    scope(x, [large(x), file(x), scope(y, [folder(y), in(x, y)])]) |
+|Start with initial formula |    scope(x, [large(x), file(x), scope(y, [folder(y), in(x, y)])]) |
 |set x='a folder' (the first item in the world) |    scope('a folder', [large('a folder'), file('a folder'), scope(y, [folder(y), in('a folder', y)])]) |
 |first item in list is `false`|    ... large('a folder')...|
 |backtrack: set x='a small file' (the next item in the world) |    scope('a small file', [large('a small file'), file('a small file'), scope(y, [folder(y), in('a small file', y)])]) |
 |first item in list is `false`|    ... large('a small file')...|
 |backtrack: set x='a large file' |    scope('a large file', [large('a large file'), file('a large file'), scope(y, [folder(y), in('a large file', y)])]) |
-|first item in list is `true`|    ... large('a large file')...|
-|second item in list is `true`|    ... file('a large file')...|
+|first item in list is `true`| ... large('a large file')...|
+|second item in list is `true`| ... file('a large file')...|
 |third item in list is `scope()`: set y='a folder' (the first item in the world)|    ...  scope('a folder', [folder('a folder'), in('a large file', 'a folder')])|
-|first item in `scope(y, ...) is `true`|    ... folder('a folder')...| |second item in `scope(y, ...) is `true`|    ... in('a large file', 'a folder')...|
+|first item in `scope(y, ...)` is `true`|    ... folder('a folder') ...|
+|second item in `scope(y, ...)` is `true`|    ... in('a large file', 'a folder')...|
 |thus: `scope(y, ...)` is `true` for y='a folder'|    ...  scope('a folder', [folder('a folder'), in('a large file', 'a folder')])|
 |thus: `scope(x, ...)` is `true` for x='a large file' and y='a folder'|scope('a large file', [large('a large file'), file('a large file'), scope('a folder', [folder('a folder'), in('a large file', 'a folder')])])|
 
 This example shows how:
 
-- Iteratively assigning values to each variable in a scope
-- Evaluating the predication list within a scope
+- Iteratively assigning values to each variable in a scope and
+- Evaluating the predication list within a scope and
 - Backtracking when there is a failure
 
 ... will eventually find all the solutions to the formula (or prove that there are none). 
 
 It works because we are effectively trying all values in all variables. But, it is better than literally just assigning all values to all variables, one by one, until we find the answer, because backtracking eliminates whole branches in the search space. There are other optimizations that can be done, and we will do more as we go, but the basic approach is straightforward.
 
-At this point it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using even different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We'll work through some of those and find optimizations for some of the most aggregious problems.
+At this point, it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using completely different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems, and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We'll work through some of those and find optimizations for some of the most egregious problems.
 
-But, before we can solve a real well-formed MRS tree, we need to account for more of the features that it has. First up is allowing the solver to represent things operating ["together"](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets).
+But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating ["together"](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets).
 
-Last update: 2023-04-27 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolver.md)]{% endraw %}
+Last update: 2023-05-09 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolver.md)]{% endraw %}

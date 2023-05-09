@@ -16,7 +16,9 @@ solution 2: x=file2, y=folder2
 
 So, using that approach, we could look at the formula as representing the phrase: "large files in folders" since it will find multiple if they exist. But, this only works because of how "in" behaves. If `a` and `b` are "in" a folder, `a` is in the folder and `b` is in the folder. 
 
-This isn't true of all verbs, however. The verb "to lift" can distinguish the cases and mean very different things.  For example:
+This isn't true of all verbs, however. The verb "to lift" can distinguish cases that mean very different things.  
+
+For example:
 
 ```
 students lifted a table
@@ -25,14 +27,14 @@ students lifted a table
 1. Two students (together) lifted a table (at the same time)
 2. Two students (separately) lifted a (different) table
 
-We need to capture the semantic of the students working together or separately in our solutions.
+We need to be able to capture the semantic of the students working together or separately in our solutions. Simply having single values assigned to variables can't do that.
 
 ### Handling Sets
-To represent individuals operating "together" or "separately" we can make a simple extension to the algorithm: require that variables always contain a *set* of one or more things from the world. Predications must interpret a set of greater than one element as meaning "together".  A set of one item means "separately" or "alone". 
+To represent individuals operating "together" or "separately" we can make a simple extension to the algorithm: require that variables always contain a *set* of one or more things from the world. Predications can then interpret a set of greater than one element as meaning "together".  A set of one item can mean "separately" or "alone". 
 
-This change allows the solver to represent a solution where Alice and Bob are lifting a table *together* like this: `lift([alice, bob], [table1])`. The fact that the first argument to lift is a set of two people means they are working together, which wasn't possible before.
+This change allows the solver to represent a solution where Alice and Bob are lifting a table *together* like this: `lift([alice, bob], [table1])`. The fact that the first argument to `lift` is a set of two people means they are working together, which wasn't possible before.
 
-With this change, a `scope()` predication now needs to assign *all possible sets of values* to its variable in order to explore the solution tree and find all the solutions. This can quickly become quite expensive, but there are optimizations we will explore. For now, we'll use the direct approach to understand the algorithm.
+With this change, a `scope()` predication now needs to assign *all possible sets of values* to its variable in order to explore the solution tree and find all the solutions. This can quickly become quite expensive, but there are optimizations we will explore. For now, we'll use the direct approach to keep the algorithm simple.
 
 Let's work through an example of a world where two students are lifting a table:
 
@@ -88,6 +90,6 @@ In the new form, the solutions we get back (i.e. the variable assignments that m
 
 Thus, the algorithm still gives us all the assignments of variables that make the formula `true` in the world, but now our formulation can express things operating together or separately.
 
-However, we need something more if we are going to truly represent the meaning of a phrase with plurals, as described in the [next section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroups).
+However, we need something more to allow representing plurals in a phrase, as described in the [next section](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroups).
 
-Last update: 2023-04-26 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSets.md)]{% endraw %}
+Last update: 2023-05-09 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSets.md)]{% endraw %}

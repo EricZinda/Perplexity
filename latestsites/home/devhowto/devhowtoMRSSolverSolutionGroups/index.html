@@ -244,8 +244,6 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="collective-and-distributive-readings">Collective and Distributive Readings</h2>
-<p>TODO: talk about forward and reverse readings with respect to word order being a function of the tree that is generated.</p>
-
 <p>If we change the “students lifted a table” example from the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets">previous section</a> slightly, we can uncover another layer of meaning we need to represent in the solver.</p>
 
 <p>For example:</p>
@@ -268,31 +266,31 @@
 
 <p>Now, notice that there is more going on than just a different grouping of students. Reading #1 above describes a single table being lifted, whereas reading #2 has two … but they both come out of a phrase that says “… lifted <em>one</em> table”. This happens because the phrases are both being interpreted as “one table [<em>per group</em>]”. #1 has a single group (of two students), #2 has two groups (of one student).</p>
 
-<p>So, to discuss the whole phenomena across the phrase (and not just how students are being grouped), the term “reading” is used in conjunction with collective or distributive. As in: “#1 is a collective <em>reading</em>” and “#2 is a distributive <em>reading</em>”. Defining these a bit more rigorously:</p>
+<p>So, to discuss the whole phenomena across the phrase (and not just how the students are being grouped), the term “reading” is used in conjunction with collective or distributive. As in: “#1 is a collective <em>reading</em>” and “#2 is a distributive <em>reading</em>”. Defining these a bit more rigorously:</p>
 
 <blockquote>
-  <p>For: “<code class="language-plaintext highlighter-rouge">M</code> Students lifting <code class="language-plaintext highlighter-rouge">N</code> Tables”:</p>
+  <p>For: “<code class="language-plaintext highlighter-rouge">M</code> students lifting <code class="language-plaintext highlighter-rouge">N</code> tables”:</p>
 
-  <p>“The distributive reading”</p>
+  <p>To be the distributive reading:</p>
   <ul>
-    <li>Students are grouped <em>distributively</em> into subgroups, which means:
+    <li>Students: must be grouped <em>distributively</em> into subgroups, which means:
       <ul>
         <li>2 or more subgroups</li>
         <li>Every student is in exactly one subgroup</li>
-        <li>The total of students across the subgroups must add up to <code class="language-plaintext highlighter-rouge">M</code>.</li>
+        <li>The total of students across the subgroups must add up to <code class="language-plaintext highlighter-rouge">M</code></li>
       </ul>
     </li>
-    <li>Tables: Each student subgroup must be together (if the subgroup contains more than one student) lifting exactly <code class="language-plaintext highlighter-rouge">N</code> tables.</li>
+    <li>Tables: Each student subgroup with more than one student must be together lifting exactly <code class="language-plaintext highlighter-rouge">N</code> tables</li>
   </ul>
 
-  <p>“The collective reading”</p>
+  <p>To be the collective reading:</p>
   <ul>
-    <li>Students are grouped <em>collectively</em>, which means:
+    <li>Students must be grouped <em>collectively</em>, which means:
       <ul>
-        <li>Exactly 1 “subgroup” that contains the entire set of students.</li>
+        <li>Exactly 1 “subgroup” that contains the entire set of students</li>
       </ul>
     </li>
-    <li>Tables: Identical to the distributive reading, but using just one “subgroup” that contains everyone.</li>
+    <li>Tables: Identical to the distributive reading, but using just one “subgroup” that contains everyone</li>
   </ul>
 </blockquote>
 
@@ -310,40 +308,43 @@
 <p>This interpretation distributively groups the students, but <em>counts the tables differently</em>.  This can be confusing, so let’s do the three definitions at once:</p>
 
 <blockquote>
-  <p>For: “<code class="language-plaintext highlighter-rouge">M</code> Students lifting <code class="language-plaintext highlighter-rouge">N</code> Tables”:</p>
+  <p>For: “<code class="language-plaintext highlighter-rouge">M</code> students lifting <code class="language-plaintext highlighter-rouge">N</code> tables”:</p>
 
   <p><em>The distributive reading</em>: “Two students [separately] lifted two tables [each]”</p>
   <ul>
-    <li>Students are grouped <em>distributively</em> into subgroups, which means:
+    <li>Students: must be grouped <em>distributively</em> into subgroups, which means:
       <ul>
         <li>2 or more subgroups</li>
         <li>Every student is in exactly one subgroup</li>
-        <li>The total of students across the subgroups must add up to <code class="language-plaintext highlighter-rouge">M</code>.</li>
+        <li>The total of students across the subgroups must add up to <code class="language-plaintext highlighter-rouge">M</code></li>
       </ul>
     </li>
-    <li>Tables: Each student subgroup must be together (if the subgroup contains more than one student) lifting exactly <code class="language-plaintext highlighter-rouge">N</code> tables.</li>
+    <li>Tables: Each student subgroup with more than one student must be together lifting exactly <code class="language-plaintext highlighter-rouge">N</code> tables</li>
   </ul>
 
   <p><em>The collective reading</em>: “Two students [together] lifted two tables [at the same time]”</p>
   <ul>
-    <li>Students are grouped <em>collectively</em>, which means:</li>
-    <li>Exactly 1 “subgroup” that contains the entire set of students.</li>
-    <li>Tables: Identical to the distributive reading, but using just one “subgroup” that contains everyone.</li>
+    <li>Students must be grouped <em>collectively</em>, which means:
+      <ul>
+        <li>Exactly 1 “subgroup” that contains the entire set of students</li>
+      </ul>
+    </li>
+    <li>Tables: Identical to the distributive reading, but using just one “subgroup” that contains everyone</li>
   </ul>
 
   <p><em>The cumulative reading</em>: “One student lifted one table and another student lifted a different table”</p>
   <ul>
     <li>Students: Identical to the distributive reading.</li>
-    <li>Tables: The total of tables across all subgroups <em>adds up</em> to <code class="language-plaintext highlighter-rouge">M</code>.</li>
+    <li>Tables: The total of tables across all subgroups must <em>add up</em> to <code class="language-plaintext highlighter-rouge">M</code></li>
   </ul>
 </blockquote>
 
 <p>Note how the math for the cumulative reading is different than the math for collective and distributive readings. Collective and distributive readings require <code class="language-plaintext highlighter-rouge">M</code> tables <em>per student subgroup</em>, whereas cumulative requires <code class="language-plaintext highlighter-rouge">M</code> tables, total, <em>across all student subgroups</em>.</p>
 
-<p>It is important to note that this is not some DELPH-IN feature or artifact, this is how human language works. We are just trying to build an algorithm that does it like a human would.</p>
+<p>It is important to note that this is not some DELPH-IN feature or artifact, this is how human language works. We are just trying to emulate it by building an algorithm that processes phrases like a human would.</p>
 
 <h3 id="algorithm-fixes-for-collective-distributive-and-cumulative">Algorithm Fixes for Collective, Distributive and Cumulative</h3>
-<p>The algorithm we’ve defined so far will actually find the collective, distributive, and cumulative solutions to an MRS, if they exist, because it will find <em>all</em> solutions to the MRS. The problem is the way we’re defining “solution”. To see why, let’s bring back the three readings:</p>
+<p>The backtracking algorithm we’ve defined in previous sections will actually find the collective, distributive, and cumulative solutions to an MRS, if they exist, because it will find <em>all</em> solutions to the MRS.  But, there is a problem with the way we’re currently defining “solution”. To see why, let’s bring back the three readings:</p>
 
 <blockquote>
   <p>“two students lifted two tables”</p>
@@ -354,13 +355,13 @@
   </ol>
 </blockquote>
 
-<p>Note that situations #1 and #3 are only properly represented by a <em>group</em> of solutions as we’ve defined them:</p>
+<p>Note that situations #1 and #3 are only properly represented by a <em>group</em> of solutions as we’ve defined “solution”:</p>
 
 <blockquote>
   <p>Solution: Assignments of single set-based values to all variables that make the MRS <code class="language-plaintext highlighter-rouge">true</code></p>
 </blockquote>
 
-<p>There isn’t a way to represent #1 and #3 as a <em>single</em> solution (i.e. a single set of variable assignments) in this model. To see why, look at #1: Since each student is lifting a different “two tables”, it will take 4 solutions to capture the meaning:</p>
+<p>There isn’t a way to represent #1 and #3 as a <em>single</em> solution (i.e. a single set of variable assignments) in this model. For example, look at #1: Since each student is lifting a different “two tables”, it will take 4 solutions to capture the meaning:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x=[student1], y=[table1]
 x=[student1], y=[table2]
@@ -393,7 +394,7 @@ world facts:
   [alice, bob] lift [table1, table2]
 </code></pre></div></div>
 
-<p>The <em>solution group</em> that represents this <em>can</em> be represented by a single solution in the group:</p>
+<p>The <em>solution group</em> that represents this can actually be represented by a single solution in the group:</p>
 
 <blockquote>
   <p>Solution Group for <em>the collective reading</em>: “Two students [together] lifted two tables [at the same time]”</p>
@@ -512,7 +513,9 @@ world facts:
 
 <p><a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm">Next up</a> is a description of how the solver can actually <em>do</em> the grouping and arrive at those answers.</p>
 
-<p>Last update: 2023-04-27 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroups.md">edit</a>]</p>
+<p>TODO: talk about forward and reverse readings with respect to word order being a function of the tree that is generated.</p>
+
+<p>Last update: 2023-05-09 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroups.md">edit</a>]</p>
 
         
       </section>

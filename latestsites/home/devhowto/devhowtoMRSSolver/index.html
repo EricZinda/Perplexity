@@ -286,25 +286,25 @@ a large file
 
 <ul>
   <li>Traverse the predications from the well-formed MRS tree, depth-first</li>
-  <li>When we encounter a variable in a predication that is unassigned we:
+  <li>When an unassigned variable in a predication is encountered:
     <ol>
       <li>Assign it the first item in the world</li>
       <li>Mark it as a <code class="language-plaintext highlighter-rouge">backtrack point</code></li>
     </ol>
   </li>
-  <li>If a predication is <code class="language-plaintext highlighter-rouge">false</code>, we:
+  <li>If a predication is <code class="language-plaintext highlighter-rouge">false</code>:
     <ol>
       <li>“backtrack” to the nearest <code class="language-plaintext highlighter-rouge">backtrack point</code> and retry with the next item in the world</li>
-      <li>If we run out of items, we backtrack further to the next <code class="language-plaintext highlighter-rouge">backtrack point</code> and try again.</li>
+      <li>If there are no more items to retry with, backtrack further to the next <code class="language-plaintext highlighter-rouge">backtrack point</code> and try again.</li>
     </ol>
   </li>
 </ul>
 
-<p>This will try all items in the world, in all variables, until it finds all solutions. Backtracking allows the search space to be pruned to avoid whole sets of assignments that can’t possibly work, thus improving the performance.</p>
+<p>This will try all items in the world, in all variables, until it finds all solutions. Backtracking allows the search space to be pruned to avoid whole sets of assignments that can’t possibly work, thus improving the performance vs. a full search of all possibilities.</p>
 
 <p>Let’s use the backtracking algorithm to solve a slightly more interesting example, “large file in folder”:</p>
 
-<p>[It is important to note that these are not real MRS or well-formed tree examples yet!  We are building up to that.]</p>
+<p>[It is important to note that these are not real MRS or well-formed tree examples yet!  That will come soon.]</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>formula: large(x), file(x), folder(y), in(x, y)
 
 world individuals:
@@ -315,15 +315,15 @@ a large file
 world facts:
 [a large file] is in [a folder]
 </code></pre></div></div>
-<p>The “world individuals” above are the only objects that exist in the world. <code class="language-plaintext highlighter-rouge">x</code> values in MRS will hold these as values.</p>
+<p>The “world individuals” above are the only objects that exist in the world. <code class="language-plaintext highlighter-rouge">x</code> values in the MRS will hold these as values.</p>
 
 <p>The “world facts” above are facts about the relationships between things in the world that predications such as <code class="language-plaintext highlighter-rouge">in(x, y)</code> can refer to to see if they are <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
 <p>As above, it doesn’t matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We’ll be building an example of such a system in this tutorial.</p>
 
-<p>To make the backgracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of “variable scope”. Variable scope shows where a variable is introduced and which predications can use it.</p>
+<p>To make the backtracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of “variable scope”. Variable scope shows where a variable is introduced and which predications can use it.</p>
 
-<p>We’ll represent scope by a function for now: <code class="language-plaintext highlighter-rouge">scope(variable, [predication_list])</code>. The function states that <code class="language-plaintext highlighter-rouge">variable</code> can be used by all the predications in <code class="language-plaintext highlighter-rouge">[predication_list]</code>. And, since <code class="language-plaintext highlighter-rouge">scope()</code> itself is a predication, more variables can be defined in <code class="language-plaintext highlighter-rouge">predication_list</code> using another <code class="language-plaintext highlighter-rouge">scope()</code>. This allows us to represent our formula using scoping, like this:</p>
+<p>We’ll represent scope by a made-up function for now: <code class="language-plaintext highlighter-rouge">scope(variable, [predication_list])</code>. The function states that <code class="language-plaintext highlighter-rouge">variable</code> can be used by all the predications in <code class="language-plaintext highlighter-rouge">[predication_list]</code>. And, since <code class="language-plaintext highlighter-rouge">scope()</code> itself is a predication, more variables can be defined in <code class="language-plaintext highlighter-rouge">predication_list</code> using another <code class="language-plaintext highlighter-rouge">scope()</code>. This allows us to represent our formula using scoping, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>formula: scope(x, [large(x), file(x), 
                                       scope(y, [folder(y), in(x, y)])
@@ -367,13 +367,13 @@ scope(x, predication_list)                          │
 <table>
   <thead>
     <tr>
-      <th>action</th>
-      <th>formula</th>
+      <th>Action</th>
+      <th>Formula</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Initial formula</td>
+      <td>Start with initial formula</td>
       <td>scope(x, [large(x), file(x), scope(y, [folder(y), in(x, y)])])</td>
     </tr>
     <tr>
@@ -409,7 +409,11 @@ scope(x, predication_list)                          │
       <td>…  scope(‘a folder’, [folder(‘a folder’), in(‘a large file’, ‘a folder’)])</td>
     </tr>
     <tr>
-      <td>first item in <code class="language-plaintext highlighter-rouge">scope(y, ...) is </code>true<code class="language-plaintext highlighter-rouge">|    ... folder('a folder')...| |second item in </code>scope(y, …) is <code class="language-plaintext highlighter-rouge">true</code></td>
+      <td>first item in <code class="language-plaintext highlighter-rouge">scope(y, ...)</code> is <code class="language-plaintext highlighter-rouge">true</code></td>
+      <td>… folder(‘a folder’) …</td>
+    </tr>
+    <tr>
+      <td>second item in <code class="language-plaintext highlighter-rouge">scope(y, ...)</code> is <code class="language-plaintext highlighter-rouge">true</code></td>
       <td>… in(‘a large file’, ‘a folder’)…</td>
     </tr>
     <tr>
@@ -426,8 +430,8 @@ scope(x, predication_list)                          │
 <p>This example shows how:</p>
 
 <ul>
-  <li>Iteratively assigning values to each variable in a scope</li>
-  <li>Evaluating the predication list within a scope</li>
+  <li>Iteratively assigning values to each variable in a scope and</li>
+  <li>Evaluating the predication list within a scope and</li>
   <li>Backtracking when there is a failure</li>
 </ul>
 
@@ -435,11 +439,11 @@ scope(x, predication_list)                          │
 
 <p>It works because we are effectively trying all values in all variables. But, it is better than literally just assigning all values to all variables, one by one, until we find the answer, because backtracking eliminates whole branches in the search space. There are other optimizations that can be done, and we will do more as we go, but the basic approach is straightforward.</p>
 
-<p>At this point it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using even different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We’ll work through some of those and find optimizations for some of the most aggregious problems.</p>
+<p>At this point, it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using completely different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems, and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We’ll work through some of those and find optimizations for some of the most egregious problems.</p>
 
-<p>But, before we can solve a real well-formed MRS tree, we need to account for more of the features that it has. First up is allowing the solver to represent things operating <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets">“together”</a>.</p>
+<p>But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRSSolverSets">“together”</a>.</p>
 
-<p>Last update: 2023-04-27 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolver.md">edit</a>]</p>
+<p>Last update: 2023-05-09 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolver.md">edit</a>]</p>
 
         
       </section>
