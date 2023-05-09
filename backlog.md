@@ -1,7 +1,7 @@
 Remaining work to be shown in the tutorial:
-Bug: yes/no/prop doesn't say "there are more"
 
-Bug: which files are in a folder says "there are more" but that isn't true
+
+Bug: yes/no/prop doesn't say "there are more"
 Bug: Which 2 files in the folder are large is still too slow
 
 

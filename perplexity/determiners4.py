@@ -92,7 +92,8 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max):
     # Give a unique set_id to every group that gets created
     set_id = 0
-    sets = [[initial_stats_group, [], str(set_id)]]
+    initial_empty_set = [initial_stats_group, [], str(set_id)]
+    sets = []
     set_id += 1
 
     # Track the unique solution groups that are returned so we
@@ -132,9 +133,15 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                         unique_solution_groups = None
 
                 new_sets = []
-                for existing_set in sets:
+                was_merged = False
+                for existing_set in sets + [initial_empty_set]:
+                    if len(existing_set[1]) == 0 and was_merged:
+                        # Don't create a brand new set by merging with the final empty set if it was
+                        # already merged into something. Because: it is already being tracked.
+                        continue
+
                     new_set_stats_group = existing_set[0].copy()
-                    force_new_group, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
+                    merge, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
 
                     if state == CriteriaResult.fail_one:
                         # Fail (doesn't meet criteria): don't add, don't yield
@@ -150,13 +157,14 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                         # Didn't fail, decide whether to merge into the existing set or create a new one
                         # Merge if the only variables that got updated had a criteria with an upper bound of inf
                         # since alternatives won't be used anyway
-                        if force_new_group:
+                        if merge:
+                            was_merged = True
+                            new_set = existing_set
+
+                        else:
                             new_set = [None, None, existing_set[2] + ":" + str(set_id)]
                             set_id += 1
                             new_sets.append(new_set)
-
-                        else:
-                            new_set = existing_set
 
                         new_set[0] = new_set_stats_group
                         new_set[1] = existing_set[1] + [next_solution]
@@ -171,20 +179,11 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                             # Not yet a solution, don't track it as one
                             pass
 
-                        # Why does force_new_group need to be true?
-                        #
-                        # force_new_group is only False if:
-                        # a) no variables being tracked changed
-                        # or
-                        # b) every variable being tracked has an upper limit of inf
-                        #
-                        # If no variables changed, then this can't be a new solution because, if it was, the previous would have been so it would already have been tracked
-                        # If every variable has an upper limit of inf then we will only generate one solution group since they will always be merged
-                        # So we don't need to do this optimization
-                        if force_new_group and (state == CriteriaResult.meets or state == CriteriaResult.meets_pending_global) and \
+                        # See if this is a new unique solution
+                        if (state == CriteriaResult.meets or state == CriteriaResult.meets_pending_global) and \
                                 unique_solution_groups is not None:
                             # We still haven't transitioned to tracking only the two solution groups
-                            # So: add this one if it just transitioned from contender to solution group
+                            # So: add this one if it just transitioned from contender to solution group (to ensure we don't add it twice)
                             # If we haven't yet found 2
                             if existing_set[0].group_state not in [CriteriaResult.meets, CriteriaResult.meets_pending_global] and \
                                     len(unique_solution_groups) < 2:
@@ -388,7 +387,7 @@ class VariableStats(object):
 #
 def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new_solution):
     current_set_state = CriteriaResult.meets
-    force_new_group = False
+    merge = True
     for index in range(len(var_criteria)):
         # Get the existing statistics for the variable at this index
         # and the criteria for the variable as well
@@ -406,14 +405,14 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
             new_set_stats_group.group_state = current_set_state
             return None, current_set_state
 
-        # If the value in new_solution for the current variable actually added a new value to the set of values
-        # being tracked, and the criteria for this variable doesn't have an upper bound of inf,
-        # then we need to create a new group because we need to generate alternatives from it
+        # If the value in new_solution for the current variable added a new value to the set of values
+        # being tracked by a variable without an upper bound of inf, then we need to create a new group
+        # because we need to generate alternatives from it
         if new_individuals and criteria.max_size != float('inf'):
-            force_new_group = True
+            merge = False
 
     new_set_stats_group.group_state = current_set_state
-    return force_new_group, current_set_state
+    return merge, current_set_state
 
 
 # Called if we can shortcut because we have already found the answers but we still need to check global constraints

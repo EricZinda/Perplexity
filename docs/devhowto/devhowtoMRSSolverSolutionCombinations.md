@@ -201,6 +201,31 @@ In this way, we can get a minimal solution group first and slowly grow it over t
 
 If there are 5 unique solution groups for a given phrase, this means we will effectively be picking one at random to show the user. This is OK since, if there are many solutions, it really doesn't matter which we show. [TODO: explain why].
 
+But, this only works if all the subsets of a unique solution group have the same lineage.  Let's examine that next.
+
+### Generate Only Unique Maxmimal Solution Groups
+Algorithm 1 will generate all non-empty combinations of solutions. That means if the MRS is simply "files(x)" (which has the constraint `between(1, inf)`), and there are 2 files, it will generate:
+
+~~~
+Group 1:
+  file1
+
+Group 2:
+  file2
+
+Group 3:
+  file1
+  file2
+~~~
+
+The lineage technique will allow the caller to know that Group 3 is really just an updated Group 2, but Group 2 will look like an independent "unique" solution, when it really isn't. Constraints with an `inf` upper limit can accept *all* individuals and so will *always* generate duplicate solutions if they are allowed to form new sets. This is true even if their lower limit is > 1. So, any variable that has an upper constraint of `inf` should not *on its own* be a reason to add a new group to the `set_list`. 
+
+However, if the tree has multiple variables with constraints, other variables *may* be a reason to form a new group. If another variable has an upper limit < `inf` then we do want to return all combinations of, say, "2 files". Thus, in that case we *do* want to create a new set in `set_list` with the new solution so that it can form new combinations, but *only if the value for that variable in the new solution is not already in a set*. Because, if it is already in a set, it is already being tracked and creating a new set to form combinations will, again, create duplicates. 
+
+So, the logic for creating new sets needs to be: Merge a solution into an existing set if it doesn't contribute new individuals to any variables that have constraints that have a max < `inf`. If it doesn't get merged into any existing set, create a new one and add it to `set_list`.
+
+This means that, in the new algorithm, `set_list` begins with no sets. The empty set that Algorithm 1 started with is only used if a solution wasn't merged into an existing set.
+
 ### Detect If There Is More Than One Unique Solution Group
 Algorithm Version 1 doesn't indicate whether a returned solution group is a unique solution group -- one that isn't a subset of any other. It just returns solution groups that have 1 more solution than those it has generated before. This problem is really the inverse of the one above. In this case, we want to see if a new solution group *isn't* a subset of the one we've selected.
 
@@ -219,14 +244,19 @@ We now have everything we need to design Algorithm 2. It will be more efficient 
 **Combination Generator**
 
 Start with:
-- `set_list` (a list of sets), which initially is only a single empty set
+- `set_list` (a list of sets), which initially is empty
 
-When a new solution is found, for each `selected_set` in `set_list`:
+When a `new_solution` is found, for each `selected_set` in `set_list`:
 
-1. Build `new_set` by adding the solution to `selected_set`
+1. Build `new_set` by adding `new_solution` to `selected_set`
 2. Generate a `unique_id`. Then, create a lineage for `new_set` by appending `unique_id` to the end of the `selected_set` lineage
-3. If `new_set` meets or could meet the criteria (once more rows are added), add it, along with its lineage, to `set_list`
+3. If `new_set` meets or could meet the criteria (once more rows are added):
+  - If it can be merged into `selected_set` merge it
+  - If not, add it, along with its lineage, to `set_list`
 4. If `new_set` actually *did* meet the criteria, also return it, and its lineage, as a solution group
+
+If `new_solution` meets or could meet the criteria and did not get merged into any set in `set_list`, add it to `set_list`. 
+
 
 **Solution Group Picker**
 
