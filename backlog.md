@@ -1,11 +1,13 @@
 Remaining work to be shown in the tutorial:
 Bug: which files are in a folder says "there are more" but that isn't true
 Bug: Which 2 files in the folder are large is still too slow
+Bug: Test does not capture (there are more)
 
 
 Update the comments in the code and the docs
 - TODO: For propositions, we need to respond with "there are more" if it is "at least" or "exactly" once we get above the level that a normal person would say "at least" for
 Clean up code
+
 
 Plurals work 
 Need to make these right
