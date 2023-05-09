@@ -7,6 +7,63 @@ from perplexity.tree import gather_quantifier_order
 from perplexity.utilities import at_least_one_generator
 
 
+# Create a generator that yields solutions to a minimal solution group as quickly as it is found
+# but will continue returning solutions until if it is maximal if requested. The idea is to make it easy
+# to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)
+# but allow other types of phrases to get all answers in a group if needed
+class SingleSolutionGroupGenerator(object):
+    def __init__(self, all_plural_groups_stream, variable_has_inf_max):
+        self.all_plural_groups_stream = all_plural_groups_stream
+        self.variable_has_inf_max = variable_has_inf_max
+
+        self.current_group_generator = None
+        self.chosen_solution_id = None
+        self.has_multiple_groups = False
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current_group_generator is not None:
+            # Keep returning solutions from the original solution group
+            try:
+                next_solution = next(self.current_group_generator)
+                return next_solution
+
+            except StopIteration:
+                self.current_group_generator = None
+
+        if self.all_plural_groups_stream is None:
+            raise StopIteration
+
+        # Search for another solution group that descends from this solution group
+        # and return the new solution from it
+        while True:
+            group = next(self.all_plural_groups_stream)
+            if self.chosen_solution_id is None:
+                self.chosen_solution_id = group[1]
+                self.current_group_generator = iter(group[0])
+                return self.__next__()
+
+            elif group[1].startswith(self.chosen_solution_id):
+                # This group was created by adding a solution to our chosen solution group
+                # so it is just "a little more". We need to use this as our new ID so we don't accidentally
+                # return other alternative groups that have this same new solution added to them
+                self.chosen_solution_id = group[1]
+                return group[0][-1]
+
+            else:
+                # Remember that there are multiple solution groups so we can say "there are more"
+                self.has_multiple_groups = True
+
+                # If no variable has a between(N, inf) constraint,
+                # Just stop now and the caller will get a subset solution group for the answer they care about
+                # Note that it may not be *minimal*, might be a subset, and might be maximal.
+                # If it does have an between(N, inf) constraint, return them all
+                if not self.variable_has_inf_max:
+                    raise StopIteration
+
+
 # Group the unquantified solutions into "solution groups" that meet the criteria on each variable
 # Designed to return the minimal solution that meets the criteria as quickly as possible.
 #
@@ -27,43 +84,17 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
         # solution. Otherwise, we can just stop when we have a solution and return a minimal solution
         variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
-        has_multiple_groups = False
-
-        def combine_one_solution_group():
-            nonlocal has_multiple_groups
-            chosen_solution_id = None
-            for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max):
-                if chosen_solution_id is None:
-                    chosen_solution_id = group[1]
-                    for solution in group[0]:
-                        yield solution
-
-                elif group[1].startswith(chosen_solution_id):
-                    # This group was created by adding a solution to our chosen solution group
-                    # so it is just "a little more". We need to use this as our new ID so we don't accidentally
-                    # return other alternative groups that have this same new solution added to them
-                    chosen_solution_id = group[1]
-                    yield group[0][-1]
-
-                else:
-                    # Remember that there are multiple solution groups so we can say "there are more"
-                    has_multiple_groups = True
-
-                    # If no variable has a between(N, inf) constraint,
-                    # Just stop now and the caller will get a subset solution group for the answer they care about
-                    # Note that it may not be *minimal*, might be a subset, and might be maximal.
-                    # If it does have an between(N, inf) constraint, return them all
-                    if not variable_has_inf_max:
-                        return
-
-        one_group = at_least_one_generator(combine_one_solution_group())
+        groups_stream = all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
+                                                 initial_stats_group, has_global_constraint, variable_has_inf_max)
+        group_generator = SingleSolutionGroupGenerator(groups_stream, variable_has_inf_max)
+        one_group = at_least_one_generator(group_generator)
         if one_group is not None:
             yield one_group
 
             # If there are multiple solution groups, we need to add one more (fake) group
             # and yield it so that the caller thinks there are multiple answers and will give a message
             # to the user. The answers aren't shown so it can be anything
-            if has_multiple_groups:
+            if group_generator.has_multiple_groups:
                 yield True
 
 

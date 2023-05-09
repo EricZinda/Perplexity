@@ -1,3 +1,9 @@
+### Global Constraints: "the" and "only"
+
+
+
+
+
 
 ### Multiple Constraints on a Variable
 
@@ -5,17 +11,6 @@
 10 mb should not generate a set of 10 1mbs, special case this.  Turns a megabyte into a *measure* which is a set of megabytes
 
 
-###
-
-If you say "2 children are eating" it is between(2, 2), but you really mean "at least"
-    This is kind of an outer quantifier example...
-    Ditto for "are 2 children eating?"
-    BUT: this *isn't* the same as saying between(2, inf), because it still has to be exactly 2 per solution
-    It matters because if you say "1 file is 20 mb" you *don't* mean "at least 1 file is 20 mb" because that would allow 2 files that add up to 20 mb.
-    
-### More subtle: propositions
-"files are large" when there is only 1 large file
-    - should return false, but a human would say, "not 'files' but there is one..."
 
 ### More Subtle: 'which'
 There are two dials here: how many answers we return and how many are allowed in an answer
