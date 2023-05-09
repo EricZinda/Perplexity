@@ -10,17 +10,21 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 
 ... is to have the solver create groups of solutions ("solution groups") that are the complete answers -- a single solution to the MRS is not enough. This section describes one algorithm that can accomplish this.
 
+Even 1 plural variable in an MRS will require grouping to represent the complete solution if they are acting alone: "men walk".   (the collective can be one solution). In this case you'd just expect one group. But: subsets of that group would also be true.
+
+With two variables: men are walking a dog you'd still only expect one group in any world (the maximal solution). But again, subsets would work.
+
 ### Overview
-The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. This grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase has placed on the variables. The groups found represent the complete answers to the MRS.  
+The basic approach is to generate the solutions, exactly like we've been doing so far, but then add a new "grouping pass" afterward. This grouping pass will find the groups of solutions that meet all the *numeric constraints* that the words in the phrase have placed on the variables. The groups found represent the complete answers to the MRS.  
 
 To illustrate what "numeric constraint" means, take "students lifted a table":
 - "students ..." is plural, which means the contraint is: `count(students) > 2`
 - "... a table" means the constraint is: `count(tables) = 1`
 - etc.
 
-To determine `count(students)` in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for `count(tables)` and return those groups where `count(students) > 2` and `count(tables) = 1`, we will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive ones. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings.
+To determine `count(students)` in the above example, we could simply count the students across all the solutions in a given group. If we do this as well for `count(tables)`, and return those groups where `count(students) > 2` and `count(tables) = 1`, we will produce groups which *are* valid, but will miss any answers that require a "per previous value" count. So, we'll miss the distributive groups. We need to do a slightly more complicated counting algorithm that is "per previous value" to get *all* the readings.
 
-Here's an overview of the how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:
+Here's an overview of how the algorithm can determine groups that properly account for cumulative, collective and distributive readings:
 > 1. Determine the order variables appear when evaluating the tree
 > 2. Walk the variables in order. For each variable: count individuals in the solutions two different ways:
 >    - Cumulatively: Total the variable individuals across all rows (as above)
@@ -30,9 +34,9 @@ Here's an overview of the how the algorithm can determine groups that properly a
 > 4. If the end is reached and all variables succeeded, this is a valid solution group.
 
 
-To get the groups that should be checked in the process above, we (you guessed it...) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
+To get the groups that should be checked using the process above, we (you guessed it...) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
 
-Figuring out the contraints on the variables is a longer story, which the next few sections will cover.
+Figuring out the constraints on the variables is a longer story, which the next few sections will cover.
 
 ### Variable Constraints Overview
 Notice that every `x` variable used in a tree has *some kind of* numeric constraint applied to it, even if implied. We can model them all using a `between(min, max)` (inclusive) constraint with a lower bound and an upper bound. The upper bound can be "inf", meaning "infinity".
@@ -209,6 +213,8 @@ Here's the full algorithm all in one place:
 > 9. If the end of the variables is reached and all succeeded, this is a valid solution group
 
 
+When numeric constraints are removed from an MRS we are left with a relatively straightforward constraint satisfaction problem that should be able to return solutions quickly, but there still may be *many* solutions.
+
 ### Example
 That can be a lot to take in, so let's go through an example: "students lifted a table":
 ```
@@ -351,6 +357,6 @@ etc.
 
 All of the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
 
-There are a couple of subtleties that need to be address with this algorithm. Namely the special handling of "which" and "the". That is described in the next section.
+There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the next section) and global constraints from words like "the" (described in the section after that).
 
-Last update: 2023-04-27 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}
+Last update: 2023-05-08 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}

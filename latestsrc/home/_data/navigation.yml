@@ -22,3 +22,5 @@ toc:
         url: "/devhowto/devhowtoMRSSolverSolutionGroups/"
       - title: "Coll/Dist/Cuml Algorithm"
         url: "/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm/"
+      - title: "Combinations and Proper Responses"
+        url: "/devhowto/devhowtoMRSSolverSolutionCombinations/"
