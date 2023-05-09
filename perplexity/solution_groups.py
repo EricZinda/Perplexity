@@ -1,72 +1,70 @@
 import copy
-import itertools
 import logging
-import sys
-from importlib import import_module
 from math import inf
 from perplexity.determiners4 import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
-from perplexity.tree import find_quantifier_from_variable, gather_quantifier_order
-
-
-# Filter the unquantified solutions by recursively filtering them by each quantified variable
-# There is an implicit "uber quantifier" on the front of all phrases that tells you how many of the solutions to return
-# All should just return 1, except for which
-# TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
+from perplexity.tree import gather_quantifier_order
 from perplexity.utilities import at_least_one_generator
 
 
+# Group the unquantified solutions into "solution groups" that meet the criteria on each variable
+# Designed to return the minimal solution that meets the criteria as quickly as possible.
+#
+# If the criteria has any between(N, inf) criteria, it will keep streaming answers until the end
+# If not, it will stop after the first (minimal) solution is found
+#
+# A second solution group will be returned, if it exists, but will be bogus. It is just there so that the caller can see there is one. This is
+# to reduce the cost of generating the answer
+# TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info):
     solutions = at_least_one_generator(solutions_orig)
 
     if solutions:
-        # Go through each variable that has a quantifier in order
+        # Go through each variable that has a quantifier in order and gather and optimize the criteria list
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
-        # Get the statistics for the stream so we can tell if we have open sets
-        x_variables = gather_quantifier_order(tree_info)
-        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max, constraints_are_open = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
-        has_unconstrained_x_variables = len(x_variables) != len(variable_metadata)
-        groups_are_open = constraints_are_open or has_unconstrained_x_variables or variable_has_inf_max
-        if groups_are_open:
-            # if the group that is returned is "open" meaning that it is something like "which files ..." and thus has a between(1, inf)
-            # constraint, then the groups that get returned are (potentially) minimal solutions (i.e. 2 files for this example) but more might be returned as
-            # a new file gets added. combine_one_solution_group() just picks one solution group and iteratively returns it
-            # and makes sure we go all the way to the end
-            has_multiple_groups = False
+        # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
+        # solution. Otherwise, we can just stop when we have a solution and return a minimal solution
+        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
+        has_multiple_groups = False
 
-            def combine_one_solution_group():
-                nonlocal has_multiple_groups
-                chosen_set_id = None
-                for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list,
-                                                      variable_metadata, initial_stats_group, has_global_constraint,
-                                                      constraints_are_open):
-                    if chosen_set_id is None:
-                        chosen_set_id = group[1]
-                        for solution in group[0]:
-                            yield solution
+        def combine_one_solution_group():
+            nonlocal has_multiple_groups
+            chosen_solution_id = None
+            for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max):
+                if chosen_solution_id is None:
+                    chosen_solution_id = group[1]
+                    for solution in group[0]:
+                        yield solution
 
-                    elif group[1] == chosen_set_id:
-                        yield group[0][-1]
+                elif group[1].startswith(chosen_solution_id):
+                    # This group was created by adding a solution to our chosen solution group
+                    # so it is just "a little more". We need to use this as our new ID so we don't accidentally
+                    # return other alternative groups that have this same new solution added to them
+                    chosen_solution_id = group[1]
+                    yield group[0][-1]
 
-                    else:
-                        has_multiple_groups = True
+                else:
+                    # Remember that there are multiple solution groups so we can say "there are more"
+                    has_multiple_groups = True
 
-            one_group = at_least_one_generator(combine_one_solution_group())
-            if one_group is not None:
-                yield one_group
+                    # If no variable has a between(N, inf) constraint,
+                    # Just stop now and the caller will get a subset solution group for the answer they care about
+                    # Note that it may not be *minimal*, might be a subset, and might be maximal.
+                    # If it does have an between(N, inf) constraint, return them all
+                    if not variable_has_inf_max:
+                        return
 
-                # If there are multiple solution groups, we need to add one more (fake) group
-                # and yield it so that the caller thinks there are multiple answers and will give a message
-                # to the user
-                if has_multiple_groups:
-                    yield True
+        one_group = at_least_one_generator(combine_one_solution_group())
+        if one_group is not None:
+            yield one_group
 
-        else:
-            # groups are not open, so just return them as they come
-            for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata, initial_stats_group, has_global_constraint, constraints_are_open):
-                yield group[0]
+            # If there are multiple solution groups, we need to add one more (fake) group
+            # and yield it so that the caller thinks there are multiple answers and will give a message
+            # to the user. The answers aren't shown so it can be anything
+            if has_multiple_groups:
+                yield True
 
 
 # Return the infos in the order they will be executed in

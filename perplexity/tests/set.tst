@@ -236,7 +236,7 @@
         },
         {
             "Command": "the file is large",
-            "Expected": "There is more than 1 the large file",
+            "Expected": "There is more than 1 the file",
             "Tree": "_the_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "02284161-0af3-45de-b4ba-8b6fbf67012a"
@@ -278,7 +278,7 @@
         },
         {
             "Command": "which files are in a folder?",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "349d0ab3-36dd-4f81-a51b-705a0b888227"
@@ -404,8 +404,8 @@
         },
         {
             "Command": "4 files are in a folder",
-            "Expected": "Yes, that is true.",
-            "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(4,e9,x3)],_a_q(x11,_folder_n_of(x11,i16),_in_p_loc(e2,x3,x11)))",
+            "Expected": "4 file is not in a folder",
+            "Tree": "_a_q(x11,_folder_n_of(x11,i16),udef_q(x3,[_file_n_of(x3,i10), card(4,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "526a5445-c826-40cc-8fbc-33a574b36461"
         },
@@ -432,14 +432,14 @@
         },
         {
             "Command": "which files are in a folder?",
-            "Expected": "(File(name=/documents/file0.txt, size=10000000),)(File(name=/documents/file1.txt, size=10000000),)(File(name=/documents/file2.txt, size=10000000),)(File(name=/documents/file3.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(File(name=/documents/file5.txt, size=10000000),)(File(name=/documents/file6.txt, size=10000000),)(File(name=/documents/file7.txt, size=10000000),)(File(name=/documents/file8.txt, size=10000000),)(File(name=/documents/file9.txt, size=10000000),)",
+            "Expected": "(File(name=/documents/file0.txt, size=10000000),)(File(name=/documents/file1.txt, size=10000000),)(File(name=/documents/file2.txt, size=10000000),)(File(name=/documents/file3.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(File(name=/documents/file5.txt, size=10000000),)(File(name=/documents/file6.txt, size=10000000),)(File(name=/documents/file7.txt, size=10000000),)(File(name=/documents/file8.txt, size=10000000),)(File(name=/documents/file9.txt, size=10000000),)(File(name=/documents/file10.txt, size=10000000),)(File(name=/documents/file11.txt, size=10000000),)(File(name=/documents/file12.txt, size=10000000),)(File(name=/documents/file13.txt, size=10000000),)(File(name=/documents/file14.txt, size=10000000),)(File(name=/documents/file15.txt, size=10000000),)(File(name=/documents/file16.txt, size=10000000),)(File(name=/documents/file17.txt, size=10000000),)(File(name=/documents/file18.txt, size=10000000),)(File(name=/documents/file19.txt, size=10000000),)(File(name=/documents/file20.txt, size=10000000),)(File(name=/documents/file21.txt, size=10000000),)(File(name=/documents/file22.txt, size=10000000),)(File(name=/documents/file23.txt, size=10000000),)(File(name=/documents/file24.txt, size=10000000),)(File(name=/documents/file25.txt, size=10000000),)(File(name=/documents/file26.txt, size=10000000),)(File(name=/documents/file27.txt, size=10000000),)(File(name=/documents/file28.txt, size=10000000),)(File(name=/documents/file29.txt, size=10000000),)(File(name=/documents/file30.txt, size=10000000),)(File(name=/documents/file31.txt, size=10000000),)(File(name=/documents/file32.txt, size=10000000),)(File(name=/documents/file33.txt, size=10000000),)(File(name=/documents/file34.txt, size=10000000),)(File(name=/documents/file35.txt, size=10000000),)(File(name=/documents/file36.txt, size=10000000),)(File(name=/documents/file37.txt, size=10000000),)(File(name=/documents/file38.txt, size=10000000),)(File(name=/documents/file39.txt, size=10000000),)(File(name=/documents/file40.txt, size=10000000),)(File(name=/documents/file41.txt, size=10000000),)(File(name=/documents/file42.txt, size=10000000),)(File(name=/documents/file43.txt, size=10000000),)(File(name=/documents/file44.txt, size=10000000),)(File(name=/documents/file45.txt, size=10000000),)(File(name=/documents/file46.txt, size=10000000),)(File(name=/documents/file47.txt, size=10000000),)(File(name=/documents/file48.txt, size=10000000),)(File(name=/documents/file49.txt, size=10000000),)(File(name=/documents/file50.txt, size=10000000),)(File(name=/documents/file51.txt, size=10000000),)(File(name=/documents/file52.txt, size=10000000),)(File(name=/documents/file53.txt, size=10000000),)(File(name=/documents/file54.txt, size=10000000),)(File(name=/documents/file55.txt, size=10000000),)(File(name=/documents/file56.txt, size=10000000),)(File(name=/documents/file57.txt, size=10000000),)(File(name=/documents/file58.txt, size=10000000),)(File(name=/documents/file59.txt, size=10000000),)(File(name=/documents/file60.txt, size=10000000),)(File(name=/documents/file61.txt, size=10000000),)(File(name=/documents/file62.txt, size=10000000),)(File(name=/documents/file63.txt, size=10000000),)(File(name=/documents/file64.txt, size=10000000),)(File(name=/documents/file65.txt, size=10000000),)(File(name=/documents/file66.txt, size=10000000),)(File(name=/documents/file67.txt, size=10000000),)(File(name=/documents/file68.txt, size=10000000),)(File(name=/documents/file69.txt, size=10000000),)(File(name=/documents/file70.txt, size=10000000),)(File(name=/documents/file71.txt, size=10000000),)(File(name=/documents/file72.txt, size=10000000),)(File(name=/documents/file73.txt, size=10000000),)(File(name=/documents/file74.txt, size=10000000),)(File(name=/documents/file75.txt, size=10000000),)(File(name=/documents/file76.txt, size=10000000),)(File(name=/documents/file77.txt, size=10000000),)(File(name=/documents/file78.txt, size=10000000),)(File(name=/documents/file79.txt, size=10000000),)(File(name=/documents/file80.txt, size=10000000),)(File(name=/documents/file81.txt, size=10000000),)(File(name=/documents/file82.txt, size=10000000),)(File(name=/documents/file83.txt, size=10000000),)(File(name=/documents/file84.txt, size=10000000),)(File(name=/documents/file85.txt, size=10000000),)(File(name=/documents/file86.txt, size=10000000),)(File(name=/documents/file87.txt, size=10000000),)(File(name=/documents/file88.txt, size=10000000),)(File(name=/documents/file89.txt, size=10000000),)(File(name=/documents/file90.txt, size=10000000),)(File(name=/documents/file91.txt, size=10000000),)(File(name=/documents/file92.txt, size=10000000),)(File(name=/documents/file93.txt, size=10000000),)(File(name=/documents/file94.txt, size=10000000),)(File(name=/documents/file95.txt, size=10000000),)(File(name=/documents/file96.txt, size=10000000),)(File(name=/documents/file97.txt, size=10000000),)(File(name=/documents/file98.txt, size=10000000),)(File(name=/documents/file99.txt, size=10000000),)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "6f118fcc-9f49-46b9-9703-bbcd95ca84d8"
         },
         {
             "Command": "the 2 files are in 3 folders",
-            "Expected": "There is more than 2 the 2 file in 3 folder",
+            "Expected": "There is more than 2 the 2 file",
             "Tree": "udef_q(x11,[_folder_n_of(x11,i18), card(3,e17,x11)],_the_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "1a81e3da-b22d-4a11-b61e-4eb21ec94b34"

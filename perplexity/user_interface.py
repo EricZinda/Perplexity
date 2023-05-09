@@ -170,7 +170,11 @@ class UserInterface(object):
                     # test = list(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force,
                     #                                            wh_phrase_variable, tree_info))
                     # Determine the response to it
+
+                    # solution_groups() should return an iterator that iterates *groups*
                     solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
+                    # groups = [x for x in solution_group_generator]
+                    # items = [x for x in groups[0]]
 
                     # Collect any error that might have occurred from the first solution group
                     tree_record["Error"] = self.execution_context.error()
@@ -183,7 +187,10 @@ class UserInterface(object):
                         # Go through all the responses in this solution group
                         solution_group_combined = []
                         for response, solution_group in tree_record["ResponseGenerator"]:
-                            solution_group_combined += solution_group
+                            # Some messages (like responses to propositions) don't need to materialize the maximum solution to
+                            # respond, just enough to know that it is true, so don't grab all the answers because it may force
+                            # answers that we didn't need to get
+                            # solution_group_combined += solution_group
 
                             # This worked, apply the results to the current world state if it was a command
                             if this_sentence_force == "comm":
@@ -197,7 +204,8 @@ class UserInterface(object):
                             tree_record["ResponseMessage"] += response
                             print(response)
 
-                        tree_record["SolutionGroups"] = [solution_group_combined]
+                        # See note above
+                        # tree_record["SolutionGroups"] = [solution_group_combined]
 
                         more_message = self.generate_more_message(tree_info, solution_group_generator)
                         if more_message is not None:
@@ -217,15 +225,23 @@ class UserInterface(object):
             print(response)
 
     def generate_more_message(self, tree, solution_groups):
-        if solution_groups is None:
+        # Only materialize the next solution group if we absolutely need to because:
+        # propositions can be answered with the minimal solution group. Asking for next()
+        # requires finishing this one and getting the next one which can be expensive.
+        sentence_force_type = sentence_force(tree["Variables"])
+        if sentence_force_type == "ques" or sentence_force_type == "prop":
             return
         else:
-            try:
-                if next(solution_groups):
-                    return "(there are more)"
+            if solution_groups is None:
+                return
 
-            except StopIteration:
-                pass
+            else:
+                try:
+                    if next(solution_groups):
+                        return "(there are more)"
+
+                except StopIteration:
+                    pass
 
     # WORKAROUND: ERG doesn't properly quote all strings with "/" so convert to "\"
     def convert_slashes_until(self, stop_char, start_index, phrase):

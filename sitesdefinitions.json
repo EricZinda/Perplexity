@@ -33,7 +33,8 @@
         {"Page": "Backtracking", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolver.md", "DstFile": "devhowto/devhowtoMRSSolver.md"},
         {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSets.md", "DstFile": "devhowto/devhowtoMRSSolverSets.md"},
         {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroups.md"},
-        {"Page": "Coll/Dist/Cuml Algorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md"}
+        {"Page": "Coll/Dist/Cuml Algorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md"},
+        {"Page": "Combinations and Proper Responses", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionCombinations.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionCombinations.md"}
       ]}
     ]
   }
