@@ -32,7 +32,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         def combine_one_solution_group():
             nonlocal has_multiple_groups
             chosen_solution_id = None
-            for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata, initial_stats_group, has_global_constraint):
+            for group in all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max):
                 if chosen_solution_id is None:
                     chosen_solution_id = group[1]
                     for solution in group[0]:

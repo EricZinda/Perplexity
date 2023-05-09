@@ -350,4 +350,4 @@ etc.
 
 All of the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
 
-There are a couple of subtleties that need to be address with this algorithm. Namely the special handling of "which" and "the". That is described in the next section.
+There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the next section) and global constraints from words like "the" (described in the section after that).

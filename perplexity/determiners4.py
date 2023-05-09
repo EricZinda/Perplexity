@@ -76,10 +76,11 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
     return variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max
 
 
-# Every set that is generated has a GroupVariableStats object that does all
+# Every set that is generated has a StatsGroup object that does all
 # the counting that we need to see if it meets the criteria
 #
 # New groups are created by copying an existing set and adding a new solution into it
+# or merging in special cases.
 #
 # Criteria like "the" and "only" (as in "only 2") also need to track information *across groups*
 # to ensure there is "only 2" solutions generated. This is tracked in the criteria object itself
@@ -88,65 +89,117 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 # yields: solution_group, set_id
 # set_id is a lineage like 1:3:5 ... so that the caller can detect when a solution is just more rows in an existing set_id by seeing
 # if it came from a previous group
-def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint):
+def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max):
+    # Give a unique set_id to every group that gets created
     set_id = 0
     sets = [[initial_stats_group, [], str(set_id)]]
     set_id += 1
+
+    # Track the unique solution groups that are returned so we
+    # can stop after we have 2 since that is all we need
+    unique_solution_groups = []
+
+    # Track solution groups that work so far, but need to wait till the end
+    # because they require a global criteria to be true
     pending_global_criteria = []
-    abort = False
+
+    # Cases when we know we have failed early (early_fail_quit) and when we know we
+    # have a solution early (early_success_quit)
+    early_fail_quit = False
+    early_success_quit = False
     for combinatorial_solution in solutions:
-        for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
-            new_sets = []
-            for existing_set in sets:
-                new_set_stats_group = existing_set[0].copy()
-                added_non_max_inf_individuals, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
-
-                if state == CriteriaResult.fail_one:
-                    # Fail (doesn't meet criteria): don't add, don't yield
-                    continue
-
-                elif state == CriteriaResult.fail_all:
-                    # A global criteria wasn't met so none will ever work
-                    # Still run global constraints to get a good error
-                    abort = True
-                    break
-
-                else:
-                    # Didn't fail, decide whether to merge into the existing set or
-                    # create a new one
-                    # Merge if the only variables that got updated had a criteria with an upper bound of inf
-                    # since alternatives won't be used anyway
-                    if added_non_max_inf_individuals:
-                        new_set = [None, None, existing_set[2] + ":" + str(set_id)]
-                        set_id += 1
-                        new_sets.append(new_set)
-
-                    else:
-                        new_set = existing_set
-
-                    new_set[0] = new_set_stats_group
-                    new_set[1] = existing_set[1] + [next_solution]
-
-                    if state == CriteriaResult.meets:
-                        yield new_set[1], new_set[2]
-
-                    elif state == CriteriaResult.meets_pending_global:
-                        pending_global_criteria.append([new_set[1], new_set[2]])
-
-                    elif state == CriteriaResult.contender:
-                        # Not yet a solution, don't track it as one
-                        pass
-
-            sets += new_sets
-
-            if abort:
+        if early_success_quit:
+            # If there are global constraints, we still need to gather the stats for all possible
+            # rstrs (for GlobalCriteria.all_rstr_meet_criteria) or successful rstrs (for GlobalCriteria.exactly)
+            # But we no longer need to check for coll/dist/cuml so it can be faster
+            if not check_only_global_criteria_all(execution_context, var_criteria, combinatorial_solution):
+                early_fail_quit = True
                 break
 
-        if abort:
-            break
+        else:
+            for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
+                # unique_solution_groups tracks solution groups that we have returned so far
+                if unique_solution_groups is not None and len(unique_solution_groups) == 2:
+                    if not variable_has_inf_max:
+                        # We are looking for a minimal solution if max != inf, so we can quit early
+                        early_success_quit = True
+                        break
 
-    # If we aborted, the error should already be set
-    if not abort and has_global_constraint:
+                    else:
+                        # Otherwise, just switch to only developing the two groups we need to return
+                        # By setting "sets" to be just those groups
+                        sets = unique_solution_groups
+                        unique_solution_groups = None
+
+                new_sets = []
+                for existing_set in sets:
+                    new_set_stats_group = existing_set[0].copy()
+                    force_new_group, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
+
+                    if state == CriteriaResult.fail_one:
+                        # Fail (doesn't meet criteria): don't add, don't yield
+                        continue
+
+                    elif state == CriteriaResult.fail_all:
+                        # A global criteria wasn't met so none will ever work
+                        # Still run global constraints to get a good error
+                        early_fail_quit = True
+                        break
+
+                    else:
+                        # Didn't fail, decide whether to merge into the existing set or create a new one
+                        # Merge if the only variables that got updated had a criteria with an upper bound of inf
+                        # since alternatives won't be used anyway
+                        if force_new_group:
+                            new_set = [None, None, existing_set[2] + ":" + str(set_id)]
+                            set_id += 1
+                            new_sets.append(new_set)
+
+                        else:
+                            new_set = existing_set
+
+                        new_set[0] = new_set_stats_group
+                        new_set[1] = existing_set[1] + [next_solution]
+
+                        if state == CriteriaResult.meets:
+                            yield new_set[1], new_set[2]
+
+                        elif state == CriteriaResult.meets_pending_global:
+                            pending_global_criteria.append([new_set[1], new_set[2]])
+
+                        elif state == CriteriaResult.contender:
+                            # Not yet a solution, don't track it as one
+                            pass
+
+                        # Why does force_new_group need to be true?
+                        #
+                        # force_new_group is only False if:
+                        # a) no variables being tracked changed
+                        # or
+                        # b) every variable being tracked has an upper limit of inf
+                        #
+                        # If no variables changed, then this can't be a new solution because, if it was, the previous would have been so it would already have been tracked
+                        # If every variable has an upper limit of inf then we will only generate one solution group since they will always be merged
+                        # So we don't need to do this optimization
+                        if force_new_group and (state == CriteriaResult.meets or state == CriteriaResult.meets_pending_global) and \
+                                unique_solution_groups is not None:
+                            # We still haven't transitioned to tracking only the two solution groups
+                            # So: add this one if it just transitioned from contender to solution group
+                            # If we haven't yet found 2
+                            if existing_set[0].group_state not in [CriteriaResult.meets, CriteriaResult.meets_pending_global] and \
+                                    len(unique_solution_groups) < 2:
+                                unique_solution_groups.append(new_set)
+
+                sets += new_sets
+
+                if early_fail_quit:
+                    break
+
+            if early_fail_quit:
+                break
+
+    # If early_fail_quit is True, the error should already be set
+    if not early_fail_quit and has_global_constraint:
         for criteria in var_criteria:
             if not criteria.meets_global_criteria(execution_context):
                 return
@@ -155,9 +208,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
 
 class StatsGroup(object):
-    def __init__(self, variable_has_inf_max=False):
+    def __init__(self, variable_has_inf_max=False, group_state=None):
         self.variable_stats = []
         self.variable_has_inf_max = variable_has_inf_max
+        self.group_state = group_state
 
     def __repr__(self):
         return ",".join([f"({str(x)})" for x in self.variable_stats])
@@ -166,6 +220,7 @@ class StatsGroup(object):
         has_global_constraint = False
         previous_variable_stats = None
         self.variable_has_inf_max = False
+        self.group_state = None
         for criteria in var_criteria:
             if criteria.global_criteria is not None:
                 has_global_constraint = True
@@ -191,7 +246,7 @@ class StatsGroup(object):
         return has_global_constraint, self.variable_has_inf_max
 
     def copy(self):
-        new_group = StatsGroup(self.variable_has_inf_max)
+        new_group = StatsGroup(self.variable_has_inf_max, self.group_state)
         previous_new_stat = None
         for stat in self.variable_stats:
             new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state)
@@ -219,7 +274,6 @@ class VariableStats(object):
 
     def __repr__(self):
         soln_modes = self.solution_modes()
-
         contenders_modes = []
         contenders_modes += ["dist"] if self.distributive_state == CriteriaResult.contender else []
         contenders_modes += ["coll"] if self.collective_state == CriteriaResult.contender else []
@@ -332,13 +386,13 @@ class VariableStats(object):
 #       distributive if len(prev_unique_values) > 1 and for each prev_unique_value: len(unique_values) meets criteria
 #       cumulative if len(prev_unique_values) > 1 and len(unique_values) meets criteria
 #
-def check_criteria_all(execution_context, var_criteria, current_set_stats, new_solution):
+def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new_solution):
     current_set_state = CriteriaResult.meets
     force_new_group = False
     for index in range(len(var_criteria)):
         # Get the existing statistics for the variable at this index
         # and the criteria for the variable as well
-        variable_stats = current_set_stats.variable_stats[index]
+        variable_stats = new_set_stats_group.variable_stats[index]
         criteria = var_criteria[index]
 
         # See what the CriteriaResult is for the whole solution group plus the new solution
@@ -349,15 +403,31 @@ def check_criteria_all(execution_context, var_criteria, current_set_stats, new_s
         # state and the new state
         current_set_state = criteria_transitions[current_set_state][state]
         if current_set_state == CriteriaResult.fail_one or current_set_state == CriteriaResult.fail_all:
+            new_set_stats_group.group_state = current_set_state
             return None, current_set_state
 
         # If the value in new_solution for the current variable actually added a new value to the set of values
-        # being tracked, and the criteria for this variable
-        # doesn't have an upper bound of inf, then we need to create a new group
+        # being tracked, and the criteria for this variable doesn't have an upper bound of inf,
+        # then we need to create a new group because we need to generate alternatives from it
         if new_individuals and criteria.max_size != float('inf'):
             force_new_group = True
 
-    return not force_new_group, current_set_state
+    new_set_stats_group.group_state = current_set_state
+    return force_new_group, current_set_state
+
+
+# Called if we can shortcut because we have already found the answers but we still need to check global constraints
+# The set of unique individuals needed to check that "only 2 ..." are collected in the criteria
+# So we can rip through all the solutions and run the criteria to see if global criteria are met, ignoring coll/etc.
+def check_only_global_criteria_all(execution_context, var_criteria, new_solution):
+    for index in range(len(var_criteria)):
+        criteria = var_criteria[index]
+        binding_value = new_solution.get_binding(criteria.variable_name).value
+        criteria_state = criteria.meets_criteria(execution_context, binding_value)
+        if criteria_state == CriteriaResult.fail_all:
+            False
+
+    return True
 
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained
