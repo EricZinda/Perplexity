@@ -123,22 +123,22 @@
         },
         {
             "Command": "where am i",
-            "Expected": "in /Desktop",
-            "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
+            "Expected": "(Folder(name=/Desktop, size=0),)",
+            "Tree": "pronoun_q(x3,pron(x3),which_q(x4,place_n(x4),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
         },
         {
             "Command": "/new examples.Example21_reset",
-            "Expected": "State reset using examples.Example21_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "81ba878f-56f5-41e6-820a-9fe181d25bc3"
         },
         {
             "Command": "where am i",
-            "Expected": "in /Desktop",
-            "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['which_q', 'x4', [['place_n', 'x4']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
+            "Expected": "(Folder(name=/Desktop, size=0),)",
+            "Tree": "pronoun_q(x3,pron(x3),which_q(x4,place_n(x4),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "44fe6fc2-2d63-4893-a2ac-e59ca7c9fb85"
         },

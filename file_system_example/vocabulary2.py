@@ -1,4 +1,4 @@
-from file_system_example.objects import File, Folder, Megabyte, Actor
+from file_system_example.objects import File, Folder, Megabyte, Actor, Container
 from file_system_example.state import DeleteOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria
 from perplexity.execution import report_error, call, execution_context
@@ -140,6 +140,15 @@ def megabyte_n_1(state, x_binding, u_binding):
 
 
 @Predication(vocabulary)
+def place_n(state, x_binding):
+    def criteria(value):
+        # Any object is a "place" as long as it can contain things
+        return isinstance(value, Container)
+
+    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
+
+
+@Predication(vocabulary)
 def thing(state, x_binding):
     def criteria(_):
         return True
@@ -232,7 +241,6 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
         yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
 
 
-
 # This is a helper function that any predication that can
 # be "very'd" can use to understand just how "very'd" it is
 def degree_multiplier_from_event(state, e_introduced_binding):
@@ -266,6 +274,46 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
             yield from in_style_predication(state, x_actor_binding, x_location_binding, item_in_item)
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+
+
+@Predication(vocabulary, names=["loc_nonsp"])
+def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    def item_at_item(item1, item2):
+        if hasattr(item1, "all_locations"):
+            # Asking if a location of item1 is item2
+            for location in item1.all_locations(x_actor_binding.variable):
+                if location == item2:
+                    return True
+
+            return False
+
+        else:
+            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+
+    yield from in_style_predication(state, x_actor_binding, x_location_binding, item_at_item)
+    #
+    # if x_actor_binding.value is not None:
+    #     if hasattr(x_actor_binding.value, "all_locations"):
+    #         if x_location_binding.value is None:
+    #             # This is a "where is X?" type query since no location specified
+    #             for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
+    #                 yield state.set_x(x_location_binding.variable.name, location)
+    #
+    #         else:
+    #             # The system is asking if a location of x_actor is x_location,
+    #             # so check the list exhaustively until we find a match, then stop
+    #             for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
+    #                 if location == x_location_binding.value:
+    #                     # Variables are already set,
+    #                     # no need to set them again, just return the state
+    #                     yield state
+    #                     break
+    #
+    # else:
+    #     # For now, return errors for cases where x_actor is unbound
+    #     pass
+    #
+    # report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 
 # handles size only
