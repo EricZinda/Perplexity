@@ -441,10 +441,10 @@ class VariableCriteria(object):
         self.predication_index = predication.index
         self.predication = predication
         self.variable_name = variable_name
-        self.global_criteria = global_criteria
         self.min_size = min_size
         self.max_size = max_size
         self._unique_rstrs = set()
+        self.global_criteria = global_criteria
         self._after_phrase_error_location = ["AfterFullPhrase", self.variable_name]
         if parse_predication_name(predication.name)["Pos"] == "q":
             self._predication_error_location = ["AtPredication", predication.args[2], variable_name]
@@ -574,5 +574,6 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
                         CriteriaResult.fail_all: {CriteriaResult.meets: CriteriaResult.fail_all,
                                                   CriteriaResult.meets_pending_global: CriteriaResult.fail_all,
                                                   CriteriaResult.contender: CriteriaResult.fail_all,
-                                                  CriteriaResult.fail_one: CriteriaResult.fail_all}
+                                                  CriteriaResult.fail_one: CriteriaResult.fail_all,
+                                                  CriteriaResult.fail_all: CriteriaResult.fail_all}
                         }

@@ -64,7 +64,7 @@ class Folder(Container):
         return f"Folder(name={self.name}, size={self.size})"
 
     def __eq__(self, obj):
-        return isinstance(obj, Folder) and self.name == obj.name
+        return isinstance(obj, Folder) and str(self.name) == str(obj.name)
 
     def __ne__(self, obj):
         return not self == obj

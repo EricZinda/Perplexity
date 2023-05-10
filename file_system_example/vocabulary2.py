@@ -1,16 +1,45 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor, Container
 from file_system_example.state import DeleteOperation
-from perplexity.plurals import GlobalCriteria, VariableCriteria
+from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
-from perplexity.set_utilities import count_set, Measurement
+from perplexity.set_utilities import Measurement
 from perplexity.tree import used_predicatively
-from perplexity.utilities import is_plural_from_tree_info
-from perplexity.variable_binding import VariableValueType
+from perplexity.variable_binding import VariableValueType, VariableBinding
 from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralType
 
+
 vocabulary = Vocabulary()
+
+
+@Predication(vocabulary, names=["_this_q_dem"])
+def this_q_dem(state, x_variable_binding, h_rstr, h_body):
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=1,
+                                                                global_criteria=None))
+
+    # Call quantifier_raw() with a criteria_predication=in_scope so that it only allows
+    # items that are in scope
+    current_directory = state.user().current_directory()
+    # We are looking at the contained items in the user's current directory
+    # which is *not* the object in the binding. So: we need contained_items()
+    # to report an error that is not variable related, so we pass it None
+    contained_binding = VariableBinding(None, current_directory)
+    contained_items = set(current_directory.contained_items(contained_binding))
+
+    def in_scope(state, x_binding):
+        def criteria(value):
+            # In scope if binding.value is the folder the user is in
+            # and anything in it
+            return value in contained_items or value == current_directory
+
+        yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
+
+    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope)
 
 
 # Several meanings:
@@ -262,16 +291,29 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
             def item_in_item(item1, item2):
                 # x_actor is "in" x_location if x_location contains it
                 found_location = False
-                for item in item2.contained_items(x_location_binding.variable):
-                    if item1 == item:
-                        found_location = True
-                        break
+                if hasattr(item2, "contained_items"):
+                    for item in item2.contained_items(x_location_binding.variable):
+                        if item1 == item:
+                            found_location = True
+                            break
                 if not found_location:
                     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
                 return found_location
 
-            yield from in_style_predication(state, x_actor_binding, x_location_binding, item_in_item)
+            def location_unbound_values(actor_value):
+                # This is a "what is actor in?" type query since no location specified (x_location_binding was unbound)
+                # Order matters, so all_locations needs to return the best answer first
+                for location in actor_value.all_locations(x_actor_binding.variable):
+                    yield location
+
+            def actor_unbound_values(location_value):
+                # This is a "what is in x?" type query since no actor specified (x_actor_binding was unbound)
+                # Order matters, so all_locations needs to return the best answer first
+                for actor in location_value.contained_items(x_location_binding.variable):
+                    yield actor
+
+            yield from in_style_predication(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values)
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
@@ -280,40 +322,27 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def item_at_item(item1, item2):
         if hasattr(item1, "all_locations"):
-            # Asking if a location of item1 is item2
+            # Asking if a location of item1 is at item2
             for location in item1.all_locations(x_actor_binding.variable):
                 if location == item2:
                     return True
 
-            return False
+        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+        return False
 
-        else:
-            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+    def location_unbound_values(actor_value):
+        # This is a "where is actor?" type query since no location specified (x_location_binding was unbound)
+        # Order matters, so all_locations needs to return the best answer first
+        for location in actor_value.all_locations(x_actor_binding.variable):
+            yield location
 
-    yield from in_style_predication(state, x_actor_binding, x_location_binding, item_at_item)
-    #
-    # if x_actor_binding.value is not None:
-    #     if hasattr(x_actor_binding.value, "all_locations"):
-    #         if x_location_binding.value is None:
-    #             # This is a "where is X?" type query since no location specified
-    #             for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
-    #                 yield state.set_x(x_location_binding.variable.name, location)
-    #
-    #         else:
-    #             # The system is asking if a location of x_actor is x_location,
-    #             # so check the list exhaustively until we find a match, then stop
-    #             for location in x_actor_binding.value.all_locations(x_actor_binding.variable):
-    #                 if location == x_location_binding.value:
-    #                     # Variables are already set,
-    #                     # no need to set them again, just return the state
-    #                     yield state
-    #                     break
-    #
-    # else:
-    #     # For now, return errors for cases where x_actor is unbound
-    #     pass
-    #
-    # report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+    def actor_unbound_values(location_value):
+        # This is a "what is at x?" type query since no actor specified (x_actor_binding was unbound)
+        # Order matters, so all_locations needs to return the best answer first
+        for actor in location_value.contained_items(x_location_binding.variable):
+            yield actor
+
+    yield from in_style_predication(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values)
 
 
 # handles size only

@@ -123,7 +123,7 @@
         },
         {
             "Command": "where am i",
-            "Expected": "(Folder(name=/Desktop, size=0),)",
+            "Expected": "(Folder(name=/Desktop, size=0),)(there are more)",
             "Tree": "pronoun_q(x3,pron(x3),which_q(x4,place_n(x4),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
@@ -137,29 +137,29 @@
         },
         {
             "Command": "where am i",
-            "Expected": "(Folder(name=/Desktop, size=0),)",
+            "Expected": "(Folder(name=/Desktop, size=0),)(there are more)",
             "Tree": "pronoun_q(x3,pron(x3),which_q(x4,place_n(x4),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "44fe6fc2-2d63-4893-a2ac-e59ca7c9fb85"
         },
         {
             "Command": "where is this folder",
-            "Expected": "in /",
-            "Tree": "[['which_q', 'x4', [['place_n', 'x4']], [['_this_q_dem', 'x3', [['_folder_n_of', 'x3', 'i13']], [['loc_nonsp', 'e2', 'x3', 'x4']]]]]]",
+            "Expected": "(Folder(name=/, size=0),)",
+            "Tree": "which_q(x4,place_n(x4),_this_q_dem(x3,_folder_n_of(x3,i13),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "954a3dcf-10f9-42a0-943b-61364cc71c7e"
         },
         {
             "Command": "this folder is large",
             "Expected": "this folder is not large",
-            "Tree": "[['_this_q_dem', 'x3', [['_folder_n_of', 'x3', 'i8']], [['_large_a_1', 'e2', 'x3']]]]",
+            "Tree": "_this_q_dem(x3,_folder_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "e820409b-70ce-4331-80a2-6701fab73378"
         },
         {
             "Command": "/new examples.Example22_reset",
-            "Expected": "State reset using examples.Example22_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "04bb3c68-2f72-4d68-9eab-969482c530a3"
         },

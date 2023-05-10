@@ -653,7 +653,7 @@ def Example32():
 def Example33_reset():
     file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(100)]
     return FileSystemState(FileSystemMock(file_list,
-                                           "/Desktop"))
+                                           "/documents"))
 
 
 def Example33():
@@ -916,7 +916,7 @@ if __name__ == '__main__':
     # Example21()
     # Example22()
     # Example24()
-    Example25()
+    # Example25()
     # Example26()
     # Example27()
     # Example28()
@@ -924,7 +924,7 @@ if __name__ == '__main__':
     # Example30()
     # Example31()
     # Example32()
-    # Example33()
+    Example33()
     # Example33_performance_test()
     # Example34()
     # Example35()

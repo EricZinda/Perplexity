@@ -3,6 +3,7 @@ import itertools
 
 from perplexity.execution import get_variable_metadata, call, set_variable_execution_data, report_error
 from perplexity.set_utilities import count_set
+from perplexity.tree import TreePredication
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import PluralType
 
@@ -58,7 +59,7 @@ def discrete_variable_individual_generator(binding):
 
 # Ensures that solutions are sets (not combinatoric) and only passes through
 # individuals if it is given a combinatoric
-def individual_only_style_predication_1(state, binding, prediction_function):
+def individual_only_style_predication_1(state, binding, predication_function):
     if binding.variable.value_type == VariableValueType.set:
         # Pass sets through, if it is > 1 item the predication_function should fail
         iterator = [binding.value]
@@ -68,7 +69,7 @@ def individual_only_style_predication_1(state, binding, prediction_function):
         iterator = [(value, ) for value in binding.value]
 
     for value in iterator:
-        if prediction_function(value):
+        if predication_function(value):
             yield state.set_x(binding.variable.name, value, VariableValueType.set)
 
 
@@ -95,7 +96,11 @@ def lift_style_predication(state, binding1, binding2, prediction_function, bindi
 # - {a, b} predicate {x, y} can be checked as a predicate x, a predicate y, etc.
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
 # - that the any combinatoric terms will be turned into single set terms (coll or dist)
-def in_style_predication(state, binding1, binding2, prediction_function, binding1_set_size=VariableValueSetSize.all, binding2_set_size=VariableValueSetSize.all):
+#
+# both_bound_function() is called if binding1 and binding2 are bound, etc.
+def in_style_predication(state, binding1, binding2,
+                         both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function,
+                         binding1_set_size=VariableValueSetSize.all, binding2_set_size=VariableValueSetSize.all):
     # If nobody needs collective don't do it since it is expensive
     binding1_metadata = get_variable_metadata(binding1.variable.name)
     if binding1_metadata["PluralType"] == PluralType.distributive:
@@ -105,27 +110,62 @@ def in_style_predication(state, binding1, binding2, prediction_function, binding
     if binding2_metadata["PluralType"] == PluralType.distributive:
         binding2_set_size = VariableValueSetSize.exactly_one
 
-    # See if everything in binding1_set has the
-    # prediction_function relationship to binding2_set
-    for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
-        for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
-            # See if everything in binding1_set has the
-            # prediction_function relationship to binding2_set
-            sets_fail = False
-            for binding1_item in binding1_set:
-                for binding2_item in binding2_set:
-                    if not prediction_function(binding1_item, binding2_item):
-                        sets_fail = True
-                        break
-                if sets_fail:
-                    break
+    if binding1.value is None or binding2.value is None:
+        # TODO: deal with when everything is unbound
+        assert not(binding1.value is None and binding2.value is None)
+        bound_binding = binding2 if binding1.value is None else binding1
+        bound_set_size = binding2_set_size if binding1.value is None else binding1_set_size
+        unbound_binding = binding1 if binding1.value is None else binding2
+        unbound_predication_function = binding1_unbound_predication_function if binding1.value is None else binding2_unbound_predication_function
 
-            if not sets_fail:
-                yield state.set_x(binding1.variable.name,
-                                  binding1_set,
-                                  binding1_set_type).set_x(binding2.variable.name,
-                                                           binding2_set,
-                                                           binding2_set_type)
+        # This is a "what is in X" type question, that's why it is unbound
+        for bound_set_type, bound_set in discrete_variable_set_generator(bound_binding, bound_set_size):
+            # this could be in([mary, john], X) (where are mary and john together)
+            # thus, binding1_set could have more than one item, in which case we need to find the intersection of answers
+            # Do the intersection of answers from every item in the set to see where mary and john are *together*
+            first_value = True
+            # Order matters, so use a dict.  That way we return the first value first
+            intersection_all = {}
+            for bound_value in bound_set:
+                for unbound_value in unbound_predication_function(bound_value):
+                    if first_value:
+                        intersection_all[unbound_value] = None
+                    else:
+                        if unbound_value not in first_value:
+                            return
+
+                first_value = False
+
+            # Now we have a non-zero intersection of values for all items in binding1_set
+            for unbound_value in intersection_all.keys():
+                yield state.set_x(bound_binding.variable.name,
+                                  bound_set,
+                                  bound_set_type).set_x(unbound_binding.variable.name,
+                                                        (unbound_value, ),
+                                                        VariableValueType.set)
+
+    else:
+        # See if everything in binding1_set has the
+        # prediction_function relationship to binding2_set
+        for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
+            for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
+                # See if everything in binding1_set has the
+                # prediction_function relationship to binding2_set
+                sets_fail = False
+                for binding1_item in binding1_set:
+                    for binding2_item in binding2_set:
+                        if not both_bound_function(binding1_item, binding2_item):
+                            sets_fail = True
+                            break
+                    if sets_fail:
+                        break
+
+                if not sets_fail:
+                    yield state.set_x(binding1.variable.name,
+                                      binding1_set,
+                                      binding1_set_type).set_x(binding2.variable.name,
+                                                               binding2_set,
+                                                               binding2_set_type)
 
 
 # "Combinatorial Style Predication" means: a predication that, when applied to a set, will be true
@@ -164,14 +204,28 @@ def combinatorial_style_predication(state, binding, all_individuals_generator, p
         yield state.set_x(binding.variable.name, tuple(values), value_type)
 
 
+def rstr_reorderable(rstr):
+    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing"]
+
+
 # Yield all undetermined, unquantified answers
-def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
+def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
+    reverse = rstr_reorderable(h_rstr_orig)
+    h_rstr = h_body_orig if reverse else h_rstr_orig
+    h_body = h_rstr_orig if reverse else h_body_orig
+
     variable_name = x_variable_binding.variable.name
     rstr_values = []
     for rstr_solution in call(state, h_rstr):
-        rstr_values.extend(rstr_solution.get_binding(variable_name).value)
-        for body_solution in call(rstr_solution, h_body):
-            yield body_solution
+        if criteria_predication is not None:
+            alternative_states = criteria_predication(rstr_solution, rstr_solution.get_binding(x_variable_binding.variable.name))
+        else:
+            alternative_states = [rstr_solution]
+
+        for alternative_state in alternative_states:
+            rstr_values.extend(alternative_state.get_binding(variable_name).value)
+            for body_solution in call(alternative_state, h_body):
+                yield body_solution
 
     set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
 
