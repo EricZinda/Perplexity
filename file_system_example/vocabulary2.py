@@ -147,6 +147,15 @@ def thing(state, x_binding):
     yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
 
 
+@Predication(vocabulary, names=["_very_x_deg"])
+def very_x_deg(state, e_introduced_binding, e_target_binding):
+    # First see if we have been "very'd"!
+    initial_degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
+
+    # We'll interpret "very" as meaning "one order of magnitude larger"
+    yield state.add_to_e(e_target_binding.variable.name, "DegreeMultiplier", {"Value": initial_degree_multiplier * 10, "Originator": execution_context().current_predication_index()})
+
+
 # "large_a" means that each individual thing in a combinatoric argument is large
 # BUT: if you ask if large([a, b]) of a set as an index, it will fail
 @Predication(vocabulary, names=["_large_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
@@ -187,7 +196,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
 # Arbitrarily decide that "small" means a size <= 1,000,000
 # Remember that "hasattr()" checks if an object has
 # a property
-@Predication(vocabulary, names=["_small_a_1"])
+@Predication(vocabulary, names=["_small_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
 def small_a_1(state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* small we should be
     degree_multiplier = 1 / degree_multiplier_from_event(state, e_introduced_binding)

@@ -88,22 +88,22 @@
         },
         {
             "Command": "which file is very small?",
-            "Expected": "I don't understand the way you are using 'very' with 'small'",
-            "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
+            "Expected": "a file is not small",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),[_very_x_deg(e9,e2), _small_a_1(e2,x3)])",
             "Enabled": true,
             "ID": "ce5adad4-4e72-4e1e-b42e-e2d03ab87a86"
         },
         {
             "Command": "a file is deleted",
             "Expected": "I don't know the way you used: delete",
-            "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
+            "Tree": "None",
             "Enabled": true,
             "ID": "5df6d756-ed91-4d18-b435-30110dcd8dba"
         },
         {
             "Command": "delete you",
             "Expected": "I can't delete you",
-            "Tree": "[['pronoun_q', 'x8', [['pron', 'x8']], [['pronoun_q', 'x3', [['pron', 'x3']], [['_delete_v_1', 'e2', 'x3', 'x8']]]]]]",
+            "Tree": "pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_delete_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "3764ed0c-d85d-48ef-bd80-fdb6e5b85376"
         },
@@ -116,8 +116,8 @@
         },
         {
             "Command": "/new examples.Example20_reset",
-            "Expected": "State reset using examples.Example20_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "5eb557b0-97c5-483a-9498-e2772547caa1"
         },
