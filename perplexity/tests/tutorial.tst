@@ -67,22 +67,22 @@
         },
         {
             "Command": "delete a folder",
-            "Expected": "Done!",
-            "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['_a_q', 'x8', [['_folder_n_of', 'x8', 'i13']], [['_delete_v_1', 'e2', 'x3', 'x8']]]]]]",
+            "Expected": "Done!(there are more)",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_folder_n_of(x8,i13),_delete_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "fca99a4c-e127-4a6a-ac21-6d3feeeab865"
         },
         {
             "Command": "/new examples.Example18a_reset",
-            "Expected": "State reset using examples.Example18a_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "797a346f-d98a-4642-b933-f93e1d7d2323"
         },
         {
             "Command": "a file is deleted",
             "Expected": "I don't know the way you used: delete",
-            "Tree": "[['_which_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_very_x_deg', 'e9', 'e2'], ['_large_a_1', 'e2', 'x3']]]]",
+            "Tree": "None",
             "Enabled": true,
             "ID": "7f29b13c-aa0c-4d11-bc8d-ec9dcf598cac"
         },

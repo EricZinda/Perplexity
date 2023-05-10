@@ -125,7 +125,7 @@ class TestManager(object):
         prompt = None
         if test_item["Expected"] != interaction_record["ResponseMessage"]:
             prompt = f"\nExpected: {test_item['Expected']}"
-        if not (test_item["Tree"] is None and interaction_record["Tree"] is None) and test_item["Tree"] != str(interaction_record["Tree"]):
+        elif not (test_item["Tree"] is None and interaction_record["Tree"] is None) and test_item["Tree"] != str(interaction_record["Tree"]):
             prompt = f"\nPrevious Tree: {test_item['Tree']}\nNew Tree: {str(interaction_record['Tree'])}"
 
         if prompt is not None:
