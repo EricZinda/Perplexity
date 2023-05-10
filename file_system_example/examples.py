@@ -1,7 +1,3 @@
-import pstats
-import sys
-from contextlib import redirect_stdout
-
 from file_system_example.messages import respond_to_mrs_tree, error_priority
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
@@ -920,7 +916,7 @@ if __name__ == '__main__':
     # Example21()
     # Example22()
     # Example24()
-    # Example25()
+    Example25()
     # Example26()
     # Example27()
     # Example28()
@@ -928,7 +924,7 @@ if __name__ == '__main__':
     # Example30()
     # Example31()
     # Example32()
-    Example33()
+    # Example33()
     # Example33_performance_test()
     # Example34()
     # Example35()

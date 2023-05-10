@@ -105,7 +105,7 @@ def respond_to_mrs_tree(tree, solution_groups, error):
 def generate_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
-    error_constant = error_arguments[0]
+    error_constant = error_arguments[0] if error_arguments is not None else "no error set"
 
     if error_constant == "xIsNotYValue":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
@@ -250,7 +250,7 @@ def generate_message(tree_info, error_term):
             return ""
 
     else:
-        return error_term
+        return str(error_term)
 
 
 def error_priority(error_string):

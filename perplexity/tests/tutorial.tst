@@ -5,14 +5,14 @@
         {
             "Command": "a file is large",
             "Expected": "a file is not large",
-            "Tree": "[['_a_q', 'x3', [['_file_n_of', 'x3', 'i8']], [['_large_a_1', 'e2', 'x3']]]]",
+            "Tree": "_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d4a96bf6-4460-4dc2-927f-4081696c1d69"
         },
         {
             "Command": "delete a large file",
             "Expected": "There isn't 'a large file' in the system",
-            "Tree": "[['pronoun_q', 'x3', [['pron', 'x3']], [['_a_q', 'x8', [['_file_n_of', 'x8', 'i14'], ['_large_a_1', 'e13', 'x8']], [['_delete_v_1', 'e2', 'x3', 'x8']]]]]]",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_file_n_of(x8,i14), _large_a_1(e13,x8)],_delete_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "261f95e0-000e-4e71-8d55-a2d16862df3d"
         },

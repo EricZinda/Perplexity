@@ -1,4 +1,5 @@
 Remaining work to be shown in the tutorial:
+- Make old tests work
 
 - Get rid of the old plurals comments and docs
 - Rebuild the scenarios to get the tests to pass again

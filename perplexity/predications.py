@@ -1,7 +1,7 @@
 import enum
 import itertools
 
-from perplexity.execution import get_variable_metadata, call, set_variable_execution_data
+from perplexity.execution import get_variable_metadata, call, set_variable_execution_data, report_error
 from perplexity.set_utilities import count_set
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import PluralType
@@ -171,3 +171,6 @@ def quantifier_raw(state, x_variable_binding, h_rstr, h_body):
 
     set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
 
+    if len(rstr_values) == 0:
+        # Ignore whatever error the RSTR produced, this is a better one
+        report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
