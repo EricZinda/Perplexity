@@ -1,7 +1,9 @@
 Remaining work to be shown in the tutorial:
 
-
-Bug: yes/no/prop doesn't say "there are more"
+Bug: Example 28: "a few files are 20 MB" says "there are more"
+  - 3 files are counted as "a few" when 1 is 20 mb and the other 2 add up to 20 mb
+  - Hmmm
+  
 Bug: Which 2 files in the folder are large is still too slow
 
 

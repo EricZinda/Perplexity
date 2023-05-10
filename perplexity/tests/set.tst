@@ -53,7 +53,7 @@
         },
         {
             "Command": "a file is large",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "e6ffb672-551a-48af-98de-34ff9b0c1a04"
@@ -81,7 +81,7 @@
         },
         {
             "Command": "1 file is large",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "3ffe599b-e9fb-40d7-a32b-56fa35710574"
@@ -180,7 +180,7 @@
         },
         {
             "Command": "a few files are large",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "7bb89f92-03e9-400d-99b7-5d9d3fec52e9"
@@ -194,7 +194,7 @@
         },
         {
             "Command": "a few files are large",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "2d32bbb8-f4b2-4069-a19d-0f67e0a4262e"
@@ -250,14 +250,14 @@
         },
         {
             "Command": "a few files are 20 mb",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x10,[_megabyte_n_1(x10,u17), card(20,e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],loc_nonsp(e2,x3,x10)))",
             "Enabled": true,
             "ID": "678dbe3f-6589-4d72-b1c9-34434445b00c"
         },
         {
             "Command": "a few files are 30 mb",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x10,[_megabyte_n_1(x10,u17), card(30,e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],loc_nonsp(e2,x3,x10)))",
             "Enabled": true,
             "ID": "7ff0f68e-4ca3-4085-a67f-1ae4b64a5287"
@@ -418,14 +418,14 @@
         },
         {
             "Command": "a few files are in a folder together",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "_a_q(x10,_folder_n_of(x10,i15),udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],[_together_p(e16,x3), _in_p_loc(e2,x3,x10)]))",
             "Enabled": true,
             "ID": "c640b37a-26d2-42f0-ab14-4be856692f16"
         },
         {
             "Command": "4 files are in a folder",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "_a_q(x11,_folder_n_of(x11,i16),udef_q(x3,[_file_n_of(x3,i10), card(4,e9,x3)],_in_p_loc(e2,x3,x11)))",
             "Enabled": true,
             "ID": "1a73a9fb-0c5e-49bc-8063-a85df202a70c"
@@ -460,7 +460,7 @@
         },
         {
             "Command": "2 files are large",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x3,[_file_n_of(x3,i10), card(2,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "5162b0c9-fa3e-4c94-abc3-04a62f8dfc68"

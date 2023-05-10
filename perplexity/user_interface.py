@@ -226,13 +226,6 @@ class UserInterface(object):
             print(response)
 
     def generate_more_message(self, tree, solution_groups):
-        # Only materialize the next solution group if we absolutely need to because:
-        # propositions can be answered with the minimal solution group. Asking for next()
-        # requires finishing this one and getting the next one which can be expensive.
-        sentence_force_type = sentence_force(tree["Variables"])
-        # if sentence_force_type == "ques" or sentence_force_type == "prop":
-        #     return
-        # else:
         if solution_groups is None:
             return
 

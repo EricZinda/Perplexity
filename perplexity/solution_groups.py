@@ -8,9 +8,12 @@ from perplexity.utilities import at_least_one_generator
 
 
 # Create a generator that yields solutions to a minimal solution group as quickly as it is found
-# but will continue returning solutions until if it is maximal if requested. The idea is to make it easy
+# but will continue returning solutions until it is maximal if requested. The idea is to make it easy
 # to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)
 # but allow other types of phrases to get all answers in a group if needed
+#
+# Finally: there should be a way to see if there are more solutions that could be added to the group
+# or more than one group available
 class SingleSolutionGroupGenerator(object):
     def __init__(self, all_plural_groups_stream, variable_has_inf_max):
         self.all_plural_groups_stream = all_plural_groups_stream
@@ -18,7 +21,7 @@ class SingleSolutionGroupGenerator(object):
 
         self.current_group_generator = None
         self.chosen_solution_id = None
-        self.has_multiple_groups = False
+        self._has_multiple_groups = False
 
     def __iter__(self):
         return self
@@ -39,7 +42,13 @@ class SingleSolutionGroupGenerator(object):
         # Search for another solution group that descends from this solution group
         # and return the new solution from it
         while True:
-            group = next(self.all_plural_groups_stream)
+            try:
+                group = next(self.all_plural_groups_stream)
+
+            except StopIteration:
+                self.all_plural_groups_stream = None
+                raise
+
             if self.chosen_solution_id is None:
                 self.chosen_solution_id = group[1]
                 self.current_group_generator = iter(group[0])
@@ -54,7 +63,7 @@ class SingleSolutionGroupGenerator(object):
 
             else:
                 # Remember that there are multiple solution groups so we can say "there are more"
-                self.has_multiple_groups = True
+                self._has_multiple_groups = True
 
                 # If no variable has a between(N, inf) constraint,
                 # Just stop now and the caller will get a subset solution group for the answer they care about
@@ -62,6 +71,28 @@ class SingleSolutionGroupGenerator(object):
                 # If it does have an between(N, inf) constraint, return them all
                 if not self.variable_has_inf_max:
                     raise StopIteration
+
+    # This generator has more solution groups than just its chosen group available
+    def has_multiple_groups(self):
+        if self._has_multiple_groups:
+            return True
+
+        else:
+            if self.all_plural_groups_stream is None:
+                # No more solutions to iterate through
+                return False
+
+            else:
+                # Keep working through solutions until we find another group
+                # Or the end of all solutions
+                while True:
+                    try:
+                        group = next(self.all_plural_groups_stream)
+                        if not group[1].startswith(self.chosen_solution_id):
+                            return True
+
+                    except StopIteration:
+                        return False
 
 
 # Group the unquantified solutions into "solution groups" that meet the criteria on each variable
@@ -94,7 +125,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
             # If there are multiple solution groups, we need to add one more (fake) group
             # and yield it so that the caller thinks there are multiple answers and will give a message
             # to the user. The answers aren't shown so it can be anything
-            if group_generator.has_multiple_groups:
+            if group_generator.has_multiple_groups():
                 yield True
 
 
