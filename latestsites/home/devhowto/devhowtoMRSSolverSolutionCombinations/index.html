@@ -451,6 +451,30 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 
 <p>If there are 5 unique solution groups for a given phrase, this means we will effectively be picking one at random to show the user. This is OK since, if there are many solutions, it really doesn’t matter which we show. [TODO: explain why].</p>
 
+<p>But, this only works if all the subsets of a unique solution group have the same lineage.  Let’s examine that next.</p>
+
+<h3 id="generate-only-unique-maxmimal-solution-groups">Generate Only Unique Maxmimal Solution Groups</h3>
+<p>Algorithm 1 will generate all non-empty combinations of solutions. That means if the MRS is simply “files(x)” (which has the constraint <code class="language-plaintext highlighter-rouge">between(1, inf)</code>), and there are 2 files, it will generate:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Group 1:
+  file1
+
+Group 2:
+  file2
+
+Group 3:
+  file1
+  file2
+</code></pre></div></div>
+
+<p>The lineage technique will allow the caller to know that Group 3 is really just an updated Group 2, but Group 2 will look like an independent “unique” solution, when it really isn’t. Constraints with an <code class="language-plaintext highlighter-rouge">inf</code> upper limit can accept <em>all</em> individuals and so will <em>always</em> generate duplicate solutions if they are allowed to form new sets. This is true even if their lower limit is &gt; 1. So, any variable that has an upper constraint of <code class="language-plaintext highlighter-rouge">inf</code> should not <em>on its own</em> be a reason to add a new group to the <code class="language-plaintext highlighter-rouge">set_list</code>.</p>
+
+<p>However, if the tree has multiple variables with constraints, other variables <em>may</em> be a reason to form a new group. If another variable has an upper limit &lt; <code class="language-plaintext highlighter-rouge">inf</code> then we do want to return all combinations of, say, “2 files”. Thus, in that case we <em>do</em> want to create a new set in <code class="language-plaintext highlighter-rouge">set_list</code> with the new solution so that it can form new combinations, but <em>only if the value for that variable in the new solution is not already in a set</em>. Because, if it is already in a set, it is already being tracked and creating a new set to form combinations will, again, create duplicates.</p>
+
+<p>So, the logic for creating new sets needs to be: Merge a solution into an existing set if it doesn’t contribute new individuals to any variables that have constraints that have a max &lt; <code class="language-plaintext highlighter-rouge">inf</code>. If it doesn’t get merged into any existing set, create a new one and add it to <code class="language-plaintext highlighter-rouge">set_list</code>.</p>
+
+<p>This means that, in the new algorithm, <code class="language-plaintext highlighter-rouge">set_list</code> begins with no sets. The empty set that Algorithm 1 started with is only used if a solution wasn’t merged into an existing set.</p>
+
 <h3 id="detect-if-there-is-more-than-one-unique-solution-group">Detect If There Is More Than One Unique Solution Group</h3>
 <p>Algorithm Version 1 doesn’t indicate whether a returned solution group is a unique solution group – one that isn’t a subset of any other. It just returns solution groups that have 1 more solution than those it has generated before. This problem is really the inverse of the one above. In this case, we want to see if a new solution group <em>isn’t</em> a subset of the one we’ve selected.</p>
 
@@ -470,17 +494,24 @@ Carlos: Well, lets see: file1.txt and file2.txt are in \desktop, file3.txt and f
 
 <p>Start with:</p>
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">set_list</code> (a list of sets), which initially is only a single empty set</li>
+  <li><code class="language-plaintext highlighter-rouge">set_list</code> (a list of sets), which initially is empty</li>
 </ul>
 
-<p>When a new solution is found, for each <code class="language-plaintext highlighter-rouge">selected_set</code> in <code class="language-plaintext highlighter-rouge">set_list</code>:</p>
+<p>When a <code class="language-plaintext highlighter-rouge">new_solution</code> is found, for each <code class="language-plaintext highlighter-rouge">selected_set</code> in <code class="language-plaintext highlighter-rouge">set_list</code>:</p>
 
 <ol>
-  <li>Build <code class="language-plaintext highlighter-rouge">new_set</code> by adding the solution to <code class="language-plaintext highlighter-rouge">selected_set</code></li>
+  <li>Build <code class="language-plaintext highlighter-rouge">new_set</code> by adding <code class="language-plaintext highlighter-rouge">new_solution</code> to <code class="language-plaintext highlighter-rouge">selected_set</code></li>
   <li>Generate a <code class="language-plaintext highlighter-rouge">unique_id</code>. Then, create a lineage for <code class="language-plaintext highlighter-rouge">new_set</code> by appending <code class="language-plaintext highlighter-rouge">unique_id</code> to the end of the <code class="language-plaintext highlighter-rouge">selected_set</code> lineage</li>
-  <li>If <code class="language-plaintext highlighter-rouge">new_set</code> meets or could meet the criteria (once more rows are added), add it, along with its lineage, to <code class="language-plaintext highlighter-rouge">set_list</code></li>
+  <li>If <code class="language-plaintext highlighter-rouge">new_set</code> meets or could meet the criteria (once more rows are added):
+    <ul>
+      <li>If it can be merged into <code class="language-plaintext highlighter-rouge">selected_set</code> merge it</li>
+      <li>If not, add it, along with its lineage, to <code class="language-plaintext highlighter-rouge">set_list</code></li>
+    </ul>
+  </li>
   <li>If <code class="language-plaintext highlighter-rouge">new_set</code> actually <em>did</em> meet the criteria, also return it, and its lineage, as a solution group</li>
 </ol>
+
+<p>If <code class="language-plaintext highlighter-rouge">new_solution</code> meets or could meet the criteria and did not get merged into any set in <code class="language-plaintext highlighter-rouge">set_list</code>, add it to <code class="language-plaintext highlighter-rouge">set_list</code>.</p>
 
 <p><strong>Solution Group Picker</strong></p>
 
