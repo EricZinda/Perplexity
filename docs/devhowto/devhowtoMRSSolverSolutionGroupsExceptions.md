@@ -1,7 +1,9 @@
 ### Global Constraints: "the" and "only"
+But, consider how "the" works, it effectively is adding "only" to the cardinal. If the user says "the two files in "/documents" are hidden" they pretty clearly mean "there is *only* two files". So, the logic of `card(2, ...)` being true if there are *at least* won't work. "The" will need to add "only" to the cardinal
 
-
-
+"Only/Exactly", much like the quantifier "the" does more than just group solutions into groups ("only 2 files are in the folder") it also limits *all* the solutions to that number. So we need to go to the bitter end before we know that that are "only 2" group_rstr is set in the criteria each time a rstr is checked.
+    Also, as soon as >2 are found, abort the whole thing
+    At the very end return all sets
 
 
 

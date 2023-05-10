@@ -1,8 +1,9 @@
 Remaining work to be shown in the tutorial:
 
 - Get rid of the old plurals comments and docs
+- Rebuild the scenarios to get the tests to pass again
 - Build a backend to use for ESL Scenarios
-- 
+
 Plurals work 
 - Example 36: "delete files that are 20mb" -> crash
 - Example 33: "delete only 2 files in the folder" -> There are more than 2 file in the folder

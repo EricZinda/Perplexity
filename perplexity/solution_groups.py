@@ -1,7 +1,7 @@
 import copy
 import logging
 from math import inf
-from perplexity.determiners4 import determiner_from_binding, quantifier_from_binding, \
+from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
 from perplexity.tree import gather_quantifier_order
 from perplexity.utilities import at_least_one_generator

@@ -13,7 +13,7 @@ from perplexity.generation import english_for_delphin_variable
 # Helpers that allow the examples to use
 # old interfaces in the early parts of the docs
 ##########################
-from perplexity.determiners4 import all_plural_groups_stream, VariableCriteria, GlobalCriteria
+from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.tree import TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
