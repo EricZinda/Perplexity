@@ -722,6 +722,20 @@ def Example36():
         print()
 
 
+
+def Example37_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000})
+                                           ],
+                                           "/Desktop"))
+
+
+def Example37():
+    user_interface = UserInterface(Example37_reset, vocabulary, respond_to_mrs_tree, error_priority)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
 def build_solutions(spec):
     solutions = []
     for item in spec:
@@ -906,7 +920,7 @@ if __name__ == '__main__':
     # Example21()
     # Example22()
     # Example24()
-    Example25()
+    # Example25()
     # Example26()
     # Example27()
     # Example28()
@@ -914,10 +928,11 @@ if __name__ == '__main__':
     # Example30()
     # Example31()
     # Example32()
-    # Example33()
+    Example33()
     # Example33_performance_test()
     # Example34()
     # Example35()
+    # Example36()
     #
     # state_test()
 

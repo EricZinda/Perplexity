@@ -20,6 +20,7 @@ def determiner_from_binding(state, binding):
                                     max_size=float('inf'))
 
         else:
+            # Singular determinter, mark this as coming from the quantifier for error reporting purposes
             return VariableCriteria(quantifier,
                                     binding.variable.name,
                                     min_size=1,
@@ -30,6 +31,8 @@ def quantifier_from_binding(state, binding):
     return binding.variable.quantifier
 
 
+# If a solution has combinatorial variables:
+# expand one solution with combinatorial variables into multiple solutions
 def expand_combinatorial_variables(variable_metadata, solution):
     alternatives = {}
     for variable_item in variable_metadata.items():
@@ -64,6 +67,8 @@ def expand_combinatorial_variables(variable_metadata, solution):
             yield new_solution
 
 
+# Needs to be called before all_plural_groups_stream. Allows the caller to
+# Gather useful stats that all_plural_groups_stream also consumes
 def plural_groups_stream_initial_stats(execution_context, var_criteria):
     variable_metadata = {}
     for criteria in var_criteria:
@@ -77,7 +82,7 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 
 
 # Every set that is generated has a StatsGroup object that does all
-# the counting that we need to see if it meets the criteria
+# the counting needed to see if it meets the criteria
 #
 # New groups are created by copying an existing set and adding a new solution into it
 # or merging in special cases.
@@ -415,8 +420,8 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
     return merge, current_set_state
 
 
-# Called if we can shortcut because we have already found the answers but we still need to check global constraints
-# The set of unique individuals needed to check that "only 2 ..." are collected in the criteria
+# Called if we can shortcut because we have already found the answers but we still need to check global constraints.
+# The set of unique individuals needed to check that "only 2 ..." are collected is in the criteria
 # So we can rip through all the solutions and run the criteria to see if global criteria are met, ignoring coll/etc.
 def check_only_global_criteria_all(execution_context, var_criteria, new_solution):
     for index in range(len(var_criteria)):
@@ -449,7 +454,6 @@ class VariableCriteria(object):
     def __repr__(self):
         return f"{{{self.variable_name}: min={self.min_size}, max={self.max_size}, global={self.global_criteria}, pred={self.predication.name}({self.predication.args[0]})}}"
 
-    # Numbers can only increase so ...
     def meets_criteria(self, execution_context, value_list):
         values_count = count_set(value_list)
 

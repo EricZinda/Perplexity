@@ -7,18 +7,16 @@ from perplexity.tree import gather_quantifier_order
 from perplexity.utilities import at_least_one_generator
 
 
-# Create a generator that yields solutions to a minimal solution group as quickly as it is found
+# Create a generator that yields solutions in a minimal solution group as quickly as it is found
 # but will continue returning solutions until it is maximal if requested. The idea is to make it easy
 # to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)
 # but allow other types of phrases to get all answers in a group if needed
 #
-# Finally: there should be a way to see if there are more solutions that could be added to the group
-# or more than one group available
+# It also provides a method to see if there is at least one other solution group available
 class SingleSolutionGroupGenerator(object):
     def __init__(self, all_plural_groups_stream, variable_has_inf_max):
         self.all_plural_groups_stream = all_plural_groups_stream
         self.variable_has_inf_max = variable_has_inf_max
-
         self.current_group_generator = None
         self.chosen_solution_id = None
         self._has_multiple_groups = False
@@ -72,7 +70,7 @@ class SingleSolutionGroupGenerator(object):
                 if not self.variable_has_inf_max:
                     raise StopIteration
 
-    # This generator has more solution groups than just its chosen group available
+    # See if this generator has more solution groups than just its chosen group available
     def has_multiple_groups(self):
         if self._has_multiple_groups:
             return True
@@ -95,11 +93,11 @@ class SingleSolutionGroupGenerator(object):
                         return False
 
 
-# Group the unquantified solutions into "solution groups" that meet the criteria on each variable
+# Group the unquantified solutions into "solution groups" that meet the criteria on each variable.
 # Designed to return the minimal solution that meets the criteria as quickly as possible.
 #
 # If the criteria has any between(N, inf) criteria, it will keep streaming answers until the end
-# If not, it will stop after the first (minimal) solution is found
+# If not, it will stop after the first (minimal) solution is found.
 #
 # A second solution group will be returned, if it exists, but will be bogus. It is just there so that the caller can see there is one. This is
 # to reduce the cost of generating the answer

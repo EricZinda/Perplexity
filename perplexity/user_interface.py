@@ -166,31 +166,22 @@ class UserInterface(object):
                     #     temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable)
                     #     tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
-                    # test1 = list(solutions)
-                    # test = list(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force,
-                    #                                            wh_phrase_variable, tree_info))
-                    # Determine the response to it
-
                     # solution_groups() should return an iterator that iterates *groups*
                     solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
-                    # groups = [x for x in solution_group_generator]
-                    # items = [x for x in groups[0]]
 
                     # Collect any error that might have occurred from the first solution group
                     tree_record["Error"] = self.execution_context.error()
                     tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(tree_info, solution_group_generator, tree_record["Error"]))
                     if solution_group_generator is not None:
-                        # If there were solutions, this is our answer,
-                        # return it and stop looking
+                        # There were solutions, so this is our answer.
+                        # Return it and stop looking
                         self.evaluate_best_response(solution_group_generator)
 
                         # Go through all the responses in this solution group
-                        solution_group_combined = []
                         for response, solution_group in tree_record["ResponseGenerator"]:
                             # Some messages (like responses to propositions) don't need to materialize the maximum solution to
                             # respond, just enough to know that it is true, so don't grab all the answers because it may force
                             # answers that we didn't need to get
-                            # solution_group_combined += solution_group
 
                             # This worked, apply the results to the current world state if it was a command
                             if this_sentence_force == "comm":
@@ -203,9 +194,6 @@ class UserInterface(object):
 
                             tree_record["ResponseMessage"] += response
                             print(response)
-
-                        # See note above
-                        # tree_record["SolutionGroups"] = [solution_group_combined]
 
                         more_message = self.generate_more_message(tree_info, solution_group_generator)
                         if more_message is not None:
