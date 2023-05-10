@@ -320,6 +320,10 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
 @Predication(vocabulary, names=["loc_nonsp"])
 def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    # Don't use this version if we are dealing with a size
+    if x_location_binding.value is not None and value_is_measure(x_location_binding.value):
+        return
+
     def item_at_item(item1, item2):
         if hasattr(item1, "all_locations"):
             # Asking if a location of item1 is at item2
@@ -350,6 +354,7 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
 @Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", PluralType.all), ("x", PluralType.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
+
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):
             if not x_size_binding.variable.value_type == VariableValueType.set:

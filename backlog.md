@@ -1,7 +1,6 @@
 Remaining work to be shown in the tutorial:
 - Make old tests work
-- Example25: 1 file is 20 megabytes -> 1 file is not in 20 megabyte
-  - should be:  1 file is not 20 megabyte
+
   - 
 - what is large? -> fails
 - 
