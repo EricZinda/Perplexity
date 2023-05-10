@@ -285,7 +285,9 @@ def is_this_last_fw_seq(state):
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
-def is_index_predication(state):
+# TODO: Change this to the better approach for checking for attributively used adjectives
+# As per this thread: https://delphinqa.ling.washington.edu/t/converting-mrs-output-to-a-logical-form/413/29
+def used_predicatively(state):
     this_tree = state.get_binding("tree").value[0]
     this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
     return this_predication.introduced_variable() == this_tree["Index"]

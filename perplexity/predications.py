@@ -128,7 +128,11 @@ def in_style_predication(state, binding1, binding2, prediction_function, binding
                                                            binding2_set_type)
 
 
-# "Combinatorial Style" means: preserve (or create) a combinatorial set if possible
+# "Combinatorial Style Predication" means: a predication that, when applied to a set, will be true
+# for any chosen subset of the set. So, it gives a combinatorial answer.
+# combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
+# not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
+# for example
 def combinatorial_style_predication(state, binding, all_individuals_generator, predication_function):
     if binding.variable.value_type == VariableValueType.set:
         # This is a single set that needs to be kept intact

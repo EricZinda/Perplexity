@@ -5,7 +5,7 @@ from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
     individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import count_set, Measurement
-from perplexity.tree import is_index_predication
+from perplexity.tree import used_predicatively
 from perplexity.utilities import is_plural_from_tree_info
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralType
@@ -154,7 +154,9 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* large we should be
     degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
-    if is_index_predication(state):
+    if used_predicatively(state):
+        # "large" is being used "predicatively" as in "the dogs are large". This needs to force
+        # the individuals to be separate (i.e. not part of a group)
         def criteria_index(value):
             if len(value) > 1:
                 report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
@@ -169,6 +171,8 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
         yield from individual_only_style_predication_1(state, x_target_binding, criteria_index)
 
     else:
+        # "large" is being used "attributively" as in "the large dogs are meeting" which doesn't force
+        # dogs to be grouped or individual, but *does* require that each, individually, is large
         def criteria(value):
             if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
                 return True
@@ -178,6 +182,46 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
                 return False
 
         yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
+
+
+# Arbitrarily decide that "small" means a size <= 1,000,000
+# Remember that "hasattr()" checks if an object has
+# a property
+@Predication(vocabulary, names=["_small_a_1"])
+def small_a_1(state, e_introduced_binding, x_target_binding):
+    # See if any modifiers have changed *how* small we should be
+    degree_multiplier = 1 / degree_multiplier_from_event(state, e_introduced_binding)
+
+    if used_predicatively(state):
+        # "small" is being used "predicatively" as in "the dogs are small". This needs to force
+        # the individuals to be separate (i.e. not part of a group)
+        def criteria_index(value):
+            if len(value) > 1:
+                report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
+
+            else:
+                if hasattr(value[0], 'size') and value[0].size <= degree_multiplier * 1000000:
+                    return True
+
+                else:
+                    report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
+                    return False
+
+        yield from individual_only_style_predication_1(state, x_target_binding, criteria_index)
+
+    else:
+        # "small" is being used "attributively" as in "the small dogs are meeting" which doesn't force
+        # dogs to be grouped or individual, but *does* require that each, individually, is small
+        def criteria(value):
+            if hasattr(value, 'size') and value.size <= degree_multiplier * 1000000:
+                return True
+
+            else:
+                report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
+                return False
+
+        yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
+
 
 
 # This is a helper function that any predication that can

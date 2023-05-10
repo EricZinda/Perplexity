@@ -1,6 +1,9 @@
 Remaining work to be shown in the tutorial:
 - Make old tests work
+- implement small
 
+- "delete a folder" -> test infrastructure doesn't notice (there are more)
+- 
 - Get rid of the old plurals comments and docs
 - Rebuild the scenarios to get the tests to pass again
 - Build a backend to use for ESL Scenarios
