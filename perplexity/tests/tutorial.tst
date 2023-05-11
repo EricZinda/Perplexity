@@ -285,7 +285,7 @@
         {
             "Command": "\"foo\" is in \"/documents\"",
             "Expected": "'foo' is not in '/documents'",
-            "Tree": "proper_q(x10,[quoted(/documents,i15), fw_seq(x10,i15)],proper_q(x3,[quoted(foo,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
+            "Tree": "proper_q(x10,[quoted(\\\\>documents,i15), fw_seq(x10,i15)],proper_q(x3,[quoted(foo,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "086f2827-5653-4d90-8fe8-a5b3986df029"
         },
