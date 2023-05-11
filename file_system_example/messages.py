@@ -176,6 +176,9 @@ def generate_message(tree_info, error_term):
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"I can't {arg1} {arg2}"
 
+    elif error_constant == "beMoreSpecific":
+        return f"Could you be more specific?"
+
     elif error_constant == "unknownWords":
         lemmas_unknown = []
         lemmas_form_known = []

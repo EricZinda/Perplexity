@@ -353,7 +353,7 @@ class FileSystemMock(FileSystem):
             raise MessageException("notFound", [from_binding.variable.name])
 
     def change_directory(self, folder_binding):
-        path = self.add_current_directory(folder_binding.value.name)
+        path = self.add_current_directory(folder_binding.value[0].name)
         if self.exists(path, is_file=False):
             self.current = self.item_from_path(path, is_file=False)
 

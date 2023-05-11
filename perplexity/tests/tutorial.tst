@@ -306,13 +306,13 @@
         {
             "Command": "go to \"/documents\"",
             "Expected": "Done!",
-            "Tree": "proper_q(x9,[quoted(/documents,i14), fw_seq(x9,i14)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
+            "Tree": "proper_q(x9,[quoted(\\\\>documents,i14), fw_seq(x9,i14)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
             "Enabled": true,
             "ID": "2db0658c-8aac-484f-b120-f9c43de91e26"
         },
         {
             "Command": "what is in this folder?",
-            "Expected": "File(name=/documents/file1.txt, size=1000)\n",
+            "Expected": "(File(name=/documents/file1.txt, size=1000),)",
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "10313c53-a01e-400e-aa74-b798db3fe3f4"
@@ -326,15 +326,15 @@
         },
         {
             "Command": "/reset",
-            "Expected": "State reset using examples.Example23_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "0b3ba5ef-4c0f-4fed-bfaa-45cda3a0ce09"
         },
         {
             "Command": "what is in \"/documents\"",
-            "Expected": "File(name=/documents/file1.txt, size=1000)\n",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(/documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Expected": "(File(name=/documents/file1.txt, size=1000),)",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "805cdc7d-1391-40c9-a686-a6ea6c2c58f7"
         },

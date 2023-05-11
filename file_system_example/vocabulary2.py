@@ -1,5 +1,5 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor, Container, QuotedText
-from file_system_example.state import DeleteOperation
+from file_system_example.state import DeleteOperation, ChangeDirectoryOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication, in_style_predication, \
@@ -478,6 +478,50 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 
     else:
         report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+
+# go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
+#
+@Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
+def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
+    x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
+
+    def both_bound_function(actor_item, location_item):
+        if actor_item.name == "Computer":
+            # Only allow moving to folders
+            if isinstance(location_item, Folder):
+                return True
+
+            else:
+                if hasattr(x_location_binding.value, "exists") and location_item.exists():
+                    report_error(["cantDo", "change directory to", x_location_binding.variable.name])
+
+                else:
+                    report_error(["notFound", x_location_binding.variable.name])
+
+        else:
+            report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding1_unbound_predication_function(location_item):
+        # Actor is unbound, unclear when this would happen but report an error
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding2_unbound_predication_function(actor_item):
+        # Location is unbound, ask them to be more specific
+        report_error(["beMoreSpecific"])
+
+    for new_state in in_style_predication(state, x_actor_binding, x_location_binding,
+                                          both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
+        yield new_state.apply_operations([ChangeDirectoryOperation(new_state.get_binding(x_location_binding.variable.name))])
+
+
+@Predication(vocabulary, names=["_to_p_dir"])
+def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
+    preposition_info = {
+        "EndLocation": x_location_binding
+    }
+
+    yield state.add_to_e(e_target_binding.variable.name, "DirectionalPreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
 
 
 @Predication(vocabulary, names=["pron"])

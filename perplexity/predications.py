@@ -14,51 +14,7 @@ class VariableValueSetSize(enum.Enum):
     exactly_one = 2
 
 
-# Yields each possible variable set from binding based on what type of value it is
-# "discrete" means it will generate specific all possible sets (i.e. not yield a combinatoric value)
-def discrete_variable_set_generator(binding, set_size):
-    if binding.variable.value_type == VariableValueType.set:
-        binding_value = binding.value
-        if set_size == VariableValueSetSize.all or \
-           (set_size == VariableValueSetSize.more_than_one and count_set(binding_value) > 1) or \
-           (set_size == VariableValueSetSize.exactly_one and count_set(binding_value) == 1):
-            # This is a single set that needs to be kept intact
-            yield VariableValueType.set, binding.value
-
-        return
-
-    else:
-        # Generate all possible sets
-        assert binding.variable.value_type == VariableValueType.combinatoric
-
-        min_set_size = 2 if set_size == VariableValueSetSize.more_than_one else 1
-        max_set_size = 1 if set_size == VariableValueSetSize.exactly_one else len(binding.value)
-
-        for value_set_size in range(min_set_size, max_set_size + 1):
-            for value_set in itertools.combinations(binding.value, value_set_size):
-                yield VariableValueType.set, value_set
-
-
-def discrete_variable_individual_generator(binding):
-    if binding.variable.value_type == VariableValueType.set:
-        # This is a single set that needs to be kept intact
-        yield VariableValueType.set, binding.value
-        return
-
-    else:
-        # Generate all possible sets of 1
-        assert binding.variable.value_type == VariableValueType.combinatoric
-
-        min_set_size = 1
-        max_set_size = 1
-
-        for value_set_size in range(min_set_size, max_set_size + 1):
-            for value_set in itertools.combinations(binding.value, value_set_size):
-                yield VariableValueType.set, value_set
-
-
-# Used for words like "large" and "small" that always force an answer to be individuals
-# if used predicatively
+# Used for words like "large" and "small" that always force an answer to be individuals when used predicatively
 # Ensures that solutions are sets (not combinatoric) and only passes through
 # individuals, even if it is given a combinatoric
 def force_individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function):
@@ -100,7 +56,7 @@ def lift_style_predication(state, binding1, binding2, prediction_function, bindi
 
 
 # "'in' style" means that:
-# - {a, b} predicate {x, y} can be checked as a predicate x, a predicate y, etc.
+# - {a, b} predicate {x, y} can be checked (or do something) as {a} predicate {x}, {a} predicate {y}, etc.
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
 # - that the any combinatoric terms will be turned into single set terms (coll or dist)
 #
@@ -209,6 +165,49 @@ def combinatorial_style_predication_1(state, binding, all_individuals_generator,
 
     if len(values) > 0:
         yield state.set_x(binding.variable.name, tuple(values), value_type)
+
+
+# Yields each possible variable set from binding based on what type of value it is
+# "discrete" means it will generate specific all possible sets (i.e. not yield a combinatoric value)
+def discrete_variable_set_generator(binding, set_size):
+    if binding.variable.value_type == VariableValueType.set:
+        binding_value = binding.value
+        if set_size == VariableValueSetSize.all or \
+           (set_size == VariableValueSetSize.more_than_one and count_set(binding_value) > 1) or \
+           (set_size == VariableValueSetSize.exactly_one and count_set(binding_value) == 1):
+            # This is a single set that needs to be kept intact
+            yield VariableValueType.set, binding.value
+
+        return
+
+    else:
+        # Generate all possible sets
+        assert binding.variable.value_type == VariableValueType.combinatoric
+
+        min_set_size = 2 if set_size == VariableValueSetSize.more_than_one else 1
+        max_set_size = 1 if set_size == VariableValueSetSize.exactly_one else len(binding.value)
+
+        for value_set_size in range(min_set_size, max_set_size + 1):
+            for value_set in itertools.combinations(binding.value, value_set_size):
+                yield VariableValueType.set, value_set
+
+
+def discrete_variable_individual_generator(binding):
+    if binding.variable.value_type == VariableValueType.set:
+        # This is a single set that needs to be kept intact
+        yield VariableValueType.set, binding.value
+        return
+
+    else:
+        # Generate all possible sets of 1
+        assert binding.variable.value_type == VariableValueType.combinatoric
+
+        min_set_size = 1
+        max_set_size = 1
+
+        for value_set_size in range(min_set_size, max_set_size + 1):
+            for value_set in itertools.combinations(binding.value, value_set_size):
+                yield VariableValueType.set, value_set
 
 
 def rstr_reorderable(rstr):
