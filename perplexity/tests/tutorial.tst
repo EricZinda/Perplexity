@@ -369,35 +369,35 @@
         {
             "Command": "copy \"file1.txt\" in \"/documents\"",
             "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(/documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[_in_p_loc(e15,x8,x16), quoted(file1.txt,i13), fw_seq(x8,i13)],_copy_v_1(e2,x3,x8))))",
+            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file1.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "5a73a52a-fa97-4694-8120-8a47e0c99ce2"
         },
         {
-            "Command": "what is in this folder?",
-            "Expected": "File(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=1000)\nFile(name=/Desktop/file1.txt, size=1000)\n",
-            "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
+            "Command": "\"file1.txt\" is in this folder",
+            "Expected": "Yes, that is true.",
+            "Tree": "_this_q_dem(x10,_folder_n_of(x10,i15),proper_q(x3,[quoted(file1.txt,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "b12b4de4-f6ec-4dee-811a-1a9f96003ea7"
         },
         {
             "Command": "/reset",
-            "Expected": "State reset using examples.Example23_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "6aeec7a0-0b66-488f-bfc7-f15bcf81c024"
         },
         {
             "Command": "what is in \"\\>root111\"",
-            "Expected": "Folder(name=/documents, size=0)\nFolder(name=/Desktop, size=10000000)\n",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>work111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Expected": "(Folder(name=/documents, size=0),)(there are more)",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>root111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "87db9431-d91b-492f-844e-919dac3a392f"
         },
         {
             "Command": "/new examples.Example24_reset",
-            "Expected": "State reset using examples.Example24_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "292119f9-27f4-4bea-9f64-46ec589f07b5"
         },

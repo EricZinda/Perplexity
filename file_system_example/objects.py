@@ -336,24 +336,25 @@ class FileSystemMock(FileSystem):
             # PurePath will only attach the from_directory_binding.value.name to the front if
             # if from_binding.value is relative, otherwise it is ignored
             from_path = str(pathlib.PurePath(from_directory_binding.value.name, from_binding.value.name))
+
         else:
-            from_path = from_binding.value.name
+            from_path = from_binding.value[0].name
 
-        if self.exists(from_path, is_file=isinstance(from_binding.value, File)):
+        if self.exists(from_path, is_file=isinstance(from_binding.value[0], File)):
             if to_binding is None:
-                to_binding = VariableBinding(None, self.current_directory())
+                to_binding = VariableBinding(None, (self.current_directory(), ))
 
-            if self.exists(to_binding.value.name, is_file=isinstance(to_binding.value, File)):
-                item_name = pathlib.PurePath(from_binding.value.name).parts[-1]
-                if isinstance(to_binding.value, Folder):
+            if self.exists(to_binding.value[0].name, is_file=isinstance(to_binding.value[0], File)):
+                item_name = pathlib.PurePath(from_binding.value[0].name).parts[-1]
+                if isinstance(to_binding.value[0], Folder):
                     # "to" is a folder, use it as the new base for the file name
-                    new_item_path = pathlib.PurePath(to_binding.value.name, item_name)
+                    new_item_path = pathlib.PurePath(to_binding.value[0].name, item_name)
 
                 else:
                     # "to" includes a file name, use the entire name as the name of the target
-                    new_item_path = to_binding.value.name
+                    new_item_path = to_binding.value[0].name
 
-                new_item = copy.deepcopy(self.item_from_path(from_path, is_file=isinstance(from_binding.value, File)))
+                new_item = copy.deepcopy(self.item_from_path(from_path, is_file=isinstance(from_binding.value[0], File)))
                 new_item.name = new_item_path
                 self.items[str(new_item_path)] = new_item
 

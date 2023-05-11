@@ -1,5 +1,5 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor, Container, QuotedText
-from file_system_example.state import DeleteOperation, ChangeDirectoryOperation
+from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication, in_style_predication, \
@@ -522,6 +522,34 @@ def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
     }
 
     yield state.add_to_e(e_target_binding.variable.name, "DirectionalPreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
+
+
+# "copy" where the user did not say where to copy to, assume current directory
+@Predication(vocabulary, names=["_copy_v_1"])
+def copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    def both_bound_function(actor_item, location_item):
+        if actor_item.name == "Computer":
+            # Only allow copying files and folders
+            if isinstance(x_what_binding.value[0], (File, Folder)) and x_what_binding.value[0].exists():
+                return True
+
+            else:
+                report_error(["cantDo", "copy", x_what_binding.variable.name])
+
+        else:
+            report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding1_unbound_predication_function(location_item):
+        # Actor is unbound, unclear when this would happen but report an error
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding2_unbound_predication_function(actor_item):
+        # Location is unbound, ask them to be more specific
+        report_error(["beMoreSpecific"])
+
+    for new_state in in_style_predication(state, x_actor_binding, x_what_binding,
+                                          both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
+        yield new_state.apply_operations([CopyOperation(None, new_state.get_binding(x_what_binding.variable.name), None)])
 
 
 @Predication(vocabulary, names=["pron"])
