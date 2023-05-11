@@ -1,5 +1,6 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor, Container, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
+from file_system_example.vocabulary import locative_preposition_end_location
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication, in_style_predication, \
@@ -7,6 +8,7 @@ from perplexity.predications import combinatorial_style_predication_1, lift_styl
 from perplexity.set_utilities import Measurement
 from perplexity.tree import used_predicatively, is_this_last_fw_seq
 from perplexity.variable_binding import VariableValueType, VariableBinding
+from perplexity.virtual_arguments import scopal_argument
 from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralType
 
 
@@ -297,6 +299,28 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 
 
+@Predication(vocabulary, names=["_in_p_state"])
+def in_p_state(state, e_introduced_binding, e_target_binding, x_location_binding):
+    preposition_info = {
+        "EndLocation": x_location_binding
+    }
+
+    yield state.add_to_e(e_target_binding.variable.name, "StativePreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
+
+
+def default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    preposition_info = {
+        "LeftSide": x_actor_binding,
+        "EndLocation": x_location_binding
+    }
+    yield state.add_to_e(e_introduced_binding.variable.name, "LocativePreposition", {"Value": preposition_info, "Originator": execution_context().current_predication_index()})
+
+
+@Predication(vocabulary, names=["_in_p_loc"])
+def in_p_loc_norm(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    yield from default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding)
+
+
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def item_in_item(item1, item2):
@@ -550,6 +574,83 @@ def copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     for new_state in in_style_predication(state, x_actor_binding, x_what_binding,
                                           both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
         yield new_state.apply_operations([CopyOperation(None, new_state.get_binding(x_what_binding.variable.name), None)])
+
+
+# "copy" where the user specifies where to copy "from". Assume "to" is current directory since it isn't specified
+# This is really only different from the locative "_in_p_loc(e15,x8,x16), _copy_v_1(e2,x3,x8)" version if:
+# a) The from directory doesn't exist
+# b) The thing to copy has a relative path because our "current directory" for the file will be different
+@Predication(vocabulary, names=["_copy_v_1"], handles=[("StativePreposition", EventOption.required)])
+def copy_v_1_stative_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    # TODO: Handle set based from locations
+    x_copy_from_location_binding = e_introduced_binding.value["StativePreposition"]["Value"]["EndLocation"]
+    if len(x_copy_from_location_binding.value) != 1:
+        return
+
+    if not isinstance(x_copy_from_location_binding.value[0], Folder):
+        report_error(["cantDo", "copy from", x_what_binding.variable.name])
+        return
+
+    def both_bound_function(actor_item, location_item):
+        if actor_item.name == "Computer":
+            # We only know how to copy something "from" a folder
+            if isinstance(x_what_binding.value[0], (File, Folder)) and x_what_binding.value[0].exists():
+                return True
+
+            else:
+                report_error(["cantDo", "copy", x_what_binding.variable.name])
+
+        else:
+            report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding1_unbound_predication_function(location_item):
+        # Actor is unbound, unclear when this would happen but report an error
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding2_unbound_predication_function(actor_item):
+        # Location is unbound, ask them to be more specific
+        report_error(["beMoreSpecific"])
+
+    for new_state in in_style_predication(state, x_actor_binding, x_what_binding,
+                                          both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
+        yield new_state.apply_operations([CopyOperation(x_copy_from_location_binding, new_state.get_binding(x_what_binding.variable.name), None)])
+
+
+@Predication(vocabulary, names=["_copy_v_1"], virtual_args=[(scopal_argument(scopal_index=3, event_for_arg_index=2, event_value_pattern=locative_preposition_end_location), EventOption.required)])
+def copy_v_1_locative_comm(state, e_introduced_binding, x_actor_binding, x_what_binding, h_where, where_binding_generator):
+    # TODO: Handle set based from locations
+    where_binding_list = list(where_binding_generator)
+    if len(where_binding_list) != 1:
+        return
+
+    if not isinstance(where_binding_list[0].value[0], Folder) or not where_binding_list[0].value[0].exists():
+        report_error(["cantDo", "copy to", x_what_binding.variable.name])
+        return
+
+    def both_bound_function(actor_item, what_item):
+        if actor_item.name == "Computer":
+            # We only know how to copy a file or folder
+            if isinstance(what_item, (File, Folder)) and what_item.exists():
+                return True
+
+            else:
+                report_error(["cantDo", "copy", x_what_binding.variable.name])
+
+        else:
+            report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding1_unbound_predication_function(location_item):
+        # Actor is unbound, unclear when this would happen but report an error
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+    def binding2_unbound_predication_function(actor_item):
+        # Location is unbound, ask them to be more specific
+        report_error(["beMoreSpecific"])
+
+    for new_state in in_style_predication(state, x_actor_binding, x_what_binding,
+                                          both_bound_function, binding1_unbound_predication_function,
+                                          binding2_unbound_predication_function):
+        yield new_state.apply_operations([CopyOperation(None, new_state.get_binding(x_what_binding.variable.name), where_binding_list[0])])
 
 
 @Predication(vocabulary, names=["pron"])

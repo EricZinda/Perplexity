@@ -3,7 +3,6 @@ Remaining work to be shown in the tutorial:
 - Bug: What is large? Will only return one item because it is singular
 - Bug?: Is used_collective used anymore?
 - 
-- copy "file1.txt" in "/documents"
 
 - combinatorial_style_predication() handles unbound differently than the others
 - Rebuild the scenarios to get the tests to pass again

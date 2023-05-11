@@ -335,7 +335,7 @@ class FileSystemMock(FileSystem):
         if from_directory_binding is not None:
             # PurePath will only attach the from_directory_binding.value.name to the front if
             # if from_binding.value is relative, otherwise it is ignored
-            from_path = str(pathlib.PurePath(from_directory_binding.value.name, from_binding.value.name))
+            from_path = str(pathlib.PurePath(from_directory_binding.value[0].name, from_binding.value[0].name))
 
         else:
             from_path = from_binding.value[0].name

@@ -101,7 +101,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
             if new_arg is not None:
                 new_args.append(new_arg)
             else:
-                if virtual_args[1] == EventOption.required:
+                if virtual_arg[1] == EventOption.required:
                     # Couldn't create this arg, fail since it is required
                     # create_function should report an error
                     return None

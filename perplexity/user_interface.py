@@ -36,6 +36,7 @@ class UserInterface(object):
         self.run_mrs_index = None
         self.run_tree_index = None
         self.show_all_answers = False
+        self.run_all_parses = False
 
     def chosen_tree_record(self):
         chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
@@ -200,7 +201,8 @@ class UserInterface(object):
                             tree_record["ResponseMessage"] += more_message
                             print(more_message)
 
-                        return
+                        if not self.run_all_parses:
+                            return
 
                     else:
                         # This failed, remember it if it is the "best" failure
@@ -280,25 +282,25 @@ class UserInterface(object):
     # None: Was not a command
     # Str: The string that should be recorded for the command
     def handle_command(self, text):
-        # try:
-        text = text.strip()
-        if len(text) > 0:
-            if text[0] == "/":
-                text = text[1:]
-                items = text.split()
-                if len(items) > 0:
-                    command = items[0].strip().lower()
-                    command_info = command_data.get(command, None)
-                    if command_info is not None:
-                        return command_info["Function"](self, " ".join(text.split()[1:]))
+        try:
+            text = text.strip()
+            if len(text) > 0:
+                if text[0] == "/":
+                    text = text[1:]
+                    items = text.split()
+                    if len(items) > 0:
+                        command = items[0].strip().lower()
+                        command_info = command_data.get(command, None)
+                        if command_info is not None:
+                            return command_info["Function"](self, " ".join(text.split()[1:]))
 
-                    else:
-                        print("Don't know that command ...")
-                        return True
+                        else:
+                            print("Don't know that command ...")
+                            return True
 
-        # except Exception as error:
-        #     print(str(error))
-        #     return True
+        except Exception as error:
+            print(str(error))
+            return True
 
         return None
 
@@ -361,7 +363,7 @@ class UserInterface(object):
                 if tree_info['ResponseMessage'] == "" and tree_info['ResponseGenerator'] is not None:
                     tree_info['ResponseMessage'] = ""
                     for response in tree_info['ResponseGenerator']:
-                        tree_info['ResponseMessage'] += response
+                        tree_info['ResponseMessage'] += str(response)
                 print(f"Response:\n{tree_info['ResponseMessage']}")
 
             tree_index += 1
@@ -466,6 +468,13 @@ class UserInterface(object):
         return ergFile
 
 
+def command_run_all_parses(ui, arg):
+    turn_on = bool(arg) if len(arg) > 0 else True
+    print(f"Run all parses is now {turn_on}")
+    ui.run_all_parses = turn_on
+    return True
+
+
 def command_show(ui, arg):
     parts = arg.split(",")
     all = False
@@ -566,9 +575,13 @@ def command_soln(ui, arg):
 
 
 def command_run_parse(ui, arg):
+    if arg.strip() == '':
+        ui.run_mrs_index = None
+        ui.run_tree_index = None
+        print("Runparse is off")
+        return True
+
     parts = arg.split(",")
-    if len(parts) == 0 or len(parts) > 2:
-        print("Please supply a parseindex, treeindex or just a parseindex")
 
     ui.run_mrs_index = int(parts[0])
     if len(parts) == 2:
@@ -702,8 +715,11 @@ command_data = {
     "soln": {"Function": command_soln, "Category": "Parsing",
              "Description": "Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else to only see what is required",
              "Example": "/soln or /soln all"},
+    "runall": {"Function": command_run_all_parses, "Category": "Parsing",
+                  "Description": "Runs all parses, doesn't stop after success",
+                  "Example": "/runall 1 OR /runall True"},
     "runparse": {"Function": command_run_parse, "Category": "Parsing",
-                  "Description": "Only runs the identified parse index and optional tree index",
+                  "Description": "Only runs the identified parse index and optional tree index. Pass no arguments to turn off",
                   "Example": "/runparse 1 OR /runparse 1, 0"},
     "debugtree": {"Function": command_debug_tree, "Category": "Parsing",
                   "Description": "Shows tracing information about the tree. give a predication query after to only show trees that match it. Use '_' to mean 'anything' for an argument or the predication name",

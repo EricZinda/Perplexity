@@ -417,21 +417,21 @@
         },
         {
             "Command": "/new examples.Example23_reset",
-            "Expected": "State reset using examples.Example23_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "1b73ed22-576e-48c9-b837-2986d664c627"
         },
         {
             "Command": "what is in '\\>documents'",
-            "Expected": "File(name=/documents/file1.txt, size=1000)\n",
+            "Expected": "(File(name=/documents/file1.txt, size=1000),)",
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "3ddf1b4f-8ee5-4659-ab7b-1ba4b2235221"
         },
         {
             "Command": "what is in this folder?",
-            "Expected": "File(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=1000)\n",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(there are more)",
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35917912-d515-4f69-8a28-f313804fb234"
@@ -439,12 +439,12 @@
         {
             "Command": "copy 'blue' in '\\>documents'",
             "Expected": "Done!",
-            "Tree": "proper_q(x8,[quoted(blue,i14), fw_seq(x8,i14)],proper_q(x18,[quoted(\\\\>documents,i23), fw_seq(x18,i23)],pronoun_q(x3,pron(x3),_copy_v_1(e2,x3,x8,_in_p_loc(e17,x8,x18)))))",
+            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
             "Enabled": true,
             "ID": "a25651b5-b4b2-4b40-a2b3-945f6ece746c"
         },
         {
-            "Command": "what is in '\\>documents'",
+            "Command": "'blue' is in '\\>documents'",
             "Expected": "File(name=/documents/file1.txt, size=1000)\nFile(name=/documents/blue, size=1000)\n",
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
