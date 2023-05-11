@@ -81,6 +81,9 @@ class Folder(Container):
         else:
             raise MessageException("notFound", [variable_data.name])
 
+    def can_interpret_as(self, value):
+        return pathlib.PurePath(self.name).match(value)
+
     def containers(self, variable_data):
         yield from self.all_locations(variable_data)
 
@@ -157,6 +160,9 @@ class File(Container):
 
     def file_name(self):
         return pathlib.PurePath(self.name).parts[-1]
+
+    def can_interpret_as(self, value):
+        return pathlib.PurePath(self.name).match(value)
 
     def size_measurement(self):
         return Measurement(Megabyte(), self.size/1000000)
@@ -297,6 +303,11 @@ class FileSystemMock(FileSystem):
         else:
             return path
 
+    def all_individuals_interpreted_as(self, name):
+        for item in self.all_individuals():
+            if hasattr(item, "can_interpret_as") and item.can_interpret_as(name):
+                yield item
+
     def all_individuals(self):
         links = {}
         for item in self.items.items():
@@ -372,14 +383,7 @@ class QuotedText(object):
         # Yield the text converted to a file or folder if possible
         # If one of them exists, return it first so that its errors
         # get priority
-        file_rep = File(name=self.name, file_system=state.file_system)
-        folder_rep = Folder(name=self.name, file_system=state.file_system)
-        if file_rep.exists():
-            yield file_rep
-            yield folder_rep
-        else:
-            yield folder_rep
-            yield file_rep
+        yield from state.file_system.all_individuals_interpreted_as(self.name)
 
         # Always yield the text value last since the others
         # are probably what was meant and the first error

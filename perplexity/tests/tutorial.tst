@@ -270,14 +270,14 @@
         },
         {
             "Command": "what is \"foo\" in?",
-            "Expected": "'foo' was not found",
+            "Expected": "'foo' is not in thing",
             "Tree": "which_q(x5,thing(x5),proper_q(x3,[quoted(foo,i13), fw_seq(x3,i13)],_in_p_loc(e2,x3,x5)))",
             "Enabled": true,
             "ID": "767c57ee-5234-4c6d-9dce-9f8a2c789711"
         },
         {
             "Command": "what is in \"foo\"",
-            "Expected": "'foo' was not found",
+            "Expected": "'foo' can't contain things",
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(foo,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "cf9f7269-1dfe-439a-adc6-caa15dbc887f"
@@ -291,7 +291,7 @@
         },
         {
             "Command": "where is \"doesn't exist\"",
-            "Expected": "'doesn\u2019t exist' was not found",
+            "Expected": "'doesn\u2019t exist' is not in place",
             "Tree": "which_q(x4,place_n(x4),proper_q(x3,[quoted(exist,i14), quoted(doesn\u2019t,i13), fw_seq(x3,i13,i14)],loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "cd5bbf5b-d4de-469b-b690-5e125dda5378"
@@ -341,27 +341,27 @@
         {
             "Command": "delete \"file1.txt\" in \"/documents\"",
             "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(/documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[_in_p_loc(e15,x8,x16), quoted(file1.txt,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8))))",
+            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file1.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_delete_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "f95d74c8-3b08-401e-bc70-7a5517eee968"
         },
         {
             "Command": "what is in \"/documents\"",
             "Expected": "thing is not in '/documents'",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(/documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "bc7ebed2-b20c-4426-b0d1-124ffe2a5dd0"
         },
         {
             "Command": "/reset",
-            "Expected": "State reset using examples.Example23_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "688b1014-1849-42c3-9f6d-1eed9164ce64"
         },
         {
             "Command": "what is in this folder?",
-            "Expected": "File(name=/Desktop/the yearly budget.txt, size=10000000)\nFile(name=/Desktop/blue, size=1000)\n",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(there are more)",
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4f519332-f958-470e-ae0c-28da1161c5e6"

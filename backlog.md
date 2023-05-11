@@ -1,10 +1,9 @@
 Remaining work to be shown in the tutorial:
 - Make old tests work
 - Bug: What is large? Will only return one item because it is singular
+- Bug?: Is used_collective used anymore?
+- 
 
-- delete "file1.txt" in "/documents" -> There isn't 'file1.txt' in '/documents' in the system
-  - Should be "done!"
-  
 - combinatorial_style_predication() handles unbound differently than the others
 - Rebuild the scenarios to get the tests to pass again
 - Build a backend to use for ESL Scenarios
