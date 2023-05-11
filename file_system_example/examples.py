@@ -1,7 +1,7 @@
 from file_system_example.messages import respond_to_mrs_tree, error_priority
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
-from file_system_example.vocabulary2 import vocabulary
+from file_system_example.vocabulary import vocabulary
 from perplexity.execution import ExecutionContext, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 
