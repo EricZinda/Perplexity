@@ -236,6 +236,7 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
 
     set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
 
-    if len(rstr_values) == 0:
+    if not reverse and len(rstr_values) == 0:
+        # If the rstr was actually run (i.e. not reversed) and produced no values:
         # Ignore whatever error the RSTR produced, this is a better one
         report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
