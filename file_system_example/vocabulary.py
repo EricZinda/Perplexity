@@ -36,12 +36,17 @@ def this_q_dem(state, x_variable_binding, h_rstr, h_body):
     contained_items = set(current_directory.contained_items(contained_binding))
 
     def in_scope(state, x_binding):
-        def criteria(value):
+        def bound_variable(value):
             # In scope if binding.value is the folder the user is in
             # and anything in it
             return value in contained_items or value == current_directory
 
-        yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
+        def unbound_variable():
+            for item in state.all_individuals():
+                if bound_variable(item):
+                    yield item
+
+        yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope)
 
@@ -148,45 +153,67 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
 # in the set is a file
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
-    def criteria(value):
+    def bound_variable(value):
         return isinstance(value, File)
 
-    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 # true for both sets and individuals as long as everything
 # in the set is a file
 @Predication(vocabulary, names=["_folder_n_of"])
 def folder_n_of(state, x_binding, i_binding):
-    def criteria(value):
+    def bound_variable(value):
         return isinstance(value, Folder)
 
-    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_megabyte_n_1"])
 def megabyte_n_1(state, x_binding, u_binding):
-    def criteria(value):
+    def bound_variable(value):
         return isinstance(value, Megabyte)
 
-    yield from combinatorial_style_predication_1(state, x_binding, [Megabyte()], criteria)
+    def unbound_variable():
+        yield Megabyte()
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary)
 def place_n(state, x_binding):
-    def criteria(value):
+    def bound_variable(value):
         # Any object is a "place" as long as it can contain things
         return isinstance(value, Container)
 
-    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary)
 def thing(state, x_binding):
-    def criteria(_):
+    def bound_variable(_):
         return True
 
-    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
+    def unbound_variable():
+        for item in state.all_individuals():
+            yield item
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
@@ -231,7 +258,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
     else:
         # "large" is being used "attributively" as in "the large dogs are meeting" which doesn't force
         # dogs to be grouped or individual, but *does* require that each, individually, is large
-        def criteria(value):
+        def bound_variable(value):
             if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
                 return True
 
@@ -239,7 +266,12 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
                 report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
                 return False
 
-        yield from combinatorial_style_predication_1(state, x_target_binding, state.all_individuals(), criteria)
+        def unbound_variable():
+            for item in state.all_individuals():
+                if bound_variable(item):
+                    yield item
+
+        yield from combinatorial_style_predication_1(state, x_target_binding, bound_variable, unbound_variable)
 
 
 # Arbitrarily decide that "small" means a size <= 1,000,000
@@ -276,7 +308,7 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
     else:
         # "small" is being used "attributively" as in "the small dogs are meeting" which doesn't force
         # dogs to be grouped or individual, but *does* require that each, individually, is small
-        def criteria(value):
+        def bound_variable(value):
             if hasattr(value, 'size') and value.size <= degree_multiplier * 1000000:
                 return True
 
@@ -284,7 +316,12 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
                 report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
                 return False
 
-        yield from combinatorial_style_predication_1(state, x_target_binding, state.all_individuals(), criteria)
+        def unbound_variable():
+            for item in state.all_individuals():
+                if bound_variable(item):
+                    yield item
+
+        yield from combinatorial_style_predication_1(state, x_target_binding, bound_variable, unbound_variable)
 
 
 # This is a helper function that any predication that can
@@ -659,10 +696,15 @@ def copy_v_1_locative_comm(state, e_introduced_binding, x_actor_binding, x_what_
 def pron(state, x_who_binding):
     person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
 
-    def criteria(value):
+    def bound_variable(value):
         return isinstance(value, Actor) and value.person == person
 
-    yield from combinatorial_style_predication_1(state, x_who_binding, state.all_individuals(), criteria)
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 
 
 # c_raw_text_value will always be set to a raw string

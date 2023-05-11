@@ -133,35 +133,31 @@ def in_style_predication(state, binding1, binding2,
 # combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
 # not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
 # for example
-def combinatorial_style_predication_1(state, binding, all_individuals_generator, predication_function):
-    if binding.variable.value_type == VariableValueType.set:
-        # This is a single set that needs to be kept intact
-        # and succeed or fail as a unit
-        all_must_succeed = True
-        value_type = VariableValueType.set
-
-    else:
-        all_must_succeed = False
-        value_type = VariableValueType.combinatoric
-
+def combinatorial_style_predication_1(state, binding, bound_function, unbound_function):
     if binding.value is None:
-        # Unbound variable means the incoming set contains "all individuals"
-        iterator = all_individuals_generator
+        yield state.set_x(binding.variable.name, tuple(unbound_function()), VariableValueType.combinatoric)
 
     else:
-        # x is set to a set of values, restrict them to just those that match the predication_function
-        iterator = binding.value
+        if binding.variable.value_type == VariableValueType.set:
+            # This is a single set that needs to be kept intact
+            # and succeed or fail as a unit
+            all_must_succeed = True
+            value_type = VariableValueType.set
 
-    values = []
-    for value in iterator:
-        if predication_function(value):
-            values.append(value)
-        elif all_must_succeed:
-            # One didn't work, so fail
-            return
+        else:
+            all_must_succeed = False
+            value_type = VariableValueType.combinatoric
 
-    if len(values) > 0:
-        yield state.set_x(binding.variable.name, tuple(values), value_type)
+        values = []
+        for value in binding.value:
+            if bound_function(value):
+                values.append(value)
+            elif all_must_succeed:
+                # One didn't work, so fail
+                return
+
+        if len(values) > 0:
+            yield state.set_x(binding.variable.name, tuple(values), value_type)
 
 
 # Yields each possible variable set from binding based on what type of value it is
