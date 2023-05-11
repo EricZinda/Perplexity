@@ -59,7 +59,7 @@ class State(object):
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, value_type, determiner=None, used_collective=None, quantifier=None):
+    def set_x(self, variable_name, item, value_type: VariableValueType, determiner=None, used_collective=None, quantifier=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object

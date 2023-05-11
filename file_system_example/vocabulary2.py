@@ -1,11 +1,11 @@
-from file_system_example.objects import File, Folder, Megabyte, Actor, Container
+from file_system_example.objects import File, Folder, Megabyte, Actor, Container, QuotedText
 from file_system_example.state import DeleteOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication, in_style_predication, \
     force_individual_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import Measurement
-from perplexity.tree import used_predicatively
+from perplexity.tree import used_predicatively, is_this_last_fw_seq
 from perplexity.variable_binding import VariableValueType, VariableBinding
 from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralType
 
@@ -86,7 +86,7 @@ def which_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["udef_q", "pronoun_q"])
+@Predication(vocabulary, names=["udef_q", "pronoun_q", "proper_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(execution_context().current_predication(),
@@ -475,3 +475,79 @@ def pron(state, x_who_binding):
         return isinstance(value, Actor) and value.person == person
 
     yield from combinatorial_style_predication_1(state, x_who_binding, state.all_individuals(), criteria)
+
+
+# c_raw_text_value will always be set to a raw string
+@Predication(vocabulary)
+def quoted(state, c_raw_text_value, i_text_binding):
+    if i_text_binding.value is None:
+        yield state.set_x(i_text_binding.variable.name, (QuotedText(c_raw_text_value), ), VariableValueType.set)
+
+    else:
+        if len(i_text_binding.value) == 1 and \
+                isinstance(i_text_binding.value[0], QuotedText) and \
+                i_text_binding.value[0].name == c_raw_text_value:
+            yield state
+
+
+# Yield all the solutions for fw_seq where value is bound
+# and x_phrase_binding may or may not be
+def yield_from_fw_seq(state, x_phrase_binding, non_set_value):
+    if x_phrase_binding.value is None:
+        # x is not bound
+        if is_this_last_fw_seq(state) and hasattr(non_set_value, "all_interpretations"):
+            # Get all the interpretations of the quoted text
+            # and bind them iteratively
+            for interpretation in non_set_value.all_interpretations(state):
+                yield state.set_x(x_phrase_binding.variable.name, (interpretation, ), VariableValueType.set)
+
+        else:
+            yield state.set_x(x_phrase_binding.variable.name, (non_set_value,), VariableValueType.set)
+
+    else:
+        # x is bound, compare it to value
+        if hasattr(non_set_value, "all_interpretations"):
+            # Get all the interpretations of the object
+            # and check them iteratively
+            for interpretation in non_set_value.all_interpretations(state):
+                if interpretation == x_phrase_binding.value:
+                    yield state
+
+        else:
+            if non_set_value == x_phrase_binding.value:
+                yield state
+
+
+@Predication(vocabulary, names=["fw_seq"])
+def fw_seq1(state, x_phrase_binding, i_part_binding):
+    if i_part_binding.value is None:
+        # This should never happen since it basically means
+        # "return all possible strings"
+        assert x_phrase_binding.value is not None
+        yield state.set_x(i_part_binding.variable.name, (x_phrase_binding.value, ), VariableValueType.set)
+
+    else:
+        yield from yield_from_fw_seq(state, x_phrase_binding, i_part_binding.value[0])
+
+
+@Predication(vocabulary, names=["fw_seq"])
+def fw_seq2(state, x_phrase_binding, i_part1_binding, i_part2_binding):
+    # Only succeed if part1 and part2 are bound and are QuotedText instances to avoid
+    # having to split x into pieces somehow
+    if i_part1_binding.value is not None and i_part2_binding.value is not None and \
+        len(i_part1_binding.value) == 1 and len(i_part2_binding.value) == 1 and \
+            isinstance(i_part1_binding.value[0], QuotedText) and isinstance(i_part2_binding.value[0], QuotedText):
+        combined_value = QuotedText(" ".join([i_part1_binding.value[0].name, i_part2_binding.value[0].name]))
+        yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
+
+
+@Predication(vocabulary, names=["fw_seq"])
+def fw_seq3(state, x_phrase_binding, x_part1_binding, i_part2_binding):
+    # Only succeed if part1 and part2 are set and are QuotedText instances to avoid
+    # having to split x into pieces somehow
+    if x_part1_binding.value is not None and i_part2_binding.value is not None and \
+        len(x_part1_binding.value) == 1 and len(i_part2_binding.value) == 1 and \
+            isinstance(x_part1_binding.value[0], QuotedText) and isinstance(i_part2_binding.value[0], QuotedText):
+        combined_value = QuotedText(" ".join([x_part1_binding.value[0].name, i_part2_binding.value[0].name]))
+        yield from yield_from_fw_seq(state, x_phrase_binding, combined_value)
+

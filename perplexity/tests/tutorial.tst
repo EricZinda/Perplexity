@@ -222,7 +222,7 @@
         {
             "Command": "\"blue\" is in this folder",
             "Expected": "Yes, that is true.",
-            "Tree": "pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],_delete_v_1(e2,x3,x8)))",
+            "Tree": "_this_q_dem(x10,_folder_n_of(x10,i15),proper_q(x3,[quoted(blue,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "dfa7fc82-b238-4f94-8001-5f690181baf7"
         },

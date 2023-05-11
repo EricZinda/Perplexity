@@ -2,7 +2,8 @@ Remaining work to be shown in the tutorial:
 - Make old tests work
 - Bug: What is large? Will only return one item because it is singular
 
-  
+- "blue" is in this folder -> fails
+
 - combinatorial_style_predication() handles unbound differently than the others
 - Rebuild the scenarios to get the tests to pass again
 - Build a backend to use for ESL Scenarios
