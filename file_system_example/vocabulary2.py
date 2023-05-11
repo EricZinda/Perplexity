@@ -355,14 +355,20 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def location_unbound_values(actor_value):
         # This is a "where is actor?" type query since no location specified (x_location_binding was unbound)
         # Order matters, so all_locations needs to return the best answer first
-        for location in actor_value.all_locations(x_actor_binding.variable):
-            yield location
+        if hasattr(actor_value, "all_locations"):
+            for location in actor_value.all_locations(x_actor_binding.variable):
+                yield location
+
+        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
     def actor_unbound_values(location_value):
         # This is a "what is at x?" type query since no actor specified (x_actor_binding was unbound)
         # Order matters, so all_locations needs to return the best answer first
-        for actor in location_value.contained_items(x_location_binding.variable):
-            yield actor
+        if hasattr(location_value, "contained_items"):
+            for actor in location_value.contained_items(x_location_binding.variable):
+                yield actor
+        else:
+            report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
     yield from in_style_predication(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values)
 

@@ -298,8 +298,8 @@
         },
         {
             "Command": "/reset",
-            "Expected": "State reset using examples.Example23_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "41d51bab-23a8-4169-93a7-365aef864641"
         },
