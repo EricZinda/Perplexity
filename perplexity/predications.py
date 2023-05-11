@@ -180,7 +180,7 @@ def in_style_predication(state, binding1, binding2,
 # combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
 # not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
 # for example
-def combinatorial_style_predication(state, binding, all_individuals_generator, predication_function):
+def combinatorial_style_predication_1(state, binding, all_individuals_generator, predication_function):
     if binding.variable.value_type == VariableValueType.set:
         # This is a single set that needs to be kept intact
         # and succeed or fail as a unit

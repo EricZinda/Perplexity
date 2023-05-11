@@ -2,7 +2,7 @@ from file_system_example.objects import File, Folder, Megabyte, Actor, Container
 from file_system_example.state import DeleteOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
-from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
+from perplexity.predications import combinatorial_style_predication_1, lift_style_predication, in_style_predication, \
     force_individual_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import Measurement
 from perplexity.tree import used_predicatively
@@ -37,7 +37,7 @@ def this_q_dem(state, x_variable_binding, h_rstr, h_body):
             # and anything in it
             return value in contained_items or value == current_directory
 
-        yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
+        yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope)
 
@@ -147,7 +147,7 @@ def file_n_of(state, x_binding, i_binding):
     def criteria(value):
         return isinstance(value, File)
 
-    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
+    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
 
 
 # true for both sets and individuals as long as everything
@@ -157,7 +157,7 @@ def folder_n_of(state, x_binding, i_binding):
     def criteria(value):
         return isinstance(value, Folder)
 
-    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
+    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
 
 
 @Predication(vocabulary, names=["_megabyte_n_1"])
@@ -165,7 +165,7 @@ def megabyte_n_1(state, x_binding, u_binding):
     def criteria(value):
         return isinstance(value, Megabyte)
 
-    yield from combinatorial_style_predication(state, x_binding, [Megabyte()], criteria)
+    yield from combinatorial_style_predication_1(state, x_binding, [Megabyte()], criteria)
 
 
 @Predication(vocabulary)
@@ -174,7 +174,7 @@ def place_n(state, x_binding):
         # Any object is a "place" as long as it can contain things
         return isinstance(value, Container)
 
-    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
+    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
 
 
 @Predication(vocabulary)
@@ -182,7 +182,7 @@ def thing(state, x_binding):
     def criteria(_):
         return True
 
-    yield from combinatorial_style_predication(state, x_binding, state.all_individuals(), criteria)
+    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
@@ -235,7 +235,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
                 report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
                 return False
 
-        yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
+        yield from combinatorial_style_predication_1(state, x_target_binding, state.all_individuals(), criteria)
 
 
 # Arbitrarily decide that "small" means a size <= 1,000,000
@@ -280,7 +280,7 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
                 report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
                 return False
 
-        yield from combinatorial_style_predication(state, x_target_binding, state.all_individuals(), criteria)
+        yield from combinatorial_style_predication_1(state, x_target_binding, state.all_individuals(), criteria)
 
 
 # This is a helper function that any predication that can
@@ -299,34 +299,32 @@ def degree_multiplier_from_event(state, e_introduced_binding):
 
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
-    if x_actor_binding.value is not None:
-        if x_location_binding.value is not None:
-            def item_in_item(item1, item2):
-                # x_actor is "in" x_location if x_location contains it
-                found_location = False
-                if hasattr(item2, "contained_items"):
-                    for item in item2.contained_items(x_location_binding.variable):
-                        if item1 == item:
-                            found_location = True
-                            break
-                if not found_location:
-                    report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+    def item_in_item(item1, item2):
+        # x_actor is "in" x_location if x_location contains it
+        found_location = False
+        if hasattr(item2, "contained_items"):
+            for item in item2.contained_items(x_location_binding.variable):
+                if item1 == item:
+                    found_location = True
+                    break
+        if not found_location:
+            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
-                return found_location
+        return found_location
 
-            def location_unbound_values(actor_value):
-                # This is a "what is actor in?" type query since no location specified (x_location_binding was unbound)
-                # Order matters, so all_locations needs to return the best answer first
-                for location in actor_value.all_locations(x_actor_binding.variable):
-                    yield location
+    def location_unbound_values(actor_value):
+        # This is a "what is actor in?" type query since no location specified (x_location_binding was unbound)
+        # Order matters, so all_locations needs to return the best answer first
+        for location in actor_value.all_locations(x_actor_binding.variable):
+            yield location
 
-            def actor_unbound_values(location_value):
-                # This is a "what is in x?" type query since no actor specified (x_actor_binding was unbound)
-                # Order matters, so all_locations needs to return the best answer first
-                for actor in location_value.contained_items(x_location_binding.variable):
-                    yield actor
+    def actor_unbound_values(location_value):
+        # This is a "what is in x?" type query since no actor specified (x_actor_binding was unbound)
+        # Order matters, so all_locations needs to return the best answer first
+        for actor in location_value.contained_items(x_location_binding.variable):
+            yield actor
 
-            yield from in_style_predication(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values)
+    yield from in_style_predication(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values)
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
@@ -476,4 +474,4 @@ def pron(state, x_who_binding):
     def criteria(value):
         return isinstance(value, Actor) and value.person == person
 
-    yield from combinatorial_style_predication(state, x_who_binding, state.all_individuals(), criteria)
+    yield from combinatorial_style_predication_1(state, x_who_binding, state.all_individuals(), criteria)
