@@ -450,8 +450,8 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                 report_error(["cantDeleteSet", x_what_binding.variable.name])
 
             else:
-                # Only allow deleting files and folders
-                if isinstance(value[0], (File, Folder)):
+                # Only allow deleting files and folders that exist
+                if isinstance(value[0], (File, Folder)) and value[0].exists():
                     return True
 
                 else:
