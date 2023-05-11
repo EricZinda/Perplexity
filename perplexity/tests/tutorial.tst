@@ -165,15 +165,15 @@
         },
         {
             "Command": "what is large?",
-            "Expected": "Folder(name=/Desktop, size=10000000)\nFile(name=/Desktop/file2.txt, size=10000000)\n",
+            "Expected": "(Folder(name=/Desktop, size=10000000),)(there are more)",
             "Tree": "which_q(x3,thing(x3),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "8422a7fa-a85e-48fa-902e-6c85667c01c9"
         },
         {
             "Command": "/reset",
-            "Expected": "State reset using examples.Example22_reset().",
-            "Tree": null,
+            "Expected": "",
+            "Tree": "None",
             "Enabled": true,
             "ID": "a333c133-2cde-4f90-a71c-f60589853b2a"
         },

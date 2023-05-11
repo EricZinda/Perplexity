@@ -3,7 +3,7 @@ from file_system_example.state import DeleteOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication, lift_style_predication, in_style_predication, \
-    individual_only_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
+    force_individual_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import Measurement
 from perplexity.tree import used_predicatively
 from perplexity.variable_binding import VariableValueType, VariableBinding
@@ -204,9 +204,10 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
     if used_predicatively(state):
         # "large" is being used "predicatively" as in "the dogs are large". This needs to force
         # the individuals to be separate (i.e. not part of a group)
-        def criteria_index(value):
+        def criteria_predicatively(value):
             if len(value) > 1:
                 report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+
             else:
                 if hasattr(value[0], 'size') and value[0].size > degree_multiplier * 1000000:
                     return True
@@ -215,7 +216,13 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
                     report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
                     return False
 
-        yield from individual_only_style_predication_1(state, x_target_binding, criteria_index)
+        def unbound_values_predicatively():
+            # Find all large things
+            for value in state.all_individuals():
+                if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+                    yield value
+
+        yield from force_individual_style_predication_1(state, x_target_binding, criteria_predicatively, unbound_values_predicatively)
 
     else:
         # "large" is being used "attributively" as in "the large dogs are meeting" which doesn't force
@@ -242,7 +249,7 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
     if used_predicatively(state):
         # "small" is being used "predicatively" as in "the dogs are small". This needs to force
         # the individuals to be separate (i.e. not part of a group)
-        def criteria_index(value):
+        def criteria_predicatively(value):
             if len(value) > 1:
                 report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
 
@@ -254,7 +261,13 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
                     report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
                     return False
 
-        yield from individual_only_style_predication_1(state, x_target_binding, criteria_index)
+        def unbound_values_predicatively():
+            # Find all large things
+            for value in state.all_individuals():
+                if hasattr(value, 'size') and value.size <= degree_multiplier * 1000000:
+                    yield value
+
+        yield from force_individual_style_predication_1(state, x_target_binding, criteria_predicatively, unbound_values_predicatively)
 
     else:
         # "small" is being used "attributively" as in "the small dogs are meeting" which doesn't force
@@ -446,7 +459,10 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                 else:
                     report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-        for new_state in individual_only_style_predication_1(state, x_what_binding, criteria):
+        def unbound_what():
+            report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+        for new_state in force_individual_style_predication_1(state, x_what_binding, criteria, unbound_what):
             yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:

@@ -57,10 +57,17 @@ def discrete_variable_individual_generator(binding):
                 yield VariableValueType.set, value_set
 
 
+# Used for words like "large" and "small" that always force an answer to be individuals
+# if used predicatively
 # Ensures that solutions are sets (not combinatoric) and only passes through
-# individuals if it is given a combinatoric
-def individual_only_style_predication_1(state, binding, predication_function):
-    if binding.variable.value_type == VariableValueType.set:
+# individuals, even if it is given a combinatoric
+def force_individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function):
+    if binding.value is None:
+        # Unbound
+        for unbound_value in unbound_predication_function():
+            yield state.set_x(binding.variable.name, (unbound_value, ), VariableValueType.set)
+
+    elif binding.variable.value_type == VariableValueType.set:
         # Pass sets through, if it is > 1 item the predication_function should fail
         iterator = [binding.value]
 
@@ -69,7 +76,7 @@ def individual_only_style_predication_1(state, binding, predication_function):
         iterator = [(value, ) for value in binding.value]
 
     for value in iterator:
-        if predication_function(value):
+        if bound_predication_function(value):
             yield state.set_x(binding.variable.name, value, VariableValueType.set)
 
 
