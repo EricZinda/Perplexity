@@ -408,7 +408,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             if not x_size_binding.variable.value_type == VariableValueType.set:
                 # we only deal with x megabytes as a set because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
                 report_error(["formNotUnderstood", "missing", "collective"])
-                return False, None, None
+                return False
 
             # Try to add up all combinations of x_actor_binding
             # to total size_set[0]
@@ -416,19 +416,19 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             for actor in actor_set:
                 if not hasattr(actor, "size_measurement"):
                     report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
-                    return False, None, None
+                    return False
                 else:
                     total += actor.size_measurement().count
 
             if size_set[0].count == total:
-                return True, True, True
+                return True
 
             else:
                 report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
-                return False, None, None
+                return False
 
         else:
-            return False, None, None
+            return False
 
     if x_actor_binding.value is not None:
         if x_size_binding.value is not None:
@@ -461,7 +461,7 @@ def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_bind
 @Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", PluralType.collective)])
 def together_p(state, e_introduced_binding, x_target_binding):
     for _, x_target_value in discrete_variable_set_generator(x_target_binding, VariableValueSetSize.more_than_one):
-        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set, used_collective=True)
+        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set)
 
 
 # Needed for "together, which 3 files are 3 mb?"

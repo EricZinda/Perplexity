@@ -1,8 +1,7 @@
 Remaining work to be shown in the tutorial:
 - Make old tests work
 - Bug: What is large? Will only return one item because it is singular
-- Bug?: Is used_collective used anymore?
-- 
+- used_collective is not used anymore
 
 - combinatorial_style_predication() handles unbound differently than the others
 - Rebuild the scenarios to get the tests to pass again

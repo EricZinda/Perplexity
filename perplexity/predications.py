@@ -46,13 +46,10 @@ def lift_style_predication(state, binding1, binding2, prediction_function, bindi
         for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
             # See if everything in binding1_set has the
             # prediction_function relationship to binding2_set
-            success, set1_used_collective, set2_used_collective = prediction_function(binding1_set, binding2_set)
+            success = prediction_function(binding1_set, binding2_set)
             if success:
-                set1_used_collective = set1_used_collective if len(binding1_set) > 1 else False
-                set2_used_collective = set2_used_collective if len(binding2_set) > 1 else False
-
-                yield state.set_x(binding1.variable.name, binding1_set, binding1_set_type, used_collective=set1_used_collective) \
-                    .set_x(binding2.variable.name, binding2_set, binding2_set_type, used_collective=set2_used_collective)
+                yield state.set_x(binding1.variable.name, binding1_set, binding1_set_type) \
+                    .set_x(binding2.variable.name, binding2_set, binding2_set_type)
 
 
 # "'in' style" means that:
