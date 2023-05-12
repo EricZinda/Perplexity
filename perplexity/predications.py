@@ -4,6 +4,7 @@ import itertools
 from perplexity.execution import get_variable_metadata, call, set_variable_execution_data, report_error
 from perplexity.set_utilities import count_set
 from perplexity.tree import TreePredication
+from perplexity.utilities import at_least_one_generator
 from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import ValueSize
 
@@ -17,7 +18,7 @@ def force_individual_style_predication_1(state, binding, bound_predication_funct
         for unbound_value in unbound_predication_function():
             yield state.set_x(binding.variable.name, (unbound_value, ), VariableValueType.set)
 
-    elif binding.variable.value_type == VariableValueType.set:
+    elif binding.variable.combinatoric == VariableValueType.set:
         # Pass sets through, if it is > 1 item the predication_function should fail
         iterator = [binding.value]
 
@@ -129,10 +130,12 @@ def in_style_predication(state, binding1, binding2,
 # for example
 def combinatorial_style_predication_1(state, binding, bound_function, unbound_function):
     if binding.value is None:
-        yield state.set_x(binding.variable.name, tuple(unbound_function()), VariableValueType.combinatoric)
+        at_least_one = at_least_one_generator(unbound_function())
+        if at_least_one is not None:
+            yield state.set_x(binding.variable.name, tuple(at_least_one), VariableValueType.combinatoric)
 
     else:
-        if binding.variable.value_type == VariableValueType.set:
+        if binding.variable.combinatoric == VariableValueType.set:
             # This is a single set that needs to be kept intact
             # and succeed or fail as a unit
             all_must_succeed = True
@@ -157,7 +160,7 @@ def combinatorial_style_predication_1(state, binding, bound_function, unbound_fu
 # Yields each possible variable set from binding based on what type of value it is
 # "discrete" means it will generate specific all possible sets (i.e. not yield a combinatoric value)
 def discrete_variable_set_generator(binding, set_size):
-    if binding.variable.value_type == VariableValueType.set:
+    if binding.variable.combinatoric == VariableValueType.set:
         binding_value = binding.value
         if set_size == ValueSize.all or \
            (set_size == ValueSize.more_than_one and count_set(binding_value) > 1) or \
@@ -169,7 +172,7 @@ def discrete_variable_set_generator(binding, set_size):
 
     else:
         # Generate all possible sets
-        assert binding.variable.value_type == VariableValueType.combinatoric
+        assert binding.variable.combinatoric == VariableValueType.combinatoric
 
         min_set_size = 2 if set_size == ValueSize.more_than_one else 1
         max_set_size = 1 if set_size == ValueSize.exactly_one else len(binding.value)
@@ -180,14 +183,14 @@ def discrete_variable_set_generator(binding, set_size):
 
 
 def discrete_variable_individual_generator(binding):
-    if binding.variable.value_type == VariableValueType.set:
+    if binding.variable.combinatoric == VariableValueType.set:
         # This is a single set that needs to be kept intact
         yield VariableValueType.set, binding.value
         return
 
     else:
         # Generate all possible sets of 1
-        assert binding.variable.value_type == VariableValueType.combinatoric
+        assert binding.variable.combinatoric == VariableValueType.combinatoric
 
         min_set_size = 1
         max_set_size = 1

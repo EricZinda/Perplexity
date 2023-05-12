@@ -121,7 +121,7 @@ def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
     if variable_is_megabyte(x_target_binding):
         yield state.set_x(x_target_binding.variable.name,
                           (Measurement(x_target_binding.value[0], int(c_count)), ),
-                          value_type=VariableValueType.set)
+                          combinatoric=VariableValueType.set)
 
 
 @Predication(vocabulary, names=["card"], handles=[("DeterminerDegreeLimiter", EventOption.optional)])
@@ -444,7 +444,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
 
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):
-            if not x_size_binding.variable.value_type == VariableValueType.set:
+            if not x_size_binding.variable.combinatoric == VariableValueType.set:
                 # we only deal with x megabytes as a set because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
                 report_error(["formNotUnderstood", "missing", "collective"])
                 return False

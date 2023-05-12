@@ -9,18 +9,18 @@ class VariableValueType(enum.Enum):
 
 class VariableData(object):
     # These are the defaults if a variable has never been set
-    def __init__(self, name, value_type=VariableValueType.none, determiner=None, quantifier=None):
+    def __init__(self, name, combinatoric=VariableValueType.set, determiner=None, quantifier=None):
         self.name = name
-        self.value_type = value_type
+        self.combinatoric = combinatoric
         self.determiner = determiner
         self.quantifier = quantifier
 
     def __repr__(self):
-        return f"{self.name}({self.value_type})"
+        return f"{self.name}({self.combinatoric})"
 
-    def copy_with_changes(self, value_type=None, determiner=None, quantifier=None):
+    def copy_with_changes(self, combinatoric=None, determiner=None, quantifier=None):
         return VariableData(self.name,
-                            value_type=value_type if value_type is not None else self.value_type,
+                            combinatoric=combinatoric if combinatoric is not None else self.combinatoric,
                             determiner=determiner if determiner is not None else self.determiner,
                             quantifier=quantifier if quantifier is not None else self.quantifier)
 

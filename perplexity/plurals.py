@@ -38,7 +38,7 @@ def expand_combinatorial_variables(variable_metadata, solution):
     for variable_item in variable_metadata.items():
         binding = solution.get_binding(variable_item[0])
         variable_plural_type = variable_item[1]["ValueSize"]
-        if binding.variable.value_type == VariableValueType.combinatoric:
+        if binding.variable.combinatoric == VariableValueType.combinatoric:
             # If variable_name is combinatoric, all of its appropriate alternative combinations
             # have to be used. Thus, if the variable_plural_type is collective, we only add sets > 1, etc
             min_size = 1

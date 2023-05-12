@@ -54,12 +54,12 @@ class State(object):
 
     def set_variable_data(self, variable_name, determiner=None, quantifier=None):
         binding = self.get_binding(variable_name)
-        return self.set_x(variable_name, binding.value, binding.variable.value_type, determiner=determiner, quantifier=quantifier)
+        return self.set_x(variable_name, binding.value, binding.variable.combinatoric, determiner=determiner, quantifier=quantifier)
 
     # This is how predications will set the value
     # of an "x" variable (or another type of variable
     # that is acting like an unquantified "x" variable)
-    def set_x(self, variable_name, item, value_type: VariableValueType, determiner=None, quantifier=None):
+    def set_x(self, variable_name, item, combinatoric, determiner=None, quantifier=None):
         # Make a *copy* of the entire object using the built-in Python
         # class called "copy", we pass it "self" so it copies this
         # instance of the object
@@ -74,9 +74,9 @@ class State(object):
         if variable_name in new_state.variables:
             initial_variable_data = new_state.variables[variable_name].variable
         else:
-            initial_variable_data = VariableData(variable_name, value_type)
+            initial_variable_data = VariableData(variable_name, combinatoric)
 
-        variable_data = initial_variable_data.copy_with_changes(value_type=value_type,
+        variable_data = initial_variable_data.copy_with_changes(combinatoric=combinatoric,
                                                                 determiner=determiner,
                                                                 quantifier=quantifier)
 

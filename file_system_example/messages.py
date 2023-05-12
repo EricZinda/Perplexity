@@ -69,7 +69,7 @@ def respond_to_mrs_tree(tree, solution_groups, error):
                 response = ""
                 for solution in solution_group:
                     binding = solution.get_binding(wh_variable)
-                    if binding.variable.value_type == VariableValueType.combinatoric:
+                    if binding.variable.combinatoric == VariableValueType.combinatoric:
                         value_set = ((value, ) for value in binding.value)
                         if value_set not in answer_items:
                             answer_items.add(value_set)
