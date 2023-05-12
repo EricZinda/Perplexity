@@ -372,9 +372,9 @@ def gather_quantifier_order(tree_info):
     return quantifier_order
 
 
-# Walk the tree represented by "term" and
-# return the predication that matches
-# "predicate_name" or "None" if none is found
+# Gather the metadata that a developer has decorated a predication with
+# using @vocabulary.  Merge it *across* predications so the final metadata has
+# the union
 def gather_predication_metadata(vocabulary, tree_info):
     def gather_metadata(predication):
         metadata_list = vocabulary.metadata(predication.name, predication.arg_types)
