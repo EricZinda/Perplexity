@@ -2,6 +2,8 @@ Remaining work to be shown in the tutorial:
 - Make old tests work
 - Bug: What is large? Will only return one item because it is singular
 
+- PluralType.distributive is a bit out of date. I think it is only used to remove options for predicates that don't use certain types
+- Need to explain VariableValueSetSize.exactly_one as well
 
 - Rebuild the scenarios to get the tests to pass again
 - Build a backend to use for ESL Scenarios

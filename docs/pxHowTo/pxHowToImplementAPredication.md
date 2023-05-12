@@ -60,14 +60,35 @@ This pattern happens a lot...so the function can say "all combinations of this l
 blah blah
 ~~~
 
-Because a variable can be a set or combinatorial, we also need to be prepared to be asked if a combinatorial variable is a `file_n`, the code can get complicted quickly. So we have a helper:
+Because a variable can be a set or combinatorial, we also need to be prepared to be asked if a combinatorial variable is a `file_n`, the code can get complicated quickly. So we have a helper:
 
 ~~~
 def file_n_of(state, x_binding, i_binding):
-    def criteria(value):
+    def bound_variable(value):
         return isinstance(value, File)
 
-    yield from combinatorial_style_predication_1(state, x_binding, state.all_individuals(), criteria)
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 ~~~
 
+## Adding Predications to the Vocabulary
+~~~
+@Predication(vocabulary, names=["_file_n_of"])
+def file_n_of(state, x_binding, i_binding):
+    def bound_variable(value):
+        return isinstance(value, File)
 
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+~~~
+
+## Implementing large_a()
+todo
