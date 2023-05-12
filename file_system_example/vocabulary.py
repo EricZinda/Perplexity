@@ -3,12 +3,12 @@ from file_system_example.state import DeleteOperation, ChangeDirectoryOperation,
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication, in_style_predication, \
-    force_individual_style_predication_1, VariableValueSetSize, discrete_variable_set_generator, quantifier_raw
+    force_individual_style_predication_1, ValueSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import Measurement
 from perplexity.tree import used_predicatively, is_this_last_fw_seq
 from perplexity.variable_binding import VariableValueType, VariableBinding
 from perplexity.virtual_arguments import scopal_argument
-from perplexity.vocabulary import Vocabulary, Predication, EventOption, PluralType
+from perplexity.vocabulary import Vocabulary, Predication, EventOption, ValueSize
 
 
 vocabulary = Vocabulary()
@@ -439,7 +439,7 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # handles size only
 # loc_nonsp will add up the size of files if a collective set of actors comes in, so declare that as handling them differently
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
-@Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", PluralType.all), ("x", PluralType.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
+@Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
 
     def criteria(actor_set, size_set):
@@ -475,10 +475,10 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             # if it is for x_actor or x_size, so we have to try both
             if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
                 set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
-                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, set_size, VariableValueSetSize.all)
-                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, set_size)
+                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, set_size, ValueSize.all)
+                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, ValueSize.all, set_size)
             else:
-                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, VariableValueSetSize.all, VariableValueSetSize.all)
+                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, ValueSize.all, ValueSize.all)
 
 
 @Predication(vocabulary, names=["_only_x_deg"])
@@ -497,9 +497,9 @@ def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_bind
     yield state.add_to_e(e_target_binding.variable.name, "DeterminerSetLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
-@Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", PluralType.collective)])
+@Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", ValueSize.more_than_one)])
 def together_p(state, e_introduced_binding, x_target_binding):
-    for _, x_target_value in discrete_variable_set_generator(x_target_binding, VariableValueSetSize.more_than_one):
+    for _, x_target_value in discrete_variable_set_generator(x_target_binding, ValueSize.more_than_one):
         yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set)
 
 
@@ -511,7 +511,7 @@ def together_p_ee(state, e_introduced_binding, e_target_binding):
 
 @Predication(vocabulary, names=["_together_p_state"])
 def together_p_state(state, e_introduced_binding, e_target_binding):
-    yield from default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_binding, VariableValueSetSize.more_than_one)
+    yield from default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_binding, ValueSize.more_than_one)
 
 
 # Delete only works on distributive values: i.e. there is no semantic for deleting

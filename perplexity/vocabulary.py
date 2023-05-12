@@ -12,10 +12,14 @@ class EventOption(enum.Enum):
     required = 2
 
 
-# Determines what should be generated
-class PluralType(enum.Enum):
-    distributive = 1
-    collective = 2
+# Used to indicate when the value of something should be only one or more than one
+#
+# Can be set on arguments for a predication to indicate what
+# kind of plural it handles. Helps the system remove alternatives: When
+# no predications have a special handling of sets > 1, don't generate them
+class ValueSize(enum.Enum):
+    exactly_one = 1  # default
+    more_than_one = 2
     all = 3
 
 
@@ -73,14 +77,14 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
                 arg_list.append(arg_metadata)
                 arg_metadata["VariableType"] = arg_type
                 if arg_type == "x":
-                    arg_metadata["PluralType"] = PluralType.distributive
+                    arg_metadata["ValueSize"] = ValueSize.exactly_one
 
         else:
             for arg_spec in arg_spec_list:
                 arg_metadata = {}
                 arg_list.append(arg_metadata)
                 arg_metadata["VariableType"] = arg_spec[0]
-                arg_metadata["PluralType"] = arg_spec[1] if len(arg_spec) > 1 else PluralType.distributive
+                arg_metadata["ValueSize"] = arg_spec[1] if len(arg_spec) > 1 else ValueSize.exactly_one
 
         return arg_list
 

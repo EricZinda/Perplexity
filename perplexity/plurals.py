@@ -3,7 +3,7 @@ from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, pro
 from perplexity.tree import find_quantifier_from_variable
 from perplexity.utilities import is_plural_from_tree_info, parse_predication_name, is_plural
 from perplexity.variable_binding import VariableValueType
-from perplexity.vocabulary import PluralType
+from perplexity.vocabulary import ValueSize
 
 
 def determiner_from_binding(state, binding):
@@ -37,20 +37,20 @@ def expand_combinatorial_variables(variable_metadata, solution):
     alternatives = {}
     for variable_item in variable_metadata.items():
         binding = solution.get_binding(variable_item[0])
-        variable_plural_type = variable_item[1]["PluralType"]
+        variable_plural_type = variable_item[1]["ValueSize"]
         if binding.variable.value_type == VariableValueType.combinatoric:
             # If variable_name is combinatoric, all of its appropriate alternative combinations
             # have to be used. Thus, if the variable_plural_type is collective, we only add sets > 1, etc
             min_size = 1
             max_size = None
-            if variable_plural_type == PluralType.distributive:
+            if variable_plural_type == ValueSize.exactly_one:
                 max_size = 1
 
-            elif variable_plural_type == PluralType.collective:
+            elif variable_plural_type == ValueSize.more_than_one:
                 min_size = 2
 
             else:
-                assert variable_plural_type == PluralType.all
+                assert variable_plural_type == ValueSize.all
 
             alternatives[binding.variable.name] = all_nonempty_subsets_stream(binding.value, min_size=min_size, max_size=max_size)
 

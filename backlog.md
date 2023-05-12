@@ -8,7 +8,6 @@ Remaining work to be shown in the tutorial:
       - I think it is only used to remove options for predicates that don't use certain types
     - expand_combinatorial_variables
       - Only expand alternatives that are actually used by predications. Ignore collective if noone uses it, etc.
-  - Bug?: PluralType.distributive *should also include subsets* as per AnnC?
   - PluralType.collective is expensive so isn't generated if not needed?
   - PluralType should probably be: Exactly 1, More than 1 instead of distributive and collective
   

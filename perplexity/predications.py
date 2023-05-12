@@ -5,13 +5,7 @@ from perplexity.execution import get_variable_metadata, call, set_variable_execu
 from perplexity.set_utilities import count_set
 from perplexity.tree import TreePredication
 from perplexity.variable_binding import VariableValueType
-from perplexity.vocabulary import PluralType
-
-
-class VariableValueSetSize(enum.Enum):
-    all = 0
-    more_than_one = 1
-    exactly_one = 2
+from perplexity.vocabulary import ValueSize
 
 
 # Used for words like "large" and "small" that always force an answer to be individuals when used predicatively
@@ -39,7 +33,7 @@ def force_individual_style_predication_1(state, binding, bound_predication_funct
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
-def lift_style_predication(state, binding1, binding2, prediction_function, binding1_set_size=VariableValueSetSize.all, binding2_set_size=VariableValueSetSize.all):
+def lift_style_predication(state, binding1, binding2, prediction_function, binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
     # See if everything in binding1_set has the
     # prediction_function relationship to binding2_set
     for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
@@ -60,15 +54,15 @@ def lift_style_predication(state, binding1, binding2, prediction_function, bindi
 # both_bound_function() is called if binding1 and binding2 are bound, etc.
 def in_style_predication(state, binding1, binding2,
                          both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function,
-                         binding1_set_size=VariableValueSetSize.all, binding2_set_size=VariableValueSetSize.all):
+                         binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
     # If nobody needs collective don't do it since it is expensive
     binding1_metadata = get_variable_metadata(binding1.variable.name)
-    if binding1_metadata["PluralType"] == PluralType.distributive:
-        binding1_set_size = VariableValueSetSize.exactly_one
+    if binding1_metadata["ValueSize"] == ValueSize.exactly_one:
+        binding1_set_size = ValueSize.exactly_one
 
     binding2_metadata = get_variable_metadata(binding2.variable.name)
-    if binding2_metadata["PluralType"] == PluralType.distributive:
-        binding2_set_size = VariableValueSetSize.exactly_one
+    if binding2_metadata["ValueSize"] == ValueSize.exactly_one:
+        binding2_set_size = ValueSize.exactly_one
 
     if binding1.value is None or binding2.value is None:
         # TODO: deal with when everything is unbound
@@ -165,9 +159,9 @@ def combinatorial_style_predication_1(state, binding, bound_function, unbound_fu
 def discrete_variable_set_generator(binding, set_size):
     if binding.variable.value_type == VariableValueType.set:
         binding_value = binding.value
-        if set_size == VariableValueSetSize.all or \
-           (set_size == VariableValueSetSize.more_than_one and count_set(binding_value) > 1) or \
-           (set_size == VariableValueSetSize.exactly_one and count_set(binding_value) == 1):
+        if set_size == ValueSize.all or \
+           (set_size == ValueSize.more_than_one and count_set(binding_value) > 1) or \
+           (set_size == ValueSize.exactly_one and count_set(binding_value) == 1):
             # This is a single set that needs to be kept intact
             yield VariableValueType.set, binding.value
 
@@ -177,8 +171,8 @@ def discrete_variable_set_generator(binding, set_size):
         # Generate all possible sets
         assert binding.variable.value_type == VariableValueType.combinatoric
 
-        min_set_size = 2 if set_size == VariableValueSetSize.more_than_one else 1
-        max_set_size = 1 if set_size == VariableValueSetSize.exactly_one else len(binding.value)
+        min_set_size = 2 if set_size == ValueSize.more_than_one else 1
+        max_set_size = 1 if set_size == ValueSize.exactly_one else len(binding.value)
 
         for value_set_size in range(min_set_size, max_set_size + 1):
             for value_set in itertools.combinations(binding.value, value_set_size):

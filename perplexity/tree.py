@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 import perplexity.execution
 from perplexity.utilities import parse_predication_name
-from perplexity.vocabulary import PluralType
+from perplexity.vocabulary import ValueSize
 
 
 class TreePredication(object):
@@ -390,14 +390,14 @@ def gather_predication_metadata(vocabulary, tree_info):
                     variable_metadata[arg_name] = {}
 
                 if arg_metadata["VariableType"] == "x":
-                    if "PluralType" not in variable_metadata[arg_name]:
-                        variable_metadata[arg_name]["PluralType"] = None
+                    if "ValueSize" not in variable_metadata[arg_name]:
+                        variable_metadata[arg_name]["ValueSize"] = None
 
-                    if variable_metadata[arg_name]["PluralType"] is None:
-                        variable_metadata[arg_name]["PluralType"] = arg_metadata["PluralType"]
-                    elif variable_metadata[arg_name]["PluralType"] != PluralType.all:
-                        if variable_metadata[arg_name]["PluralType"] != arg_metadata["PluralType"]:
-                            variable_metadata[arg_name]["PluralType"] = PluralType.all
+                    if variable_metadata[arg_name]["ValueSize"] is None:
+                        variable_metadata[arg_name]["ValueSize"] = arg_metadata["ValueSize"]
+                    elif variable_metadata[arg_name]["ValueSize"] != ValueSize.all:
+                        if variable_metadata[arg_name]["ValueSize"] != arg_metadata["ValueSize"]:
+                            variable_metadata[arg_name]["ValueSize"] = ValueSize.all
 
     variable_metadata = {}
     walk_tree_predications_until(tree_info["Tree"], gather_metadata)
