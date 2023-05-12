@@ -1,6 +1,9 @@
 As described in the conceptual overview, Perplexity uses [backtracking]() to find the solutions to a well-formed MRS Tree.
 
-### Predications
+### Predication Functions
+Predication functions look like x. They have a state and get passed their variables.
+
+### Success and Failure
 Every predication in an MRS is implemented by building a Python [generator function]() 
 
 The predication for "file" (as in "a file is large") in the ERG is:
@@ -15,7 +18,7 @@ def file_n_of(state, x_binding, i_binding):
 ...
 ~~~
 
-`state` is an object that represents the current state of this world when the predication is called. It holds the current value of all the MRS variables at this point in the solver backtracking process.  Because of backtracking, the same predication can be called many times with different states as the solver attempts to find a solution to the MRS. 
+`state` is an object that represents the current state of this world when the predication is called. It holds, among other things, the current value of all the MRS variables at this point in the solver backtracking process.  Because of backtracking, the same predication can be called many times with different states as the solver attempts to find a solution to the MRS. 
 
 `x_binding` and `i_binding` hold all the information about the variables that `_file_n_of` has. All of this information can be obtained directly from the `state` object as well, but the engine conveniently pulls them out and passes them as arguments to cut down on boilerplate code that the developer needs to write. 
 
@@ -90,5 +93,3 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 ~~~
 
-## Implementing large_a()
-todo

@@ -481,6 +481,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
         set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
         yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, set_size, ValueSize.all)
         yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, set_size)
+
     else:
         yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, ValueSize.all)
 
