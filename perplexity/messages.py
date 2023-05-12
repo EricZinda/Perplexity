@@ -1,6 +1,94 @@
 from perplexity.generation import english_for_delphin_variable
-from perplexity.tree import predication_from_index
-from perplexity.utilities import parse_predication_name
+from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication
+from perplexity.utilities import parse_predication_name, sentence_force
+
+
+# Implements the response for a given tree
+# yields: response, solution_group that generated the response
+# In scenarios where there is an open solution group (meaning like "files are ..." where there is an initial solution that will
+# grow), this will yield once for every additional solution
+def respond_to_mrs_tree(message_function, tree, solution_groups, error):
+    # Tree can be None if we didn't have one of the
+    # words in the vocabulary
+    if tree is None:
+        message = message_function(None, error)
+        yield message, None
+        return
+
+    sentence_force_type = sentence_force(tree["Variables"])
+    if sentence_force_type == "prop":
+        # This was a proposition, so the user only expects
+        # a confirmation or denial of what they said.
+        # The phrase was "true" if there was at least one answer
+        if solution_groups is not None:
+            yield "Yes, that is true.", next(solution_groups)
+            return
+
+        else:
+            message = message_function(tree, error)
+            yield message, None
+            return
+
+    elif sentence_force_type == "ques":
+        # See if this is a "WH" type question
+        wh_predication = find_predication(tree["Tree"], "_which_q")
+        if wh_predication is None:
+            wh_predication = find_predication(tree["Tree"], "which_q")
+
+        if wh_predication is None:
+            # This was a simple question, so the user only expects
+            # a yes or no.
+            # The phrase was "true" if there was at least one answer
+            if solution_groups is not None:
+                yield "Yes.", next(solution_groups)
+                return
+
+            else:
+                message = message_function(tree, error)
+                yield message, None
+                return
+
+        else:
+            # This was a "WH" question. Return the values of the variable
+            # asked about from the solution
+            # The phrase was "true" if there was at least one answer
+            if solution_groups is not None:
+                # Build an error term that we can use to call generate_message
+                # to get the response
+                index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
+                wh_variable = wh_predication.introduced_variable()
+
+                # Get unique items from all solutions
+                answer_items = set()
+                solution_group = next(solution_groups)
+                response = ""
+                for solution in solution_group:
+                    binding = solution.get_binding(wh_variable)
+                    if binding.variable.combinatoric:
+                        value_set = ((value, ) for value in binding.value)
+                        if value_set not in answer_items:
+                            answer_items.add(value_set)
+                            yield message_function(tree, [-1, ["answerWithList", index_predication, [value_set]]]), [solution]
+
+                    else:
+                        if binding.value not in answer_items:
+                            answer_items.add(binding.value)
+                            yield message_function(tree, [-1, ["answerWithList", index_predication, [binding.value]]]), [solution]
+
+            else:
+                message = message_function(tree, error)
+                yield message, None
+                return
+
+    elif sentence_force_type == "comm":
+        # This was a command so, if it works, just say so
+        # We'll get better errors and messages in upcoming sections
+        if solution_groups is not None:
+            yield "Done!", next(solution_groups)
+
+        else:
+            message = message_function(tree, error)
+            yield message, None
 
 
 def generate_message(tree_info, error_term):

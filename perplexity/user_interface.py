@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 import perplexity.solution_groups
+import perplexity.messages
 from delphin import ace
 from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext, MessageException
@@ -21,12 +22,13 @@ def no_error_priority(error):
 
 
 class UserInterface(object):
-    def __init__(self, reset, vocabulary, response_function, error_priority_function=no_error_priority):
+    def __init__(self, reset, vocabulary, response_function=perplexity.messages.respond_to_mrs_tree, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority):
         self.max_holes = 13
         self.reset = reset
         self.state = reset()
         self.execution_context = ExecutionContext(vocabulary)
         self.response_function = response_function
+        self.message_function = message_function
         self.error_priority_function = error_priority_function
         self.interaction_record = None
         self.records = None
@@ -68,11 +70,6 @@ class UserInterface(object):
                 "UnknownWords": unknown_words,
                 "Trees": []}
 
-    # response_function gets passed three arguments:
-    #   response_function(mrs, solutions, error)
-    # It must use them to return a string to say to the user
-    # Builds up a record of what happened so diagnostics
-    # can be printed later
     def interact_once(self, force_input=None):
         if force_input is None:
             # input() pauses the program and waits for the user to
@@ -132,7 +129,7 @@ class UserInterface(object):
 
             if len(mrs_record["UnknownWords"]) > 0:
                 unknown_words_error = [0, ["unknownWords", mrs_record["UnknownWords"]]]
-                tree_record = self.new_error_tree_record(error=unknown_words_error, response_generator=self.response_function(None, [], unknown_words_error))
+                tree_record = self.new_error_tree_record(error=unknown_words_error, response_generator=self.response_function(self.message_function, None, [], unknown_words_error))
                 mrs_record["Trees"].append(tree_record)
                 self.evaluate_best_response(None)
 
@@ -172,7 +169,7 @@ class UserInterface(object):
 
                     # Collect any error that might have occurred from the first solution group
                     tree_record["Error"] = self.execution_context.error()
-                    tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(tree_info, solution_group_generator, tree_record["Error"]))
+                    tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(self.message_function, tree_info, solution_group_generator, tree_record["Error"]))
                     if solution_group_generator is not None:
                         # There were solutions, so this is our answer.
                         # Return it and stop looking
@@ -190,7 +187,7 @@ class UserInterface(object):
                                     self.apply_solutions_to_state([solution for solution in solution_group])
 
                                 except MessageException as error:
-                                    response = self.response_function(tree_info, [], [0, error.message_object()])
+                                    response = self.response_function(self.message_function, tree_info, [], [0, error.message_object()])
                                     tree_record["ResponseMessage"] += f"\n{str(response)}"
 
                             tree_record["ResponseMessage"] += response
