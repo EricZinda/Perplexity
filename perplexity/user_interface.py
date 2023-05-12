@@ -22,7 +22,7 @@ def no_error_priority(error):
 
 
 class UserInterface(object):
-    def __init__(self, reset, vocabulary, response_function=perplexity.messages.respond_to_mrs_tree, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority):
+    def __init__(self, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree):
         self.max_holes = 13
         self.reset = reset
         self.state = reset()

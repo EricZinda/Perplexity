@@ -7,7 +7,7 @@ from perplexity.generation import english_for_delphin_variable
 from perplexity.messages import respond_to_mrs_tree
 from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.tree import TreePredication
-from perplexity.user_interface import UserInterface
+from perplexity.user_interface import UserInterface, no_error_priority
 from perplexity.utilities import ShowLogging
 
 
@@ -369,7 +369,7 @@ def Example16_reset():
 
 def Example16():
     # ShowLogging("Pipeline")
-    user_interface = UserInterface(Example16_reset, vocabulary, respond_to_mrs_tree, generate_message)
+    user_interface = UserInterface(Example16_reset, vocabulary, generate_message, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -381,7 +381,7 @@ def Example17():
         return State([Folder(name="Desktop"),
                       Folder(name="Documents")])
 
-    user_interface = UserInterface(reset, vocabulary, None, generate_message)
+    user_interface = UserInterface(reset, vocabulary, generate_message, None)
 
     for mrs in user_interface.mrss_from_phrase("every book is in a cave"):
         for tree in user_interface.trees_from_mrs(mrs):
@@ -406,7 +406,7 @@ def Example18a_reset():
 
 def Example18():
     # ShowLogging("Pipeline")
-    user_interface = UserInterface(Example18_reset, vocabulary, respond_to_mrs_tree, generate_message)
+    user_interface = UserInterface(Example18_reset, vocabulary, generate_message, no_error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -421,7 +421,7 @@ def Example19_reset():
 
 def Example19():
     # ShowLogging("Pipeline")
-    user_interface = UserInterface(Example19_reset, vocabulary, respond_to_mrs_tree, generate_message)
+    user_interface = UserInterface(Example19_reset, vocabulary, generate_message, no_error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -435,7 +435,7 @@ def Example20_reset():
 
 
 def Example20():
-    user_interface = UserInterface(Example20_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example20_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -451,7 +451,7 @@ def Example21_reset():
 
 
 def Example21():
-    user_interface = UserInterface(Example21_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example21_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -467,7 +467,7 @@ def Example22_reset():
 
 
 def Example22():
-    user_interface = UserInterface(Example22_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example22_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -484,7 +484,7 @@ def Example23_reset():
 
 
 def Example23():
-    user_interface = UserInterface(Example23_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example23_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -501,7 +501,7 @@ def Example24_reset():
 
 
 def Example24():
-    user_interface = UserInterface(Example24_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example24_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -518,7 +518,7 @@ def Example25_reset():
 
 
 def Example25():
-    user_interface = UserInterface(Example25_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example25_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -537,7 +537,7 @@ def Example26_reset():
 
 
 def Example26():
-    user_interface = UserInterface(Example26_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example26_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -558,7 +558,7 @@ def Example27_reset():
 
 
 def Example27():
-    user_interface = UserInterface(Example27_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example27_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -578,7 +578,7 @@ def Example28_reset():
 
 
 def Example28():
-    user_interface = UserInterface(Example28_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example28_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -592,7 +592,7 @@ def Example29_reset():
 
 
 def Example29():
-    user_interface = UserInterface(Example29_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example29_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -608,7 +608,7 @@ def Example30_reset():
 
 
 def Example30():
-    user_interface = UserInterface(Example30_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example30_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -624,7 +624,7 @@ def Example31_reset():
 
 
 def Example31():
-    user_interface = UserInterface(Example31_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example31_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -638,7 +638,7 @@ def Example32_reset():
 
 
 def Example32():
-    user_interface = UserInterface(Example32_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example32_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -652,7 +652,7 @@ def Example33_reset():
 
 
 def Example33():
-    user_interface = UserInterface(Example33_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example33_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -660,7 +660,7 @@ def Example33():
 
 
 def Example33_performance_test():
-    user_interface = UserInterface(Example33_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example33_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
     user_interface.interact_once(force_input="which files are large?")
 
 
@@ -674,7 +674,7 @@ def Example34_reset():
 
 
 def Example34():
-    user_interface = UserInterface(Example34_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example34_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -690,7 +690,7 @@ def Example35_reset():
 
 
 def Example35():
-    user_interface = UserInterface(Example35_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example35_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -706,7 +706,7 @@ def Example36_reset():
 
 
 def Example36():
-    user_interface = UserInterface(Example36_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example36_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
@@ -721,7 +721,7 @@ def Example37_reset():
 
 
 def Example37():
-    user_interface = UserInterface(Example37_reset, vocabulary, respond_to_mrs_tree, generate_message, error_priority)
+    user_interface = UserInterface(Example37_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
 
     while True:
         user_interface.interact_once()
