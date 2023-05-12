@@ -3,6 +3,13 @@
     "ResetFunction": "Example19_reset",
     "TestItems": [
         {
+            "Command": "/new examples.Example19_reset",
+            "Expected": "",
+            "Tree": null,
+            "Enabled": true,
+            "ID": "265a5921-b404-4896-9d8f-59305081820d"
+        },
+        {
             "Command": "a file is large",
             "Expected": "a file is not large",
             "Tree": "_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",

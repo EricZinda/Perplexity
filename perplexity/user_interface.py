@@ -591,12 +591,8 @@ def command_run_parse(ui, arg):
 
 
 def command_run_folder(ui, arg):
-    if len(arg) == 0:
-        print(f"Please supply a folder name.")
-
-    else:
-        test_iterator = TestFolderIterator(ui.test_manager.full_test_path(arg))
-        ui.test_manager.run_tests(test_iterator, ui)
+    test_iterator = TestFolderIterator(ui.test_manager.full_test_path(arg))
+    ui.test_manager.run_tests(test_iterator, ui)
 
     return True
 

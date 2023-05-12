@@ -2,7 +2,6 @@ import enum
 
 
 class VariableValueType(enum.Enum):
-    none = 0
     combinatoric = 1
     set = 2
 
