@@ -2,17 +2,6 @@ Remaining work to be shown in the tutorial:
 - Make old tests work
 - Bug: What is large? Will only return one item because it is singular
 
-- PluralType.distributive is a bit out of date. 
-  - Only used by:
-    - In in_style_predication
-      - I think it is only used to remove options for predicates that don't use certain types
-    - expand_combinatorial_variables
-      - Only expand alternatives that are actually used by predications. Ignore collective if noone uses it, etc.
-  - PluralType.collective is expensive so isn't generated if not needed?
-  - PluralType should probably be: Exactly 1, More than 1 instead of distributive and collective
-  
-- Need to explain VariableValueSetSize.exactly_one as well
-- And VariableValueType.set
 
 - Rebuild the scenarios to get the tests to pass again
 - Build a backend to use for ESL Scenarios

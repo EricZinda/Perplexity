@@ -45,7 +45,7 @@ def file_n_of(state, x_binding, i_binding):
 In this case we ....
 Since our world only has one file in it, we've just hard-coded it here.
 
-## Set and Combinatorial Variables
+## Combinatorial Variables
 Sets of files are still files. So, it needs all combinations.
 
 Recall from [the section]() that Perplexity represents items operating together as a set. Because users of the system may ask questions like "Are file1.txt and file2.txt 20 mb?" (meaning are they 20mb *together*), predications need to return *all combinations* of things that make them true.

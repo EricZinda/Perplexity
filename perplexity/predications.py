@@ -53,7 +53,7 @@ def lift_style_predication(state, binding1, binding2, prediction_function, bindi
 #
 # both_bound_function() is called if binding1 and binding2 are bound, etc.
 def in_style_predication(state, binding1, binding2,
-                         both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function,
+                         both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                          binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
     # If nobody needs collective don't do it since it is expensive
     binding1_metadata = get_variable_metadata(binding1.variable.name)
@@ -64,7 +64,14 @@ def in_style_predication(state, binding1, binding2,
     if binding2_metadata["ValueSize"] == ValueSize.exactly_one:
         binding2_set_size = ValueSize.exactly_one
 
-    if binding1.value is None or binding2.value is None:
+    if binding1.value is None and binding2.value is None:
+        if all_unbound_predication_function is None:
+            report_error(["beMoreSpecific"], force=True)
+
+        else:
+            yield from all_unbound_predication_function()
+
+    elif binding1.value is None or binding2.value is None:
         # TODO: deal with when everything is unbound
         assert not(binding1.value is None and binding2.value is None)
         bound_binding = binding2 if binding1.value is None else binding1
