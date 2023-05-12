@@ -442,7 +442,7 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 @Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
 
-    def criteria(actor_set, size_set):
+    def both_bound_criteria(actor_set, size_set):
         if value_is_measure(size_set):
             if x_size_binding.variable.combinatoric:
                 # we only deal with x megabytes as a set because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
@@ -469,16 +469,20 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
         else:
             return False
 
-    if x_actor_binding.value is not None:
-        if x_size_binding.value is not None:
-            # If a cardinal limiter like "together" is acting on this verb, it is unclear
-            # if it is for x_actor or x_size, so we have to try both
-            if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
-                set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
-                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, set_size, ValueSize.all)
-                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, ValueSize.all, set_size)
-            else:
-                yield from lift_style_predication(state, x_actor_binding, x_size_binding, criteria, ValueSize.all, ValueSize.all)
+    def actor_unbound_criteria(size_set):
+        assert False
+
+    def size_unbound_criteria(actor_set):
+        assert False
+
+    # If a cardinal limiter like "together" is acting on this verb, it is unclear
+    # if it is for x_actor or x_size, so we have to try both
+    if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
+        set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
+        yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, set_size, ValueSize.all)
+        yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, set_size)
+    else:
+        yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, ValueSize.all)
 
 
 @Predication(vocabulary, names=["_only_x_deg"])

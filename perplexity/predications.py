@@ -33,17 +33,49 @@ def force_individual_style_predication_1(state, binding, bound_predication_funct
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
-def lift_style_predication(state, binding1, binding2, prediction_function, binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
-    # See if everything in binding1_set has the
-    # prediction_function relationship to binding2_set
-    for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
-        for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
-            # See if everything in binding1_set has the
-            # prediction_function relationship to binding2_set
-            success = prediction_function(binding1_set, binding2_set)
-            if success:
-                yield state.set_x(binding1.variable.name, binding1_set, binding1_set_type) \
-                    .set_x(binding2.variable.name, binding2_set, binding2_set_type)
+def lift_style_predication(state, binding1, binding2,
+                           both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
+                           binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+
+    # If nobody needs collective don't do it since it is expensive
+    binding1_metadata = get_variable_metadata(binding1.variable.name)
+    if binding1_metadata["ValueSize"] == ValueSize.exactly_one:
+        binding1_set_size = ValueSize.exactly_one
+
+    binding2_metadata = get_variable_metadata(binding2.variable.name)
+    if binding2_metadata["ValueSize"] == ValueSize.exactly_one:
+        binding2_set_size = ValueSize.exactly_one
+
+    if binding1.value is None and binding2.value is None:
+        if all_unbound_predication_function is None:
+            report_error(["beMoreSpecific"], force=True)
+
+        else:
+            yield from all_unbound_predication_function()
+
+    elif binding1.value is None:
+        if binding1_unbound_predication_function is None:
+            report_error(["beMoreSpecific"], force=True)
+        else:
+            assert False, "not yet implemented"
+
+    elif binding2.value is None:
+        if binding2_unbound_predication_function is None:
+            report_error(["beMoreSpecific"], force=True)
+        else:
+            assert False, "not yet implemented"
+
+    else:
+        # See if everything in binding1_set has the
+        # prediction_function relationship to binding2_set
+        for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
+            for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
+                # See if everything in binding1_set has the
+                # prediction_function relationship to binding2_set
+                success = both_bound_prediction_function(binding1_set, binding2_set)
+                if success:
+                    yield state.set_x(binding1.variable.name, binding1_set, binding1_set_type) \
+                        .set_x(binding2.variable.name, binding2_set, binding2_set_type)
 
 
 # "'in' style" means that:

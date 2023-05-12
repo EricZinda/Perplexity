@@ -1,6 +1,7 @@
 ## Predications with Multiple X Arguments
 Logic gets more complicated when there is more than one `x` type argument because there are many cases to handle. The predication for "in" from "a file is in a folder" is:
 
+### In-Style Predications
 ~~~
 _in_p_loc(e1,x1,x2)
 ~~~
@@ -61,7 +62,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
 The function is called `in_style_predication()` because it uses the behavior of "in" as a template.  Any predication that is associative like "in" can use this same helper to implement the logic efficiently.
 
-### Unbound Arguments
+#### Unbound Arguments
 As discussed in the [previous section](), arguments to a predication aren't always set (i.e. *bound*) as in the above example. When they are missing, the predication needs to yield all possible values for them that make the predication `true`. This allows predications to use more optimal logic for finding answers that simply trying every possible combination. 
 
 To support unbound arguments, `in_style_predication()` has two additional functions it supports: one for the first argument being unbound and one for the second. There is a final argument that is rarely used for when both are unbound. If it isn't set, the system reports the error `beMoreSpecific` since the user said something that is really broad like "what is in anything?".
@@ -83,4 +84,6 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     yield from in_style_predication(state, x_actor_binding, x_location_binding, check_item_in_item, all_item1_in_item2, all_item2_containing_item1)
 ~~~
 
-As before, `in_style_predication()` does all the work to make sure that the two new functions are only passed single values even if the incoming values are combinatorial.
+Note that the two new functions need to *yield all alternatives* and not just return `true` or `false`.
+
+And, as before, `in_style_predication()` does all the work to make sure that the two new functions are only passed single values even if the incoming values are combinatorial.  
