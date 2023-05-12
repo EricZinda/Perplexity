@@ -444,7 +444,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
 
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):
-            if not x_size_binding.variable.combinatoric == VariableValueType.set:
+            if x_size_binding.variable.combinatoric == VariableValueType.combinatoric:
                 # we only deal with x megabytes as a set because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
                 report_error(["formNotUnderstood", "missing", "collective"])
                 return False
