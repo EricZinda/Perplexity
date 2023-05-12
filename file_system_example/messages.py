@@ -1,4 +1,6 @@
 import logging
+
+import perplexity.messages
 from perplexity.generation import english_for_delphin_variable
 from perplexity.set_utilities import append_if_unique, in_equals
 from perplexity.tree import find_predication, predication_from_index, \
@@ -100,120 +102,33 @@ def respond_to_mrs_tree(tree, solution_groups, error):
 # list like: ["name", arg1, arg2, ...]. The first item is the error
 # constant (i.e. its name). What the args mean depends on the error
 def generate_message(tree_info, error_term):
+    system_message = perplexity.messages.generate_message(tree_info, error_term)
+    if system_message is not None:
+        return system_message
+
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
 
-    if error_constant == "xIsNotYValue":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg2 = error_arguments[2]
-        return f"{arg1} is not {arg2}"
-
-    elif error_constant == "xIsNotY":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not {arg2}"
-
-    elif error_constant == "notPlural":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        return f"There isn't more than one {arg1}"
-
-    elif error_constant == "moreThan":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        return f"There are more than {arg1}"
-
-    elif error_constant == "lessThan":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        arg2 = error_arguments[2]
-        return f"There are less than {arg2} {arg1}"
-
-    elif error_constant == "tooMany":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        return f"There are more than {arg1}"
-
-    elif error_constant == "notEnough":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        return f"There are less than {arg1}"
-
-    elif error_constant == "notTrueForAll":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        return f"That isn't true for all {arg1}"
-
-    elif error_constant == "moreThan1":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        return f"There is more than one {arg1}"
-
-    elif error_constant == "moreThanN":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
-        arg2 = error_arguments[2]
-        return f"There is more than {arg2} {arg1}"
-
-    elif error_constant == "adjectiveDoesntApply":
+    if error_constant == "adjectiveDoesntApply":
         arg1 = error_arguments[1]
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"{arg2} is not {arg1}"
-
-    elif error_constant == "doesntExist":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg1 = arg1.strip("'\"")
-        return f"There isn't '{arg1}' in the system"
-
-    elif error_constant == "dontKnowPronoun":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg1 = arg1.strip("'\"")
-        return f"I don't know who '{arg1}' is"
-
-    elif error_constant == "dontKnowActor":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg1 = arg1.strip("'\"")
-        return f"I don't know who '{arg1}' is"
 
     elif error_constant == "cantDo":
         arg1 = error_arguments[1]
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"I can't {arg1} {arg2}"
 
-    elif error_constant == "beMoreSpecific":
-        return f"Could you be more specific?"
-
-    elif error_constant == "unknownWords":
-        lemmas_unknown = []
-        lemmas_form_known = []
-        for unknown_predication in error_arguments[1]:
-            parsed_predicate = parse_predication_name(unknown_predication[0])
-            if unknown_predication[3]:
-                lemmas_form_known.append(parsed_predicate["Lemma"])
-            else:
-                lemmas_unknown.append(parsed_predicate["Lemma"])
-
-        answers = []
-        if len(lemmas_unknown) > 0:
-            answers.append(f"I don't know the words: {', '.join(lemmas_unknown)}")
-
-        if len(lemmas_form_known) > 0:
-            answers.append(f"I don't know the way you used: {', '.join(lemmas_form_known)}")
-
-        return " and ".join(answers)
-
-    elif error_constant == "formNotUnderstood":
-        predication = predication_from_index(tree_info, error_predicate_index)
-        parsed_predicate = parse_predication_name(predication.name)
-
-        if error_arguments[1] == "notHandled":
-            # The event had something that the predication didn't know how to handle
-            # See if there is information about where it came from
-            if "Originator" in error_arguments[2][1]:
-                originator_index = error_arguments[2][1]["Originator"]
-                originator_predication = predication_from_index(tree_info, originator_index)
-                parsed_originator = parse_predication_name(originator_predication.name)
-                return f"I don't understand the way you are using '{parsed_originator['Lemma']}' with '{parsed_predicate['Lemma']}'"
-
-        return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
-
-    elif error_constant == "moreThanOneInScope":
+    elif error_constant == "dontKnowActor":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         arg1 = arg1.strip("'\"")
-        return f"There is more than one '{arg1}' where you are"
+        return f"I don't know who '{arg1}' is"
+
+    elif error_constant == "notFound":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg1 = arg1.strip("'\"")
+        return f"'{arg1}' was not found"
 
     elif error_constant == "thingHasNoLocation":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
@@ -224,35 +139,15 @@ def generate_message(tree_info, error_term):
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         return f"{arg1} can't contain things"
 
-    elif error_constant == "notFound":
+    elif error_constant == "xIsNotY":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg1 = arg1.strip("'\"")
-        return f"'{arg1}' was not found"
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+        return f"{arg1} is not {arg2}"
 
-    elif error_constant == "answerWithList":
-        answer_predication = error_arguments[1]
-        answer_items = error_arguments[2]
-
-        if len(answer_items) > 0:
-            message = "\n".join([str(answer_item) for answer_item in answer_items])
-            # if answer_predication.name == "loc_nonsp":
-            #     # if "loc_nonsp" is the "verb", it means the phrase was
-            #     # "Where is YYY?", so only return the "best" answer, which
-            #     # is the most specific one
-            #     best_answer = ""
-            #     for answer_item in answer_items:
-            #         current_answer = str(answer_item.name)
-            #         if len(current_answer) > len(best_answer):
-            #             best_answer = current_answer
-            #     message = f"in {best_answer}"
-            #
-            # else:
-            #     for answer_item in answer_items:
-            #         message += str(answer_item) + "\n"
-
-            return message
-        else:
-            return ""
+    elif error_constant == "xIsNotYValue":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg2 = error_arguments[2]
+        return f"{arg1} is not {arg2}"
 
     else:
         return str(error_term)
