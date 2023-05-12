@@ -519,8 +519,8 @@ def together_p_state(state, e_introduced_binding, e_target_binding):
     yield from default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_binding, ValueSize.more_than_one)
 
 
-# Delete only works on distributive values: i.e. there is no semantic for deleting
-# things "together" which would probably imply
+# Delete only works on individual values: i.e. there is no semantic for deleting
+# things "together" which would probably imply a transaction or something
 @Predication(vocabulary, names=["_delete_v_1", "_erase_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     # We only know how to delete things from the

@@ -1,3 +1,8 @@
+import importlib
+import inspect
+import logging
+import sys
+
 # Returns a dict:
 # {
 #     "Surface" : True | False
@@ -6,12 +11,6 @@
 #     "PredicateRaw":
 #     "Sense": "dir"...
 # }
-import importlib
-import inspect
-import logging
-import sys
-
-
 def parse_predication_name(name):
     result = {"PredicateRaw": name}
 

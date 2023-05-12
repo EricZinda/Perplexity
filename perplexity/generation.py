@@ -1,5 +1,5 @@
 import logging
-from perplexity.tree import walk_tree_predications_until, find_predications_using_variable, is_last_fw_seq
+from perplexity.tree import walk_tree_predications_until, is_last_fw_seq
 from perplexity.utilities import parse_predication_name
 
 

@@ -1,6 +1,5 @@
 import enum
 import itertools
-
 from perplexity.execution import get_variable_metadata, call, set_variable_execution_data, report_error
 from perplexity.set_utilities import count_set
 from perplexity.tree import TreePredication

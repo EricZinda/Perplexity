@@ -3,15 +3,14 @@ import logging
 import os
 import pathlib
 import uuid
-
 from perplexity.set_utilities import Measurement
 from perplexity.variable_binding import VariableBinding
+from perplexity.execution import MessageException
 
 
 # Base class that objects derive from so that
 # objects have a unique ID that is preserved even
 # when they are copied
-from perplexity.execution import MessageException
 
 
 class UniqueObject(object):

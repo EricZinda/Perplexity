@@ -1,6 +1,3 @@
-
-# Just a simple iterator that must return
-# a new test item each time it is asked
 import copy
 import json
 import os
@@ -9,7 +6,8 @@ import traceback
 import uuid
 from perplexity.utilities import module_name
 
-
+# Just a simple iterator that must return
+# a new test item each time it is asked
 # TestIterators must return test items when iterated
 # "test items" are JSON objects in a format like this:
 #

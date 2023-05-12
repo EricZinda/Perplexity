@@ -298,7 +298,7 @@
         },
         {
             "Command": "where is \"doesn't exist\"",
-            "Expected": "'doesn\u2019t exist' is not in place",
+            "Expected": "Could you be more specific?",
             "Tree": "which_q(x4,place_n(x4),proper_q(x3,[quoted(exist,i14), quoted(doesn\u2019t,i13), fw_seq(x3,i13,i14)],loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "cd5bbf5b-d4de-469b-b690-5e125dda5378"

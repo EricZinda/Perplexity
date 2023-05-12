@@ -1,6 +1,3 @@
-import enum
-
-
 class VariableData(object):
     # These are the defaults if a variable has never been set
     def __init__(self, name, combinatoric=False, determiner=None, quantifier=None):

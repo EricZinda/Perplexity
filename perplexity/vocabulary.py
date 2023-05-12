@@ -1,8 +1,7 @@
 import enum
 import inspect
 import logging
-
-from perplexity.execution import report_error
+import perplexity.execution
 from perplexity.utilities import parse_predication_name
 from perplexity.variable_binding import VariableBinding
 
@@ -38,13 +37,13 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
                             break
 
                     if not foundItem:
-                        report_error(["formNotUnderstood", "notHandled", item])
+                        perplexity.execution.report_error(["formNotUnderstood", "notHandled", item])
                         return False
 
             # Look at everything it handles and make sure the required things are there
             for item in handles:
                 if item[1] == EventOption.required and (event_binding.value is None or item[0] not in event_binding.value):
-                    report_error(["formNotUnderstood", "missing", item])
+                    perplexity.execution.report_error(["formNotUnderstood", "missing", item])
                     return False
 
         return True
