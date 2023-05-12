@@ -6,7 +6,7 @@ from perplexity.predications import combinatorial_style_predication_1, lift_styl
     force_individual_style_predication_1, ValueSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import Measurement
 from perplexity.tree import used_predicatively, is_this_last_fw_seq
-from perplexity.variable_binding import VariableValueType, VariableBinding
+from perplexity.variable_binding import VariableBinding
 from perplexity.virtual_arguments import scopal_argument
 from perplexity.vocabulary import Vocabulary, Predication, EventOption, ValueSize
 
@@ -121,7 +121,7 @@ def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
     if variable_is_megabyte(x_target_binding):
         yield state.set_x(x_target_binding.variable.name,
                           (Measurement(x_target_binding.value[0], int(c_count)), ),
-                          combinatoric=VariableValueType.set)
+                          combinatoric=False)
 
 
 @Predication(vocabulary, names=["card"], handles=[("DeterminerDegreeLimiter", EventOption.optional)])
@@ -444,7 +444,7 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
 
     def criteria(actor_set, size_set):
         if value_is_measure(size_set):
-            if x_size_binding.variable.combinatoric == VariableValueType.combinatoric:
+            if x_size_binding.variable.combinatoric:
                 # we only deal with x megabytes as a set because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
                 report_error(["formNotUnderstood", "missing", "collective"])
                 return False
@@ -500,7 +500,7 @@ def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_bind
 @Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", ValueSize.more_than_one)])
 def together_p(state, e_introduced_binding, x_target_binding):
     for _, x_target_value in discrete_variable_set_generator(x_target_binding, ValueSize.more_than_one):
-        yield state.set_x(x_target_binding.variable.name, x_target_value, VariableValueType.set)
+        yield state.set_x(x_target_binding.variable.name, x_target_value, False)
 
 
 # Needed for "together, which 3 files are 3 mb?"
@@ -711,7 +711,7 @@ def pron(state, x_who_binding):
 @Predication(vocabulary)
 def quoted(state, c_raw_text_value, i_text_binding):
     if i_text_binding.value is None:
-        yield state.set_x(i_text_binding.variable.name, (QuotedText(c_raw_text_value), ), VariableValueType.set)
+        yield state.set_x(i_text_binding.variable.name, (QuotedText(c_raw_text_value), ), False)
 
     else:
         if len(i_text_binding.value) == 1 and \
@@ -729,10 +729,10 @@ def yield_from_fw_seq(state, x_phrase_binding, non_set_value):
             # Get all the interpretations of the quoted text
             # and bind them iteratively
             for interpretation in non_set_value.all_interpretations(state):
-                yield state.set_x(x_phrase_binding.variable.name, (interpretation, ), VariableValueType.set)
+                yield state.set_x(x_phrase_binding.variable.name, (interpretation, ), False)
 
         else:
-            yield state.set_x(x_phrase_binding.variable.name, (non_set_value,), VariableValueType.set)
+            yield state.set_x(x_phrase_binding.variable.name, (non_set_value,), False)
 
     else:
         # x is bound, compare it to value
@@ -754,7 +754,7 @@ def fw_seq1(state, x_phrase_binding, i_part_binding):
         # This should never happen since it basically means
         # "return all possible strings"
         assert x_phrase_binding.value is not None
-        yield state.set_x(i_part_binding.variable.name, (x_phrase_binding.value, ), VariableValueType.set)
+        yield state.set_x(i_part_binding.variable.name, (x_phrase_binding.value, ), False)
 
     else:
         yield from yield_from_fw_seq(state, x_phrase_binding, i_part_binding.value[0])

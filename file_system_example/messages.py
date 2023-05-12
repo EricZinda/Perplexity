@@ -6,9 +6,6 @@ from perplexity.tree import find_predication, predication_from_index, \
 from perplexity.utilities import parse_predication_name, sentence_force, at_least_one_generator
 
 # Implements the response for a given tree
-from perplexity.variable_binding import VariableValueType
-
-
 # yields: response, solution_group that generated the response
 # In scenarios where there is an open solution group (meaning like "files are ..." where there is an initial solution that will
 # grow), this will yield once for every additional solution
@@ -69,7 +66,7 @@ def respond_to_mrs_tree(tree, solution_groups, error):
                 response = ""
                 for solution in solution_group:
                     binding = solution.get_binding(wh_variable)
-                    if binding.variable.combinatoric == VariableValueType.combinatoric:
+                    if binding.variable.combinatoric:
                         value_set = ((value, ) for value in binding.value)
                         if value_set not in answer_items:
                             answer_items.add(value_set)

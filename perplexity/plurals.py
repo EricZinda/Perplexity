@@ -2,7 +2,6 @@ import enum
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
 from perplexity.tree import find_quantifier_from_variable
 from perplexity.utilities import is_plural_from_tree_info, parse_predication_name, is_plural
-from perplexity.variable_binding import VariableValueType
 from perplexity.vocabulary import ValueSize
 
 
@@ -38,7 +37,7 @@ def expand_combinatorial_variables(variable_metadata, solution):
     for variable_item in variable_metadata.items():
         binding = solution.get_binding(variable_item[0])
         variable_plural_type = variable_item[1]["ValueSize"]
-        if binding.variable.combinatoric == VariableValueType.combinatoric:
+        if binding.variable.combinatoric:
             # If variable_name is combinatoric, all of its appropriate alternative combinations
             # have to be used. Thus, if the variable_plural_type is collective, we only add sets > 1, etc
             min_size = 1
@@ -63,7 +62,7 @@ def expand_combinatorial_variables(variable_metadata, solution):
         for assignment in product_stream(iter(alternatives.values())):
             new_solution = solution
             for variable_index in range(len(variable_names)):
-                new_solution.set_x(variable_names[variable_index], tuple(assignment[variable_index]), VariableValueType.set)
+                new_solution.set_x(variable_names[variable_index], tuple(assignment[variable_index]), False)
             yield new_solution
 
 

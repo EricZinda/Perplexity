@@ -13,7 +13,6 @@ from perplexity.plurals import all_plural_groups_stream, VariableCriteria, Globa
 from perplexity.tree import TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
-from perplexity.variable_binding import VariableValueType
 
 
 def solve_and_respond(state, mrs):
@@ -737,7 +736,7 @@ def build_solutions(spec):
     for item in spec:
         state = State([])
         for var_item in item.items():
-            state = state.set_x(var_item[0], var_item[1], VariableValueType.none)
+            state = state.set_x(var_item[0], var_item[1], False)
         solutions.append(state)
 
     return solutions

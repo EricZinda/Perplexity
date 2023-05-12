@@ -1,14 +1,9 @@
 import enum
 
 
-class VariableValueType(enum.Enum):
-    combinatoric = 1
-    set = 2
-
-
 class VariableData(object):
     # These are the defaults if a variable has never been set
-    def __init__(self, name, combinatoric=VariableValueType.set, determiner=None, quantifier=None):
+    def __init__(self, name, combinatoric=False, determiner=None, quantifier=None):
         self.name = name
         self.combinatoric = combinatoric
         self.determiner = determiner

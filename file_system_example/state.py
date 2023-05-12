@@ -1,7 +1,7 @@
 import copy
 import logging
 from file_system_example.objects import Actor
-from perplexity.variable_binding import VariableBinding, VariableData, VariableValueType
+from perplexity.variable_binding import VariableBinding, VariableData
 
 
 # The state representation used by the file system example
