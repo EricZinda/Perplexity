@@ -39,7 +39,11 @@ def this_q_dem(state, x_variable_binding, h_rstr, h_body):
         def bound_variable(value):
             # In scope if binding.value is the folder the user is in
             # and anything in it
-            return value in contained_items or value == current_directory
+            if value in contained_items or value == current_directory:
+                return True
+            else:
+                report_error(["valueIsNotValue", value, "this"])
+                return False
 
         def unbound_variable():
             for item in state.all_individuals():
@@ -154,7 +158,11 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        return isinstance(value, File)
+        if isinstance(value, File):
+            return True
+        else:
+            report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
 
     def unbound_variable():
         for item in state.all_individuals():
@@ -169,7 +177,11 @@ def file_n_of(state, x_binding, i_binding):
 @Predication(vocabulary, names=["_folder_n_of"])
 def folder_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        return isinstance(value, Folder)
+        if isinstance(value, Folder):
+            return True
+        else:
+            report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
 
     def unbound_variable():
         for item in state.all_individuals():
@@ -182,7 +194,11 @@ def folder_n_of(state, x_binding, i_binding):
 @Predication(vocabulary, names=["_megabyte_n_1"])
 def megabyte_n_1(state, x_binding, u_binding):
     def bound_variable(value):
-        return isinstance(value, Megabyte)
+        if isinstance(value, Megabyte):
+            return True
+        else:
+            report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
 
     def unbound_variable():
         yield Megabyte()
@@ -194,7 +210,11 @@ def megabyte_n_1(state, x_binding, u_binding):
 def place_n(state, x_binding):
     def bound_variable(value):
         # Any object is a "place" as long as it can contain things
-        return isinstance(value, Container)
+        if isinstance(value, Container):
+            return True
+        else:
+            report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
 
     def unbound_variable():
         for item in state.all_individuals():

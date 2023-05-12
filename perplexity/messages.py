@@ -150,6 +150,26 @@ def generate_message(tree_info, error_term):
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
         return f"That isn't true for all {arg1}"
 
+    elif error_constant == "xIsNotY":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+        return f"{arg1} is not {arg2}"
+
+    elif error_constant == "xIsNotYValue":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg2 = error_arguments[2]
+        return f"{arg1} is not {arg2}"
+
+    elif error_constant == "valueIsNotX":
+        arg1 = error_arguments[1]
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+        return f"{arg1} is not {arg2}"
+
+    elif error_constant == "valueIsNotValue":
+        arg1 = error_arguments[1]
+        arg2 = error_arguments[2]
+        return f"{arg1} is not {arg2}"
+
     elif error_constant == "unknownWords":
         lemmas_unknown = []
         lemmas_form_known = []

@@ -478,11 +478,11 @@ class VariableCriteria(object):
 
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
-            execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size])
+            execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size], force=True)
             return CriteriaResult.fail_one
 
         elif values_count < self.min_size:
-            execution_context.report_error_for_index(self.predication_index, ["lessThan", self._after_phrase_error_location, self.min_size])
+            execution_context.report_error_for_index(self.predication_index, ["lessThan", self._after_phrase_error_location, self.min_size] ,force=True)
             return CriteriaResult.contender
 
         else:
