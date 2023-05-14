@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">
 
 
 
@@ -173,7 +173,7 @@
         
         <ul>
           
-            <li><a href="/Perplexity/home/devhowto/devhowtoOverview/" class="active">Overview</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowtoOverview/">Overview</a></li>
           
         </ul>
         
@@ -233,7 +233,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">Overview</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Overview</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/" class="active">Overview</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Overview</a></li>
           
@@ -271,22 +271,64 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h1 id="overview">Overview</h1>
-<p>The DELPH-IN Consortium has developed a large and rich set of technologies for manipulating natural language. The list of <a href="https://blog.inductorsoftware.com/docsproto/home/DelphinApplications/">DELPH-IN applications</a> is a great place to start for a survey of different approaches to using them.  There you will find pointers to uses such as identification of speculative or negated event mentions in biomedical text (MacKinlay et al 2011), question generation (Yao et al 2012), detecting the scope of negation (Packard et al 2014), relating natural language to robot control language (Packard 2014), and recognizing textual entailment (PETE task; Lien &amp; Kouylekov 2015). ERS representations have also been beneficial in semantic transfer-based MT (Oepen et al 2007, Bond et al 2011), ontology acquisition (Herbelot &amp; Copestake 2006), extraction of glossary sentences (Reiplinger et al 2012), sentiment analysis (Kramer &amp; Gordon 2014), and the ACL Anthology Searchbench (Schäfer et al 2011), and many more.</p>
+        <h2 id="predications-with-multiple-x-arguments-lift-style-predications">Predications with Multiple X Arguments: Lift-Style Predications</h2>
+<p>Not all words are associative with sets like “in” from the previous section: The verb “to lift” interprets sets vs, individuals as very different things.  For example:</p>
 
-<p>This tutorial is designed to show <em>developers</em> how to consume a narrow set of DELPH-IN technologies (especially <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">MRS</a> and <a href="http://sweaglesw.org/linguistics/ace/">ACE</a>) to build an application. It focuses on <em>one particular</em> application (a natural language interface to a computer’s file system), but the concepts should apply to any type of constrained system (‘constrained’ in the sense of the size of the world under discussion). It also takes <em>one particular approach</em> to building the system by logically evaluating the output of the DELPH-IN parsers against a world definition. While this approach may not be the right one for every application, the concepts illustrated and the tools used along the way should be more broadly applicable.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Students lifted a table.
+</code></pre></div></div>
+<p>…<em>could</em> mean:</p>
+<ol>
+  <li>Two students (together) lifted a table (at the same time)</li>
+  <li>Two students (separately) lifted a (different) table</li>
+</ol>
 
-<p>The tutorial will use the <a href="https://blog.inductorsoftware.com/docsproto/erg/ErgTop/">DELPH-IN English Resource Grammar (ERG)</a> to parse English, but the concepts are the same across the <a href="https://blog.inductorsoftware.com/docsproto/grammars/NorsourceTop/">DELPH-IN grammars</a>.  In fact, the library functions we build have no dependency on the grammar at all. They can be used for any of the DELPH-IN grammars.</p>
+<p>This is a case where the prediction for “lift”:</p>
 
-<p>Python was chosen as a simple, popular, open-source language available on many platforms. However, the examples and approach shown here could be implemented in any language. There is not much code in the core solver and associated helper functions that would need to be translated. The overwhelming majority of code will be in the implementation of the terms you implement for your own domain.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_lift_v_cause(e1,x1,x2)
+</code></pre></div></div>
 
-<p>It is designed to be read in order, but the most important background is in the first two sections, <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">The Minimal Recursion Semantics (MRS) Format</a> and <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoWellFormedTree">Building Well-Formed MRS Trees</a>. These should definitely be read before moving on to the rest of the topics. The rest of the topics broadly break down into <em>conceptual topics</em> which cover the algorithms and concepts needed to implement a system and <em>how-to topics</em> which walk through writing the Python code to implement them.</p>
+<p>… can’t just check if each value of <code class="language-plaintext highlighter-rouge">x1</code> is lifting a value in <code class="language-plaintext highlighter-rouge">x2</code> and assume that means they are all also lifting alone or together.  Lifting together means something different, and thus, unlike “in”, all combinations <em>do</em> need to be checked. There is a different helper that will do the logic for this scenario: <code class="language-plaintext highlighter-rouge">lift_style_predication()</code>. In contrast to <code class="language-plaintext highlighter-rouge">in_style_predication()</code>, the check functions need to be prepared for sets with more than one item and check if they are working <em>together</em>:</p>
 
-<blockquote>
-  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
-</blockquote>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_lift_v_cause"])
+def lift(state, e_introduced_binding, x_actor_binding, x_size_binding):
+    def check_items_lifting_items(item1, item2):
+        return is_lifting(item1, item2)
+    
+    def all_item1s_lifting_item2s(item2):
+        yield from all_lifting(item2)
 
-<p>Last update: 2023-04-27 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoOverview.md">edit</a>]</p>
+    def all_item2s_being_lifted_by_item1s(item1):
+        yield from all_being_lifted(item1)
+
+    yield from lift_style_predication(state, x_actor_binding, x_size_binding, 
+                                      check_items_lifting_items, all_item1s_lifting_item2s, all_item2s_being_lifted_by_item1s)
+</code></pre></div></div>
+
+<p>So, <code class="language-plaintext highlighter-rouge">lift_style_predication()</code> works very much like the <code class="language-plaintext highlighter-rouge">in_style_predication()</code> from the previous section but calls the check function with sets.</p>
+
+<h3 id="declaring-arguments-that-understand-with-sets--1-item">Declaring Arguments that Understand with Sets &gt; 1 item</h3>
+<p>As written, however, these check functions will <em>still</em> only get called with a single item. That is because the helper functions won’t go through the work to generate all combinations unless a predication declares that they might use it. It is just too expensive to calculate if it will be thrown away.  To do this, we need to declare which arguments semantically understand sets of more than one by adding information to the <code class="language-plaintext highlighter-rouge">@Predication</code> declaration, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_lift_v_cause"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+def lift(state, e_introduced_binding, x_actor_binding, x_size_binding):
+    def check_items_lifting_items(item1, item2):
+        return is_lifting(item1, item2)
+    
+    def all_item1s_lifting_item2s(item2):
+        yield from all_lifting(item2)
+
+    def all_item2s_being_lifted_by_item1s(item1):
+        yield from all_being_lifted(item1)
+
+    yield from lift_style_predication(state, x_actor_binding, x_size_binding, 
+                                      check_items_lifting_items, all_item1s_lifting_item2s, all_item2s_being_lifted_by_item1s)
+</code></pre></div></div>
+
+<p>Adding the <code class="language-plaintext highlighter-rouge">arguments=[]</code> list to <code class="language-plaintext highlighter-rouge">@Predication</code> tells the engine that we want to override the defaults for arguments and declare them ourselves.  The default for all arguments is to only have single values since that is <em>much</em> faster.  Only predications which specially process more than one arguments should ask for them. The declaration for <code class="language-plaintext highlighter-rouge">lift</code> asks for them by setting <code class="language-plaintext highlighter-rouge">ValueSize.all</code> on both <code class="language-plaintext highlighter-rouge">x</code> arguments.</p>
+
+<p>Other options for <code class="language-plaintext highlighter-rouge">ValueSize</code> are: <code class="language-plaintext highlighter-rouge">exactly_one</code> (the default) and <code class="language-plaintext highlighter-rouge">more_than_one</code>. <code class="language-plaintext highlighter-rouge">more_than_one</code> can be used when an argument only makes sense for more than one individual to be doing it. One example is the verb “met”.</p>
+
+<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo40LiftStylePredications.md">edit</a>]</p>
 
         
       </section>
