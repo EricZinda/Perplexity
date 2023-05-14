@@ -219,7 +219,11 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowto3.0ImplementPredication/">Implementing a Predication</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto09.0BuildSolver/">Build the Solver</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowto09.0BuildSolver/">Initial Solver</a></li>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowto9.1Conjunctions/">Solving Conjunctions</a></li>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowto9.2ScopalArguments/">Soliving Scopal Arguments</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
           
@@ -415,7 +419,7 @@ class State(object):
         for item in self.objects:
             yield item
 </code></pre></div></div>
-<p>Note that the <code class="language-plaintext highlighter-rouge">SetX()</code> method does not actually “set” a value in the <code class="language-plaintext highlighter-rouge">State</code> object, it creates a copy of the current <code class="language-plaintext highlighter-rouge">State</code> object and sets the value in <em>that</em>.  This ensures that variables set for a given <code class="language-plaintext highlighter-rouge">State</code> object are never changed (they are <em>immutable</em>). Immutability allows our solver to reuse the same state object multiple times when calling a predication in order to get fresh values bound to the variables. And this, in turn, is important to allow “backtracking” through possible solutions to the MRS. The fact that the <em>entire</em> state object (not just the variables) gets copied will be important when we get to verbs that change the world (e.g. deleting a file).</p>
+<p>Note that the <code class="language-plaintext highlighter-rouge">SetX()</code> method does not actually “set” a value in the <code class="language-plaintext highlighter-rouge">State</code> object, it creates a copy of the current <code class="language-plaintext highlighter-rouge">State</code> object and sets the value in <em>that</em>.  This ensures that variables set for a given <code class="language-plaintext highlighter-rouge">State</code> object are never changed (they are <em>immutable</em>). Immutability allows our solver to reuse the same state object multiple times when calling a predication in order to get fresh values bound to the variables. And this, in turn, is important to allow backtracking through possible solutions to the MRS. The fact that the <em>entire</em> state object (not just the variables) gets copied will be important when we get to verbs that change the world (e.g. deleting a file).</p>
 
 <blockquote>
   <p>Note: There are much more efficient ways to isolate the data than copying the entire world, but we’re doing a copy to keep the code simple. For example, database engines like MySQL have transactions to isolate different parts of code from changes until they should be seen. We could improve our simple implementation by keeping a difference list and not copying the entire state for every copy, but for now we’ll keep it simple.</p>

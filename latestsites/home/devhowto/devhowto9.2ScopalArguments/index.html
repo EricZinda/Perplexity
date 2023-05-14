@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto12.0SentenceForce/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto9.2ScopalArguments/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto12.0SentenceForce/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto9.2ScopalArguments/">
 
 
 
@@ -223,13 +223,13 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowto9.1Conjunctions/">Solving Conjunctions</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto9.2ScopalArguments/">Soliving Scopal Arguments</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowto9.2ScopalArguments/" class="active">Soliving Scopal Arguments</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto11.0WhichParseAndTree/">Choosing a Parse and Tree</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto12.0SentenceForce/" class="active">Sentence Types</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowto12.0SentenceForce/">Sentence Types</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto13.0SimplePropositions/">Propositions</a></li>
           
@@ -299,73 +299,84 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="responding-by-using-sentence-force">Responding by Using Sentence Force</h2>
-<p>So far, we’ve been building up the ability to evaluate an MRS against a software world model. Now it is time to start working through <em>types</em> of sentences and actually giving the answers people will expect from each type.</p>
+        <h2 id="scopal-arguments">Scopal Arguments</h2>
+<p>Scopal arguments are predication arguments that hold <em>other predications</em>, much like lambda functions can pass around functions as arguments in some programming languages.  They indicate that the predication should do its job using the results of the whole “branch” it is given. Exactly <em>what</em> job depends on the predication. The most common scopal arguments are seen in quantifiers like “a, the, every, some” etc. The job of a quantifier in a natural language is to limit (i.e. “quantify”) the number of answers in some way. They do that by taking a <code class="language-plaintext highlighter-rouge">RSTR</code> argument that indicates what the quantifier is about (e.g. “a <em>folder</em>”), and a <code class="language-plaintext highlighter-rouge">BODY</code> argument that says what we are restricting the quantification to (e.g. “something <em>large</em>”).</p>
 
-<p>Let’s look at the MRS for the sentence we’ve been working with so far, “A file is very large”:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
-INDEX: e2
-RELS: &lt; 
-[ _a_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
-[ _file_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
-[ _very_x_deg LBL: h1 ARG0: e9 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e2 ]
-[ _large_a_1 LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ]
-&gt;
-HCONS: &lt; h0 qeq h1 h5 qeq h7 &gt; ]
+<p>For example, take the phrase: “a file is large”. One of the scope-resolved MRS trees for it is:</p>
 
-
-          ┌────── _file_n_of(x3,i8)
-_a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
-               └─ and(0,1)
-                        └ _large_a_1(e2,x3)
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>           ┌───── _file_n_of(x3)
+_a_q(x3, RSTR,BODY)
+                └ _large_a_1(e2,x3)
 </code></pre></div></div>
-
-<p>You can see what <em>type</em> of phrase it is by looking at the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS"><em>properties</em> of that variable</a>. This is the first time we’ve had to inspect variable properties, so lets dig in there a bit.</p>
-
-<p>You can see that, next to each argument in the MRS, there is a list of properties surrounded by <code class="language-plaintext highlighter-rouge">[]</code>. It looks like this for the <code class="language-plaintext highlighter-rouge">e2</code> argument of <code class="language-plaintext highlighter-rouge">_large_a_1</code>:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ]
-</code></pre></div></div>
-
-<p>This is the list of properties for that variable. It provides various information about the kind of things that should be in that variable. Think of it as “metadata” about the variable or single argument predications for that variable.  The property we are interested in here is:</p>
-
 <blockquote>
-  <p><code class="language-plaintext highlighter-rouge">SF: prop</code> (“sentence force”: “proposition”).</p>
+  <p>We can ignore for the moment variables of type <code class="language-plaintext highlighter-rouge">e</code>. We’ll handle those later, they don’t matter for this example.</p>
 </blockquote>
 
-<p>Every sentence is categorized into a <em>type</em>, indicated by the <code class="language-plaintext highlighter-rouge">SF</code> (“sentence force”) property of one or more of its variables (note that the <code class="language-plaintext highlighter-rouge">SF</code> should be the same even if it appears on more than one variable):</p>
+<p>If we convert this into text, it would be something like:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> _a_q(x3, _file_n_of(x3), _large_a_1(e2, x3))
+</code></pre></div></div>
+<p>And finally, using our text format, you get:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>["_a_q", "x3", ["_file_n_of", "x3"], ["_large_a_1", "e2", "x3"]]
+</code></pre></div></div>
 
+<p>This MRS says “from all the files in the world model, return a single (arbitrary) one that is large”. It is indicating that we want the answer to be “a” (i.e. an arbitrary single) large file, whereas <code class="language-plaintext highlighter-rouge">_large_a_1(e,x) and _file_n_of(x)</code> would give us <em>all</em> large files.</p>
+
+<p>If you look at the resolved tree, it really is just one predication with the other two as arguments. So, the <code class="language-plaintext highlighter-rouge">Call()</code> solver we built is only going to call the function that implements <code class="language-plaintext highlighter-rouge">_a_q</code>. The work of implementing the rest of the tree goes to that predication itself. It works this way because the job of predications with scopal arguments is to handle <em>how</em> those trees get resolved. That is their whole point. Thus, they need control over the resolution behavior for those arguments.</p>
+
+<p>To implement <code class="language-plaintext highlighter-rouge">_a_q</code> using our predication contract, we conceptually:</p>
+
+<ol>
+  <li>Find the first set of variable assignments returned from the first argument, <code class="language-plaintext highlighter-rouge">_file_n_of(x3)</code>, using <code class="language-plaintext highlighter-rouge">Call()</code></li>
+  <li>Use <em>those</em> variable assignments to find a solution to the second argument, <code class="language-plaintext highlighter-rouge">_large_a_1(e2,x3)</code>, again using <code class="language-plaintext highlighter-rouge">Call()</code></li>
+  <li>If there was at least one answer, this is true. So: return each of the body solutions that worked from <code class="language-plaintext highlighter-rouge">a_q</code>, one by one.  Don’t “backtrack” to find another “file” since <code class="language-plaintext highlighter-rouge">a_q</code> should only return “one, arbitrary thing”. Other quantifiers like “every” will behave differently.</li>
+  <li>If there was not an answer from the first “file”, go back to #1 and try again (remember that our contract says these predications will keep returning values until there are no more)</li>
+</ol>
+
+<p>If there were no large files, <code class="language-plaintext highlighter-rouge">a_q</code> fails instead of returning any assignments, as per the predication contract. Here’s the Python code that does all this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_a_q")
+def a_q(state, x_variable, h_rstr, h_body):
+    # Run the RSTR which should fill in the variable with an item
+    for solution in Call(vocabulary, state, h_rstr):
+        # Now see if that solution works in the BODY
+        success = False
+        for body_solution in Call(vocabulary, solution, h_body):
+            yield body_solution
+            success = True
+
+        if success:
+            # If it works, stop looking. This one is the single arbitrary item we are looking for
+            break
+
+def Example4():
+    # Note that both files are "large" now
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=1000000),
+                   File(name="file2.txt", size=2000000)])
+    mrs = ["_a_q", "x3", ["_file_n_of", "x3"], ["_large_a_1", "e2", "x3"]]
+    for item in Call(vocabulary, state, mrs):
+        print(item.variables)
+        
+# Example4() prints:
+{'x3': File(name=file2.txt, size=2000000)}
+</code></pre></div></div>
+<p>Note that, even though we have made both files “large” for this example, only one, arbitrary, file is returned since the phrase is “<em>a</em> large file”.</p>
+
+<p>At this point we have a fully functional evaluator, but there are a few things still to work out:</p>
 <ul>
-  <li>Proposition (<code class="language-plaintext highlighter-rouge">SF: prop</code>): “A file is large.”</li>
-  <li>Question (<code class="language-plaintext highlighter-rouge">SF: ques</code>): “Is a file large?”, “Which file is large?”, “A file is large?”</li>
-  <li>Command (<code class="language-plaintext highlighter-rouge">SF: comm</code>): “Make a file large.”</li>
+  <li>Dealing with variable types beyond <code class="language-plaintext highlighter-rouge">x</code> variables</li>
+  <li>Handling questions vs. commands vs. propositions</li>
+  <li>Reporting errors</li>
 </ul>
 
-<p>The “sentence force” of a sentence indicates what kind of response the user expects:</p>
-
-<ul>
-  <li>User: “A file is large.” -&gt; “Yes, that is true”</li>
-  <li>User: “Is a file large?” -&gt; “Yes”</li>
-  <li>User: “Which file is large?” -&gt; “test1.txt”</li>
-  <li>User: “Make a file large.” -&gt; “test1.txt is now large”</li>
-</ul>
-
-<p>Note that these are all answers the user would expect if the statement worked.  All but the last would be very different if there were no large files in the system:</p>
-
-<ul>
-  <li>User: “A file is large.” -&gt; “No, that isn’t true”</li>
-  <li>User: “Is a file large?” -&gt; “No”</li>
-  <li>User: “Which file is large?” -&gt; “No files are large”</li>
-  <li>User: “Make a file large.” -&gt; “test1.txt is now large”</li>
-</ul>
-
-<p>In the next few sections we’ll work through how to handle the different types of sentences when they succeed. We’ll end by talking about how to handle failures.</p>
+<p>The next topics will tackle these issues.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowto12.0SentenceForce.md">edit</a>]</p>
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowto9.2ScopalArguments.md">edit</a>]</p>
 
         
       </section>
