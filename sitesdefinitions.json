@@ -30,6 +30,7 @@
         {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0020WellFormedTree.md", "DstFile": "mrscon/devhowto0020WellFormedTree.md"}
       ]},
       {"Section": "MRS Solver Conceptual", "Pages": [
+        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devcon/pxint0000Overview.md", "DstFile": "devcon/pxint0000Overview.md"},
         {"Page": "Backtracking", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0010MRSSolver.md", "DstFile": "devcon/devcon0010MRSSolver.md"},
         {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0020MRSSolverSets.md", "DstFile": "devcon/devcon0020MRSSolverSets.md"},
         {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0030MRSSolverSolutionGroups.md", "DstFile": "devcon/devcon0030MRSSolverSolutionGroups.md"},
@@ -40,6 +41,7 @@
         {"Page": "Choosing a Failure", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "DstFile": "devcon/devcon0080ErrorsChoosingWhichFailure.md"}
       ]},
       {"Section": "Perplexity Internals", "Pages": [
+        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0000Overview.md", "DstFile": "pxint/pxint0000Overview.md"},
         {"Page": "The Predication Contract", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0010PredicationContract.md", "DstFile": "pxint/pxint0010PredicationContract.md"},
         {"Page": "State and Python Basics", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0020PythonBasics.md", "DstFile": "pxint/pxint0020PythonBasics.md"},
         {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0030ImplementPredication.md", "DstFile": "pxint/pxint0030ImplementPredication.md"},
