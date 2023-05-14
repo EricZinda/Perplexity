@@ -48,11 +48,11 @@ Either way, the global `vocabulary` instance will record the mapping between all
 #   The rest of the items are the arguments
 def CallPredication(vocabulary, state, predication):
     # The [0] syntax returns the first item in a list
-    predication_name = predication[0]
+    predication_name = predication.name
 
     # The [1:] syntax returns a new list that starts from
     # the first item and goes until the end of the list
-    predication_args = predication[1:]
+    predication_args = predication.args
 
     # Look up the actual Python module and
     # function name given a string like "folder_n_of".
@@ -82,23 +82,11 @@ def CallPredication(vocabulary, state, predication):
     for next_state in function(*function_args):
         yield next_state
 
-def Example2():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt"),
-                   File(name="file2.txt")])
-
-    for item in CallPredication(vocabulary,
-                                state,
-                                TreePredication(0, "_folder_n_of", None, ["x1"])):
-        print(item.variables)
-
-# Calling Example2() outputs:
-{'x1': Folder(name=Desktop)}
-{'x1': Folder(name=Documents)}
 ```
 
-The `Example2()` function shows how we can use all of this to call a predication using the simple solver. With this in place, we can tackle more complicated groups of predications such as conjunctions in the [next section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0050Conjunctions).
+TODO: Update example to include code running
+
+With this in place, we can tackle more complicated groups of predications such as conjunctions in the [next section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0050Conjunctions).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
