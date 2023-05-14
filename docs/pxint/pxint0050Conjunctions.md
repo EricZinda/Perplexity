@@ -12,14 +12,7 @@ For an example such as: `_large_a_1(e,x) and _file_n_of(x)` (to indicate a "larg
 
 This works because the first predication (`_large_a_1(e,x)`) is called with *unbound variables*, and because of our [predication contract](devhowtoPredicationContract), this means it will iterate through all the "large" things in the world, whether they are files, folders, beach balls, or whatever. When it returns, `x` is set to whatever it selected and the next predication (`file_n_of`) will only succeed if the item is a *file*, So, if we get all the way through, we have a "large file".  The "backtracking" behavior allows us to iterate through all the objects in the world to find all the "large files".
 
-We'll implement this logic generally by creating a `Call()` function. It expects our text-based format, either as a single predication or a list of predications, like this:
-~~~
-["_large_a_1", "e1", "x1"]
-OR
-[["_large_a_1", "e1", "x1"], ["_file_n_of", "x1"]]
-~~~
-
-It will use the `CallPredication()` function we [defined in the previous section](devhowtoMRSToPython) to call the individual predications. 
+We'll implement this logic generally by creating a `Call()` function. It will take the new `TreePredication` class, either as a single predication or a list of predications, and call the predications using the `CallPredication()` function we [defined in the previous section](pxint0040BuildSolver). 
 
 In the code for `Call()` below, note that there is a new Python construct: `yield from`.  Where `yield` expects an actual object to yield as its argument, `yield from` says "call the function I'm giving you and yield whatever *that function* yields".
 
@@ -33,7 +26,6 @@ def Call(vocabulary, state, term):
         yield state
     else:
         # See if the first thing in the list is actually a list
-        # like [["_large_a_1", "e1", "x1"], ["_file_n_of", "x1"]]
         # If so, we have a conjunction
         if isinstance(term[0], list):
             # This is a list of predications, so they should
@@ -55,55 +47,12 @@ def Call(vocabulary, state, term):
 
 It is worth making sure you understand how this function works since it is the core of our evaluator. 
 
-A scope-resolved MRS is a *tree*, so to solve it, we do a single call to `Call()` and pass the whole tree as `term`. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. "scopal arguments"). This builds a tree and the predications with scopal arguments are responsible for solving the scopal arguments. How this all works is [described in the next topic](devhowtoScopalArguments).
+A scope-resolved MRS is a *tree*, so to solve it, we do a single call to `Call()` and pass the whole tree as `term`. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. "scopal arguments"). This builds a tree and the predications with scopal arguments are responsible for solving the scopal arguments. How this all works is [described in the next topic](pxint0060ScopalArguments).
 
 To finish this up, let's implement the predications needed to make the example run and run it:
 
 ~~~
-@Predication(vocabulary, name="_file_n_of")
-def file_n_of(state, x):
-    x_value = state.GetVariable(x)
-    if x_value is None:
-        iterator = state.AllIndividuals()
-    else:
-        iterator = [x_value]
-
-    for item in iterator:
-        if isinstance(item, File):
-            new_state = state.SetX(x, item)
-            yield new_state
-
-
-@Predication(vocabulary, name="_large_a_1")
-def large_a_1(state, e_introduced, x_target):
-    x_target_value = state.GetVariable(x)
-    if x_target_value is None:
-        iterator = state.AllIndividuals()
-    else:
-        iterator = [x_target_value]
-
-    for item in iterator:
-        # Arbitrarily decide that "large" means a size greater
-        # than 1,000,000 
-        # remember that "hasattr()" checks if an object has
-        # a property
-        if hasattr(item, 'size') and item.size > 1000000:
-            new_state = state.SetX(x_target, item)
-            yield new_state
-
-    
-def Example3():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt", size=100),
-                   File(name="file2.txt", size=2000000)])
-    mrs = [["_large_a_1", "e1", "x1"], ["_file_n_of", "x1"]]
-    for item in Call(vocabulary, state, mrs):
-        print(item.variables)
-        
-        
-# Prints:
-# File(name="file2.txt", size=2000000)
+TODO: Update example
 ~~~
 
 Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](devhowtoScopalArguments), we'll be able to handle full well-formed trees.
