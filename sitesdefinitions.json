@@ -48,7 +48,6 @@
         {"Page": "Soliving Scopal Arguments", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0060ScopalArguments.md", "DstFile": "pxint/pxint0060ScopalArguments.md"},
         {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0070GenerateMRSAndTrees.md", "DstFile": "pxint/pxint0070GenerateMRSAndTrees.md"},
         {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0071WhichParseAndTree.md", "DstFile": "pxint/pxint0071WhichParseAndTree.md"},
-        {"Page": "Sentence Types", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0075SentenceForce.md", "DstFile": "pxint/pxint0075SentenceForce.md"},
         {"Page": "Propositions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0080SimplePropositions.md", "DstFile": "pxint/pxint0080SimplePropositions.md"},
         {"Page": "Questions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0090SimpleQuestions.md", "DstFile": "pxint/pxint0090SimpleQuestions.md"},
         {"Page": "Commands", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0100SimpleCommands.md", "DstFile": "pxint/pxint0100SimpleCommands.md"},
