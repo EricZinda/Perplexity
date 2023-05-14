@@ -35,6 +35,7 @@
         {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroups.md"},
         {"Page": "Coll/Dist/Cuml Algorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md"},
         {"Page": "Combinations and Proper Responses", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionCombinations.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionCombinations.md"},
+        {"Page": "Build the Solver", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto09.0BuildSolver.md", "DstFile": "devhowto/devhowto09.0BuildSolver.md"},
         {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "DstFile": "devhowto/devhowto10.0GenerateMRSAndTrees.md"}
       ]},
       {"Section": "Perplexity How-to", "Pages": [
