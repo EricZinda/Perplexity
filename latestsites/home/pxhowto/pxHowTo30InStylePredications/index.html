@@ -235,7 +235,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predication</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predications</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Action Verbs</a></li>
           
@@ -271,12 +271,12 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="predications-with-multiple-x-arguments">Predications with Multiple X Arguments</h2>
+        <h2 id="in-style-predications">In-Style Predications</h2>
 <p>Logic gets more complicated when there is more than one <code class="language-plaintext highlighter-rouge">x</code> argument because there are many cases to handle. The predication for “in” from “a file is in a folder” is:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,x1,x2)
 </code></pre></div></div>
-<p>Ignoring the event argument <code class="language-plaintext highlighter-rouge">e2</code> for the moment, there are two <code class="language-plaintext highlighter-rouge">x</code> arguments. The predicate checks whether <code class="language-plaintext highlighter-rouge">x1</code> is “in” <code class="language-plaintext highlighter-rouge">x2</code> (whatever that means in the application). Because of combinatorial values (described in the previous topic), if the predication is called with two combinatorial arguments that have two values each, like this:</p>
+<p>Ignoring the event argument <code class="language-plaintext highlighter-rouge">e2</code> for the moment, there are two <code class="language-plaintext highlighter-rouge">x</code> arguments. The predication’s job is to check whether <code class="language-plaintext highlighter-rouge">x1</code> is “in” <code class="language-plaintext highlighter-rouge">x2</code> (whatever that means in the application). Because of combinatorial values (described in the previous topic), if the predication is called with two combinatorial arguments that have two values each, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,[file1, file2],[folder1, folder2])
 </code></pre></div></div>
@@ -312,7 +312,7 @@ check: [file1, file2] in [folder1, folder2]?
 
 <p>It should be noted that, even though we can avoid the checks for many sets, in theory we still have to yield all the possible combinations. In the next topic we’ll walk through how to avoid this for many cases as well.</p>
 
-<p>The logic for checking if variables have combinatorial values, doing the optimization above, and yielding the right values can be long and repetative. So, like for the single <code class="language-plaintext highlighter-rouge">x</code> case from the previous topic, Perplexity has a function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function, like this:</p>
+<p>The logic for checking if variables have combinatorial values, doing the optimization above, and yielding the right values can be long and repetative. So, like for the single <code class="language-plaintext highlighter-rouge">x</code> case from the previous topic, Perplexity has a helper function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
@@ -321,17 +321,20 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     
     ...
 
-    yield from in_style_predication(state, x_actor_binding, x_location_binding, check_item_in_item, ...)
+    yield from in_style_predication(state, 
+                                    x_actor_binding, 
+                                    x_location_binding, 
+                                    check_item_in_item, ...)
 </code></pre></div></div>
 
 <p>[The example uses a placeholder function <code class="language-plaintext highlighter-rouge">is_item_in_item(item1, item2)</code> to do the checking since its logic is application specific.]</p>
 
-<p>The function is called <code class="language-plaintext highlighter-rouge">in_style_predication()</code> because it uses the behavior of “in” as a template.  Any predication that is associative like “in” (meaning that it doesn’t have a different meaning for together or separately but is OK if they are said) can use this same helper to implement the logic efficiently.</p>
+<p>The function is called <code class="language-plaintext highlighter-rouge">in_style_predication()</code> because it uses the behavior of “in” as a template.  Any predication that is like “in” (meaning that it doesn’t have a different meaning for “together” or “separately” but is OK if they are said) can use this same helper to implement the logic efficiently.</p>
 
 <h4 id="unbound-arguments">Unbound Arguments</h4>
 <p>As discussed in the previous section, arguments to a predication aren’t always set (i.e. <em>bound</em>) as in the above example. When they are missing, the predication needs to yield all possible values for them that make the predication <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
-<p>To support unbound arguments, <code class="language-plaintext highlighter-rouge">in_style_predication()</code> has two additional functions it supports: one for if the first argument is unbound and one if the second is. There is a final argument that is rarely used for when both are unbound. If it isn’t set, the system reports the error <code class="language-plaintext highlighter-rouge">beMoreSpecific</code> since the user said something that is really broad like “what is in anything?”.</p>
+<p>To support unbound arguments, <code class="language-plaintext highlighter-rouge">in_style_predication()</code> has two additional functions it supports: one for if the first argument is unbound and one for if the second is. There is a final argument that is rarely used for when both are unbound. If that one isn’t set, the system reports the error <code class="language-plaintext highlighter-rouge">beMoreSpecific</code> since the user said something that is really broad like “what is in anything?”</p>
 
 <p>Presumably the system we are building would have an efficient way to find “things in something else” (or vice versa) so the example below uses fake functions that represent this:</p>
 
@@ -346,12 +349,17 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def all_item2_containing_item1(item1):
         yield from all_containing(item1)
 
-    yield from in_style_predication(state, x_actor_binding, x_location_binding, check_item_in_item, all_item1_in_item2, all_item2_containing_item1)
+    yield from in_style_predication(state, 
+                                    x_actor_binding, 
+                                    x_location_binding, 
+                                    check_item_in_item, 
+                                    all_item1_in_item2, 
+                                    all_item2_containing_item1)
 </code></pre></div></div>
 
 <p>Note that the two new functions need to <em>yield all alternatives</em> and not just return <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code>.</p>
 
-<p>And, as with the first “check” function, <code class="language-plaintext highlighter-rouge">in_style_predication()</code> does all the work to make sure that the two new functions are only passed single values even if the incoming values are combinatorial.</p>
+<p>And, as with the first “check” function, <code class="language-plaintext highlighter-rouge">in_style_predication()</code> does all the work to make sure that the two unbound functions are only passed single values even if the incoming values are combinatorial.</p>
 
 <p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo30InStylePredications.md">edit</a>]</p>
 

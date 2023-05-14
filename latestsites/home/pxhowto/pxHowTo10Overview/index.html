@@ -235,7 +235,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predication</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predications</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Action Verbs</a></li>
           
@@ -301,9 +301,9 @@ if __name__ == '__main__':
 
 <p>The <code class="language-plaintext highlighter-rouge">UserInterface</code> class is the main entry point to Perplexity.</p>
 
-<p>It is created and passed a function (<code class="language-plaintext highlighter-rouge">reset()</code> in this example) whose job is to return an object derived from the <a href="https://github.com/EricZinda/Perplexity/blob/main/perplexity/state.py">Perplexity <code class="language-plaintext highlighter-rouge">State</code> class</a> that is in the “startup state” whatever that means for the application.</p>
+<p>It is created and passed a function (<code class="language-plaintext highlighter-rouge">reset()</code> in this example) whose job is to return an object derived from the <a href="https://github.com/EricZinda/Perplexity/blob/main/perplexity/state.py">Perplexity <code class="language-plaintext highlighter-rouge">State</code> class</a> that is in the “startup state”, whatever that means for the application.</p>
 
-<p>The second argument is a vocabulary object that contains all the vocabulary required for the application. We don’t yet have any vocabulary so an empty <code class="language-plaintext highlighter-rouge">Vocabulary</code> class is provided above.</p>
+<p>The second argument is a <code class="language-plaintext highlighter-rouge">Vocabulary</code> object that contains all the vocabulary required for the application. We don’t yet have any vocabulary so an empty <code class="language-plaintext highlighter-rouge">Vocabulary</code> class is used above.</p>
 
 <p>To allow user interaction, <code class="language-plaintext highlighter-rouge">UserInterface.interact_once()</code> is called in a loop.  That’s it!</p>
 
