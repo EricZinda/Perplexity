@@ -203,6 +203,8 @@
         
         <ul>
           
+            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
+          
             <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
@@ -230,6 +232,8 @@
 
         
         <ul>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0000Overview/">Overview</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0010PredicationContract/">The Predication Contract</a></li>
           
@@ -616,6 +620,11 @@ Group 3:
   <li><strong>Quit generating at 2</strong>: Since we only really care about 2 solution groups, the generator doesn’t need to keep track of all the sets to build all combinations.  Instead, once it has returned two unique solution groups, it only needs to generate iterations of those. In fact, it really only needs to generate iterations of the first. This eliminates a lot of work generating and testing sets that aren’t used.</li>
   <li><strong>Merge answers</strong>: We can reduce the number of sets we have to consider in <code class="language-plaintext highlighter-rouge">set_list</code> by observing that we only need to add a new set to the set list if we have a set that needs to be the base for more alternatives. Variables that have constraints with an upper limit of <code class="language-plaintext highlighter-rouge">inf</code> don’t need to generate all the combinations since they will just be subsets of the one maximal set. So, if a solution only introduces new individuals to variables that have an upper limit of <code class="language-plaintext highlighter-rouge">inf</code>, it can just be merged into that set, it doesn’t need to be added as a separate set to <code class="language-plaintext highlighter-rouge">set_list</code>.</li>
 </ul>
+
+<h2 id="next-steps">Next Steps</h2>
+<p>The last few sections have described an algorithm that properly generates all the solutions to an MRS by providing solution groups.</p>
+
+<p><a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree">Next</a>, we’ll describe how to decide which of the multiple MRS parses and trees should be used when a user provides a phrase to the system.</p>
 
 <p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0050MRSSolverSolutionCombinations.md">edit</a>]</p>
 

@@ -14,6 +14,8 @@ toc:
         url: "/mrscon/devhowto0020WellFormedTree/"
   - title: "MRS Solver Conceptual"
     children:
+      - title: "Overview"
+        url: "/devcon/devcon0000Overview/"
       - title: "Backtracking"
         url: "/devcon/devcon0010MRSSolver/"
       - title: "Representing 'Together'"
@@ -32,6 +34,8 @@ toc:
         url: "/devcon/devcon0080ErrorsChoosingWhichFailure/"
   - title: "Perplexity Internals"
     children:
+      - title: "Overview"
+        url: "/pxint/pxint0000Overview/"
       - title: "The Predication Contract"
         url: "/pxint/pxint0010PredicationContract/"
       - title: "State and Python Basics"
