@@ -29,9 +29,9 @@ if __name__ == '__main__':
 
 The `UserInterface` class is the main entry point to Perplexity. 
 
-It is created and passed a function (`reset()` in this example) whose job is to return an object derived from the [Perplexity `State` class](https://github.com/EricZinda/Perplexity/blob/main/perplexity/state.py) that is in the "startup state" whatever that means for the application. 
+It is created and passed a function (`reset()` in this example) whose job is to return an object derived from the [Perplexity `State` class](https://github.com/EricZinda/Perplexity/blob/main/perplexity/state.py) that is in the "startup state", whatever that means for the application. 
 
-The second argument is a vocabulary object that contains all the vocabulary required for the application. We don't yet have any vocabulary so an empty `Vocabulary` class is provided above.
+The second argument is a `Vocabulary` object that contains all the vocabulary required for the application. We don't yet have any vocabulary so an empty `Vocabulary` class is used above.
 
 To allow user interaction, `UserInterface.interact_once()` is called in a loop.  That's it!
 
