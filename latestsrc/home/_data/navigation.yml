@@ -48,8 +48,6 @@ toc:
     children:
       - title: "Overview"
         url: "/pxhowto/pxHowTo10Overview/"
-      - title: "State"
-        url: "/pxhowto/pxHowTo11State/"
       - title: "Implementing a Predication"
         url: "/pxhowto/pxHowTo20ImplementAPredication/"
       - title: "In-Style Predications"
