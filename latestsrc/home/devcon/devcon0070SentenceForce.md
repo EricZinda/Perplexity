@@ -1,5 +1,5 @@
-{% raw %}## Responding by Using Sentence Force
-So far, we've been building up the ability to evaluate an MRS against a software world model. Now it is time to start working through *types* of sentences and actually giving the answers people will expect from each type.
+{% raw %}## Sentence Types
+We've been using a lot of examples that are questions and propositions without actually working through how the system should detect the *type* of phrase the user said and respond to it. Now it is time to start working through *types* of sentences and actually giving the answers people will expect from each type.
 
 Let's look at the MRS for the sentence we've been working with so far, "A file is very large":
 ```
@@ -53,7 +53,9 @@ Note that these are all answers the user would expect if the statement worked.  
 - User: "Which file is large?" -> "No files are large"
 - User: "Make a file large." -> "test1.txt is now large"
 
-In the next few sections we'll work through how to handle the different types of sentences when they succeed. We'll end by talking about how to handle failures.
+[Perplexity Internals](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions) discusses how to go about coding responses to these different sentence types concretely.
+
+In the next section we'll talk about how to handle failures.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 

@@ -8,7 +8,6 @@
         {"Page": "devhowtoMRSSolverSolutionGroups", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRSSolverSolutionGroups.md", "BaseReferrer": "home/docs/devcon/devcon0020MRSSolverSets.md", "Referrer": "home/docs/devcon/devcon0020MRSSolverSets.md", "FileMissing": true},
         {"Page": "devhowtoMRSSolverSolutionGroupsAlgorithm", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "BaseReferrer": "home/docs/devcon/devcon0030MRSSolverSolutionGroups.md", "Referrer": "home/docs/devcon/devcon0030MRSSolverSolutionGroups.md", "FileMissing": true},
         {"Page": "devhowtoPredicationContract", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoPredicationContract.md", "BaseReferrer": "home/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "Referrer": "home/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "FileMissing": true},
-        {"Page": "devhowtoSimplePropositions", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoSimplePropositions.md", "BaseReferrer": "home/docs/devcon/devcon0070SentenceForce.md", "Referrer": "home/docs/devcon/devcon0070SentenceForce.md", "FileMissing": true},
         {"Page": "devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/devcon/devcon0010MRSSolver.md", "Referrer": "home/docs/devcon/devcon0010MRSSolver.md", "FileMissing": true}
       ]},
       {"Section": "Developer Tutorial Overview", "Pages": [
