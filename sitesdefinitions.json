@@ -36,7 +36,15 @@
         {"Page": "Coll/Dist/Cuml Algorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md"},
         {"Page": "Combinations and Proper Responses", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionCombinations.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionCombinations.md"},
         {"Page": "Build the Solver", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto09.0BuildSolver.md", "DstFile": "devhowto/devhowto09.0BuildSolver.md"},
-        {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "DstFile": "devhowto/devhowto10.0GenerateMRSAndTrees.md"}
+        {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "DstFile": "devhowto/devhowto10.0GenerateMRSAndTrees.md"},
+        {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto11.0WhichParseAndTree.md", "DstFile": "devhowto/devhowto11.0WhichParseAndTree.md"},
+        {"Page": "Sentence Types", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto12.0SentenceForce.md", "DstFile": "devhowto/devhowto12.0SentenceForce.md"},
+        {"Page": "Propositions", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto13.0SimplePropositions.md", "DstFile": "devhowto/devhowto13.0SimplePropositions.md"},
+        {"Page": "Commands", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto14.0SimpleQuestions.md", "DstFile": "devhowto/devhowto14.0SimpleQuestions.md"},
+        {"Page": "Choosing a Failure", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto15ErrorsChoosingWhichFailure.md", "DstFile": "devhowto/devhowto15ErrorsChoosingWhichFailure.md"},
+        {"Page": "Naive Failures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto16ErrorsReportingAFailure.md", "DstFile": "devhowto/devhowto16ErrorsReportingAFailure.md"},
+        {"Page": "Words in Failures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto17.0ErrorsConceptualFailures.md", "DstFile": "devhowto/devhowto17.0ErrorsConceptualFailures.md"},
+        {"Page": "Robust Failures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto17.5ErrorsRobustFailure.md", "DstFile": "devhowto/devhowto17.5ErrorsRobustFailure.md"}
       ]},
       {"Section": "Perplexity How-to", "Pages": [
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo10Overview.md", "DstFile": "pxhowto/pxHowTo10Overview.md"},
