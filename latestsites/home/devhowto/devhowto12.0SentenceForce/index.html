@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto12.0SentenceForce/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto12.0SentenceForce/">
 
 
 
@@ -219,7 +219,7 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowto11.0WhichParseAndTree/">Choosing a Parse and Tree</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto12.0SentenceForce/">Sentence Types</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowto12.0SentenceForce/" class="active">Sentence Types</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto13.0SimplePropositions/">Propositions</a></li>
           
@@ -259,7 +259,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/" class="active">Quantifiers and Determiners</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
           
         </ul>
         
@@ -291,15 +291,73 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="quantifiers-and-determiners">Quantifiers and Determiners</h2>
-<p>At this point we’ve walked through all of the predications for the MRS of “a file is large” or “delete a file” except one.</p>
+        <h2 id="responding-by-using-sentence-force">Responding by Using Sentence Force</h2>
+<p>So far, we’ve been building up the ability to evaluate an MRS against a software world model. Now it is time to start working through <em>types</em> of sentences and actually giving the answers people will expect from each type.</p>
 
-<p>Most quantifiers and determiners are not application specific since they just manage determining how many of something there is, which can be managed at the object level without consideration for what the objects are.</p>
+<p>Let’s look at the MRS for the sentence we’ve been working with so far, “A file is very large”:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
+INDEX: e2
+RELS: &lt; 
+[ _a_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
+[ _file_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
+[ _very_x_deg LBL: h1 ARG0: e9 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e2 ]
+[ _large_a_1 LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ]
+&gt;
+HCONS: &lt; h0 qeq h1 h5 qeq h7 &gt; ]
 
-<h2 id="todo-list-all-implemented-quantifiers">TODO: list all implemented quantifiers</h2>
-<h2 id="todo-talk-about-how-to-build-one-if-it-was-needed-or-changes-were-needed">TODO: Talk about how to build one if it was needed or changes were needed?</h2>
 
-<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md">edit</a>]</p>
+          ┌────── _file_n_of(x3,i8)
+_a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
+               └─ and(0,1)
+                        └ _large_a_1(e2,x3)
+</code></pre></div></div>
+
+<p>You can see what <em>type</em> of phrase it is by looking at the <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS"><em>properties</em> of that variable</a>. This is the first time we’ve had to inspect variable properties, so lets dig in there a bit.</p>
+
+<p>You can see that, next to each argument in the MRS, there is a list of properties surrounded by <code class="language-plaintext highlighter-rouge">[]</code>. It looks like this for the <code class="language-plaintext highlighter-rouge">e2</code> argument of <code class="language-plaintext highlighter-rouge">_large_a_1</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ]
+</code></pre></div></div>
+
+<p>This is the list of properties for that variable. It provides various information about the kind of things that should be in that variable. Think of it as “metadata” about the variable or single argument predications for that variable.  The property we are interested in here is:</p>
+
+<blockquote>
+  <p><code class="language-plaintext highlighter-rouge">SF: prop</code> (“sentence force”: “proposition”).</p>
+</blockquote>
+
+<p>Every sentence is categorized into a <em>type</em>, indicated by the <code class="language-plaintext highlighter-rouge">SF</code> (“sentence force”) property of one or more of its variables (note that the <code class="language-plaintext highlighter-rouge">SF</code> should be the same even if it appears on more than one variable):</p>
+
+<ul>
+  <li>Proposition (<code class="language-plaintext highlighter-rouge">SF: prop</code>): “A file is large.”</li>
+  <li>Question (<code class="language-plaintext highlighter-rouge">SF: ques</code>): “Is a file large?”, “Which file is large?”, “A file is large?”</li>
+  <li>Command (<code class="language-plaintext highlighter-rouge">SF: comm</code>): “Make a file large.”</li>
+</ul>
+
+<p>The “sentence force” of a sentence indicates what kind of response the user expects:</p>
+
+<ul>
+  <li>User: “A file is large.” -&gt; “Yes, that is true”</li>
+  <li>User: “Is a file large?” -&gt; “Yes”</li>
+  <li>User: “Which file is large?” -&gt; “test1.txt”</li>
+  <li>User: “Make a file large.” -&gt; “test1.txt is now large”</li>
+</ul>
+
+<p>Note that these are all answers the user would expect if the statement worked.  All but the last would be very different if there were no large files in the system:</p>
+
+<ul>
+  <li>User: “A file is large.” -&gt; “No, that isn’t true”</li>
+  <li>User: “Is a file large?” -&gt; “No”</li>
+  <li>User: “Which file is large?” -&gt; “No files are large”</li>
+  <li>User: “Make a file large.” -&gt; “test1.txt is now large”</li>
+</ul>
+
+<p>In the next few sections we’ll work through how to handle the different types of sentences when they succeed. We’ll end by talking about how to handle failures.</p>
+
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowto12.0SentenceForce.md">edit</a>]</p>
 
         
       </section>

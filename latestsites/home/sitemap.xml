@@ -1,7 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto09.0BuildSolver/</loc>
+</url>
+<url>
 <loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto11.0WhichParseAndTree/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto12.0SentenceForce/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto13.0SimplePropositions/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto14.0SimpleQuestions/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto15ErrorsChoosingWhichFailure/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto16ErrorsReportingAFailure/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto17.0ErrorsConceptualFailures/</loc>
+</url>
+<url>
+<loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto17.5ErrorsRobustFailure/</loc>
 </url>
 <url>
 <loc>http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS/</loc>
@@ -53,6 +80,6 @@
 </url>
 <url>
 <loc>http://blog.inductorsoftware.com/Perplexity/home/nav.html</loc>
-<lastmod>2023-05-14T17:09:48+00:00</lastmod>
+<lastmod>2023-05-14T17:29:08+00:00</lastmod>
 </url>
 </urlset>

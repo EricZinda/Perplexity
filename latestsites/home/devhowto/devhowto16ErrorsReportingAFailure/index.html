@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto16ErrorsReportingAFailure/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto16ErrorsReportingAFailure/">
 
 
 
@@ -227,7 +227,7 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowto15ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto16ErrorsReportingAFailure/">Naive Failures</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowto16ErrorsReportingAFailure/" class="active">Naive Failures</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto17.0ErrorsConceptualFailures/">Words in Failures</a></li>
           
@@ -259,7 +259,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/" class="active">Quantifiers and Determiners</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
           
         </ul>
         
@@ -291,15 +291,76 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="quantifiers-and-determiners">Quantifiers and Determiners</h2>
-<p>At this point we’ve walked through all of the predications for the MRS of “a file is large” or “delete a file” except one.</p>
+        <h2 id="reporting-a-failure-naively">Reporting a Failure Naively</h2>
+<p>With all that in place, we can now start reporting errors from predications. As outlined in the predication contract, “failure” is when the predication is not true for its arguments, so let’s add a little code at the end of <code class="language-plaintext highlighter-rouge">large_a_1</code> to record an error when there is a failure. We’ll call the new <code class="language-plaintext highlighter-rouge">ReportError()</code> method and pass it what seems like the right error given the code:</p>
 
-<p>Most quantifiers and determiners are not application specific since they just manage determining how many of something there is, which can be managed at the object level without consideration for what the objects are.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_large_a_1")
+def large_a_1(state, e_introduced, x_target):
 
-<h2 id="todo-list-all-implemented-quantifiers">TODO: list all implemented quantifiers</h2>
-<h2 id="todo-talk-about-how-to-build-one-if-it-was-needed-or-changes-were-needed">TODO: Talk about how to build one if it was needed or changes were needed?</h2>
+    ...
+    
+    degree_multiplier = DegreeMultiplierFromEvent(state, e_introduced)
+    for item in iterator:
+        if hasattr(item, 'size') and item.size &gt; degree_multiplier * 1000000:
+            new_state = state.SetX(x_target, item)
+            yield new_state
+        else:
+            # starting a string with: f" allows you to put local Python
+            # variables into it using {}, in a kind of template approach
+            ReportError(f"'{item}' is not large")
+</code></pre></div></div>
 
-<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md">edit</a>]</p>
+<p><code class="language-plaintext highlighter-rouge">large_a_1</code> looks at an object, checks if it has a size at all, and if so, checks if it is “large” and succeeds if it is. If not, a logical error to report would be “‘this thing I was passed’ is not large” (which is what we did).</p>
+
+<p>Let’s try it by evaluating “A file is large”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ┌────── _file_n_of(x3,i8)
+_a_q(x3,RSTR,BODY)    
+               └─ _large_a_1(e2,x3)
+</code></pre></div></div>
+
+<p>… against this example world:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a folder
+a small file
+a file
+a dog
+</code></pre></div></div>
+
+<p>… and with our new error logic, we’ll get these failures:</p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">a folder</code>: a <code class="language-plaintext highlighter-rouge">_file_n_of</code> failure</li>
+  <li><code class="language-plaintext highlighter-rouge">a small file</code>: a <code class="language-plaintext highlighter-rouge">large_a_1</code> failure</li>
+  <li><code class="language-plaintext highlighter-rouge">a file</code>: a <code class="language-plaintext highlighter-rouge">large_a_1</code> failure</li>
+  <li><code class="language-plaintext highlighter-rouge">a dog</code>: a <code class="language-plaintext highlighter-rouge">_file_n_of</code> failure</li>
+</ol>
+
+<p>Error #2 will be remembered using our new heuristic. The actual error reported from #2 for the phrase, “A file is large” will be: “‘a small file’ is not large”.</p>
+
+<p>This is an odd answer.  Even though it looked like it made sense in the code, it is pretty far from the one we wanted which is something like: “There isn’t a large file”.</p>
+
+<p>We can correct it if we remember what is going on at the abstract level: We are finding values for the variables that make the MRS true.  The <em>mechanics</em> are to feed every object in the world through the variables in the MRS, but the overall <em>objective</em> is to, for example, find an <code class="language-plaintext highlighter-rouge">x</code> that makes <code class="language-plaintext highlighter-rouge">_large_a_1</code> true.  The problem is that we are reporting the error with a textual description of the <em>example</em> that is currently in the <code class="language-plaintext highlighter-rouge">x</code> variable (e.g. <code class="language-plaintext highlighter-rouge">a small file</code>) instead of what <code class="language-plaintext highlighter-rouge">x</code> <em>represents</em> (“a file”).</p>
+
+<p>Right now, all that <code class="language-plaintext highlighter-rouge">large_a_1</code> knows about <code class="language-plaintext highlighter-rouge">x</code> is that it is a variable, it doesn’t know that x represents <code class="language-plaintext highlighter-rouge">a file</code> (we’ll fix this next). So, the best we can do at the moment is to say “a thing”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_large_a_1")
+def large_a_1(state, e_introduced, x_target):
+    
+    ...
+    
+            ReportError("A thing is not large")
+</code></pre></div></div>
+
+<p>With that, if we run “A file is large” through the system with no large files, we’ll get: “A thing is not large”.  This is the best we can do for now.</p>
+
+<p>The next section will improve it to say “A file is not large” which is more clear.</p>
+
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowto16ErrorsReportingAFailure.md">edit</a>]</p>
 
         
       </section>
