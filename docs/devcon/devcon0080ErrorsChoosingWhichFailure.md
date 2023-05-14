@@ -94,3 +94,5 @@ Here's a more explicit algorithm:
 - Track the "depth" of each predication in the tree, where "depth" means "call order"
 - Every time a predication fails, if it is the "deepest" failure so far, remember that error
 - If the MRS has no solutions, report the remembered error to the user
+
+[Perplexity Internals](../pxint/pxint0105ErrorsChoosingWhichFailure) gives a good example of how Perplexity registers and reports failures. 

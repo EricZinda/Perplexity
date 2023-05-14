@@ -1,4 +1,6 @@
 ### Reporting the Right Failure
+As described in the conceptual topic on [Choosing a Failure](../devcon/devcon0080ErrorsChoosingWhichFailure), a good heurstic to use for reporting failures to the user is to pick the "deepest" failure encountered. Here we'll walk through how Perplexity does that.
+
 We will need to remember the "current deepest" error as we go. To organize the methods and variables dealing with executing predications and tracking errors, we'll move our existing `Call()`, `CallPredication()` and `RespondToMRS()` functions into a class called `ExecutionContext`. Then, we can track our "current deepest" error there, along with a variable that tracks how deep the currently executing predication is.
 
 The following methods aren't changed at all from what we wrote in previous sections except for `Call()`.  It now assigns an "index" to each predication as they are executed so we know how deep we are. There is also now a global `ExecutionContext` that we'll use for calling predications, along with a couple of methods that make it easy to call:

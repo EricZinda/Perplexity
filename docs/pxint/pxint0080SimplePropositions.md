@@ -1,4 +1,6 @@
 ## Responding to Simple Propositions
+The [Sentence Types](../devcon/devcon0070SentenceForce) conceptual topic outlines the logic for how to detect what type of phrase a user made. Here we'll walk through how to implement one type of phrase: the proposition. The next sections will walk through the rest.
+
 "Propositions" are sentences that declare something to be true like "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be [handled later](devhowtoChoosingWhichFailure)). A phrase is a proposition if the "sentence force" (SF) property of one or more of its variables is `prop` as [described in the previous section](devhowtoSentenceForce).
 
 Below is the MRS for "A file is very large". As described in the [previous section](devhowtoSentenceForce): `e2` has a sentence force of "proposition": `SF: prop`.

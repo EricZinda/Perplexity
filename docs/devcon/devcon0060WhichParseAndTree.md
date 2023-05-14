@@ -15,4 +15,6 @@ Thus, the approach to finding which of the `m x n` meanings is the "meant one" i
 
 Things get a little trickier if none of them works. However, the same principle holds: as long as the error response we give is *logical* and *understandable*, it will make sense to the user, even if it isn't quite the answer a person would have given. Often we can do better than just returning the first failure, but this requires knowing what kinds of errors your particular system produces, which ones are less useful, etc. Returning the first failure is a good place to start.
 
+[Perplexity Internals](../pxint/pxint0071WhichParseAndTree) walks through how Perplexity implements this logic internally.
+
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
