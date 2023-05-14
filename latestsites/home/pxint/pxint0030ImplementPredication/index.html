@@ -1,0 +1,487 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Perplexity</title>
+<meta name="description" content="An amazing website.">
+
+
+  <meta name="author" content="Your Name">
+  
+
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Perplexity">
+<meta property="og:title" content="Perplexity">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0030ImplementPredication/">
+
+
+  <meta property="og:description" content="An amazing website.">
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0030ImplementPredication/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Your Name",
+      "url": "http://blog.inductorsoftware.com/Perplexity/home/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/Perplexity/home/feed.xml" type="application/atom+xml" rel="alternate" title="Perplexity Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/Perplexity/home/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--delphin_page wide">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+          <a class="site-logo" href="/Perplexity/home/"><img src="/Perplexity/home/assets/images/Delph-In.png" alt="Perplexity"></a>
+        
+        <a class="site-title" href="/Perplexity/home/">
+          Perplexity
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview">Home</a>
+            </li></ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox" />
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Developer Tutorial Overview</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devOverview/">Overview</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/">Well-Formed Trees</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Perplexity Internals</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0010PredicationContract/">The Predication Contract</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0020PythonBasics/">State and Python Basics</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0030ImplementPredication/" class="active">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0040BuildSolver/">Initial Solver</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0050Conjunctions/">Solving Conjunctions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0060ScopalArguments/">Soliving Scopal Arguments</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0075SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0100SimpleCommands/">Commands</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure/">Naive Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures/">Words in Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0130ErrorsRobustFailure/">Robust Failures</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Using Perplexity</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo20ImplementAPredication/">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">In-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Verb Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    
+    
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+        <h2 id="implementing-a-predication">Implementing a Predication</h2>
+<p>With that <a href="">Python background and the creation of the <code class="language-plaintext highlighter-rouge">State</code> object</a>, we can now implement the predication contract for <code class="language-plaintext highlighter-rouge">_folder_n_of</code> in Python.  We will be passing an instance of the <code class="language-plaintext highlighter-rouge">State</code> object as the first argument to every predication so that it can access its arguments <em>and</em> the world state. The variables will be passed in as strings like <code class="language-plaintext highlighter-rouge">"x1"</code> or <code class="language-plaintext highlighter-rouge">"e12"</code>. To get their values, the code will look them up in the <code class="language-plaintext highlighter-rouge">State</code> object as shown below:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def folder_n_of(state, x):
+    x_value = state.GetVariable(x)
+    if x_value is None:
+        # Variable is unbound:
+        # iterate over all individuals in the world
+        # using the iterator returned by state.AllIndividuals()
+        iterator = state.AllIndividuals()
+    else:
+        # Variable is bound: create an iterator that will iterate
+        # over just that one by creating a list and adding it as
+        # the only element
+        iterator = [x_value]
+
+    # By converting both cases to an iterator, the code that
+    # checks if x is "a folder" can be shared
+    for item in iterator:
+    
+        # "isinstance" is a built-in function in Python that
+        # checks if a variable is an
+        # instance of the specified class
+        if isinstance(item, Folder):
+            # state.SetX() returns a *new* state that
+            # is a copy of the old one with just that one
+            # variable set to a new value
+            new_state = state.SetX(x, item)
+            yield new_state
+</code></pre></div></div>
+<p>First notice that we are not really taking advantage of our “practical predication contract” in this code: we are literally just iterating through every object in the system. We can fix that later, but for the moment the examples are so small that it won’t really matter.</p>
+
+<p>Further on in the code, notice that the <code class="language-plaintext highlighter-rouge">folder_n_of</code> <code class="language-plaintext highlighter-rouge">yields</code> the new instance of the state object returned from setting <code class="language-plaintext highlighter-rouge">x</code> to a value.  This behavior (enforced by the<code class="language-plaintext highlighter-rouge">State</code> object) will allow our solver to pass around the same state object to a predication multiple times and get fresh values bound to the variables. Since we always make copies when setting a value, the solver can rely on a particular <code class="language-plaintext highlighter-rouge">State</code> object not being changed, even after it has been passed to a predication.</p>
+
+<p>Now we can write a simple test to call our first predication:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example1():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
+
+    for item in folder_n_of(state, "x1"):
+        print(item.variables)
+    
+    print("\nThe original `state` object is not changed:")
+    print(state.variables)
+
+# calling Example1() prints:
+{'x1': Folder(name=Desktop)}
+{'x1': Folder(name=Documents)}
+
+The original `state` object is not changed:
+{}
+</code></pre></div></div>
+<p>Again, it is important to note that the initial <code class="language-plaintext highlighter-rouge">state</code> variable will not actually be changed at the end of the <code class="language-plaintext highlighter-rouge">Example1()</code> function. In order to print out the folders that were found by the predication, we need to print the value of <code class="language-plaintext highlighter-rouge">x1</code> in the state <em>returned from the predication</em>. This is key to allowing us to call the same predication multiple times with the same <code class="language-plaintext highlighter-rouge">State</code> object to get different answers.</p>
+
+<p>Now we have one predication that implements the predication contract: it will iteratively return all the “folders” in the world when called with an unbound variable as we did here. This is the basic pattern we’ll use for all predications from here on out.</p>
+
+<p>Since we are going to start calling more than one predication and eventually deal with a whole MRS resolved tree, we’ll need a way to convert the MRS text representation into a set of Python function calls. That way, we won’t have to manually convert them to Python like the above example. The next section describes how to do that.</p>
+
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md">edit</a>]</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+
+      </footer>
+
+      
+
+      
+    </div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+<!--Scroll the navbar to the current page-->
+<script type="text/javascript">
+  let el = document.querySelector('.nav__list .active');
+  if(el){
+    el.scrollIntoView({block: "center", inline: "start"});
+  }
+</script>
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
+  </form>
+  <div id="results" class="results"></div></div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+
+    
+      <li><a href="/Perplexity/home/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2023 Your Name. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/Perplexity/home/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/Perplexity/home/assets/js/lunr/lunr.min.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-store.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,609 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Perplexity</title>
+<meta name="description" content="An amazing website.">
+
+
+  <meta name="author" content="Your Name">
+  
+
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Perplexity">
+<meta property="og:title" content="Perplexity">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree/">
+
+
+  <meta property="og:description" content="An amazing website.">
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Your Name",
+      "url": "http://blog.inductorsoftware.com/Perplexity/home/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/Perplexity/home/feed.xml" type="application/atom+xml" rel="alternate" title="Perplexity Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/Perplexity/home/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--delphin_page wide">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+          <a class="site-logo" href="/Perplexity/home/"><img src="/Perplexity/home/assets/images/Delph-In.png" alt="Perplexity"></a>
+        
+        <a class="site-title" href="/Perplexity/home/">
+          Perplexity
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview">Home</a>
+            </li></ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox" />
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Developer Tutorial Overview</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devOverview/">Overview</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/">Well-Formed Trees</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/" class="active">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Perplexity Internals</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0010PredicationContract/">The Predication Contract</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0020PythonBasics/">State and Python Basics</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0030ImplementPredication/">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0040BuildSolver/">Initial Solver</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0050Conjunctions/">Solving Conjunctions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0060ScopalArguments/">Soliving Scopal Arguments</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0075SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0100SimpleCommands/">Commands</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure/">Naive Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures/">Words in Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0130ErrorsRobustFailure/">Robust Failures</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Using Perplexity</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo20ImplementAPredication/">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">In-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Verb Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    
+    
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+        <h2 id="determining-the-right-parse-and-tree">Determining the Right Parse and Tree</h2>
+<p>As discussed in the MRS topic and the Well-Formed Trees topic, a single phrase like “Look under the table” produces <code class="language-plaintext highlighter-rouge">m</code> MRS documents, and each of those produces <code class="language-plaintext highlighter-rouge">n</code> well-formed trees, thus generating <code class="language-plaintext highlighter-rouge">m x n</code> potential interpretations of a phrase. How do you determine which one is the one the user <em>meant</em>?</p>
+
+<p>The short answer is that, just like when you are talking to a human, you never <em>really</em> know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: First, <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> uses a machine-learning-based algorithm to sort the MRS documents and returns the “most common” ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the well-formed trees. So, at best we have a partial ordering of the <code class="language-plaintext highlighter-rouge">m x n</code> trees in terms of “most commonly meant”.</p>
+
+<p>With that in mind, a simple approach to choosing the “right” interpretation that works surprisingly well is:</p>
+
+<blockquote>
+  <p>Execute each well-formed tree against the world state using the provided partial order. Assume the first one that succeeds is what the user meant. If none succeed, return the first failure.</p>
+</blockquote>
+
+<p>This works for the same reason human interactions work: Most phrases are meant to convey information that <em>makes sense</em>. I.e. the phrase discusses things that actually exist, uses verbs that make sense with objects being discussed, etc. So, most phrases the user gives your system <em>should</em> have a solution given the current world state. Furthermore, humans have an intuitive understanding of the ambiguity of language and are forgiving of errors when they are understandable and logical failures. I.e. “I can see why you thought that, even though it wasn’t what I meant…”.</p>
+
+<p>So, if the system finds a tree that has a solution in the current world state, it is likely to be at least close to what the user meant. Even if it isn’t, given that it was a solution in the world state, it will still be <em>logical</em> and the user will very often understand (and sometimes be delighted by) how their phrase was misinterpreted.</p>
+
+<p>Thus, the approach to finding which of the <code class="language-plaintext highlighter-rouge">m x n</code> meanings is the “meant one” is to run them all, in order, and assume the first that works is the right one.</p>
+
+<p>Things get a little trickier if none of them works. However, the same principle holds: as long as the error response we give is <em>logical</em> and <em>understandable</em>, it will make sense to the user, even if it isn’t quite the answer a person would have given. Often we can do better than just returning the first failure, but this requires knowing what kinds of errors your particular system produces, which ones are less useful, etc. For now, we’ll just return the first failure.</p>
+
+<p>To implement the code for choosing the right tree, we’re going to create a new class that will be the main entry point into the whole system. It is called <code class="language-plaintext highlighter-rouge">UserInterface</code> and its main method is <code class="language-plaintext highlighter-rouge">interact_once()</code>. Each call to that method does a single “command/response” interaction with the system. It uses the code we wrote in the previous topic to convert the phrase to MRS, and then generate the trees for the MRS. It then iterates through all of them and solves them using <code class="language-plaintext highlighter-rouge">solve_mrs_tree()</code> which solves the tree using the approach we saw in the Conjunctions topic:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class UserInterface(object):
+    def __init__(self, state, vocabulary):
+        self.max_holes = 13
+        self.state = state
+        self.execution_context = ExecutionContext(vocabulary)
+        
+    # response_function gets passed three arguments:
+    #   response_function(mrs, solutions, error)
+    # It must use them to return a string to say to the user
+    def interact_once(self, response_function):
+        # input() pauses the program and waits for the user to
+        # type input and hit enter, and then returns it
+        user_input = str(input("? "))
+        best_failure = None
+
+        # Loop through each MRS and each tree that can be
+        # generated from it...
+        for mrs in self.mrss_from_phrase(user_input):
+            for tree in self.trees_from_mrs(mrs):
+                # Collect all the solutions for this tree against the
+                # current world state
+                tree_info = {"Index": mrs.index,
+                             "Variables": mrs.variables,
+                             "Tree": tree}
+
+                solutions = []
+                for item in self.execution_context.solve_mrs_tree(self.state, tree_info):
+                    pipeline_logger.debug(f"solution: {item}")
+                    solutions.append(item)
+
+                # Determine the response to it
+                error = self.execution_context.error()
+                pipeline_logger.debug(f"{len(solutions)} solutions, error: {error}")
+                message = response_function(tree_info, solutions, error)
+                if len(solutions) &gt; 0:
+                    # This worked, apply the results to the current world state if it was a command
+                    if sentence_force(tree_info) == "comm":
+                        self.apply_solutions_to_state(solutions)
+
+                    print(message)
+                    return
+                else:
+                    # This failed, remember it if it is the "best" failure
+                    # which we currently define as the first one
+                    if best_failure is None:
+                        best_failure = message
+
+        # If we got here, nothing worked: print out the best failure
+        print(best_failure)
+        
+        ...
+</code></pre></div></div>
+
+<p>The function that <code class="language-plaintext highlighter-rouge">interact_once()</code> is passed in the <code class="language-plaintext highlighter-rouge">response_function</code> argument is responsible for taking the MRS, the solutions (if any), and the error (if any) and generating a response to the user. This function is the same one we’ve been using all along (<code class="language-plaintext highlighter-rouge">respond_to_mrs_tree()</code>). It, and the main function it calls (<code class="language-plaintext highlighter-rouge">generate_message()</code> – that we’ve also been using all along), are included below:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def respond_to_mrs_tree(tree, solutions, error):
+    sentence_force_type = sentence_force(tree)
+    if sentence_force_type == "prop":
+        # This was a proposition, so the user only expects
+        # a confirmation or denial of what they said.
+        # The phrase was "true" if there was at least one answer
+        if len(solutions) &gt; 0:
+            return "Yes, that is true."
+        else:
+            message = generate_message(tree, error)
+            return message
+
+    elif sentence_force_type == "ques":
+        # See if this is a "WH" type question
+        wh_predication = find_predicate(tree["Tree"], "_which_q")
+        if wh_predication is None:
+            # This was a simple question, so the user only expects
+            # a yes or no.
+            # The phrase was "true" if there was at least one answer
+            if len(solutions) &gt; 0:
+                return "Yes."
+            else:
+                message = generate_message(tree, error)
+                return message
+        else:
+            # This was a "WH" question
+            # return the values of the variable asked about
+            # from the solution
+            # The phrase was "true" if there was at least one answer
+            if len(solutions) &gt; 0:
+                wh_variable = wh_predication[1]
+                message = ""
+                for solution in solutions:
+                    message += str(solution.get_variable(wh_variable)) + "\n"
+
+                return message
+            else:
+                message = generate_message(tree, error)
+                return message
+
+    elif sentence_force_type == "comm":
+        # This was a command so, if it works, just say so
+        # We'll get better errors and messages in upcoming sections
+        if len(solutions) &gt; 0:
+            return "Done!"
+        else:
+            message = generate_message(tree, error)
+            return message
+
+
+# Generates all the responses that predications can return when an error
+# occurs
+#
+# error_term is of the form: [index, error] where "error" is another
+# list like: ["name", arg1, arg2, ...]. The first item is the error
+# constant (i.e. its name). What the args mean depends on the error
+def generate_message(mrs, error_term):
+    error_predicate_index = error_term[0]
+    error_arguments = error_term[1]
+    error_constant = error_arguments[0]
+
+    if error_constant == "xIsNotY":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], mrs)
+        arg2 = error_arguments[2]
+        return f"{arg1} is not {arg2}"
+
+    elif error_constant == "adjectiveDoesntApply":
+        arg1 = error_arguments[1]
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], mrs)
+        return f"{arg2} is not {arg1}"
+        
+    ...
+</code></pre></div></div>
+
+<p>With this, we now have a (simple) fully functioning interactive natural language system! Here’s a simple example that runs it in a loop, and an interactive session using some phrases we’ve used throughout the tutorial to test it:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example16():
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
+                   Folder(name="Documents")])
+
+    user_interface = UserInterface(state, vocabulary)
+
+    while True:
+        user_interface.interact_once(respond_to_mrs_tree)
+        print()
+        
+# Example15 session:
+
+? a file is large
+Yes, that is true.
+
+? which file is large?
+File(name=file1.txt, size=2000000)
+
+? which folder is large?
+a folder is not large
+
+? delete a folder
+Done!
+
+? delete him
+There isn't 'he/she' in the system
+</code></pre></div></div>
+
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0060WhichParseAndTree.md">edit</a>]</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+
+      </footer>
+
+      
+
+      
+    </div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+<!--Scroll the navbar to the current page-->
+<script type="text/javascript">
+  let el = document.querySelector('.nav__list .active');
+  if(el){
+    el.scrollIntoView({block: "center", inline: "start"});
+  }
+</script>
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
+  </form>
+  <div id="results" class="results"></div></div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+
+    
+      <li><a href="/Perplexity/home/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2023 Your Name. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/Perplexity/home/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/Perplexity/home/assets/js/lunr/lunr.min.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-store.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+
+
+
+  </body>
+</html>
