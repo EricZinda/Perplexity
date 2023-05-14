@@ -1,5 +1,16 @@
   {
     "home": [
+      {"Section": "MRS Solver Conceptual", "Pages": [
+        {"Page": "devhowtoChoosingWhichFailure", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoChoosingWhichFailure.md", "BaseReferrer": "home/docs/devhowto/devhowto13.0SimplePropositions.md", "Referrer": "home/docs/devhowto/devhowto13.0SimplePropositions.md", "FileMissing": true},
+        {"Page": "devhowtoConjunctions", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoConjunctions.md", "BaseReferrer": "home/docs/devhowto/devhowto11.0WhichParseAndTree.md", "Referrer": "home/docs/devhowto/devhowto11.0WhichParseAndTree.md", "FileMissing": true},
+        {"Page": "devhowtoGenerateMRSAndTrees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoGenerateMRSAndTrees.md", "BaseReferrer": "home/docs/devhowto/devhowto11.0WhichParseAndTree.md", "Referrer": "home/docs/devhowto/devhowto11.0WhichParseAndTree.md", "FileMissing": true},
+        {"Page": "devhowtoMRSToPython", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSToPython.md", "BaseReferrer": "home/docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "Referrer": "home/docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "FileMissing": true},
+        {"Page": "devhowtoParsePredication", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoParsePredication.md", "BaseReferrer": "home/docs/devhowto/devhowto17.0ErrorsConceptualFailures.md", "Referrer": "home/docs/devhowto/devhowto17.0ErrorsConceptualFailures.md", "FileMissing": true},
+        {"Page": "devhowtoQuantifierErrors", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoQuantifierErrors.md", "BaseReferrer": "home/docs/devhowto/devhowto17.5ErrorsRobustFailure.md", "Referrer": "home/docs/devhowto/devhowto17.5ErrorsRobustFailure.md", "FileMissing": true},
+        {"Page": "devhowtoReportingAFailure", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoReportingAFailure.md", "BaseReferrer": "home/docs/devhowto/devhowto15ErrorsChoosingWhichFailure.md", "Referrer": "home/docs/devhowto/devhowto15ErrorsChoosingWhichFailure.md", "FileMissing": true},
+        {"Page": "devhowtoSimplePropositions", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoSimplePropositions.md", "BaseReferrer": "home/docs/devhowto/devhowto12.0SentenceForce.md", "Referrer": "home/docs/devhowto/devhowto12.0SentenceForce.md", "FileMissing": true},
+        {"Page": "devhowtoSimpleQuestions", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoSimpleQuestions.md", "BaseReferrer": "home/docs/devhowto/devhowto13.0SimplePropositions.md", "Referrer": "home/docs/devhowto/devhowto13.0SimplePropositions.md", "FileMissing": true}
+      ]},
       {"Section": "MRS Conceptual", "Pages": [
         {"Page": "devhowtoConceptualFailures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoConceptualFailures.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "devhowtoEvents", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoEvents.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
@@ -9,9 +20,6 @@
         {"Page": "devhowtoWhichParseAndTree", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoWhichParseAndTree.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "docs/devhowto/devhowtoMRS", "SrcDir": "main", "SrcFile": "docs/devhowto/docs/devhowto/devhowtoMRS.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "docs/devhowto/devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/devhowto/docs/devhowto/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "Referrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "FileMissing": true}
-      ]},
-      {"Section": "MRS Solver Conceptual", "Pages": [
-        {"Page": "devhowtoMRSToPython", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSToPython.md", "BaseReferrer": "home/docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "Referrer": "home/docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "FileMissing": true}
       ]},
       {"Section": "Perplexity How-to", "Pages": [
         {"Page": "docs/pxHowTo/pxHowTo20ImplementAPredication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/docs/pxHowTo/pxHowTo20ImplementAPredication.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo20ImplementAPredication.md", "Referrer": "home/docs/pxHowTo/pxHowTo20ImplementAPredication.md", "FileMissing": true},

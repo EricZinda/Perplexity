@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto13.0SimplePropositions/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto13.0SimplePropositions/">
 
 
 
@@ -221,7 +221,7 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowto12.0SentenceForce/">Sentence Types</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto13.0SimplePropositions/">Propositions</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowto13.0SimplePropositions/" class="active">Propositions</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto14.0SimpleQuestions/">Commands</a></li>
           
@@ -259,7 +259,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/" class="active">Quantifiers and Determiners</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
           
         </ul>
         
@@ -291,15 +291,118 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="quantifiers-and-determiners">Quantifiers and Determiners</h2>
-<p>At this point we’ve walked through all of the predications for the MRS of “a file is large” or “delete a file” except one.</p>
+        <h2 id="responding-to-simple-propositions">Responding to Simple Propositions</h2>
+<p>“Propositions” are sentences that declare something to be true like “A file is very large”. If true, a human would expect something like “yep, you are right” or “correct!” or “yes, this is true” as a response (error cases will be handled later). A phrase is a proposition if the “sentence force” (SF) property of one or more of its variables is <code class="language-plaintext highlighter-rouge">prop</code> as described in the previous section.</p>
 
-<p>Most quantifiers and determiners are not application specific since they just manage determining how many of something there is, which can be managed at the object level without consideration for what the objects are.</p>
+<p>Below is the MRS for “A file is very large”. As described in the previous section: <code class="language-plaintext highlighter-rouge">e2</code> has a sentence force of “proposition”: <code class="language-plaintext highlighter-rouge">SF: prop</code>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
+INDEX: e2
+RELS: &lt; 
+[ _a_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
+[ _file_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
+[ _very_x_deg LBL: h1 ARG0: e9 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e2 ]
+[ _large_a_1 LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ]
+&gt;
+HCONS: &lt; h0 qeq h1 h5 qeq h7 &gt; ]
 
-<h2 id="todo-list-all-implemented-quantifiers">TODO: list all implemented quantifiers</h2>
-<h2 id="todo-talk-about-how-to-build-one-if-it-was-needed-or-changes-were-needed">TODO: Talk about how to build one if it was needed or changes were needed?</h2>
+          ┌────── _file_n_of(x3,i8)
+_a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
+               └─ and(0,1)
+                        └ _large_a_1(e2,x3)
+</code></pre></div></div>
 
-<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md">edit</a>]</p>
+<p>In order to start responding to user phrases properly, we need to begin passing in more information from the MRS, not just the predications.  We’ll need the variable properties. We’ll do this using a dictionary. In fact, we can make it easier to read using the Python <code class="language-plaintext highlighter-rouge">json</code> format. The <code class="language-plaintext highlighter-rouge">json</code> format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree.</p>
+
+<p>In a <code class="language-plaintext highlighter-rouge">json</code> declaration:</p>
+<ul>
+  <li>Dictionaries are surrounded by <code class="language-plaintext highlighter-rouge">{}</code> with key/value pairs represented by <code class="language-plaintext highlighter-rouge">"key":"value"</code></li>
+  <li>Lists are surrounded by <code class="language-plaintext highlighter-rouge">[]</code>, with items in the list separated by <code class="language-plaintext highlighter-rouge">,</code></li>
+  <li>Strings are surrounded by <code class="language-plaintext highlighter-rouge">""</code></li>
+  <li>Numbers are just bare</li>
+</ul>
+
+<p>Note that a <code class="language-plaintext highlighter-rouge">list</code> can contain <code class="language-plaintext highlighter-rouge">dicts</code>, <code class="language-plaintext highlighter-rouge">dicts</code> can have <code class="language-plaintext highlighter-rouge">lists</code> as the value of a key value pair, etc.</p>
+
+<p>As always, you can set the key of a <code class="language-plaintext highlighter-rouge">dict</code> using the syntax <code class="language-plaintext highlighter-rouge">dict["key"] = &lt;value&gt;</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Start with an empty dictionary
+mrs = {}
+
+# Set its "index" key to the value "e1"
+mrs["Index"] = "e1"
+
+# Set its "Variables" key to *another* dictionary with 
+# two keys: "x1" and "e1". Each of those has a "value" of 
+# yet another dictionary that holds the properties of the variables
+mrs["Variables"] = {"x1": {"NUM": "pl"},
+                    "e1": {"SF": "prop"}}
+                    
+# Set the "RELS" key to the scope-resolved MRS tree, using our format
+mrs["RELS"] = [["_a_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]
+</code></pre></div></div>
+<p>Thus, the <code class="language-plaintext highlighter-rouge">mrs</code> variable ends up being a big, single <code class="language-plaintext highlighter-rouge">json</code> object that has the MRS definition (that we understand so far) in it.</p>
+
+<p>Now we can create a new function called <code class="language-plaintext highlighter-rouge">RespondToMRS()</code> that inspects the MRS and uses the handy <code class="language-plaintext highlighter-rouge">sentence_force()</code> function to properly respond to a proposition:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def RespondToMRS(state, mrs):
+    # Collect all the solutions to the MRS against the
+    # current world state
+    solution = []
+    for item in Call(vocabulary, state, mrs["RELS"]):
+        solution.append(item)
+    
+    sentence_force = sentence_force(mrs["Variables"])
+    if sentence_force == "prop":
+        # This was a proposition, so the user only expects
+        # a confirmation or denial of what they said.
+        # The phrase was "true" if there was at least one answer
+        if len(solution) &gt; 0:
+            print("Yes, that is true.")
+        else:
+            print("No, that isn't correct.")
+            
+            
+def sentence_force(variables):
+    for variable in variables.items():
+        if "SF" in variable[1]:
+            return variable[1]["SF"]
+            
+            
+# Evaluate the proposition: "a file is large"
+def Example5():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=2000000)])
+
+    # Start with an empty dictionary
+    mrs = {}
+    
+    # Set its "index" key to the value "e1"
+    mrs["Index"] = "e1"
+    
+    # Set its "Variables" key to *another* dictionary with 
+    # two keys: "x1" and "e1". Each of those has a "value" of 
+    # yet another dictionary that holds the properties of the variables
+    mrs["Variables"] = {"x1": {"NUM": "pl"},
+                        "e1": {"SF": "prop"}}
+                        
+    # Set the "RELS" key to the scope-resolved MRS tree, using our format
+    mrs["RELS"] = [["_a_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]
+
+    RespondToMRS(state, mrs)
+
+# Outputs:
+Yes, that is true.
+</code></pre></div></div>
+
+<p>In the next section, we’ll respond to questions.</p>
+
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowto13.0SimplePropositions.md">edit</a>]</p>
 
         
       </section>
