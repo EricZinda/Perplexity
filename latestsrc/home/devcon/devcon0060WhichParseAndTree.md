@@ -14,7 +14,7 @@ So, if the system finds a tree that has a solution in the current world state, i
 
 Thus, the approach to finding which of the `m x n` meanings is the "meant one" is to run them all, in order, and assume the first that works is the right one.
 
-Things get a little trickier if none of them works. However, the same principle holds: as long as the error response we give is *logical* and *understandable*, it will make sense to the user, even if it isn't quite the answer a person would have given. Often we can do better than just returning the first failure, but this requires knowing what kinds of errors your particular system produces, which ones are less useful, etc. For now, we'll just return the first failure.
+Things get a little trickier if none of them works. However, the same principle holds: as long as the error response we give is *logical* and *understandable*, it will make sense to the user, even if it isn't quite the answer a person would have given. Often we can do better than just returning the first failure, but this requires knowing what kinds of errors your particular system produces, which ones are less useful, etc. Returning the first failure is a good place to start.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 

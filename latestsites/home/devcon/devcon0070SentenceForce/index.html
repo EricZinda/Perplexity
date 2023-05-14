@@ -317,8 +317,8 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="responding-by-using-sentence-force">Responding by Using Sentence Force</h2>
-<p>So far, we’ve been building up the ability to evaluate an MRS against a software world model. Now it is time to start working through <em>types</em> of sentences and actually giving the answers people will expect from each type.</p>
+        <h2 id="sentence-types">Sentence Types</h2>
+<p>We’ve been using a lot of examples that are questions and propositions without actually working through how the system should detect the <em>type</em> of phrase the user said and respond to it. Now it is time to start working through <em>types</em> of sentences and actually giving the answers people will expect from each type.</p>
 
 <p>Let’s look at the MRS for the sentence we’ve been working with so far, “A file is very large”:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
@@ -377,7 +377,9 @@ _a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
   <li>User: “Make a file large.” -&gt; “test1.txt is now large”</li>
 </ul>
 
-<p>In the next few sections we’ll work through how to handle the different types of sentences when they succeed. We’ll end by talking about how to handle failures.</p>
+<p><a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions">Perplexity Internals</a> discusses how to go about coding responses to these different sentence types concretely.</p>
+
+<p>In the next section we’ll talk about how to handle failures.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
