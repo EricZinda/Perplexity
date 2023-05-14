@@ -213,6 +213,24 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowtoMRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
           
+            <li><a href="/Perplexity/home/devhowto/devhowto11.0WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowto12.0SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devhowto/devhowto15ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Perplexity Internals</span>
+        
+
+        
+        <ul>
+          
             <li><a href="/Perplexity/home/devhowto/devhowto1.0PredicationContract/">The Predication Contract</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto2.0PythonBasics/">State and Python Basics</a></li>
@@ -227,15 +245,9 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto11.0WhichParseAndTree/">Choosing a Parse and Tree</a></li>
-          
-            <li><a href="/Perplexity/home/devhowto/devhowto12.0SentenceForce/">Sentence Types</a></li>
-          
             <li><a href="/Perplexity/home/devhowto/devhowto13.0SimplePropositions/">Propositions</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto14.0SimpleQuestions/">Commands</a></li>
-          
-            <li><a href="/Perplexity/home/devhowto/devhowto15ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
             <li><a href="/Perplexity/home/devhowto/devhowto16ErrorsReportingAFailure/">Naive Failures</a></li>
           
@@ -249,7 +261,7 @@
     
       <li>
         
-          <span class="nav__sub-title">Perplexity How-to</span>
+          <span class="nav__sub-title">Using Perplexity</span>
         
 
         
@@ -299,7 +311,7 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="scopal-arguments">Scopal Arguments</h2>
+        <h2 id="solving-scopal-arguments">Solving Scopal Arguments</h2>
 <p>Scopal arguments are predication arguments that hold <em>other predications</em>, much like lambda functions can pass around functions as arguments in some programming languages.  They indicate that the predication should do its job using the results of the whole “branch” it is given. Exactly <em>what</em> job depends on the predication. The most common scopal arguments are seen in quantifiers like “a, the, every, some” etc. The job of a quantifier in a natural language is to limit (i.e. “quantify”) the number of answers in some way. They do that by taking a <code class="language-plaintext highlighter-rouge">RSTR</code> argument that indicates what the quantifier is about (e.g. “a <em>folder</em>”), and a <code class="language-plaintext highlighter-rouge">BODY</code> argument that says what we are restricting the quantification to (e.g. “something <em>large</em>”).</p>
 
 <p>For example, take the phrase: “a file is large”. One of the scope-resolved MRS trees for it is:</p>
