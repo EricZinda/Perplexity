@@ -235,7 +235,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/" class="active">Event Predication</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/" class="active">Event Predications</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Action Verbs</a></li>
           
@@ -272,13 +272,13 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="predications-with-event-variables">Predications with Event Variables</h2>
-<p>So far, we have been conveniently ignoring event variables (variables that start with “e”). Where instance (<code class="language-plaintext highlighter-rouge">x</code>) variables contain a single instance for any solution, event (<code class="language-plaintext highlighter-rouge">e</code>) variables are designed to build up a structure. They are how modifiers to a word like “very” and “slowly” get tracked.</p>
+<p>So far, we have been conveniently ignoring event variables (variables that start with “e”). Where instance (<code class="language-plaintext highlighter-rouge">x</code>) variables contain a single set for any solution, event (<code class="language-plaintext highlighter-rouge">e</code>) variables are designed to build up a structure. They allow words like “very” and “slowly” to modify other words.</p>
 
 <p>For example, we’ve been talking about a <code class="language-plaintext highlighter-rouge">_large_a_1(e2,x3), _file_n_of(x3)</code> and have ignored what the event variable <code class="language-plaintext highlighter-rouge">e2</code> is for. We can’t do this if we are trying to find a <code class="language-plaintext highlighter-rouge">_very_x_deg(e2, e1), _large_a_1(e1,x3), _file_n_of(x3)</code>.</p>
 
-<p>In an MRS, any predication except a quantifier is said to “introduce” its first argument. If you look closely you’ll see that every variable is only “introduced” by one predication in a given MRS – only one predication has a given variable as its first argument.  So, in a sense, that variable <em>represents</em> that predication.  If a predication like <code class="language-plaintext highlighter-rouge">_large_a_1(e2,x3)</code> introduces event variable <code class="language-plaintext highlighter-rouge">e2</code>, it does so to provide a place for other predications to hang modifiers to it.</p>
+<p>In an MRS, any predication except a quantifier is said to “introduce” its first argument. If you look closely, you’ll see that every variable is only “introduced” by one predication in a given MRS – only one predication has a given variable as its first argument.  So, in a sense, that variable <em>represents</em> that predication.  If a predication like <code class="language-plaintext highlighter-rouge">_large_a_1(e2,x3)</code> introduces event variable <code class="language-plaintext highlighter-rouge">e2</code>, it does so to provide a place for other predications to hang modifiers.</p>
 
-<p>For example, to represent something that is “very large”, the word “very” needs to be able to attach its “veryness” to “large”. For “very very large” you build a chain where the first “very” modifies the second which modifies “large”. This is all done with events, and it happens like this because languages allow all kinds of recursive constructions. DELPH-IN needed a way to model this.</p>
+<p>For example, to represent something that is “very large”, the word “very” needs to be able to attach its “veryness” to “large”. For “very very large”, a chain is needed where the first “very” modifies the second, which modifies “large”. This is all done with events, and it happens like this because human languages allow all kinds of recursive constructions. DELPH-IN needed a way to model the behavior.</p>
 
 <p>Here are the predications generated for: “very large” and “very very large”. The comma (“,”) is being used to indicate a conjunction (i.e. “and”):</p>
 
@@ -289,20 +289,20 @@ _very_x_deg(e2, e1), _large_a_1(e1,x3)
 _very_x_deg(e3, e2), _very_x_deg(e2, e1), _large_a_1(e1,x3)
 </code></pre></div></div>
 
-<p>You can see that in “very large” <code class="language-plaintext highlighter-rouge">_very_x_deg</code> takes the event variable <em>introduced by</em> <code class="language-plaintext highlighter-rouge">_large_a_1</code> as an argument. The job of <code class="language-plaintext highlighter-rouge">_very_x_deg</code> is to put something in the event that <code class="language-plaintext highlighter-rouge">_large_a_1</code> can look for so that its behavior can be modified to be “very large”.</p>
+<p>You can see that in “very large”, <code class="language-plaintext highlighter-rouge">_very_x_deg</code> takes the event variable <em>introduced by</em> <code class="language-plaintext highlighter-rouge">_large_a_1</code> as an argument. The job of <code class="language-plaintext highlighter-rouge">_very_x_deg</code> is to put something in the event that <code class="language-plaintext highlighter-rouge">_large_a_1</code> can look for so that its behavior can be modified to be “very large”.</p>
 
-<p><code class="language-plaintext highlighter-rouge">_very_x_deg</code> also introduces <em>its own</em> event variable that other predications can modify as, for example, in “very very large”. The first “very” modifies the event variable introduced by the second “very”, etc.</p>
+<p><code class="language-plaintext highlighter-rouge">_very_x_deg</code> also introduces <em>its own</em> event variable that other predications can modify as in “very very large”. The first “very” modifies the event variable introduced by the second “very”, etc.</p>
 
 <p>This means, first, that we need a mechanism for handling event variables and, second, that our implementation of <code class="language-plaintext highlighter-rouge">_large_a_1</code> needs to be modified to pay attention to modifications to its event.</p>
 
-<p>Since event variables need to be able to capture what could be a large buildup of modifications in a given sentence, we’ll internally use a dictionary for them. The <code class="language-plaintext highlighter-rouge">State</code> object passed to every predication has an <code class="language-plaintext highlighter-rouge">add_to_e()</code> method to allow predications to build up information on the event variable.  <code class="language-plaintext highlighter-rouge">x</code> variables have a value that is a single set, while <code class="language-plaintext highlighter-rouge">e</code> variables are a dictionary that builds up over time. So, <code class="language-plaintext highlighter-rouge">add_to_e()</code> has arguments that indicate what information to add to the event. However, just like <code class="language-plaintext highlighter-rouge">set_x()</code>,  <code class="language-plaintext highlighter-rouge">add_to_e()</code> returns a new <code class="language-plaintext highlighter-rouge">state</code> that must be yielded to indicate success.</p>
+<p>Since event variables need to be able to capture what could be a large buildup of modifications in a given sentence, we’ll internally use a dictionary for them. The <code class="language-plaintext highlighter-rouge">State</code> object passed to every predication has an <code class="language-plaintext highlighter-rouge">add_to_e()</code> method to allow predications to build up information on event variables.  <code class="language-plaintext highlighter-rouge">x</code> variables have a value that is a single set, while <code class="language-plaintext highlighter-rouge">e</code> variables are a dictionary that builds up over time. So, <code class="language-plaintext highlighter-rouge">add_to_e()</code> has arguments that indicate what information to add to the event. However, just like <code class="language-plaintext highlighter-rouge">set_x()</code>,  <code class="language-plaintext highlighter-rouge">add_to_e()</code> returns a new <code class="language-plaintext highlighter-rouge">state</code> that must be yielded to indicate success. The <code class="language-plaintext highlighter-rouge">State</code> object is still immutable.</p>
 
 <p>The <code class="language-plaintext highlighter-rouge">add_to_e()</code> method looks like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def add_to_e(self, event_name, key, value):
     ...
 </code></pre></div></div>
-<p><code class="language-plaintext highlighter-rouge">add_to_e()</code> adds the key/value pair it is given to a dictionary that represents the event state and returns a new <code class="language-plaintext highlighter-rouge">State</code> object, just like <code class="language-plaintext highlighter-rouge">set_x()</code> does. But, unlike <code class="language-plaintext highlighter-rouge">set_x()</code>, it keeps whatever was in the event variable before. This allows information to get built up in the event.</p>
+<p><code class="language-plaintext highlighter-rouge">add_to_e()</code> adds the key/value pair it is given to a dictionary that represents the event state and returns a new <code class="language-plaintext highlighter-rouge">State</code> object, just like <code class="language-plaintext highlighter-rouge">set_x()</code> does. But, unlike <code class="language-plaintext highlighter-rouge">set_x()</code>, it adds to whatever was in the event variable before instead of replacing it. This allows information to get built up in the event.</p>
 
 <p>Now, using the helpers from the previous sections and the new <code class="language-plaintext highlighter-rouge">add_to_e()</code> method, let’s create a <code class="language-plaintext highlighter-rouge">_very_x_deg</code> predication along with a <code class="language-plaintext highlighter-rouge">_large_a_1</code> predication that pays attention to modifications to its event.</p>
 
@@ -315,20 +315,21 @@ def very_x_deg(state, e_introduced_binding, e_target_binding):
                          {"Value": 10, 
                           "Originator": execution_context().current_predication_index()})
 </code></pre></div></div>
-<p><code class="language-plaintext highlighter-rouge">very_x_deg()</code> doesn’t have any <code class="language-plaintext highlighter-rouge">x</code> variables, so we don’t have to worry about if they are bound or unbound. Predications like this simply have to add information to the <code class="language-plaintext highlighter-rouge">e</code> variable they are modifying. Recall that the first argument (in this case, <code class="language-plaintext highlighter-rouge">e_introduced_binding</code>) represents <em>this</em> predication, so the variable being modified is the second one: <code class="language-plaintext highlighter-rouge">e_target_binding</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">very_x_deg()</code> doesn’t have any <code class="language-plaintext highlighter-rouge">x</code> variables, so we don’t have to worry about if they are bound or unbound. Event variables always exist. Predications like this simply have to add information to the <code class="language-plaintext highlighter-rouge">e</code> variable they are modifying. Recall that the first argument (in this case, <code class="language-plaintext highlighter-rouge">e_introduced_binding</code>) represents <em>this</em> predication, so the variable being modified is the second one: <code class="language-plaintext highlighter-rouge">e_target_binding</code>.</p>
 
-<p>It really doesn’t matter <em>what</em> the predication adds to <code class="language-plaintext highlighter-rouge">e_target_binding</code> as long as the predications that consume it know what to look for. It is application specific. However, the system will look for the <code class="language-plaintext highlighter-rouge">Originator: execution_context().current_predication_index()</code> field and use it to produce nice errors.</p>
+<p>It really doesn’t matter <em>what</em> the predication adds to <code class="language-plaintext highlighter-rouge">e_target_binding</code> as long as the predications that consume it know what to look for. It is application specific. However, the system will look for the <code class="language-plaintext highlighter-rouge">Originator: execution_context().current_predication_index()</code> field and use it to produce nice errors if it exists.</p>
 
-<p>So, we’ve chosen to give the key <code class="language-plaintext highlighter-rouge">"DegreeMultiplier"</code> to the information provided by <code class="language-plaintext highlighter-rouge">very_x_deg</code>, and added a field that indicates to what degree something should be increased using <code class="language-plaintext highlighter-rouge">"Value": 10</code>.</p>
+<p>So, we’ve chosen to use the key <code class="language-plaintext highlighter-rouge">"DegreeMultiplier"</code> in the event as a name for the information provided by <code class="language-plaintext highlighter-rouge">very_x_deg</code>, and added a dictionary value for it that indicates to what degree something should be increased using <code class="language-plaintext highlighter-rouge">"Value": 10</code>.</p>
 
-<p>We can build a helper that know about the names and fields we’ve chosen so that any predication that understands “very” can use it:</p>
+<p>We can now build a helper that knows about the names we’ve chosen so that any predication that understands “very” can use it:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># This is a helper function that any predication that can
 # be "very'd" can use to understand just how "very'd" it is
 def degree_multiplier_from_event(state, e_introduced_binding):
     # if a "very" is modifying this event, use that value
     # otherwise, return 1
-    if e_introduced_binding.value is None or "DegreeMultiplier" not in e_introduced_binding.value:
+    if e_introduced_binding.value is None or \
+            "DegreeMultiplier" not in e_introduced_binding.value:
         degree_multiplier = 1
 
     else:
@@ -337,7 +338,7 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 </code></pre></div></div>
 
-<p>The helper function gets passed an event variable and looks for the information that <code class="language-plaintext highlighter-rouge">very_x_deg</code> adds to it. If found, it turns it. Otherwise, it just returns 1. Now, any predication can multiply numbers using this value.  Here’s an example of <code class="language-plaintext highlighter-rouge">large_a_1</code> using it:</p>
+<p>The helper function gets passed an event variable and looks for the information that <code class="language-plaintext highlighter-rouge">very_x_deg</code> adds to it. If found, it turns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here’s an example of <code class="language-plaintext highlighter-rouge">large_a_1</code> using it:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_large_a_1"])
 def large_a_1(state, e_introduced_binding, x_target_binding):
@@ -359,7 +360,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
 
     yield from combinatorial_style_predication_1(state, x_target_binding, bound_variable, unbound_variable)
 </code></pre></div></div>
-<p><code class="language-plaintext highlighter-rouge">large_a_1</code> uses the same <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> helper that “file” did from a previous section. It tests if something is large by seeing if it has a size property and, if so, seeing if the size is 1,000,000 multiplied by however many “very’s” the user said. Obviously, this only makes sense if we are talking about files, the implementation of <code class="language-plaintext highlighter-rouge">large_a_1</code>, like every predication, is application specific.</p>
+<p><code class="language-plaintext highlighter-rouge">large_a_1</code> uses the same <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> helper that “file” did from a previous section. It tests if something is large by seeing if it has a <code class="language-plaintext highlighter-rouge">size</code> property and, if so, seeing if the <code class="language-plaintext highlighter-rouge">size</code> is 1,000,000 multiplied by however many “very’s” the user said. Obviously, this only makes sense if we are talking about files, the implementation of <code class="language-plaintext highlighter-rouge">large_a_1</code>, like every predication, is application specific.</p>
 
 <p>Note that if <code class="language-plaintext highlighter-rouge">large_a_1</code> is called with an unbound variable, it looks through every object in the system and only returns the ones that are “large” (or “very large”) by calling the same function used to check bound variables.</p>
 
@@ -371,15 +372,17 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
 
 <p>This is because Perplexity is designed to make sure it understands <em>every</em> word in a sentence so that users gain confidence that they truly are understood and that the system isn’t just doing “keyword picking”. One way it does this is by ensuring that any information added to an event is actually consumed by another predication in the phrase. If not, it replies with that error.</p>
 
-<p>Since we have implemented very with large, the fix is simple: we just need to add information to the <code class="language-plaintext highlighter-rouge">@Predication</code> declaration, like this:</p>
+<p>Since we have implemented “very” with “large”, the fix is simple: we just need to add information to the <code class="language-plaintext highlighter-rouge">@Predication</code> declaration, like this:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_large_a_1"], handles=[("DegreeMultiplier", EventOption.optional)])
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, 
+             names=["_large_a_1"], 
+             handles=[("DegreeMultiplier", EventOption.optional)])
 def large_a_1(state, e_introduced_binding, x_target_binding):
 
     ...
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">handles=[]</code> clause lists out all of the keys that the predication knows how to process in its introduced event. In this case, we have also added <code class="language-plaintext highlighter-rouge">EventOption.optional</code> to say that large doesn’t <em>require</em> “very”, but understands it if said. Now it will properly process the phrase.</p>
+<p>The <code class="language-plaintext highlighter-rouge">handles=[]</code> clause lists out all of the keys that the predication knows how to process in its introduced event. In this case, we have also added <code class="language-plaintext highlighter-rouge">EventOption.optional</code> to say that large doesn’t <em>require</em> “very”, but understands it if it exists. Now it will properly process the phrase.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>

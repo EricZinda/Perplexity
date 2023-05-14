@@ -235,7 +235,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predication</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predications</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/" class="active">Action Verbs</a></li>
           
@@ -274,7 +274,7 @@
         <h2 id="action-verbs">Action Verbs</h2>
 <p>All of the predications we’ve dealt with so far have just been used to ask questions like “Is a file large?” or make propositions like “A file is large.” (which is just a kind of question in terms of the kind of response a person would expect). Now it is time to implement “action verbs” – verbs that actually <em>do</em> something to the system. Let’s implement “delete”.</p>
 
-<p>“delete” goes beyond asking questions about the state of the system. To implement it, we need to actually modify the system we are building a language interface for. So far, we’ve only been using the <code class="language-plaintext highlighter-rouge">State</code> object to inspect and modify the state of MRS variables in the system. With “delete” we need to actually modify the state of the file system, too. Since the current state of all parts of the system is represented by the <code class="language-plaintext highlighter-rouge">state</code> object, we’ll end up calling a method on that object in some form to delete a file. And, just like the <code class="language-plaintext highlighter-rouge">add_to_e()</code> or <code class="language-plaintext highlighter-rouge">set_x()</code> methods, the new method will need to return a new <code class="language-plaintext highlighter-rouge">state</code> object with that file deleted, and we’ll <code class="language-plaintext highlighter-rouge">yield</code> the answer.</p>
+<p>“Delete” goes beyond asking questions about the state of the system. To implement it, we need to actually <em>modify</em> the state of the system. So far, we’ve only been using the <code class="language-plaintext highlighter-rouge">State</code> object to inspect and modify the state of MRS variables in the system. With “delete” we need to actually modify the state of the file system, too. Since the current state of all parts of the system is represented by the <code class="language-plaintext highlighter-rouge">state</code> object, we’ll end up calling a method on that object in some form to delete a file. And, just like the <code class="language-plaintext highlighter-rouge">add_to_e()</code> or <code class="language-plaintext highlighter-rouge">set_x()</code> methods, the new method will need to return a new <code class="language-plaintext highlighter-rouge">state</code> object with that file deleted, and we’ll <code class="language-plaintext highlighter-rouge">yield</code> the answer.</p>
 
 <p>If the user says, “delete a file”, this MRS and tree are produced (among others):</p>
 
@@ -313,9 +313,11 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     yield from combinatorial_style_predication_1(state, x_what_binding, criteria, unbound_what)
 </code></pre></div></div>
 
-<p>This does some of the work we need: it will actually succeed if the user asks to delete a file or folder, and it won’t allow phrases like “delete everything” that would produce an unbound <code class="language-plaintext highlighter-rouge">x8</code>. However, it won’t actually <em>delete anything</em> because there isn’t any code that does the deleting.</p>
+<p>This does some of the work we need: it will actually succeed if the user asks to delete a file or folder, and it won’t allow phrases like “delete everything” that would produce an unbound <code class="language-plaintext highlighter-rouge">x8</code>. However, it won’t actually <em>delete anything</em> because there isn’t any code to do the deleting.</p>
 
-<p>Since <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> yields a <code class="language-plaintext highlighter-rouge">state</code> object when <code class="language-plaintext highlighter-rouge">delete_v_1_comm</code> is successful, we could start by doing the actual delete when it yields a value. Let’s imagine that we added a <code class="language-plaintext highlighter-rouge">state.delete_object()</code> to the <code class="language-plaintext highlighter-rouge">State</code> object that actually deletes a file and yields a new state with that file deleted. That could look like this:</p>
+<p>Since <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> yields a <code class="language-plaintext highlighter-rouge">state</code> object when <code class="language-plaintext highlighter-rouge">delete_v_1_comm</code> is successful, we could start by doing the actual delete when it yields a value.</p>
+
+<p>Let’s imagine that we added a <code class="language-plaintext highlighter-rouge">state.delete_object()</code> to the <code class="language-plaintext highlighter-rouge">State</code> object that actually deletes a file and yields a new state with that file deleted. That approach could look like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_delete_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
@@ -336,21 +338,21 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 </code></pre></div></div>
 <p>This works because:</p>
 
-<p>When <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> yields a new state, it means this predication was successful. That happened because the <code class="language-plaintext highlighter-rouge">criteria()</code> function returned <code class="language-plaintext highlighter-rouge">True</code>. The new state has all of the MRS variables set to the value that made the predication true, which means that the <code class="language-plaintext highlighter-rouge">x_what_binding</code> variable should now be set to the thing being deleted.</p>
+<p>When <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> yields a new state, it means this predication was successful. That happened because the <code class="language-plaintext highlighter-rouge">criteria()</code> function returned <code class="language-plaintext highlighter-rouge">true</code>. The new state has all of the MRS variables set to the value that made the predication <code class="language-plaintext highlighter-rouge">true</code>, which means that the <code class="language-plaintext highlighter-rouge">x_what_binding</code> variable should now be set to the thing being deleted.</p>
 
 <p>However, we need to be careful to ask for the value of the variable represented by <code class="language-plaintext highlighter-rouge">x_what_binding</code> <em>in the new state</em>. Remember that <code class="language-plaintext highlighter-rouge">state</code> objects are immutable, so we have to look at the copy being returned to get the new value of the variable.</p>
 
-<p>So: we need to look up the variable name from <code class="language-plaintext highlighter-rouge">x_what_binding</code> in the new state returned by <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1</code>, like this:</p>
+<p>So, we need to look up the variable name from <code class="language-plaintext highlighter-rouge">x_what_binding</code> in the new state returned by <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1</code>, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
 </code></pre></div></div>
 
-<p>This is basically the approach we are going to use, but we need to use some extra mechanism to do it for reasons we’ll describe next.</p>
+<p>This is basically the approach we are going to use, but we need to use some extra mechanisms to do it for reasons described below.</p>
 
 <h3 id="operations">Operations</h3>
-<p>Actions that modify anything in the world state besides an MRS variable are called an “Operation” in Perplexity.  They go beyond manipulating the MRS and actually affect the world the person is speaking about. Any predication like <code class="language-plaintext highlighter-rouge">_delete_v_1</code> that wants to modify the state of the world needs to use an <code class="language-plaintext highlighter-rouge">Operation</code>.</p>
+<p>Actions that modify anything in the world state besides an MRS variable are called an <code class="language-plaintext highlighter-rouge">Operation</code> in Perplexity.  They go beyond manipulating the MRS and actually affect the world the person is speaking about. Any predication like <code class="language-plaintext highlighter-rouge">_delete_v_1</code> that wants to modify the state of the world needs to use an <code class="language-plaintext highlighter-rouge">Operation</code>.</p>
 
-<p><code class="language-plaintext highlighter-rouge">Operation</code>s are a way of recording what to do and then doing it later: Think of an <code class="language-plaintext highlighter-rouge">Operation</code> as a way to package up a method call into an object and then <em>later</em> ask it to execute.</p>
+<p><code class="language-plaintext highlighter-rouge">Operations</code> are a way of recording what to do and then doing it later: Think of an <code class="language-plaintext highlighter-rouge">Operation</code> as a way to package up a method call into an object and then <em>later</em> ask it to execute.</p>
 
 <p>An <code class="language-plaintext highlighter-rouge">Operation</code> is simply a Python class that has a single method:</p>
 
@@ -370,14 +372,14 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def apply_to(self, state):
         state.file_system.delete_item(self.value_to_delete)
 </code></pre></div></div>
-<p>The <code class="language-plaintext highlighter-rouge">DeleteOperation</code> itself is very simple, it is really just remembering what to delete. When it is asked to <code class="language-plaintext highlighter-rouge">apply_to()</code> it calls the method in the <code class="language-plaintext highlighter-rouge">state</code> object that actually deletes the file, <em>in that state object</em> (which might be different than the one it was added to).</p>
+<p>The <code class="language-plaintext highlighter-rouge">DeleteOperation</code> itself is very simple, it is really just remembering what to delete. When it is asked to <code class="language-plaintext highlighter-rouge">apply_to()</code>, it calls the method in the <code class="language-plaintext highlighter-rouge">state</code> object that actually deletes the file, in <em>that</em> state object (which might be different than the one it was added to).</p>
 
-<p>To use the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>, we create one and pass it to a method in the <code class="language-plaintext highlighter-rouge">State</code> object, like this:</p>
+<p>To use the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>, we create an instance of one and pass it to a method in the <code class="language-plaintext highlighter-rouge">State</code> object, like this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>operation = DeleteOperation(new_state.get_binding(x_what_binding.variable.name).value[0])
 new_state.record_operations([operation])
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">State</code> object has a <code class="language-plaintext highlighter-rouge">record_operations()</code> method that takes a list of operations to record, in this case we’re only doing one. Those two lines of code record that we want to delete a particular file, but it doesn’t actually <em>do</em> it yet.  Later, when we have the final solution group, we can gather all of the operations that were done to the solutions in the group and call <code class="language-plaintext highlighter-rouge">apply_operations()</code> on the one single state we want to represent the new world.</p>
+<p>The <code class="language-plaintext highlighter-rouge">State</code> object has a <code class="language-plaintext highlighter-rouge">record_operations()</code> method that takes a list of operations to record, but in this case we’re only doing one. Those two lines of code record that we want to delete a particular file, but they don’t actually <em>do</em> it yet.  Later, when we have the final solution group, we can gather all of the operations that were done to the solutions in the group and call <code class="language-plaintext highlighter-rouge">apply_operations()</code> on the one single state we want to represent the new world.</p>
 
 <p>This solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don’t want files <em>actually being deleted</em> during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the “new state of the world” once we know what to do.</p>
 
@@ -403,6 +405,8 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 </code></pre></div></div>
 
 <p>The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of <code class="language-plaintext highlighter-rouge">interact_once()</code></p>
+
+<h3 id="todo-talk-about-pronx">TODO: Talk about pron(x)</h3>
 
 <p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo70ActionVerbs.md">edit</a>]</p>
 
