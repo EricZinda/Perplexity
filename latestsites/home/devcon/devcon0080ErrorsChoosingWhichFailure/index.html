@@ -247,8 +247,6 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Parse and Tree</a></li>
           
-            <li><a href="/Perplexity/home/pxint/pxint0075SentenceForce/">Sentence Types</a></li>
-          
             <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
@@ -431,79 +429,6 @@ Bob: (bad answer) "I thought about handing you ketchup,
   <li>Every time a predication fails, if it is the “deepest” failure so far, remember that error</li>
   <li>If the MRS has no solutions, report the remembered error to the user</li>
 </ul>
-
-<p>So, we will need to remember the “current deepest” error as we go. To organize the methods and variables dealing with executing predications and tracking errors, we’ll move our existing <code class="language-plaintext highlighter-rouge">Call()</code>, <code class="language-plaintext highlighter-rouge">CallPredication()</code> and <code class="language-plaintext highlighter-rouge">RespondToMRS()</code> functions into a class called <code class="language-plaintext highlighter-rouge">ExecutionContext</code>. Then, we can track our “current deepest” error there, along with a variable that tracks how deep the currently executing predication is.</p>
-
-<p>The following methods aren’t changed at all from what we wrote in previous sections except for <code class="language-plaintext highlighter-rouge">Call()</code>.  It now assigns an “index” to each predication as they are executed so we know how deep we are. There is also now a global <code class="language-plaintext highlighter-rouge">ExecutionContext</code> that we’ll use for calling predications, along with a couple of methods that make it easy to call:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class ExecutionContext(object):
-    def __init__(self, vocabulary):
-        
-        ...
-        
-        self._error = None
-        self._error_predication_index = -1
-        self._predication_index = -1
-
-    def Call(self, vocabulary, state, term):
-        # Keep track of how deep in the tree this 
-        # predication is
-        last_predication_index = self._predication_index
-        self._predication_index += 1
-
-        ...
-
-        # Restore it since we are recursing
-        self._predication_index = last_predication_index
-
-    # Do not use directly.
-    # Use Call() instead so that the predication index is set properly
-    def _CallPredication(self, vocabulary, state, predication):
-        
-        ...
-
-    def RespondToMRS(self, state, mrs):
-        
-        ...
-                          
-            
-# Create a global execution context to use when running the MRS
-execution_context = ExecutionContext(vocabulary)
-
-
-# Helper to access the global context so code is isolated from
-# how we manage it
-def DelphinContext():
-    return execution_context
-
-
-# Helper used by predications just to make the code easier to read
-def Call(*args, **kwargs):
-    yield from DelphinContext().Call(*args, **kwargs)
-</code></pre></div></div>
-
-<p>At this point, we’ve just restructured things into an <code class="language-plaintext highlighter-rouge">ExecutionContext</code> class and started giving an “index” to every predication, but we’re not using it.</p>
-
-<p>Next, we can create a <code class="language-plaintext highlighter-rouge">ReportError()</code> method that will do the work of recording the “deepest” error, along with a helper function to make it easy to call.</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class ExecutionContext(object):
-    
-    ...
-    
-    def ReportError(self, error):
-        if self._error_predication_index &lt; self._predication_index:
-            self._error = error
-            self._error_predication_index = self._predication_index
-
-
-def ReportError(error):
-    DelphinContext().ReportError(error)
-</code></pre></div></div>
-
-<p>The system will now remember which is the right (“deepest”) error to report. The next section will describe what they should say. This is not as obvious as it might seem.</p>
-
-<blockquote>
-  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
-</blockquote>
 
 <p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md">edit</a>]</p>
 

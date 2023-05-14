@@ -1,8 +1,6 @@
   {
     "home": [
       {"Section": "MRS Solver Conceptual", "Pages": [
-        {"Page": "devhowtoConjunctions", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoConjunctions.md", "BaseReferrer": "home/docs/devcon/devcon0060WhichParseAndTree.md", "Referrer": "home/docs/devcon/devcon0060WhichParseAndTree.md", "FileMissing": true},
-        {"Page": "devhowtoGenerateMRSAndTrees", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoGenerateMRSAndTrees.md", "BaseReferrer": "home/docs/devcon/devcon0060WhichParseAndTree.md", "Referrer": "home/docs/devcon/devcon0060WhichParseAndTree.md", "FileMissing": true},
         {"Page": "devhowtoMRS", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRS.md", "BaseReferrer": "home/docs/devcon/devcon0010MRSSolver.md", "Referrer": "home/docs/devcon/devcon0010MRSSolver.md", "FileMissing": true},
         {"Page": "devhowtoMRSSolver", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRSSolver.md", "BaseReferrer": "home/docs/devcon/devcon0020MRSSolverSets.md", "Referrer": "home/docs/devcon/devcon0020MRSSolverSets.md", "FileMissing": true},
         {"Page": "devhowtoMRSSolverSets", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRSSolverSets.md", "BaseReferrer": "home/docs/devcon/devcon0010MRSSolver.md", "Referrer": "home/docs/devcon/devcon0010MRSSolver.md", "FileMissing": true},
@@ -10,7 +8,6 @@
         {"Page": "devhowtoMRSSolverSolutionGroups", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRSSolverSolutionGroups.md", "BaseReferrer": "home/docs/devcon/devcon0020MRSSolverSets.md", "Referrer": "home/docs/devcon/devcon0020MRSSolverSets.md", "FileMissing": true},
         {"Page": "devhowtoMRSSolverSolutionGroupsAlgorithm", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "BaseReferrer": "home/docs/devcon/devcon0030MRSSolverSolutionGroups.md", "Referrer": "home/docs/devcon/devcon0030MRSSolverSolutionGroups.md", "FileMissing": true},
         {"Page": "devhowtoPredicationContract", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoPredicationContract.md", "BaseReferrer": "home/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "Referrer": "home/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "FileMissing": true},
-        {"Page": "devhowtoReportingAFailure", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoReportingAFailure.md", "BaseReferrer": "home/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "Referrer": "home/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "FileMissing": true},
         {"Page": "devhowtoSimplePropositions", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoSimplePropositions.md", "BaseReferrer": "home/docs/devcon/devcon0070SentenceForce.md", "Referrer": "home/docs/devcon/devcon0070SentenceForce.md", "FileMissing": true},
         {"Page": "devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/devcon/devcon0010MRSSolver.md", "Referrer": "home/docs/devcon/devcon0010MRSSolver.md", "FileMissing": true}
       ]},
@@ -53,7 +50,6 @@
         {"Page": "devhowtoReportingAFailure", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoReportingAFailure.md", "BaseReferrer": "home/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md", "Referrer": "home/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md", "FileMissing": true},
         {"Page": "devhowtoScopalArguments", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoScopalArguments.md", "BaseReferrer": "home/docs/pxint/pxint0050Conjunctions.md", "Referrer": "home/docs/pxint/pxint0050Conjunctions.md", "FileMissing": true},
         {"Page": "devhowtoSentenceForce", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoSentenceForce.md", "BaseReferrer": "home/docs/pxint/pxint0080SimplePropositions.md", "Referrer": "home/docs/pxint/pxint0080SimplePropositions.md", "FileMissing": true},
-        {"Page": "devhowtoSimplePropositions", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoSimplePropositions.md", "BaseReferrer": "home/docs/pxint/pxint0075SentenceForce.md", "Referrer": "home/docs/pxint/pxint0075SentenceForce.md", "FileMissing": true},
         {"Page": "devhowtoSimpleQuestions", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoSimpleQuestions.md", "BaseReferrer": "home/docs/pxint/pxint0080SimplePropositions.md", "Referrer": "home/docs/pxint/pxint0080SimplePropositions.md", "FileMissing": true},
         {"Page": "devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/pxint/pxint0010PredicationContract.md", "Referrer": "home/docs/pxint/pxint0010PredicationContract.md", "FileMissing": true},
         {"Page": "devhowtoWhichParseAndTree", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoWhichParseAndTree.md", "BaseReferrer": "home/docs/pxint/pxint0070GenerateMRSAndTrees.md", "Referrer": "home/docs/pxint/pxint0070GenerateMRSAndTrees.md", "FileMissing": true},
