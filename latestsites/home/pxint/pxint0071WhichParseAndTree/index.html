@@ -247,8 +247,6 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/" class="active">Choosing a Parse and Tree</a></li>
           
-            <li><a href="/Perplexity/home/pxint/pxint0075SentenceForce/">Sentence Types</a></li>
-          
             <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
@@ -320,24 +318,6 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="determining-the-right-parse-and-tree">Determining the Right Parse and Tree</h2>
-<p>As discussed in the MRS topic and the Well-Formed Trees topic, a single phrase like “Look under the table” produces <code class="language-plaintext highlighter-rouge">m</code> MRS documents, and each of those produces <code class="language-plaintext highlighter-rouge">n</code> well-formed trees, thus generating <code class="language-plaintext highlighter-rouge">m x n</code> potential interpretations of a phrase. How do you determine which one is the one the user <em>meant</em>?</p>
-
-<p>The short answer is that, just like when you are talking to a human, you never <em>really</em> know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: First, <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> uses a machine-learning-based algorithm to sort the MRS documents and returns the “most common” ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the well-formed trees. So, at best we have a partial ordering of the <code class="language-plaintext highlighter-rouge">m x n</code> trees in terms of “most commonly meant”.</p>
-
-<p>With that in mind, a simple approach to choosing the “right” interpretation that works surprisingly well is:</p>
-
-<blockquote>
-  <p>Execute each well-formed tree against the world state using the provided partial order. Assume the first one that succeeds is what the user meant. If none succeed, return the first failure.</p>
-</blockquote>
-
-<p>This works for the same reason human interactions work: Most phrases are meant to convey information that <em>makes sense</em>. I.e. the phrase discusses things that actually exist, uses verbs that make sense with objects being discussed, etc. So, most phrases the user gives your system <em>should</em> have a solution given the current world state. Furthermore, humans have an intuitive understanding of the ambiguity of language and are forgiving of errors when they are understandable and logical failures. I.e. “I can see why you thought that, even though it wasn’t what I meant…”.</p>
-
-<p>So, if the system finds a tree that has a solution in the current world state, it is likely to be at least close to what the user meant. Even if it isn’t, given that it was a solution in the world state, it will still be <em>logical</em> and the user will very often understand (and sometimes be delighted by) how their phrase was misinterpreted.</p>
-
-<p>Thus, the approach to finding which of the <code class="language-plaintext highlighter-rouge">m x n</code> meanings is the “meant one” is to run them all, in order, and assume the first that works is the right one.</p>
-
-<p>Things get a little trickier if none of them works. However, the same principle holds: as long as the error response we give is <em>logical</em> and <em>understandable</em>, it will make sense to the user, even if it isn’t quite the answer a person would have given. Often we can do better than just returning the first failure, but this requires knowing what kinds of errors your particular system produces, which ones are less useful, etc. For now, we’ll just return the first failure.</p>
-
 <p>To implement the code for choosing the right tree, we’re going to create a new class that will be the main entry point into the whole system. It is called <code class="language-plaintext highlighter-rouge">UserInterface</code> and its main method is <code class="language-plaintext highlighter-rouge">interact_once()</code>. Each call to that method does a single “command/response” interaction with the system. It uses the code we wrote in the previous topic to convert the phrase to MRS, and then generate the trees for the MRS. It then iterates through all of them and solves them using <code class="language-plaintext highlighter-rouge">solve_mrs_tree()</code> which solves the tree using the approach we saw in the Conjunctions topic:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class UserInterface(object):
