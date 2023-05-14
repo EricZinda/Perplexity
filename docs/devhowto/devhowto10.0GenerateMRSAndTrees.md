@@ -1,5 +1,5 @@
 ## Converting Phrases to MRS and Well-Formed Trees
-Now that we've got the basic algorithm worked out for solving a well-formed tree, it is time to work through how to generate them. Let's take our knowledge of MRS and well-formed trees and write the code that will convert a human phrase into all its interpretations -- i.e. generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.
+Now let's take our knowledge of MRS and well-formed trees and write the code that will convert a human phrase into all its interpretations -- i.e. generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.
 
 First, we'll write code to use the [ACE parser](http://sweaglesw.org/linguistics/ace/) to convert a phrase into an MRS document. We can use the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin) to do this. The only trick is that we need to supply a grammar file. The grammar file tells ACE which language we are speaking. It is platform dependent, so we've got a helper function that determines which one to return for the current user:
 ~~~

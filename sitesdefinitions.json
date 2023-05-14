@@ -34,7 +34,8 @@
         {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSets.md", "DstFile": "devhowto/devhowtoMRSSolverSets.md"},
         {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroups.md"},
         {"Page": "Coll/Dist/Cuml Algorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md"},
-        {"Page": "Combinations and Proper Responses", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionCombinations.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionCombinations.md"}
+        {"Page": "Combinations and Proper Responses", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionCombinations.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionCombinations.md"},
+        {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "DstFile": "devhowto/devhowto10.0GenerateMRSAndTrees.md"}
       ]},
       {"Section": "Perplexity How-to", "Pages": [
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo10Overview.md", "DstFile": "pxhowto/pxHowTo10Overview.md"},
@@ -43,7 +44,7 @@
         {"Page": "In-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo30InStylePredications.md", "DstFile": "pxhowto/pxHowTo30InStylePredications.md"},
         {"Page": "Lift-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo40LiftStylePredications.md", "DstFile": "pxhowto/pxHowTo40LiftStylePredications.md"},
         {"Page": "Event Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo50EventPredications.md", "DstFile": "pxhowto/pxHowTo50EventPredications.md"},
-        {"Page": "Action Verbs", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo70ActionVerbs.md", "DstFile": "pxhowto/pxHowTo70ActionVerbs.md"},
+        {"Page": "Verb Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo70ActionVerbs.md", "DstFile": "pxhowto/pxHowTo70ActionVerbs.md"},
         {"Page": "Quantifiers and Determiners", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md", "DstFile": "pxhowto/pxHowTo80QuantifiersAndDeterminers.md"}
       ]}
 
