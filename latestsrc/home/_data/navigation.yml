@@ -24,6 +24,8 @@ toc:
         url: "/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm/"
       - title: "Combinations and Proper Responses"
         url: "/devhowto/devhowtoMRSSolverSolutionCombinations/"
+      - title: "Generating MRS and Trees"
+        url: "/devhowto/devhowto10.0GenerateMRSAndTrees/"
   - title: "Perplexity How-to"
     children:
       - title: "Overview"
@@ -38,7 +40,7 @@ toc:
         url: "/pxhowto/pxHowTo40LiftStylePredications/"
       - title: "Event Predications"
         url: "/pxhowto/pxHowTo50EventPredications/"
-      - title: "Action Verbs"
+      - title: "Verb Predications"
         url: "/pxhowto/pxHowTo70ActionVerbs/"
       - title: "Quantifiers and Determiners"
         url: "/pxhowto/pxHowTo80QuantifiersAndDeterminers/"
