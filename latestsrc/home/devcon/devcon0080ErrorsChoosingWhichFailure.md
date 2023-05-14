@@ -95,4 +95,6 @@ Here's a more explicit algorithm:
 - Every time a predication fails, if it is the "deepest" failure so far, remember that error
 - If the MRS has no solutions, report the remembered error to the user
 
+[Perplexity Internals](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure) gives a good example of how Perplexity registers and reports failures. 
+
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0080ErrorsChoosingWhichFailure.md)]{% endraw %}

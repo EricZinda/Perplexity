@@ -318,6 +318,8 @@
       <section class="page__content e-content" itemprop="text">
         
         <h3 id="reporting-the-right-failure">Reporting the Right Failure</h3>
+<p>As described in the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure">Choosing a Failure</a>, a good heurstic to use for reporting failures to the user is to pick the “deepest” failure encountered. Here we’ll walk through how Perplexity does that.</p>
+
 <p>We will need to remember the “current deepest” error as we go. To organize the methods and variables dealing with executing predications and tracking errors, we’ll move our existing <code class="language-plaintext highlighter-rouge">Call()</code>, <code class="language-plaintext highlighter-rouge">CallPredication()</code> and <code class="language-plaintext highlighter-rouge">RespondToMRS()</code> functions into a class called <code class="language-plaintext highlighter-rouge">ExecutionContext</code>. Then, we can track our “current deepest” error there, along with a variable that tracks how deep the currently executing predication is.</p>
 
 <p>The following methods aren’t changed at all from what we wrote in previous sections except for <code class="language-plaintext highlighter-rouge">Call()</code>.  It now assigns an “index” to each predication as they are executed so we know how deep we are. There is also now a global <code class="language-plaintext highlighter-rouge">ExecutionContext</code> that we’ll use for calling predications, along with a couple of methods that make it easy to call:</p>
