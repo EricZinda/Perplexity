@@ -169,3 +169,9 @@ One approach to handling this is to do the merging differently with `the`.
 |`the`: `between(1, 1)`| `_a_q`: `between(1, 1)`|
 |`card`: `between(2, 2)`| `NUM: sg`: `between(1, 1)` |
 |`NUM: pl`: `between(2, inf)`| |
+
+
+
+### Other Observations and Thoughts
+- For `prop` and `ques` phrases, we want to add "there are more" even if there are more *in the current solution group*. If the user says, "a few files are in this folder" and there are 100, we'd like it to say "yes but there are more". For `wh-ques` and `comm` phrases, we want it to say "there are more" if there is another *solution group*. Said another way: for `prop`, we need to respond with "there are more" if it is "at least" or "exactly" once we get above the level that a normal person would say "at least" for.  So, sometimes we say "there are more" for when there is another solution group, but other times we say "there are more" for when "only" would have failed.  For example: "a few files ..." works for 100 files since it is "at least". but "only a few files" would fail.
+- Any variable that has max=inf will end up with only 1 valid set of individuals in any solution group. If all variables have this, there will be only one unique solution group.  A variable that has a range such as between(2, 4), will generate a subset for each count until it gets to 4. For example, there will be a subset that has 2 items, one that has 3, and one that has 4. It will *also* generate alternatives that are unique for each set < 4.
