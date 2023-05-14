@@ -217,6 +217,34 @@
         
       </li>
     
+      <li>
+        
+          <span class="nav__sub-title">Perplexity How-to</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo11State/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo20ImplementAPredication/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Overview</a></li>
+          
+        </ul>
+        
+      </li>
+    
   </ul>
 </nav>
 
@@ -543,7 +571,7 @@ Group 3:
   <li><strong>Merge answers</strong>: We can reduce the number of sets we have to consider in <code class="language-plaintext highlighter-rouge">set_list</code> by observing that we only need to add a new set to the set list if we have a set that needs to be the base for more alternatives. Variables that have constraints with an upper limit of <code class="language-plaintext highlighter-rouge">inf</code> don’t need to generate all the combinations since they will just be subsets of the one maximal set. So, if a solution only introduces new individuals to variables that have an upper limit of <code class="language-plaintext highlighter-rouge">inf</code>, it can just be merged into that set, it doesn’t need to be added as a separate set to <code class="language-plaintext highlighter-rouge">set_list</code>.</li>
 </ul>
 
-<h3 id="other-observations-still-being-developed">Other Observations Still Being Developed</h3>
+<h3 id="other-observations-and-thoughts">Other Observations and Thoughts</h3>
 <ul>
   <li>For <code class="language-plaintext highlighter-rouge">prop</code> and <code class="language-plaintext highlighter-rouge">ques</code> phrases, we want to add “there are more” even if there are more <em>in the current solution group</em>. If the user says, “a few files are in this folder” and there are 100, we’d like it to say “yes but there are more”. For <code class="language-plaintext highlighter-rouge">wh-ques</code> and <code class="language-plaintext highlighter-rouge">comm</code> phrases, we want it to say “there are more” if there is another <em>solution group</em>. Said another way: for <code class="language-plaintext highlighter-rouge">prop</code>, we need to respond with “there are more” if it is “at least” or “exactly” once we get above the level that a normal person would say “at least” for.  So, sometimes we say “there are more” for when there is another solution group, but other times we say “there are more” for when “only” would have failed.  For example: “a few files …” works for 100 files since it is “at least”. but “only a few files” would fail.</li>
   <li>Any variable that has max=inf will end up with only 1 valid set of individuals in any solution group. If all variables have this, there will be only one unique solution group.  A variable that has a range such as between(2, 4), will generate a subset for each count until it gets to 4. For example, there will be a subset that has 2 items, one that has 3, and one that has 4. It will <em>also</em> generate alternatives that are unique for each set &lt; 4.</li>

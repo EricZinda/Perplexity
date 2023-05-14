@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">
 
 
 
@@ -173,7 +173,7 @@
         
         <ul>
           
-            <li><a href="/Perplexity/home/devhowto/devhowtoOverview/" class="active">Overview</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowtoOverview/">Overview</a></li>
           
         </ul>
         
@@ -231,7 +231,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo20ImplementAPredication/">Overview</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">Overview</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/" class="active">Overview</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Overview</a></li>
           
@@ -271,22 +271,89 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h1 id="overview">Overview</h1>
-<p>The DELPH-IN Consortium has developed a large and rich set of technologies for manipulating natural language. The list of <a href="https://blog.inductorsoftware.com/docsproto/home/DelphinApplications/">DELPH-IN applications</a> is a great place to start for a survey of different approaches to using them.  There you will find pointers to uses such as identification of speculative or negated event mentions in biomedical text (MacKinlay et al 2011), question generation (Yao et al 2012), detecting the scope of negation (Packard et al 2014), relating natural language to robot control language (Packard 2014), and recognizing textual entailment (PETE task; Lien &amp; Kouylekov 2015). ERS representations have also been beneficial in semantic transfer-based MT (Oepen et al 2007, Bond et al 2011), ontology acquisition (Herbelot &amp; Copestake 2006), extraction of glossary sentences (Reiplinger et al 2012), sentiment analysis (Kramer &amp; Gordon 2014), and the ACL Anthology Searchbench (Schäfer et al 2011), and many more.</p>
+        <h2 id="predications-with-multiple-x-arguments">Predications with Multiple X Arguments</h2>
+<p>Logic gets more complicated when there is more than one <code class="language-plaintext highlighter-rouge">x</code> argument because there are many cases to handle. The predication for “in” from “a file is in a folder” is:</p>
 
-<p>This tutorial is designed to show <em>developers</em> how to consume a narrow set of DELPH-IN technologies (especially <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">MRS</a> and <a href="http://sweaglesw.org/linguistics/ace/">ACE</a>) to build an application. It focuses on <em>one particular</em> application (a natural language interface to a computer’s file system), but the concepts should apply to any type of constrained system (‘constrained’ in the sense of the size of the world under discussion). It also takes <em>one particular approach</em> to building the system by logically evaluating the output of the DELPH-IN parsers against a world definition. While this approach may not be the right one for every application, the concepts illustrated and the tools used along the way should be more broadly applicable.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,x1,x2)
+</code></pre></div></div>
+<p>Ignoring the event argument <code class="language-plaintext highlighter-rouge">e2</code> for the moment, there are two <code class="language-plaintext highlighter-rouge">x</code> arguments. The predicate checks whether <code class="language-plaintext highlighter-rouge">x1</code> is “in” <code class="language-plaintext highlighter-rouge">x2</code> (whatever that means in the application). Because of combinatorial values (described in the previous topic), if the predication is called with two combinatorial arguments that have two values each, like this:</p>
 
-<p>The tutorial will use the <a href="https://blog.inductorsoftware.com/docsproto/erg/ErgTop/">DELPH-IN English Resource Grammar (ERG)</a> to parse English, but the concepts are the same across the <a href="https://blog.inductorsoftware.com/docsproto/grammars/NorsourceTop/">DELPH-IN grammars</a>.  In fact, the library functions we build have no dependency on the grammar at all. They can be used for any of the DELPH-IN grammars.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,[file1, file2],[folder1, folder2])
+</code></pre></div></div>
 
-<p>Python was chosen as a simple, popular, open-source language available on many platforms. However, the examples and approach shown here could be implemented in any language. There is not much code in the core solver and associated helper functions that would need to be translated. The overwhelming majority of code will be in the implementation of the terms you implement for your own domain.</p>
+<p>It will need to check all combinations of the first argument with the second, and yield any that are true, like this:</p>
 
-<p>It is designed to be read in order, but the most important background is in the first two sections, <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS">The Minimal Recursion Semantics (MRS) Format</a> and <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoWellFormedTree">Building Well-Formed MRS Trees</a>. These should definitely be read before moving on to the rest of the topics. The rest of the topics broadly break down into <em>conceptual topics</em> which cover the algorithms and concepts needed to implement a system and <em>how-to topics</em> which walk through writing the Python code to implement them.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check: [file1] in [folder1]?
+check: [file1] in [folder2]?
+check: [file2] in [folder1]?
+check: [file2] in [folder2]?
+check: [file1, file2] in [folder1]?
+check: [file1, file2] in [folder2]?
+check: [file1, file2] in [folder1, folder2]?
+</code></pre></div></div>
+<p>We can reduce the combinations that need to be checked by remembering that, when a variable has a set of more than one item, it means “together”.  So, “[file1, file2] in [folder1]?” means “are file1 and file2 in folder1 <em>together</em>?”, For files, at least, saying two files are in a folder “together” is no different than saying they are in a folder “separately”. If <code class="language-plaintext highlighter-rouge">file1</code> is in <code class="language-plaintext highlighter-rouge">folder1</code> and <code class="language-plaintext highlighter-rouge">file2</code> is in <code class="language-plaintext highlighter-rouge">folder2</code>, then they are both in there separately <em>and</em> together. Note that the meaning of “in” in this case also doesn’t <em>exclude</em> someone saying “together” or “separately”. It is perfectly fine to say “Are file1 and file2 in folder2 together?”, it just doesn’t add anything to the meaning.</p>
 
-<blockquote>
-  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
-</blockquote>
+<p>This observation allows us to simplify the number of checks down to this:</p>
 
-<p>Last update: 2023-04-27 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowtoOverview.md">edit</a>]</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check: [file1] in [folder1]?
+check: [file1] in [folder2]?
+check: [file2] in [folder1]?
+check: [file2] in [folder2]?
+</code></pre></div></div>
+
+<p>If those are all true, then these must be too (without having to check):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check: [file1, file2] in [folder1]?
+check: [file1, file2] in [folder2]?
+check: [file1, file2] in [folder1, folder2]?
+</code></pre></div></div>
+
+<p>This observation can greatly reduce the number of checks needed. If there are 10 files in <code class="language-plaintext highlighter-rouge">x1</code>, checking all combinations for even one folder would take <code class="language-plaintext highlighter-rouge">n^10 - 1 = 1023</code> checks! If we only check them individually, it only takes 10.</p>
+
+<p>It should be noted that, even though we can avoid the checks for many sets, in theory we still have to yield all the possible combinations. In the next topic we’ll walk through how to avoid this for many cases as well.</p>
+
+<p>The logic for checking if variables have combinatorial values, doing the optimization above, and yielding the right values can be long and repetative. So, like for the single <code class="language-plaintext highlighter-rouge">x</code> case from the previous topic, Perplexity has a function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_in_p_loc"])
+def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    def check_item_in_item(item1, item2):
+        return is_item_in_item(item1, item2)
+    
+    ...
+
+    yield from in_style_predication(state, x_actor_binding, x_location_binding, check_item_in_item, ...)
+</code></pre></div></div>
+
+<p>[The example uses a placeholder function <code class="language-plaintext highlighter-rouge">is_item_in_item(item1, item2)</code> to do the checking since its logic is application specific.]</p>
+
+<p>The function is called <code class="language-plaintext highlighter-rouge">in_style_predication()</code> because it uses the behavior of “in” as a template.  Any predication that is associative like “in” (meaning that it doesn’t have a different meaning for together or separately but is OK if they are said) can use this same helper to implement the logic efficiently.</p>
+
+<h4 id="unbound-arguments">Unbound Arguments</h4>
+<p>As discussed in the previous section, arguments to a predication aren’t always set (i.e. <em>bound</em>) as in the above example. When they are missing, the predication needs to yield all possible values for them that make the predication <code class="language-plaintext highlighter-rouge">true</code>.</p>
+
+<p>To support unbound arguments, <code class="language-plaintext highlighter-rouge">in_style_predication()</code> has two additional functions it supports: one for if the first argument is unbound and one if the second is. There is a final argument that is rarely used for when both are unbound. If it isn’t set, the system reports the error <code class="language-plaintext highlighter-rouge">beMoreSpecific</code> since the user said something that is really broad like “what is in anything?”.</p>
+
+<p>Presumably the system we are building would have an efficient way to find “things in something else” (or vice versa) so the example below uses fake functions that represent this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_in_p_loc"])
+def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    def check_item_in_item(item1, item2):
+        return is_item_in_item(item1, item2)
+    
+    def all_item1_in_item2(item2):
+        yield from all_contained_in(item2)
+
+    def all_item2_containing_item1(item1):
+        yield from all_containing(item1)
+
+    yield from in_style_predication(state, x_actor_binding, x_location_binding, check_item_in_item, all_item1_in_item2, all_item2_containing_item1)
+</code></pre></div></div>
+
+<p>Note that the two new functions need to <em>yield all alternatives</em> and not just return <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code>.</p>
+
+<p>And, as with the first “check” function, <code class="language-plaintext highlighter-rouge">in_style_predication()</code> does all the work to make sure that the two new functions are only passed single values even if the incoming values are combinatorial.</p>
+
+<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo30InStylePredications.md">edit</a>]</p>
 
         
       </section>

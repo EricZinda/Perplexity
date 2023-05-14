@@ -9,6 +9,14 @@
         {"Page": "devhowtoWhichParseAndTree", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoWhichParseAndTree.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "docs/devhowto/devhowtoMRS", "SrcDir": "main", "SrcFile": "docs/devhowto/docs/devhowto/devhowtoMRS.md", "BaseReferrer": "home/docs/devhowto/devhowtoMRS.md", "Referrer": "home/docs/devhowto/devhowtoMRS.md", "FileMissing": true},
         {"Page": "docs/devhowto/devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/devhowto/docs/devhowto/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "Referrer": "home/docs/devhowto/devhowtoWellFormedTree.md", "FileMissing": true}
+      ]},
+      {"Section": "Perplexity How-to", "Pages": [
+        {"Page": "devhowtoPredicationContract", "SrcDir": "main", "SrcFile": "docs/pxHowTo/devhowtoPredicationContract.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo11State.md", "Referrer": "home/docs/pxHowTo/pxHowTo11State.md", "FileMissing": true},
+        {"Page": "docs/pxHowTo/pxHowTo11State", "SrcDir": "main", "SrcFile": "docs/pxHowTo/docs/pxHowTo/pxHowTo11State.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo11State.md", "Referrer": "home/docs/pxHowTo/pxHowTo11State.md", "FileMissing": true},
+        {"Page": "docs/pxHowTo/pxHowTo20ImplementAPredication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/docs/pxHowTo/pxHowTo20ImplementAPredication.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo20ImplementAPredication.md", "Referrer": "home/docs/pxHowTo/pxHowTo20ImplementAPredication.md", "FileMissing": true},
+        {"Page": "docs/pxHowTo/pxHowTo30InStylePredications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/docs/pxHowTo/pxHowTo30InStylePredications.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo30InStylePredications.md", "Referrer": "home/docs/pxHowTo/pxHowTo30InStylePredications.md", "FileMissing": true},
+        {"Page": "docs/pxHowTo/pxHowTo40LiftStylePredications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/docs/pxHowTo/pxHowTo40LiftStylePredications.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo40LiftStylePredications.md", "Referrer": "home/docs/pxHowTo/pxHowTo40LiftStylePredications.md", "FileMissing": true},
+        {"Page": "docs/pxHowTo/pxHowTo50EventPredications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/docs/pxHowTo/pxHowTo50EventPredications.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo50EventPredications.md", "Referrer": "home/docs/pxHowTo/pxHowTo50EventPredications.md", "FileMissing": true}
       ]}
     ]
   }
