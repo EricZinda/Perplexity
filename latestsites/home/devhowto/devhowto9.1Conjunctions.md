@@ -1,4 +1,4 @@
-{% raw %}#### Conjuctions of Predications
+{% raw %}#### Solving Conjuctions of Predications
 There are two ways to group predications together in an MRS: as a "conjunction" (i.e. a logical "and") or by using ["scopal arguments"](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoMRS). Scopal arguments allow passing *a predication* as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a [well-formed tree](https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoWellFormedTree). Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.
 
 To handle a logical "and" or "conjunction" of predications, we'll perform a depth-first search of the answers from each predication, evaluated in order. This means: take the variables set by the first predication, pass them to the second predication, and collect the successful result. Once you've iterated through all of them, you have the set of things that are true for all of the predications in the conjunction for that world.
