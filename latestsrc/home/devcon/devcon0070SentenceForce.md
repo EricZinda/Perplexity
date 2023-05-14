@@ -20,7 +20,7 @@ _a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
                         └ _large_a_1(e2,x3)
 ```
 
-You can see what *type* of phrase it is by looking at the [*properties* of that variable](). This is the first time we've had to inspect variable properties, so lets dig in there a bit. 
+You can see what *type* of phrase it is by looking at the [*properties* of its variables](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS). This is the first time we've had to inspect variable properties, so lets dig in there a bit. 
 
 You can see that, next to each argument in the MRS, there is a list of properties surrounded by `[]`. It looks like this for the `e2` argument of `_large_a_1`:
 
@@ -51,11 +51,11 @@ Note that these are all answers the user would expect if the statement worked.  
 - User: "A file is large." -> "No, that isn't true"
 - User: "Is a file large?" -> "No"
 - User: "Which file is large?" -> "No files are large"
-- User: "Make a file large." -> "test1.txt is now large"
+- User: "Make a file large." -> "test1.txt is now large" (still works because it isn't looking for large files, it is making them large)
 
-[Perplexity Internals](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions) discusses how to go about coding responses to these different sentence types concretely.
+So, the sentence force property is key to understanding the types of responses a user expects. [Perplexity Internals](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions) discusses how to go about coding responses to these different sentence types concretely.
 
-In the next section we'll talk about how to handle failures.
+In the [next section](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure) we'll talk about how to handle failures in a backtracking system.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 

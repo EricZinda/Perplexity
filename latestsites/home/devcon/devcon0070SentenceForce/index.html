@@ -203,6 +203,8 @@
         
         <ul>
           
+            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
+          
             <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
@@ -230,6 +232,8 @@
 
         
         <ul>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0000Overview/">Overview</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0010PredicationContract/">The Predication Contract</a></li>
           
@@ -338,7 +342,7 @@ _a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
                         └ _large_a_1(e2,x3)
 </code></pre></div></div>
 
-<p>You can see what <em>type</em> of phrase it is by looking at the <a href=""><em>properties</em> of that variable</a>. This is the first time we’ve had to inspect variable properties, so lets dig in there a bit.</p>
+<p>You can see what <em>type</em> of phrase it is by looking at the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS"><em>properties</em> of its variables</a>. This is the first time we’ve had to inspect variable properties, so lets dig in there a bit.</p>
 
 <p>You can see that, next to each argument in the MRS, there is a list of properties surrounded by <code class="language-plaintext highlighter-rouge">[]</code>. It looks like this for the <code class="language-plaintext highlighter-rouge">e2</code> argument of <code class="language-plaintext highlighter-rouge">_large_a_1</code>:</p>
 
@@ -374,12 +378,12 @@ _a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
   <li>User: “A file is large.” -&gt; “No, that isn’t true”</li>
   <li>User: “Is a file large?” -&gt; “No”</li>
   <li>User: “Which file is large?” -&gt; “No files are large”</li>
-  <li>User: “Make a file large.” -&gt; “test1.txt is now large”</li>
+  <li>User: “Make a file large.” -&gt; “test1.txt is now large” (still works because it isn’t looking for large files, it is making them large)</li>
 </ul>
 
-<p><a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions">Perplexity Internals</a> discusses how to go about coding responses to these different sentence types concretely.</p>
+<p>So, the sentence force property is key to understanding the types of responses a user expects. <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions">Perplexity Internals</a> discusses how to go about coding responses to these different sentence types concretely.</p>
 
-<p>In the next section we’ll talk about how to handle failures.</p>
+<p>In the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure">next section</a> we’ll talk about how to handle failures in a backtracking system.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
