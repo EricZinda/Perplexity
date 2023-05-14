@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo10Overview/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo10Overview/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/">
 
 
 
@@ -213,7 +213,7 @@
           
             <li><a href="/Perplexity/home/devhowto/devhowtoMRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
           
-            <li><a href="/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
+            <li><a href="/Perplexity/home/devhowto/devhowto10.0GenerateMRSAndTrees/" class="active">Generating MRS and Trees</a></li>
           
         </ul>
         
@@ -227,7 +227,7 @@
         
         <ul>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/" class="active">Overview</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/">Overview</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo11State/">State</a></li>
           
@@ -273,99 +273,138 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="perplexity-overview">Perplexity Overview</h2>
-<p>Perplexity is a Python library designed to support building natural language software interfaces on DELPH-IN grammars. Interfaces are built by implementing an application vocabulary using Python functions.</p>
+        <h2 id="converting-phrases-to-mrs-and-well-formed-trees">Converting Phrases to MRS and Well-Formed Trees</h2>
+<p>Now let’s take our knowledge of MRS and well-formed trees and write the code that will convert a human phrase into all its interpretations – i.e. generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.</p>
 
-<p>The simplest Perplexity application is:</p>
+<p>First, we’ll write code to use the <a href="http://sweaglesw.org/linguistics/ace/">ACE parser</a> to convert a phrase into an MRS document. We can use the <code class="language-plaintext highlighter-rouge">ACEParser</code> class from <a href="https://github.com/delph-in/pydelphin"><code class="language-plaintext highlighter-rouge">pydelphin</code></a> to do this. The only trick is that we need to supply a grammar file. The grammar file tells ACE which language we are speaking. It is platform dependent, so we’ve got a helper function that determines which one to return for the current user:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    def mrss_from_phrase(self, phrase):
+        # Don't print errors to the screen
+        f = open(os.devnull, 'w')
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from perplexity.state import State
-from perplexity.user_interface import UserInterface
-from perplexity.vocabulary import Vocabulary
+        # Create an instance of the ACE parser and ask to give &lt;= 25 MRS documents
+        with ace.ACEParser(self.erg_file(), cmdargs=['-n', '25'], stderr=f) as parser:
+            ace_response = parser.interact(phrase)
 
-vocabulary = Vocabulary()
-
-
-def reset():
-    return State([])
-
-
-def hello_world():
-    user_interface = UserInterface(reset, vocabulary)
-
-    while True:
-        user_interface.interact_once()
-        print()
+        for parse_result in ace_response.results():
+            # Keep track of the original phrase on the object
+            mrs = parse_result.mrs()
+            mrs.surface = phrase
+            yield mrs
 
 
-if __name__ == '__main__':
-    hello_world()
+    def erg_file(self):
+        if sys.platform == "linux":
+            ergFile = "erg-2020-ubuntu-perplexity.dat"
+
+        elif sys.platform == "darwin":
+            # Mac returns darwin for both M1 and Intel silicon, need to dig deeper
+            unameResult = platform.uname()
+
+            if "ARM" in unameResult.version:
+                # M1 silicon
+                ergFile = "erg-2020-osx-m1-perplexity.dat"
+
+            else:
+                # Intel silicon
+                ergFile = "erg-2020-osx-perplexity.dat"
+
+        else:
+            ergFile = "erg-2020-ubuntu-perplexity.dat"
+
+        return ergFile
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">UserInterface</code> class is the main entry point to Perplexity.</p>
+<p>Next, we need to take those MRS documents and turn them into well-formed trees. For this, we’ll create a function called <code class="language-plaintext highlighter-rouge">trees_from_mrs()</code>. It will call the function we wrote in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoWellFormedTree">well-formed trees</a> called <code class="language-plaintext highlighter-rouge">valid_hole_assignments()</code> that does the assignments of predication labels to “holes” as discussed in that section.  It will then call the <code class="language-plaintext highlighter-rouge">tree_from_assignments()</code> function (also included below) that does the work of actually <em>building a tree</em> from those assignments and represents the tree using the text format we designed in the MRS to Python topic:</p>
 
-<p>It is created and passed a function (<code class="language-plaintext highlighter-rouge">reset()</code> in this example) whose job is to return an object derived from the <a href="https://github.com/EricZinda/Perplexity/blob/main/perplexity/state.py">Perplexity <code class="language-plaintext highlighter-rouge">State</code> class</a> that is in the “startup state”, whatever that means for the application.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def trees_from_mrs(self, mrs):
+    # Create a dict of predications using their labels as each key
+    # for easy access when building trees
+    # Note that a single label could represent multiple predications
+    # in conjunction so we need a list for each label
+    mrs_predication_dict = {}
+    for predication in mrs.predications:
+        if predication.label not in mrs_predication_dict.keys():
+            mrs_predication_dict[predication.label] = []
+        mrs_predication_dict[predication.label].append(predication)
 
-<p>The second argument is a <code class="language-plaintext highlighter-rouge">Vocabulary</code> object that contains all the vocabulary required for the application. We don’t yet have any vocabulary so an empty <code class="language-plaintext highlighter-rouge">Vocabulary</code> class is used above.</p>
+    # Iteratively return well-formed trees from the MRS
+    for holes_assignments in valid_hole_assignments(mrs, self.max_holes):
+        # valid_hole_assignments can return None if the grammar returns something
+        # that doesn't have the same number of holes and floaters (which is a grammar bug)
+        if holes_assignments is not None:
+            # Now we have the assignments of labels to holes, but we need
+            # to actually build the *tree* using that information
+            well_formed_tree = tree_from_assignments(mrs.top,
+                                                     holes_assignments,
+                                                     mrs_predication_dict,
+                                                     mrs)
+            pipeline_logger.debug(f"Tree: {well_formed_tree}")
+            yield well_formed_tree
+                
 
-<p>To allow user interaction, <code class="language-plaintext highlighter-rouge">UserInterface.interact_once()</code> is called in a loop.  That’s it!</p>
+def tree_from_assignments(hole_label, assignments, predication_dict, mrs):
+    # Get the list of predications that should fill in the hole
+    # represented by labelName
+    if hole_label in assignments.keys():
+        predication_list = predication_dict[assignments[hole_label]]
+    else:
+        predication_list = predication_dict[hole_label]
 
-<p>If you run this, you’ll get something like this:</p>
+    # predication_list is a list because multiple items might
+    # have the same key and should be put in conjunction (i.e. be and'd together)
+    conjunction_list = []
+    for predication in predication_list:
+        tree_node = [predication.predicate]
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python ./hello_world.py
-? hello!
-I don't know the words: unknown, greet, discourse
+        # Recurse through this predication's arguments
+        # and look for any scopal arguments to recursively convert
+        for arg_name in predication.args.keys():
+            original_value = predication.args[arg_name]
 
-? where am i?
-I don't know the words: loc_nonsp, place, which, pron, pronoun
+            # CARG arguments contain strings that are never
+            # variables, they are constants
+            if arg_name in ["CARG"]:
+                new_value = original_value
+            else:
+                argType = original_value[0]
+                if argType == "h":
+                    new_value = tree_from_assignments(original_value, assignments, predication_dict, mrs)
+                else:
+                    new_value = original_value
+
+            tree_node.append(new_value)
+
+        conjunction_list.append(tree_node)
+
+    # Since these are "and" they can be in any order
+    # Sort them into an order which ensures event variable
+    #   usage comes before introduction (i.e. ARG0)
+    return sort_conjunctions(conjunction_list)
 </code></pre></div></div>
 
-<p>So far, it has no vocabulary so it will just keep saying, “I don’t know the words…” until we implement some. That’s what the whole rest of the tutorial is about.</p>
+<p>The <code class="language-plaintext highlighter-rouge">sort_conjunctions()</code> function isn’t shown because it is not a small amount of code and it isn’t important to understanding the material here. It is there because our evaluation model evaluates predications in a depth-first manner. Terms that are in conjunction need to be evaluated in a particular order so that event arguments are filled in before they are used, and <code class="language-plaintext highlighter-rouge">sort_conjunctions()</code> does this. You can browse the code for it <a href="https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree.py">here</a>.</p>
 
-<h2 id="example">Example</h2>
-<p>We are implementing a natural language interface to a filesystem. so we derive from <code class="language-plaintext highlighter-rouge">State</code> and add two things to it.</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Optimized for the file system example
-class FileSystemState(State):
-    def __init__(self, file_system):
-        super().__init__([])
-        self.file_system = file_system
-        self.current_user = file_system_example.objects.Actor(name="User", person=1, file_system=file_system)
-        self.actors = [self.current_user,
-                       file_system_example.objects.Actor(name="Computer", person=2, file_system=file_system)]
+<p>With all that, we can now write code that takes a phrase and generates all the trees from it:</p>
 
-    def all_individuals(self):
-        yield from self.file_system.all_individuals()
-        yield from self.actors
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example17():
+    for mrs in mrss_from_phrase("every book is in a cave"):
+        for tree in trees_from_mrs(mrs):
+            print(tree)
 
-    def user(self):
-        return self.current_user
+
+# Example17() prints:
+[['_a_q', 'x9', [['_cave_n_1', 'x9']], [['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_in_p_loc', 'e2', 'x3', 'x9']]]]]]
+[['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_a_q', 'x9', [['_cave_n_1', 'x9']], [['_in_p_loc', 'e2', 'x3', 'x9']]]]]]
+[['_a_q', 'x10', [['_cave_n_1', 'x10']], [['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_in_p_state', 'e9', 'e2', 'x10'], ['ellipsis_ref', 'e2', 'x3']]]]]]
+[['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_a_q', 'x10', [['_cave_n_1', 'x10']], [['_in_p_state', 'e9', 'e2', 'x10'], ['ellipsis_ref', 'e2', 'x3']]]]]]
 </code></pre></div></div>
+<p>The next topic will describe a heuristic for determining which of those trees is the one the user meant.</p>
 
-<p>This will be the state object we’ll use, so now hello world is this, where the only change is telling the system to use our <code class="language-plaintext highlighter-rouge">FileSystemState</code> object instead of the built in <code class="language-plaintext highlighter-rouge">State</code>:</p>
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from perplexity.state import State
-from perplexity.user_interface import UserInterface
-from perplexity.vocabulary import Vocabulary
-
-vocabulary = Vocabulary()
-
-
-def reset():
-    return FileSystemState([])
-
-
-def hello_world():
-    user_interface = UserInterface(reset, vocabulary)
-
-    while True:
-        user_interface.interact_once()
-        print()
-
-
-if __name__ == '__main__':
-    hello_world()
-</code></pre></div></div>
-
-<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo10Overview.md">edit</a>]</p>
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devhowto/devhowto10.0GenerateMRSAndTrees.md">edit</a>]</p>
 
         
       </section>
