@@ -37,14 +37,10 @@ class State(object):
     # of MRS variables like "x1" and "e1"
     def get_binding(self, variable_name):
         # "get()" is one way to access a value in a dictionary.
-        # The second argument, "None", is what to return if the
-        # key doesn't exist.  "None" is a built-in value in Python
-        # like "null"
-        value = self.variables.get(variable_name, None)
-        if value is None:
-            return VariableBinding(VariableData(variable_name), None)
-        else:
-            return value
+        # The second argument is what to return if the
+        # key doesn't exist.  "VariableBinding" is the class that
+        # represents a variable binding in Perplexity
+        return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
 
     def set_variable_data(self, variable_name, determiner=None, quantifier=None):
         binding = self.get_binding(variable_name)
