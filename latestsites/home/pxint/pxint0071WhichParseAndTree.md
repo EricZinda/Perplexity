@@ -1,4 +1,6 @@
 {% raw %}## Determining the Right Parse and Tree
+As discussed in the conceptual topic on [Choosing a Parse and Tree](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree), returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general. 
+
 To implement the code for choosing the right tree, we're going to create a new class that will be the main entry point into the whole system. It is called `UserInterface` and its main method is `interact_once()`. Each call to that method does a single "command/response" interaction with the system. It uses the code we wrote in the previous topic to convert the phrase to MRS, and then generate the trees for the MRS. It then iterates through all of them and solves them using `solve_mrs_tree()` which solves the tree using the approach we saw in the Conjunctions topic:
 
 ```

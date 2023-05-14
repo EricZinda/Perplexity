@@ -318,6 +318,8 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="responding-to-simple-propositions">Responding to Simple Propositions</h2>
+<p>The <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0070SentenceForce">Sentence Types</a> conceptual topic outlines the logic for how to detect what type of phrase a user made. Here we’ll walk through how to implement one type of phrase: the proposition. The next sections will walk through the rest.</p>
+
 <p>“Propositions” are sentences that declare something to be true like “A file is very large”. If true, a human would expect something like “yep, you are right” or “correct!” or “yes, this is true” as a response (error cases will be handled later). A phrase is a proposition if the “sentence force” (SF) property of one or more of its variables is <code class="language-plaintext highlighter-rouge">prop</code> as described in the previous section.</p>
 
 <p>Below is the MRS for “A file is very large”. As described in the previous section: <code class="language-plaintext highlighter-rouge">e2</code> has a sentence force of “proposition”: <code class="language-plaintext highlighter-rouge">SF: prop</code>.</p>
