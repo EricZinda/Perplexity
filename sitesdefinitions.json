@@ -26,32 +26,33 @@
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoOverview.md", "DstFile": "devhowto/devhowtoOverview.md"}
       ]},
       {"Section": "MRS Conceptual", "Pages": [
-        {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRS.md", "DstFile": "devhowto/devhowtoMRS.md"},
-        {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoWellFormedTree.md", "DstFile": "devhowto/devhowtoWellFormedTree.md"}
+        {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0010MRS.md", "DstFile": "mrscon/devhowtoMRS.md"},
+        {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0020WellFormedTree.md", "DstFile": "mrscon/devhowto0020WellFormedTree.md"}
       ]},
       {"Section": "MRS Solver Conceptual", "Pages": [
-        {"Page": "Backtracking", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolver.md", "DstFile": "devhowto/devhowtoMRSSolver.md"},
-        {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSets.md", "DstFile": "devhowto/devhowtoMRSSolverSets.md"},
-        {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroups.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroups.md"},
-        {"Page": "Coll/Dist/Cuml Algorithm", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionGroupsAlgorithm.md"},
-        {"Page": "Combinations and Proper Responses", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowtoMRSSolverSolutionCombinations.md", "DstFile": "devhowto/devhowtoMRSSolverSolutionCombinations.md"},
-        {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto11.0WhichParseAndTree.md", "DstFile": "devhowto/devhowto11.0WhichParseAndTree.md"},
-        {"Page": "Sentence Types", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto12.0SentenceForce.md", "DstFile": "devhowto/devhowto12.0SentenceForce.md"},
-        {"Page": "Choosing a Failure", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto15ErrorsChoosingWhichFailure.md", "DstFile": "devhowto/devhowto15ErrorsChoosingWhichFailure.md"}
+        {"Page": "Backtracking", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0010MRSSolver.md", "DstFile": "devcon/devcon0010MRSSolver.md"},
+        {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0020MRSSolverSets.md", "DstFile": "devcon/devcon0020MRSSolverSets.md"},
+        {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0030MRSSolverSolutionGroups.md", "DstFile": "devcon/devcon0030MRSSolverSolutionGroups.md"},
+        {"Page": "Coll/Dist/Cuml Algorithm", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md"},
+        {"Page": "Combinations and Proper Responses", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0050MRSSolverSolutionCombinations.md", "DstFile": "devcon/devcon0050MRSSolverSolutionCombinations.md"},
+        {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0060WhichParseAndTree.md", "DstFile": "devcon/devcon0060WhichParseAndTree.md"},
+        {"Page": "Sentence Types", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0070SentenceForce.md", "DstFile": "devcon/devcon0070SentenceForce.md"},
+        {"Page": "Choosing a Failure", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "DstFile": "devcon/devcon0080ErrorsChoosingWhichFailure.md"}
       ]},
       {"Section": "Perplexity Internals", "Pages": [
-        {"Page": "The Predication Contract", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto1.0PredicationContract.md", "DstFile": "devhowto/devhowto1.0PredicationContract.md"},
-        {"Page": "State and Python Basics", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto2.0PythonBasics.md", "DstFile": "devhowto/devhowto2.0PythonBasics.md"},
-        {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto3.0ImplementPredication.md", "DstFile": "devhowto/devhowto3.0ImplementPredication.md"},
-        {"Page": "Initial Solver", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto09.0BuildSolver.md", "DstFile": "devhowto/devhowto09.0BuildSolver.md"},
-        {"Page": "Solving Conjunctions", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto9.1Conjunctions.md", "DstFile": "devhowto/devhowto9.1Conjunctions.md"},
-        {"Page": "Soliving Scopal Arguments", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto9.2ScopalArguments.md", "DstFile": "devhowto/devhowto9.2ScopalArguments.md"},
-        {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto10.0GenerateMRSAndTrees.md", "DstFile": "devhowto/devhowto10.0GenerateMRSAndTrees.md"},
-        {"Page": "Propositions", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto13.0SimplePropositions.md", "DstFile": "devhowto/devhowto13.0SimplePropositions.md"},
-        {"Page": "Commands", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto14.0SimpleQuestions.md", "DstFile": "devhowto/devhowto14.0SimpleQuestions.md"},
-        {"Page": "Naive Failures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto16ErrorsReportingAFailure.md", "DstFile": "devhowto/devhowto16ErrorsReportingAFailure.md"},
-        {"Page": "Words in Failures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto17.0ErrorsConceptualFailures.md", "DstFile": "devhowto/devhowto17.0ErrorsConceptualFailures.md"},
-        {"Page": "Robust Failures", "SrcDir": "main", "SrcFile": "docs/devhowto/devhowto17.5ErrorsRobustFailure.md", "DstFile": "devhowto/devhowto17.5ErrorsRobustFailure.md"}
+        {"Page": "The Predication Contract", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0010PredicationContract.md", "DstFile": "pxint/pxint0010PredicationContract.md"},
+        {"Page": "State and Python Basics", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0020PythonBasics.md", "DstFile": "pxint/pxint0020PythonBasics.md"},
+        {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0030ImplementPredication.md", "DstFile": "pxint/pxint0030ImplementPredication.md"},
+        {"Page": "Initial Solver", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0040BuildSolver.md", "DstFile": "pxint/pxint0040BuildSolver.md"},
+        {"Page": "Solving Conjunctions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0050Conjunctions.md", "DstFile": "pxint/pxint0050Conjunctions.md"},
+        {"Page": "Soliving Scopal Arguments", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0060ScopalArguments.md", "DstFile": "pxint/pxint0060ScopalArguments.md"},
+        {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0070GenerateMRSAndTrees.md", "DstFile": "pxint/pxint0070GenerateMRSAndTrees.md"},
+        {"Page": "Propositions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0080SimplePropositions.md", "DstFile": "pxint/pxint0080SimplePropositions.md"},
+        {"Page": "Questions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0090SimpleQuestions.md", "DstFile": "pxint/pxint0090SimpleQuestions.md"},
+        {"Page": "Commands", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0100SimpleCommands.md", "DstFile": "pxint/pxint0100SimpleCommands.md"},
+        {"Page": "Naive Failures", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0110ErrorsReportingAFailure.md", "DstFile": "pxint/pxint0110ErrorsReportingAFailure.md"},
+        {"Page": "Words in Failures", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0120ErrorsConceptualFailures.md", "DstFile": "pxint/pxint0120ErrorsConceptualFailures.md"},
+        {"Page": "Robust Failures", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0130ErrorsRobustFailure.md", "DstFile": "pxint/pxint0130ErrorsRobustFailure.md"}
       ]},
       {"Section": "Using Perplexity", "Pages": [
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo10Overview.md", "DstFile": "pxhowto/pxHowTo10Overview.md"},
