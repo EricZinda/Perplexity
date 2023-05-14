@@ -1,27 +1,30 @@
 {% raw %}## The Predication Contract
-> It is important to understand what MRS is and what a well-formed MRS tree is before reading this section. Visit those links first to understand the basic concepts.
+> It is important to understand [what MRS is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS) and what [a well-formed MRS tree is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
 
-As discussed in the previous sections, we'll be solving MRS well-formed trees using a backtracking approach. The previous section discuss "calling" or "evaluating" predications without discussing exactly *how* this happens. This section will get specific.
+As discussed in [the "Backtracking" conceptual topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver), we'll be solving MRS well-formed trees using a backtracking approach. That topic discusses "calling" or "evaluating" predications without discussing exactly *how* this happens. This section will get specific.
 
-As discussed previously, a well-formed MRS tree can be thought of as an *equation* that can be solved against a certain state of the world. One approach to solving an MRS is to walk the well-formed tree in depth-first order and iteratively find assignments of variables that make the MRS `true`, using backtracking to try alternatives when they exist. This is the approach we'll be using. To solve an MRS tree using the backtracking approach, we need to code the predications to meet a specific contract that our backtracking solver will rely on. This is the "predication contract".
+As discussed previously, a [well-formed MRS tree](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) can be thought of as an *equation* that can be solved against a certain state of the world. One approach to solving an MRS is to walk the well-formed tree in depth-first order and iteratively find assignments of variables that make the MRS `true`, using [backtracking](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) to try alternatives when they exist. This is the approach we'll be using. To solve an MRS tree using the backtracking approach, we need to code the predications to meet a specific contract that our backtracking solver will rely on. This is the "predication contract".
 
 Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. We'll be treating the predications as classic programming language functions that can be "called" or "invoked".
 
 For the purpose of defining the contract, we'll group predications into two types:
-- Regular Predications: Declare something that must be true about their arguments. For example: `_table_n_1(x)` says that `x` must be a "table"
-- Quantifier Predications: Act like a Regular Predication but also define the scope of a variable `x`. For example: `a_q(x, rstr, body)` declares a variable `x` that can now be used in its arguments *and* says that `x` must be an arbitrary, single object (since the quantifier is "a") defined by the predications in the `rstr` that is also true for the predications in the `body`
+- *Regular Predications*: Declare something that must be `true` about their arguments. For example: `_table_n_1(x)` says that `x` must be a "table"
+- *Quantifier Predications*: Act like a Regular Predication but also define the scope of a variable `x`. For example: `a_q(x, rstr, body)` declares a variable `x` that can now be used in its arguments. It *also* says that `x` must be an arbitrary, single object (since the quantifier is "a") that is true for the predications in the `rstr` and the `body`
 
 ### Idealized Contract
 We'll start with an "idealized contract" because it clarifies how the backtracking solver works. It is "idealized" because it has relatively poor performance characteristics for large worlds. We'll tackle those characteristics with our "practical contract" next, but it is important to understand the fundamental approach first.
 
-The contract is designed to "solve" an MRS for the variables defined in it, such as `x1`, `x2`, or `e1`. Our goal is to find all values of the variables (the "solutions") that are `True` within a given world. The approach will be to call predications as functions and so we'll define the contract in terms of what these calls must look like. In the contract, the term `bound` means a variable is "set" or "provided", and `unbound` means it doesn't yet have a value:
+The contract is designed to "solve" an MRS for the variables defined in it, such as `x1`, `x2`, or `e1`. Our goal is to find all values of the variables that are `True` within a given world (i.e. find the "solutions"). The approach will be to call predications as functions and so we'll define the contract in terms of what these calls must look like. In the contract, the term `bound` means a variable is "set" or "provided", and `unbound` means it doesn't yet have a value:
 
 > A Regular Predication is called with its arguments bound. If the predication's meaning is `true` given those arguments, it returns `True`. Otherwise, it returns `False`.
 > 
-> A Quantifier Predication is called with its arguments bound *except* the variable it provides scope for (its first argument). It must then iteratively set its unbound argument to every possible object in the world and call its other arguments with each binding. It then returns each solution (i.e. assignment of variables) for which the Quantifier Predication itself is true, given what was returned by its arguments and the quantification it is doing.
+> A Quantifier Predication is called with its arguments bound *except* the variable it provides scope for (its first argument). 
 > 
-> The "Solution" to an MRS is the set of all variable assignments that resulted in the entire MRS tree being `True`
+> - It must then iteratively set its unbound first argument to every possible object in the world and call its other arguments with each binding. 
+> - It then returns each solution (i.e. assignment of variables) for which the Quantifier Predication itself is true, given what was returned by its arguments and the quantification it is doing.
+> 
+> The "solution" to an MRS is the set of all variable assignments that resulted in the entire MRS tree being `true`
 
 
 A few observations about the contract:
@@ -64,6 +67,8 @@ a_q(x, large_a_1(x), file(x))
 
 This approach to solving an MRS works because every `x` variable in an MRS is scoped by a Quantifier Predication. It effectively tries every combination of objects in the world in every `x` variable. This is also why it is "idealized": the performance of this approach quickly becomes impractical.
 
+As mentioned in the ["Representing Together" conceptual topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets), the values bound to all of the variables in these examples are actually *sets* represented as a `tuple` in Python, but the examples above and below gloss over this to keep things simple. 
+
 ### Practical Contract
 The performance of the contract can be greatly improved. Let's imagine a world with thousands of files and folders. In this world, a user says:
 
@@ -99,11 +104,11 @@ for item in rstr():
     ...
 ```
 
-The `RSTR` regular predication can now be called with *unbound* arguments, and if so, it is responsible for finding the objects in the world that make it `True`, which it should be able to do much more efficiently.  This change effectively makes the contract the same for all predications at the cost of complicating the logic for regular predications a little. It is worth it for the performance improvement. 
+The `RSTR` regular predication can now be called with *unbound* arguments, and if so, it is responsible for finding the objects in the world that make it `true`, which it should be able to do much more efficiently.  This change effectively makes the contract the same for all predications at the cost of complicating the logic for regular predications a little. It is worth it for the performance improvement. 
 
 So, the contract we'll use in the rest of the tutorial is the "practical contract":
 
-> Calling any predication with *unbound* variables should return the unbound variables bound to values from the world that, together, make it `True`. Calling it again should return a different set of bindings that also make it `True`. Eventually, the predication will run out of things that can be `True` and should then stop returning bindings (i.e. fail). 
+> Calling any predication with *unbound* variables should return the unbound variables bound to values from the world that, together, make it `true`. Calling it again should return a different set of bindings that also make it `true`. Eventually, the predication will run out of things that can be `true` and should then stop returning bindings (i.e. fail). 
 > 
 > Calling any predication with *bound* variables should simply return the same values if `True` or fail if not. In other words, it should iterate at most once.
 
@@ -134,7 +139,10 @@ To help with performance of the system, the "practical contract" is the contract
 ### Final Performance Thoughts
 Even with this optimization, the example MRS for something like "a large file is in the folder" will need to check each "large file" in the system to see if it is in "the" folder (where "the folder" might mean "current folder"), which could still be a lot of iterations. There are further optimizations that can be done by the solver and many will depend on the particular world you execute against. Optimizing performance of a system like this is an ongoing task.
 
-There are other ways to solve an MRS for the variables that make it true. For example, some MRS's can be converted to classic logic statements "There exists an x such that..." and various solvers can be used to solve for the variables in it: TODO: List references here. In addition, there are many uses for MRS that don't involve solving for the variables at all TODO: List references here. However, the backtracking approach is relatively straightforward and can be used for constrained worlds. It  allows us to explain the various aspects of DELPH-IN without getting too deep in complicated mathematics or logic.
+There are other ways to solve an MRS for the variables that make it true. For example, some MRS's can be converted to classic logic statements "There exists an x such that..." and various solvers can be used to solve for the variables in it: TODO: List references here. In addition, there are many uses for MRS that don't involve solving for the variables at all TODO: List references here. However, the [backtracking approach](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) is relatively straightforward and can be used for constrained worlds. It  allows us to explain the various aspects of DELPH-IN without getting too deep in complicated mathematics or logic.
+
+### Conclusion
+We've talked through the contract required on functions that implement a predication, but aren't yet ready to implement one. First, we need to describe a key object used in the implementation: [the `State` object](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 

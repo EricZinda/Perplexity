@@ -321,12 +321,12 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="python-primer-and-the-state-object">Python Primer and the State object</h2>
-<p>The predication contract can be implemented in any programming language, but we’ll be using Python. This section should give enough background so that even readers not familiar with Python can read the code and understand the examples. Even if you know Python, skim through this section since we will be implementing a key class (<code class="language-plaintext highlighter-rouge">State</code>) used elsewhere in the documentation.</p>
+        <h2 id="the-state-object-and-a-python-primer">The State object (and a Python Primer)</h2>
+<p>The <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a> can be implemented in any programming language, but we’ll be using Python. This section should give enough background so that even readers not familiar with Python can read the code and understand the examples. Even if you know Python, skim through this section since we will be implementing a key class (<code class="language-plaintext highlighter-rouge">State</code>) used elsewhere in the documentation.</p>
 
 <p>The Python language has functions, classes, methods, variables, operators, statements, and other elements shared by many imperative programming languages such as C++, Java, Javascript, Go, etc. How these work will be described as we go along and should be relatively straightforward to understand if you are proficient in an existing imperative programming language.</p>
 
-<p>Python also has a notion of “iterators” which needs a bit more attention. Iterators are objects that can be “iterated” or “listed” or “looped through”. These can be lists represented in square brackets like <code class="language-plaintext highlighter-rouge">[item1, item2]</code>. They can also be special functions called “generators” which act like a list but allow code to dynamically generate the items that are returned.</p>
+<p>Python also has a notion of “iterators” which needs a bit more attention. Iterators are objects that can be “iterated” or “listed” or “looped through”. These can be lists represented in square brackets like <code class="language-plaintext highlighter-rouge">[item1, item2]</code> or read-only lists called “tuples” represented in parentheses as <code class="language-plaintext highlighter-rouge">(item1, item2)</code>. They can also be special functions called “generators” which act like a list but allow code to dynamically generate the items that are returned.</p>
 
 <p>You iterate over an iterator of any type using the <code class="language-plaintext highlighter-rouge">for ... in ...</code> construct like this:</p>
 
@@ -375,8 +375,9 @@ def OutputResults():
 # 3
 </code></pre></div></div>
 
-<p>Given the predication contract, we’ll be doing lots of iteration and this syntactic sugar from Python makes it easier.</p>
+<p>Given the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a>, we’ll be doing lots of iteration and this syntactic sugar from Python makes it easier.</p>
 
+<h3 id="the-state-class">The <code class="language-plaintext highlighter-rouge">State</code> Class</h3>
 <p>Let’s work through how to implement a class in Python by creating the class that will hold the state of the world: <code class="language-plaintext highlighter-rouge">State</code>. The current state of all MRS variables <em>and</em> the state of everything in the world will be accessed through this class. Because we want the state to be changed by predications, we will include an instance of it as the first argument when calling them.</p>
 
 <p>The implementation of the <code class="language-plaintext highlighter-rouge">State</code> object can be very simple for now:</p>
@@ -385,7 +386,6 @@ def OutputResults():
 # The parenthesis after the "State" class name surround
 # the object the class derives from (object)
 class State(object):
-
     # All class methods are indented under the
     # class and take "self" as their first argument.
     # "self" represents the class instance.
@@ -403,87 +403,85 @@ class State(object):
         # by whoever creates an instance of the class
         self.objects = objects
 
-
     # A standard "class method" is just a function definition,
     # indented properly, with "self" as the first argument
 
     # This is how predications will access the current value
     # of MRS variables like "x1" and "e1"
-    def GetVariable(self, variable_name):
+    def get_binding(self, variable_name):
         # "get()" is one way to access a value in a dictionary.
-        # The second argument, "None", is what to return if the
-        # key doesn't exist.  "None" is a built-in value in Python
-        # like "null"
-        return self.variables.get(variable_name, None)
+        # The second argument is what to return if the
+        # key doesn't exist.  "VariableBinding" is the class that 
+        # represents a variable binding in Perplexity
+        return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
 
     # This is how predications will set the value
-    # of an "x" variable
-    def SetX(self, variable_name, item):
+    # of an "x" variable (or another type of variable
+    # that is acting like an unquantified "x" variable)
+    def set_x(self, variable_name, item):
         # Make a *copy* of the entire object using the built-in Python
-        # class called "copy", we pass it "self" so it copies this 
+        # class called "copy", we pass it "self" so it copies this
         # instance of the object
         new_state = copy.deepcopy(self)
 
         # Now we have a new "State" object with the same
         # world state that we can modify.
-        
-        # Dictionaries hold name/value pairs.
-        # This is how you assign values to keys in dictionaries
-        new_state.variables[variable_name] = item
+
+        # Find a common mistakes early: item must always be a tuple
+        # since x values are sets
+        assert item is None or isinstance(item, tuple)
+
+        if variable_name in new_state.variables:
+            # Need to copy the item so that if the list is changed it won't affect
+            # the state which is supposed to be immutable
+            variable_data = copy.deepcopy(new_state.variables[variable_name].variable)
+        else:
+            variable_data = VariableData(variable_name, combinatoric)
+
+        new_state.variables[variable_name] = VariableBinding(variable_data, copy.deepcopy(item))
 
         # "return" returns to the caller the new state with
         # that one variable set to a new value
         return new_state
 
+    def add_to_e(self, event_name, key, value):
+        newState = copy.deepcopy(self)
+        e_binding = newState.get_binding(event_name)
+        if e_binding.value is None:
+            e_binding = VariableBinding(VariableData(event_name), dict())
+            newState.variables[event_name] = e_binding
+
+        e_binding.value[key] = value
+        return newState
+
     # This is an iterator (described above) that returns
-    # all the objects in the world
-    def AllIndividuals(self):
+    # all the objects in the world bound to the specified variable
+    def all_individuals(self):
         for item in self.objects:
             yield item
 </code></pre></div></div>
-<p>Note that the <code class="language-plaintext highlighter-rouge">SetX()</code> method does not actually “set” a value in the <code class="language-plaintext highlighter-rouge">State</code> object, it creates a copy of the current <code class="language-plaintext highlighter-rouge">State</code> object and sets the value in <em>that</em>.  This ensures that variables set for a given <code class="language-plaintext highlighter-rouge">State</code> object are never changed (they are <em>immutable</em>). Immutability allows our solver to reuse the same state object multiple times when calling a predication in order to get fresh values bound to the variables. And this, in turn, is important to allow backtracking through possible solutions to the MRS. The fact that the <em>entire</em> state object (not just the variables) gets copied will be important when we get to verbs that change the world (e.g. deleting a file).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">set_x()</code> is how code changes the value of an <code class="language-plaintext highlighter-rouge">x</code> variable. It requires the value to be a set (as described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">“Representing Together”</a> topic) and this is represented as <code class="language-plaintext highlighter-rouge">tuple</code> in Python. <code class="language-plaintext highlighter-rouge">tuples</code> are read-only lists. When this method is called, the state that is returned has the MRS value specified set to the new value, the old value is replaced.</p>
+
+<p>Note that the <code class="language-plaintext highlighter-rouge">set_x()</code> method does not actually “set” a value in the <code class="language-plaintext highlighter-rouge">State</code> object, it creates a copy of the current <code class="language-plaintext highlighter-rouge">State</code> object and sets the value in <em>that</em>.  This ensures that variables set for a given <code class="language-plaintext highlighter-rouge">State</code> object are never changed (they are <em>immutable</em>). Immutability allows our solver to reuse the same state object multiple times when calling a predication in order to get fresh values bound to the variables. And this, in turn, is important to allow backtracking through possible solutions to the MRS. The fact that the <em>entire</em> state object (not just the variables) gets copied will be important when we get to verbs that change the world (e.g. deleting a file).</p>
 
 <blockquote>
   <p>Note: There are much more efficient ways to isolate the data than copying the entire world, but we’re doing a copy to keep the code simple. For example, database engines like MySQL have transactions to isolate different parts of code from changes until they should be seen. We could improve our simple implementation by keeping a difference list and not copying the entire state for every copy, but for now we’ll keep it simple.</p>
 </blockquote>
 
-<p>Objects in the world can just be Python objects, although there are many other ways to represent them (the predication contract doesn’t care).</p>
+<p>The <code class="language-plaintext highlighter-rouge">add_to_e()</code> method is used for adding information to an event (or <code class="language-plaintext highlighter-rouge">e</code>) variable. Instead of replacing the value of the variable, it represents each <code class="language-plaintext highlighter-rouge">e</code> variable as a Python <code class="language-plaintext highlighter-rouge">dict</code> and allows the caller to set or replace key/value pairs in it. Event variables have a very different semantic than <code class="language-plaintext highlighter-rouge">x</code> variables, as described in <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS">the Event section of the “MRS” topic</a>. This behavior implements that semantic.</p>
 
-<p>Because we will be copying the <code class="language-plaintext highlighter-rouge">State</code> object when changes are made, we will need some way to identify that, for example, the <code class="language-plaintext highlighter-rouge">foo</code> folder in one <code class="language-plaintext highlighter-rouge">State</code> object is the same <code class="language-plaintext highlighter-rouge">foo</code> folder in another <code class="language-plaintext highlighter-rouge">State</code> object. To do this, we’ll give each object a unique ID by creating a base class called <code class="language-plaintext highlighter-rouge">UniqueObject</code>. It will create a member variable called <code class="language-plaintext highlighter-rouge">unique_id</code> with a UUID (a globally unique number) in it. Then, we’ll derive all the objects in the system from it. That way, objects will always have a unique ID that follows them even if they are copied.</p>
+<p>Creating a <code class="language-plaintext highlighter-rouge">State</code> object with the list of the objects representing files and folders could be done like this:</p>
 
-<p>Here’s how we’ll create classes for each “type of thing” in our file system world:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class UniqueObject(object):
-    def __init__(self):
-        self.unique_id = uuid.uuid4()
-
-
-# Derive from UniqueObject and call
-# its __init__ method from this __init__
-# method so we get the unique ID created
-class Folder(UniqueObject):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-        
-
-class File(UniqueObject):
-    def __init__(self, name, size=None):
-        super().__init__()
-        self.name = name
-        self.size = size
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>state = State(["Desktop", 
+               "Documents", 
+               "file1.txt", 
+               "file2.txt"])
 </code></pre></div></div>
 
-<p>Creating a <code class="language-plaintext highlighter-rouge">State</code> object with the list of the objects from the example looks like this:</p>
+<p>Note that an instance of the <code class="language-plaintext highlighter-rouge">State</code> object is created by calling it like a function. This really calls the <code class="language-plaintext highlighter-rouge">__init__</code> function of <code class="language-plaintext highlighter-rouge">State</code> and passes the supplied argument (a list) to <code class="language-plaintext highlighter-rouge">__init__</code>. Each object in the list is created just like <code class="language-plaintext highlighter-rouge">State</code> was: by calling it as a function.</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>state = State([Folder(name="Desktop"), 
-               Folder(name="Documents"), 
-               File(name="file1.txt"), 
-               File(name="file2.txt")])
-</code></pre></div></div>
-
-<p>Note that an instance of the <code class="language-plaintext highlighter-rouge">State</code> object is created by calling it like a function. This really calls the <code class="language-plaintext highlighter-rouge">__init__</code> function of <code class="language-plaintext highlighter-rouge">State</code> and passes the supplied argument (a list) to <code class="language-plaintext highlighter-rouge">__init__</code>. Each object in the list is created just like <code class="language-plaintext highlighter-rouge">State</code> was: by calling it as a function. Note that arguments can be named like <code class="language-plaintext highlighter-rouge">name="Documents"</code> to clarify what is going on.</p>
-
-<p>Now you’ve seen some of the basic Python you’ll see throughout the tutorial and we’ve defined the core <code class="language-plaintext highlighter-rouge">State</code> class we’ll use in our predications.  Next, we’ll implement a predication.</p>
+<p>Now you’ve seen some of the basic Python you’ll see throughout the tutorial and we’ve defined the core <code class="language-plaintext highlighter-rouge">State</code> class we’ll use in our predications.  Next, we’ll <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0030ImplementPredication">implement a predication</a>.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
