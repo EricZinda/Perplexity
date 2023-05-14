@@ -38,13 +38,13 @@
       ]},
       {"Section": "Perplexity How-to", "Pages": [
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo10Overview.md", "DstFile": "pxhowto/pxHowTo10Overview.md"},
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo11State.md", "DstFile": "pxhowto/pxHowTo11State.md"},
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo20ImplementAPredication.md", "DstFile": "pxhowto/pxHowTo20ImplementAPredication.md"},
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo30InStylePredications.md", "DstFile": "pxhowto/pxHowTo30InStylePredications.md"},
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo40LiftStylePredications.md", "DstFile": "pxhowto/pxHowTo40LiftStylePredications.md"},
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo50EventPredications.md", "DstFile": "pxhowto/pxHowTo50EventPredications.md"},
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo70ActionVerbs.md", "DstFile": "pxhowto/pxHowTo70ActionVerbs.md"},
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md", "DstFile": "pxhowto/pxHowTo80QuantifiersAndDeterminers.md"}
+        {"Page": "State", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo11State.md", "DstFile": "pxhowto/pxHowTo11State.md"},
+        {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo20ImplementAPredication.md", "DstFile": "pxhowto/pxHowTo20ImplementAPredication.md"},
+        {"Page": "In-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo30InStylePredications.md", "DstFile": "pxhowto/pxHowTo30InStylePredications.md"},
+        {"Page": "Lift-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo40LiftStylePredications.md", "DstFile": "pxhowto/pxHowTo40LiftStylePredications.md"},
+        {"Page": "Event Predication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo50EventPredications.md", "DstFile": "pxhowto/pxHowTo50EventPredications.md"},
+        {"Page": "Action Verbs", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo70ActionVerbs.md", "DstFile": "pxhowto/pxHowTo70ActionVerbs.md"},
+        {"Page": "Quantifiers and Determiners", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md", "DstFile": "pxhowto/pxHowTo80QuantifiersAndDeterminers.md"}
       ]}
 
     ]
