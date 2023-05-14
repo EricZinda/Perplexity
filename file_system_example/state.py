@@ -4,7 +4,9 @@ import file_system_example.objects
 from perplexity.state import State
 
 
-# Optimized for the file system example
+# The state representation used by the file system example
+# note that the core system doesn't care at all what this object
+# looks like. It is only the predications that interact with it
 class FileSystemState(State):
     def __init__(self, file_system):
         super().__init__([])

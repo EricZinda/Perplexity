@@ -8,17 +8,18 @@ from perplexity.tree import find_predication, predication_from_index, \
 from perplexity.utilities import parse_predication_name, sentence_force, at_least_one_generator
 
 
-# Generates all the responses that predications can return when an error
-# occurs
-#
-# error_term is of the form: [index, error] where "error" is another
-# list like: ["name", arg1, arg2, ...]. The first item is the error
-# constant (i.e. its name). What the args mean depends on the error
+# Generates all the responses that predications can
+# return when an error occurs
 def generate_message(tree_info, error_term):
+    # See if the system can handle converting the error
+    # to a message first
     system_message = perplexity.messages.generate_message(tree_info, error_term)
     if system_message is not None:
         return system_message
 
+    # error_term is of the form: [index, error] where "error" is another
+    # list like: ["name", arg1, arg2, ...]. The first item is the error
+    # constant (i.e. its name). What the args mean depends on the error
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"

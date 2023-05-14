@@ -153,8 +153,6 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
                                                               max_size=5))
 
 
-# true for both sets and individuals as long as everything
-# in the set is a file
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
