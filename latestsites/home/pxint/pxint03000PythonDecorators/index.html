@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0000Overview/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0000Overview/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators/">
 
 
 
@@ -233,7 +233,7 @@
         
         <ul>
           
-            <li><a href="/Perplexity/home/pxint/pxint0000Overview/" class="active">Overview</a></li>
+            <li><a href="/Perplexity/home/pxint/pxint0000Overview/">Overview</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0010PredicationContract/">The Predication Contract</a></li>
           
@@ -265,7 +265,7 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0130ErrorsRobustFailure/">Robust Failures</a></li>
           
-            <li><a href="/Perplexity/home/pxint/pxint03000PythonDecorators/">A. Python Decorators</a></li>
+            <li><a href="/Perplexity/home/pxint/pxint03000PythonDecorators/" class="active">A. Python Decorators</a></li>
           
         </ul>
         
@@ -323,12 +323,50 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="perplexity-internals">Perplexity Internals</h2>
-<p>This section walks through the details of implementing the concepts described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0000Overview">MRS Solver Conceptual</a> section in a Python application.  It is assumed that the concepts from that section are understood (and links are always provided).</p>
+        <h2 id="python-decorators-and-the-vocabulary-class">Python Decorators and the Vocabulary Class</h2>
+<p>This section describes a more arcane part of Python called “decorators” that we use to register predication methods in the <code class="language-plaintext highlighter-rouge">Vocabulary Class</code>. It is not important to understand how the code works, but it is here for those that are interested.</p>
 
-<p>If you just want to <em>use</em> the Perplexity system to build a natural language interface to a program, you can also just jump right to the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo10Overview">“Using Perplexity”</a> section. If you want to understand how it all works, you’re in the right place.</p>
+<p>Python decorators allow us to run code at load time that inspects whatever they decorate and take action. In this case, we will take the name and arguments of the function passed to <code class="language-plaintext highlighter-rouge">@Predication()</code>, and record it in the <code class="language-plaintext highlighter-rouge">vocabulary</code> instance we are given. That way, we will have an object that knows all the predications after the file is loaded.</p>
 
-<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0000Overview.md">edit</a>]</p>
+<p>The <code class="language-plaintext highlighter-rouge">vocabulary</code> class is simple: it has a dictionary that maps predication names to functions:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Vocabulary(object):
+    def __init__(self):
+        self.all = dict()
+
+    def AddPredication(self, module, function, delphin_name):
+        self.all[delphin_name] = [module, function]
+
+    def Predication(self, delphin_name):
+        return self.all.get(delphin_name, None)
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Predication</code> class is the actual “decorator” class. It uses the fact that Python functions can define other functions within them.</p>
+<blockquote>
+  <p>TODO: Describe in more detail how this decorator works</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Predication(vocabulary, name=None):
+    # Gets called when the function is first created
+    # function_to_decorate is the function definition
+    def PredicationDecorator(function_to_decorate):
+        def WrapperFunction(*args, **kwargs):
+            # For now just iterate from the predication,
+            # later we'll do more here
+            yield from function_to_decorate(*args, **kwargs)
+
+        predication_name = name if name is not None else function_to_decorate.__name__
+        vocabulary.AddPredication(function_to_decorate.__module__, function_to_decorate.__name__, predication_name)
+
+        return WrapperFunction
+
+    return PredicationDecorator
+</code></pre></div></div>
+
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint03000PythonDecorators.md">edit</a>]</p>
 
         
       </section>
