@@ -66,6 +66,8 @@ toc:
         url: "/pxint/pxint0120ErrorsConceptualFailures/"
       - title: "Robust Failures"
         url: "/pxint/pxint0130ErrorsRobustFailure/"
+      - title: "A. Python Decorators"
+        url: "/pxint/pxint03000PythonDecorators/"
   - title: "Using Perplexity"
     children:
       - title: "Overview"

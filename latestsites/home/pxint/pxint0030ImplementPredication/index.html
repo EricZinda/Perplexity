@@ -265,6 +265,8 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0130ErrorsRobustFailure/">Robust Failures</a></li>
           
+            <li><a href="/Perplexity/home/pxint/pxint03000PythonDecorators/">A. Python Decorators</a></li>
+          
         </ul>
         
       </li>
@@ -322,7 +324,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="implementing-a-predication">Implementing a Predication</h2>
-<p>With that <a href="">Python background and the creation of the <code class="language-plaintext highlighter-rouge">State</code> object</a>, we can now implement the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a> for a predication to see how it all works. Let’s implement the <code class="language-plaintext highlighter-rouge">_folder_n_of</code> predication in Python.</p>
+<p>With that <a href="">Python background and overview of the <code class="language-plaintext highlighter-rouge">State</code> object</a>, we can now implement the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a> for a predication to see how it all works. Let’s implement the <code class="language-plaintext highlighter-rouge">_folder_n_of</code> predication in Python.</p>
 
 <p>We will be passing an instance of the <code class="language-plaintext highlighter-rouge">State</code> object as the first argument to every predication so that it can access its arguments <em>and</em> the world state. The variables will be passed in as strings like <code class="language-plaintext highlighter-rouge">"x1"</code> or <code class="language-plaintext highlighter-rouge">"e12"</code>. To get their values, the code will look them up in the <code class="language-plaintext highlighter-rouge">State</code> object as shown below:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def folder_n_of(state, x):

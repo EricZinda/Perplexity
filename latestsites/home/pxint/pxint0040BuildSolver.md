@@ -1,13 +1,21 @@
 {% raw %}## Converting MRS Text to Python Function Calls
-So far, we have been calling our predications directly as functions. To be able to solve an MRS we're going to need a way to convert from the MRS text representation to actual Python function calls. This section describes how.
+Now it is time to start working through the code that *calls* the [Predication Contract](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract): the solver.  The algorithm we'll use was describe in the ["Backtracking" conceptual topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver).
 
-We'll use a simple Python representation that allows easy conversion from a raw MRS document: each predication will be a Python `list` with the predication name as the first element and the arguments as the rest. Like this for the `_folder_n_of(x1)` and `compound(e1, x1, x2)` predications:
-```
-["_folder_n_of", "x1"]
-["compound", "e1", "x1", "x2"]
-```
+To be able to solve an MRS we first need a way to convert from the MRS text representation to actual Python function calls. This section describes how.
 
-To convert this representation into a Python function (like the one we wrote earlier) and call it, we need a mapping from the string name (e.g. `"_folder_n_of"`) to the function and module where the function lives. We'll do this using a Python feature called "decorators". It isn't important to understand *how* it works (but if you want to: read this section). For our purposes, just understand that by writing two small Python classes we can now write code like this:
+We'll use a simple Python representation that allows easy conversion from a raw MRS document: each predication will be represented by a Python class called `TreePredication` that just records the basic information about the predication:
+
+```
+class TreePredication(object):
+    def __init__(self, index, name, args, arg_names=None):
+        self.index = index
+        self.name = name
+        self.args = args
+        self.arg_names = arg_names
+```
+`index` is a number representing the order in when the predication is called when solving the MRS, all the rest of the arguments are pulled directly from the MRS format.
+
+To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. `"_folder_n_of"`) to the function and module where the function lives. We'll do this using a Python feature called "decorators". It isn't important to understand *how* it works (but if you want to: [read this section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators)). For our purposes, just understand that by writing two small Python classes we can now write code like this:
 ```
 # You can create global variables in Python
 # by just setting their values outside the scope
@@ -82,7 +90,7 @@ def Example2():
 
     for item in CallPredication(vocabulary,
                                 state,
-                                ["_folder_n_of", "x1"]):
+                                TreePredication(0, "_folder_n_of", None, ["x1"])):
         print(item.variables)
 
 # Calling Example2() outputs:
@@ -90,7 +98,7 @@ def Example2():
 {'x1': Folder(name=Documents)}
 ```
 
-The `Example2()` function shows how we can use all of this to call a predication using our new text-based format. With this in place, we can tackle more complicated groups of predications such as conjunctions in the next section.
+The `Example2()` function shows how we can use all of this to call a predication using the simple solver. With this in place, we can tackle more complicated groups of predications such as conjunctions in the [next section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0050Conjunctions).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
