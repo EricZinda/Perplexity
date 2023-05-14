@@ -1,0 +1,677 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Perplexity</title>
+<meta name="description" content="An amazing website.">
+
+
+  <meta name="author" content="Your Name">
+  
+
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Perplexity">
+<meta property="og:title" content="Perplexity">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree/">
+
+
+  <meta property="og:description" content="An amazing website.">
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Your Name",
+      "url": "http://blog.inductorsoftware.com/Perplexity/home/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/Perplexity/home/feed.xml" type="application/atom+xml" rel="alternate" title="Perplexity Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/Perplexity/home/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--delphin_page wide">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+          <a class="site-logo" href="/Perplexity/home/"><img src="/Perplexity/home/assets/images/Delph-In.png" alt="Perplexity"></a>
+        
+        <a class="site-title" href="/Perplexity/home/">
+          Perplexity
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview">Home</a>
+            </li></ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox" />
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Developer Tutorial Overview</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devOverview/">Overview</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/" class="active">Well-Formed Trees</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Perplexity Internals</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0010PredicationContract/">The Predication Contract</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0020PythonBasics/">State and Python Basics</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0030ImplementPredication/">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0040BuildSolver/">Initial Solver</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0050Conjunctions/">Solving Conjunctions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0060ScopalArguments/">Soliving Scopal Arguments</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0075SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0100SimpleCommands/">Commands</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure/">Naive Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures/">Words in Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0130ErrorsRobustFailure/">Robust Failures</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Using Perplexity</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo20ImplementAPredication/">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">In-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Verb Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    
+    
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+        <h2 id="building-well-formed-mrs-trees">Building Well-Formed MRS Trees</h2>
+<blockquote>
+  <p>To understand this section, first make sure you have a basic understanding of the MRS format.</p>
+</blockquote>
+
+<p>Let’s use the sentence “every book is in a cave” as an example. If the phrase is parsed with <a href="http://sweaglesw.org/linguistics/ace/">the ACE parser</a>, you get an MRS document like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
+INDEX: e2
+RELS: &lt; 
+[ _a_q LBL: h10 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] RSTR: h11 BODY: h12 ]
+[ _cave_n_1 LBL: h13 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] ]
+[ _every_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
+[ _book_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
+[ _in_p_loc LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: x9 ]
+&gt;
+HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
+</code></pre></div></div>
+<p>Our goal is to eventually “solve” the MRS by finding values for its MRS variables such that it is “true”. When complete, these variables indicate what the speaker <em>meant</em> and allow us to <em>do</em> something about it.</p>
+
+<p>To resolve an MRS against a world state (a particular state of the world at a moment in time) and get <em>solutions</em> to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a <em>well-formed MRS tree</em>. We will examine <em>how</em> shortly, but for now just know that a well-formed MRS tree has (among other things) nodes that are the predications from the MRS like <code class="language-plaintext highlighter-rouge">_every_q__xhh</code> and arcs that are links between the <em>scopal arguments</em> of the predications and other nodes, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>              ┌────── _book_n_of(x3,i8)
+_every_q(x3,RSTR,BODY)          ┌────── _cave_n_1(x9)
+                   └─ _a_q(x9,RSTR,BODY)
+                                     └─ _in_p_loc(e2,x3,x9)
+</code></pre></div></div>
+
+<p>This tree represents <em>one interpretation</em> of “every book is in a cave”, namely, “every book is in a (possibly different) cave”.</p>
+
+<p>To “solve” this tree against a particular world state, you walk it in depth-first order: <code class="language-plaintext highlighter-rouge">every_q</code> is the starting, leftmost node. It starts by selecting a book on its upper branch, and then solves its lower branch with the selected book. This finds “a cave that the (selected) book is in”. <code class="language-plaintext highlighter-rouge">every_q</code> does this for every book in the world state. If they all succeed (they must all succeed because the speaker said “every”), we have a solution to the MRS. Because <code class="language-plaintext highlighter-rouge">_every_q</code> chooses a book <em>and then</em> a cave that it is in, it allows a <em>different</em> cave to be selected for each book. This tree will be only true if every book is in a (possibly different) cave.</p>
+
+<p>But this is only one interpretation. Another interpretation of the <em>same</em> MRS is: “all books are in the same exact cave”. The speaker might have meant that interpretation, which is represented by this tree:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ┌────── _cave_n_1(x9)
+_a_q(x9,RSTR,BODY)              ┌────── _book_n_of(x3,i8)
+               └─ _every_q(x3,RSTR,BODY)
+                                     └─ _in_p_loc(e2,x3,x9)
+</code></pre></div></div>
+
+<p>When <code class="language-plaintext highlighter-rouge">a_q</code> is the leftmost node, it starts by selecting a cave on its upper branch, and then resolves its lower branch with that selection, making sure that “every book is in the (selected) cave”. This will only be true if there is (at least one) cave that every book is in.</p>
+
+<blockquote>
+  <p>Don’t worry if you don’t completely understand how the solutions are obtained yet.  The point is that there are different interpretations for the same MRS, represented by different trees. The rest of the tutorial will work through how these get solved.</p>
+</blockquote>
+
+<p>Both of these trees are represented by the same MRS document. The MRS structure is said to be <em>underspecified</em>, meaning that a single MRS document allows multiple interpretations.</p>
+
+<p>Here’s the MRS for “Every book is in a cave” again, so we can see how:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
+INDEX: e2
+RELS: &lt; 
+[ _a_q LBL: h10 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] RSTR: h11 BODY: h12 ]
+[ _cave_n_1 LBL: h13 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] ]
+[ _every_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
+[ _book_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
+[ _in_p_loc LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: x9 ]
+&gt;
+HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
+</code></pre></div></div>
+<p>The MRS is a flat list of predications so that it avoids building a single tree which would “lock in” one interpretation.  How it does this is described in detail next, but in summary: It leaves “holes” using scopal (<code class="language-plaintext highlighter-rouge">h</code>) arguments for various predications and provides constraints (the <code class="language-plaintext highlighter-rouge">HCONS</code>) for plugging the predications together “legally”.  If you combine the predications by following the constraints (among other things), you’ll end up with a “well-formed MRS tree” which defines one valid interpretation of the sentence. If you build all the well-formed trees, you have all the possible interpretations.</p>
+
+<p>This interpretation is what we need in order to eventually “solve” the phrase for the variables it contains. This topic describes how to build that tree.</p>
+
+<h2 id="holes-and-constraints">Holes and Constraints</h2>
+<p>“Holes” are <code class="language-plaintext highlighter-rouge">h</code> arguments in a predication that refer to a predicate label that is <em>not</em> defined. In the above MRS, <code class="language-plaintext highlighter-rouge">h0</code> (the <code class="language-plaintext highlighter-rouge">TOP:</code>), <code class="language-plaintext highlighter-rouge">h11</code>, <code class="language-plaintext highlighter-rouge">h12</code>, <code class="language-plaintext highlighter-rouge">h5</code>, and <code class="language-plaintext highlighter-rouge">h6</code> are all “holes” since none of the predicates use those names as their <code class="language-plaintext highlighter-rouge">LBL:</code>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">HCONS</code> section of the MRS puts <em>CONS</em>traints on which placement of <em>H</em>andles in holes is valid.</p>
+
+<p>The only kind of constraint used in “modern” MRS is a <code class="language-plaintext highlighter-rouge">qeq</code> constraint.  A <code class="language-plaintext highlighter-rouge">qeq</code> constraint always relates a hole to a (non-hole) handle and says that the handle must be a direct or eventual child in the tree. Furthermore, if not directly connected, the only things between the hole and the handle can be quantifiers.</p>
+
+<p>Said a different way:</p>
+
+<blockquote>
+  <p>A qeq constraint of <code class="language-plaintext highlighter-rouge">h0 qeq h1</code> (as in the above example) says that the direct path in the final tree from <code class="language-plaintext highlighter-rouge">h0</code> to <code class="language-plaintext highlighter-rouge">h1</code> must only contain quantifier predicates, but can contain as many as you want, as long as they don’t violate other constraints.</p>
+</blockquote>
+
+<p>So, in this MRS:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
+INDEX: e2
+RELS: &lt; 
+[ _a_q LBL: h10 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] RSTR: h11 BODY: h12 ]
+[ _cave_n_1 LBL: h13 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] ]
+[ _every_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
+[ _book_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
+[ _in_p_loc LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: x9 ]
+&gt;
+HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">h1</code> is the LBL of the <code class="language-plaintext highlighter-rouge">_in_p_loc__exx</code> predicate. Given the qeq constraint of <code class="language-plaintext highlighter-rouge">h0 qeq h1</code>, it would be perfectly valid to assign <code class="language-plaintext highlighter-rouge">h0 = h1</code> (meaning put the predication labelled by <code class="language-plaintext highlighter-rouge">h1</code> in the <code class="language-plaintext highlighter-rouge">h0</code> hole) since the path from <code class="language-plaintext highlighter-rouge">h0</code> to <code class="language-plaintext highlighter-rouge">h1</code> is direct.</p>
+
+<p>Again, given the qeq constraint of <code class="language-plaintext highlighter-rouge">h0 qeq h1</code>: You could alternatively assign <code class="language-plaintext highlighter-rouge">h0 = h4</code> (<code class="language-plaintext highlighter-rouge">h0</code> is the “hole” at the top of the tree, <code class="language-plaintext highlighter-rouge">h4</code> is the label for <code class="language-plaintext highlighter-rouge">_every_q</code>), and <code class="language-plaintext highlighter-rouge">h6 = h1</code> (<code class="language-plaintext highlighter-rouge">h6</code> is a “hole” in <code class="language-plaintext highlighter-rouge">_every_q</code>, <code class="language-plaintext highlighter-rouge">h1</code> is the label for <code class="language-plaintext highlighter-rouge">_in_p_loc</code>). With this configuration, <code class="language-plaintext highlighter-rouge">h0 qeq h1</code> is still valid because the path from <code class="language-plaintext highlighter-rouge">h0</code> to <code class="language-plaintext highlighter-rouge">h1</code> only includes the <code class="language-plaintext highlighter-rouge">every_q</code> quantifier and <code class="language-plaintext highlighter-rouge">h1</code> itself.</p>
+
+<p>Once you fill <em>all</em> the holes with unique predications, and you follow all of the <code class="language-plaintext highlighter-rouge">qeq</code> constraints, you’ll end up with a tree that is “scope-resolved”, but not yet guaranteed to be “well-formed”. There is one more rule to check.</p>
+
+<h2 id="x-variable-scoping">X Variable Scoping</h2>
+<p>All of the arguments that aren’t handles in the MRS for <code class="language-plaintext highlighter-rouge">Every book is in a cave</code> except two (<code class="language-plaintext highlighter-rouge">e2</code> and <code class="language-plaintext highlighter-rouge">i8</code>) are <code class="language-plaintext highlighter-rouge">x</code> variables:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ TOP: h0
+INDEX: e2
+RELS: &lt; 
+[ _a_q LBL: h10 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] RSTR: h11 BODY: h12 ]
+[ _cave_n_1 LBL: h13 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] ]
+[ _every_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
+[ _book_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
+[ _in_p_loc LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: x9 ]
+&gt;
+HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
+</code></pre></div></div>
+
+<p>The rules for MRS say that any variable in the MRS is “globally defined” (or “existentially qualified” in logic terms) for the whole structure <em>except</em> for <code class="language-plaintext highlighter-rouge">x</code> variables.  So, both <code class="language-plaintext highlighter-rouge">e2</code> and <code class="language-plaintext highlighter-rouge">i8</code> don’t need any special handling, they are globally defined.</p>
+
+<p><code class="language-plaintext highlighter-rouge">x</code> variables, on the other hand, can <em>only</em> be defined by quantifiers, and are <em>only</em> defined for the branches of the tree that are attached to the quantifier’s scopal (<code class="language-plaintext highlighter-rouge">h</code>) arguments: <code class="language-plaintext highlighter-rouge">RSTR</code> and <code class="language-plaintext highlighter-rouge">BODY</code>.</p>
+
+<p>So, while the predications can be in any order in the tree with respect to their <code class="language-plaintext highlighter-rouge">e</code>  (or <code class="language-plaintext highlighter-rouge">i</code> or <code class="language-plaintext highlighter-rouge">u</code> if it had them) arguments, the tree must be checked to make sure all of the <code class="language-plaintext highlighter-rouge">x</code> arguments have an eventual parent which is a quantifier which puts them in scope (i.e. has the <code class="language-plaintext highlighter-rouge">x</code> variable as its first argument: <code class="language-plaintext highlighter-rouge">ARG0</code>). This is an additional constraint that has to be checked to build a “well-formed” tree.</p>
+
+<p>If the labels from the MRS are all in (exactly) one place, the built tree passes all <code class="language-plaintext highlighter-rouge">qeq</code> constraints, and the <code class="language-plaintext highlighter-rouge">x</code> variables are all properly scoped, then it is a “well-formed” tree that we can now attempt to solve.  That’s what we’re going for here.</p>
+
+<h2 id="resolving-the-tree">Resolving the tree</h2>
+<p>Finding ways to efficiently create these trees is an area of active research because natural language can easily create MRS structures that have a ton of holes.  <code class="language-plaintext highlighter-rouge">n</code> holes, in the worst case, can require <code class="language-plaintext highlighter-rouge">n!</code> checks to resolve, if done exhaustively.  So, an MRS structure with 12 holes (which is easy to generate) could require up to 480,000,000 checks before finding a valid solution if you just try every combination.</p>
+
+<p>To generate the well-formed trees, you could simply try all possible combinations of holes and labels, do the <code class="language-plaintext highlighter-rouge">qeq</code> and <code class="language-plaintext highlighter-rouge">x</code> scoping checks on each, and only keep the valid ones. This will only be practical for the simplest possible trees.</p>
+
+<p>Another algorithm, the one we’ll use in the tutorial, is able to prune the search space and works much faster.  The Python implementation can usually generate all trees for an MRS with 12 holes in around 1.5s (with some outliers being slower) on a 2013-era MacBook Pro.  This will be sufficient for the purposes of this tutorial.  Something like “put the diamond on the table where the safe is and the book is” generates MRS structures with up to 14 holes and could take up to 30 seconds to generate <em>all</em> the valid interpretations (1500+ valid interpretations in some cases!) for each MRS.  It turns out it is very rarely necessary to generate all the interpretations, but regardless: because it scales factorially, things slow down fast after 12 holes.</p>
+
+<p>There are definitely more efficient approaches, but the algorithm below has the advantage of being relatively simple. Here is <a href="https://www.aclweb.org/anthology/W05-1105.pdf">one alternative</a>.  There are definitely more.</p>
+
+<h2 id="a-simple-fast-enough-algorithm">A Simple, Fast Enough, Algorithm</h2>
+<blockquote>
+  <p>It isn’t important to fully understand this algorithm as long as you understand what it has to do: build a well-formed MRS tree, and what the rules are in doing that. We’ll use this code as a library routine all throughout the tutorial, but we won’t dive into its implementation again. If you’ve followed along and understood the content so far, you’ve got enough background to go to the next section where we start to dive into how to implement the predications.</p>
+</blockquote>
+
+<p>This description is for those that are interested in how the algorithm works, and isn’t necessary for understanding the rest of the tutorial:</p>
+
+<p>First some definitions used in this algorithm:</p>
+<ul>
+  <li><strong>Hole</strong>: A scopal (i.e. <code class="language-plaintext highlighter-rouge">h</code> type) argument in an MRS predicate that doesn’t refer to an existing predication</li>
+  <li><strong>Floater</strong>: A tree of predications that have had zero or more of their scopal (i.e. <code class="language-plaintext highlighter-rouge">h</code> type) arguments filled by unique predications.  [This is not at official MRS term, it is one created for this algorithm]</li>
+</ul>
+
+<p>As a reminder, a tree is “well-formed” if:</p>
+
+<ol>
+  <li>Each floater is assigned to one, and only one, hole. No holes or floaters are left at the end</li>
+  <li>None of the assignments of floaters to holes violates a <code class="language-plaintext highlighter-rouge">qeq</code> constraint</li>
+  <li>Any variable introduced by a quantifier is not used outside of the branches assigned to its <code class="language-plaintext highlighter-rouge">RSTR</code> or <code class="language-plaintext highlighter-rouge">Body</code> arguments</li>
+</ol>
+
+<p><strong>Here’s the intuition for how the algorithm works</strong>: We are going to walk a search tree.  Every node of the search tree represents a partial assignment of floaters to holes that meets the above 3 constraints. Every arc from a parent node in the search tree to a child node in the search tree represents a unique assignment of a (otherwise unassigned) floater to a hole.  If that assignment violates a constraint, the search tree node is not valid (since obviously keeping this assignment and adding floaters to it can’t be valid either) and we stop searching that whole branch of the search tree. This pruning is what makes it faster than the really naive “try every option” approach. Every node in the search tree that has no holes left to assign is a solution.</p>
+
+<p><strong>Algorithm Flow Summary</strong>: We start at the <code class="language-plaintext highlighter-rouge">TOP:</code> hole and record on it any <code class="language-plaintext highlighter-rouge">qeq</code> constraints that apply to it and any <code class="language-plaintext highlighter-rouge">X</code> variables that are in scope for it (none at the start). As we traverse an arc in the search tree and assign a new floater to a hole, we propagate any constraints and in-scope variables from the (parent) hole to the holes in the (child) floater.  Then we create the next node in the search tree by choosing the next hole to fill from the existing node.</p>
+
+<p><strong>Start with</strong>:<br />
+Each node in the search tree has the following structures that represent where the search has progressed to:</p>
+
+<p><code class="language-plaintext highlighter-rouge">allHolesDict</code>:              Dictionary populated with all the holes in the MRS. Each hole has information about:</p>
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">qeq</code> constraints that currently apply to it</li>
+  <li>The <code class="language-plaintext highlighter-rouge">X</code> variables that are currently in scope for it</li>
+  <li>The floater it is from
+<code class="language-plaintext highlighter-rouge">nodeAssignmentList</code>:        Assignments of floaters to holes that the search tree node represents. Empty for the initial node.
+<code class="language-plaintext highlighter-rouge">nodeRemainingHolesList</code>:    Holes left to fill in this search tree node. Only contains the <code class="language-plaintext highlighter-rouge">TOP:</code> hole for the initial node.
+<code class="language-plaintext highlighter-rouge">nodeRemainingFloatersList</code>: Floaters still unassigned at this node in the search tree. Contains all floaters for the initial node. Each floater contains information about:</li>
+  <li>A list of holes it contains</li>
+  <li>A list of unresolved <code class="language-plaintext highlighter-rouge">x</code> variables it contains</li>
+  <li>A list of any <code class="language-plaintext highlighter-rouge">Lo</code> parts of a <code class="language-plaintext highlighter-rouge">qeq</code> constraint it contains (if it doesn’t also have the <code class="language-plaintext highlighter-rouge">Hi</code> part in the floater)</li>
+</ul>
+
+<p><strong>Algorithm</strong>:<br />
+Starting at the initial node:</p>
+<ul>
+  <li>Get <code class="language-plaintext highlighter-rouge">currentHole</code> by removing the first hole from <code class="language-plaintext highlighter-rouge">nodeRemainingHolesList</code></li>
+  <li>Get <code class="language-plaintext highlighter-rouge">currentFloater</code> by removing each floater from <code class="language-plaintext highlighter-rouge">nodeRemainingFloatersList</code> and:
+    <ul>
+      <li>If <code class="language-plaintext highlighter-rouge">currentFloater</code> does not violate the constraints in <code class="language-plaintext highlighter-rouge">currentHole</code>:
+        <ul>
+          <li>Add <code class="language-plaintext highlighter-rouge">currentHole = currentFloater</code> to <code class="language-plaintext highlighter-rouge">nodeAssignmentList</code></li>
+          <li>Propagate the constraints and variables from the new parent to all holes in <code class="language-plaintext highlighter-rouge">currentFloater</code></li>
+          <li>Add holes from <code class="language-plaintext highlighter-rouge">currentFloater</code> to the end of <code class="language-plaintext highlighter-rouge">nodeRemainingHolesList</code></li>
+          <li>Check number of holes left:
+            <ul>
+              <li>if == 0, return <code class="language-plaintext highlighter-rouge">nodeAssignmentList</code> as a solution</li>
+              <li>otherwise, continue the search by “creating a new search tree node” via recursing to the top of the algorithm</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Returns</strong>:
+<code class="language-plaintext highlighter-rouge">nodeAssignmentList</code> which is simply a dictionary where the keys are holes and the value is the floater that was assigned to it.</p>
+
+<p>Once this has run its course you will have all the valid well-formed trees for the MRS.</p>
+
+<p>Here is the Python code for the main routine:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, nodeRemainingFloatersList, nodeAssignmentList):
+    # Grab the first hole to fill and remove it from the list
+    currentHole = allHolesDict[nodeRemainingHolesListOrig[0]]
+    nodeRemainingHolesList = nodeRemainingHolesListOrig[1:]
+
+    index = 0
+    # Try each remaining floater in this hole
+    for index in range(0, len(nodeRemainingFloatersList)):
+        # Grab the current floater and pull from the list for when we recurse
+        currentFloater = nodeRemainingFloatersList[index]
+        newNodeRemainingFloatersList = [x for i, x in enumerate(nodeRemainingFloatersList) if i != index]
+
+        # Check if constraints are met. If not, prune entire search space by
+        # skipping since none of its children can work either
+        errorOut = []
+        if not CheckConstraints(currentHole["Constraints"], currentFloater, errorOut):
+            # Constraint Failed: try the next one
+            continue
+
+        # Hole successfully filled
+        # Assign the floater to the hole in a copy of assignments since we will be
+        # changing on each loop
+        currentAssignments = copy.deepcopy(nodeAssignmentList)
+        currentAssignments[currentHole["Label"]] = currentFloater["Label"]
+
+        if len(newNodeRemainingFloatersList) == 0:
+            # We filled the last hole, return the solution
+            yield currentAssignments
+            return
+
+        # If this floater has more holes, add them to a copy of the nodeRemainingHolesListOrig
+        # Fixup any of the holes from this floater in a *copy* of holeDict since it also holds the holes
+        # and the pointer to the hole is being changed so we don't want other nodes to get changed too
+        newNodeRemainingHolesList = copy.deepcopy(nodeRemainingHolesList)
+        newHoleDict = copy.deepcopy(allHolesDict)
+        FixupConstraintsForFloaterInHole(currentHole["Constraints"], currentFloater, newHoleDict)
+        for nextHoleName in currentFloater["FloaterTreeHoles"]:
+            newNodeRemainingHolesList.append(nextHoleName)
+
+        # This hole was filled, see if any remain
+        if len(newNodeRemainingHolesList) &gt; 0:
+            # recurse
+            yield from TryAlternativeHoleAssignments(newHoleDict, newNodeRemainingHolesList, newNodeRemainingFloatersList, currentAssignments)
+
+    # At this point we tried all the floaters in this hole
+    return
+</code></pre></div></div>
+
+<blockquote>
+  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
+</blockquote>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md">edit</a>]</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+
+      </footer>
+
+      
+
+      
+    </div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+<!--Scroll the navbar to the current page-->
+<script type="text/javascript">
+  let el = document.querySelector('.nav__list .active');
+  if(el){
+    el.scrollIntoView({block: "center", inline: "start"});
+  }
+</script>
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
+  </form>
+  <div id="results" class="results"></div></div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+
+    
+      <li><a href="/Perplexity/home/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2023 Your Name. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/Perplexity/home/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/Perplexity/home/assets/js/lunr/lunr.min.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-store.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+
+
+
+  </body>
+</html>

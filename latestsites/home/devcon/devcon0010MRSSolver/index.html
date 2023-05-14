@@ -1,0 +1,624 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Perplexity</title>
+<meta name="description" content="An amazing website.">
+
+
+  <meta name="author" content="Your Name">
+  
+
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Perplexity">
+<meta property="og:title" content="Perplexity">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver/">
+
+
+  <meta property="og:description" content="An amazing website.">
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Your Name",
+      "url": "http://blog.inductorsoftware.com/Perplexity/home/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/Perplexity/home/feed.xml" type="application/atom+xml" rel="alternate" title="Perplexity Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/Perplexity/home/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--delphin_page wide">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+          <a class="site-logo" href="/Perplexity/home/"><img src="/Perplexity/home/assets/images/Delph-In.png" alt="Perplexity"></a>
+        
+        <a class="site-title" href="/Perplexity/home/">
+          Perplexity
+          
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview">Home</a>
+            </li></ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+  
+    
+      
+      
+      
+      
+    
+    
+      
+
+<nav class="nav__list">
+  
+  <input id="ac-toc" name="accordion-toc" type="checkbox" />
+  <label for="ac-toc">Toggle Menu</label>
+  <ul class="nav__items">
+    
+      <li>
+        
+          <span class="nav__sub-title">Developer Tutorial Overview</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devOverview/">Overview</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
+          
+            <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/">Well-Formed Trees</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/" class="active">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Perplexity Internals</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0010PredicationContract/">The Predication Contract</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0020PythonBasics/">State and Python Basics</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0030ImplementPredication/">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0040BuildSolver/">Initial Solver</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0050Conjunctions/">Solving Conjunctions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0060ScopalArguments/">Soliving Scopal Arguments</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0075SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0100SimpleCommands/">Commands</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure/">Naive Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures/">Words in Failures</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0130ErrorsRobustFailure/">Robust Failures</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
+          <span class="nav__sub-title">Using Perplexity</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo20ImplementAPredication/">Implementing a Predication</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">In-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo40LiftStylePredications/">Lift-Style Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo50EventPredications/">Event Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo70ActionVerbs/">Verb Predications</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo80QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
+        </ul>
+        
+      </li>
+    
+  </ul>
+</nav>
+
+    
+  
+  </div>
+
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    
+    
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+        <h2 id="solving-an-mrs">Solving an MRS</h2>
+<blockquote>
+  <p>It is important to understand what MRS is and what a well-formed MRS tree is before reading this section. Visit those links first to understand the basic concepts.</p>
+</blockquote>
+
+<p>A well-formed MRS tree can be thought of as an <em>equation</em> that is <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code> depending on the values of its variables. Recall that predications are of the form: <code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> or <code class="language-plaintext highlighter-rouge">compound(e,x,x)</code>. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are <code class="language-plaintext highlighter-rouge">true</code> when their arguments are set to values that <em>are</em> or <em>mean</em> what the predication means.</p>
+
+<p>So:</p>
+
+<ul>
+  <li>If we set <code class="language-plaintext highlighter-rouge">x = 'a cat'</code> then <code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> will be <code class="language-plaintext highlighter-rouge">false</code></li>
+  <li>If we set <code class="language-plaintext highlighter-rouge">x = 'the brown table'</code> then <code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> will be <code class="language-plaintext highlighter-rouge">true</code></li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> means: “the object in <code class="language-plaintext highlighter-rouge">x</code> is <code class="language-plaintext highlighter-rouge">a table</code>”. It might <em>also</em> be many other things, like <code class="language-plaintext highlighter-rouge">brown</code> or <code class="language-plaintext highlighter-rouge">large</code> or <code class="language-plaintext highlighter-rouge">missing</code>, etc. But as long as it is at least <code class="language-plaintext highlighter-rouge">a table</code>, <code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> is <code class="language-plaintext highlighter-rouge">true</code>.</p>
+
+<p>How <code class="language-plaintext highlighter-rouge">a cat</code> or <code class="language-plaintext highlighter-rouge">the brown table</code> are actually <em>represented</em> doesn’t matter as long as the predication can interpret it. It could be a string or an object of some kind.</p>
+
+<p>A group of multiple predications separated by commas means they are “in conjunction”, which means the commas should be treated as <code class="language-plaintext highlighter-rouge">and</code>. So,<code class="language-plaintext highlighter-rouge">large(x), file(x)</code> will only be <code class="language-plaintext highlighter-rouge">true</code> if <code class="language-plaintext highlighter-rouge">x</code> is set to values that make all the predications <code class="language-plaintext highlighter-rouge">true</code>. In this example, <code class="language-plaintext highlighter-rouge">x</code> must be set to something that is <code class="language-plaintext highlighter-rouge">a large file</code>. Again, <code class="language-plaintext highlighter-rouge">x</code> could be <code class="language-plaintext highlighter-rouge">a large yellow file</code> or <code class="language-plaintext highlighter-rouge">a large file of paperwork</code>, but each predication just tests for some property of <code class="language-plaintext highlighter-rouge">x</code> and is <code class="language-plaintext highlighter-rouge">true</code> as long as that property is <code class="language-plaintext highlighter-rouge">true</code>, regardless of its other properties.</p>
+
+<p><em>Solving</em> a well-formed tree means finding values for the variables that make all the predications <code class="language-plaintext highlighter-rouge">true</code>.</p>
+
+<p>Here’s a simple example. Let’s solve <code class="language-plaintext highlighter-rouge">large(x), file(x)</code> in a world with 3 objects in it:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a folder
+a small file
+a large file
+</code></pre></div></div>
+<p><code class="language-plaintext highlighter-rouge">x</code> variables in an MRS represent “individuals” or “things in the world”. So, we need to find which are the individuals from the world that, when put into <code class="language-plaintext highlighter-rouge">x</code>, make both the predications in <code class="language-plaintext highlighter-rouge">large(x), file(x)</code> be <code class="language-plaintext highlighter-rouge">true</code>.</p>
+
+<p>While this is trivial to solve by looking at it, once the world contains a million objects we will need a more systematic approach.</p>
+
+<h2 id="a-backtracking-mrs-solver">A Backtracking MRS Solver</h2>
+<p>We can look at solving an MRS as a <a href="https://en.wikipedia.org/wiki/Constraint_satisfaction_problem">constraint satisfaction problem</a> which is a well-studied class of problems that have a finite set of constraints over variables. In the MRS case, the constraints are the predications:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">large(x)</code> constrains <code class="language-plaintext highlighter-rouge">x</code> to only be those objects that are <code class="language-plaintext highlighter-rouge">large</code></li>
+  <li><code class="language-plaintext highlighter-rouge">file(x)</code> constrains <code class="language-plaintext highlighter-rouge">x</code> to only be those objects that are a <code class="language-plaintext highlighter-rouge">file</code></li>
+  <li><code class="language-plaintext highlighter-rouge">large(x), file(x)</code> constrains <code class="language-plaintext highlighter-rouge">x</code> to be a <code class="language-plaintext highlighter-rouge">large file</code></li>
+</ul>
+
+<p>One simple approach to solving constraint satisfaction problems (like finding the solutions to an MRS) is to use <a href="https://en.wikipedia.org/wiki/Backtracking">“backtracking”</a>. The simplest backtracking algorithm is to:</p>
+
+<ul>
+  <li>Traverse the predications from the well-formed MRS tree, depth-first</li>
+  <li>When an unassigned variable in a predication is encountered:
+    <ol>
+      <li>Assign it the first item in the world</li>
+      <li>Mark it as a <code class="language-plaintext highlighter-rouge">backtrack point</code></li>
+    </ol>
+  </li>
+  <li>If a predication is <code class="language-plaintext highlighter-rouge">false</code>:
+    <ol>
+      <li>“backtrack” to the nearest <code class="language-plaintext highlighter-rouge">backtrack point</code> and retry with the next item in the world</li>
+      <li>If there are no more items to retry with, backtrack further to the next <code class="language-plaintext highlighter-rouge">backtrack point</code> and try again.</li>
+    </ol>
+  </li>
+</ul>
+
+<p>This will try all items in the world, in all variables, until it finds all solutions. Backtracking allows the search space to be pruned to avoid whole sets of assignments that can’t possibly work, thus improving the performance vs. a full search of all possibilities.</p>
+
+<p>Let’s use the backtracking algorithm to solve a slightly more interesting example, “large file in folder”:</p>
+
+<p>[It is important to note that these are not real MRS or well-formed tree examples yet!  That will come soon.]</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>formula: large(x), file(x), folder(y), in(x, y)
+
+world individuals:
+a folder
+a small file
+a large file
+
+world facts:
+[a large file] is in [a folder]
+</code></pre></div></div>
+<p>The “world individuals” above are the only objects that exist in the world. <code class="language-plaintext highlighter-rouge">x</code> values in the MRS will hold these as values.</p>
+
+<p>The “world facts” above are facts about the relationships between things in the world that predications such as <code class="language-plaintext highlighter-rouge">in(x, y)</code> can refer to to see if they are <code class="language-plaintext highlighter-rouge">true</code>.</p>
+
+<p>As above, it doesn’t matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We’ll be building an example of such a system in this tutorial.</p>
+
+<p>To make the backtracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of “variable scope”. Variable scope shows where a variable is introduced and which predications can use it.</p>
+
+<p>We’ll represent scope by a made-up function for now: <code class="language-plaintext highlighter-rouge">scope(variable, [predication_list])</code>. The function states that <code class="language-plaintext highlighter-rouge">variable</code> can be used by all the predications in <code class="language-plaintext highlighter-rouge">[predication_list]</code>. And, since <code class="language-plaintext highlighter-rouge">scope()</code> itself is a predication, more variables can be defined in <code class="language-plaintext highlighter-rouge">predication_list</code> using another <code class="language-plaintext highlighter-rouge">scope()</code>. This allows us to represent our formula using scoping, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>formula: scope(x, [large(x), file(x), 
+                                      scope(y, [folder(y), in(x, y)])
+                  ])
+</code></pre></div></div>
+<p>The formula is formatted to make it easier to see the nesting. You can see that this is just a flat way of representing a tree shaped like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                            ┌── large(x)
+                            │ ┌── file(x) 
+                ┌────── and(0,1,2)
+                │               └── scope(y, predication_list)
+scope(x, predication_list)                          │
+                                                    └─ and(0,1)
+                                                           │ └ in(x, y)
+                                                           └ folder(y)
+</code></pre></div></div>
+<p>… where <code class="language-plaintext highlighter-rouge">and(...)</code> has been used to explicitly show the conjunctions (i.e. <code class="language-plaintext highlighter-rouge">and</code>s).</p>
+
+<p>The backtracking algorithm does its job by recursively “evaluating” the <code class="language-plaintext highlighter-rouge">scope()</code> predications:</p>
+
+<blockquote>
+  <p>Evaluating a <code class="language-plaintext highlighter-rouge">scope()</code> means:</p>
+  <ul>
+    <li>Assign a world value to the scope’s variable</li>
+    <li>Evaluate its <code class="language-plaintext highlighter-rouge">predication_list</code> using that value (see below for how)</li>
+    <li>If the list is <code class="language-plaintext highlighter-rouge">false</code>, restart the list using the next world value</li>
+    <li>If the list is <code class="language-plaintext highlighter-rouge">true</code>, the <code class="language-plaintext highlighter-rouge">scope()</code> predication is <code class="language-plaintext highlighter-rouge">true</code></li>
+  </ul>
+
+  <p>Evaluating a <code class="language-plaintext highlighter-rouge">predication_list</code> means:</p>
+  <ul>
+    <li>Evaluate the first predication in the list using the current values of all variables in scope</li>
+    <li>If <code class="language-plaintext highlighter-rouge">true</code>, try the next predication in the list</li>
+    <li>If <code class="language-plaintext highlighter-rouge">false</code>, the list is <code class="language-plaintext highlighter-rouge">false</code></li>
+    <li>If all the predications are <code class="language-plaintext highlighter-rouge">true</code>, the list is <code class="language-plaintext highlighter-rouge">true</code></li>
+  </ul>
+</blockquote>
+
+<p>So, working through the example:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Formula</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Start with initial formula</td>
+      <td>scope(x, [large(x), file(x), scope(y, [folder(y), in(x, y)])])</td>
+    </tr>
+    <tr>
+      <td>set x=’a folder’ (the first item in the world)</td>
+      <td>scope(‘a folder’, [large(‘a folder’), file(‘a folder’), scope(y, [folder(y), in(‘a folder’, y)])])</td>
+    </tr>
+    <tr>
+      <td>first item in list is <code class="language-plaintext highlighter-rouge">false</code></td>
+      <td>… large(‘a folder’)…</td>
+    </tr>
+    <tr>
+      <td>backtrack: set x=’a small file’ (the next item in the world)</td>
+      <td>scope(‘a small file’, [large(‘a small file’), file(‘a small file’), scope(y, [folder(y), in(‘a small file’, y)])])</td>
+    </tr>
+    <tr>
+      <td>first item in list is <code class="language-plaintext highlighter-rouge">false</code></td>
+      <td>… large(‘a small file’)…</td>
+    </tr>
+    <tr>
+      <td>backtrack: set x=’a large file’</td>
+      <td>scope(‘a large file’, [large(‘a large file’), file(‘a large file’), scope(y, [folder(y), in(‘a large file’, y)])])</td>
+    </tr>
+    <tr>
+      <td>first item in list is <code class="language-plaintext highlighter-rouge">true</code></td>
+      <td>… large(‘a large file’)…</td>
+    </tr>
+    <tr>
+      <td>second item in list is <code class="language-plaintext highlighter-rouge">true</code></td>
+      <td>… file(‘a large file’)…</td>
+    </tr>
+    <tr>
+      <td>third item in list is <code class="language-plaintext highlighter-rouge">scope()</code>: set y=’a folder’ (the first item in the world)</td>
+      <td>…  scope(‘a folder’, [folder(‘a folder’), in(‘a large file’, ‘a folder’)])</td>
+    </tr>
+    <tr>
+      <td>first item in <code class="language-plaintext highlighter-rouge">scope(y, ...)</code> is <code class="language-plaintext highlighter-rouge">true</code></td>
+      <td>… folder(‘a folder’) …</td>
+    </tr>
+    <tr>
+      <td>second item in <code class="language-plaintext highlighter-rouge">scope(y, ...)</code> is <code class="language-plaintext highlighter-rouge">true</code></td>
+      <td>… in(‘a large file’, ‘a folder’)…</td>
+    </tr>
+    <tr>
+      <td>thus: <code class="language-plaintext highlighter-rouge">scope(y, ...)</code> is <code class="language-plaintext highlighter-rouge">true</code> for y=’a folder’</td>
+      <td>…  scope(‘a folder’, [folder(‘a folder’), in(‘a large file’, ‘a folder’)])</td>
+    </tr>
+    <tr>
+      <td>thus: <code class="language-plaintext highlighter-rouge">scope(x, ...)</code> is <code class="language-plaintext highlighter-rouge">true</code> for x=’a large file’ and y=’a folder’</td>
+      <td>scope(‘a large file’, [large(‘a large file’), file(‘a large file’), scope(‘a folder’, [folder(‘a folder’), in(‘a large file’, ‘a folder’)])])</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This example shows how:</p>
+
+<ul>
+  <li>Iteratively assigning values to each variable in a scope and</li>
+  <li>Evaluating the predication list within a scope and</li>
+  <li>Backtracking when there is a failure</li>
+</ul>
+
+<p>… will eventually find all the solutions to the formula (or prove that there are none).</p>
+
+<p>It works because we are effectively trying all values in all variables. But, it is better than literally just assigning all values to all variables, one by one, until we find the answer, because backtracking eliminates whole branches in the search space. There are other optimizations that can be done, and we will do more as we go, but the basic approach is straightforward.</p>
+
+<p>At this point, it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using completely different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems, and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We’ll work through some of those and find optimizations for some of the most egregious problems.</p>
+
+<p>But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating “together”.</p>
+
+<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0010MRSSolver.md">edit</a>]</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+
+
+      </footer>
+
+      
+
+      
+    </div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+<!--Scroll the navbar to the current page-->
+<script type="text/javascript">
+  let el = document.querySelector('.nav__list .active');
+  if(el){
+    el.scrollIntoView({block: "center", inline: "start"});
+  }
+</script>
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap"><form class="search-content__form" onkeydown="return event.key != 'Enter';">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term..." />
+  </form>
+  <div id="results" class="results"></div></div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+
+    
+      <li><a href="/Perplexity/home/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2023 Your Name. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/Perplexity/home/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/Perplexity/home/assets/js/lunr/lunr.min.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-store.js"></script>
+<script src="/Perplexity/home/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+
+
+
+  </body>
+</html>
