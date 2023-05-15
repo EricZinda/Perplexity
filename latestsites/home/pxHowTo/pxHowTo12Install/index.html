@@ -333,7 +333,17 @@
 <p>Below are instructions for installing everything you’ll need to run it and begin developing applications.</p>
 
 <h3 id="install-perplexity-and-python-libraries">Install Perplexity and Python Libraries</h3>
+<p>IMPORTANT: Perplexity has very large grammar files in its repository and so uses <a href="https://git-lfs.com/">git LFS</a> to store them. Before cloning Perplexity you must install git lfs (see previous link) and run:</p>
+
+<p><code class="language-plaintext highlighter-rouge">git lfs install</code> for the user account that you will clone Perplexity with.</p>
+
 <ol>
+  <li>Perplexity has very large grammar files in its repository and so uses <a href="https://git-lfs.com/">git LFS</a> to store them. If you don’t have git LFS installed yet:
+    <ul>
+      <li>Install <a href="https://git-lfs.com/">git LFS</a> following the instructions at that link</li>
+      <li><code class="language-plaintext highlighter-rouge">git lfs install</code> for the user account that you will clone Perplexity with</li>
+    </ul>
+  </li>
   <li><code class="language-plaintext highlighter-rouge">cd</code> to the directory where you want to install Perplexity</li>
   <li>Clone the Perplexity project:
     <ul>
