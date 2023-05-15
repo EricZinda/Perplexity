@@ -34,7 +34,15 @@ The second argument is a `Vocabulary` object that contains all the vocabulary re
 
 To allow user interaction, `UserInterface.interact_once()` is called in a loop.  That's it!
 
-If you run this, you'll get something like this:
+To run this:
+
+1. Create a `hello_world` directory in the Perplexity project
+2. Create a `hello_world.py` file in that directory with the code above
+3. From within the `hello_world` directory, run: `python ./hello_world.py`
+
+[Note: As always, you will need to have your environment activated as described in the [Installation](https://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo12Install) section to successfully run]
+
+You'll get something like this:
 
 ```
 python ./hello_world.py
