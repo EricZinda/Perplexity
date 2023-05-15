@@ -522,7 +522,7 @@ def generate_custom_message(tree_info, error_term):
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
         else:
             report_error(["notAThing", x_binding.value, x_binding.variable.name])
@@ -546,7 +546,7 @@ def generate_custom_message(tree_info, error_term):
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
         else:
             report_error(["notAThing", x_binding.value, x_binding.variable.name])
@@ -651,7 +651,7 @@ vocabulary = system_vocabulary()
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
         else:
             report_error(["notAThing", x_binding.value, x_binding.variable.name])
