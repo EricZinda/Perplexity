@@ -61,6 +61,7 @@
       ]},
       {"Section": "Using Perplexity", "Pages": [
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo10Overview.md", "DstFile": "pxhowto/pxHowTo10Overview.md"},
+        {"Page": "Installing Perplexity", "SrcDir": "main", "SrcFile": "docs/pxHowTo/psHowTo12Install.md", "DstFile": "pxhowto/psHowTo12Install.md"},
         {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo20ImplementAPredication.md", "DstFile": "pxhowto/pxHowTo20ImplementAPredication.md"},
         {"Page": "In-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo30InStylePredications.md", "DstFile": "pxhowto/pxHowTo30InStylePredications.md"},
         {"Page": "Lift-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo40LiftStylePredications.md", "DstFile": "pxhowto/pxHowTo40LiftStylePredications.md"},
