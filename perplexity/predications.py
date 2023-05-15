@@ -32,9 +32,9 @@ def force_individual_style_predication_1(state, binding, bound_predication_funct
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
-def lift_style_predication(state, binding1, binding2,
-                           both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
-                           binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+def lift_style_predication_2(state, binding1, binding2,
+                             both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
+                             binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
 
     # If nobody needs collective don't do it since it is expensive
     binding1_metadata = get_variable_metadata(binding1.variable.name)
@@ -83,9 +83,9 @@ def lift_style_predication(state, binding1, binding2,
 # - that the any combinatoric terms will be turned into single set terms (coll or dist)
 #
 # both_bound_function() is called if binding1 and binding2 are bound, etc.
-def in_style_predication(state, binding1, binding2,
-                         both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
-                         binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+def in_style_predication_2(state, binding1, binding2,
+                           both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
+                           binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
     # If nobody needs collective don't do it since it is expensive
     binding1_metadata = get_variable_metadata(binding1.variable.name)
     if binding1_metadata["ValueSize"] == ValueSize.exactly_one:

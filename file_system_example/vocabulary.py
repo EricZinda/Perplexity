@@ -2,7 +2,7 @@ from file_system_example.objects import File, Folder, Megabyte, Actor, Container
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
-from perplexity.predications import combinatorial_style_predication_1, lift_style_predication, in_style_predication, \
+from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, in_style_predication_2, \
     force_individual_style_predication_1, ValueSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import Measurement
 from perplexity.system_vocabulary import system_vocabulary
@@ -349,7 +349,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
         else:
             report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    yield from in_style_predication(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values)
+    yield from in_style_predication_2(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values)
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
@@ -388,7 +388,7 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
         else:
             report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    yield from in_style_predication(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values)
+    yield from in_style_predication_2(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values)
 
 
 # handles size only
@@ -434,11 +434,11 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
     # if it is for x_actor or x_size, so we have to try both
     if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
         set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
-        yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, set_size, ValueSize.all)
-        yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, set_size)
+        yield from lift_style_predication_2(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, set_size, ValueSize.all)
+        yield from lift_style_predication_2(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, set_size)
 
     else:
-        yield from lift_style_predication(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, ValueSize.all)
+        yield from lift_style_predication_2(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, ValueSize.all)
 
 
 @Predication(vocabulary, names=["_only_x_deg"])
@@ -533,8 +533,8 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
         # Location is unbound, ask them to be more specific
         report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication(state, x_actor_binding, x_location_binding,
-                                          both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
+    for new_state in in_style_predication_2(state, x_actor_binding, x_location_binding,
+                                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
         yield new_state.apply_operations([ChangeDirectoryOperation(new_state.get_binding(x_location_binding.variable.name))])
 
 
@@ -570,8 +570,8 @@ def copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
         # Location is unbound, ask them to be more specific
         report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication(state, x_actor_binding, x_what_binding,
-                                          both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
+    for new_state in in_style_predication_2(state, x_actor_binding, x_what_binding,
+                                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
         yield new_state.apply_operations([CopyOperation(None, new_state.get_binding(x_what_binding.variable.name), None)])
 
 
@@ -610,8 +610,8 @@ def copy_v_1_stative_comm(state, e_introduced_binding, x_actor_binding, x_what_b
         # Location is unbound, ask them to be more specific
         report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication(state, x_actor_binding, x_what_binding,
-                                          both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
+    for new_state in in_style_predication_2(state, x_actor_binding, x_what_binding,
+                                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
         yield new_state.apply_operations([CopyOperation(x_copy_from_location_binding, new_state.get_binding(x_what_binding.variable.name), None)])
 
 
@@ -646,9 +646,9 @@ def copy_v_1_locative_comm(state, e_introduced_binding, x_actor_binding, x_what_
         # Location is unbound, ask them to be more specific
         report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication(state, x_actor_binding, x_what_binding,
-                                          both_bound_function, binding1_unbound_predication_function,
-                                          binding2_unbound_predication_function):
+    for new_state in in_style_predication_2(state, x_actor_binding, x_what_binding,
+                                            both_bound_function, binding1_unbound_predication_function,
+                                            binding2_unbound_predication_function):
         yield new_state.apply_operations([CopyOperation(None, new_state.get_binding(x_what_binding.variable.name), where_binding_list[0])])
 
 
