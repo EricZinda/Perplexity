@@ -26,21 +26,28 @@ Install the Delphin `ACE` parser from: [http://sweaglesw.org/linguistics/ace/](h
 ## Running Tests
 If everything is installed correctly, you should be able to successfully run all the tests:
 
-- Go to the directory where Perplexity was cloned:
-  - `cd <Perplexity project path>`
-- Tell Python that it should look in this directory for modules:
-  - `export PYTHONPATH=$PATH:<Perplexity project path>`
-- Start the Perplexity engine:
-  - `python3 ./file_system_example/examples.py` 
-- Run all the Perplexity tests in the `tests` folder:
-  - `/runfolder`
+1. Go to the directory where Perplexity was cloned:
+   - `cd <Perplexity project path>`
+2. Activate the environment
+   - `source env/bin/activate`
+3. Tell Python that it should look in this directory for modules:
+   - `export PYTHONPATH=$PATH:<Perplexity project path>`
+4. Start the Perplexity engine:
+   - `python3 ./file_system_example/examples.py` 
+5. Run all the Perplexity tests in the `tests` folder:
+   - `/runfolder`
 
 ## Daily Workflow
 Once everything in installed, to begin a session of Perplexity development you simply need to activate the Python environment you created above and run Perplexity:
 
-- `cd <Perplexity project path>`
-- `export PYTHONPATH=$PATH:<Perplexity project path>`
-- `python3 ./file_system_example/examples.py` 
+1. Go to the directory where Perplexity was cloned:
+   - `cd <Perplexity project path>`
+2. Activate the environment
+   - `source env/bin/activate`
+3. Tell Python that it should look in this directory for modules:
+   - `export PYTHONPATH=$PATH:<Perplexity project path>`
+4. Start the Perplexity engine:
+   - `python3 ./file_system_example/examples.py` 
 
 ## Next Step: Hello World
 Now that you've got Perplexity installed, the next step is to [create the minimal "Hello World" application](https://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo14HelloWorld).
