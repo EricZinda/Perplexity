@@ -462,7 +462,7 @@ class UserInterface(object):
         else:
             ergFile = "erg-2020-ubuntu-perplexity.dat"
 
-        return ergFile
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 
 
 def command_run_all_parses(ui, arg):
