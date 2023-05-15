@@ -501,7 +501,22 @@ def generate_custom_message(tree_info, error_term):
         yield state
 </code></pre></div></div>
 
-<p>Because this pattern happens a lot and there are optimizations that can avoid a lot of the work here, the system provides a helper function that does the bulk of the work called <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code>.  The <code class="language-plaintext highlighter-rouge">_1</code> means “one <code class="language-plaintext highlighter-rouge">x</code> argument”.</p>
+<p>Iteratively returning all combinations of a set runs a lot of code. We can optimize this by allowing predications to say, “all combinations of this set are true for me”. Perplexity calls this a “combinatorial set”. It is done by passing a boolean value to <code class="language-plaintext highlighter-rouge">set_x()</code>, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
+    if x_binding.value is None:
+        # Yield all combinations of files in the system
+        yield state.set_x(("file1.txt","file2.txt","file3.txt"), combinatorial=True
+        
+    else:
+        for item in x_binding.value:
+            if item not in ["file1.txt", "file2.txt" and "file3.txt"]
+                report_error(["notAThing", x_binding.value, x_binding.variable.name])
+                return False
+        yield state
+</code></pre></div></div>
+
+<p>This does mean, however, that predications need to check for combinatorial sets and deal with them appropriately. To reduce the complexity of building predications, the system provides a helper function that does the bulk of the work called, <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code>.  The <code class="language-plaintext highlighter-rouge">_1</code> means “one <code class="language-plaintext highlighter-rouge">x</code> argument”.</p>
 
 <p>To use this function, you provide it two functions and then let the helper work out all the combinations, like this:</p>
 
@@ -520,9 +535,9 @@ def generate_custom_message(tree_info, error_term):
 
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 </code></pre></div></div>
-<p>The <code class="language-plaintext highlighter-rouge">bound_variable()</code> function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the list and calling the function to see if each element in it is a file.</p>
+<p>The <code class="language-plaintext highlighter-rouge">bound_variable()</code> function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the list and calling the function to see if each element in it is a file. It properly checks to see if the set is combinatorial and does the right thing.</p>
 
-<p>The <code class="language-plaintext highlighter-rouge">unbound_variable()</code> function only needs to yield each item that is a file and the system handles yielding all the combinations.</p>
+<p>The <code class="language-plaintext highlighter-rouge">unbound_variable()</code> function only needs to yield each item that is a file and the system handles yielding all the combinations, including setting the variable to be a combinatorial set.</p>
 
 <p>Note that there are several optimizations the system does to avoid having to do the most brute force approach shown above, and the helper handles them all automatically.</p>
 
@@ -710,8 +725,6 @@ def hello_world():
 if __name__ == '__main__':
     hello_world()
 </code></pre></div></div>
-
-<h2 id="todo-describe-combinatorial-values-it-is-referred-to-in-the-next-section">TODO: describe combinatorial values, it is referred to in the next section</h2>
 
 <p>Last update: 2023-05-15 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo20ImplementAPredication.md">edit</a>]</p>
 
