@@ -1,5 +1,9 @@
 {% raw %}## Installing Perplexity
+Perplexity is almost 100% Python code, but it does require the DELPH-IN ACE parser to be able to use the DELPH-IN grammars for parsing natural language. 
 
+Below are instructions for installing everything you'll need to run it and begin developing applications.
+
+### Install Perplexity and Python Libraries
 1. `cd` to the directory where you want to install Perplexity
 2. Clone the Perplexity project: 
    - `git clone https://github.com/EricZinda/Perplexity.git`
@@ -13,22 +17,35 @@
 7. Install the libraries required by Perplexity:
    - `pip install pydelphin`
 
-Install the Delphin `ACE` parser: http://sweaglesw.org/linguistics/ace/ and make sure you have a path to it. 
-- best location is /usr/local/bin
-- Note the notes in the "Troubleshooting" section of the parser.  
-- ACE needs execute permissions to your TEMP directory
+### Install the ACE Parser
+
+Install the Delphin `ACE` parser: http://sweaglesw.org/linguistics/ace/ and make sure your path is set to it. 
+- Best location for the ACE binary on a Mac is: `/usr/local/bin`
+- Note the notes in the "Troubleshooting" section of the ACE documentation in the link above: ACE needs execute permissions to your TEMP directory
 
 ## Running Tests
 If everything is installed correctly, you should be able to successfully run all the tests:
 
-- cd <Perplexity project path>
-- export PYTHONPATH=$PATH:<Perplexity project path>
-- python3 ./file_system_example/examples.py 
+- Go to the directory where Perplexity was cloned:
+  - `cd <Perplexity project path>`
+- Tell Python that it should look in this directory for modules:
+  - `export PYTHONPATH=$PATH:<Perplexity project path>`
+- Start the Perplexity engine:
+  - `python3 ./file_system_example/examples.py` 
+- Run all the Perplexity tests in the `tests` folder:
+  - `/runfolder`
+
+## Daily Workflow
+Once everything in installed, to begin a session of Perplexity development you simply need to activate the Python environment you created above and run Perplexity:
+
+- `cd <Perplexity project path>`
+- `export PYTHONPATH=$PATH:<Perplexity project path>`
+- `python3 ./file_system_example/examples.py` 
 
 ## Docs
 If you want to build the docs:
 - pip install marko
 
-Other instructions TBW.
+TODO: Other instructions for docs TBW.
 
 Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo12Install.md)]{% endraw %}
