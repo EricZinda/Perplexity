@@ -542,9 +542,16 @@ def file_n_of(state, x_binding, i_binding):
 
 <p>With that, the system can now recognize that the function exists and know which DELPH-IN predication(s) to map it to.</p>
 
+<h2 id="implementing-large">Implementing “large”</h2>
+<p>Let’s finish by implementing the predication for “large” (<code class="language-plaintext highlighter-rouge">_large_a_1(e2, x3)</code> from the MRS above) so we can see the system process “a file is large”.</p>
+
+<p>Just like <code class="language-plaintext highlighter-rouge">file_n_of</code>, <code class="language-plaintext highlighter-rouge">_large_a_1(e2, x3)</code> has a single <code class="language-plaintext highlighter-rouge">x</code> variable, so we can copy the approach from above to implement it. For now we can just ignore the event variable <code class="language-plaintext highlighter-rouge">e2</code>, we’ll describe how to handle that in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo50EventPredications"><code class="language-plaintext highlighter-rouge">Event Predications</code></a> later.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    
+</code></pre></div></div>
 <h2 id="todo-describe-combinatorial-values-it-is-referred-to-in-the-next-section">TODO: describe combinatorial values, it is referred to in the next section</h2>
 
-<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo20ImplementAPredication.md">edit</a>]</p>
+<p>Last update: 2023-05-15 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo20ImplementAPredication.md">edit</a>]</p>
 
         
       </section>
