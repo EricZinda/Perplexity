@@ -43,6 +43,6 @@ Once everything in installed, to begin a session of Perplexity development you s
 - `python3 ./file_system_example/examples.py` 
 
 ## Next Step: Hello World
-Now that you've got Perplexity installed, the next step is to create the minimal "Hello World" application.
+Now that you've got Perplexity installed, the next step is to [create the minimal "Hello World" application](https://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo14HelloWorld).
 
 Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo12Install.md)]{% endraw %}
