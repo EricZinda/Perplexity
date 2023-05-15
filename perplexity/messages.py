@@ -68,7 +68,7 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
                         value_set = ((value, ) for value in binding.value)
                         if value_set not in answer_items:
                             answer_items.add(value_set)
-                            yield message_function(tree, [-1, ["answerWithList", index_predication, [value_set]]]), [solution]
+                            yield message_function(tree, [-1, ["answerWithList", index_predication, value_set]]), [solution]
 
                     else:
                         if binding.value not in answer_items:
@@ -97,7 +97,7 @@ def generate_message(tree_info, error_term):
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
 
     if error_constant == "answerWithList":
-        answer_items = error_arguments[2]
+        answer_items = list(error_arguments[2])
 
         if len(answer_items) > 0:
             message = "\n".join([str(answer_item) for answer_item in answer_items])
