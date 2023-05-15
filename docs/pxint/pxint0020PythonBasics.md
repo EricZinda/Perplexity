@@ -1,4 +1,5 @@
 ## The State object (and a Python Primer)
+### Python Basics - Generator Functions
 The [predication contract](pxint0010PredicationContract) can be implemented in any programming language, but we'll be using Python. This section should give enough background so that even readers not familiar with Python can read the code and understand the examples. Even if you know Python, skim through this section since we will be implementing a key class (`State`) used elsewhere in the documentation.
 
 The Python language has functions, classes, methods, variables, operators, statements, and other elements shared by many imperative programming languages such as C++, Java, Javascript, Go, etc. How these work will be described as we go along and should be relatively straightforward to understand if you are proficient in an existing imperative programming language. 
