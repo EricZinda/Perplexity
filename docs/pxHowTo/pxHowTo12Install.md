@@ -19,7 +19,7 @@ Below are instructions for installing everything you'll need to run it and begin
 
 ### Install the ACE Parser
 
-Install the Delphin `ACE` parser: http://sweaglesw.org/linguistics/ace/ and make sure your path is set to it. 
+Install the Delphin `ACE` parser from: [http://sweaglesw.org/linguistics/ace/](http://sweaglesw.org/linguistics/ace/) and make sure your path is set to it. 
 - Best location for the ACE binary on a Mac is: `/usr/local/bin`
 - Note the notes in the "Troubleshooting" section of the ACE documentation in the link above: ACE needs execute permissions to your TEMP directory
 
@@ -43,9 +43,5 @@ Once everything in installed, to begin a session of Perplexity development you s
    - `export PYTHONPATH=$PATH:<Perplexity project path>`
    - `python3 ./file_system_example/examples.py` 
 
-
-## Docs
-If you want to build the docs:
-- pip install marko
-
-TODO: Other instructions for docs TBW.
+## Next Step: Hello World
+Now that you've got Perplexity installed, the next step is to [create the minimal "Hello World" application](pxHowTo14HelloWorld.md).
