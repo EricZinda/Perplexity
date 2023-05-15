@@ -281,6 +281,8 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo10Overview/" class="active">Overview</a></li>
           
+            <li><a href="/Perplexity/home/pxHowTo/pxHowTo12Install/">Installing Perplexity</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo20ImplementAPredication/">Implementing a Predication</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo30InStylePredications/">In-Style Predications</a></li>
@@ -355,7 +357,7 @@ if __name__ == '__main__':
 
 <p>The <code class="language-plaintext highlighter-rouge">UserInterface</code> class is the main entry point to Perplexity.</p>
 
-<p>It is created and passed a function (<code class="language-plaintext highlighter-rouge">reset()</code> in this example) whose job is to return an object derived from the <a href="https://github.com/EricZinda/Perplexity/blob/main/perplexity/state.py">Perplexity <code class="language-plaintext highlighter-rouge">State</code> class</a> that is in the “startup state”, whatever that means for the application.</p>
+<p>It is created and passed a function (<code class="language-plaintext highlighter-rouge">reset()</code> in this example) whose job is to return an object derived from the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics">Perplexity <code class="language-plaintext highlighter-rouge">State</code> class</a> that is in the “startup state”, whatever that means for the application.</p>
 
 <p>The second argument is a <code class="language-plaintext highlighter-rouge">Vocabulary</code> object that contains all the vocabulary required for the application. We don’t yet have any vocabulary so an empty <code class="language-plaintext highlighter-rouge">Vocabulary</code> class is used above.</p>
 
@@ -374,7 +376,7 @@ I don't know the words: loc_nonsp, place, which, pron, pronoun
 <p>So far, it has no vocabulary so it will just keep saying, “I don’t know the words…” until we implement some. That’s what the whole rest of the tutorial is about.</p>
 
 <h2 id="example">Example</h2>
-<p>We are implementing a natural language interface to a filesystem. so we derive from <code class="language-plaintext highlighter-rouge">State</code> and add two things to it.</p>
+<p>We are implementing a natural language interface to a file system. so we derive from <code class="language-plaintext highlighter-rouge">State</code> and add two things to it.</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Optimized for the file system example
 class FileSystemState(State):
     def __init__(self, file_system):

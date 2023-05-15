@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 The `UserInterface` class is the main entry point to Perplexity. 
 
-It is created and passed a function (`reset()` in this example) whose job is to return an object derived from the [Perplexity `State` class](https://github.com/EricZinda/Perplexity/blob/main/perplexity/state.py) that is in the "startup state", whatever that means for the application. 
+It is created and passed a function (`reset()` in this example) whose job is to return an object derived from the [Perplexity `State` class](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics) that is in the "startup state", whatever that means for the application. 
 
 The second argument is a `Vocabulary` object that contains all the vocabulary required for the application. We don't yet have any vocabulary so an empty `Vocabulary` class is used above.
 
@@ -51,7 +51,7 @@ I don't know the words: loc_nonsp, place, which, pron, pronoun
 So far, it has no vocabulary so it will just keep saying, "I don't know the words..." until we implement some. That's what the whole rest of the tutorial is about.
 
 ## Example
-We are implementing a natural language interface to a filesystem. so we derive from `State` and add two things to it. 
+We are implementing a natural language interface to a file system. so we derive from `State` and add two things to it. 
 ```
 # Optimized for the file system example
 class FileSystemState(State):
