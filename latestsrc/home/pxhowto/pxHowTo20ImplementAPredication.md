@@ -181,7 +181,23 @@ def file_n_of(state, x_binding, i_binding):
         yield state
 ```
 
-Because this pattern happens a lot and there are optimizations that can avoid a lot of the work here, the system provides a helper function that does the bulk of the work called `combinatorial_style_predication_1()`.  The `_1` means "one `x` argument". 
+Iteratively returning all combinations of a set runs a lot of code. We can optimize this by allowing predications to say, "all combinations of this set are true for me". Perplexity calls this a "combinatorial set". It is done by passing a boolean value to `set_x()`, like this:
+
+```
+def file_n_of(state, x_binding, i_binding):
+    if x_binding.value is None:
+        # Yield all combinations of files in the system
+        yield state.set_x(("file1.txt","file2.txt","file3.txt"), combinatorial=True
+        
+    else:
+        for item in x_binding.value:
+            if item not in ["file1.txt", "file2.txt" and "file3.txt"]
+                report_error(["notAThing", x_binding.value, x_binding.variable.name])
+                return False
+        yield state
+```
+
+This does mean, however, that predications need to check for combinatorial sets and deal with them appropriately. To reduce the complexity of building predications, the system provides a helper function that does the bulk of the work called, `combinatorial_style_predication_1()`.  The `_1` means "one `x` argument". 
 
 To use this function, you provide it two functions and then let the helper work out all the combinations, like this:
 
@@ -201,9 +217,9 @@ def file_n_of(state, x_binding, i_binding):
 
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 ```
-The `bound_variable()` function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the list and calling the function to see if each element in it is a file.
+The `bound_variable()` function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the list and calling the function to see if each element in it is a file. It properly checks to see if the set is combinatorial and does the right thing.
 
-The `unbound_variable()` function only needs to yield each item that is a file and the system handles yielding all the combinations.
+The `unbound_variable()` function only needs to yield each item that is a file and the system handles yielding all the combinations, including setting the variable to be a combinatorial set.
 
 Note that there are several optimizations the system does to avoid having to do the most brute force approach shown above, and the helper handles them all automatically.
 
@@ -396,7 +412,5 @@ def hello_world():
 if __name__ == '__main__':
     hello_world()
 ```
-
-## TODO: describe combinatorial values, it is referred to in the next section
 
 Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo20ImplementAPredication.md)]{% endraw %}
