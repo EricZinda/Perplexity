@@ -1,22 +1,47 @@
 from perplexity.execution import report_error
 from perplexity.generation import english_for_delphin_variable
+from perplexity.predications import combinatorial_style_predication_1
 from perplexity.state import State
 from perplexity.user_interface import UserInterface
-from perplexity.vocabulary import Vocabulary
+from perplexity.vocabulary import Vocabulary, Predication
 import perplexity.messages
 
 
 vocabulary = Vocabulary()
 
 
+@Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
-    if x_binding.value is None:
-        yield state.set_x(("file1.txt", ))
-    elif x_binding.value[0] == "file1.txt":
-        yield state
-    else:
-        report_error(["notAThing", x_binding.value, x_binding.variable.name])
-        return False
+    def bound_variable(value):
+        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+            return True
+        else:
+            report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield "file1.txt"
+        yield "file2.txt"
+        yield "file3.txt"
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+
+@Predication(vocabulary, names=["_large_a_1"])
+def large_a_1(state, e_introduced_binding, x_target_binding):
+    def criteria_bound(value):
+        if value == "file2.txt":
+            return True
+
+        else:
+            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            return False
+
+    def unbound_values():
+        # Find all large things
+        yield "file2.txt"
+
+    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
 
 
 # Generates all the responses that predications can

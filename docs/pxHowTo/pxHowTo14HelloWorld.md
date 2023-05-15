@@ -53,7 +53,7 @@ I don't know the words: unknown, greet, discourse
 I don't know the words: loc_nonsp, place, which, pron, pronoun
 ~~~
 
-So far, it has no vocabulary so it will just keep saying, "I don't know the words..." until we implement some. That's what the whole rest of the tutorial is about.
+So far, it has no vocabulary so it will just keep saying, "I don't know the words..." until we implement some. That's what the remainder of the tutorial is about.
 
 ## Example
 We are implementing a natural language interface to a file system. so we derive from `State` and add two things to it. 
