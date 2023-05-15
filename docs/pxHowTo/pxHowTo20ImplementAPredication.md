@@ -230,7 +230,94 @@ Let's finish by implementing the predication for "large" (`_large_a_1(e2, x3)` f
 
 Just like `file_n_of`, `_large_a_1(e2, x3)` has a single `x` variable, so we can copy the approach from above to implement it. For now we can just ignore the event variable `e2`, we'll describe how to handle that in the section on [`Event Predications`](pxHowTo50EventPredications) later.
 
+We'll implement large by making it be `true` only for "file2.txt":
 ~~~
-    
+@Predication(vocabulary, names=["_large_a_1"])
+def large_a_1(state, e_introduced_binding, x_target_binding):
+    def criteria_bound(value):
+        if value == "file2.txt":
+            return True
+
+        else:
+            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            return False
+
+    def unbound_values():
+        # Find all large things
+        yield "file2.txt"
+
+    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+~~~
+
+~~~
+from perplexity.execution import report_error
+from perplexity.predications import combinatorial_style_predication_1
+from perplexity.state import State
+from perplexity.system_vocabulary import system_vocabulary
+from perplexity.user_interface import UserInterface
+from perplexity.vocabulary import Predication
+
+
+vocabulary = system_vocabulary()
+
+
+@Predication(vocabulary, names=["_file_n_of"])
+def file_n_of(state, x_binding, i_binding):
+    def bound_variable(value):
+        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+            return True
+        else:
+            report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield "file1.txt"
+        yield "file2.txt"
+        yield "file3.txt"
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+
+@Predication(vocabulary, names=["_large_a_1"])
+def large_a_1(state, e_introduced_binding, x_target_binding):
+    def criteria_bound(value):
+        if value == "file2.txt":
+            return True
+
+        else:
+            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            return False
+
+    def unbound_values():
+        # Find all large things
+        yield "file2.txt"
+
+    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+
+def reset():
+    return State([])
+
+
+def hello_world():
+    user_interface = UserInterface(reset, vocabulary)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
+if __name__ == '__main__':
+    hello_world()
+
+~~~
+
+~~~
+? a file is large
+Yes, that is true.
+
+? which file is large?
+('file2.txt',)
+
+? 
 ~~~
 ## TODO: describe combinatorial values, it is referred to in the next section
