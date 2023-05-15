@@ -1,4 +1,5 @@
 {% raw %}## The State object (and a Python Primer)
+### Python Basics - Generator Functions
 The [predication contract](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract) can be implemented in any programming language, but we'll be using Python. This section should give enough background so that even readers not familiar with Python can read the code and understand the examples. Even if you know Python, skim through this section since we will be implementing a key class (`State`) used elsewhere in the documentation.
 
 The Python language has functions, classes, methods, variables, operators, statements, and other elements shared by many imperative programming languages such as C++, Java, Javascript, Go, etc. How these work will be described as we go along and should be relatively straightforward to understand if you are proficient in an existing imperative programming language. 
@@ -166,4 +167,4 @@ Now you've seen some of the basic Python you'll see throughout the tutorial and 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0020PythonBasics.md)]{% endraw %}
+Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0020PythonBasics.md)]{% endraw %}
