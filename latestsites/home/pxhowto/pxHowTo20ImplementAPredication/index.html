@@ -328,7 +328,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="implementing-a-predication">Implementing a Predication</h2>
-<p>Recall from the section on backtracking that Perplexity interpets a phrase by:</p>
+<p>Recall from the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking</a> that Perplexity interpets a phrase by:</p>
 <ol>
   <li>Converting the phrase to an MRS document</li>
   <li>Creating a well-formed tree from the MRS document</li>
@@ -351,7 +351,7 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 </code></pre></div></div>
 
-<p>The solver maps each predication in the tree to a Python function and calls it. A <code class="language-plaintext highlighter-rouge">State</code> object is used to track the current value of all MRS variables (such as <code class="language-plaintext highlighter-rouge">x3</code>) as the solver goes through this process. <code class="language-plaintext highlighter-rouge">State</code> always has the current value of all MRS variables <em>and</em> the state of the software that the natural language interface is being built for. Each program that uses Perplexity derives an object from <code class="language-plaintext highlighter-rouge">State</code> to allow predications to interact with the program.</p>
+<p>In summary: The solver maps each predication in the tree to a Python function and calls it. A <code class="language-plaintext highlighter-rouge">State</code> object is used to track the current value of all MRS variables (such as <code class="language-plaintext highlighter-rouge">x3</code>) as the solver goes through this process. <code class="language-plaintext highlighter-rouge">State</code> always has the current value of all MRS variables <em>and</em> the state of the software that the natural language interface is being built for. Each program that uses Perplexity derives an object from <code class="language-plaintext highlighter-rouge">State</code> to allow predications to interact with the program.</p>
 
 <p>The rest of this section describes how to write these predication functions and how to interact with the <code class="language-plaintext highlighter-rouge">state</code> object.</p>
 
@@ -384,20 +384,20 @@ _a_q(x3,RSTR,BODY)
 <p>… but passing the bindings, pre-loaded, as arguments is more convenient.</p>
 
 <h3 id="predication-success">Predication Success</h3>
-<p>Recall from the section on backtracking that the job of a predication is to be <code class="language-plaintext highlighter-rouge">true</code> when its arguments “are set to values that are (or mean) what the predication means”.  So, <code class="language-plaintext highlighter-rouge">file_n_of</code> should be <code class="language-plaintext highlighter-rouge">true</code> if <code class="language-plaintext highlighter-rouge">x_binding</code> and <code class="language-plaintext highlighter-rouge">i_binding</code> have values that mean “file” in the world it is implementing.</p>
+<p>Recall from the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking</a> that the job of a predication is to be <code class="language-plaintext highlighter-rouge">true</code> when its arguments “are set to values that are (or mean) what the predication means”.  So, <code class="language-plaintext highlighter-rouge">file_n_of</code> should be <code class="language-plaintext highlighter-rouge">true</code> if <code class="language-plaintext highlighter-rouge">x_binding</code> and <code class="language-plaintext highlighter-rouge">i_binding</code> have values that mean “file” in the world it is implementing.</p>
 
-<p>Predications functions must be Python generator functions so they can return multiple values iteratively by calling the Python <code class="language-plaintext highlighter-rouge">yield</code> operator (we’ll see this used next). <code class="language-plaintext highlighter-rouge">true</code> is indicated by <code class="language-plaintext highlighter-rouge">yield</code>ing the <code class="language-plaintext highlighter-rouge">state</code> object, as is, to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state (i.e. values) of the arguments. <code class="language-plaintext highlighter-rouge">false</code> is indicated by calling Python <code class="language-plaintext highlighter-rouge">return</code> directly: returning without yielding anything.</p>
+<p>Predication functions must be <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics">Python generator functions</a> so they can return multiple values iteratively by calling the Python <code class="language-plaintext highlighter-rouge">yield</code> operator (we’ll see this used next). <code class="language-plaintext highlighter-rouge">true</code> is indicated by <code class="language-plaintext highlighter-rouge">yield</code>ing the <code class="language-plaintext highlighter-rouge">state</code> object, as is, to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of the arguments. <code class="language-plaintext highlighter-rouge">false</code> is indicated by calling Python <code class="language-plaintext highlighter-rouge">return</code> directly – returning without yielding anything.</p>
 
-<p>Here’s a simple example: Let’s say a program we are building an interface to only has 1 file in it, called <code class="language-plaintext highlighter-rouge">file1.txt</code>. We could implement <code class="language-plaintext highlighter-rouge">file_n_of</code> like this:</p>
+<p>Here’s a simple example: Let’s say a program we are building an interface to only has one file in it, called <code class="language-plaintext highlighter-rouge">file1.txt</code>. We could implement <code class="language-plaintext highlighter-rouge">file_n_of</code> like this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     if x_binding.value is not None and x_binding.value[0] == "file1.txt":
         yield state
 </code></pre></div></div>
-<p>Note that <code class="language-plaintext highlighter-rouge">i_binding</code> is ignored since <code class="language-plaintext highlighter-rouge">i</code> variables usually indicate an ignored (or ‘dropped’) argument as described in the section on MRS.</p>
+<p>Note that <code class="language-plaintext highlighter-rouge">i_binding</code> is ignored since <code class="language-plaintext highlighter-rouge">i</code> variables usually indicate an ignored (or ‘dropped’) argument as described in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS">MRS</a>.</p>
 
-<p>The code illustrates that bindings have a <code class="language-plaintext highlighter-rouge">binding.value</code> property that returns the current variable’s value, which is always a list for reasons described in the solver overview . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. If so, it <code class="language-plaintext highlighter-rouge">yields</code> the state object  to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of its variables. Nothing changed in the <code class="language-plaintext highlighter-rouge">state</code> object so it can just be yielded, as is.</p>
+<p>The code illustrates that bindings have a <code class="language-plaintext highlighter-rouge">binding.value</code> property that returns the current variable’s value, which is always a list for reasons described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">conceptual topic on “Together”</a> . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. If so, it <code class="language-plaintext highlighter-rouge">yields</code> the state object  to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of its variables. Nothing changed in the <code class="language-plaintext highlighter-rouge">state</code> object so it can just be yielded, as is.</p>
 
-<p>Predications will often be called with all of their variables bound as in this example. But, recall that sometimes the engine will instead be looking for the function to provide a list of <em>all</em> <code class="language-plaintext highlighter-rouge">file_n</code> objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables “unbound”, which means: <code class="language-plaintext highlighter-rouge">binding.value is None</code>.  This indicates to the function that it should <code class="language-plaintext highlighter-rouge">yield</code> all the things in the world that are a <code class="language-plaintext highlighter-rouge">file</code>, like this:</p>
+<p>Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of <em>all</em> <code class="language-plaintext highlighter-rouge">file_n</code> objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables “unbound”, which means: <code class="language-plaintext highlighter-rouge">binding.value is None</code>.  This indicates to the function that it should <code class="language-plaintext highlighter-rouge">yield</code> all the things in the world that are a <code class="language-plaintext highlighter-rouge">file</code>, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
@@ -405,9 +405,11 @@ _a_q(x3,RSTR,BODY)
     elif x_binding.value[0] == "file1.txt":
         yield state
 </code></pre></div></div>
+<p>[Note that sets are represented as a Python tuple, and Python tuples require single element tuples to have a trailing “,”, so returning a single item tuple is done like this: <code class="language-plaintext highlighter-rouge">("file1.txt, )</code>]</p>
+
 <p><code class="language-plaintext highlighter-rouge">x_binding.value1</code> being <code class="language-plaintext highlighter-rouge">None</code> means that the MRS variable <code class="language-plaintext highlighter-rouge">x3</code> is unbound (not set to anything), and when a variable is unbound the predication needs to yield all the the variable assignments that <em>could</em> make it true – which in this case is just one. It does this by setting the variable in the state object and yielding it.</p>
 
-<p>Note that the <code class="language-plaintext highlighter-rouge">state</code> object is <em>immutable</em>, meaning that it cannot be changed directly.  Instead, when methods like <code class="language-plaintext highlighter-rouge">state.set_x()</code> are called, the method returns a <em>copy</em> of the object with only the change the method accomplished. That is why the function yields like this: <code class="language-plaintext highlighter-rouge">yield state.set_x(...)</code> – it needs to yield the copy with the changes in it.</p>
+<p>Note that the <code class="language-plaintext highlighter-rouge">state</code> object is <em>immutable</em>, meaning that it cannot be changed directly.  Instead, when methods like <code class="language-plaintext highlighter-rouge">state.set_x()</code> are called, the method returns a <em>copy</em> of the object with only the change the method accomplished. That is why the function yields like this: <code class="language-plaintext highlighter-rouge">yield state.set_x(...)</code> – it needs to yield the <em>copy</em> with the changes in it.</p>
 
 <p>Since our world only has one file in it, we’ve just hard-coded it here, but obviously the code could be more complicated in a real example.</p>
 
@@ -424,10 +426,10 @@ _a_q(x3,RSTR,BODY)
         return False
 </code></pre></div></div>
 
-<p>Errors are reported as a list and some errors like <code class="language-plaintext highlighter-rouge">valueIsNotX</code> are built into the system. Note that the message generated will be something like “folder1 is not a file”. The error that is created has <code class="language-plaintext highlighter-rouge">x_binding.value</code> as its first argument, which will be some non-file object like <code class="language-plaintext highlighter-rouge">folder1</code>. The second argument is <code class="language-plaintext highlighter-rouge">x_binding.variable.name</code>, which is the name of the variable <code class="language-plaintext highlighter-rouge">x3</code>. The system knows that <code class="language-plaintext highlighter-rouge">x3</code> represents “a folder” so this is a way of not having to hard code the name of the predictation and to allow it to generate richer errors. This is described more in the Errors conceptual topic, and the mechanics of it is shown next.</p>
+<p>Errors are reported as a list and here we’ve created a custom error to show how it is done. To create a custom error, we pick a string to represent it like <code class="language-plaintext highlighter-rouge">"notAThing"</code>, and include all the information we’ll need later to generate a nice text string for the user. In this case, we provide <code class="language-plaintext highlighter-rouge">x_binding.value</code> as its first argument, which will be some non-file object like <code class="language-plaintext highlighter-rouge">"folder1"</code>. The second argument is <code class="language-plaintext highlighter-rouge">x_binding.variable.name</code>, which is the name of the variable: <code class="language-plaintext highlighter-rouge">x3</code>. Perplexity has functions that can convert variable names like <code class="language-plaintext highlighter-rouge">x3</code> to their actual words like “a folder”. So, passing the variable name is a way of not having to hard code the name of the predictation and allowing the system to generate richer errors. This is described more in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures">Converting Variables to English</a> topic, and the mechanics of it is shown next.</p>
 
 <h2 id="converting-errors-to-messages">Converting Errors to Messages</h2>
-<p>If the error returned is a system error, the system will convert it to a message for the user.  If not, we need to create a function that converts the custom error codes to messages and pass that function to the <code class="language-plaintext highlighter-rouge">UserInterface</code> object, like this:</p>
+<p>If the error returned is a system error, the system will convert it to a message for the user.  If not, we need to create a function that converts the custom error information to messages and pass that function to the <code class="language-plaintext highlighter-rouge">UserInterface</code> object, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
 
@@ -466,14 +468,19 @@ def generate_custom_message(tree_info, error_term):
 
 </code></pre></div></div>
 
-<p>You can use whatever logic you want for converting the error code to a string, this is just an example. Note the use of the <code class="language-plaintext highlighter-rouge">arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)</code> call, however. This is how a variable name like ‘x3’ that was included as part of the message gets converted to a string like “file”.</p>
+<p>You can use whatever logic you want for converting the error code to a string, this is just an example. Note the use of the:</p>
 
-<p>The logic the system uses for reporting errors is not obvious, it is worth reading the section on errors to understand how it works.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+</code></pre></div></div>
+
+<p>… call, however. This is how a variable name like <code class="language-plaintext highlighter-rouge">x3</code> gets converted to a string like “file”.</p>
+
+<p>The logic the system uses for reporting errors is not obvious, it is worth reading the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure">section on errors</a> to understand how it works.</p>
 
 <h2 id="combinatorial-variables">Combinatorial Variables</h2>
-<p>Recall from ?the section? that Perplexity represents items operating together as a set (represented as a <code class="language-plaintext highlighter-rouge">tuple</code> in Python). Because users of the system may ask questions like, “Are the files 20 mb?” (meaning are they 20mb <em>together</em>), predications need to be prepared to deal with variables that have a set of more than one item. Let’s update the <code class="language-plaintext highlighter-rouge">file_n_of()</code> function to handle this case.</p>
+<p>Recall from <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">the section on “Together”</a> that Perplexity represents items operating together as a set (represented as a <code class="language-plaintext highlighter-rouge">tuple</code> in Python). Because users of the system may ask questions like, “Are the files 20 mb?” (meaning are they 20mb <em>together</em>), predications need to be prepared to deal with variables that have a set of more than one item. Let’s update the <code class="language-plaintext highlighter-rouge">file_n_of()</code> function to handle this case.</p>
 
-<p>Assume we have 2 more files in our example, so that now we have: <code class="language-plaintext highlighter-rouge">file1.txt</code>, <code class="language-plaintext highlighter-rouge">file2.txt</code> and <code class="language-plaintext highlighter-rouge">file3.txt</code>. A group of files “together” is still a group of files, so we really only have to change the logic to loop through the list and make sure they are all files. However, if the <code class="language-plaintext highlighter-rouge">x</code> variable is unbound, we need to yield <em>all combinations</em> of files since any combination of them could make this predication <code class="language-plaintext highlighter-rouge">true</code>, like this:</p>
+<p>Assume we have two more files in our example, so that now we have: <code class="language-plaintext highlighter-rouge">file1.txt</code>, <code class="language-plaintext highlighter-rouge">file2.txt</code> and <code class="language-plaintext highlighter-rouge">file3.txt</code>. A group of files “together” is still a group of files, so we really only have to change the logic to loop through the list and make sure they are all files. However, if the <code class="language-plaintext highlighter-rouge">x</code> variable is unbound, we need to yield <em>all combinations</em> of files since any combination of them could make this predication <code class="language-plaintext highlighter-rouge">true</code>, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
@@ -494,7 +501,9 @@ def generate_custom_message(tree_info, error_term):
         yield state
 </code></pre></div></div>
 
-<p>Because this pattern happens a lot and there are optimizations that can avoid a lot of the work here, the system provides a helper function that does the bulk of the work called <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code>.  The <code class="language-plaintext highlighter-rouge">_1</code> means “one <code class="language-plaintext highlighter-rouge">x</code> argument”. To use this function, you provide it two functions and then let the helper work out all the combinations, like this:</p>
+<p>Because this pattern happens a lot and there are optimizations that can avoid a lot of the work here, the system provides a helper function that does the bulk of the work called <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code>.  The <code class="language-plaintext highlighter-rouge">_1</code> means “one <code class="language-plaintext highlighter-rouge">x</code> argument”.</p>
+
+<p>To use this function, you provide it two functions and then let the helper work out all the combinations, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
@@ -511,14 +520,14 @@ def generate_custom_message(tree_info, error_term):
 
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 </code></pre></div></div>
-<p>The <code class="language-plaintext highlighter-rouge">bound_variable()</code> function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the list and calling the function to see if they are files.</p>
+<p>The <code class="language-plaintext highlighter-rouge">bound_variable()</code> function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the list and calling the function to see if each element in it is a file.</p>
 
 <p>The <code class="language-plaintext highlighter-rouge">unbound_variable()</code> function only needs to yield each item that is a file and the system handles yielding all the combinations.</p>
 
 <p>Note that there are several optimizations the system does to avoid having to do the most brute force approach shown above, and the helper handles them all automatically.</p>
 
 <h2 id="adding-predications-to-the-vocabulary">Adding Predications to the Vocabulary</h2>
-<p>The final step in creating a predication is to register the function as part of the vocabulary and indicate which DELPH-IN predication it maps to. This is done using Python “decorators” which are really just special functions you can use to label other functions. They are preceeded by <code class="language-plaintext highlighter-rouge">@</code>, like this:</p>
+<p>The final step in creating a predication is to register the function as part of the vocabulary and indicate which DELPH-IN predication it maps to. This is done using Python <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators">“decorators”</a> which are really just special functions you can use to label other functions. They are preceeded by <code class="language-plaintext highlighter-rouge">@</code>, like this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
@@ -536,18 +545,18 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 </code></pre></div></div>
 
-<p>The first argument to <code class="language-plaintext highlighter-rouge">@Predication</code> is the vocabulary object that the program wants to register it in, and <code class="language-plaintext highlighter-rouge">names=[]</code> provides a list of all the predications (in case some are synonyms) that should use this function.</p>
+<p>The first argument to <code class="language-plaintext highlighter-rouge">@Predication</code> is the <code class="language-plaintext highlighter-rouge">Vocabulary</code> object that the program wants to register it in, and <code class="language-plaintext highlighter-rouge">names=[]</code> provides a list of all the predication names (in case some are synonyms) that should use this function.</p>
 
-<p>Note that Perplexity requires that the function have the right number of arguments for the predications it lists in <code class="language-plaintext highlighter-rouge">names=[]</code>, and that the names of the function arguments start with the type, like <code class="language-plaintext highlighter-rouge">x-</code> or <code class="language-plaintext highlighter-rouge">i-</code> and that those also match the predications listed.</p>
+<p>Note that Perplexity requires that the function have the right number of arguments for the predications it lists in <code class="language-plaintext highlighter-rouge">names=[]</code>, and that the names of the function arguments start with the type (like <code class="language-plaintext highlighter-rouge">x-</code> or <code class="language-plaintext highlighter-rouge">i-</code>) and that those also match the predications listed.</p>
 
 <p>With that, the system can now recognize that the function exists and know which DELPH-IN predication(s) to map it to.</p>
 
 <h2 id="implementing-large">Implementing “large”</h2>
 <p>Let’s finish by implementing the predication for “large” (<code class="language-plaintext highlighter-rouge">_large_a_1(e2, x3)</code> from the MRS above) so we can see the system process “a file is large”.</p>
 
-<p>Just like <code class="language-plaintext highlighter-rouge">file_n_of</code>, <code class="language-plaintext highlighter-rouge">_large_a_1(e2, x3)</code> has a single <code class="language-plaintext highlighter-rouge">x</code> variable, so we can copy the approach from above to implement it. For now we can just ignore the event variable <code class="language-plaintext highlighter-rouge">e2</code>, we’ll describe how to handle that in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo50EventPredications"><code class="language-plaintext highlighter-rouge">Event Predications</code></a> later.</p>
+<p>Just like <code class="language-plaintext highlighter-rouge">file_n_of</code>, <code class="language-plaintext highlighter-rouge">_large_a_1(e2, x3)</code> has a single <code class="language-plaintext highlighter-rouge">x</code> variable, so we can copy the approach above to implement it. For now, we can just ignore the event variable <code class="language-plaintext highlighter-rouge">e2</code>, we’ll describe how to handle that in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo50EventPredications"><code class="language-plaintext highlighter-rouge">Event Predications</code></a> later.</p>
 
-<p>We’ll implement large by making it be <code class="language-plaintext highlighter-rouge">true</code> only for “file2.txt”:</p>
+<p>We’ll implement large by making it be <code class="language-plaintext highlighter-rouge">true</code> only for “file2.txt” to simulate that being the only “large thing” in the system:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_large_a_1"])
 def large_a_1(state, e_introduced_binding, x_target_binding):
     def criteria_bound(value):
@@ -565,9 +574,10 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
     yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
 </code></pre></div></div>
 
-<p>Once that predication is added to <code class="language-plaintext highlighter-rouge">file_n_of</code>, we can now run hello_world.py and get this:</p>
+<p>Once the implementation of <code class="language-plaintext highlighter-rouge">large_a_1</code> and <code class="language-plaintext highlighter-rouge">file_n_of</code> are added to <code class="language-plaintext highlighter-rouge">hello_world.py</code>, we can now run <code class="language-plaintext highlighter-rouge">hello_world.py</code> and get this:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? a file is large
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python ./hello_world.py
+? a file is large
 Yes, that is true.
 
 ? which file is large?
@@ -576,7 +586,9 @@ Yes, that is true.
 ? 
 </code></pre></div></div>
 
-<p>Note that there are a few words in there that the system implements automatically: “which” and “a”.  You can see this by typing <code class="language-plaintext highlighter-rouge">/show</code>. Perplexity will then output the MRS, Tree, and other debugging information:</p>
+<p>Note that the system has built in logic for handling propositions like “a file is large” and for answering questions like “which file is large?” automatically. By implementing the two predications we can already start processing a few phrase.</p>
+
+<p>To make this work, there are two words in there that the system implements automatically: “which” and “a”.  You can see this by typing <code class="language-plaintext highlighter-rouge">/show</code>. Perplexity will then output the MRS, tree, and other debugging information:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? /show
 User Input: a file is large
@@ -603,6 +615,8 @@ Error: [2, ['adjectiveDoesntApply', 'large', 'x3']]
 Response:
 Yes, that is true.
 </code></pre></div></div>
+
+<p>Below is the full source for the predications we’ve gone through above. <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo30InStylePredications">Next up</a>, we’ll handle a few more kinds of predications.</p>
 
 <h2 id="example-full-source">Example Full Source</h2>
 <p>The full source for the example is now:</p>
