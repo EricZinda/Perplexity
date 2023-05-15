@@ -206,7 +206,7 @@ To use this function, you provide it two functions and then let the helper work 
 ~~~
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
         else:
             report_error(["notAThing", x_binding.value, x_binding.variable.name])
@@ -231,7 +231,7 @@ The final step in creating a predication is to register the function as part of 
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
         else:
             report_error(["notAThing", x_binding.value, x_binding.variable.name])
@@ -340,7 +340,7 @@ vocabulary = system_vocabulary()
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        if value in ["file1.txt", "file2.txt" and "file3.txt"]:
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
         else:
             report_error(["notAThing", x_binding.value, x_binding.variable.name])
