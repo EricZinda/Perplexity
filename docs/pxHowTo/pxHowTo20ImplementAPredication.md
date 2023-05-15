@@ -225,4 +225,12 @@ Note that Perplexity requires that the function have the right number of argumen
 
 With that, the system can now recognize that the function exists and know which DELPH-IN predication(s) to map it to.
 
+## Implementing "large"
+Let's finish by implementing the predication for "large" (`_large_a_1(e2, x3)` from the MRS above) so we can see the system process "a file is large".
+
+Just like `file_n_of`, `_large_a_1(e2, x3)` has a single `x` variable, so we can copy the approach from above to implement it. For now we can just ignore the event variable `e2`, we'll describe how to handle that in the section on [`Event Predications`](pxHowTo50EventPredications) later.
+
+~~~
+    
+~~~
 ## TODO: describe combinatorial values, it is referred to in the next section

@@ -2,12 +2,13 @@ from perplexity.execution import report_error
 from perplexity.generation import english_for_delphin_variable
 from perplexity.predications import combinatorial_style_predication_1
 from perplexity.state import State
+from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
 from perplexity.vocabulary import Vocabulary, Predication
 import perplexity.messages
 
 
-vocabulary = Vocabulary()
+vocabulary = system_vocabulary()
 
 
 @Predication(vocabulary, names=["_file_n_of"])

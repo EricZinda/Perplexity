@@ -4,6 +4,13 @@ Perplexity is almost 100% Python code, but it does require the DELPH-IN ACE pars
 Below are instructions for installing everything you'll need to run it and begin developing applications.
 
 ### Install Perplexity and Python Libraries
+IMPORTANT: Perplexity has very large grammar files in its repository and so uses [git LFS](https://git-lfs.com/) to store them. Before cloning Perplexity you must install git lfs (see previous link) and run:
+
+`git lfs install` for the user account that you will clone Perplexity with. 
+
+0. Perplexity has very large grammar files in its repository and so uses [git LFS](https://git-lfs.com/) to store them. If you don't have git LFS installed yet:
+   - Install [git LFS](https://git-lfs.com/) following the instructions at that link
+   - `git lfs install` for the user account that you will clone Perplexity with
 1. `cd` to the directory where you want to install Perplexity
 2. Clone the Perplexity project: 
    - `git clone https://github.com/EricZinda/Perplexity.git`
