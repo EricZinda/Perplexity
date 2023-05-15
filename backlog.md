@@ -1,5 +1,6 @@
 Remaining work to be shown in the tutorial:
-START HERE: Continue updating the Perplexity Internals at the "Choosing a Parse and Tree" section.
+- Docs update:
+  - Figure out how to do examples in the internals section.  Just replicate the how-to?
 - Make old tests work
 - Bug: What is large? Will only return one item because it is singular
 
