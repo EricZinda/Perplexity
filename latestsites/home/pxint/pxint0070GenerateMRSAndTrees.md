@@ -1,7 +1,7 @@
 {% raw %}## Converting Phrases to MRS and Well-Formed Trees
-Now let's take our knowledge of MRS and well-formed trees and write the code that will convert a human phrase into all its interpretations -- i.e. generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.
+To use our completed backtracking solver, we need to write the code that will convert a human phrase into `TreePredications` and call this solver with them. So, we need to generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.
 
-First, we'll write code to use the [ACE parser](http://sweaglesw.org/linguistics/ace/) to convert a phrase into an MRS document. We can use the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin) to do this. The only trick is that we need to supply a grammar file. The grammar file tells ACE which language we are speaking. It is platform dependent, so we've got a helper function that determines which one to return for the current user:
+To do this, we'll write code to use the [ACE parser](http://sweaglesw.org/linguistics/ace/) to convert a phrase into an MRS document. We can use the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin) to do this. The only trick is that we need to supply a grammar file. The grammar file tells ACE which language we are speaking. It is platform dependent, so we've got a helper function that determines which one to return for the current user:
 ```
     def mrss_from_phrase(self, phrase):
         # Don't print errors to the screen
@@ -114,19 +114,9 @@ The `sort_conjunctions()` function isn't shown because it is not a small amount 
 With all that, we can now write code that takes a phrase and generates all the trees from it:
 
 ```
-def Example17():
-    for mrs in mrss_from_phrase("every book is in a cave"):
-        for tree in trees_from_mrs(mrs):
-            print(tree)
-
-
-# Example17() prints:
-[['_a_q', 'x9', [['_cave_n_1', 'x9']], [['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_in_p_loc', 'e2', 'x3', 'x9']]]]]]
-[['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_a_q', 'x9', [['_cave_n_1', 'x9']], [['_in_p_loc', 'e2', 'x3', 'x9']]]]]]
-[['_a_q', 'x10', [['_cave_n_1', 'x10']], [['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_in_p_state', 'e9', 'e2', 'x10'], ['ellipsis_ref', 'e2', 'x3']]]]]]
-[['_every_q', 'x3', [['_book_n_of', 'x3', 'i8']], [['_a_q', 'x10', [['_cave_n_1', 'x10']], [['_in_p_state', 'e9', 'e2', 'x10'], ['ellipsis_ref', 'e2', 'x3']]]]]]
+Todo: update example
 ```
-The next topic will describe a heuristic for determining which of those trees is the one the user meant.
+The [next topic](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0071WhichParseAndTree) will describe a heuristic for determining which of those trees is the one the user meant.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 

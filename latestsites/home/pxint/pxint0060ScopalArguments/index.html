@@ -339,8 +339,8 @@ _a_q(x3, RSTR,BODY)
 <p>If we convert this into text, it would be something like:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> _a_q(x3, _file_n_of(x3), _large_a_1(e2, x3))
 </code></pre></div></div>
-<p>And finally, using our text format, you get:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>["_a_q", "x3", ["_file_n_of", "x3"], ["_large_a_1", "e2", "x3"]]
+<p>And finally, using our PredicationTree object, you get:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Todo: update example
 </code></pre></div></div>
 
 <p>This MRS says “from all the files in the world model, return a single (arbitrary) one that is large”. It is indicating that we want the answer to be “a” (i.e. an arbitrary single) large file, whereas <code class="language-plaintext highlighter-rouge">_large_a_1(e,x) and _file_n_of(x)</code> would give us <em>all</em> large files.</p>
@@ -352,49 +352,19 @@ _a_q(x3, RSTR,BODY)
 <ol>
   <li>Find the first set of variable assignments returned from the first argument, <code class="language-plaintext highlighter-rouge">_file_n_of(x3)</code>, using <code class="language-plaintext highlighter-rouge">Call()</code></li>
   <li>Use <em>those</em> variable assignments to find a solution to the second argument, <code class="language-plaintext highlighter-rouge">_large_a_1(e2,x3)</code>, again using <code class="language-plaintext highlighter-rouge">Call()</code></li>
-  <li>If there was at least one answer, this is true. So: return each of the body solutions that worked from <code class="language-plaintext highlighter-rouge">a_q</code>, one by one.  Don’t “backtrack” to find another “file” since <code class="language-plaintext highlighter-rouge">a_q</code> should only return “one, arbitrary thing”. Other quantifiers like “every” will behave differently.</li>
+  <li>If there was at least one answer, this is <code class="language-plaintext highlighter-rouge">true</code>. So: return each of the body solutions that worked from <code class="language-plaintext highlighter-rouge">a_q</code>, one by one.  Don’t “backtrack” to find another “file” since <code class="language-plaintext highlighter-rouge">a_q</code> should only return “one, arbitrary thing”. Other quantifiers like “every” will behave differently.</li>
   <li>If there was not an answer from the first “file”, go back to #1 and try again (remember that our contract says these predications will keep returning values until there are no more)</li>
 </ol>
 
 <p>If there were no large files, <code class="language-plaintext highlighter-rouge">a_q</code> fails instead of returning any assignments, as per the predication contract. Here’s the Python code that does all this:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_a_q")
-def a_q(state, x_variable, h_rstr, h_body):
-    # Run the RSTR which should fill in the variable with an item
-    for solution in Call(vocabulary, state, h_rstr):
-        # Now see if that solution works in the BODY
-        success = False
-        for body_solution in Call(vocabulary, solution, h_body):
-            yield body_solution
-            success = True
-
-        if success:
-            # If it works, stop looking. This one is the single arbitrary item we are looking for
-            break
-
-def Example4():
-    # Note that both files are "large" now
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt", size=1000000),
-                   File(name="file2.txt", size=2000000)])
-    mrs = ["_a_q", "x3", ["_file_n_of", "x3"], ["_large_a_1", "e2", "x3"]]
-    for item in Call(vocabulary, state, mrs):
-        print(item.variables)
-        
-# Example4() prints:
-{'x3': File(name=file2.txt, size=2000000)}
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Todo: update example
 </code></pre></div></div>
 <p>Note that, even though we have made both files “large” for this example, only one, arbitrary, file is returned since the phrase is “<em>a</em> large file”.</p>
 
-<p>At this point we have a fully functional evaluator, but there are a few things still to work out:</p>
-<ul>
-  <li>Dealing with variable types beyond <code class="language-plaintext highlighter-rouge">x</code> variables</li>
-  <li>Handling questions vs. commands vs. propositions</li>
-  <li>Reporting errors</li>
-</ul>
+<p>At this point we have a fully functional evaluator, now we need to use it to process real phrases and build some of the mechanism around it.</p>
 
-<p>The next topics will tackle these issues.</p>
+<p>We’ll start by stepping back and walking through how <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees">MRS documents and trees are generated</a> in the first place.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
