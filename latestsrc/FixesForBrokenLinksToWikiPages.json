@@ -25,9 +25,6 @@
         {"Page": "docs/mrscon/devhowto0010MRS", "SrcDir": "main", "SrcFile": "docs/mrscon/docs/mrscon/devhowto0010MRS.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
         {"Page": "docs/mrscon/devhowto0020WellFormedTree", "SrcDir": "main", "SrcFile": "docs/mrscon/docs/mrscon/devhowto0020WellFormedTree.md", "BaseReferrer": "home/docs/mrscon/devhowto0020WellFormedTree.md", "Referrer": "home/docs/mrscon/devhowto0020WellFormedTree.md", "FileMissing": true}
       ]},
-      {"Section": "Using Perplexity", "Pages": [
-        {"Page": "docs/pxHowTo/pxHowTo50EventPredications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/docs/pxHowTo/pxHowTo50EventPredications.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo50EventPredications.md", "Referrer": "home/docs/pxHowTo/pxHowTo50EventPredications.md", "FileMissing": true}
-      ]},
       {"Section": "Perplexity Internals", "Pages": [
         {"Page": "devhowtoChoosingWhichFailure", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoChoosingWhichFailure.md", "BaseReferrer": "home/docs/pxint/pxint0130ErrorsRobustFailure.md", "Referrer": "home/docs/pxint/pxint0130ErrorsRobustFailure.md", "FileMissing": true},
         {"Page": "devhowtoConceptualFailures", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoConceptualFailures.md", "BaseReferrer": "home/docs/pxint/pxint0110ErrorsReportingAFailure.md", "Referrer": "home/docs/pxint/pxint0110ErrorsReportingAFailure.md", "FileMissing": true},
