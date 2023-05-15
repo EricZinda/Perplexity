@@ -1,11 +1,11 @@
-from perplexity.execution import report_error
+from perplexity.execution import report_error, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2
 from perplexity.state import State
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
-from perplexity.vocabulary import Vocabulary, Predication, ValueSize
+from perplexity.vocabulary import Vocabulary, Predication, ValueSize, EventOption
 import perplexity.messages
 
 
@@ -83,10 +83,15 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
-@Predication(vocabulary, names=["_large_a_1"])
+@Predication(vocabulary,
+             names=["_large_a_1"],
+             handles=[("DegreeMultiplier", EventOption.optional)])
 def large_a_1(state, e_introduced_binding, x_target_binding):
+    # See if any modifiers have changed *how* large we should be
+    degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
+
     def criteria_bound(value):
-        if value == "file2.txt":
+        if degree_multiplier == 1 and value == "file2.txt":
             return True
 
         else:
@@ -94,10 +99,34 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
             return False
 
     def unbound_values():
-        # Find all large things
-        yield "file2.txt"
+        if criteria_bound("file2.txt"):
+            yield "file2.txt"
 
     yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+
+
+# This is a helper function that any predication that can
+# be "very'd" can use to understand just how "very'd" it is
+def degree_multiplier_from_event(state, e_introduced_binding):
+    # if a "very" is modifying this event, use that value
+    # otherwise, return 1
+    if e_introduced_binding.value is None or \
+            "DegreeMultiplier" not in e_introduced_binding.value:
+        degree_multiplier = 1
+
+    else:
+        degree_multiplier = e_introduced_binding.value["DegreeMultiplier"]["Value"]
+
+    return degree_multiplier
+
+
+@Predication(vocabulary, names=["_very_x_deg"])
+def very_x_deg(state, e_introduced_binding, e_target_binding):
+    # We'll interpret every "very" as meaning "one order of magnitude larger"
+    yield state.add_to_e(e_target_binding.variable.name,
+                         "DegreeMultiplier",
+                         {"Value": 10,
+                          "Originator": execution_context().current_predication_index()})
 
 
 # Generates all the responses that predications can
