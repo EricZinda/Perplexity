@@ -5,7 +5,9 @@ All of the examples we've used so far have produced quantifiers in their MRS, an
 - "Which files are large?": `which_q`
 - "Delete a file": `pronoun_q`
 
-etc. This will almost always be the case because quantifiers are not application specific. As described in the [Solution Group Algorithm topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm), quantifers do two things, neither of which is usually application specific:
+etc.
+
+This will almost always be the case because quantifiers are not application specific. As described in the [Solution Group Algorithm topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm), quantifers do two things, neither of which is usually application specific:
 - scope variables
 - constrain their variables to be a certain count
 

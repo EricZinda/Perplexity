@@ -328,20 +328,17 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="installing-perplexity">Installing Perplexity</h2>
-<p>Perplexity is almost 100% Python code, but it does require the DELPH-IN ACE parser to be able to use the DELPH-IN grammars for parsing natural language.</p>
+<p>Perplexity is almost 100% Python code, but it does require the DELPH-IN <a href="http://sweaglesw.org/linguistics/ace/">ACE parser</a> for using the DELPH-IN grammars that parse natural language.</p>
 
-<p>Below are instructions for installing everything you’ll need to run it and begin developing applications.</p>
+<p>Below are instructions for installing everything you’ll need to install Perplexity and begin developing applications.</p>
 
 <h3 id="install-perplexity-and-python-libraries">Install Perplexity and Python Libraries</h3>
-<p>IMPORTANT: Perplexity has very large grammar files in its repository and so uses <a href="https://git-lfs.com/">git LFS</a> to store them. Before cloning Perplexity you must install git lfs (see previous link) and run:</p>
-
-<p><code class="language-plaintext highlighter-rouge">git lfs install</code> for the user account that you will clone Perplexity with.</p>
 
 <ol>
   <li>Perplexity has very large grammar files in its repository and so uses <a href="https://git-lfs.com/">git LFS</a> to store them. If you don’t have git LFS installed yet:
     <ul>
       <li>Install <a href="https://git-lfs.com/">git LFS</a> following the instructions at that link</li>
-      <li><code class="language-plaintext highlighter-rouge">git lfs install</code> for the user account that you will clone Perplexity with</li>
+      <li><code class="language-plaintext highlighter-rouge">git lfs install</code> for the git user account that you will clone Perplexity with</li>
     </ul>
   </li>
   <li><code class="language-plaintext highlighter-rouge">cd</code> to the directory where you want to install Perplexity</li>
@@ -352,7 +349,7 @@
   </li>
   <li><code class="language-plaintext highlighter-rouge">cd</code> to the directory where you installed Perplexity:
     <ul>
-      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity project path&gt;</code></li>
+      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity repository path&gt;</code></li>
     </ul>
   </li>
   <li>Install Python 3.8 or greater</li>
@@ -375,10 +372,15 @@
 
 <h3 id="install-the-ace-parser">Install the ACE Parser</h3>
 
-<p>Install the Delphin <code class="language-plaintext highlighter-rouge">ACE</code> parser from: <a href="http://sweaglesw.org/linguistics/ace/">http://sweaglesw.org/linguistics/ace/</a> and make sure your path is set to it.</p>
+<p>Install the DELPH-IN <code class="language-plaintext highlighter-rouge">ACE</code> parser from: <a href="http://sweaglesw.org/linguistics/ace/">http://sweaglesw.org/linguistics/ace/</a> and make sure your path is set to the ACE binary you download from there.</p>
+
+<blockquote>
+  <p>The mac download in the ACE link above <em>does not</em> support the Mac M1 processor. You’ll need a special build that is only available on the forum at the moment if you have an M1. Download that <a href="https://delphinqa.ling.washington.edu/t/compiling-ace-on-macos/486/26">here</a>.</p>
+</blockquote>
+
 <ul>
-  <li>Best location for the ACE binary on a Mac is: <code class="language-plaintext highlighter-rouge">/usr/local/bin</code></li>
-  <li>Note the notes in the “Troubleshooting” section of the ACE documentation in the link above: ACE needs execute permissions to your TEMP directory</li>
+  <li>The best location for the ACE binary on a Mac is: <code class="language-plaintext highlighter-rouge">/usr/local/bin</code>, but it can be anywhere as long as the path points to it</li>
+  <li>Read the notes in the “Troubleshooting” section of the ACE documentation in the link above: ACE needs execute permissions to your TEMP directory</li>
 </ul>
 
 <h2 id="running-tests">Running Tests</h2>
@@ -387,7 +389,7 @@
 <ol>
   <li>Go to the directory where Perplexity was cloned:
     <ul>
-      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity project path&gt;</code></li>
+      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity repository path&gt;</code></li>
     </ul>
   </li>
   <li>Activate the environment
@@ -397,7 +399,7 @@
   </li>
   <li>Tell Python that it should look in this directory for modules:
     <ul>
-      <li><code class="language-plaintext highlighter-rouge">export PYTHONPATH=$PATH:&lt;Perplexity project path&gt;</code></li>
+      <li><code class="language-plaintext highlighter-rouge">export PYTHONPATH=$PATH:&lt;Perplexity repository path&gt;</code></li>
     </ul>
   </li>
   <li>Start the Perplexity engine:
@@ -413,12 +415,12 @@
 </ol>
 
 <h2 id="daily-workflow">Daily Workflow</h2>
-<p>Once everything in installed, to begin a session of Perplexity development you simply need to activate the Python environment you created above and run Perplexity:</p>
+<p>Once everything in installed, to begin a session of Perplexity development you need to activate the Python environment you created above and then run Perplexity:</p>
 
 <ol>
   <li>Go to the directory where Perplexity was cloned:
     <ul>
-      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity project path&gt;</code></li>
+      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity repository path&gt;</code></li>
     </ul>
   </li>
   <li>Activate the environment
@@ -428,7 +430,7 @@
   </li>
   <li>Tell Python that it should look in this directory for modules:
     <ul>
-      <li><code class="language-plaintext highlighter-rouge">export PYTHONPATH=$PATH:&lt;Perplexity project path&gt;</code></li>
+      <li><code class="language-plaintext highlighter-rouge">export PYTHONPATH=$PATH:&lt;Perplexity repository path&gt;</code></li>
     </ul>
   </li>
   <li>Start the Perplexity engine:

@@ -330,7 +330,7 @@
         <h2 id="action-verbs">Action Verbs</h2>
 <p>All of the predications we’ve dealt with so far have just been used to ask questions like “Is a file large?” or make propositions like “A file is large.” (which is just a kind of question in terms of the kind of response a person would expect). Now it is time to implement “action verbs” – verbs that actually <em>do</em> something to the system. Let’s implement “delete”.</p>
 
-<p>“Delete” goes beyond asking questions about the state of the system. To implement it, we need to actually <em>modify</em> the state of the system. So far, we’ve only been using the <code class="language-plaintext highlighter-rouge">State</code> object to inspect and modify the state of MRS variables in the system. With “delete” we need to actually modify the state of the file system, too. Since the current state of all parts of the system is represented by the <code class="language-plaintext highlighter-rouge">state</code> object, we’ll end up calling a method on that object in some form to delete a file. And, just like the <code class="language-plaintext highlighter-rouge">add_to_e()</code> or <code class="language-plaintext highlighter-rouge">set_x()</code> methods, the new method will need to return a new <code class="language-plaintext highlighter-rouge">state</code> object with that file deleted, and we’ll <code class="language-plaintext highlighter-rouge">yield</code> the answer.</p>
+<p>“Delete” goes beyond asking questions about the state of the system. To implement it, we need to actually <em>modify</em> the state of the system. Since the current state of all parts of the system is represented by the <code class="language-plaintext highlighter-rouge">state</code> object, we’ll end up calling a method on that object in some form to delete a file.</p>
 
 <p>If the user says, “delete a file”, this MRS and tree are produced (among others):</p>
 
@@ -351,9 +351,9 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                                       └─ _delete_v_1(e2,x3,x8)
 </code></pre></div></div>
 
-<p>Let’s ignore the pronoun related predications and focus on <code class="language-plaintext highlighter-rouge">_delete_v_1(e2,x3,x8)</code>. We’re not going to handle any modifiers to it either, so we can ignore <code class="language-plaintext highlighter-rouge">e2</code> and <code class="language-plaintext highlighter-rouge">x3</code> (since <code class="language-plaintext highlighter-rouge">x3</code> represents the pronoun). That leaves <code class="language-plaintext highlighter-rouge">x8</code> which is the thing the user wants to delete. So, now we could try implementing the predication like the other single <code class="language-plaintext highlighter-rouge">x</code> predications we’ve built and call the <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> helper. The problem is, <code class="language-plaintext highlighter-rouge">_delete_v_1</code> is not combinatorial.</p>
+<p>Let’s ignore the pronoun related predications and focus on <code class="language-plaintext highlighter-rouge">_delete_v_1(e2,x3,x8)</code>. We’re not going to handle any modifiers to it either, so we can ignore both <code class="language-plaintext highlighter-rouge">e2</code> and <code class="language-plaintext highlighter-rouge">x3</code> (since <code class="language-plaintext highlighter-rouge">x3</code> represents the pronoun). That leaves <code class="language-plaintext highlighter-rouge">x8</code>, which is the thing the user wants to delete. We could try implementing <code class="language-plaintext highlighter-rouge">_delete_v_1</code> like the other single <code class="language-plaintext highlighter-rouge">x</code> predications we’ve built by calling the <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> helper. The problem is: <code class="language-plaintext highlighter-rouge">_delete_v_1</code> is not combinatorial.</p>
 
-<p>Combinatorial predications are those that when applied to a set, can be true for any chosen subset of the set. Delete, however doesn’t make sense for a set of items “together”.  Deleting items together sounds dangerously like “deleting them in a transaction”.  Really, delete can only apply to one item at a time, it shouldn’t support a “together” semantic unless it can really enforce it somehow. So, it will use a different helper called, <code class="language-plaintext highlighter-rouge">individual_style_predication_1</code> which ensures that only single individuals make it through, like this:</p>
+<p>Combinatorial predications are those that, when applied to a set, can be <code class="language-plaintext highlighter-rouge">true</code> for any chosen subset of the set. Delete, however, doesn’t make sense for a set of items “together”.  Deleting items together sounds dangerously like “deleting them in a transaction” which our file system can’t do.  Really, delete can only apply to one item at a time, and it shouldn’t support a “together” semantic unless it can really enforce it. So, it will use a different helper called, <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code> which ensures that only single individuals make it through, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_delete_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
@@ -369,15 +369,16 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    yield from individual_style_predication_1(state, x_what_binding,
-                                                        criteria, unbound_what,
-                                                        ["cantXYTogether", "delete", x_what_binding.variable.name])
+    yield from individual_style_predication_1(state, 
+                                              x_what_binding,
+                                              criteria, unbound_what,
+                                              ["cantXYTogether", "delete", x_what_binding.variable.name])
 </code></pre></div></div>
 <p>Note that <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code> has an extra argument at the end which is the error to report if it gets called with a set of more than one item.</p>
 
-<p>So, this does <em>some</em> of the work we need: it will actually succeed if the user asks to delete a file or folder, and it won’t allow phrases like “delete everything” that would produce an unbound <code class="language-plaintext highlighter-rouge">x8</code>. However, it won’t actually <em>delete anything</em> because there isn’t any code to do the deleting.</p>
+<p>So, this does <em>some</em> of the work we need: it will only succeed if the user asks to delete a file that exists, and it won’t allow phrases like “delete everything” that would produce an unbound <code class="language-plaintext highlighter-rouge">x8</code>. However, it won’t actually <em>delete anything</em> because there isn’t any code to do the deleting.</p>
 
-<p><code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code> yields a <code class="language-plaintext highlighter-rouge">state</code> object when <code class="language-plaintext highlighter-rouge">delete_v_1_comm</code> is successful. So, we could start by doing the actual delete when that functions yields a value, because it means everything has been checked and is <code class="language-plaintext highlighter-rouge">true</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code> yields a <code class="language-plaintext highlighter-rouge">state</code> object when <code class="language-plaintext highlighter-rouge">delete_v_1_comm</code> is successful. So, we could start by doing the actual delete when that function yields a value because it means everything has been checked and is <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
 <p>Let’s imagine that we added a <code class="language-plaintext highlighter-rouge">state.delete_object()</code> to the <code class="language-plaintext highlighter-rouge">State</code> object that actually deletes a file and yields a new state with that file deleted. That approach could look like this:</p>
 
@@ -395,8 +396,10 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in individual_style_predication_1(state, x_what_binding,
-                                                        criteria, unbound_what,
+    for success_state in individual_style_predication_1(state, 
+                                                        x_what_binding,
+                                                        criteria, 
+                                                        unbound_what,
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         yield success_state.delete_object(object_to_delete)        
@@ -406,9 +409,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 
 <p>When <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code> yields a new state, it means this predication was successful. That happened because the <code class="language-plaintext highlighter-rouge">criteria()</code> function returned <code class="language-plaintext highlighter-rouge">true</code>. The new state has all of the MRS variables set to the value that made the predication <code class="language-plaintext highlighter-rouge">true</code>, which means that the <code class="language-plaintext highlighter-rouge">x_what_binding</code> variable should now be set to the thing being deleted.</p>
 
-<p>However, we need to be careful to ask for the value of the variable represented by <code class="language-plaintext highlighter-rouge">x_what_binding</code> <em>in the new state</em>. Remember that <code class="language-plaintext highlighter-rouge">state</code> objects are immutable, so we have to look at the copy being returned to get the new value of the variable.</p>
-
-<p>So, we looked up the variable name from <code class="language-plaintext highlighter-rouge">x_what_binding</code> in the new state returned by <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code>, like this:</p>
+<p>However, we need to be careful to ask for the value of the variable represented by <code class="language-plaintext highlighter-rouge">x_what_binding</code> <em>in the new state</em>. Remember that <code class="language-plaintext highlighter-rouge">state</code> objects are immutable, so we have to look at the <em>copy</em> being returned to get the new value of the variable. That’s what this line does:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
 </code></pre></div></div>
@@ -416,18 +417,18 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 <p>This is basically the approach we are going to use, but we need some extra mechanisms to do it. The reason why is described next.</p>
 
 <h3 id="operations">Operations</h3>
-<p>Actions that modify anything in the world state besides an MRS variable are called an <code class="language-plaintext highlighter-rouge">Operation</code> in Perplexity.  They go beyond manipulating the MRS and actually affect the world the person is speaking about. Any predication like <code class="language-plaintext highlighter-rouge">_delete_v_1</code> that wants to modify the state of the world needs to use an <code class="language-plaintext highlighter-rouge">Operation</code>.</p>
+<p>Actions that modify anything in the world state besides an MRS variable are called an <code class="language-plaintext highlighter-rouge">Operation</code> in Perplexity.  They go beyond manipulating the MRS and actually affect the world the person is speaking about. Predications like <code class="language-plaintext highlighter-rouge">_delete_v_1</code> that want to modify the state of the world need to use an <code class="language-plaintext highlighter-rouge">Operation</code>.</p>
 
 <p><code class="language-plaintext highlighter-rouge">Operations</code> are a way of recording what to do and then doing it later: Think of an <code class="language-plaintext highlighter-rouge">Operation</code> as a way to package up a method call into an object and then <em>later</em> ask it to execute.</p>
 
-<p>An <code class="language-plaintext highlighter-rouge">Operation</code> is simply a Python class that has a single method:</p>
+<p>An <code class="language-plaintext highlighter-rouge">Operation</code> is simply any Python class that includes this method:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def apply_to(self, state):
 
     ...
 </code></pre></div></div>
 
-<p>The constructor (i.e. the <code class="language-plaintext highlighter-rouge">__init__</code> method) is what packages up all the information needed to perform the operation later. It just gathers up the required arguments and stores them in the class. When it is time to actually perform the operation, <code class="language-plaintext highlighter-rouge">apply_to()</code> is called, and the <code class="language-plaintext highlighter-rouge">state</code> object that it should be applied to is passed in.</p>
+<p>The constructor (i.e. the <code class="language-plaintext highlighter-rouge">__init__</code> method) packages up all the information needed to perform the operation later by storing them as members in the class. When it is time to actually perform the operation, <code class="language-plaintext highlighter-rouge">apply_to()</code> is called, and the <code class="language-plaintext highlighter-rouge">state</code> object that it should be applied to is passed in.</p>
 
 <p>Here is an example of what a <code class="language-plaintext highlighter-rouge">DeleteOperation</code> could look like:</p>
 
@@ -440,12 +441,12 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 </code></pre></div></div>
 <p>The <code class="language-plaintext highlighter-rouge">DeleteOperation</code> itself is very simple, it is really just remembering what to delete. When it is asked to <code class="language-plaintext highlighter-rouge">apply_to()</code>, it calls the method in the <code class="language-plaintext highlighter-rouge">state</code> object that actually deletes the file, in <em>that</em> state object (which might be different than the one it was added to).</p>
 
-<p>To use the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>, we create an instance of one and pass it to a method in the <code class="language-plaintext highlighter-rouge">State</code> object, like this:</p>
+<p>To use the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>, we create an instance of one and pass it to the <code class="language-plaintext highlighter-rouge">record_operations()</code> method in the <code class="language-plaintext highlighter-rouge">State</code> object, like this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>operation = DeleteOperation(new_state.get_binding(x_what_binding.variable.name).value[0])
 new_state.record_operations([operation])
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">State</code> object has a <code class="language-plaintext highlighter-rouge">record_operations()</code> method that takes a list of operations to record, but in this case we’re only doing one. Those two lines of code record that we want to delete a particular file, but they don’t actually <em>do</em> it yet.  Later, when we have the final solution group, we can gather all of the operations that were done to the solutions in the group and call <code class="language-plaintext highlighter-rouge">apply_operations()</code> on the one single state we want to represent the new world.</p>
+<p>The <code class="language-plaintext highlighter-rouge">record_operations()</code> method takes a list of operations to record, but in this case we’re only doing one. Those two lines of code record that we want to delete a particular file, but they don’t actually <em>do</em> it yet.  Later, when we have the final solution group, we can gather all of the <code class="language-plaintext highlighter-rouge">Operations</code> that were done to the solutions in the group and call <code class="language-plaintext highlighter-rouge">apply_operations()</code> on the one single state we want to represent the new world.</p>
 
 <p>Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don’t want files <em>actually being deleted</em> during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the “new state of the world” once we know what to do.</p>
 
@@ -465,17 +466,19 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in individual_style_predication_1(state, x_what_binding,
-                                                        criteria, unbound_what,
+    for success_state in individual_style_predication_1(state, 
+                                                        x_what_binding,
+                                                        criteria, 
+                                                        unbound_what,
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
         yield success_state.record_operations([operation])
 </code></pre></div></div>
 
-<p>The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of <code class="language-plaintext highlighter-rouge">interact_once()</code>. That’s where <code class="language-plaintext highlighter-rouge">DeleteOperation.apply_to()</code> gets called for every solution.</p>
+<p>The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of <code class="language-plaintext highlighter-rouge">interact_once()</code>. That’s where <code class="language-plaintext highlighter-rouge">DeleteOperation.apply_to()</code> gets called for every solution in the solution group.</p>
 
-<h2 id="pron">pron()</h2>
+<h2 id="the-pron-predication">The pron() Predication</h2>
 <p>The MRS we are working with is:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ "delete a file"
@@ -494,7 +497,7 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                     └─ _a_q(x8,RSTR,BODY)
                                       └─ _delete_v_1(e2,x3,x8)
 </code></pre></div></div>
-<p>… and <code class="language-plaintext highlighter-rouge">pron(x)</code> is the last predication to implement (<code class="language-plaintext highlighter-rouge">pronoun_q</code> is a quantifier and that is implemented by the system). <code class="language-plaintext highlighter-rouge">pron(x)</code> is true when <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what the specified pronoun is <em>referring to</em>. The “specified pronoun” is determined by looking at the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS">properties</a> for the <code class="language-plaintext highlighter-rouge">x</code> variable to determine if the pronoun is “you” (<code class="language-plaintext highlighter-rouge">PERS: 2</code> – second person), “him/her”(<code class="language-plaintext highlighter-rouge">PERS: 3</code> – third person), etc. If <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what that pronoun is referring to, it is <code class="language-plaintext highlighter-rouge">true</code>.</p>
+<p>… and <code class="language-plaintext highlighter-rouge">pron(x)</code> is the last predication to implement (<code class="language-plaintext highlighter-rouge">pronoun_q</code> is a quantifier that is implemented by the system). <code class="language-plaintext highlighter-rouge">pron(x)</code> is true when <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what the specified pronoun is <em>referring to</em>. The “specified pronoun” is determined by looking at the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS">properties</a> for the <code class="language-plaintext highlighter-rouge">x</code> variable to determine if the pronoun is “you” (<code class="language-plaintext highlighter-rouge">PERS: 2</code> – second person), “him/her”(<code class="language-plaintext highlighter-rouge">PERS: 3</code> – third person), etc. If <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what that pronoun is referring to, it is <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
 <p>There were not any pronouns in our command “delete a file”, so where did the <code class="language-plaintext highlighter-rouge">pron</code> predication come from? In this case, the pronoun is an <em>implied</em> “you” since it is a command. I.e “(You) delete a large file”.  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are “you” (“can you delete the file?” or the implied case above) and maybe “I” (“I want to delete a file”). For now, let’s just do “you” and fail otherwise.</p>
 
@@ -517,16 +520,16 @@ def pron(state, x_who_binding):
     yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 </code></pre></div></div>
 
-<p>To find out what pronoun is being referred to be <code class="language-plaintext highlighter-rouge">x</code>, we use a special variable binding that Perplexity puts in state: <code class="language-plaintext highlighter-rouge">tree</code>.  This is not an MRS concept or feature, it is just a convenient place to keep the tree for predications that need to inspect it. The variables in the tree, and their properties are accessed like a tree of dictionaries as shown above.</p>
+<p>To find out what pronoun is being referred to be <code class="language-plaintext highlighter-rouge">x</code>, we use a special variable binding that Perplexity puts in <code class="language-plaintext highlighter-rouge">state</code> called: <code class="language-plaintext highlighter-rouge">tree</code>.  This is not an MRS concept or feature, it is just a convenient place to keep the tree for predications that need to inspect it. The variables in the tree and their properties are accessed like a tree of dictionaries as shown above.</p>
 
-<p>The 2nd person pronoun “you” will always refer to “the computer” so we represent it as a string “computer”, that is enough for this simple example.</p>
+<p>The 2nd person pronoun “you” will always refer to “the computer” so we represent it as a string “computer”. That is enough for this simple example.</p>
 
-<p>Now we’ve implemented all the predications.  Just one final step is left</p>
+<p>Now we’ve implemented all the predications.  Just one final step is left.</p>
 
 <h2 id="using-the-state-object">Using the State Object</h2>
-<p>To make this run for real, we need to quit using hard-coded lists of files since we’re going to be deleting them. It is time to use a real <code class="language-plaintext highlighter-rouge">State</code> object to track state. The built-in Perplexity <code class="language-plaintext highlighter-rouge">State</code> object has a very simple mechanism for tracking objects. In most cases, we would need to derive a new class from it to manage the state of an application, but our examples are simple enough that we can use it directly.</p>
+<p>To make this run properly, we need to quit using hard-coded lists of files since we’re going to be deleting them. It is time to use a real <code class="language-plaintext highlighter-rouge">State</code> object to track state. The built-in Perplexity <code class="language-plaintext highlighter-rouge">State</code> object has a very simple default mechanism for tracking objects. In most cases, we would need to derive a new class from it to manage the state of an application in a richer way, but our examples are simple enough that we can use it as-is.</p>
 
-<p>The important parts of the class for our purposes here are below. A list of objects can be passed in the constructor and <code class="language-plaintext highlighter-rouge">State</code> will return them from <code class="language-plaintext highlighter-rouge">all_individuals()</code>. It is very simple:</p>
+<p>The important parts of the class for our purposes are below. A list of objects can be passed in the constructor and <code class="language-plaintext highlighter-rouge">State</code> will return them from <code class="language-plaintext highlighter-rouge">all_individuals()</code>. It is very simple:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class State(object):
     def __init__(self, objects):
 
@@ -543,7 +546,7 @@ def pron(state, x_who_binding):
     ...
 </code></pre></div></div>
 
-<p>We’ll need to update the relevant predications to start using this object, as well as initializing the <code class="language-plaintext highlighter-rouge">state</code> so that it has all the objects we need at startup. We need to change <code class="language-plaintext highlighter-rouge">file_n_of</code>, <code class="language-plaintext highlighter-rouge">large_a_1</code> and <code class="language-plaintext highlighter-rouge">delete_v_1_comm</code> to use the <code class="language-plaintext highlighter-rouge">state</code> object instead of hard-coding the list of files:</p>
+<p>We need to change <code class="language-plaintext highlighter-rouge">file_n_of</code>, <code class="language-plaintext highlighter-rouge">large_a_1</code> and <code class="language-plaintext highlighter-rouge">delete_v_1_comm</code> to use the <code class="language-plaintext highlighter-rouge">state</code> object instead of hard-coding the list of files:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
@@ -596,8 +599,10 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in individual_style_predication_1(state, x_what_binding,
-                                                        criteria, unbound_what,
+    for success_state in individual_style_predication_1(state, 
+                                                        x_what_binding,
+                                                        criteria, 
+                                                        unbound_what,
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
