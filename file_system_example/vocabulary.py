@@ -491,38 +491,36 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
         report_error(["dontKnowActor", x_actor_binding.variable.name])
 
 
-# go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
-#
 @Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
 def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
+    if x_actor_binding.value is None or len(x_actor_binding.value) > 1 or x_actor_binding.value[0].name != "Computer":
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        return
+
     x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
 
-    def both_bound_function(actor_item, location_item):
-        if actor_item.name == "Computer":
-            # Only allow moving to folders
-            if isinstance(location_item, Folder):
-                return True
-
-            else:
-                if hasattr(x_location_binding.value, "exists") and location_item.exists():
-                    report_error(["cantDo", "change directory to", x_location_binding.variable.name])
-
-                else:
-                    report_error(["notFound", x_location_binding.variable.name])
+    def bound_location(location_item):
+        # Only allow moving to folders
+        if isinstance(location_item, Folder):
+            return True
 
         else:
-            report_error(["dontKnowActor", x_actor_binding.variable.name])
+            if hasattr(x_location_binding.value, "exists") and location_item.exists():
+                report_error(["cantDo", "change directory to", x_location_binding.variable.name])
 
-    def binding1_unbound_predication_function(location_item):
-        # Actor is unbound, unclear when this would happen but report an error
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+            else:
+                report_error(["notFound", x_location_binding.variable.name])
 
-    def binding2_unbound_predication_function(actor_item):
+    def unbound_location(location_item):
         # Location is unbound, ask them to be more specific
         report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication_2(state, x_actor_binding, x_location_binding,
-                                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
+    # go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
+    for new_state in individual_style_predication_1(state,
+                                                    x_location_binding,
+                                                    bound_location,
+                                                    unbound_location,
+                                                    ["cantDo", "go", x_location_binding.variable.name]):
         yield new_state.apply_operations([ChangeDirectoryOperation(new_state.get_binding(x_location_binding.variable.name))])
 
 

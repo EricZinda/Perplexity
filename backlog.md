@@ -1,4 +1,5 @@
 Remaining work to be shown in the tutorial:
+- Fix the bug where there is a failure and no error and it crashes
 - Put thing() in the system space.  Others?  "a few"?
 - Docs update:
   - Figure out how to do examples in the internals section.  Just replicate the how-to?
