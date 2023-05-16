@@ -3,7 +3,7 @@ from file_system_example.state import DeleteOperation, ChangeDirectoryOperation,
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, in_style_predication_2, \
-    force_individual_style_predication_1, ValueSize, discrete_variable_set_generator, quantifier_raw
+    individual_style_predication_1, ValueSize, discrete_variable_set_generator, quantifier_raw
 from perplexity.set_utilities import Measurement
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.tree import used_predicatively, is_this_last_fw_seq
@@ -191,16 +191,12 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
         # "large" is being used "predicatively" as in "the dogs are large". This needs to force
         # the individuals to be separate (i.e. not part of a group)
         def criteria_predicatively(value):
-            if len(value) > 1:
-                report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+                return True
 
             else:
-                if hasattr(value[0], 'size') and value[0].size > degree_multiplier * 1000000:
-                    return True
-
-                else:
-                    report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
-                    return False
+                report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+                return False
 
         def unbound_values_predicatively():
             # Find all large things
@@ -208,7 +204,11 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
                 if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
                     yield value
 
-        yield from force_individual_style_predication_1(state, x_target_binding, criteria_predicatively, unbound_values_predicatively)
+        yield from individual_style_predication_1(state,
+                                                  x_target_binding,
+                                                  criteria_predicatively,
+                                                  unbound_values_predicatively,
+                                                  ["adjectiveDoesntApply", "large", x_target_binding.variable.name])
 
     else:
         # "large" is being used "attributively" as in "the large dogs are meeting" which doesn't force
@@ -241,16 +241,12 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
         # "small" is being used "predicatively" as in "the dogs are small". This needs to force
         # the individuals to be separate (i.e. not part of a group)
         def criteria_predicatively(value):
-            if len(value) > 1:
-                report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
+            if hasattr(value, 'size') and value.size <= degree_multiplier * 1000000:
+                return True
 
             else:
-                if hasattr(value[0], 'size') and value[0].size <= degree_multiplier * 1000000:
-                    return True
-
-                else:
-                    report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
-                    return False
+                report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
+                return False
 
         def unbound_values_predicatively():
             # Find all large things
@@ -258,7 +254,11 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
                 if hasattr(value, 'size') and value.size <= degree_multiplier * 1000000:
                     yield value
 
-        yield from force_individual_style_predication_1(state, x_target_binding, criteria_predicatively, unbound_values_predicatively)
+        yield from individual_style_predication_1(state,
+                                                  x_target_binding,
+                                                  criteria_predicatively,
+                                                  unbound_values_predicatively,
+                                                  ["adjectiveDoesntApply", "small", x_target_binding.variable.name])
 
     else:
         # "small" is being used "attributively" as in "the small dogs are meeting" which doesn't force
@@ -482,21 +482,17 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     # computer's perspective
     if x_actor_binding.value[0].name == "Computer":
         def criteria(value):
-            if len(value) > 1:
-                report_error(["cantDeleteSet", x_what_binding.variable.name])
+            # Only allow deleting files and folders that exist
+            if isinstance(value, (File, Folder)) and value.exists():
+                return True
 
             else:
-                # Only allow deleting files and folders that exist
-                if isinstance(value[0], (File, Folder)) and value[0].exists():
-                    return True
-
-                else:
-                    report_error(["cantDo", "delete", x_what_binding.variable.name])
+                report_error(["cantDo", "delete", x_what_binding.variable.name])
 
         def unbound_what():
             report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-        for new_state in force_individual_style_predication_1(state, x_what_binding, criteria, unbound_what):
+        for new_state in individual_style_predication_1(state, x_what_binding, criteria, unbound_what, ["cantDeleteSet", x_what_binding.variable.name]):
             yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:

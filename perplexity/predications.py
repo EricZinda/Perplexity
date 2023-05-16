@@ -10,22 +10,27 @@ from perplexity.vocabulary import ValueSize
 # Used for words like "large" and "small" that always force an answer to be individuals when used predicatively
 # Ensures that solutions are sets (not combinatoric) and only passes through
 # individuals, even if it is given a combinatoric
-def force_individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function):
+def individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function, greater_than_one_error):
     if binding.value is None:
         # Unbound
         for unbound_value in unbound_predication_function():
             yield state.set_x(binding.variable.name, (unbound_value, ), False)
 
     elif binding.variable.combinatoric is False:
-        # Pass sets through, if it is > 1 item the predication_function should fail
-        iterator = [binding.value]
+        # if it is > 1 item the predication_function should fail since it is individual_style
+        if len(binding.value) > 1:
+            report_error(greater_than_one_error)
+            return
+        else:
+            # Pass sets through,
+            iterator = [binding.value]
 
     else:
         # If it is combinatoric, only pass through individuals
         iterator = [(value, ) for value in binding.value]
 
     for value in iterator:
-        if bound_predication_function(value):
+        if bound_predication_function(value[0]):
             yield state.set_x(binding.variable.name, value, False)
 
 
@@ -160,7 +165,7 @@ def in_style_predication_2(state, binding1, binding2,
                                                                binding2_set_type)
 
 
-# "Combinatorial Style Predication" means: a predication that, when applied to a set, will be true
+# "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
 # for any chosen subset of the set. So, it gives a combinatorial answer.
 # combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
 # not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,

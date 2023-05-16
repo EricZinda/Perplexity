@@ -1,6 +1,7 @@
 from perplexity.execution import report_error, execution_context
 from perplexity.generation import english_for_delphin_variable
-from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2
+from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, \
+    individual_style_predication_1
 from perplexity.state import State
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
@@ -131,6 +132,7 @@ def very_x_deg(state, e_introduced_binding, e_target_binding):
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
+        # value will not be a tuple since individual_style_predication_1() was used
         if value in state.all_individuals():
             return True
 
@@ -140,7 +142,9 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in combinatorial_style_predication_1(state, x_what_binding, criteria, unbound_what):
+    for success_state in individual_style_predication_1(state, x_what_binding,
+                                                        criteria, unbound_what,
+                                                        ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
         yield success_state.record_operations([operation])
@@ -211,6 +215,11 @@ def generate_custom_message(tree_info, error_term):
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         arg1 = arg1.strip("'\"")
         return f"I don't know who '{arg1}' is"
+
+    elif error_constant == "cantXYTogether":
+        arg1 = error_arguments[1]
+        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+        return f"I can't {arg1} {arg2} *together*"
 
     else:
         # No custom message, just return the raw error for debugging
