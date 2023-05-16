@@ -1,5 +1,5 @@
 ## Lift-Style Predications
-Not all words are associative with sets like "in" from the [previous section](pxHowTo30InStylePredications): The verb "to lift" interprets sets vs. individuals as very different things.  For example:
+Not all words are associative with sets like "in" from the [previous section](pxHowTo030InStylePredications): The verb "to lift" interprets sets vs. individuals as very different things.  For example:
 
 ~~~
 Students lifted a table.
@@ -42,7 +42,7 @@ def lift(state, e_introduced_binding, x_actor_binding, x_item_binding):
                                         all_item2s_being_lifted_by_item1s)
 ~~~
 
-So, `lift_style_predication_1()` works very much like the `in_style_predication_1()` from the [previous section](pxHowTo30InStylePredications) but calls the check function with sets.  
+So, `lift_style_predication_1()` works very much like the `in_style_predication_1()` from the [previous section](pxHowTo030InStylePredications) but calls the check function with sets.  
 
 ### Declaring Arguments that Understand Sets of More Than One Item
 As written, however, these check functions will *still* only get called with a single item. That is because the helper functions won't go through the work to generate all combinations unless a predication declares that it will use a set if provided. It's too expensive to calculate if it will be thrown away.  
@@ -81,7 +81,7 @@ Adding the `arguments=[]` list to `@Predication()` tells the engine that we want
 Other options for `ValueSize` are: `exactly_one` (the default) and `more_than_one`. `more_than_one` can be used when an argument only makes sense for more than one individual to be doing it. One example is the verb "met".
 
 ## Running the Example
-As is, we can't run the example, yet. We need to teach the system "students" and "tables" first.  This is easy enough using the approach we used in our [first topic](pxHowTo20ImplementAPredication) about files:
+As is, we can't run the example, yet. We need to teach the system "students" and "tables" first.  This is easy enough using the approach we used in our [first topic](pxHowTo020ImplementAPredication) about files:
 
 ~~~
 @Predication(vocabulary, names=["_student_n_of"])
@@ -138,7 +138,7 @@ Because we defined `_lift_v_cause` to only be `true` when *both* students are li
 
 Note that we can also use worlds like "large" from previous scenarios and they do work correctly (since we haven't said either student is large in the system).
 
-Next we will tackle [event predications](pxHowTo50EventPredications) so that we can handle words like "very" and other modifiers.
+Next we will tackle [event predications](pxHowTo050EventPredications) so that we can handle words like "very" and other modifiers.
 
 
 

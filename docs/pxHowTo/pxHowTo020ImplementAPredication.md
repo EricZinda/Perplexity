@@ -260,7 +260,7 @@ With that, the system can now recognize that the function exists and know which 
 ## Implementing "large"
 Let's finish by implementing the predication for "large" (`_large_a_1(e2, x3)` from the MRS above) so we can see the system process "a file is large".
 
-Just like `file_n_of`, `_large_a_1(e2, x3)` has a single `x` variable, so we can copy the approach above to implement it. For now, we can just ignore the event variable `e2`, we'll describe how to handle that in the [Event Predications topic](pxHowTo50EventPredications) later.
+Just like `file_n_of`, `_large_a_1(e2, x3)` has a single `x` variable, so we can copy the approach above to implement it. For now, we can just ignore the event variable `e2`, we'll describe how to handle that in the [Event Predications topic](pxHowTo050EventPredications) later.
 
 We'll implement large by making it be `true` only for "file2.txt" to simulate that being the only "large thing" in the system:
 ~~~
@@ -328,7 +328,7 @@ Response:
 Yes, that is true.
 ~~~
 
-Below is the full source for the predications we've gone through above. [Next up](pxHowTo30InStylePredications), we'll handle a few more kinds of predications.
+Below is the full source for the predications we've gone through above. [Next up](pxHowTo030InStylePredications), we'll handle a few more kinds of predications.
 
 ## Example Full Source
 The full source for the example is now:

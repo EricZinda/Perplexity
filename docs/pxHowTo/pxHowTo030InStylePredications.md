@@ -4,7 +4,7 @@ Logic gets more complicated when there is more than one `x` argument because the
 ~~~
 _in_p_loc(e1,x1,x2)
 ~~~
-Ignoring the event argument `e2` for the moment, there are two `x` arguments. The predication's job is to check whether `x1` is "in" `x2` (whatever that means in the application). Because of combinatorial values (described in [the previous topic](pxHowTo20ImplementAPredication#combinatorial-variables)), if the predication is called with two combinatorial arguments that have two values each, like this:
+Ignoring the event argument `e2` for the moment, there are two `x` arguments. The predication's job is to check whether `x1` is "in" `x2` (whatever that means in the application). Because of combinatorial values (described in [the previous topic](pxHowTo020ImplementAPredication#combinatorial-variables)), if the predication is called with two combinatorial arguments that have two values each, like this:
 
 ~~~
 _in_p_loc(e1,(file1, file2),(folder1, folder2))
@@ -44,7 +44,7 @@ This observation can greatly reduce the number of checks needed. If there are 10
 
 It should be noted that, even though we can avoid the checks for many sets, in theory we still have to yield all the possible combinations. In the next topic, we'll walk through how to avoid this for many cases as well.
 
-The logic for checking if variables have combinatorial values, doing the optimization above, and yielding the right values can be long and repetitive. So, like for the single `x` case from the [previous topic](pxHowTo20ImplementAPredication), Perplexity has a helper function that performs the right logic and only requires the caller to implement the `check()` function, like this:
+The logic for checking if variables have combinatorial values, doing the optimization above, and yielding the right values can be long and repetitive. So, like for the single `x` case from the [previous topic](pxHowTo020ImplementAPredication), Perplexity has a helper function that performs the right logic and only requires the caller to implement the `check()` function, like this:
 
 ~~~
 @Predication(vocabulary, names=("_in_p_loc"))
@@ -66,7 +66,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 The function is called `in_style_predication_2()` because it uses the behavior of "in" as a template and has two `x` arguments.  Any predication that is like "in" (meaning that it doesn't have a different meaning for "together" or "separately" but is OK if they are said) can use this same helper to implement the logic efficiently.
 
 #### Unbound Arguments
-As discussed in the [previous topic](pxHowTo20ImplementAPredication), arguments to a predication aren't always set (i.e. *bound*) as in the above example. When they are missing, the predication needs to yield all possible values for them that make the predication `true`.  
+As discussed in the [previous topic](pxHowTo020ImplementAPredication), arguments to a predication aren't always set (i.e. *bound*) as in the above example. When they are missing, the predication needs to yield all possible values for them that make the predication `true`.  
 
 To support unbound arguments, `in_style_predication_2()` has two additional functions it supports: one for the first argument being unbound and another for the second. There is a final argument that is rarely used for when both are unbound. If that one isn't set, the system reports the system error `beMoreSpecific` since the user said something really broad like "what is in anything?"
 
@@ -92,6 +92,6 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
                                       all_item2_containing_item1)
 ~~~
 
-Note that the two new functions need to *yield all alternatives* and not just return `true` or `false`, just like `combinatorial_style_predication_1()` did in the [previous topic](./pxHowTo20ImplementAPredication).
+Note that the two new functions need to *yield all alternatives* and not just return `true` or `false`, just like `combinatorial_style_predication_1()` did in the [previous topic](./pxHowTo020ImplementAPredication).
 
 And, as with the first "check" function, `in_style_predication_2()` does all the work to make sure that the two unbound functions are only passed single values -- even if the incoming values are combinatorial or sets > 1 item.  

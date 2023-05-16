@@ -136,6 +136,6 @@ Yes, that is true.
 
 Note that the system doesn't know how to add the word "very" to the error, so we get the error "a file is not large". We'll fix that in a future topic.
 
-Now we are ready to tackle action verbs in the [next topic](pxHowTo70ActionVerbs).
+Now we are ready to tackle action verbs in the [next topic](pxHowTo070ActionVerbs).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

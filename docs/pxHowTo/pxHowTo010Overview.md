@@ -5,4 +5,4 @@ This section is designed to teach users how to use the Perplexity system to buil
 
 If you are looking for how Perplexity itself is implemented, take a look at the [Perplexity Internals](../pxint/pxint0000Overview) section. 
 
-With that said, let's get started. The first step is to [install Perplexity](pxHowTo12Install.md).
+With that said, let's get started. The first step is to [install Perplexity](pxHowTo012Install.md).
