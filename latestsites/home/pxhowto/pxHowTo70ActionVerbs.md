@@ -154,10 +154,58 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 
 The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of `interact_once()`. That's where `DeleteOperation.apply_to()` gets called for every solution.
 
-### TODO: Talk about pron(x)
+## pron()
+The MRS we are working with is:
 
-## Example
-To make this run for real, we need to quit using hard coded lists of files since we're going to be deleting them. It is time to use a real `State` object to track state. The built-in Perplexity `State` object has a very simple mechanism for tracking objects. In most cases, we would need to derive a new class from it to manage the state of an application, but our examples are simple enough that we can use it directly.
+```
+[ "delete a file"
+  TOP: h0
+  INDEX: e2 [ e SF: comm TENSE: pres MOOD: indicative PROG: - PERF: - ]
+  RELS: < [ pronoun_q<0:13> LBL: h4 ARG0: x3 [ x PERS: 2 PT: zero ] RSTR: h5 BODY: h6 ]
+          [ pron<0:13> LBL: h7 ARG0: x3 ]
+          [ _delete_v_1<0:6> LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: sg IND: + ] ]
+          [ _a_q<7:8> LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ]
+          [ _file_n_of<9:13> LBL: h12 ARG0: x8 ARG1: i13 ] >
+  HCONS: < h0 qeq h1 h5 qeq h7 h10 qeq h12 > ]
+
+
+               ┌────── pron(x3)
+pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
+                    └─ _a_q(x8,RSTR,BODY)
+                                      └─ _delete_v_1(e2,x3,x8)
+```
+... and `pron(x)` is the last predication to implement (`pronoun_q` is a quantifier and that is implemented by the system). `pron(x)` is true when `x` is bound to an object that represents what the specified pronoun is *referring to*. The "specified pronoun" is determined by looking at the [properties](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS) for the `x` variable to determine if the pronoun is "you" (`PERS: 2` -- second person), "him/her"(`PERS: 3` -- third person), etc. If `x` is bound to an object that represents what that pronoun is referring to, it is `true`. 
+
+There were not any pronouns in our command "delete a file", so where did the `pron` predication come from? In this case, the pronoun is an *implied* "you" since it is a command. I.e "(You) delete a large file".  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are "you" ("can you delete the file?" or the implied case above) and maybe "I" ("I want to delete a file"). For now, let's just do "you" and fail otherwise. 
+
+```
+@Predication(vocabulary, names=["pron"])
+def pron(state, x_who_binding):
+    person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
+
+    def bound_variable(value):
+        if person == 2 and value == "computer":
+            return True
+        else:
+            report_error(["dontKnowActor", x_who_binding.variable.name])
+
+    def unbound_variable():
+        if person == 2:
+            yield "computer"
+        else:
+            report_error(["dontKnowActor", x_who_binding.variable.name])
+
+    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+```
+
+To find out what pronoun is being referred to be `x`, we use a special variable binding that Perplexity puts in state: `tree`.  This is not an MRS concept or feature, it is just a convenient place to keep the tree for predications that need to inspect it. The variables in the tree, and their properties are accessed like a tree of dictionaries as shown above.
+
+The 2nd person pronoun "you" will always refer to "the computer" so we represent it as a string "computer", that is enough for this simple example. 
+
+Now we've implemented all the predications.  Just one final step is left
+
+## Using the State Object
+To make this run for real, we need to quit using hard-coded lists of files since we're going to be deleting them. It is time to use a real `State` object to track state. The built-in Perplexity `State` object has a very simple mechanism for tracking objects. In most cases, we would need to derive a new class from it to manage the state of an application, but our examples are simple enough that we can use it directly.
 
 The important parts of the class for our purposes here are below. A list of objects can be passed in the constructor and `State` will return them from `all_individuals()`. It is very simple:
 ```
@@ -259,5 +307,7 @@ Done!
 ? a file is large
 a file is not large
 ```
+
+The last line confirms that the one large file in the system has been deleted.
 
 Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo70ActionVerbs.md)]{% endraw %}
