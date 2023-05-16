@@ -209,6 +209,8 @@ class UserInterface(object):
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_tree_record()
         for response, _ in chosen_record["ResponseGenerator"]:
+            if response is None:
+                response = "(no error specified)"
             chosen_record["ResponseMessage"] += response
             print(response)
 
