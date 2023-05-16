@@ -29,16 +29,7 @@ class DeleteOperation(object):
         self.binding_to_delete = binding_to_delete
 
     def apply_to(self, state):
-        if isinstance(state, FileSystemState):
-            state.file_system.delete_item(self.binding_to_delete)
-
-        else:
-            for index in range(0, len(state.objects)):
-                # Use the `unique_id` property to compare objects since they
-                # may have come from different `State` objects and will thus be copies
-                if state.objects[index].unique_id == self.binding_to_delete.unique_id:
-                    state.objects.pop(index)
-                    break
+        state.file_system.delete_item(self.binding_to_delete)
 
 
 class CopyOperation(object):
@@ -48,8 +39,7 @@ class CopyOperation(object):
         self.binding_to_copy = binding_to_copy
 
     def apply_to(self, state):
-        if isinstance(state, FileSystemState):
-            state.file_system.copy_item(self.from_directory_binding, self.binding_from_copy, self.binding_to_copy)
+        state.file_system.copy_item(self.from_directory_binding, self.binding_from_copy, self.binding_to_copy)
 
 
 class ChangeDirectoryOperation(object):

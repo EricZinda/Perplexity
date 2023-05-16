@@ -373,8 +373,8 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
         if hasattr(location_value, "contained_items"):
             for actor in location_value.contained_items(x_location_binding.variable):
                 yield actor
-        else:
-            report_error(["thingIsNotContainer", x_location_binding.variable.name])
+
+        report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
     yield from in_style_predication_2(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values)
 
@@ -480,7 +480,11 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
         def unbound_what():
             report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-        for new_state in individual_style_predication_1(state, x_what_binding, criteria, unbound_what, ["cantDeleteSet", x_what_binding.variable.name]):
+        for new_state in individual_style_predication_1(state,
+                                                        x_what_binding,
+                                                        criteria,
+                                                        unbound_what,
+                                                        ["cantDeleteSet", x_what_binding.variable.name]):
             yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:

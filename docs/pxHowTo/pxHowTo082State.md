@@ -282,3 +282,164 @@ if __name__ == '__main__':
 ~~~
 
 That, and modifying the predications to start using the new state, is all that is needed.
+
+# Example
+Only the `_file_n_of`, `_folder_n_of`, `_large_a_1`, `delete_v_1_comm` and `pron` predications need to be updated to use the new objects.  The `DeleteOperation` class needs to be updated as well. These are all relatively minor changes, and the final functions are listed below:
+
+~~~
+@Predication(vocabulary, names=["_file_n_of"])
+def file_n_of(state, x_binding, i_binding):
+    def bound_variable(value):
+        if isinstance(value, File):
+            return True
+        else:
+            report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state,
+                                                 x_binding,
+                                                 bound_variable,
+                                                 unbound_variable)
+
+
+# true for both sets and individuals as long as everything
+# in the set is a file
+@Predication(vocabulary, names=["_folder_n_of"])
+def folder_n_of(state, x_binding, i_binding):
+    def bound_variable(value):
+        if isinstance(value, Folder):
+            return True
+        else:
+            report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state,
+                                                 x_binding,
+                                                 bound_variable,
+                                                 unbound_variable)
+
+
+@Predication(vocabulary,
+             names=["_large_a_1"],
+             handles=[("DegreeMultiplier", EventOption.optional)])
+def large_a_1(state, e_introduced_binding, x_target_binding):
+    # See if any modifiers have changed *how* large we should be
+    degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
+
+    # "large" is being used "predicatively" as in "the dogs are large". This needs to force
+    # the individuals to be separate (i.e. not part of a group)
+    def criteria_bound(value):
+        if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+            return True
+
+        else:
+            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            return False
+
+    def unbound_values():
+        # Find all large things
+        for value in state.all_individuals():
+            if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+                yield value
+
+    yield from combinatorial_style_predication_1(state,
+                                                 x_target_binding,
+                                                 criteria_bound,
+                                                 unbound_values)
+
+
+# Delete only works on individual values: i.e. there is no semantic for deleting
+# things "together" which would probably imply a transaction or something
+@Predication(vocabulary, names=["_delete_v_1"])
+def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    # We only know how to delete things from the
+    # computer's perspective
+    if x_actor_binding.value[0].name == "Computer":
+        def criteria(value):
+            # Only allow deleting files and folders that exist
+            if isinstance(value, (File, Folder)) and value.exists():
+                return True
+
+            else:
+                report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+        def unbound_what():
+            report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+        for new_state in individual_style_predication_1(state,
+                                                        x_what_binding,
+                                                        criteria,
+                                                        unbound_what,
+                                                        ["cantDeleteSet", x_what_binding.variable.name]):
+            yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
+
+    else:
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+
+
+# Delete any object in the system
+class DeleteOperation(object):
+    def __init__(self, binding_to_delete):
+        self.binding_to_delete = binding_to_delete
+
+    def apply_to(self, state):
+        state.file_system.delete_item(self.binding_to_delete)
+
+
+@Predication(vocabulary, names=["pron"])
+def pron(state, x_who_binding):
+    person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
+
+    def bound_variable(value):
+        return isinstance(value, Actor) and value.person == person
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+~~~
+
+The `reset()` function also needs to be updated to use the new `FileSystemState` object:
+
+~~~
+def reset():
+    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
+                                           (True, "/documents/file2.txt", {"size": 10000000}),
+                                           (True, "/documents/file3.txt", {"size": 1000})],
+                                          "/documents"))
+~~~
+
+With those changes, all the examples from before still work the same but now use the new objects:
+
+~~~
+python ./hello_world.py
+? a file is large
+Yes, that is true.
+
+? which file is large?
+(File(name=/documents/file2.txt, size=10000000),)
+
+? what file is very large?
+a file is not large
+
+? a file is very large
+a file is not large
+
+? delete a large file
+Done!
+
+? a file is large
+a file is not large
+~~~
