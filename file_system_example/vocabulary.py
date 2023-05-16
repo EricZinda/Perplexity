@@ -159,18 +159,6 @@ def place_n(state, x_binding):
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
-@Predication(vocabulary)
-def thing(state, x_binding):
-    def bound_variable(_):
-        return True
-
-    def unbound_variable():
-        for item in state.all_individuals():
-            yield item
-
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
-
-
 @Predication(vocabulary, names=["_very_x_deg"])
 def very_x_deg(state, e_introduced_binding, e_target_binding):
     # First see if we have been "very'd"!

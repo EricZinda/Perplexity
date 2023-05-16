@@ -2,7 +2,7 @@ import copy
 
 from perplexity.execution import execution_context
 from perplexity.plurals import VariableCriteria, GlobalCriteria
-from perplexity.predications import quantifier_raw
+from perplexity.predications import quantifier_raw, combinatorial_style_predication_1
 from perplexity.vocabulary import Predication, Vocabulary
 
 vocabulary = Vocabulary()
@@ -11,6 +11,18 @@ vocabulary = Vocabulary()
 # Merge the system vocabulary into new_vocabulary
 def system_vocabulary():
     return copy.deepcopy(vocabulary)
+
+
+@Predication(vocabulary)
+def thing(state, x_binding):
+    def bound_variable(_):
+        return True
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            yield item
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_a_q"])
