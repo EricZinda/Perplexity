@@ -36,9 +36,6 @@ class Megabyte(object):
         return self.units
 
 
-# Derive from UniqueObject and call
-# its __init__ method from this __init__
-# method so we get the unique ID created
 class Folder(UniqueObject):
     def __init__(self, name, size=0, file_system=None):
         super().__init__()
