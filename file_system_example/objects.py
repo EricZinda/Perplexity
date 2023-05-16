@@ -18,15 +18,6 @@ class UniqueObject(object):
         self.unique_id = uuid.uuid4()
 
 
-class Container(UniqueObject):
-    def __init__(self):
-        super().__init__()
-
-    def contained_items(self):
-        if False:
-            yield None
-
-
 class Megabyte(object):
     def __init__(self):
         self.units = "mb"
@@ -48,7 +39,7 @@ class Megabyte(object):
 # Derive from UniqueObject and call
 # its __init__ method from this __init__
 # method so we get the unique ID created
-class Folder(Container):
+class Folder(UniqueObject):
     def __init__(self, name, size=0, file_system=None):
         super().__init__()
         self.name = name
@@ -64,9 +55,6 @@ class Folder(Container):
 
     def __eq__(self, obj):
         return isinstance(obj, Folder) and str(self.name) == str(obj.name)
-
-    def __ne__(self, obj):
-        return not self == obj
 
     def contained_items(self, variable_data):
         yield from self.file_system.contained_items(self, variable_data)
@@ -90,7 +78,7 @@ class Folder(Container):
         return self.file_system.exists(self.name, is_file=False)
 
 
-class File(Container):
+class File(UniqueObject):
     def __init__(self, name, size=None, file_system=None, link=None):
         super().__init__()
         self.name = name
@@ -129,9 +117,6 @@ class File(Container):
                 # If one or both of them doesn't have a path specified then it is a pure filename
                 # which means it == the other object if the file name alone matches
                 return self.file_name() == obj.file_name()
-
-    def __ne__(self, obj):
-        return not self == obj
 
     def all_locations(self, variable_data):
         if self.exists():
@@ -183,9 +168,6 @@ class Actor(UniqueObject):
     def __eq__(self, other):
         if isinstance(other, Actor):
             return self._hash == other._hash
-
-    def __ne__(self, other):
-        return not self == other
 
     def __repr__(self):
         return f"Actor(name={self.name}, person={self.person})"

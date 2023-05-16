@@ -1,4 +1,4 @@
-from file_system_example.objects import File, Folder, Megabyte, Actor, Container, QuotedText
+from file_system_example.objects import File, Folder, Megabyte, Actor, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
@@ -145,7 +145,7 @@ def megabyte_n_1(state, x_binding, u_binding):
 def place_n(state, x_binding):
     def bound_variable(value):
         # Any object is a "place" as long as it can contain things
-        if isinstance(value, Container):
+        if hasattr(value, "contained_items"):
             return True
         else:
             report_error(["valueIsNotX", value, x_binding.variable.name])
