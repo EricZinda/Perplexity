@@ -88,3 +88,5 @@ toc:
         url: "/pxhowto/pxHowTo070ActionVerbs/"
       - title: "Quantifiers and Determiners"
         url: "/pxhowto/pxHowTo080QuantifiersAndDeterminers/"
+      - title: "Custom State"
+        url: "/pxhowto/pxHowTo082State/"
