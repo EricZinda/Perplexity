@@ -23,14 +23,17 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                                       └─ _delete_v_1(e2,x3,x8)
 ```
 
-Let's ignore the pronoun related predications and focus on `_delete_v_1(e2,x3,x8)`. We're not going to handle any modifiers to it either, so we can ignore `e2` and `x3` (since `x3` represents the pronoun). That leaves `x8` which is the thing the user wants to delete. So, now we could try implementing the predication like the other single `x` predications we've built and call the `combinatorial_style_predication_1()` helper, like this:
+Let's ignore the pronoun related predications and focus on `_delete_v_1(e2,x3,x8)`. We're not going to handle any modifiers to it either, so we can ignore `e2` and `x3` (since `x3` represents the pronoun). That leaves `x8` which is the thing the user wants to delete. So, now we could try implementing the predication like the other single `x` predications we've built and call the `combinatorial_style_predication_1()` helper. The problem is, `_delete_v_1` is not combinatorial.
+
+Combinatorial predications are those that when applied to a set, can be true for any chosen subset of the set. Delete, however doesn't make sense for a set of items "together".  Deleting items together sounds dangerously like "deleting them in a transaction".  Really, delete can only apply to one item at a time, it shouldn't support a "together" semantic unless it can really enforce it somehow. So, it will use a different helper called, `individual_style_predication_1` which ensures that only single individuals make it through, like this:
 
 ```
 @Predication(vocabulary, names=["_delete_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
-        if value[0] in ["file1.txt", "file2.txt", "file3.txt"]:
+        # value will not be a tuple since individual_style_predication_1() was used
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
 
         else:
@@ -39,12 +42,15 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    yield from combinatorial_style_predication_1(state, x_what_binding, criteria, unbound_what)
+    yield from individual_style_predication_1(state, x_what_binding,
+                                                        criteria, unbound_what,
+                                                        ["cantXYTogether", "delete", x_what_binding.variable.name])
 ```
+Note that `individual_style_predication_1()` has an extra argument at the end which is the error to report if it gets called with a set of more than one item.
 
-This does some of the work we need: it will actually succeed if the user asks to delete a file or folder, and it won't allow phrases like "delete everything" that would produce an unbound `x8`. However, it won't actually *delete anything* because there isn't any code to do the deleting. 
+So, this does *some* of the work we need: it will actually succeed if the user asks to delete a file or folder, and it won't allow phrases like "delete everything" that would produce an unbound `x8`. However, it won't actually *delete anything* because there isn't any code to do the deleting. 
 
-`combinatorial_style_predication_1()` yields a `state` object when `delete_v_1_comm` is successful. So, we could start by doing the actual delete when that functions yields a value, because it means everything has been checked and is `true`.
+`individual_style_predication_1()` yields a `state` object when `delete_v_1_comm` is successful. So, we could start by doing the actual delete when that functions yields a value, because it means everything has been checked and is `true`.
 
 Let's imagine that we added a `state.delete_object()` to the `State` object that actually deletes a file and yields a new state with that file deleted. That approach could look like this:
 
@@ -53,7 +59,8 @@ Let's imagine that we added a `state.delete_object()` to the `State` object that
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
-        if isinstance(value[0], (File, Folder)) and value[0].exists():
+        # value will not be a tuple since individual_style_predication_1() was used
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
 
         else:
@@ -62,23 +69,26 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in combinatorial_style_predication_1(state, x_what_binding, criteria, unbound_what):
+    for success_state in individual_style_predication_1(state, x_what_binding,
+                                                        criteria, unbound_what,
+                                                        ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
-        yield success_state.delete_object(object_to_delete)
+        yield success_state.delete_object(object_to_delete)        
 ```
+
 This works because: 
 
-When `combinatorial_style_predication_1()` yields a new state, it means this predication was successful. That happened because the `criteria()` function returned `true`. The new state has all of the MRS variables set to the value that made the predication `true`, which means that the `x_what_binding` variable should now be set to the thing being deleted. 
+When `individual_style_predication_1()` yields a new state, it means this predication was successful. That happened because the `criteria()` function returned `true`. The new state has all of the MRS variables set to the value that made the predication `true`, which means that the `x_what_binding` variable should now be set to the thing being deleted. 
 
 However, we need to be careful to ask for the value of the variable represented by `x_what_binding` *in the new state*. Remember that `state` objects are immutable, so we have to look at the copy being returned to get the new value of the variable.
 
-So, we looked up the variable name from `x_what_binding` in the new state returned by `combinatorial_style_predication_1`, like this:
+So, we looked up the variable name from `x_what_binding` in the new state returned by `individual_style_predication_1()`, like this:
 
 ```
 object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
 ```
 
-This is basically the approach we are going to use, but we need some extra mechanisms to do it for reasons described below.
+This is basically the approach we are going to use, but we need some extra mechanisms to do it. The reason why is described next.
 
 ### Operations
 Actions that modify anything in the world state besides an MRS variable are called an `Operation` in Perplexity.  They go beyond manipulating the MRS and actually affect the world the person is speaking about. Any predication like `_delete_v_1` that wants to modify the state of the world needs to use an `Operation`.
@@ -115,7 +125,7 @@ new_state.record_operations([operation])
 
 The `State` object has a `record_operations()` method that takes a list of operations to record, but in this case we're only doing one. Those two lines of code record that we want to delete a particular file, but they don't actually *do* it yet.  Later, when we have the final solution group, we can gather all of the operations that were done to the solutions in the group and call `apply_operations()` on the one single state we want to represent the new world.
 
-Doing things in this roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the "new state of the world" once we know what to do.
+Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the "new state of the world" once we know what to do.
 
 Now we can write the basic implementation of "delete":
 
@@ -124,7 +134,8 @@ Now we can write the basic implementation of "delete":
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
-        if isinstance(value[0], (File, Folder)) and value[0].exists():
+        # value will not be a tuple since individual_style_predication_1() was used
+        if value in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
 
         else:
@@ -133,20 +144,22 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in combinatorial_style_predication_1(state, x_what_binding, criteria, unbound_what):
+    for success_state in individual_style_predication_1(state, x_what_binding,
+                                                        criteria, unbound_what,
+                                                        ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
         yield success_state.record_operations([operation])
 ```
 
-The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of `interact_once()`
+The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of `interact_once()`. That's where `DeleteOperation.apply_to()` gets called for every solution.
 
 ### TODO: Talk about pron(x)
 
 ## Example
-The built-in Perplexity `State` object has a very simple mechanism for tracking objects. In most cases, we would need to derive a new class from it to manage the state of an application, but our examples are simple enough that we can use it directly.
+To make this run for real, we need to quit using hard coded lists of files since we're going to be deleting them. It is time to use a real `State` object to track state. The built-in Perplexity `State` object has a very simple mechanism for tracking objects. In most cases, we would need to derive a new class from it to manage the state of an application, but our examples are simple enough that we can use it directly.
 
-The important part of the class for our purpose here are below. A list of objects can be passed in the constructor, and `State` will return them from `all_individuals()`. It is very simple:
+The important parts of the class for our purposes here are below. A list of objects can be passed in the constructor and `State` will return them from `all_individuals()`. It is very simple:
 ```
 class State(object):
     def __init__(self, objects):
@@ -164,7 +177,7 @@ class State(object):
     ...
 ```
 
-We'll need to update the relevant predications to start using this object, as well as initializing the state so that it has all the objects we need at startup. The only code that needs to change is:
+We'll need to update the relevant predications to start using this object, as well as initializing the `state` so that it has all the objects we need at startup. We need to change `file_n_of`, `large_a_1` and `delete_v_1_comm` to use the `state` object instead of hard-coding the list of files:
 
 ```
 @Predication(vocabulary, names=["_file_n_of"])
@@ -204,12 +217,47 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
 
     yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
 
-...
+@Predication(vocabulary, names=["_delete_v_1"])
+def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    def criteria(value):
+        # Only allow deleting files and folders that exist
+        # value will not be a tuple since individual_style_predication_1() was used
+        if value in state.all_individuals():
+            return True
 
+        else:
+            report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+    def unbound_what():
+        report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+    for success_state in individual_style_predication_1(state, x_what_binding,
+                                                        criteria, unbound_what,
+                                                        ["cantXYTogether", "delete", x_what_binding.variable.name]):
+        object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
+        operation = DeleteOperation(object_to_delete)
+        yield success_state.record_operations([operation])
+```
+
+... and create our initial `State` object with the starting list of files:
+
+```
 def reset():
     return State(["file1.txt", "file2.txt", "file3.txt"])
+```
 
-...
+With those changes, we can now test the system:
+
+```
+python hello_world.py
+? a file is large
+Yes, that is true.
+
+? delete a large file
+Done!
+
+? a file is large
+a file is not large
 ```
 
 Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo70ActionVerbs.md)]{% endraw %}
