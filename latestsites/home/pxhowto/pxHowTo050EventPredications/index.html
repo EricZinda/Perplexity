@@ -299,6 +299,8 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo082State/">Custom State</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo085Place/">Representing Places</a></li>
+          
         </ul>
         
       </li>
@@ -396,7 +398,7 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 </code></pre></div></div>
 
-<p>The helper function gets passed an event variable and looks for the information that <code class="language-plaintext highlighter-rouge">very_x_deg</code> adds to it. If found, it turns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here’s an example of a modified <code class="language-plaintext highlighter-rouge">large_a_1</code> that now uses it:</p>
+<p>The helper function gets passed an event variable and looks for the information that <code class="language-plaintext highlighter-rouge">very_x_deg</code> adds to it. If found, it returns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here’s an example of a modified <code class="language-plaintext highlighter-rouge">large_a_1</code> that now uses it:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def large_a_1(state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* large we should be

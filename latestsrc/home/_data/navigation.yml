@@ -90,3 +90,5 @@ toc:
         url: "/pxhowto/pxHowTo080QuantifiersAndDeterminers/"
       - title: "Custom State"
         url: "/pxhowto/pxHowTo082State/"
+      - title: "Representing Places"
+        url: "/pxhowto/pxHowTo085Place/"
