@@ -77,7 +77,7 @@ Predications will often be called with all of their variables bound like this. B
 ```
 def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
-        yield state.set_x(("file1.txt", ))
+        yield state.set_x(x_binding.variable.name, ("file1.txt", ))
     elif x_binding.value[0] == "file1.txt":
         yield state
 ```
@@ -95,7 +95,7 @@ If the predication is called with variable values that make it `false`, it simpl
 ```
 def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
-        yield state.set_x(("file1.txt",), VariableValueType.set)
+        yield state.set_x(x_binding.variable.name, ("file1.txt",))
     elif x_binding.value[0] == "file1.txt":
         yield state
     else:
@@ -165,13 +165,13 @@ Assume we have two more files in our example, so that now we have: `file1.txt`, 
 def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
         # Yield all combinations of files in the system
-        yield state.set_x(("file1.txt",))
-        yield state.set_x(("file2.txt",))
-        yield state.set_x(("file3.txt",))
-        yield state.set_x(("file1.txt","file2.txt"))
-        yield state.set_x(("file1.txt","file2.txt"))
-        yield state.set_x(("file2.txt","file3.txt"))
-        yield state.set_x(("file1.txt","file2.txt","file3.txt"))
+        yield state.set_x(x_binding.variable.name, ("file1.txt",))
+        yield state.set_x(x_binding.variable.name, ("file2.txt",))
+        yield state.set_x(x_binding.variable.name, ("file3.txt",))
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt"))
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt"))
+        yield state.set_x(x_binding.variable.name, ("file2.txt","file3.txt"))
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt","file3.txt"))
         
     else:
         for item in x_binding.value:
@@ -187,7 +187,7 @@ Iteratively returning all combinations of a set runs a lot of code. We can optim
 def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
         # Yield all combinations of files in the system
-        yield state.set_x(("file1.txt","file2.txt","file3.txt"), combinatorial=True)
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt","file3.txt"), combinatorial=True)
         
     else:
         for item in x_binding.value:
