@@ -1,9 +1,9 @@
 {% raw %}## Building a Custom State Object
-We are getting to the point where the examples need to get richer and the approach we've used so far of just hard-coding the state of the world or using the base `State` object is not going to be good enough for future examples. We need to step back and think about how to model the file system state in a more robust way.
+We are getting to the point where the examples need to get richer and hard-coding the state of the world or using the base `State` object is not going to be good enough for future examples. We need to step back and think about how to model the file system state in a more robust way.
 
 ## The Perplexity State object
 
-The default `State` object only has a very small amount of code for manipulating *application* state, the rest of its implementation manipulates MRS variables. We used that code in the [Action Verbs topic][pxHowTo070ActionVerbs) Here it is again:
+The default `State` object only has a small amount of code for manipulating *application* state, the rest of its implementation manipulates MRS variables. We used that code in the [Action Verbs topic](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs). Here it is again:
 
 ```
 class State(object):
@@ -22,12 +22,12 @@ class State(object):
     ...
 ```
 
-The only reason it even has this basic implementation is because the system implementation of `thing(x)` needs to return all "things in the world" if it is called with an unbound `x`. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern that `set_x()` and `add_to_e()` followed and return a copy of itself with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) work.
+The only reason it even has this basic implementation is because the system implementation of `thing(x)` needs to return all "things in the world" if it is called with an unbound `x`. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern that `set_x()` and `add_to_e()` followed and return a copy with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) work.
 
-So, we'll need to add a notion of files and folders to `State`, and provide some ways of querying the system about them. We'll do that next.
+So, we'll need to add a notion of files and folders to `State`, and provide some ways to query the system about them. We'll do that next.
 
 ## Identity
-Because the system is built around immutable state, we will sometimes end up with two state objects and need to be able to find the same object in either one. We need a way to compare objects *across* state object. The easiest way to do this is by having all the objects in the system have a globally unique id that can be easily compared. We'll create a base class, `UniqueObject` that does this and derive everything from it:
+Because the system is built around immutable state, we will sometimes end up with two state objects and need to be able to find the same object in either one. We need a way to compare objects *across* state object. The easiest way to do this is to give all the objects in the system a globally unique id that can be easily compared. We'll create a base class, `UniqueObject` that does this and derive everything from it:
 
 ```
 class UniqueObject(object):
@@ -49,11 +49,11 @@ def all_locations(self, variable_data):
 ```
 
 ## Files and Folders
-Because users may talk about files or folders that don't exist yet, or that may need to be created, we need the `File` and `Folder` object to be able to represent files and folders that don't actually exist. So, these objects will have a small amount of information in them and call to a `FileSystem` object for the rest. We'll implement that object next. 
+Because users may talk about files or folders that don't exist yet, or that may need to be created, we need the `File` and `Folder` object to be able to represent files and folders that don't actually exist. So, these objects will have a small amount of information in them and call to a `FileSystem` object for the rest (we'll implement that object in the next section). 
 
-Note that the `File` object has a simplistic notion of a "linked file" (as in Unix) so that we can show the system answering questions about things that are in more than one place.
+It is very important that these objects implement `__hash__` since that allows them to be in sets and dictionaries which are required by Perplexity. `__repr__` is just a method that makes debugging nicer. Checking if things are equal is also required by Perplexity, which is why `__eq__` is implemented. As described above, `contained_items` and `all_locations` are implemented in both to support predications that involve containment. The rest of the methods are helpers.
 
-It is very important that these objects implement `__hash__` since that allows them to be in sets and dictionaries which are required by Perplexity. `__repr__` is just a method that makes debugging nicer. Checking if things are equal is also required by Perplexity, which is why `__eq__` is implemented. As described above `contained_items` and `all_locations` are implemented in both to support predications we'll build that involve containment. The rest of the methods are helpers
+[Note that the `File` object also has a simplistic notion of a "linked file" (as in Unix) so that we can show the system answering questions about things that are in more than one place.]
 
 ```
 class File(UniqueObject):
@@ -158,7 +158,7 @@ class Folder(UniqueObject):
 ```
 
 ## FileSystem
-We'll be using a fake `FileSystem` object for the examples so that we can inject the files and folders that we want to test more easily, but the class is built to allow it to be implemented on top of a real file system as well. There are a lot of implementation details in this class that aren't important for understanding how the system works. You can see the full implementation [here](https://github.com/EricZinda/Perplexity/blob/main/file_system_example/objects.py). For our purposes the important parts are the constructor and the implementation of `all_individuals()`:
+We'll be using a fake `FileSystem` object for the examples so that we can inject the files and folders that we want to test, but the class is built to allow it to be implemented on top of a real file system as well. There are a lot of implementation details in this class that aren't important for understanding how the system works -- you can see the full implementation [here](https://github.com/EricZinda/Perplexity/blob/main/file_system_example/objects.py). For our purposes, the important parts are the constructor and the implementation of `all_individuals()`:
 
 ```
 # Allows mocking up a file system for testing
@@ -194,7 +194,7 @@ FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
 It takes a list of tuples that describe files and folders. The first element of the tuple is `True` if the item is a file, `False` if folder. Sizes can be provided for each.  The last argument is the folder that is the "current" directory.
 
 ## Actor
-We will encounter phrases that have an explicit person like "where am I?" as well as an implied person like "delete a file" ("[you] delete a file"). Either case generates predications that need "Actors" to be modelled in the system:
+We will encounter phrases that have an explicit person like "where am I?" as well as an implied person like "delete a file" (i.e. "[you] delete a file"). Either case generates predications that need "actors" to be modelled in the system:
 
 ```
 class Actor(UniqueObject):
@@ -225,19 +225,19 @@ class Actor(UniqueObject):
         return self.file_system.current_directory()
 ```
 
-An `Actor` has a `person` property that indicates what pronoun role it plays: 1 means "first person pronoun" like "I" or "me", 2 means second person pronoun, which is always "the computer" in this system, etc. It also has a `FileSystem` member so it find its "current directory". Finally, it has the `all_locations` method so we can find out where the Actor is.
+An `Actor` has a `person` property that indicates what pronoun role it plays: 1 means "first person pronoun" like "I" or "me", 2 means second person pronoun, which is always "the computer" in this system, etc. It also has a `FileSystem` member so it can find its "current directory". Finally, it has the `all_locations()` method so we can find out where the `Actor` is.
 
 ## FileSystemState
-The last step is to create a new `State` object that uses the the `FileSystem` object that we'll actually in our samples. We need to derive this from the Perplexity `State` object so that it can be used in the system, and we need to implement the `State.all_individuals()` method so that `thing(x)` will work. Note that all individuals returns both actors and file system objects since they are all the objects in the system.
+The last step is to create a new `State` object that uses the `FileSystem` object that we'll actually use in the samples. We need to derive this from the Perplexity `State` object so that it can be used in the system, and we need to implement the `State.all_individuals()` method so that `thing(x)` will work. Note that all individuals returns both actors and file system objects since they are all the objects in the system.
 
 ```
 class FileSystemState(State):
     def __init__(self, file_system):
         super().__init__([])
         self.file_system = file_system
-        self.current_user = file_system_example.objects.Actor(name="User", person=1, file_system=file_system)
+        self.current_user = Actor(name="User", person=1, file_system=file_system)
         self.actors = [self.current_user,
-                       file_system_example.objects.Actor(name="Computer", person=2, file_system=file_system)]
+                       Actor(name="Computer", person=2, file_system=file_system)]
 
     def all_individuals(self):
         yield from self.file_system.all_individuals()
@@ -247,10 +247,10 @@ class FileSystemState(State):
         return self.current_user
 ```
 
-Note that we don't need to do anything special to handle the object being copied because the objects have all been carefully built to support the Python `copy.deepcopy()` method. They also all derive from `UniqueObject` so they can be compared across objects. As we implement actions like copy or delete, we'll need to add methods to do more than this, however.
+The base `State` class will handle doing copies of the object when `set_x` or `add_to_e` are called. We don't need to do anything special to handle the object being copied because the objects have all been carefully built to support the Python `copy.deepcopy()` method. They also all derive from `UniqueObject` so they can be compared across objects. As we implement actions like copy or delete, we'll need to add methods to do more than this.
 
 ## Using FileSystemState
-To use the object, we modify the `reset()` function to return the new `FileSystemState` object instead of the default `State` object, like this:
+To use the object, we modify the `hello_world.py` `reset()` function to return the new `FileSystemState` object instead of the default `State` object, like this:
 
 ```
 ... 
