@@ -69,7 +69,7 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 ```
 
-The helper function gets passed an event variable and looks for the information that `very_x_deg` adds to it. If found, it turns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here's an example of a modified `large_a_1` that now uses it:
+The helper function gets passed an event variable and looks for the information that `very_x_deg` adds to it. If found, it returns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here's an example of a modified `large_a_1` that now uses it:
 
 ```
 def large_a_1(state, e_introduced_binding, x_target_binding):
