@@ -401,7 +401,7 @@ _a_q(x3,RSTR,BODY)
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
-        yield state.set_x(("file1.txt", ))
+        yield state.set_x(x_binding.variable.name, ("file1.txt", ))
     elif x_binding.value[0] == "file1.txt":
         yield state
 </code></pre></div></div>
@@ -418,7 +418,7 @@ _a_q(x3,RSTR,BODY)
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
-        yield state.set_x(("file1.txt",), VariableValueType.set)
+        yield state.set_x(x_binding.variable.name, ("file1.txt",))
     elif x_binding.value[0] == "file1.txt":
         yield state
     else:
@@ -485,13 +485,13 @@ def generate_custom_message(tree_info, error_term):
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
         # Yield all combinations of files in the system
-        yield state.set_x(("file1.txt",))
-        yield state.set_x(("file2.txt",))
-        yield state.set_x(("file3.txt",))
-        yield state.set_x(("file1.txt","file2.txt"))
-        yield state.set_x(("file1.txt","file2.txt"))
-        yield state.set_x(("file2.txt","file3.txt"))
-        yield state.set_x(("file1.txt","file2.txt","file3.txt"))
+        yield state.set_x(x_binding.variable.name, ("file1.txt",))
+        yield state.set_x(x_binding.variable.name, ("file2.txt",))
+        yield state.set_x(x_binding.variable.name, ("file3.txt",))
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt"))
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt"))
+        yield state.set_x(x_binding.variable.name, ("file2.txt","file3.txt"))
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt","file3.txt"))
         
     else:
         for item in x_binding.value:
@@ -506,7 +506,7 @@ def generate_custom_message(tree_info, error_term):
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
         # Yield all combinations of files in the system
-        yield state.set_x(("file1.txt","file2.txt","file3.txt"), combinatorial=True)
+        yield state.set_x(x_binding.variable.name, ("file1.txt","file2.txt","file3.txt"), combinatorial=True)
         
     else:
         for item in x_binding.value:
