@@ -33,7 +33,7 @@ def add_to_e(self, event_name, key, value):
 ```
 `add_to_e()` adds the key/value pair it is given to a dictionary that represents the event state and returns a new `State` object, just like `set_x()` does. But, unlike `set_x()`, it adds to whatever was in the event variable before instead of replacing it. This allows information to get built up in the event.
 
-Now, using the helpers from the previous sections and the new `add_to_e()` method, let's create a `_very_x_deg` predication along with a `_large_a_1` predication that pays attention to modifications to its event.
+Now, using the new `add_to_e()` method, let's create a `_very_x_deg` predication along with a `_large_a_1` predication that pays attention to modifications to its event.
 
 Let's start with `very_x_deg`:
 ```
@@ -72,29 +72,27 @@ def degree_multiplier_from_event(state, e_introduced_binding):
 The helper function gets passed an event variable and looks for the information that `very_x_deg` adds to it. If found, it turns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here's an example of `large_a_1` using it:
 
 ```
-@Predication(vocabulary, names=["_large_a_1"])
 def large_a_1(state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* large we should be
     degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
-    def bound_variable(value):
-        if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+    def criteria_bound(value):
+        if degree_multiplier == 1 and value == "file2.txt":
             return True
 
         else:
             report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
             return False
 
-    def unbound_variable():
-        for item in state.all_individuals():
-            if bound_variable(item):
-                yield item
+    def unbound_values():
+        if criteria_bound("file2.txt"):
+            yield "file2.txt"
 
-    yield from combinatorial_style_predication_1(state, x_target_binding, bound_variable, unbound_variable)
+    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
 ```
-`large_a_1` uses the same `combinatorial_style_predication_1()` helper that "file" did from a previous section. It tests if something is large by seeing if it has a `size` property and, if so, seeing if the `size` is 1,000,000 multiplied by however many "very's" the user said. Obviously, this only makes sense if we are talking about files, the implementation of `large_a_1`, like every predication, is application specific.
+We have modified the `large_a_1` implementation from the first section to now pay attention to "very". For the example, we assume the file is just large, not very large.
 
-Note that if `large_a_1` is called with an unbound variable, it looks through every object in the system and only returns the ones that are "large" (or "very large") by calling the same function used to check bound variables.
+Note that if `large_a_1` is called with an unbound variable, it calls the same `criteria_bound()` function so it will only say that "file2.txt" is large, not vary large as well.
 
 ## Declaring Use of Event Information
 There is a problem, however. This doesn't work yet. If the user says "a file is very large" the system will respond with:
@@ -118,7 +116,29 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
 
 The `handles=[]` clause lists out all of the keys that the predication knows how to process in its introduced event. In this case, we have also added `EventOption.optional` to say that large doesn't *require* "very", but understands it if it exists. Now it will properly process the phrase.
 
+# Example
+Adding these to `hello_world.py` allows us to have this interaction:
+
+```
+python ./hello_world.py
+? what file is large?
+('file2.txt',)
+
+? what file is very large?
+a file is not large
+
+? a file is very large
+a file is not large
+
+? a file is large
+Yes, that is true.
+```
+
+Note that the system doesn't know how to add the word "very" to the error, so we get the error "a file is not large". We'll fix that in a future topic.
+
+Now we are ready to tackle action verbs in the [next topic](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo70ActionVerbs).
+
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-05-13 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo50EventPredications.md)]{% endraw %}
+Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo50EventPredications.md)]{% endraw %}
