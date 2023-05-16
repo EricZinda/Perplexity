@@ -22,12 +22,12 @@ class State(object):
     ...
 ~~~
 
-The only reason it even has this basic implementation is because the system implementation of `thing(x)` needs to return all "things in the world" if it is called with an unbound `x`. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern that `set_x()` and `add_to_e()` followed and return a copy with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](../devcon/devcon0010MRSSolver) work.
+The only reason it even has this basic implementation is because the system implementation of `thing(x)` needs to return all "things in the world" if it is called with an unbound `x`. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern used by `set_x()` and `add_to_e()` and return a copy with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](../devcon/devcon0010MRSSolver) work.
 
-So, we'll need to add a notion of files and folders to `State`, and provide some ways to query the system about them. We'll do that next.
+So, we'll need to add a notion of files and folders to `State`, and provide some ways to query the system about them. 
 
 ## Identity
-Because the system is built around immutable state, we will sometimes end up with two state objects and need to be able to find the same object in either one. We need a way to compare objects *across* state object. The easiest way to do this is to give all the objects in the system a globally unique id that can be easily compared. We'll create a base class, `UniqueObject` that does this and derive everything from it:
+Because the system is built around immutable state, we will sometimes end up with two `State` objects and need to be able to find the same object contained in either one. We need a way to compare objects *across* state object. The easiest way to do this is to give all the objects in the system a globally unique id that can be easily compared. We'll create a base class, `UniqueObject` that does this and derive everything from it:
 
 ~~~
 class UniqueObject(object):
@@ -229,7 +229,7 @@ class Actor(UniqueObject):
 An `Actor` has a `person` property that indicates what pronoun role it plays: 1 means "first person pronoun" like "I" or "me", 2 means second person pronoun, which is always "the computer" in this system, etc. It also has a `FileSystem` member so it can find its "current directory". Finally, it has the `all_locations()` method so we can find out where the `Actor` is.
 
 ## FileSystemState
-The last step is to create a new `State` object that uses the `FileSystem` object that we'll actually use in the samples. We need to derive this from the Perplexity `State` object so that it can be used in the system, and we need to implement the `State.all_individuals()` method so that `thing(x)` will work. Note that all individuals returns both actors and file system objects since they are all the objects in the system.
+The last step is to create a new `State` object that uses the `FileSystem` object that we'll actually use in the samples. We need to derive this from the Perplexity `State` object so that it can be used in the system, and we need to implement the `State.all_individuals()` method so that `thing(x)` will work. Note that all individuals needs to return both actors and file system objects since they are all the objects in the system.
 
 ~~~
 class FileSystemState(State):
@@ -281,7 +281,7 @@ if __name__ == '__main__':
     hello_world()
 ~~~
 
-That, and modifying the predications to start using the new state, is all that is needed.
+That change will ensure that our `FileSystemState` object is used by the solver in every call to one of our predications.That, and modifying the predications to start using the new state, is all that is needed.
 
 # Example
 Only the `_file_n_of`, `_folder_n_of`, `_large_a_1`, `delete_v_1_comm` and `pron` predications need to be updated to use the new objects.  The `DeleteOperation` class needs to be updated as well. These are all relatively minor changes, and the final functions are listed below:

@@ -34,7 +34,7 @@ pronoun_q(x3,RSTR,BODY)             ┌────── place_n(x4)
 ~~~
 
 ### `place_n(x)`
-As with "Where am I?", a predication that often appears with `loc_nonsp` is `place_n` when the location being referred to is inferred by the system to be a place.
+As in "Where am I?", a predication that often appears with `loc_nonsp` is `place_n` when the location being referred to is inferred by the system to be a place.
 
 What are the "places" in a file system? They are all the objects where something else can be located, some obvious ones:
 - `file`: text can be located in a file, "where is the text 'summary of costs'?"
@@ -160,7 +160,7 @@ you is not in place
 (Folder(name=/, size=0),)
 ~~~
 
-Both "where am I?" and "where is a file?" give an answer and then say, "(there are more)". That is because the user asked for "a place" (singular) but most things will "be located" in more than one place. For example, the user is in both "/documents" and "/" (the root directory). As described in the [Combination Algorithm and Proper Responses topic](../devcon/devcon0050MRSSolverSolutionCombinations), we let the user know if they there are more than one thing if they ask for a singular answer, just to clarify.
+Both "where am I?" and "where is a file?" give an answer and then say, "(there are more)". That is because the user asked for "a place" (singular) but most things will "be located" in more than one place. For example, the user is in both "/documents" and "/" (the root directory). As described in the [Combination Algorithm and Proper Responses topic](../devcon/devcon0050MRSSolverSolutionCombinations), we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.
 
 Also note that "you" refers to "the computer" and we haven't put it anywhere, that's why the system responds with "you is not in place". Again, we'll fix the English on error messages soon.
 
