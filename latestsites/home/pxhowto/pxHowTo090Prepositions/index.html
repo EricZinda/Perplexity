@@ -369,7 +369,7 @@ _a_q(x9,RSTR,BODY)               ┌────── pron(x3)
 <p>It introduces two additional predications we’ll need to implement to make this work: <code class="language-plaintext highlighter-rouge">_to_p_dir</code> and <code class="language-plaintext highlighter-rouge">_go_v_1</code>.</p>
 
 <h3 id="_to_p_dir"><code class="language-plaintext highlighter-rouge">_to_p_dir</code></h3>
-<p><code class="language-plaintext highlighter-rouge">_to_p_dir</code> is a <em>directional</em> preposition.  Directional prepositions <em>usually</em> end with <code class="language-plaintext highlighter-rouge">_dir</code> and have the signature (<code class="language-plaintext highlighter-rouge">e</code>, <code class="language-plaintext highlighter-rouge">e_verb</code>, <code class="language-plaintext highlighter-rouge">x_location</code>).  <code class="language-plaintext highlighter-rouge">x_location</code> indicates the location the preposition is using, and <code class="language-plaintext highlighter-rouge">e_verb</code> indicates the event (often a verb) that this preposition should be attached to. They specify a particular direction in which to do something.  The fact that the predication takes an event as its second argument is a hint that the predication itself doesn’t <em>do</em> anything except attach its information to the specified event so that something else can use it. Taking an event as an argument besides <code class="language-plaintext highlighter-rouge">ARG0</code> usually indicates the predication is modifying the event. So, it can be implemented like this:</p>
+<p><code class="language-plaintext highlighter-rouge">_to_p_dir</code> is a <em>directional</em> preposition.  Directional prepositions <em>usually</em> end with <code class="language-plaintext highlighter-rouge">_dir</code> and have the signature (<code class="language-plaintext highlighter-rouge">e</code>, <code class="language-plaintext highlighter-rouge">e_verb</code>, <code class="language-plaintext highlighter-rouge">x_location</code>).  <code class="language-plaintext highlighter-rouge">x_location</code> indicates the location the preposition is specifying, and <code class="language-plaintext highlighter-rouge">e_verb</code> indicates the event (often a verb) that this preposition should be attached to. They specify a particular direction in which to do something.  The fact that the predication takes an event as its second argument is a hint that the predication itself doesn’t <em>do</em> anything except attach its information to the specified event so that something else can use it. Taking an event as an argument besides <code class="language-plaintext highlighter-rouge">ARG0</code> usually indicates the predication is modifying the event. So, it can be implemented like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_to_p_dir"])
 def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
@@ -388,7 +388,9 @@ def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
 <h3 id="_go_v_1"><code class="language-plaintext highlighter-rouge">_go_v_1</code></h3>
 <p>Next, we need to implement <code class="language-plaintext highlighter-rouge">_go_v_1</code>, indicating that it <em>does</em> know how to handle that information, like this:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, 
+             names=["_go_v_1"], 
+             handles=[("DirectionalPreposition", EventOption.required)])
 def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
     if x_actor_binding.value is None or len(x_actor_binding.value) &gt; 1 or x_actor_binding.value[0].name != "Computer":
         report_error(["dontKnowActor", x_actor_binding.variable.name])
@@ -421,7 +423,7 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
         yield new_state.apply_operations([ChangeDirectoryOperation(new_state.get_binding(x_location_binding.variable.name))])
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">handles=[]</code> clause on <code class="language-plaintext highlighter-rouge">Predication</code> tells the system that this predication <em>requires</em> a directional predication and the system ensures that it won’t get called if it isn’t there. That is why the code can just assume it is there and access the <code class="language-plaintext highlighter-rouge">EndLocation</code> key without checking for its existence first in this line:</p>
+<p>The <code class="language-plaintext highlighter-rouge">handles=[... EventOption.required ...]</code> clause on <code class="language-plaintext highlighter-rouge">Predication</code> tells the system that this predication <em>requires</em> a directional predication and the system ensures that it won’t get called if it isn’t there. That is why the code can just assume it is there and access the <code class="language-plaintext highlighter-rouge">EndLocation</code> key without checking for its existence first in this line:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
 </code></pre></div></div>
@@ -473,6 +475,8 @@ Done!
 (Folder(name=/documents, size=0),)
 (there are more)
 </code></pre></div></div>
+
+<p>The system says “(there are more)” in response to “where am i” because the user is in both “/Desktop” and “/”. The reasons are described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Combinations and Proper Responses topic</a>. The same is true for “go to a folder” … there are several folders.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
