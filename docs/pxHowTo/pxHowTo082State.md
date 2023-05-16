@@ -35,38 +35,35 @@ class UniqueObject(object):
         self.unique_id = uuid.uuid4()
 ~~~
 
-## Containment
-One of the main concepts in a file system is "containment" - folders contain files, files contain text, etc. We'll want to model this in a general way so that words like "in" or "contains" can work across objects. We'll do this by creating a `Container` base class that derives from the `UniqueObject` base class:
+## Containment and Location
+One of the main concepts in a file system is "containment" - folders contain files, files contain text, etc. We'll want to model this in a general way so that words like "in" or "contains" can work across objects. We'll do this by having two methods that objects can implement:
 
 ~~~
-class Container(UniqueObject):
-    def __init__(self):
-        super().__init__()
+# Implement by yielding all objects that this object contains
+def contained_items(self, variable_data):
+    ...
 
-    def contained_items(self):
-        if False:
-            yield None
+# Implement by yielding all the places that this object "is" 
+def all_locations(self, variable_data):
+    ...
 ~~~
 
-Note that `contained_items()` has to include an `if` statement that will never work to force Python to make it act like a generator, even though it is never going to return anything by default. This is just a quirk of Python.
 
 ## Files and Folders
+Because users may talk about files or folders that don't exist yet, or that may need to be created, we need the `File` and `Folder` object to be able to represent files and folders that don't actually exist. So, these objects will have a small amount of information in them and call to a `FileSystem` object for the rest. We'll implement that object next. 
+
+Note that the `File` object has a simplistic notion of a "linked file" (as in Unix) so that we can show the system answering questions about things that are in more than one place.
+
+It is very important that these objects implement `__hash__` since that allows them to be in sets and dictionaries which are required by Perplexity. `__repr__` is just a method that makes debugging nicer. Checking if things are equal is also required by Perplexity, which is why `__eq__` is implemented.
 
 ~~~
-class File(Container):
+class File(UniqueObject):
     def __init__(self, name, size=None, file_system=None, link=None):
         super().__init__()
         self.name = name
         self.size = size
         self.file_system = file_system
         self.link = link
-
-        # If we assume link objects always have the same name, then if we only hash the name
-        # link objects will have the same hash, but so will anything else with that name (which is OK)
-        # Any other files in the system with the same name (including raw file specifiers) will
-        # hash to the same value too.
-        # This means that there could be collisions if there are lots of files with the same name
-        # but it is unclear how else to do this
         self._hash = hash(self.file_name())
 
     def __repr__(self):
@@ -104,9 +101,6 @@ class File(Container):
 
     def contained_items(self, variable_data):
         yield from self.file_system.contained_items(self, variable_data)
-
-    def containers(self, variable_data):
-        yield from self.all_locations(variable_data)
 
     def exists(self):
         return self.file_system.exists(self.name, is_file=True)

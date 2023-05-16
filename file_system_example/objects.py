@@ -71,9 +71,6 @@ class Folder(UniqueObject):
     def can_interpret_as(self, value):
         return pathlib.PurePath(self.name).match(value)
 
-    def containers(self, variable_data):
-        yield from self.all_locations(variable_data)
-
     def exists(self):
         return self.file_system.exists(self.name, is_file=False)
 
@@ -130,9 +127,6 @@ class File(UniqueObject):
     def contained_items(self, variable_data):
         yield from self.file_system.contained_items(self, variable_data)
 
-    def containers(self, variable_data):
-        yield from self.all_locations(variable_data)
-
     def exists(self):
         return self.file_system.exists(self.name, is_file=True)
 
@@ -177,9 +171,6 @@ class Actor(UniqueObject):
             # Return the locations for the user "me"
             yield self.current_directory()
             yield from self.current_directory().all_locations(variable_data)
-
-    def containers(self, variable_data):
-        yield from self.all_locations(variable_data)
 
     def current_directory(self):
         return self.file_system.current_directory()
