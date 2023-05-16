@@ -1,5 +1,5 @@
 ## Predications with Event Variables
-So far, we have been conveniently ignoring event variables (variables that start with "e"). Where instance (`x`) variables contain a single set for any solution, event (`e`) variables are designed to build up a structure. They allow words like "very" and "slowly" to modify other words. 
+So far, we have been conveniently ignoring event variables (variables that start with "e"). Where instance (`x`) variables contain a single set, event (`e`) variables are designed to build up a structure. They allow words like "very" and "slowly" to modify other words. 
 
 For example, we've been talking about a `_large_a_1(e2,x3), _file_n_of(x3)` and have ignored what the event variable `e2` is for. We can't do this if we are trying to find a `_very_x_deg(e2, e1), _large_a_1(e1,x3), _file_n_of(x3)`.
 
@@ -7,7 +7,7 @@ In an MRS, any predication except a quantifier is said to "introduce" its first 
 
 For example, to represent something that is "very large", the word "very" needs to be able to attach its "veryness" to "large". For "very very large", a chain is needed where the first "very" modifies the second, which modifies "large". This is all done with events, and it happens like this because human languages allow all kinds of recursive constructions. DELPH-IN needed a way to model the behavior.
 
-Here are the predications generated for: "very large" and "very very large". The comma (",") is being used to indicate a conjunction (i.e. "and"):
+Here are the predications generated for: "very large" and "very very large". A comma (",") is being used to indicate a conjunction (i.e. "and"):
 
 ~~~
 # Very large
@@ -17,13 +17,13 @@ _very_x_deg(e2, e1), _large_a_1(e1,x3)
 _very_x_deg(e3, e2), _very_x_deg(e2, e1), _large_a_1(e1,x3)
 ~~~
 
-You can see that in "very large", `_very_x_deg` takes the event variable *introduced by* `_large_a_1` as an argument. The job of `_very_x_deg` is to put something in the event that `_large_a_1` can look for so that its behavior can be modified to be "very large". 
+You can see that in "very large", `_very_x_deg` takes the event variable *introduced by* `_large_a_1` as an argument. The job of `_very_x_deg` is to put something in that event that `_large_a_1` can look for so that its behavior can be modified to be "very large". 
 
 `_very_x_deg` also introduces *its own* event variable that other predications can modify as in "very very large". The first "very" modifies the event variable introduced by the second "very", etc.
 
 This means, first, that we need a mechanism for handling event variables and, second, that our implementation of `_large_a_1` needs to be modified to pay attention to modifications to its event.
 
-Since event variables need to be able to capture what could be a large buildup of modifications in a given sentence, we'll internally use a dictionary for them. The `State` object passed to every predication has an `add_to_e()` method to allow predications to build up information on event variables.  `x` variables have a value that is a single set, while `e` variables are a dictionary that builds up over time. So, `add_to_e()` has arguments that indicate what information to add to the event. However, just like `set_x()`,  `add_to_e()` returns a new `state` that must be yielded to indicate success. The `State` object is still immutable.
+Since event variables need to be able to capture what could be a large buildup of modifications in a given sentence, Perplexity internally uses a dictionary for them. The `State` object passed to every predication has an `add_to_e()` method to allow predications to build up information on event variables.  `x` variables have a value that is a single set, while `e` variables are a dictionary that builds up over time. So, `add_to_e()` has arguments that indicate what information to add to the event. However, just like `set_x()`,  `add_to_e()` returns a new `state` that must be yielded to indicate success. The `State` object is still immutable.
 
 The `add_to_e()` method looks like this:
 
@@ -31,7 +31,7 @@ The `add_to_e()` method looks like this:
 def add_to_e(self, event_name, key, value):
     ...
 ~~~
-`add_to_e()` adds the key/value pair it is given to a dictionary that represents the event state and returns a new `State` object, just like `set_x()` does. But, unlike `set_x()`, it adds to whatever was in the event variable before instead of replacing it. This allows information to get built up in the event.
+`add_to_e()` adds the key/value pair it is given to a dictionary that represents the event state and returns a new `State` object, just like `set_x()` does. But, unlike `set_x()`, it *adds* to whatever was in the event variable before instead of replacing it. This allows information to get built up in the event.
 
 Now, using the new `add_to_e()` method, let's create a `_very_x_deg` predication along with a `_large_a_1` predication that pays attention to modifications to its event.
 
@@ -45,13 +45,13 @@ def very_x_deg(state, e_introduced_binding, e_target_binding):
                          {"Value": 10, 
                           "Originator": execution_context().current_predication_index()})
 ~~~
-`very_x_deg()` doesn't have any `x` variables, so we don't have to worry about if they are bound or unbound. Event variables always exist. Predications like this simply have to add information to the `e` variable they are modifying. Recall that the first argument (in this case, `e_introduced_binding`) represents *this* predication, so the variable being modified is the second one: `e_target_binding`.
+`very_x_deg()` doesn't have any `x` variables, so we don't have to consider if they are bound or unbound. Event variables *always* exist. Predications like this simply have to add information to the `e` variable they are modifying. Recall that the first argument (in this case, `e_introduced_binding`) represents *this* predication, so the variable being modified is the second one: `e_target_binding`.
 
-It really doesn't matter *what* the predication adds to `e_target_binding` as long as the predications that consume it know what to look for. It is application specific. However, the system will look for the `Originator: execution_context().current_predication_index()` field and use it to produce nice errors if it exists. 
+It really doesn't matter *what* the predication adds to `e_target_binding` as long as the predications that consume it know what to look for. It is application specific. However, the system will look for the `Originator: <index>` field and use it to produce nice errors if it exists. 
 
-So, we've chosen to use the key `"DegreeMultiplier"` in the event as a name for the information provided by `very_x_deg`, and added a dictionary value for it that indicates to what degree something should be increased using `"Value": 10`.
+So, we've chosen to use the key `"DegreeMultiplier"` in the event dictionary as the name of the information provided by `very_x_deg`, and added a value for it (that is also a dictionary) that indicates to what degree something should be increased: `"Value": 10`.
 
-We can now build a helper that knows about the names we've chosen so that any predication that understands "very" can use it:
+We can now build a helper that knows about the names we've chosen so that any predication that understands "very" can call it:
 
 ~~~
 # This is a helper function that any predication that can
@@ -69,7 +69,7 @@ def degree_multiplier_from_event(state, e_introduced_binding):
     return degree_multiplier
 ~~~
 
-The helper function gets passed an event variable and looks for the information that `very_x_deg` adds to it. If found, it turns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here's an example of `large_a_1` using it:
+The helper function gets passed an event variable and looks for the information that `very_x_deg` adds to it. If found, it turns it. Otherwise, it just returns 1. Now, any predication can multiply numbers by this value.  Here's an example of a modified `large_a_1` that now uses it:
 
 ~~~
 def large_a_1(state, e_introduced_binding, x_target_binding):
@@ -90,9 +90,9 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
 
     yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
 ~~~
-We have modified the `large_a_1` implementation from the first section to now pay attention to "very". For the example, we assume the file is just large, not very large.
+We have modified the `large_a_1` implementation from the first section to now pay attention to "very". For the example, we assume that "file2.txt" is just large, not very large.
 
-Note that if `large_a_1` is called with an unbound variable, it calls the same `criteria_bound()` function so it will only say that "file2.txt" is large, not vary large as well.
+Note that if `large_a_1` is called with an unbound variable, it calls the same `criteria_bound()` function so it will only say that "file2.txt" is large, not very large.
 
 ## Declaring Use of Event Information
 There is a problem, however. This doesn't work yet. If the user says "a file is very large" the system will respond with:
@@ -101,9 +101,9 @@ There is a problem, however. This doesn't work yet. If the user says "a file is 
 I don't understand the way you are using 'very' with 'large'
 ~~~
 
-This is because Perplexity is designed to make sure it understands *every* word in a sentence so that users gain confidence that they truly are understood and that the system isn't just doing "keyword picking". One way it does this is by ensuring that any information added to an event is actually consumed by another predication in the phrase. If not, it replies with that error.
+This is because Perplexity is designed to make sure it understands *every* word in a sentence so that users gain confidence that they are truly understood and that the system isn't just doing "keyword picking". One way it does this is by ensuring that any information added to an event is actually consumed by another predication in the phrase. If not, it replies with that error.
 
-Since we have implemented "very" with "large", the fix is simple: we just need to add information to the `@Predication` declaration, like this:
+Since we have implemented "very" with "large", the fix is simple: we just need to add information to the `@Predication()` declaration, like this:
 
 ~~~
 @Predication(vocabulary, 

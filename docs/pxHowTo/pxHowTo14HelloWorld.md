@@ -40,7 +40,7 @@ To run this:
 2. Create a `hello_world.py` file in that directory with the code above
 3. From within the `hello_world` directory, run: `python ./hello_world.py`
 
-[Note: As always, you will need to have your environment activated as described in the [Installation](pxHowTo12Install) section to successfully run]
+[Note: As always, you will need to have your environment activated as described in the [Installing Perplexity topic](pxHowTo12Install) to successfully run]
 
 You'll get something like this:
 
@@ -53,4 +53,4 @@ I don't know the words: unknown, greet, discourse
 I don't know the words: loc_nonsp, place, which, pron, pronoun
 ~~~
 
-So far, it has no vocabulary so it will just keep saying, "I don't know the words..." until we implement some. That's what [the remainder of the tutorial](pxHowTo20ImplementAPredication) is about.
+So far, it has no vocabulary so it will just keep saying, "I don't know the words..." to any phrases typed until we implement some. That's what [the remainder of the tutorial](pxHowTo20ImplementAPredication) is about.

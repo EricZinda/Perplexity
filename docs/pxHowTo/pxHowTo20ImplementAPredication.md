@@ -21,13 +21,13 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 ~~~
 
-In summary: The solver maps each predication in the tree to a Python function and calls it. A `State` object is used to track the current value of all MRS variables (such as `x3`) as the solver goes through this process. `State` always has the current value of all MRS variables *and* the state of the software that the natural language interface is being built for. Each program that uses Perplexity derives an object from `State` to allow predications to interact with the program.
+In summary: The backtracking solver maps each predication in the tree to a Python function and calls it. A `State` object is used to track the current value of all MRS variables (such as `x3`) as the solver goes through this process. `State` always has the current value of all MRS variables *and* the state of the software that the natural language interface is being built for. Each program that uses Perplexity derives an object from `State` to allow predications to interact with the program.
 
 The rest of this section describes how to write these predication functions and how to interact with the `state` object.
 
 
 ### Predication Function Arguments
-The ERG predication for "file" from the above example is:
+Perplexity comes preinstalled and configured to use the DELPH-IN English grammar called the ["English Resource Grammar"](https://https://delph-in.github.io/docs/erg/ErgTop/) or "ERG.  The ERG predication generated for "file" in the above MRS is:
 ~~~
 _file_n_of(x3,i8)
 ~~~
@@ -42,18 +42,18 @@ def file_n_of(state, x_binding, i_binding):
 
 `state` is the `State` object described above that represents the state of the world when the predication is called. It holds, among other things, the current value of all the MRS variables at this point in the solver backtracking process.  Because of backtracking, the same predication can be called many times with different states as the solver attempts to find a solution to the MRS. 
 
-`x_binding` and `i_binding` hold all the information about the MRS variables that `_file_n_of` uses. These `VariableBinding` objects have properties like `.name` that will return the name ('x3' and 'i8') of the MRS variable the binding represents, as well as their current value from the `state` object. 
+`x_binding` and `i_binding` hold all the information about the MRS variables that `_file_n_of` uses. These `VariableBinding` objects have properties like `.name` that will return the name ("x3" or "i8" in this example) of the MRS variable the binding represents, as well as their current value from the `state` object. 
 
-If you know the name of the variable (like 'x3') you can retrieve its value directly from the `state` object. So, the engine could have just called the predication with the state object and variable *names* like this:
+If you know the name of the variable (like "x3") you can retrieve its value directly from the `state` object. So, the engine could have just called the predication with the state object and variable *names* like this:
 
 ~~~
-file_n_of(state, 'x3', 'i8')
+file_n_of(state, "x3", "i8")
 ~~~
 
 ... and forced developers to look them up manually like this:
 
 ~~~
-x_binding = state.get_binding('x3')
+x_binding = state.get_binding("x3")
 ~~~
 
 ... but passing the bindings, pre-loaded, as arguments is more convenient.
@@ -71,7 +71,7 @@ def file_n_of(state, x_binding, i_binding):
 ~~~
 Note that `i_binding` is ignored since `i` variables usually indicate an ignored (or 'dropped') argument as described in the section on [MRS](../mrscon/devhowto0010MRS#other-variables-types-i-u-p).
 
-The code illustrates that bindings have a `binding.value` property that returns the current variable's value, which is always a list for reasons described in the [conceptual topic on "Together"](../devcon/devcon0020MRSSolverSets) . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. If so, it `yields` the state object  to indicate that this predication is `true` for the current state of its variables. Nothing changed in the `state` object so it can just be yielded, as is. 
+The code illustrates that bindings have a `binding.value` property that returns the current variable's value, which is always a list for reasons described in the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. If so, it `yields` the state object  to indicate that this predication is `true` for the current state of its variables. Nothing changed in the `state` object so it can just be yielded, as is. 
 
 Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of *all* `file_n` objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables "unbound", which means: `binding.value is None`.  This indicates to the function that it should `yield` all the things in the world that are a `file`, like this:
 
@@ -84,14 +84,14 @@ def file_n_of(state, x_binding, i_binding):
 ~~~
 [Note that sets are represented as a Python tuple, and Python tuples require single element tuples to have a trailing ",", so returning a single item tuple is done like this: `("file1.txt, )`]
 
-`x_binding.value1` being `None` means that the MRS variable `x3` is unbound (not set to anything), and when a variable is unbound the predication needs to yield all the the variable assignments that *could* make it true -- which in this case is just one. It does this by setting the variable in the state object and yielding it.
+`x_binding.value` being `None` means that the MRS variable `x3` is unbound (not set to anything). When a variable is unbound, the predication needs to yield all the the variable assignments that *could* make it true -- which in this case is just one. It does this by setting the variable in the state object and yielding it.
 
-Note that the `state` object is *immutable*, meaning that it cannot be changed directly.  Instead, when methods like `state.set_x()` are called, the method returns a *copy* of the object with only the change the method accomplished. That is why the function yields like this: `yield state.set_x(...)` -- it needs to yield the *copy* with the changes in it.
+Note that the `state` object is *immutable*, meaning that it cannot be changed directly.  Instead, when methods like `state.set_x()` are called, the method returns a *copy* of the object with only the change the method accomplished. That's why the function yields like this: `yield state.set_x(...)` -- it needs to yield the *copy* with changes in it.
 
 Since our world only has one file in it, we've just hard-coded it here, but obviously the code could be more complicated in a real example.
 
 ## Predication Failure
-If the predication is called with variable values that make it `false`, it simply returns without yielding. However, it needs to register an error first so that it can be reported to the user. Reporting errors is done by calling `report_error()` and passing it a list that describes the error and any information needed to build a message for the user, like this:
+If the predication is called with variable values that make it `false`, it simply returns without yielding. However, it needs to register an error first so that it can be reported to the user. Reporting errors is done by calling `report_error()` and passing it a list that names the error and includes any other information needed to build a message for the user, like this:
 
 ~~~
 def file_n_of(state, x_binding, i_binding):
@@ -104,7 +104,7 @@ def file_n_of(state, x_binding, i_binding):
         return False
 ~~~
 
-Errors are reported as a list and here we've created a custom error to show how it is done. To create a custom error, we pick a string to represent it like `"notAThing"`, and include all the information we'll need later to generate a nice text string for the user. In this case, we provide `x_binding.value` as its first argument, which will be some non-file object like `"folder1"`. The second argument is `x_binding.variable.name`, which is the name of the variable: `x3`. Perplexity has functions that can convert variable names like `x3` to their actual words like "a folder". So, passing the variable name is a way of not having to hard code the name of the predictation and allowing the system to generate richer errors. This is described more in the [Converting Variables to English](../pxint/pxint0120ErrorsConceptualFailures) topic, and the mechanics of it is shown next.
+Errors are reported as a list and here we've created a custom `notAThing` error to show how it is done. To create a custom error, we pick a string to represent it like `"notAThing"`, and include all the information we'll need later to generate a nice text string for the user. In this case, we provide `x_binding.value` as its first argument, which will be some non-file object like `"folder1"`. The second argument is `x_binding.variable.name`, which is the name of the variable: `x3`. Perplexity has functions that can convert variable names like `x3` to their actual words like "a file". So, passing the variable name is a way of not hard-coding the predication name and allowing the system to generate richer errors. This is described more in the [Converting Variables to English](../pxint/pxint0120ErrorsConceptualFailures) topic, and the mechanics of it is shown next.
 
 ## Converting Errors to Messages
 If the error returned is a system error, the system will convert it to a message for the user.  If not, we need to create a function that converts the custom error information to messages and pass that function to the `UserInterface` object, like this:
@@ -159,7 +159,7 @@ The logic the system uses for reporting errors is not obvious, it is worth readi
 
 
 ## Combinatorial Variables
-Recall from [the section on "Together"](../devcon/devcon0020MRSSolverSets) that Perplexity represents items operating together as a set (represented as a `tuple` in Python). Because users of the system may ask questions like, "Are the files 20 mb?" (meaning are they 20mb *together*), predications need to be prepared to deal with variables that have a set of more than one item. Let's update the `file_n_of()` function to handle this case.
+Recall from the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) that Perplexity represents items operating together as a set (represented as a `tuple` in Python). Because users of the system may ask questions like, "Are the files 20 mb?" (meaning are they 20mb *together*), predications need to be prepared to deal with variables that have a set of more than one item. Let's update the `file_n_of()` function to handle this case.
 
 Assume we have two more files in our example, so that now we have: `file1.txt`, `file2.txt` and `file3.txt`. A group of files "together" is still a group of files, so we really only have to change the logic to loop through the list and make sure they are all files. However, if the `x` variable is unbound, we need to yield *all combinations* of files since any combination of them could make this predication `true`, like this:
 
@@ -177,19 +177,19 @@ def file_n_of(state, x_binding, i_binding):
         
     else:
         for item in x_binding.value:
-            if item not in ["file1.txt", "file2.txt" and "file3.txt"]
+            if item not in ["file1.txt", "file2.txt", "file3.txt"]
                 report_error(["notAThing", x_binding.value, x_binding.variable.name])
                 return False
         yield state
 ~~~
 
-Iteratively returning all combinations of a set runs a lot of code. We can optimize this by allowing predications to say, "all combinations of this set are true for me". Perplexity calls this a "combinatorial set". It is done by passing a boolean value to `set_x()`, like this:
+Iteratively returning all combinations of a set runs a lot of code. We can optimize this by allowing predications to say, "all combinations of this set are `true` for me". Perplexity calls this a "combinatorial set". It is done by passing a boolean value to `set_x()`, like this:
 
 ~~~
 def file_n_of(state, x_binding, i_binding):
     if x_binding.value is None:
         # Yield all combinations of files in the system
-        yield state.set_x(("file1.txt","file2.txt","file3.txt"), combinatorial=True
+        yield state.set_x(("file1.txt","file2.txt","file3.txt"), combinatorial=True)
         
     else:
         for item in x_binding.value:
@@ -217,16 +217,19 @@ def file_n_of(state, x_binding, i_binding):
         yield "file2.txt"
         yield "file3.txt"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_style_predication_1(state, 
+                                                 x_binding, 
+                                                 bound_variable, 
+                                                 unbound_variable)
 ~~~
-The `bound_variable()` function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the list and calling the function to see if each element in it is a file. It properly checks to see if the set is combinatorial and does the right thing.
+The `bound_variable()` function only needs to implement the logic to check if a single value is a file and report an error if not. The helper does the work of iterating through the set and calling the function to see if each element is a file. It also properly checks to see if the set is combinatorial and does the right thing.
 
 The `unbound_variable()` function only needs to yield each item that is a file and the system handles yielding all the combinations, including setting the variable to be a combinatorial set.
 
 Note that there are several optimizations the system does to avoid having to do the most brute force approach shown above, and the helper handles them all automatically.
 
 ## Adding Predications to the Vocabulary
-The final step in creating a predication is to register the function as part of the vocabulary and indicate which DELPH-IN predication it maps to. This is done using Python ["decorators"](../pxint/pxint03000PythonDecorators) which are really just special functions you can use to label other functions. They are preceeded by `@`, like this:
+The final step in creating a predication is to register the function as part of the vocabulary and indicate which ERG predication it maps to. This is done using Python ["decorators"](../pxint/pxint03000PythonDecorators) which are really just special functions you can use to label other functions. They are preceeded by `@`, like this:
 ~~~
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
@@ -242,19 +245,22 @@ def file_n_of(state, x_binding, i_binding):
         yield "file2.txt"
         yield "file3.txt"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_style_predication_1(state, 
+                                                 x_binding, 
+                                                 bound_variable, 
+                                                 unbound_variable)
 ~~~
 
-The first argument to `@Predication` is the `Vocabulary` object that the program wants to register it in, and `names=[]` provides a list of all the predication names (in case some are synonyms) that should use this function.
+The first argument to `@Predication` is the `Vocabulary` object that the program wants to register the predication in, and `names=[]` provides a list of all the predication names (in case some are synonyms) that should use this function.
 
-Note that Perplexity requires that the function have the right number of arguments for the predications it lists in `names=[]`, and that the names of the function arguments start with the type (like `x-` or `i-`) and that those also match the predications listed.
+Note that Perplexity requires that the function have the right number of arguments for the predications listed in `names=[]`, that the names of the function arguments start with the arguments type (like `x-` or `i-`) and that those types match the types of all predications listed.
 
-With that, the system can now recognize that the function exists and know which DELPH-IN predication(s) to map it to.
+With that, the system can now recognize that the function exists and know which ERG predication(s) to map it to.
 
 ## Implementing "large"
 Let's finish by implementing the predication for "large" (`_large_a_1(e2, x3)` from the MRS above) so we can see the system process "a file is large".
 
-Just like `file_n_of`, `_large_a_1(e2, x3)` has a single `x` variable, so we can copy the approach above to implement it. For now, we can just ignore the event variable `e2`, we'll describe how to handle that in the section on [`Event Predications`](pxHowTo50EventPredications) later.
+Just like `file_n_of`, `_large_a_1(e2, x3)` has a single `x` variable, so we can copy the approach above to implement it. For now, we can just ignore the event variable `e2`, we'll describe how to handle that in the [Event Predications topic](pxHowTo50EventPredications) later.
 
 We'll implement large by making it be `true` only for "file2.txt" to simulate that being the only "large thing" in the system:
 ~~~
@@ -272,7 +278,10 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
         # Find all large things
         yield "file2.txt"
 
-    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+    yield from combinatorial_style_predication_1(state, 
+                                                 x_target_binding, 
+                                                 criteria_bound, 
+                                                 unbound_values)
 ~~~
 
 Once the implementation of `large_a_1` and `file_n_of` are added to `hello_world.py`, we can now run `hello_world.py` and get this:
@@ -288,7 +297,7 @@ Yes, that is true.
 ? 
 ~~~
 
-Note that the system has built in logic for handling propositions like "a file is large" and for answering questions like "which file is large?" automatically. By implementing the two predications we can already start processing a few phrase.
+Note that the system has built in logic for handling propositions like "a file is large" and for answering questions like "which file is large?" automatically. By implementing the two predications we can already start processing a few phrases.
 
 To make this work, there are two words in there that the system implements automatically: "which" and "a".  You can see this by typing `/show`. Perplexity will then output the MRS, tree, and other debugging information:
 
