@@ -36,6 +36,9 @@ class State(object):
     # This is how predications will access the current value
     # of MRS variables like "x1" and "e1"
     def get_binding(self, variable_name):
+        # Find a common mistakes early
+        assert not isinstance(variable_name, VariableBinding)
+
         # "get()" is one way to access a value in a dictionary.
         # The second argument is what to return if the
         # key doesn't exist.  "VariableBinding" is the class that
@@ -79,6 +82,9 @@ class State(object):
         return new_state
 
     def add_to_e(self, event_name, key, value):
+        # Find a common mistakes early
+        assert not isinstance(event_name, VariableBinding)
+
         newState = copy.deepcopy(self)
         e_binding = newState.get_binding(event_name)
         if e_binding.value is None:

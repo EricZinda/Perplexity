@@ -1,5 +1,5 @@
 from file_system_example.objects import File, Folder, Actor, FileSystemMock
-from file_system_example.state import DeleteOperation, FileSystemState
+from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation
 from perplexity.execution import report_error, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, \
@@ -276,6 +276,51 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
                                       location_unbound_values)
 
 
+@Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
+def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
+    if x_actor_binding.value is None or len(x_actor_binding.value) > 1 or x_actor_binding.value[0].name != "Computer":
+        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        return
+
+    x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
+
+    def bound_location(location_item):
+        # Only allow moving to folders
+        if isinstance(location_item, Folder):
+            return True
+
+        else:
+            if hasattr(x_location_binding.value, "exists") and location_item.exists():
+                report_error(["cantDo", "change directory to", x_location_binding.variable.name])
+
+            else:
+                report_error(["notFound", x_location_binding.variable.name])
+
+    def unbound_location(location_item):
+        # Location is unbound, ask them to be more specific
+        report_error(["beMoreSpecific"])
+
+    # go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
+    for new_state in individual_style_predication_1(state,
+                                                    x_location_binding,
+                                                    bound_location,
+                                                    unbound_location,
+                                                    ["cantDo", "go", x_location_binding.variable.name]):
+        yield new_state.apply_operations([ChangeDirectoryOperation(new_state.get_binding(x_location_binding.variable.name))])
+
+
+@Predication(vocabulary, names=["_to_p_dir"])
+def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
+    preposition_info = {
+        "EndLocation": x_location_binding
+    }
+
+    yield state.add_to_e(e_target_binding.variable.name,
+                         "DirectionalPreposition",
+                         {"Value": preposition_info,
+                          "Originator": execution_context().current_predication_index()})
+
+
 # Generates all the responses that predications can
 # return when an error occurs
 def generate_custom_message(tree_info, error_term):
@@ -336,9 +381,10 @@ def generate_custom_message(tree_info, error_term):
 
 def reset():
     return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
-                                           (True, "/documents/file2.txt", {"size": 10000000}),
-                                           (True, "/documents/file3.txt", {"size": 1000})],
-                                          "/documents"))
+                                           (False, "/Desktop", {"size": 10000000}),
+                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
+                                           (True, "/Desktop/blue", {"size": 1000})],
+                                          "/Desktop"))
 
 
 def hello_world():
