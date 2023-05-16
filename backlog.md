@@ -1,5 +1,5 @@
 Remaining work to be shown in the tutorial:
-- Bug: Delete scenario broken due to not handling combinatorial variables
+- Put thing() in the system space.  Others?  "a few"?
 - Docs update:
   - Figure out how to do examples in the internals section.  Just replicate the how-to?
 - Make old tests work
