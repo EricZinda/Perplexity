@@ -163,14 +163,14 @@ def pron(state, x_who_binding):
     person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
 
     def bound_variable(value):
-        if person == 2:
+        if person == 2 and value == "computer":
             return True
         else:
             report_error(["dontKnowActor", x_who_binding.variable.name])
 
     def unbound_variable():
         if person == 2:
-            yield "you"
+            yield "computer"
         else:
             report_error(["dontKnowActor", x_who_binding.variable.name])
 
