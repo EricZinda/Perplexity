@@ -328,14 +328,27 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="quantifiers-and-determiners">Quantifiers and Determiners</h2>
-<p>At this point we’ve walked through all of the predications for the MRS of “a file is large” or “delete a file” except one.</p>
+<p>All of the examples we’ve used so far have produced quantifiers in their MRS, and all have been implemented automatically by the system:</p>
 
-<p>Most quantifiers and determiners are not application specific since they just manage determining how many of something there is, which can be managed at the object level without consideration for what the objects are.</p>
+<ul>
+  <li>“A file is large”: <code class="language-plaintext highlighter-rouge">a_q</code></li>
+  <li>“Which files are large?”: <code class="language-plaintext highlighter-rouge">which_q</code></li>
+  <li>“Delete a file”: <code class="language-plaintext highlighter-rouge">pronoun_q</code></li>
+</ul>
 
-<h2 id="todo-list-all-implemented-quantifiers">TODO: list all implemented quantifiers</h2>
-<h2 id="todo-talk-about-how-to-build-one-if-it-was-needed-or-changes-were-needed">TODO: Talk about how to build one if it was needed or changes were needed?</h2>
+<p>etc. This will almost always be the case because quantifiers are not application specific. As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm">Solution Group Algorithm topic</a>, quantifers do two things, neither of which is usually application specific:</p>
+<ul>
+  <li>scope variables</li>
+  <li>constrain their variables to be a certain count</li>
+</ul>
 
-<p>Last update: 2023-05-13 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md">edit</a>]</p>
+<p>So, the system can manage them automatically across applications.</p>
+
+<p>The same is true for determiners that count like “a few”, “less than 3”, “both”, etc.</p>
+
+<h3 id="todo-describe-how-to-build-one-that-isnt-in-the-system-like-this">TODO: describe how to build one that isn’t in the system like “this”</h3>
+
+<p>Last update: 2023-05-15 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo80QuantifiersAndDeterminers.md">edit</a>]</p>
 
         
       </section>
