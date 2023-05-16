@@ -57,12 +57,13 @@ def expand_combinatorial_variables(variable_metadata, solution):
         yield solution
 
     else:
-        # create combinations by picking one from each
         variable_names = list(alternatives.keys())
-        for assignment in product_stream(iter(alternatives.values())):
+        # create combinations by picking one from each
+        for assignment in product_stream(*alternatives.values()):
+            assignment_list = list(assignment)
             new_solution = solution
             for variable_index in range(len(variable_names)):
-                new_solution.set_x(variable_names[variable_index], tuple(assignment[variable_index]), False)
+                new_solution = new_solution.set_x(variable_names[variable_index], tuple(assignment_list[variable_index]), False)
             yield new_solution
 
 

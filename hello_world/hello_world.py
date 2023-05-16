@@ -69,16 +69,14 @@ def table_n_1(state, x_binding):
 @Predication(vocabulary, names=["_file_n_of"])
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
-        if value in ["file1.txt", "file2.txt", "file3.txt"]:
+        if value in state.all_individuals():
             return True
         else:
             report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound_variable():
-        yield "file1.txt"
-        yield "file2.txt"
-        yield "file3.txt"
+        yield from state.all_individuals()
 
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
@@ -91,7 +89,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
     degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
     def criteria_bound(value):
-        if degree_multiplier == 1 and value == "file2.txt":
+        if degree_multiplier == 1 and value == "file2.txt" and "file2.txt" in state.all_individuals():
             return True
 
         else:
@@ -129,6 +127,52 @@ def very_x_deg(state, e_introduced_binding, e_target_binding):
                           "Originator": execution_context().current_predication_index()})
 
 
+@Predication(vocabulary, names=["_delete_v_1"])
+def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+    def criteria(value):
+        # Only allow deleting files and folders that exist
+        if value in state.all_individuals():
+            return True
+
+        else:
+            report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+    def unbound_what():
+        report_error(["cantDo", "delete", x_what_binding.variable.name])
+
+    for success_state in combinatorial_style_predication_1(state, x_what_binding, criteria, unbound_what):
+        object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
+        operation = DeleteOperation(object_to_delete)
+        yield success_state.record_operations([operation])
+
+
+class DeleteOperation(object):
+    def __init__(self, value_to_delete):
+        self.value_to_delete = value_to_delete
+
+    def apply_to(self, state):
+        state.objects.remove(self.value_to_delete)
+
+
+@Predication(vocabulary, names=["pron"])
+def pron(state, x_who_binding):
+    person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
+
+    def bound_variable(value):
+        if person == 2:
+            return True
+        else:
+            report_error(["dontKnowActor", x_who_binding.variable.name])
+
+    def unbound_variable():
+        if person == 2:
+            yield "you"
+        else:
+            report_error(["dontKnowActor", x_who_binding.variable.name])
+
+    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+
+
 # Generates all the responses that predications can
 # return when an error occurs
 def generate_custom_message(tree_info, error_term):
@@ -163,13 +207,18 @@ def generate_custom_message(tree_info, error_term):
         arg3 = english_for_delphin_variable(error_predicate_index, error_arguments[3], tree_info)
         return f"{arg1} is not {arg2} {arg3}"
 
+    elif error_constant == "dontKnowActor":
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
+        arg1 = arg1.strip("'\"")
+        return f"I don't know who '{arg1}' is"
+
     else:
         # No custom message, just return the raw error for debugging
         return str(error_term)
 
 
 def reset():
-    return State([])
+    return State(["file1.txt", "file2.txt", "file3.txt"])
 
 
 def hello_world():

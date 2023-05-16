@@ -1,4 +1,5 @@
 Remaining work to be shown in the tutorial:
+- Bug: Delete scenario broken due to not handling combinatorial variables
 - Docs update:
   - Figure out how to do examples in the internals section.  Just replicate the how-to?
 - Make old tests work
