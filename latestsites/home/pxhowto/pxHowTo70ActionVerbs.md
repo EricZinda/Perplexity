@@ -23,14 +23,14 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                                       └─ _delete_v_1(e2,x3,x8)
 ```
 
-Let's ignore the pronoun related predications and focus on `_delete_v_1(e2,x3,x8)`. We're not going to handle any modifiers to it either, so we can ignore `e2` and `x3` (since it represents the pronoun). That leaves `x8` which is the thing the user wants to delete. So, now we could try implementing the predication like the other single `x` predications we've built and call the `combinatorial_style_predication_1()` helper, like this:
+Let's ignore the pronoun related predications and focus on `_delete_v_1(e2,x3,x8)`. We're not going to handle any modifiers to it either, so we can ignore `e2` and `x3` (since `x3` represents the pronoun). That leaves `x8` which is the thing the user wants to delete. So, now we could try implementing the predication like the other single `x` predications we've built and call the `combinatorial_style_predication_1()` helper, like this:
 
 ```
 @Predication(vocabulary, names=["_delete_v_1"])
 def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
-        if isinstance(value[0], (File, Folder)) and value[0].exists():
+        if value[0] in ["file1.txt", "file2.txt", "file3.txt"]:
             return True
 
         else:
@@ -44,7 +44,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 
 This does some of the work we need: it will actually succeed if the user asks to delete a file or folder, and it won't allow phrases like "delete everything" that would produce an unbound `x8`. However, it won't actually *delete anything* because there isn't any code to do the deleting. 
 
-Since `combinatorial_style_predication_1()` yields a `state` object when `delete_v_1_comm` is successful, we could start by doing the actual delete when it yields a value. 
+`combinatorial_style_predication_1()` yields a `state` object when `delete_v_1_comm` is successful. So, we could start by doing the actual delete when that functions yields a value, because it means everything has been checked and is `true`.
 
 Let's imagine that we added a `state.delete_object()` to the `State` object that actually deletes a file and yields a new state with that file deleted. That approach could look like this:
 
@@ -72,13 +72,13 @@ When `combinatorial_style_predication_1()` yields a new state, it means this pre
 
 However, we need to be careful to ask for the value of the variable represented by `x_what_binding` *in the new state*. Remember that `state` objects are immutable, so we have to look at the copy being returned to get the new value of the variable.
 
-So, we need to look up the variable name from `x_what_binding` in the new state returned by `combinatorial_style_predication_1`, like this:
+So, we looked up the variable name from `x_what_binding` in the new state returned by `combinatorial_style_predication_1`, like this:
 
 ```
 object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
 ```
 
-This is basically the approach we are going to use, but we need to use some extra mechanisms to do it for reasons described below.
+This is basically the approach we are going to use, but we need some extra mechanisms to do it for reasons described below.
 
 ### Operations
 Actions that modify anything in the world state besides an MRS variable are called an `Operation` in Perplexity.  They go beyond manipulating the MRS and actually affect the world the person is speaking about. Any predication like `_delete_v_1` that wants to modify the state of the world needs to use an `Operation`.
@@ -115,7 +115,7 @@ new_state.record_operations([operation])
 
 The `State` object has a `record_operations()` method that takes a list of operations to record, but in this case we're only doing one. Those two lines of code record that we want to delete a particular file, but they don't actually *do* it yet.  Later, when we have the final solution group, we can gather all of the operations that were done to the solutions in the group and call `apply_operations()` on the one single state we want to represent the new world.
 
-This solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the "new state of the world" once we know what to do.
+Doing things in this roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the "new state of the world" once we know what to do.
 
 Now we can write the basic implementation of "delete":
 
@@ -143,4 +143,73 @@ The final step that merges together all the operations and applies them to a sin
 
 ### TODO: Talk about pron(x)
 
-Last update: 2023-05-13 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo70ActionVerbs.md)]{% endraw %}
+## Example
+The built-in Perplexity `State` object has a very simple mechanism for tracking objects. In most cases, we would need to derive a new class from it to manage the state of an application, but our examples are simple enough that we can use it directly.
+
+The important part of the class for our purpose here are below. A list of objects can be passed in the constructor, and `State` will return them from `all_individuals()`. It is very simple:
+```
+class State(object):
+    def __init__(self, objects):
+
+        ...
+
+        self.objects = objects
+
+    ...
+    
+    def all_individuals(self):
+        for item in self.objects:
+            yield item
+
+    ...
+```
+
+We'll need to update the relevant predications to start using this object, as well as initializing the state so that it has all the objects we need at startup. The only code that needs to change is:
+
+```
+@Predication(vocabulary, names=["_file_n_of"])
+def file_n_of(state, x_binding, i_binding):
+    def bound_variable(value):
+        if value in state.all_individuals():
+            return True
+        else:
+            report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield from state.all_individuals()
+
+    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+
+
+@Predication(vocabulary,
+             names=["_large_a_1"],
+             handles=[("DegreeMultiplier", EventOption.optional)])
+def large_a_1(state, e_introduced_binding, x_target_binding):
+    # See if any modifiers have changed *how* large we should be
+    degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
+
+    def criteria_bound(value):
+        if degree_multiplier == 1 and value == "file2.txt" and "file2.txt" in state.all_individuals():
+            return True
+
+        else:
+            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            return False
+
+    def unbound_values():
+        if criteria_bound("file2.txt"):
+            yield "file2.txt"
+
+    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+
+...
+
+def reset():
+    return State(["file1.txt", "file2.txt", "file3.txt"])
+
+...
+```
+
+Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo70ActionVerbs.md)]{% endraw %}
