@@ -1,6 +1,6 @@
 main:
   - title: "Home"
-    url: https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview
+    url: https://blog.inductorsoftware.com/Perplexity/home/devOverview
 toc:
   - title: "Developer Tutorial Overview"
     children:
@@ -9,7 +9,7 @@ toc:
   - title: "MRS Conceptual"
     children:
       - title: "Minimal Recursion Semantics (MRS)"
-        url: "/mrscon/devhowtoMRS/"
+        url: "/mrscon/devhowto0010MRS/"
       - title: "Well-Formed Trees"
         url: "/mrscon/devhowto0020WellFormedTree/"
   - title: "MRS Solver Conceptual"
@@ -94,3 +94,5 @@ toc:
         url: "/pxhowto/pxHowTo085Place/"
       - title: "Directional Propositions"
         url: "/pxhowto/pxHowTo090Prepositions/"
+      - title: "Locative Propositions"
+        url: "/pxhowto/pxHowTo095LocativePrepositions/"

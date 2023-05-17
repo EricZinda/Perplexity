@@ -119,7 +119,7 @@
           
         </a>
         <ul class="visible-links"><li class="masthead__menu-item">
-              <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview">Home</a>
+              <a href="https://blog.inductorsoftware.com/Perplexity/home/devOverview">Home</a>
             </li></ul>
         
         <button class="search__toggle" type="button">
@@ -187,7 +187,7 @@
         
         <ul>
           
-            <li><a href="/Perplexity/home/mrscon/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
+            <li><a href="/Perplexity/home/mrscon/devhowto0010MRS/">Minimal Recursion Semantics (MRS)</a></li>
           
             <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/" class="active">Well-Formed Trees</a></li>
           
@@ -303,6 +303,8 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo090Prepositions/">Directional Propositions</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo095LocativePrepositions/">Locative Propositions</a></li>
+          
         </ul>
         
       </li>
@@ -335,7 +337,7 @@
         
         <h2 id="building-well-formed-mrs-trees">Building Well-Formed MRS Trees</h2>
 <blockquote>
-  <p>To understand this section, first make sure you have a basic understanding of the MRS format.</p>
+  <p>To understand this section, first make sure you have a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">basic understanding of the MRS format</a>.</p>
 </blockquote>
 
 <p>Let’s use the sentence “every book is in a cave” as an example. If the phrase is parsed with <a href="http://sweaglesw.org/linguistics/ace/">the ACE parser</a>, you get an MRS document like this:</p>
@@ -353,7 +355,7 @@ HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 </code></pre></div></div>
 <p>Our goal is to eventually “solve” the MRS by finding values for its MRS variables such that it is “true”. When complete, these variables indicate what the speaker <em>meant</em> and allow us to <em>do</em> something about it.</p>
 
-<p>To resolve an MRS against a world state (a particular state of the world at a moment in time) and get <em>solutions</em> to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a <em>well-formed MRS tree</em>. We will examine <em>how</em> shortly, but for now just know that a well-formed MRS tree has (among other things) nodes that are the predications from the MRS like <code class="language-plaintext highlighter-rouge">_every_q__xhh</code> and arcs that are links between the <em>scopal arguments</em> of the predications and other nodes, like this:</p>
+<p>To resolve an MRS against a world state (a particular state of the world at a moment in time) and get <em>solutions</em> to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a <em>well-formed MRS tree</em>. We will examine <em>how</em> shortly, but for now just know that a well-formed MRS tree has (among other things) nodes that are the predications from the MRS like <code class="language-plaintext highlighter-rouge">_every_q__xhh</code> and arcs that are links between the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS"><em>scopal arguments</em></a> of the predications and other nodes, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>              ┌────── _book_n_of(x3,i8)
 _every_q(x3,RSTR,BODY)          ┌────── _cave_n_1(x9)
@@ -399,11 +401,11 @@ HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 <p>This interpretation is what we need in order to eventually “solve” the phrase for the variables it contains. This topic describes how to build that tree.</p>
 
 <h2 id="holes-and-constraints">Holes and Constraints</h2>
-<p>“Holes” are <code class="language-plaintext highlighter-rouge">h</code> arguments in a predication that refer to a predicate label that is <em>not</em> defined. In the above MRS, <code class="language-plaintext highlighter-rouge">h0</code> (the <code class="language-plaintext highlighter-rouge">TOP:</code>), <code class="language-plaintext highlighter-rouge">h11</code>, <code class="language-plaintext highlighter-rouge">h12</code>, <code class="language-plaintext highlighter-rouge">h5</code>, and <code class="language-plaintext highlighter-rouge">h6</code> are all “holes” since none of the predicates use those names as their <code class="language-plaintext highlighter-rouge">LBL:</code>.</p>
+<p>“Holes” are <code class="language-plaintext highlighter-rouge">h</code> arguments in a predication that refer to a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">predicate label</a> that is <em>not</em> defined. In the above MRS, <code class="language-plaintext highlighter-rouge">h0</code> (the <code class="language-plaintext highlighter-rouge">TOP:</code>), <code class="language-plaintext highlighter-rouge">h11</code>, <code class="language-plaintext highlighter-rouge">h12</code>, <code class="language-plaintext highlighter-rouge">h5</code>, and <code class="language-plaintext highlighter-rouge">h6</code> are all “holes” since none of the predicates use those names as their <code class="language-plaintext highlighter-rouge">LBL:</code>.</p>
 
 <p>The <code class="language-plaintext highlighter-rouge">HCONS</code> section of the MRS puts <em>CONS</em>traints on which placement of <em>H</em>andles in holes is valid.</p>
 
-<p>The only kind of constraint used in “modern” MRS is a <code class="language-plaintext highlighter-rouge">qeq</code> constraint.  A <code class="language-plaintext highlighter-rouge">qeq</code> constraint always relates a hole to a (non-hole) handle and says that the handle must be a direct or eventual child in the tree. Furthermore, if not directly connected, the only things between the hole and the handle can be quantifiers.</p>
+<p>The only kind of constraint used in “modern” MRS is a <code class="language-plaintext highlighter-rouge">qeq</code> constraint.  A <code class="language-plaintext highlighter-rouge">qeq</code> constraint always relates a hole to a (non-hole) handle and says that the handle must be a direct or eventual child in the tree. Furthermore, if not directly connected, the only things between the hole and the handle can be <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">quantifiers</a>.</p>
 
 <p>Said a different way:</p>
 
@@ -448,7 +450,7 @@ HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 
 <p>The rules for MRS say that any variable in the MRS is “globally defined” (or “existentially qualified” in logic terms) for the whole structure <em>except</em> for <code class="language-plaintext highlighter-rouge">x</code> variables.  So, both <code class="language-plaintext highlighter-rouge">e2</code> and <code class="language-plaintext highlighter-rouge">i8</code> don’t need any special handling, they are globally defined.</p>
 
-<p><code class="language-plaintext highlighter-rouge">x</code> variables, on the other hand, can <em>only</em> be defined by quantifiers, and are <em>only</em> defined for the branches of the tree that are attached to the quantifier’s scopal (<code class="language-plaintext highlighter-rouge">h</code>) arguments: <code class="language-plaintext highlighter-rouge">RSTR</code> and <code class="language-plaintext highlighter-rouge">BODY</code>.</p>
+<p><code class="language-plaintext highlighter-rouge">x</code> variables, on the other hand, can <em>only</em> be defined by <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">quantifiers</a>, and are <em>only</em> defined for the branches of the tree that are attached to the quantifier’s scopal (<code class="language-plaintext highlighter-rouge">h</code>) arguments: <code class="language-plaintext highlighter-rouge">RSTR</code> and <code class="language-plaintext highlighter-rouge">BODY</code>.</p>
 
 <p>So, while the predications can be in any order in the tree with respect to their <code class="language-plaintext highlighter-rouge">e</code>  (or <code class="language-plaintext highlighter-rouge">i</code> or <code class="language-plaintext highlighter-rouge">u</code> if it had them) arguments, the tree must be checked to make sure all of the <code class="language-plaintext highlighter-rouge">x</code> arguments have an eventual parent which is a quantifier which puts them in scope (i.e. has the <code class="language-plaintext highlighter-rouge">x</code> variable as its first argument: <code class="language-plaintext highlighter-rouge">ARG0</code>). This is an additional constraint that has to be checked to build a “well-formed” tree.</p>
 
@@ -586,7 +588,7 @@ Starting at the initial node:</p>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md">edit</a>]</p>
+<p>Last update: 2023-05-17 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md">edit</a>]</p>
 
         
       </section>

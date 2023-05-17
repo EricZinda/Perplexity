@@ -68,7 +68,7 @@ def file_n_of(state, x_binding, i_binding):
     if x_binding.value is not None and x_binding.value[0] == "file1.txt":
         yield state
 ```
-Note that `i_binding` is ignored since `i` variables usually indicate an ignored (or 'dropped') argument as described in the section on [MRS](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS).
+Note that `i_binding` is ignored since `i` variables usually indicate an ignored (or 'dropped') argument as described in the section on [MRS](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS).
 
 The code illustrates that bindings have a `binding.value` property that returns the current variable's value, which is always a list for reasons described in the [Together conceptual topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets) . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. If so, it `yields` the state object  to indicate that this predication is `true` for the current state of its variables. Nothing changed in the `state` object so it can just be yielded, as is. 
 

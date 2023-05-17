@@ -1,5 +1,5 @@
 {% raw %}## The Predication Contract
-> It is important to understand [what MRS is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS) and what [a well-formed MRS tree is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
+> It is important to understand [what MRS is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) and what [a well-formed MRS tree is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
 
 As discussed in [the "Backtracking" conceptual topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver), we'll be solving MRS well-formed trees using a backtracking approach. That topic discusses "calling" or "evaluating" predications without discussing exactly *how* this happens. This section will get specific.

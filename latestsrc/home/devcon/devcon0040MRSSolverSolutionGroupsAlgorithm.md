@@ -355,4 +355,4 @@ All of the groups that succeed are solution groups and will be valid collective,
 
 There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the next section) and global constraints from words like "the" (described in the section after that).
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}
+Last update: 2023-05-17 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}
