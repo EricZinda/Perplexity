@@ -177,18 +177,14 @@ class UserInterface(object):
 
                         # Go through all the responses in this solution group
                         for response, solution_group in tree_record["ResponseGenerator"]:
-                            # Some messages (like responses to propositions) don't need to materialize the maximum solution to
-                            # respond, just enough to know that it is true, so don't grab all the answers because it may force
-                            # answers that we didn't need to get
+                            # Because this worked, we need to apply any Operations that were added to
+                            # any solution to the current world state.
+                            try:
+                                self.apply_solutions_to_state([solution for solution in solution_group])
 
-                            # This worked, apply the results to the current world state if it was a command
-                            if this_sentence_force == "comm":
-                                try:
-                                    self.apply_solutions_to_state([solution for solution in solution_group])
-
-                                except MessageException as error:
-                                    response = self.response_function(self.message_function, tree_info, [], [0, error.message_object()])
-                                    tree_record["ResponseMessage"] += f"\n{str(response)}"
+                            except MessageException as error:
+                                response = self.response_function(self.message_function, tree_info, [], [0, error.message_object()])
+                                tree_record["ResponseMessage"] += f"\n{str(response)}"
 
                             tree_record["ResponseMessage"] += response
                             print(response)
