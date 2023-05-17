@@ -1,6 +1,7 @@
 Remaining work to be shown in the tutorial:
 - Handle commands from anything
 - "What else is on the menu?" -> need to see if "else" is on "which"
+  - Not included in any predication
 - Fix the bug where there is a failure and no error and it crashes
 - Put thing() in the system space.  Others?  "a few"?
 - Docs update:
