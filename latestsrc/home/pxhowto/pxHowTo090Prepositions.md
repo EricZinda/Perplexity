@@ -34,7 +34,7 @@ _a_q(x9,RSTR,BODY)               ┌────── pron(x3)
 It introduces two additional predications we'll need to implement to make this work: `_to_p_dir` and `_go_v_1`.
 
 ### `_to_p_dir`
-`_to_p_dir` is a *directional* preposition.  Directional prepositions *usually* end with `_dir` and have the signature (`e`, `e_verb`, `x_location`).  `x_location` indicates the location the preposition is using, and `e_verb` indicates the event (often a verb) that this preposition should be attached to. They specify a particular direction in which to do something.  The fact that the predication takes an event as its second argument is a hint that the predication itself doesn't *do* anything except attach its information to the specified event so that something else can use it. Taking an event as an argument besides `ARG0` usually indicates the predication is modifying the event. So, it can be implemented like this:
+`_to_p_dir` is a *directional* preposition.  Directional prepositions *usually* end with `_dir` and have the signature (`e`, `e_verb`, `x_location`).  `x_location` indicates the location the preposition is specifying, and `e_verb` indicates the event (often a verb) that this preposition should be attached to. They specify a particular direction in which to do something.  The fact that the predication takes an event as its second argument is a hint that the predication itself doesn't *do* anything except attach its information to the specified event so that something else can use it. Taking an event as an argument besides `ARG0` usually indicates the predication is modifying the event. So, it can be implemented like this:
 
 ```
 @Predication(vocabulary, names=["_to_p_dir"])
@@ -55,7 +55,9 @@ This code just adds the location `x_location` to the `e_target` event under the 
 Next, we need to implement `_go_v_1`, indicating that it *does* know how to handle that information, like this:
 
 ```
-@Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
+@Predication(vocabulary, 
+             names=["_go_v_1"], 
+             handles=[("DirectionalPreposition", EventOption.required)])
 def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
     if x_actor_binding.value is None or len(x_actor_binding.value) > 1 or x_actor_binding.value[0].name != "Computer":
         report_error(["dontKnowActor", x_actor_binding.variable.name])
@@ -88,7 +90,7 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
         yield new_state.apply_operations([ChangeDirectoryOperation(new_state.get_binding(x_location_binding.variable.name))])
 ```
 
-The `handles=[]` clause on `Predication` tells the system that this predication *requires* a directional predication and the system ensures that it won't get called if it isn't there. That is why the code can just assume it is there and access the `EndLocation` key without checking for its existence first in this line:
+The `handles=[... EventOption.required ...]` clause on `Predication` tells the system that this predication *requires* a directional predication and the system ensures that it won't get called if it isn't there. That is why the code can just assume it is there and access the `EndLocation` key without checking for its existence first in this line:
 
 ```
 x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
@@ -144,6 +146,8 @@ Done!
 (Folder(name=/documents, size=0),)
 (there are more)
 ```
+
+The system says "(there are more)" in response to "where am i" because the user is in both "/Desktop" and "/". The reasons are described in the [Combinations and Proper Responses topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations). The same is true for "go to a folder" ... there are several folders.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 

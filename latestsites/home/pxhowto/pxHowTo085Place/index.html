@@ -372,7 +372,7 @@ pronoun_q(x3,RSTR,BODY)             ┌────── place_n(x4)
 </code></pre></div></div>
 
 <h3 id="place_nx"><code class="language-plaintext highlighter-rouge">place_n(x)</code></h3>
-<p>As with “Where am I?”, a predication that often appears with <code class="language-plaintext highlighter-rouge">loc_nonsp</code> is <code class="language-plaintext highlighter-rouge">place_n</code> when the location being referred to is inferred by the system to be a place.</p>
+<p>As in “Where am I?”, a predication that often appears with <code class="language-plaintext highlighter-rouge">loc_nonsp</code> is <code class="language-plaintext highlighter-rouge">place_n</code> when the location being referred to is inferred by the system to be a place.</p>
 
 <p>What are the “places” in a file system? They are all the objects where something else can be located, some obvious ones:</p>
 <ul>
@@ -500,7 +500,7 @@ you is not in place
 (Folder(name=/, size=0),)
 </code></pre></div></div>
 
-<p>Both “where am I?” and “where is a file?” give an answer and then say, “(there are more)”. That is because the user asked for “a place” (singular) but most things will “be located” in more than one place. For example, the user is in both “/documents” and “/” (the root directory). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Combination Algorithm and Proper Responses topic</a>, we let the user know if they there are more than one thing if they ask for a singular answer, just to clarify.</p>
+<p>Both “where am I?” and “where is a file?” give an answer and then say, “(there are more)”. That is because the user asked for “a place” (singular) but most things will “be located” in more than one place. For example, the user is in both “/documents” and “/” (the root directory). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Combination Algorithm and Proper Responses topic</a>, we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.</p>
 
 <p>Also note that “you” refers to “the computer” and we haven’t put it anywhere, that’s why the system responds with “you is not in place”. Again, we’ll fix the English on error messages soon.</p>
 
