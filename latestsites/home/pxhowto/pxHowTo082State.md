@@ -380,7 +380,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                                                         criteria,
                                                         unbound_what,
                                                         ["cantDeleteSet", x_what_binding.variable.name]):
-            yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
+            yield new_state.apply_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:
         report_error(["dontKnowActor", x_actor_binding.variable.name])
@@ -443,4 +443,4 @@ Done!
 a file is not large
 ```
 
-Last update: 2023-05-16 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md)]{% endraw %}
+Last update: 2023-05-17 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md)]{% endraw %}

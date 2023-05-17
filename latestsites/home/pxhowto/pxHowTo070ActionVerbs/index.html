@@ -303,8 +303,6 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo090Prepositions/">Directional Propositions</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo095LocativePrepositions/">Locative Propositions</a></li>
-          
         </ul>
         
       </li>
@@ -449,12 +447,12 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 </code></pre></div></div>
 <p>The <code class="language-plaintext highlighter-rouge">DeleteOperation</code> itself is very simple, it is really just remembering what to delete. When it is asked to <code class="language-plaintext highlighter-rouge">apply_to()</code>, it calls the method in the <code class="language-plaintext highlighter-rouge">state</code> object that actually deletes the file, in <em>that</em> state object (which might be different than the one it was added to).</p>
 
-<p>To use the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>, we create an instance of one and pass it to the <code class="language-plaintext highlighter-rouge">record_operations()</code> method in the <code class="language-plaintext highlighter-rouge">State</code> object, like this:</p>
+<p>To use the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>, we create an instance of one and pass it to the <code class="language-plaintext highlighter-rouge">apply_operations()</code> method in the <code class="language-plaintext highlighter-rouge">State</code> object, like this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>operation = DeleteOperation(new_state.get_binding(x_what_binding.variable.name).value[0])
-new_state.record_operations([operation])
+new_state.apply_operations([operation])
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">record_operations()</code> method takes a list of operations to record, but in this case we’re only doing one. Those two lines of code record that we want to delete a particular file, but they don’t actually <em>do</em> it yet.  Later, when we have the final solution group, we can gather all of the <code class="language-plaintext highlighter-rouge">Operations</code> that were done to the solutions in the group and call <code class="language-plaintext highlighter-rouge">apply_operations()</code> on the one single state we want to represent the new world.</p>
+<p>The <code class="language-plaintext highlighter-rouge">apply_operations()</code> method takes a list of operations to apply, but in this case we’re only doing one. Those two lines of code record that we want to delete a particular file, but they don’t actually <em>do</em> it yet.  Later, when we have the final solution group, we can gather all of the <code class="language-plaintext highlighter-rouge">Operations</code> that were done to the solutions in the group and call <code class="language-plaintext highlighter-rouge">apply_operations()</code> on the one single state we want to represent the new world.</p>
 
 <p>Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don’t want files <em>actually being deleted</em> during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the “new state of the world” once we know what to do.</p>
 
@@ -481,7 +479,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
-        yield success_state.record_operations([operation])
+        yield success_state.apply_operations([operation])
 </code></pre></div></div>
 
 <p>The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of <code class="language-plaintext highlighter-rouge">interact_once()</code>. That’s where <code class="language-plaintext highlighter-rouge">DeleteOperation.apply_to()</code> gets called for every solution in the solution group.</p>
@@ -614,7 +612,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
-        yield success_state.record_operations([operation])
+        yield success_state.apply_operations([operation])
 </code></pre></div></div>
 
 <p>… and create our initial <code class="language-plaintext highlighter-rouge">State</code> object with the starting list of files:</p>
@@ -638,7 +636,7 @@ a file is not large
 
 <p>The last line confirms that the one large file in the system has been deleted.</p>
 
-<p>Last update: 2023-05-16 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo070ActionVerbs.md">edit</a>]</p>
+<p>Last update: 2023-05-17 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo070ActionVerbs.md">edit</a>]</p>
 
         
       </section>
