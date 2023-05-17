@@ -72,7 +72,7 @@
         {"Page": "Custom State", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo082State.md", "DstFile": "pxhowto/pxHowTo082State.md"},
         {"Page": "Representing Places", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo085Place.md", "DstFile": "pxhowto/pxHowTo085Place.md"},
         {"Page": "Directional Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo090Prepositions.md", "DstFile": "pxhowto/pxHowTo090Prepositions.md"},
-        {"Page": "Locative Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowto095LocativePrepositions", "DstFile": "pxhowto/pxHowto095LocativePrepositions.md"}
+        {"Page": "Locative Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo095LocativePrepositions.md", "DstFile": "pxhowto/pxHowTo095LocativePrepositions.md"}
       ]}
     ]
   }

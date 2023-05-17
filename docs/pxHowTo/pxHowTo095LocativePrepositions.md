@@ -1,5 +1,5 @@
 ## Verbs and Locative Prepositions
-If the user types the phrase:
+Locative prepositions like "in" specify the location of something, but they can be used in several different ways. We'll examine them via the phrase:
 
 > copy "foo" in "/documents"
 
@@ -15,70 +15,82 @@ There are 171 different parses that the ERG provides since there is a lot of amb
 
 3. `_copy_v_1(e2,x3,x8,_in_p_loc(e15,x8,x16))`: Copy 'foo' such that it ends up in '/documents'
 
-   This version of `_copy_v_1` has a scopal argument which contains the "in" preposition. As discussed in the [section on scopal arguments](../mrscon/devhowtoMRS/#h-handle-variables-aka-scopal-arguments), scopal arguments occur when the predication needs to do something special with the branch of the tree it is passed.  In this case, `_copy_v_1` is being asked to change the world such that `_in_p_loc(e15,x8,x16)` is true. Since `x8` is "foo" and `x16` is "/documents", `_copy_v_1` should make "foo" be "in" "/documents".
+   This version of `_copy_v_1` has a scopal argument which contains the "in" preposition. As discussed in the [MRS Overview](../mrscon/devhowto0010MRS#h-handle-variables-aka-scopal-arguments), scopal arguments occur when the predication needs to do something special with the branch of the tree it is passed.  In this case, `_copy_v_1` is being asked to change the world such that the branch it is being passed (i.e. `_in_p_loc(e15,x8,x16)`) is `true`. Since `x8` is "foo" and `x16` is "/documents", `_copy_v_1` should make "foo" be "in" "/documents".
 
 4. (not used in this example) `_preposition_p_dir(e,e1,x), verb_v(e1, ...)`
 
-   There is another variation of the predication for "in" that the ERG doesn't generate for this example, but was shown in [the topic on `go_v_1`](../devvocab/devvocabGoTo). Look at the two interpretations of "the mouse is running under the table":
+   There is another variation of the predication for "in" that the ERG doesn't generate for this example, but was shown in [the topic on `go_v_1`](pxHowTo070ActionVerbs). Look at the two interpretations of "the mouse is running under the table":
 
    (stative) Just like example 1 above: The mouse staying under the table and running around there:
 
 ~~~
-            ┌────── _mouse_n_1(x3)
-_the_q(x3,RSTR,BODY)            ┌────── _table_n_1(x9)
-                 └─ _the_q(x9,RSTR,BODY)    ┌── _under_p_state(e8,e2,x9)
-                                     └─ and(0,1)
-                                              └ _run_v_1(e2,x3)
+                ┌────── _mouse_n_1(x3)
+    _the_q(x3,RSTR,BODY)            ┌────── _table_n_1(x9)
+                    └─ _the_q(x9,RSTR,BODY)    ┌── _under_p_state(e8,e2,x9)
+                                        └─ and(0,1)
+                                                └ _run_v_1(e2,x3)
 ~~~
 
-(directional) Just like [`to_p_dir` in the topic on `go_v_1`](../devvocab/devvocabGoTo): The mouse moving from some other spot in the room on a path that takes it under the table:
+(directional) Just like [`to_p_dir` in the topic on `go_v_1`](pxHowTo070ActionVerbs): The mouse moving from some other spot in the room on a path that takes it under the table:
 
 
 ~~~
-            ┌────── _table_n_1(x9)
-_the_q(x9,RSTR,BODY)            ┌────── _mouse_n_1(x3)
-                 └─ _the_q(x3,RSTR,BODY)    ┌── _under_p_dir(e8,e2,x9)
-                                     └─ and(0,1)
-                                              └ _run_v_1(e2,x3)
+                ┌────── _table_n_1(x9)
+    _the_q(x9,RSTR,BODY)            ┌────── _mouse_n_1(x3)
+                    └─ _the_q(x3,RSTR,BODY)    ┌── _under_p_dir(e8,e2,x9)
+                                        └─ and(0,1)
+                                                └ _run_v_1(e2,x3)
 ~~~
 
 
-So, we've seen 4 ways a locative preposition can be used with a verb that takes a direction:
+So, we've seen 4 ways that MRS can use a locative preposition with a verb that takes a direction:
 
-1. (locative) `preposition_p_loc(e,x1,x), verb_v(..., x1)`: The verb should do what it does with whatever the preposition put in `x1`
+1. (locative) `preposition_p_loc(e,x1,x2), verb_v(..., x1)`: The verb should do what it does with whatever the preposition put in `x1`
 2. (stative) `_preposition_p_state(e,e1,x2), verb_v(e1, ...)`: The actor or verb is happening at the place indicated by whatever the preposition put in `x2`
 3. (scopal) `verb_v(..., preposition_p_loc(e,x,x))`: The verb should make this preposition true via what it does
 4. (directional) `_preposition_p_dir(e,e1,x), verb_v(e1, ...)`: The actor or verb are happening in that direction
 
-We already have the version of "in" for #1 [implemented](../devvocab/devvocabIn_p_loc), so let's start there.
+We already have the locative version of "in" (#1) [implemented](pxHowTo030InStylePredications), so let's start there.
 
 ### 1. `_in_p_loc(e15,x8,x16), _copy_v_1(e2,x3,x8)`: Copy the 'foo' that is in 'documents'
-Here is the version of `_in_p_loc` that we implemented in a [previous section](devvocabIn_p_loc):
+Here is the version of `_in_p_loc` that we implemented in the section on [In-style Predications](pxHowTo030InStylePredications), but updated using the new `FileSystemState` object instead of placeholder methods:
 
 ~~~
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
-    if x_actor_binding.value is not None:
-        if x_location_binding.value is not None:
-            # x_actor is "in" x_location if x_location contains it
-            for item in x_location_binding.value.contained_items(x_location_binding.variable):
-                if x_actor_binding.value == item:
-                    # Variables are already set,
-                    # no need to set them again, just return the state
-                    yield state
+    def item_in_item(item1, item2):
+        # x_actor is "in" x_location if x_location contains it
+        found_location = False
+        if hasattr(item2, "contained_items"):
+            for item in item2.contained_items(x_location_binding.variable):
+                if item1 == item:
+                    found_location = True
+                    break
 
+        if not found_location:
+            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+
+        return found_location
+
+    def location_unbound_values(actor_value):
+        # This is a "what is actor in?" type query since no location specified (x_location_binding was unbound)
+        # Order matters, so all_locations needs to return the best answer first
+        if hasattr(actor_value, "all_locations"):
+            for location in actor_value.all_locations(x_actor_binding.variable):
+                yield location
+
+        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+
+    def actor_unbound_values(location_value):
+        # This is a "what is in x?" type query since no actor specified (x_actor_binding was unbound)
+        # Order matters, so all_locations needs to return the best answer first
+        if hasattr(location_value, "contained_items"):
+            for actor in location_value.contained_items(x_location_binding.variable):
+                yield actor
         else:
-            # Need to find all the things that x_actor is "in"
-            if hasattr(x_actor_binding.value, "containers"):
-                for item in x_actor_binding.value.containers(x_actor_binding.variable):
-                    yield state.set_x(x_location_binding.variable.name, item)
+            report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    else:
-        # Actor is unbound, this means "What is in X?" type of question
-        # Whatever x_location "contains" is "in" it
-        if hasattr(x_location_binding.value, "contained_items"):
-            for location in x_location_binding.value.contained_items(x_location_binding.variable):
-                yield state.set_x(x_actor_binding.variable.name, location)
+    yield from in_style_predication_2(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values)
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 ~~~
