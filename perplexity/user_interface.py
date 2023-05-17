@@ -208,11 +208,15 @@ class UserInterface(object):
 
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_tree_record()
-        for response, _ in chosen_record["ResponseGenerator"]:
-            if response is None:
-                response = "(no error specified)"
-            chosen_record["ResponseMessage"] += response
-            print(response)
+        if chosen_record is None:
+            print("Sorry, did you mean to say something?")
+
+        else:
+            for response, _ in chosen_record["ResponseGenerator"]:
+                if response is None:
+                    response = "(no error specified)"
+                chosen_record["ResponseMessage"] += response
+                print(response)
 
     def generate_more_message(self, tree, solution_groups):
         if solution_groups is None:

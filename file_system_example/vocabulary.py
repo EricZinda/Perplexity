@@ -656,14 +656,22 @@ def pron(state, x_who_binding):
 # c_raw_text_value will always be set to a raw string
 @Predication(vocabulary)
 def quoted(state, c_raw_text_value, i_text_binding):
-    if i_text_binding.value is None:
-        yield state.set_x(i_text_binding.variable.name, (QuotedText(c_raw_text_value), ), False)
+    def bound_value(value):
+        if isinstance(value, QuotedText) and value.name == c_raw_text_value:
+            return True
 
-    else:
-        if len(i_text_binding.value) == 1 and \
-                isinstance(i_text_binding.value[0], QuotedText) and \
-                i_text_binding.value[0].name == c_raw_text_value:
-            yield state
+        else:
+            report_error(["xIsNotYValue", i_text_binding, c_raw_text_value])
+            return False
+
+    def unbound_values():
+        yield QuotedText(c_raw_text_value)
+
+    yield from individual_style_predication_1(state,
+                                              i_text_binding,
+                                              bound_value,
+                                              unbound_values,
+                                              ["unexpected"])
 
 
 # Yield all the solutions for fw_seq where value is bound

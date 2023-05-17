@@ -170,6 +170,9 @@ def generate_message(tree_info, error_term):
         arg2 = error_arguments[2]
         return f"{arg1} is not {arg2}"
 
+    elif error_constant == "unexpected":
+        return "I'm not sure what that means."
+
     elif error_constant == "unknownWords":
         lemmas_unknown = []
         lemmas_form_known = []

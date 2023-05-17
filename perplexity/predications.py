@@ -15,23 +15,23 @@ def individual_style_predication_1(state, binding, bound_predication_function, u
         # Unbound
         for unbound_value in unbound_predication_function():
             yield state.set_x(binding.variable.name, (unbound_value, ), False)
-
-    elif binding.variable.combinatoric is False:
-        # if it is > 1 item the predication_function should fail since it is individual_style
-        if len(binding.value) > 1:
-            report_error(greater_than_one_error)
-            return
-        else:
-            # Pass sets through,
-            iterator = [binding.value]
-
     else:
-        # If it is combinatoric, only pass through individuals
-        iterator = [(value, ) for value in binding.value]
+        if binding.variable.combinatoric is False:
+            # if it is > 1 item the predication_function should fail since it is individual_style
+            if len(binding.value) > 1:
+                report_error(greater_than_one_error)
+                return
+            else:
+                # Pass sets through,
+                iterator = [binding.value]
 
-    for value in iterator:
-        if bound_predication_function(value[0]):
-            yield state.set_x(binding.variable.name, value, False)
+        else:
+            # If it is combinatoric, only pass through individuals
+            iterator = [(value, ) for value in binding.value]
+
+        for value in iterator:
+            if bound_predication_function(value[0]):
+                yield state.set_x(binding.variable.name, value, False)
 
 
 # "'lift' style" means that:
