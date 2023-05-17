@@ -125,6 +125,7 @@ pronoun_q(x3,RSTR,BODY)              │
 ~~~
 This parse doesn't try to deliver the semantic interpretation of the word in quotes. It just provides the raw term using the predication `quoted`, meaning "this text was in quotes". Then, it uses `fw_seq` on the quoted variable `i13`. This indicates it was a "sequence" of one quoted word. Finally, `x8` is quantified by `proper_q` which is often used for proper nouns, but can be used as a marker of all kinds of "raw text". As usual, the quantifier is already implemented by the system. So, for this, we need to implement: `quoted(i)`, `fw_seq(x,i)` and update `_delete_v_1(e,x,x)` to handle whatever they set the variables to.
 
+### quoted(c,i)
 `quoted` is unusual in that it has an argument called `CARG` (described in detail in the [ERG Essence topic](https://delph-in.github.io/docs/erg/ErgSemantics_Essence#further-ers-contents)). `CARG` is a way to pass a constant to a predication without requiring an `x` variable. The argument will simply be raw text:
 
 ~~~
@@ -164,7 +165,10 @@ def quoted(state, c_raw_text_value, i_text_binding):
                                               ["unexpected"])
 ~~~
 
-Implementing the [predication contract](../devhowto/devhowtoPredicationContract) on `fw_seq(x,i)` is a little more subtle. The meaning of `fw_seq(x,i)` is less linguistic and more mechanical: It is true when `x` and `i` hold the same "quoted term". If they are both bound, this is easy to check. If `x` is unbound, according to the predication contract, we should conceptually look through all the state in the world to find which state is the same as `i`. Since `i` could be any string, it would be impossible to do it that way. Instead, we can just assume that all possible text exists in the world (since files and folders can be named anything), and assume it will always exist. So we can simply set `x` to `i` if it is unbound (or vice versa if `i` is unbound): 
+`quoted()` uses `individual_style_predication_1` because it should never get a set of more than one item, and if it does, it isn't clear what having multiple quoted strings "together" means in MRS. So, we're forcing the system to only pass individuals to us and to report an error if the unexpected case happens.  In that case, we're using the system error `unexpected` which just prints out "I'm not sure what that means."
+
+###
+Implementing `fw_seq(x,i)` is a little more subtle. The meaning of `fw_seq(x,i)` is less linguistic and more mechanical: It is `true` when `x` and `i` hold the same "quoted term". If they are both bound, this is easy to check. If `x` is unbound, according to the [predication contract](../pxint/pxint0010PredicationContract), we should conceptually look through all the state in the world and `yield` each state that is the same as `i`. Since `i` could be any string, it would be impossible to do it that way. Instead, we can just assume that all possible text exists in the world (since files and folders can be named anything), and assume it will always exist. So we can simply set `x` to `i` if it is unbound (or vice versa if `i` is unbound): 
 
 ~~~
 @Predication(vocabulary)
