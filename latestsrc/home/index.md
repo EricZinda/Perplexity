@@ -1,5 +1,5 @@
 ---
 layout: redirected
 sitemap: false
-redirect_to:  devhowto/devhowtoOverview
+redirect_to:  devOverview
 ---

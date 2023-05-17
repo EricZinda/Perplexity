@@ -119,7 +119,7 @@
           
         </a>
         <ul class="visible-links"><li class="masthead__menu-item">
-              <a href="https://blog.inductorsoftware.com/Perplexity/home/devhowto/devhowtoOverview">Home</a>
+              <a href="https://blog.inductorsoftware.com/Perplexity/home/devOverview">Home</a>
             </li></ul>
         
         <button class="search__toggle" type="button">
@@ -187,7 +187,7 @@
         
         <ul>
           
-            <li><a href="/Perplexity/home/mrscon/devhowtoMRS/">Minimal Recursion Semantics (MRS)</a></li>
+            <li><a href="/Perplexity/home/mrscon/devhowto0010MRS/">Minimal Recursion Semantics (MRS)</a></li>
           
             <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/">Well-Formed Trees</a></li>
           
@@ -302,6 +302,8 @@
             <li><a href="/Perplexity/home/pxhowto/pxHowTo085Place/">Representing Places</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo090Prepositions/">Directional Propositions</a></li>
+          
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo095LocativePrepositions/">Locative Propositions</a></li>
           
         </ul>
         
@@ -503,7 +505,7 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                     └─ _a_q(x8,RSTR,BODY)
                                       └─ _delete_v_1(e2,x3,x8)
 </code></pre></div></div>
-<p>… and <code class="language-plaintext highlighter-rouge">pron(x)</code> is the last predication to implement (<code class="language-plaintext highlighter-rouge">pronoun_q</code> is a quantifier that is implemented by the system). <code class="language-plaintext highlighter-rouge">pron(x)</code> is true when <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what the specified pronoun is <em>referring to</em>. The “specified pronoun” is determined by looking at the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowtoMRS">properties</a> for the <code class="language-plaintext highlighter-rouge">x</code> variable to determine if the pronoun is “you” (<code class="language-plaintext highlighter-rouge">PERS: 2</code> – second person), “him/her”(<code class="language-plaintext highlighter-rouge">PERS: 3</code> – third person), etc. If <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what that pronoun is referring to, it is <code class="language-plaintext highlighter-rouge">true</code>.</p>
+<p>… and <code class="language-plaintext highlighter-rouge">pron(x)</code> is the last predication to implement (<code class="language-plaintext highlighter-rouge">pronoun_q</code> is a quantifier that is implemented by the system). <code class="language-plaintext highlighter-rouge">pron(x)</code> is true when <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what the specified pronoun is <em>referring to</em>. The “specified pronoun” is determined by looking at the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">properties</a> for the <code class="language-plaintext highlighter-rouge">x</code> variable to determine if the pronoun is “you” (<code class="language-plaintext highlighter-rouge">PERS: 2</code> – second person), “him/her”(<code class="language-plaintext highlighter-rouge">PERS: 3</code> – third person), etc. If <code class="language-plaintext highlighter-rouge">x</code> is bound to an object that represents what that pronoun is referring to, it is <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
 <p>There were not any pronouns in our command “delete a file”, so where did the <code class="language-plaintext highlighter-rouge">pron</code> predication come from? In this case, the pronoun is an <em>implied</em> “you” since it is a command. I.e “(You) delete a large file”.  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are “you” (“can you delete the file?” or the implied case above) and maybe “I” (“I want to delete a file”). For now, let’s just do “you” and fail otherwise.</p>
 

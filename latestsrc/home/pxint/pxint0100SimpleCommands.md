@@ -272,4 +272,4 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0100SimpleCommands.md)]{% endraw %}
+Last update: 2023-05-17 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0100SimpleCommands.md)]{% endraw %}
