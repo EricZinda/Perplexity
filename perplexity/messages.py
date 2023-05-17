@@ -21,7 +21,7 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
         if solution_groups is not None:
-            yield "Yes, that is true.", next(solution_groups)
+            yield None, next(solution_groups)
             return
 
         else:
@@ -84,7 +84,7 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
         # This was a command so, if it works, just say so
         # We'll get better errors and messages in upcoming sections
         if solution_groups is not None:
-            yield "Done!", next(solution_groups)
+            yield None, next(solution_groups)
 
         else:
             message = message_function(tree, error)

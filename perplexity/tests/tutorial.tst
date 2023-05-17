@@ -312,7 +312,7 @@
         },
         {
             "Command": "go to \"/documents\"",
-            "Expected": "Done!",
+            "Expected": "You are now in Folder(name=/documents, size=0)",
             "Tree": "proper_q(x9,[quoted(\\\\>documents,i14), fw_seq(x9,i14)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
             "Enabled": true,
             "ID": "2db0658c-8aac-484f-b120-f9c43de91e26"

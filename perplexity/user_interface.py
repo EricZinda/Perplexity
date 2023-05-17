@@ -8,6 +8,7 @@ from delphin import ace
 from delphin.codecs import simplemrs
 from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
+from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, find_predication
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
@@ -180,11 +181,25 @@ class UserInterface(object):
                             # Because this worked, we need to apply any Operations that were added to
                             # any solution to the current world state.
                             try:
-                                self.apply_solutions_to_state([solution for solution in solution_group])
+                                operation_responses = self.apply_solutions_to_state([solution for solution in solution_group])
 
                             except MessageException as error:
                                 response = self.response_function(self.message_function, tree_info, [], [0, error.message_object()])
                                 tree_record["ResponseMessage"] += f"\n{str(response)}"
+
+                            if len(operation_responses) > 0:
+                                response = "\n".join(operation_responses)
+
+                            elif response is None:
+                                if this_sentence_force == "comm":
+                                    # Only give a "Done!" message if it was a command and there were no responses given
+                                    response = "Done!"
+
+                                elif this_sentence_force == "prop":
+                                    response = "Yes, that is true."
+
+                                else:
+                                    response = "(no response)"
 
                             tree_record["ResponseMessage"] += response
                             print(response)
@@ -394,14 +409,19 @@ class UserInterface(object):
 
     def apply_solutions_to_state(self, solutions):
         # Collect all of the operations that were done
+        responses = []
         all_operations = []
         for solution in solutions:
-            all_operations += solution.get_operations()
+            for operation in solution.get_operations():
+                if isinstance(operation, RespondOperation):
+                    responses.append(operation.response_string())
+                else:
+                    all_operations.append(operation)
 
-        # Now apply all the operations to the original state object and
-        # print it to prove it happened
+        # Now apply all the operations to the original state object
         self.state = self.state.apply_operations(all_operations, False)
         logger.debug(f"Final state: {self.state.objects}")
+        return responses
 
     def mrss_from_phrase(self, phrase):
         # Don't print errors to the screen

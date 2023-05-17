@@ -1,5 +1,7 @@
 Remaining work to be shown in the tutorial:
-- Handle commands from anything
+- How to print things? Need a model for that.
+  - We only want things printed if they are used in the solution
+  - Add an operation that is "print string"
 - "What else is on the menu?" -> need to see if "else" is on "which"
   - Not included in any predication
 - Fix the bug where there is a failure and no error and it crashes

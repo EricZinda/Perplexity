@@ -4,6 +4,7 @@ from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, in_style_predication_2, \
     individual_style_predication_1, ValueSize, discrete_variable_set_generator, quantifier_raw
+from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.tree import used_predicatively, is_this_last_fw_seq
@@ -521,7 +522,9 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
                                                     bound_location,
                                                     unbound_location,
                                                     ["cantDo", "go", x_location_binding.variable.name]):
-        yield new_state.apply_operations([ChangeDirectoryOperation(new_state.get_binding(x_location_binding.variable.name))])
+        target_location_binding = new_state.get_binding(x_location_binding.variable.name)
+        yield new_state.apply_operations([ChangeDirectoryOperation(target_location_binding),
+                                          RespondOperation(f"You are now in {target_location_binding.value[0]}")])
 
 
 @Predication(vocabulary, names=["_to_p_dir"])
