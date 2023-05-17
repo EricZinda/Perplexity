@@ -2,7 +2,7 @@
 In DELPH-IN, the same predication name might get called with different sets of arguments depending on how it is used. For example, the English verb "delete" (`_delete_v_1`) can be called with these signatures:
 
 - "Delete a file" includes an implied "actor" ("you") as the first `x` argument: `_delete_v_1(e, x, x)`
-- "a file is deleted" has no implied actor, so the first `x` argument is [dropped](devhowtoMRS#other-variables-types-i-u-p) and becomes an `i`: `_delete_v_1(e, i, x)`
+- "a file is deleted" has no implied actor, so the first `x` argument is [dropped](devhowto0010MRS#other-variables-types-i-u-p) and becomes an `i`: `_delete_v_1(e, i, x)`
 
 Furthermore, the implementation of `delete_v_1` for each of those phrases will be very different. The first needs to actually delete a file and the second should (perhaps) look through the trash to see if a file has been deleted. The `Vocabulary` class needs to remember the arguments used with a predication implementation and also allow different functions to cover different sentence force scenarios.
 

@@ -1,5 +1,5 @@
 ## The Predication Contract
-> It is important to understand [what MRS is](devhowtoMRS) and what [a well-formed MRS tree is](devhowtoWellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
+> It is important to understand [what MRS is](devhowto0010MRS) and what [a well-formed MRS tree is](devhowtoWellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
 A [well-formed MRS tree](devhowtoWellFormedTree) can be thought of as an *equation* that can be solved against a certain state of the world. One approach to solving an MRS is to walk the well-formed tree in depth-first order and iteratively find assignments of variables that make the MRS "true", using backtracking to try alternatives when they exist. This is a [depth-first computational SLD approach](https://en.wikipedia.org/wiki/SLD_resolution) that, for example, the Prolog language uses in proving a goal.  We'll be using this approach for the tutorial. To solve an MRS tree using the SLD approach, we need to code the predications to meet a specific contract that our solver will rely on. This is the "predication contract".
 

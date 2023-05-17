@@ -20,7 +20,7 @@ _a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
                         └ _large_a_1(e2,x3)
 ~~~
 
-You can see what *type* of phrase it is by looking at the [*properties* of that variable](devhowtoMRS#variable-properties). This is the first time we've had to inspect variable properties, so lets dig in there a bit. 
+You can see what *type* of phrase it is by looking at the [*properties* of that variable](devhowto0010MRS#variable-properties). This is the first time we've had to inspect variable properties, so lets dig in there a bit. 
 
 You can see that, next to each argument in the MRS, there is a list of properties surrounded by `[]`. It looks like this for the `e2` argument of `_large_a_1`:
 

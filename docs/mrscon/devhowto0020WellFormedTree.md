@@ -1,5 +1,5 @@
 ## Building Well-Formed MRS Trees
-> To understand this section, first make sure you have a [basic understanding of the MRS format](devhowtoMRS).  
+> To understand this section, first make sure you have a [basic understanding of the MRS format](devhowto0010MRS).  
 
 Let's use the sentence "every book is in a cave" as an example. If the phrase is parsed with [the ACE parser](http://sweaglesw.org/linguistics/ace/), you get an MRS document like this:
 
@@ -17,7 +17,7 @@ HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 ~~~
 Our goal is to eventually "solve" the MRS by finding values for its MRS variables such that it is "true". When complete, these variables indicate what the speaker *meant* and allow us to *do* something about it.  
 
-To resolve an MRS against a world state (a particular state of the world at a moment in time) and get *solutions* to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a *well-formed MRS tree*. We will examine *how* shortly, but for now just know that a well-formed MRS tree has (among other things) nodes that are the predications from the MRS like `_every_q__xhh` and arcs that are links between the [*scopal arguments*](#devhowtoMRS#h-handle-variables-aka-scopal-arguments) of the predications and other nodes, like this:
+To resolve an MRS against a world state (a particular state of the world at a moment in time) and get *solutions* to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a *well-formed MRS tree*. We will examine *how* shortly, but for now just know that a well-formed MRS tree has (among other things) nodes that are the predications from the MRS like `_every_q__xhh` and arcs that are links between the [*scopal arguments*](devhowto0010MRS#h-handle-variables-aka-scopal-arguments) of the predications and other nodes, like this:
 
 ~~~
               ┌────── _book_n_of(x3,i8)
@@ -64,11 +64,11 @@ The MRS is a flat list of predications so that it avoids building a single tree 
 This interpretation is what we need in order to eventually "solve" the phrase for the variables it contains. This topic describes how to build that tree.
 
 ## Holes and Constraints
-"Holes" are `h` arguments in a predication that refer to a [predicate label](devhowtoMRS#predication-labels) that is *not* defined. In the above MRS, `h0` (the `TOP:`), `h11`, `h12`, `h5`, and `h6` are all "holes" since none of the predicates use those names as their `LBL:`.
+"Holes" are `h` arguments in a predication that refer to a [predicate label](devhowto0010MRS#predication-labels) that is *not* defined. In the above MRS, `h0` (the `TOP:`), `h11`, `h12`, `h5`, and `h6` are all "holes" since none of the predicates use those names as their `LBL:`.
 
 The `HCONS` section of the MRS puts *CONS*traints on which placement of *H*andles in holes is valid.
 
-The only kind of constraint used in "modern" MRS is a `qeq` constraint.  A `qeq` constraint always relates a hole to a (non-hole) handle and says that the handle must be a direct or eventual child in the tree. Furthermore, if not directly connected, the only things between the hole and the handle can be [quantifiers](devhowtoMRS#quantifier-predications).  
+The only kind of constraint used in "modern" MRS is a `qeq` constraint.  A `qeq` constraint always relates a hole to a (non-hole) handle and says that the handle must be a direct or eventual child in the tree. Furthermore, if not directly connected, the only things between the hole and the handle can be [quantifiers](devhowto0010MRS#quantifier-predications).  
 
 Said a different way: 
 
@@ -113,7 +113,7 @@ HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 
 The rules for MRS say that any variable in the MRS is "globally defined" (or "existentially qualified" in logic terms) for the whole structure *except* for `x` variables.  So, both `e2` and `i8` don't need any special handling, they are globally defined.
 
-`x` variables, on the other hand, can *only* be defined by [quantifiers](devhowtoMRS#quantifier-predications), and are *only* defined for the branches of the tree that are attached to the quantifier's scopal (`h`) arguments: `RSTR` and `BODY`.
+`x` variables, on the other hand, can *only* be defined by [quantifiers](devhowto0010MRS#quantifier-predications), and are *only* defined for the branches of the tree that are attached to the quantifier's scopal (`h`) arguments: `RSTR` and `BODY`.
 
 So, while the predications can be in any order in the tree with respect to their `e`  (or `i` or `u` if it had them) arguments, the tree must be checked to make sure all of the `x` arguments have an eventual parent which is a quantifier which puts them in scope (i.e. has the `x` variable as its first argument: `ARG0`). This is an additional constraint that has to be checked to build a "well-formed" tree.
 

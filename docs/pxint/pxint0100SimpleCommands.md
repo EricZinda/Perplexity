@@ -28,7 +28,7 @@ The sentence force for this sentence is `SF: comm` meaning "command", determined
 ### Pronouns: pron and pronoun_q
 The first two new predicates we encounter are: `pron(x3)` and `pronoun_q(x3,RSTR,BODY)` and they often work together as they do here. 
 
-`pron(x)` needs to fill `x` with an object that represents what the specified pronoun is *referring to*. It does this by looking at the [properties](devhowtoMRS#variable-properties) for the `x` variable to determine if the pronoun is "you" (`PERS: 2` -- second person), "him/her"(`PERS: 3` -- third person), etc. and sets the variable to be whatever the pronoun is referring to. 
+`pron(x)` needs to fill `x` with an object that represents what the specified pronoun is *referring to*. It does this by looking at the [properties](devhowto0010MRS#variable-properties) for the `x` variable to determine if the pronoun is "you" (`PERS: 2` -- second person), "him/her"(`PERS: 3` -- third person), etc. and sets the variable to be whatever the pronoun is referring to. 
 
 There were not any pronouns in our command "delete a large file", so where did the `pron` predication come from? In this case, the pronoun is an *implied* "you" since it is a command. I.e "(You) delete a large file".  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are "you" ("can you delete the file?" or the implied case above) and maybe "I" ("I want to delete a file"). For now, let's just do "you" and fail otherwise. 
 

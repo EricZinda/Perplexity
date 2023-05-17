@@ -26,7 +26,7 @@
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devOverview.md", "DstFile": "devOverview.md"}
       ]},
       {"Section": "MRS Conceptual", "Pages": [
-        {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0010MRS.md", "DstFile": "mrscon/devhowtoMRS.md"},
+        {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0010MRS.md", "DstFile": "mrscon/devhowto0010MRS.md"},
         {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0020WellFormedTree.md", "DstFile": "mrscon/devhowto0020WellFormedTree.md"}
       ]},
       {"Section": "MRS Solver Conceptual", "Pages": [
@@ -72,6 +72,7 @@
         {"Page": "Custom State", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo082State.md", "DstFile": "pxhowto/pxHowTo082State.md"},
         {"Page": "Representing Places", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo085Place.md", "DstFile": "pxhowto/pxHowTo085Place.md"},
         {"Page": "Directional Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo090Prepositions.md", "DstFile": "pxhowto/pxHowTo090Prepositions.md"}
+        {"Page": "Locative Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowto095LocativePrepositions", "DstFile": "pxhowto/pxHowto095LocativePrepositions.md"}
       ]}
     ]
   }
