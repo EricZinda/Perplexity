@@ -147,7 +147,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
-        yield success_state.record_operations([operation])
+        yield success_state.apply_operations([operation])
 
 
 class DeleteOperation(object):

@@ -118,13 +118,13 @@ class DeleteOperation(object):
 ~~~
 The `DeleteOperation` itself is very simple, it is really just remembering what to delete. When it is asked to `apply_to()`, it calls the method in the `state` object that actually deletes the file, in *that* state object (which might be different than the one it was added to).
 
-To use the `DeleteOperation`, we create an instance of one and pass it to the `record_operations()` method in the `State` object, like this:
+To use the `DeleteOperation`, we create an instance of one and pass it to the `apply_operations()` method in the `State` object, like this:
 ~~~
 operation = DeleteOperation(new_state.get_binding(x_what_binding.variable.name).value[0])
-new_state.record_operations([operation])
+new_state.apply_operations([operation])
 ~~~
 
-The `record_operations()` method takes a list of operations to record, but in this case we're only doing one. Those two lines of code record that we want to delete a particular file, but they don't actually *do* it yet.  Later, when we have the final solution group, we can gather all of the `Operations` that were done to the solutions in the group and call `apply_operations()` on the one single state we want to represent the new world.
+The `apply_operations()` method takes a list of operations to apply, but in this case we're only doing one. Those two lines of code record that we want to delete a particular file, but they don't actually *do* it yet.  Later, when we have the final solution group, we can gather all of the `Operations` that were done to the solutions in the group and call `apply_operations()` on the one single state we want to represent the new world.
 
 Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the "new state of the world" once we know what to do.
 
@@ -152,7 +152,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
-        yield success_state.record_operations([operation])
+        yield success_state.apply_operations([operation])
 ~~~
 
 The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of `interact_once()`. That's where `DeleteOperation.apply_to()` gets called for every solution in the solution group.
@@ -289,7 +289,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
-        yield success_state.record_operations([operation])
+        yield success_state.apply_operations([operation])
 ~~~
 
 ... and create our initial `State` object with the starting list of files:
