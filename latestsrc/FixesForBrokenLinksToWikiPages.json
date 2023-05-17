@@ -9,10 +9,6 @@
         {"Page": "devhowtoMRSSolverSolutionGroupsAlgorithm", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoMRSSolverSolutionGroupsAlgorithm.md", "BaseReferrer": "home/docs/devcon/devcon0030MRSSolverSolutionGroups.md", "Referrer": "home/docs/devcon/devcon0030MRSSolverSolutionGroups.md", "FileMissing": true},
         {"Page": "devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/devcon/devcon0010MRSSolver.md", "Referrer": "home/docs/devcon/devcon0010MRSSolver.md", "FileMissing": true}
       ]},
-      {"Section": "Developer Tutorial Overview", "Pages": [
-        {"Page": "devhowtoMRS", "SrcDir": "main", "SrcFile": "docs/devhowtoMRS.md", "BaseReferrer": "home/docs/devOverview.md", "Referrer": "home/docs/devOverview.md", "FileMissing": true},
-        {"Page": "devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/devOverview.md", "Referrer": "home/docs/devOverview.md", "FileMissing": true}
-      ]},
       {"Section": "MRS Conceptual", "Pages": [
         {"Page": "devhowtoConceptualFailures", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowtoConceptualFailures.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
         {"Page": "devhowtoEvents", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowtoEvents.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
