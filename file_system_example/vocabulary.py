@@ -108,6 +108,20 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
+def all_nouns_lemmas():
+    yield "folder"
+    yield "file"
+    yield "book"
+
+
+# Simple example of using match_all that doesn't do anything except
+# make sure we don't say "I don't know the word book"
+@Predication(vocabulary, names=["match_all_n"], matches_lemmas=all_nouns_lemmas)
+def all_nouns(state, x_binding, i_binding):
+    if False:
+        yield None
+
+
 # true for both sets and individuals as long as everything
 # in the set is a file
 @Predication(vocabulary, names=["_folder_n_of"])

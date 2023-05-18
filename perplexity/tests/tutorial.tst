@@ -456,6 +456,20 @@
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "8cad0fce-3ce7-4d96-a384-606ef10fd11f"
+        },
+        {
+            "Command": "where is a dog",
+            "Expected": "I don't know the words: dog",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "88b0aa71-c1a3-47b1-bc8b-393bef1b8d33"
+        },
+        {
+            "Command": "where is a book?",
+            "Expected": "There isn't 'a book' in the system",
+            "Tree": "which_q(x4,place_n(x4),_a_q(x3,_book_n_of(x3,i13),loc_nonsp(e2,x3,x4)))",
+            "Enabled": true,
+            "ID": "cf288c47-6395-4970-b543-62da22c74703"
         }
     ]
 }

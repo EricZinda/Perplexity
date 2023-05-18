@@ -12,7 +12,8 @@ from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, find_predication
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator
+from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
+    parse_predication_name
 
 
 def no_error_priority(error):
@@ -382,6 +383,16 @@ class UserInterface(object):
 
             tree_index += 1
 
+    def in_match_all(self, predication, argument_types, metadata_list):
+        for metadata in metadata_list:
+            if metadata.is_match_all():
+                predication_info = parse_predication_name(predication.predicate)
+                if predication_info["Lemma"] in metadata.matches_lemmas():
+                    return True
+
+        else:
+            return False
+
     def unknown_words(self, mrs):
         unknown_words = []
         phrase_type = sentence_force(mrs.variables)
@@ -392,8 +403,12 @@ class UserInterface(object):
                     argument_types.append("c")
                 else:
                     argument_types.append(argument_item[1][0])
+
             predications = list(self.execution_context.vocabulary.predications(predication.predicate, argument_types, phrase_type))
-            if len(predications) == 0:
+            all_metadata = [meta for meta in self.execution_context.vocabulary.metadata(predication.predicate, argument_types)]
+            if len(predications) == 0 or \
+                    (all(meta.is_match_all() for meta in all_metadata) and not self.in_match_all(predication, argument_types, all_metadata)):
+                # If there aren't any implementations for this predication, or they are all match_all and don't implement it...
                 # This predication is not implemented
                 unknown_words.append((predication.predicate,
                                       argument_types,

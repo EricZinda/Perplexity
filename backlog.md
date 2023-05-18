@@ -1,10 +1,55 @@
 Remaining work to be shown in the tutorial:
-- How to print things? Need a model for that.
-  - We only want things printed if they are used in the solution
-  - Add an operation that is "print string"
-- "What else is on the menu?" -> need to see if "else" is on "which"
-  - Not included in any predication
-- Fix the bug where there is a failure and no error and it crashes
+- For will:
+  - Implement all nouns in terms of base engine using noun_n()
+  - "I want ham" discussion below
+  - This is a prototype of a v1 engine, expect rewrites
+  - Test infrastructure
+  
+- "I want ham" is a proposition that we want to interpret as a command
+  - For a verb: Succeeding means it "worked" and should add an operation to change the state
+    - For will: it is not modelled as world state as in "I want a burger"
+    - Really think about a phrase as setting up all the various variables so that the verb can be called
+      - Really it just means: this is the proper interpretation, but it might be an error, in which case it can do a RespondOperation
+    - delegate to "give me" *as one alternative* if it works, great!
+      - If: it is a proposition and IF pron(I) and IF arguments are bound: There is something concrete they want, next determine how to deal with it
+          - in the doorway: "I want a table" -> give me a table, "I want a place to sit", "I want to eat " (different want_v), I want a burger" -> "Do you want take-out?"
+    - NEED TO UPDATE DOCS FOR VERBS TO MAKE ALL THIS CLEAR
+    - Do we need different messages based on the noun? For example, in the doorway: ""
+    - Use Chat GPT for testing
+    
+- How to answer "what is on the menu?" or "what items are on the menu?" with "we have a lovely selection of ..." 
+  - Conceptually this means: read the menu
+  - Unbound "what" can trigger an action that adds operations to the results
+    - Need a way to insert the beginning "We have a lovely section of " and then the list: x, y, z all from the on_p predication
+      - And each one will be a different solution. The user could have said "what are 2 things on the menu?" -> which probably shouldn't have "we have a lovely selection of..." in it
+        - But: the on_p predication can't tell
+        - Maybe there is a RespondCommand if the whole set is used, and another for a subset?
+        - Or there is some kind of global event that gets called to decide the pre and postamble?
+          - Could it be a "solution group" event?
+  - The question "is fish on the menu" should be answered with "yes"
+  
+  - Look at what we did in adventure.pl with querySetAnswer()
+    - Possibly we need different predications for attributive vs. predicative? Or index?
+    
+- Need a classic "push a context on the stack" for questions like "Do you want takeout?" know how to deal with responses like:
+  - "I want to sit down"
+  - "yes, I'd like a hamburger please"
+  - Need a conversation model? Discourse analysis?
+
+- what about "I want two hamburgers"?
+  - If hamburgers don't exist it will fail on hamburger_n() with "I don't know the word"
+    - We kind of want "want" to get called with the text of what the user wants and fail in "want/give", right?
+    - with a message like "We don't have those here"
+    - Implies there is a generic noun_n() that gets called
+
+- ESL Features TODO
+  - Don't respond with items if the user added a response with RespondCommand
+  - Give a way to replace a list with your own (like a global event for solution groups)
+  - Need a NLG realizer for strings
+  - "What else is on the menu?" -> need to see if "else" is on "which"
+    - Not included in any predication
+  - Way to push a conversation so the system can ask "Do you want this?" and properly deal with responses
+    
 - Put thing() in the system space.  Others?  "a few"?
 - Docs update:
   - Figure out how to do examples in the internals section.  Just replicate the how-to?
@@ -15,6 +60,9 @@ Remaining work to be shown in the tutorial:
 - Rebuild the scenarios to get the tests to pass again
 - Build a backend to use for ESL Scenarios
 
+- Need to write a section on predication design
+  - Objects should be implemented purely and independently so that the magic of language and logic "just work"
+  
 Plurals work 
 - Example 36: "delete files that are 20mb" -> crash
 - Example 33: "delete only 2 files in the folder" -> There are more than 2 file in the folder
