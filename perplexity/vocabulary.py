@@ -22,14 +22,12 @@ class ValueSize(enum.Enum):
     all = 3
 
 
-def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemmas=None):
+def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None):
     # Work around Python's odd handling of default arguments that are objects
     if handles is None:
         handles = []
     if virtual_args is None:
         virtual_args = []
-    if matches_lemmas is None:
-        matches_lemmas = []
 
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
@@ -146,10 +144,10 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
         # Make sure match_all args are filled in right
         is_match_all = any(name.startswith("match_all_") for name in predication_names)
-        valid_match_all = is_match_all and len(predication_names) == 1 and matches_lemmas is not None
+        valid_match_all = is_match_all and len(predication_names) == 1 and matches_lemma_function is not None
         assert not is_match_all or (is_match_all and valid_match_all)
 
-        metadata = PredicationMetadata(argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemmas)
+        metadata = PredicationMetadata(argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
         final_arg_types = metadata.arg_types()
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
         vocabulary.add_predication(metadata, function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arg_types, final_phrase_types)
@@ -171,6 +169,7 @@ class PredicationMetadata(object):
     def is_match_all(self):
         return self._match_all
 
+
 # The structure of self.all is:
 #   {"erase_v_1__exx__comm": [(module, function), ...],
 #    "erase_v_1__exx__ques": [(module, function), ...],
@@ -189,7 +188,7 @@ class Vocabulary(object):
         name_key = self.name_key(delphin_name, arg_types, "")
         if name_key in self._metadata:
             metadata_list += self._metadata[name_key]
-        generic_key = self.generic_key(delphin_name, arg_types, "")
+        _, generic_key = self.generic_key(delphin_name, arg_types, "")
         if generic_key in self._metadata:
             metadata_list += self._metadata[generic_key]
         return metadata_list
@@ -199,7 +198,7 @@ class Vocabulary(object):
 
     def generic_key(self, delphin_name, arg_types, phrase_type):
         predication_info = parse_predication_name(delphin_name)
-        return f"match_all_{predication_info['Pos']}__{''.join(arg_types)}__{phrase_type}"
+        return predication_info["Lemma"], f"match_all_{predication_info['Pos']}__{''.join(arg_types)}__{phrase_type}"
 
     def version_exists(self, delphin_name):
         name_parts = parse_predication_name(delphin_name)
@@ -235,13 +234,13 @@ class Vocabulary(object):
     def predications(self, name, arg_types, predication_type):
         name_key = self.name_key(name, arg_types, predication_type)
         if name_key in self.all:
-            for functionName in self.all[name_key]:
-                yield functionName
+            for module_function in self.all[name_key]:
+                yield module_function + (None, )
 
-        generic_key = self.generic_key(name, arg_types, predication_type)
+        lemma, generic_key = self.generic_key(name, arg_types, predication_type)
         if generic_key in self.all:
-            for functionName in self.all[generic_key]:
-                yield functionName
+            for module_function in self.all[generic_key]:
+                yield module_function + ([lemma], )
 
 
 pipeline_logger = logging.getLogger('Pipeline')

@@ -387,7 +387,7 @@ class UserInterface(object):
         for metadata in metadata_list:
             if metadata.is_match_all():
                 predication_info = parse_predication_name(predication.predicate)
-                if predication_info["Lemma"] in metadata.matches_lemmas():
+                if metadata.matches_lemmas(predication_info["Lemma"]):
                     return True
 
         else:

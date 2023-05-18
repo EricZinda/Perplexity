@@ -1,21 +1,12 @@
 Remaining work to be shown in the tutorial:
+- How to deal with "I want a strawberry" when we know about strawberries but there aren't any
+    - Do we need different messages based on the state of the world? For example, in the doorway: ""
+
 - For will:
   - Implement all nouns in terms of base engine using noun_n()
   - "I want ham" discussion below
   - This is a prototype of a v1 engine, expect rewrites
   - Test infrastructure
-  
-- "I want ham" is a proposition that we want to interpret as a command
-  - For a verb: Succeeding means it "worked" and should add an operation to change the state
-    - For will: it is not modelled as world state as in "I want a burger"
-    - Really think about a phrase as setting up all the various variables so that the verb can be called
-      - Really it just means: this is the proper interpretation, but it might be an error, in which case it can do a RespondOperation
-    - delegate to "give me" *as one alternative* if it works, great!
-      - If: it is a proposition and IF pron(I) and IF arguments are bound: There is something concrete they want, next determine how to deal with it
-          - in the doorway: "I want a table" -> give me a table, "I want a place to sit", "I want to eat " (different want_v), I want a burger" -> "Do you want take-out?"
-    - NEED TO UPDATE DOCS FOR VERBS TO MAKE ALL THIS CLEAR
-    - Do we need different messages based on the noun? For example, in the doorway: ""
-    - Use Chat GPT for testing
     
 - How to answer "what is on the menu?" or "what items are on the menu?" with "we have a lovely selection of ..." 
   - Conceptually this means: read the menu
@@ -45,11 +36,21 @@ Remaining work to be shown in the tutorial:
 - ESL Features TODO
   - Don't respond with items if the user added a response with RespondCommand
   - Give a way to replace a list with your own (like a global event for solution groups)
+    - The old prototype would gather up all responses in one answer and return it
   - Need a NLG realizer for strings
   - "What else is on the menu?" -> need to see if "else" is on "which"
     - Not included in any predication
   - Way to push a conversation so the system can ask "Do you want this?" and properly deal with responses
-    
+  - NEED TO UPDATE DOCS FOR VERBS TO MAKE ALL THIS CLEAR:
+    - "I want ham" is a proposition that we want to interpret as a command
+    - For a verb: Succeeding means it "worked" and should add an operation to change the state
+      - it is not modelled as world state as in "I want a burger = True"
+      - Really think about a phrase as setting up all the various variables so that the verb can be called
+        - Really it just means: this is the proper interpretation, but it might be an error, in which case it can do a RespondOperation
+      - delegate to "give me" *as one alternative* if it works, great!
+        - If: it is a proposition and IF pron(I) and IF arguments are bound: There is something concrete they want, next determine how to deal with it
+            - in the doorway: "I want a table" -> give me a table, "I want a place to sit", "I want to eat " (different want_v), I want a burger" -> "Do you want take-out?"
+          
 - Put thing() in the system space.  Others?  "a few"?
 - Docs update:
   - Figure out how to do examples in the internals section.  Just replicate the how-to?

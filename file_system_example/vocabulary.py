@@ -108,16 +108,15 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
-def all_nouns_lemmas():
-    yield "folder"
-    yield "file"
-    yield "book"
+def handles_noun(noun_lemma):
+    return noun_lemma in ["folder", "file", "book"]
 
 
 # Simple example of using match_all that doesn't do anything except
 # make sure we don't say "I don't know the word book"
-@Predication(vocabulary, names=["match_all_n"], matches_lemmas=all_nouns_lemmas)
-def all_nouns(state, x_binding, i_binding):
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
+def match_all_n(noun_type, state, x_binding, i_binding):
+    print(noun_type)
     if False:
         yield None
 

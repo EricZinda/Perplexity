@@ -126,6 +126,10 @@ class ExecutionContext(object):
             # predication function we wrote in Python
             function = getattr(module, module_function[1])
 
+            # See if the system wants us to tack any arguments to the front
+            if module_function[2] is not None:
+                function_args = module_function[2] + function_args
+
             # If a MessageException happens during execution,
             # convert it to an error
             try:
