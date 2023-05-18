@@ -109,7 +109,7 @@ def file_n_of(state, x_binding, i_binding):
 
 
 def handles_noun(noun_lemma):
-    return noun_lemma in ["folder", "file", "book"]
+    return noun_lemma in ["book"]
 
 
 # Simple example of using match_all that doesn't do anything except
