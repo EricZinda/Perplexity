@@ -10,7 +10,8 @@ from perplexity.execution import ExecutionContext, MessageException
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, find_predication
+from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, \
+    find_predication, MrsParser
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
     parse_predication_name
@@ -41,6 +42,7 @@ class UserInterface(object):
         self.run_tree_index = None
         self.show_all_answers = False
         self.run_all_parses = False
+        self.mrs_parser = MrsParser(self.max_holes)
 
     def chosen_tree_record(self):
         chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
@@ -120,7 +122,7 @@ class UserInterface(object):
         # Loop through each MRS and each tree that can be
         # generated from it...
         mrs_index = -1
-        for mrs in self.mrss_from_phrase(self.user_input):
+        for mrs in self.mrs_parser.mrss_from_phrase(self.user_input):
             mrs_index += 1
             tree_index = -1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
@@ -136,7 +138,7 @@ class UserInterface(object):
                 self.evaluate_best_response(None)
 
             else:
-                for tree in self.trees_from_mrs(mrs):
+                for tree in self.mrs_parser.trees_from_mrs(mrs):
                     tree_index += 1
                     if self.run_tree_index is not None and self.run_tree_index != tree_index:
                         continue
@@ -437,69 +439,6 @@ class UserInterface(object):
         self.state = self.state.apply_operations(all_operations, False)
         logger.debug(f"Final state: {self.state.objects}")
         return responses
-
-    def mrss_from_phrase(self, phrase):
-        # Don't print errors to the screen
-        f = open(os.devnull, 'w')
-
-        # Create an instance of the ACE parser and ask to give <= 100 MRS documents
-        with ace.ACEParser(self.erg_file(), cmdargs=[], stderr=f) as parser:
-        # with ace.ACEParser(self.erg_file(), cmdargs=['-n', '1000'], stderr=f) as parser:
-            ace_response = parser.interact(phrase)
-            pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
-
-        for parse_index in range(0, len(ace_response.results())):
-            # Keep track of the original phrase on the object
-            mrs = ace_response.result(parse_index).mrs()
-            mrs.surface = phrase
-            pipeline_logger.debug(f"Parse {parse_index}: {mrs}")
-            yield mrs
-
-    def trees_from_mrs(self, mrs):
-        # Create a dict of predications using their labels as each key
-        # for easy access when building trees
-        # Note that a single label could represent multiple predications
-        # in conjunction so we need a list for each label
-        mrs_predication_dict = {}
-        for predication in mrs.predications:
-            if predication.label not in mrs_predication_dict.keys():
-                mrs_predication_dict[predication.label] = []
-            mrs_predication_dict[predication.label].append(predication)
-
-        # Iteratively return well-formed trees from the MRS
-        for holes_assignments in valid_hole_assignments(mrs, self.max_holes):
-            # valid_hole_assignments can return None if the grammar returns something
-            # that doesn't have the same number of holes and floaters (which is a grammar bug)
-            if holes_assignments is not None:
-                # Now we have the assignments of labels to holes, but we need
-                # to actually build the *tree* using that information
-                well_formed_tree = tree_from_assignments(mrs.top,
-                                                         holes_assignments,
-                                                         mrs_predication_dict,
-                                                         mrs)
-                pipeline_logger.debug(f"Tree: {well_formed_tree}")
-                yield well_formed_tree
-
-    def erg_file(self):
-        if sys.platform == "linux":
-            ergFile = "erg-2020-ubuntu-perplexity.dat"
-
-        elif sys.platform == "darwin":
-            # Mac returns darwin for both M1 and Intel silicon, need to dig deeper
-            unameResult = platform.uname()
-
-            if "ARM" in unameResult.version:
-                # M1 silicon
-                ergFile = "erg-2020-osx-m1-perplexity.dat"
-
-            else:
-                # Intel silicon
-                ergFile = "erg-2020-osx-perplexity.dat"
-
-        else:
-            ergFile = "erg-2020-ubuntu-perplexity.dat"
-
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 
 
 def command_run_all_parses(ui, arg):

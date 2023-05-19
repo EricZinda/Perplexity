@@ -1,9 +1,82 @@
 import copy
 import logging
+import os
+import platform
+import sys
 from collections import defaultdict
+from delphin import ace
 import perplexity.execution
+from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name
 from perplexity.vocabulary import ValueSize
+
+
+class MrsParser(object):
+    def __init__(self, max_holes):
+        self.max_holes = max_holes
+
+    def mrss_from_phrase(self, phrase):
+        # Don't print errors to the screen
+        f = open(os.devnull, 'w')
+
+        # Create an instance of the ACE parser and ask to give <= 100 MRS documents
+        with ace.ACEParser(self.erg_file(), cmdargs=[], stderr=f) as parser:
+        # with ace.ACEParser(self.erg_file(), cmdargs=['-n', '1000'], stderr=f) as parser:
+            ace_response = parser.interact(phrase)
+            pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
+
+        for parse_index in range(0, len(ace_response.results())):
+            # Keep track of the original phrase on the object
+            mrs = ace_response.result(parse_index).mrs()
+            mrs.surface = phrase
+            pipeline_logger.debug(f"Parse {parse_index}: {mrs}")
+            yield mrs
+
+    def trees_from_mrs(self, mrs):
+        # Create a dict of predications using their labels as each key
+        # for easy access when building trees
+        # Note that a single label could represent multiple predications
+        # in conjunction so we need a list for each label
+        mrs_predication_dict = {}
+        for predication in mrs.predications:
+            if predication.label not in mrs_predication_dict.keys():
+                mrs_predication_dict[predication.label] = []
+            mrs_predication_dict[predication.label].append(predication)
+
+        # Iteratively return well-formed trees from the MRS
+        for holes_assignments in valid_hole_assignments(mrs, self.max_holes):
+            # valid_hole_assignments can return None if the grammar returns something
+            # that doesn't have the same number of holes and floaters (which is a grammar bug)
+            if holes_assignments is not None:
+                # Now we have the assignments of labels to holes, but we need
+                # to actually build the *tree* using that information
+                well_formed_tree = tree_from_assignments(mrs.top,
+                                                         holes_assignments,
+                                                         mrs_predication_dict,
+                                                         mrs)
+                pipeline_logger.debug(f"Tree: {well_formed_tree}")
+                yield well_formed_tree
+
+    def erg_file(self):
+        if sys.platform == "linux":
+            ergFile = "erg-2020-ubuntu-perplexity.dat"
+
+        elif sys.platform == "darwin":
+            # Mac returns darwin for both M1 and Intel silicon, need to dig deeper
+            unameResult = platform.uname()
+
+            if "ARM" in unameResult.version:
+                # M1 silicon
+                ergFile = "erg-2020-osx-m1-perplexity.dat"
+
+            else:
+                # Intel silicon
+                ergFile = "erg-2020-osx-perplexity.dat"
+
+        else:
+            ergFile = "erg-2020-ubuntu-perplexity.dat"
+
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 
 
 class TreePredication(object):
