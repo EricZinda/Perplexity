@@ -298,7 +298,7 @@
         },
         {
             "Command": "where is \"doesn't exist\"",
-            "Expected": "Could you be more specific?",
+            "Expected": "'doesn\u2019t exist' is not in place",
             "Tree": "which_q(x4,place_n(x4),proper_q(x3,[quoted(exist,i14), quoted(doesn\u2019t,i13), fw_seq(x3,i13,i14)],loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "cd5bbf5b-d4de-469b-b690-5e125dda5378"
@@ -466,7 +466,7 @@
         },
         {
             "Command": "where is a book?",
-            "Expected": "There isn't 'a book' in the system",
+            "Expected": "a book is not in place",
             "Tree": "which_q(x4,place_n(x4),_a_q(x3,_book_n_of(x3,i13),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "cf288c47-6395-4970-b543-62da22c74703"

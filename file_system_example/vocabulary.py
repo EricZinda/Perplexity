@@ -113,10 +113,12 @@ def handles_noun(noun_lemma):
 
 
 # Simple example of using match_all that doesn't do anything except
-# make sure we don't say "I don't know the word book"
+# make sure we don't say "I don't know the word 'book'"
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
-def match_all_n(noun_type, state, x_binding, i_binding):
-    print(noun_type)
+def noun_n(noun_type, state, x_binding, i_binding):
+    if noun_type == "book":
+        yield state.set_x(x_binding.variable.name, ("book1",))
+        # report_error(["errorText", "We don't sell books here!"])
     if False:
         yield None
 
@@ -398,6 +400,8 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 # we treat megabytes as a group, all added up, which is different than separately (a megabyte as a time) so ditto
 @Predication(vocabulary, names=["loc_nonsp"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)], handles=[("DeterminerSetLimiter", EventOption.optional)])
 def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding):
+    if x_size_binding.value is None:
+        return
 
     def both_bound_criteria(actor_set, size_set):
         if value_is_measure(size_set):

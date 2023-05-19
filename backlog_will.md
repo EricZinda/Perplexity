@@ -1,0 +1,3 @@
+- Redo existing code using Perplexity ontology
+- Implement all nouns in terms of base engine using noun_n()
+- Implement "I want ham"

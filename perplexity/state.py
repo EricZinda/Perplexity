@@ -62,8 +62,8 @@ class State(object):
         # world state that we can modify.
 
         # Find a common mistakes early
-        assert not isinstance(item, VariableBinding)
-        assert item is None or isinstance(item, tuple)
+        assert not isinstance(item, VariableBinding), "set_x value must be a tuple(), not a VariableBinding"
+        assert item is None or isinstance(item, tuple), "set_x value must be a tuple()"
         if variable_name in new_state.variables:
             initial_variable_data = new_state.variables[variable_name].variable
         else:

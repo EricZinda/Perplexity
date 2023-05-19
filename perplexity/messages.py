@@ -113,6 +113,10 @@ def generate_message(tree_info, error_term):
         arg1 = arg1.strip("'\"")
         return f"There isn't '{arg1}' in the system"
 
+    # Used when you want to embed the error message directly in the code
+    elif error_constant == "errorText":
+        return error_arguments[1]
+
     elif error_constant == "formNotUnderstood":
         predication = predication_from_index(tree_info, error_predicate_index)
         parsed_predicate = parse_predication_name(predication.name)
