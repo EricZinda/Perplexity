@@ -349,7 +349,7 @@ class UserInterface(object):
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
             tree_generator = []
-            for tree in self.trees_from_mrs(mrs_record["Mrs"]):
+            for tree in self.mrs_parser.trees_from_mrs(mrs_record["Mrs"]):
                 tree_generator.append(self.new_tree_record(tree=tree, error=mrs_record["Trees"][0]["Error"], response_generator=mrs_record["Trees"][0]["ResponseGenerator"], response_message=mrs_record["Trees"][0]["ResponseMessage"]))
 
         else:
@@ -627,7 +627,7 @@ def command_debug_tree(ui, arg):
                 tree_generator = [{"Tree": tree,
                                    "Solutions": [],
                                    "Error": None,
-                                   "ResponseMessage": None} for tree in ui.trees_from_mrs(mrs_record["Mrs"])]
+                                   "ResponseMessage": None} for tree in ui.mrs_parser.trees_from_mrs(mrs_record["Mrs"])]
             else:
                 tree_generator = mrs_record["Trees"]
 
