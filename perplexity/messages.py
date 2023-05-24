@@ -16,7 +16,7 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
         return
 
     sentence_force_type = sentence_force(tree["Variables"])
-    if sentence_force_type == "prop":
+    if sentence_force_type == "prop" or sentence_force_type == "prop-or-ques":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer

@@ -97,7 +97,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
         segments = function.__name__.split("_")
         index_types = []
         for index_type in segments:
-            if index_type in ["prop", "ques", "comm", "norm"]:
+            if index_type in ["prop", "ques", "comm", "prop-or-ques", "norm"]:
                 index_types.append(index_type)
 
         return index_types
@@ -206,7 +206,7 @@ class Vocabulary(object):
 
     def add_predication(self, predication_metadata, module, function, delphin_names, arg_types, phrase_types, first=False):
         if len(phrase_types) == 0:
-            phrase_types = ["comm", "ques", "prop", "norm"]
+            phrase_types = ["comm", "ques", "prop", "prop-or-ques", "norm"]
 
         for delphin_name in delphin_names:
             metadata_key = self.name_key(delphin_name, arg_types, "")

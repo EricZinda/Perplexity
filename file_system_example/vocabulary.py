@@ -123,6 +123,12 @@ def noun_n(noun_type, state, x_binding, i_binding):
         yield None
 
 
+@Predication(vocabulary, names=["_please_v_1"])
+def please_v_1(state, e_binding, i_binding_1, i_binding_2):
+    # Just ignore
+    yield state
+
+
 # true for both sets and individuals as long as everything
 # in the set is a file
 @Predication(vocabulary, names=["_folder_n_of"])

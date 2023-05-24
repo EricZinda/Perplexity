@@ -198,7 +198,7 @@ class UserInterface(object):
                                     # Only give a "Done!" message if it was a command and there were no responses given
                                     response = "Done!"
 
-                                elif this_sentence_force == "prop":
+                                elif this_sentence_force == "prop" or this_sentence_force == "prop-or-ques":
                                     response = "Yes, that is true."
 
                                 else:

@@ -470,6 +470,13 @@
             "Tree": "which_q(x4,place_n(x4),_a_q(x3,_book_n_of(x3,i13),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "cf288c47-6395-4970-b543-62da22c74703"
+        },
+        {
+            "Command": "please",
+            "Expected": "Yes, that is true.",
+            "Tree": "_please_v_1(e2,i3,i4)",
+            "Enabled": true,
+            "ID": "ed22ce42-3d7e-4b07-bfa2-3f6a48e2a2ff"
         }
     ]
 }
