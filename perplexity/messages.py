@@ -1,4 +1,5 @@
 from perplexity.generation import english_for_delphin_variable
+from perplexity.response import s
 from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication
 from perplexity.utilities import parse_predication_name, sentence_force
 
@@ -111,7 +112,7 @@ def generate_message(tree_info, error_term):
     elif error_constant == "doesntExist":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         arg1 = arg1.strip("'\"")
-        return f"There isn't '{arg1}' in the system"
+        return f"There isn't {s('a', arg1)} in the system"
 
     # Used when you want to embed the error message directly in the code
     elif error_constant == "errorText":
@@ -133,9 +134,9 @@ def generate_message(tree_info, error_term):
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
     elif error_constant == "lessThan":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False, singular_unquantified=True)
         arg2 = error_arguments[2]
-        return f"There are less than {arg2} {arg1}"
+        return f"There are less than {arg2} {s(None, arg1, count=int(arg2))}"
 
     elif error_constant == "moreThan":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
@@ -146,9 +147,9 @@ def generate_message(tree_info, error_term):
         return f"There is more than one {arg1}"
 
     elif error_constant == "moreThanN":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)
+        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False, singular_unquantified=True)
         arg2 = error_arguments[2]
-        return f"There is more than {arg2} {arg1}"
+        return f"There is more than {arg2} {s(None, arg1, count=int(arg2))}"
 
     elif error_constant == "notTrueForAll":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, default_a_quantifier=False)

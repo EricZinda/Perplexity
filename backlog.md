@@ -1,5 +1,6 @@
 Remaining work to be shown in the tutorial:
 - CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
+
 - How to deal with "I want a strawberry" when we know about strawberries but there aren't any
   - Do we need different messages based on the state of the world? For example, in the doorway: ""
   - create an object called "CanonicalInstance()" if we are talking about a think "in principle" like "I'd like to order a strawberry"?
@@ -52,41 +53,26 @@ Remaining work to be shown in the tutorial:
           - fake it out by generating the phrase with plural or singular *words* and then replace with the whole string of comma delimited stuff
         - If given a verb: [is, sayListNames(an, _1Items, default)]
         - Cache everything but the runtime generation since it is expensive. Don't evaluate it until we actually show the user
-      - TODO: Hande words the engine doesn't know with the same POS and replace? But then you need to pluralize
-I'm trying to see if I can use ACE to do surface realization for simple noun phrase templates. I'm wonder if, given a noun phrase fragment (examples below) there is anything I can glean from the MRS that tells me something about the fragment that would indicate which type of definite or indefinite article it should take?
-
-Background:
-
-For example, the template will include an example noun phrase, along with the type of article it wants used, like this:
-
-~~~
-"I'm not sure why you want [a thing]"
-~~~
-
-And the noun phrase to fill into the `[]` might be any of:
-
-~~
-dog
-several stacks of books
-water
-friends that never show up on time
-~~
-
-My approach is (basically):
-1. Pick the MRS for the template that will regenerate the original phrase when given to `ace -g`
-2. Build a well-formed tree from it and prune the quantifier with a `RSTR` that quantifies the noun(s) that are marked by `[]` (leaving the `BODY`), remembering if it is definite or indefinite.
-3. Chose the MRS for the fragment (e.g. "friends that never show up on time") that has a single `unknown(x)` as its `BODY`. Graft that (minus the `unknown(x)`) where the removed quantifier used to be
-4. Generate the text using `ace -g` and choose the output that matches the original (modulo the stuff in `[]`).
-
-This all seems to work pretty well so far in prototyping. Obviously there's lots of fixup that has to happen in the MRS HCONS, variable names, etc.
-
-My problem is that the original phrase will specify a definite or indefinite article in `[]` like `[a thing]`, and I need to find the corresponding definite or indefinite article (which might be none) for the phrase that is replacing it.  Clearly the ERG knows the right ones, but is there a way to determine the right one given the noun phrase fragment (using ERG and ACE)?
-
-My current approach is just attempting to parse the fragment with the various (possibly) appropriate modifiers on the front ("a" and "an" and none for indefinite, etc), and assuming the one that doesn't fail to parse must be right. 
-
-
-
+      - TODO: Handle words the engine doesn't know with the same POS and replace? But then you need to pluralize
+    - Approach 2:
+      - Focus on noun phrases only
+        - If given a word or phrase: [a, sayName(_1ObjectID)], [The, sayName(idDeer1, default, singular)]
+          - decide if it is uncountable or not  (somehow) 
+          - decide which indefinite article (somehow)
+            - https://stackoverflow.com/questions/20336524/verify-correct-use-of-a-and-an-in-english-texts-python
+            - 
+          - plug it into the original
+        - If given a verb: [is, sayListNames(an, _1Items, default)]
+          - Use something to generate the right form of verb
+          - 
         - Give a way to replace a list with your own (like a global event for solution groups)
+        - Scenarios:
+          - "There is more than x y"
+            - Need to make y have no determiner and be singular
+        - Design:
+          - Have an object that can handle a single word: Determiner, Plural in any combination
+          - TODO: Get rid of determiners like "2"
+            - Probably have to have these in metadata so that we can properly report errors where there is no state to see if they added criteria
     - The old prototype would gather up all responses in one answer and return it
   - "What else is on the menu?" -> need to see if "else" is on "which"
     - Not included in any predication

@@ -18,14 +18,14 @@
         },
         {
             "Command": "delete a large file",
-            "Expected": "There isn't 'a large file' in the system",
+            "Expected": "There isn't a large file in the system",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_file_n_of(x8,i14), _large_a_1(e13,x8)],_delete_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "261f95e0-000e-4e71-8d55-a2d16862df3d"
         },
         {
             "Command": "which files are small?",
-            "Expected": "There are less than 2 small file",
+            "Expected": "There are less than 2 small files",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_small_a_1(e2,x3))",
             "Enabled": true,
             "ID": "ff2e71f2-ee1b-48eb-94f7-01272a7af8fa"
@@ -46,14 +46,14 @@
         },
         {
             "Command": "a file is large",
-            "Expected": "There isn't 'a file' in the system",
+            "Expected": "There isn't a file in the system",
             "Tree": "_a_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "b7cad993-ba10-47f1-8917-4c9e302d926b"
         },
         {
             "Command": "which files are small?",
-            "Expected": "There isn't 'a file' in the system",
+            "Expected": "There isn't a file in the system",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_small_a_1(e2,x3))",
             "Enabled": true,
             "ID": "32b52abe-a45d-41d7-8ea3-4eb83e90a93e"

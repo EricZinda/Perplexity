@@ -5,7 +5,7 @@ from perplexity.utilities import parse_predication_name
 
 # Given the index where an error happened and a variable,
 # return what that variable "is" up to that point, in English
-def english_for_delphin_variable(failure_index, variable, tree_info, default_a_quantifier=True):
+def english_for_delphin_variable(failure_index, variable, tree_info, default_a_quantifier=True, singular_unquantified=False):
     if isinstance(variable, list):
         if variable[0] == "AtPredication":
             # Use the English for this variable as if the
@@ -44,7 +44,10 @@ def english_for_delphin_variable(failure_index, variable, tree_info, default_a_q
 
     # Take the data we gathered and convert to English
     logger.debug(f"NLG data for {variable}: {nlg_data}")
-    return convert_to_english(nlg_data, default_a_quantifier)
+    if singular_unquantified:
+        return convert_to_singular_unquantified_english(nlg_data, default_a_quantifier)
+    else:
+        return convert_to_english(nlg_data, default_a_quantifier)
 
 
 # See if this predication in any way contributes words to
@@ -162,6 +165,28 @@ def convert_to_english(nlg_data, default_a_quantifier):
         if nlg_data["Quantifier"] != "<none>":
             phrase += nlg_data["Quantifier"] + " "
     elif default_a_quantifier:
+        phrase += "a "
+
+    if "Modifiers" in nlg_data:
+        # " ".join() takes a list and turns it into a string
+        # with the string " " between each item
+        phrase += " ".join(nlg_data["Modifiers"]) + " "
+
+    if "Topic" in nlg_data:
+        phrase += nlg_data["Topic"] + " "
+    else:
+        phrase += "thing "
+
+    if "PostModifiers" in nlg_data:
+        phrase += " ".join(nlg_data["PostModifiers"]) + " "
+
+    return phrase.strip()
+
+
+def convert_to_singular_unquantified_english(nlg_data, default_a_quantifier):
+    phrase = ""
+
+    if default_a_quantifier and ("Quantifier" not in nlg_data or nlg_data["Quantifier"] == "<none>"):
         phrase += "a "
 
     if "Modifiers" in nlg_data:
