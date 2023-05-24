@@ -5,6 +5,9 @@ import platform
 import sys
 from collections import defaultdict
 from delphin import ace
+from delphin.codecs.mrx import decode
+from delphin.codecs.simplemrs import encode
+
 import perplexity.execution
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name
@@ -12,16 +15,21 @@ from perplexity.vocabulary import ValueSize
 
 
 class MrsParser(object):
-    def __init__(self, max_holes):
+    def __init__(self, max_holes=13, max_parses=None, log_file=None):
         self.max_holes = max_holes
+        self.max_parses = max_parses
+        self.log_file = log_file
 
-    def mrss_from_phrase(self, phrase):
+    def mrss_from_phrase(self, phrase, trace=False):
         # Don't print errors to the screen
-        f = open(os.devnull, 'w')
+        if trace:
+            f = self.log_file if self.log_file is not None else sys.stderr
+        else:
+            f = open(os.devnull, 'w')
 
         # Create an instance of the ACE parser and ask to give <= 100 MRS documents
-        with ace.ACEParser(self.erg_file(), cmdargs=[], stderr=f) as parser:
-        # with ace.ACEParser(self.erg_file(), cmdargs=['-n', '1000'], stderr=f) as parser:
+        cmd_args = [] if self.max_parses is None else ['-n', str(self.max_parses)]
+        with ace.ACEParser(self.erg_file(), cmdargs=cmd_args, stderr=f) as parser:
             ace_response = parser.interact(phrase)
             pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
 
@@ -31,6 +39,23 @@ class MrsParser(object):
             mrs.surface = phrase
             pipeline_logger.debug(f"Parse {parse_index}: {mrs}")
             yield mrs
+
+    def phrase_from_simple_mrs(self, simple, trace=False):
+        if trace:
+            f = self.log_file if self.log_file is not None else sys.stderr
+        else:
+            f = open(os.devnull, 'w')
+
+        with ace.ACEGenerator(self.erg_file(), cmdargs=['-n', '8'], stderr=f) as generator:
+            response = generator.interact(simple)
+            surfaceStrings = []
+            for index in range(0, len(response.results())):
+                surfaceStrings.append(response.result(index)['surface'])
+
+            yield surfaceStrings
+
+    def mrs_to_string(self, mrs):
+        return encode(mrs)
 
     def trees_from_mrs(self, mrs):
         # Create a dict of predications using their labels as each key

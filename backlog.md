@@ -1,4 +1,5 @@
 Remaining work to be shown in the tutorial:
+- CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
 - How to deal with "I want a strawberry" when we know about strawberries but there aren't any
   - Do we need different messages based on the state of the world? For example, in the doorway: ""
   - create an object called "CanonicalInstance()" if we are talking about a think "in principle" like "I'd like to order a strawberry"?
