@@ -150,7 +150,8 @@ class UserInterface(object):
                     # current world state
                     tree_info = {"Index": mrs.index,
                                  "Variables": mrs.variables,
-                                 "Tree": tree}
+                                 "Tree": tree,
+                                 "MRS": self.mrs_parser.mrs_to_string(mrs)}
 
                     solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
                     this_sentence_force = sentence_force(tree_info["Variables"])

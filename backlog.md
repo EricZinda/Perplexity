@@ -1,4 +1,20 @@
 Remaining work to be shown in the tutorial:
+- (fixed) "which files" generates to "which files" which is wrong
+- (fixed) "what is "foo" in?" generates "'foo' is not in what"
+- "59.txt" is in this folder
+- 
+- Generation issues:
+  people_n with NUM=sg doesn't generate person. But dice does
+
+- Bug: Test: the 2 files in a folder are 20 mb
+             There is more than 2 2 files in folders
+
+        Expected: There are more than the 2 file in a folder
+  the real error is "there are more than two files in a folder"
+  - We need a way to pluralize the noun phrase "files in a folder" properly
+    We can do it with MRS Generation if we can get the MRS for it
+    - Generate the MRS that round trips
+    - Replace the BODY with unknown(x)
 - CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
 
 - How to deal with "I want a strawberry" when we know about strawberries but there aren't any

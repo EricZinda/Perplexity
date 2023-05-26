@@ -6,7 +6,7 @@ import sys
 from collections import defaultdict
 from delphin import ace
 from delphin.codecs.mrx import decode
-from delphin.codecs.simplemrs import encode
+from delphin.codecs.simplemrs import encode, dumps
 
 import perplexity.execution
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
@@ -15,10 +15,11 @@ from perplexity.vocabulary import ValueSize
 
 
 class MrsParser(object):
-    def __init__(self, max_holes=13, max_parses=None, log_file=None):
+    def __init__(self, max_holes=13, max_parses=None, log_file=None, generate_root=None):
         self.max_holes = max_holes
         self.max_parses = max_parses
         self.log_file = log_file
+        self.generate_root = generate_root
 
     def mrss_from_phrase(self, phrase, trace=False):
         # Don't print errors to the screen
@@ -46,13 +47,14 @@ class MrsParser(object):
         else:
             f = open(os.devnull, 'w')
 
-        with ace.ACEGenerator(self.erg_file(), cmdargs=['-n', '8'], stderr=f) as generator:
+        cmd_args = [] if self.max_parses is None else ['-n', str(self.max_parses)]
+        if self.generate_root is not None:
+            cmd_args += ['-r', self.generate_root]
+        with ace.ACEGenerator(self.erg_file(), cmdargs=cmd_args, stderr=f) as generator:
             response = generator.interact(simple)
             surfaceStrings = []
             for index in range(0, len(response.results())):
-                surfaceStrings.append(response.result(index)['surface'])
-
-            yield surfaceStrings
+                yield response.result(index)['surface']
 
     def mrs_to_string(self, mrs):
         return encode(mrs)
@@ -105,11 +107,12 @@ class MrsParser(object):
 
 
 class TreePredication(object):
-    def __init__(self, index, name, args, arg_names=None):
+    def __init__(self, index, name, args, arg_names=None, mrs_predication=None):
         self.index = index
         self.name = name
         self.args = args
         self.arg_names = arg_names
+        self.mrs_predication = mrs_predication
 
         if arg_names is not None:
             self.arg_types = []
@@ -147,6 +150,11 @@ class TreePredication(object):
 
         return x_args
 
+    def scopal_arg_indices(self):
+        for arg_index in range(0, len(self.args)):
+            if self.arg_types[arg_index] == "h":
+                yield arg_index
+
     def __repr__(self):
         return f"{self.name}({','.join([str(arg) for arg in self.args])})"
 
@@ -166,7 +174,7 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, curren
     # have the same key and should be put in conjunction (i.e. be and'd together)
     conjunction_list = []
     for predication in predication_list:
-        tree_node = TreePredication(current_index[0], predication.predicate, [], [])
+        tree_node = TreePredication(current_index[0], predication.predicate, [], [], predication)
         current_index[0] += 1
 
         # Recurse through this predication's arguments
@@ -440,7 +448,9 @@ def find_predications_in_list_in_list(term, predication_name_list):
 def find_predication_from_introduced(term, introduced_variable):
     def match_introduced_variable(predication):
         if predication.introduced_variable() == introduced_variable:
-            return predication
+            predication_data = parse_predication_name(predication.name)
+            if predication_data["Pos"] != "q":
+                return predication
         else:
             return None
 

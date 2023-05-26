@@ -1,4 +1,9 @@
 import logging
+
+from delphin.codecs import simplemrs
+from delphin.mrs import MRSSyntaxError
+
+from perplexity.response_mrs import english_for_variable_using_mrs
 from perplexity.tree import walk_tree_predications_until, is_last_fw_seq
 from perplexity.utilities import parse_predication_name
 
@@ -46,8 +51,22 @@ def english_for_delphin_variable(failure_index, variable, tree_info, default_a_q
     logger.debug(f"NLG data for {variable}: {nlg_data}")
     if singular_unquantified:
         return convert_to_singular_unquantified_english(nlg_data, default_a_quantifier)
+
     else:
-        return convert_to_english(nlg_data, default_a_quantifier)
+        # Try to generate using MRS generation and if not, fall back to old-style
+        generated_text = None
+        try:
+            recovered_mrs = simplemrs.loads(tree_info["MRS"])[0]
+            generated_text, best_index, new_mrs = english_for_variable_using_mrs(None, recovered_mrs, tree_info["Tree"], variable)
+        except MRSSyntaxError:
+            # pydelphin doesn't round trip strings with "" like "Blue" is in this folder
+            pass
+
+        if generated_text is not None:
+            print(f"GENERATED: {generated_text}")
+            return generated_text
+        else:
+            return convert_to_english(nlg_data, default_a_quantifier)
 
 
 # See if this predication in any way contributes words to

@@ -11,7 +11,7 @@
         },
         {
             "Command": "files are large",
-            "Expected": "file is not large",
+            "Expected": "files is not large",
             "Tree": "udef_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "331f555e-dd75-4836-88b3-6cde597eaebd"
@@ -123,7 +123,7 @@
         },
         {
             "Command": "1 file is 20 megabytes",
-            "Expected": "1 file is not 20 megabyte",
+            "Expected": "1 file is not twenty mb",
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],loc_nonsp(e2,x3,x11)))",
             "Enabled": true,
             "ID": "883c4f0e-5d43-4ab5-86a8-7aa2ebc1a46d"
@@ -208,7 +208,7 @@
         },
         {
             "Command": "the files are large",
-            "Expected": "That isn't true for all the file",
+            "Expected": "That isn't true for all the files",
             "Tree": "_the_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d0738761-c3cc-45ab-a754-29b4cc871fc8"
@@ -229,7 +229,7 @@
         },
         {
             "Command": "the 3 files are large",
-            "Expected": "There are more than the 3 file",
+            "Expected": "There are more than the three files",
             "Tree": "_the_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d5ea50ee-c182-4db4-b2d8-83e1cf19b254"
