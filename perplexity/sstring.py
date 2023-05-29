@@ -2,7 +2,7 @@
 import re
 import inspect
 from perplexity.response import PluralMode
-from perplexity.response_mrs import english_for_variable_using_mrs, round_trip_mrs
+from perplexity.generation_mrs import english_for_variable_using_mrs, round_trip_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced
 
 
