@@ -1,8 +1,5 @@
 import logging
-
 from delphin.codecs import simplemrs
-from delphin.mrs import MRSSyntaxError
-
 from perplexity.response_mrs import english_for_variable_using_mrs
 from perplexity.tree import walk_tree_predications_until, is_last_fw_seq
 from perplexity.utilities import parse_predication_name

@@ -6,9 +6,15 @@ Remaining work to be shown in the tutorial:
     Anyway, he was a philosophy major and the job market isn't exactly crying out for those, so he decided to become a rock legend.
     Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
     --> Might be a matter of not doing all the parses, need to do them all
-    
-- START HERE NEXT: Bug: "What is a folder in?" can't generate 'thing'
+
+- Make english_for_delphin_variable and english_for_delphin_variable_mrs work the same so one can be used for backup:
 - 
+- Make sstrings fall back to default generation if they fail
+
+- convert lessThan error to use sstrings
+  - How to generate strings that represent the variable at the end of the whole sentence?
+  - Theory: Put a quantifier in front of the whole tree?
+  - 
 - We need a way to pluralize the noun phrase "files in a folder" properly
     We can do it with MRS Generation if we can get the MRS for it
     - Generate the MRS that round trips

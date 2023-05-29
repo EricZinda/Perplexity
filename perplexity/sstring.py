@@ -16,7 +16,7 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 #     y = 7
 #     print fstring("x is {x} and y is {y}")
 #     # Prints: x is 6 and y is 7
-def sstringify(origin, mrs, tree):
+def sstringify(origin, mrs=None, tree=None):
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
     sstringified = re.sub(r"(?:{{)+?", "\x15", origin)[::-1]
@@ -41,20 +41,24 @@ def sstringify(origin, mrs, tree):
         value = format_object.format(mrs, tree)
         if value is None:
             value = "<unknown>"
-        sstringified = sstringified.replace(match, value)
+        sstringified = sstringified.replace(match, str(value))
 
     return sstringified.replace("\x15", "{").replace("\x16", "}")
 
 
 class SStringFormat(object):
-    def __init__(self, delphin_variable=None, string_literal=None, plural_template_variable=None, plural_template_literal=None, determiner=None, plural=None, initial_cap=None):
+    def __init__(self, raw_variable=None, delphin_variable=None, string_literal=None, plural_template_variable=None, plural_template_literal=None, determiner=None, plural=None, initial_cap=None):
         self.delphin_variable = delphin_variable
+        self.raw_variable = raw_variable
         self.string_literal = string_literal
         self.plural_template_variable = plural_template_variable
         self.plural_template_literal = plural_template_literal
         self.determiner = determiner
         self.plural = plural
         self.initial_cap = initial_cap
+
+    def value_is_raw_variable(self):
+        return self.raw_variable is not None
 
     def value_is_delphin_variable(self):
         return self.delphin_variable is not None
@@ -105,9 +109,17 @@ class SStringFormat(object):
             resolved_plural = self.plural
 
         # Next resolve the variable
+        if self.value_is_raw_variable():
+            variable_value = self.resolve_variable(self.raw_variable)
+            return variable_value
+
         if self.value_is_delphin_variable():
             variable_name = self.resolve_variable(self.delphin_variable)
             formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable_name, plural=resolved_plural, determiner=self.determiner)
+            # if formatted_string is None:
+            #     return english_for_delphin_variable(failure_index, variable_name, tree_info, default_a_quantifier=True, singular_unquantified=False):
+            #
+            #     return english_for_variable_using_mrs()
             return formatted_string
 
 
@@ -142,6 +154,7 @@ def parse_s_string_element(raw_string):
     plural_template_variable = None
     string_literal = None
     delphin_variable = None
+    raw_variable = None
 
     # See if a determiner was specified
     # If so, use it to determine initial_cap and determiner
@@ -189,10 +202,13 @@ def parse_s_string_element(raw_string):
     # Now deal with the word_raw part
     if word_raw[0] in ["\"", "'"]:
         string_literal = word_raw[1:-1]
+    elif word_raw[0] == "*":
+        raw_variable = word_raw[1:]
     else:
         delphin_variable = word_raw
 
-    return SStringFormat(delphin_variable=delphin_variable,
+    return SStringFormat(raw_variable=raw_variable,
+                         delphin_variable=delphin_variable,
                          string_literal=string_literal,
                          plural_template_variable=plural_template_variable,
                          plural_template_literal=plural_template_literal,
@@ -208,6 +224,8 @@ if __name__ == '__main__':
     # Bugs:
     # "The raging party in my house has started"
     # "Load the lofty goal"
+    raw_text = "test"
+    print(sstringify("raw text: {*raw_text}"))
 
     # Test Harness
     phrase = "what is a folder in?"
