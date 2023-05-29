@@ -235,7 +235,7 @@
         },
         {
             "Command": "what is in this 'blue'",
-            "Expected": "thing is not in this 'blue'",
+            "Expected": "a thing is not in this 'blue'",
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,[quoted(blue,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "34f4e321-b387-4e56-b2ed-3fec5a574cf5"
@@ -277,7 +277,7 @@
         },
         {
             "Command": "what is \"foo\" in?",
-            "Expected": "'foo' is not in thing",
+            "Expected": "'foo' is not in a thing",
             "Tree": "which_q(x5,thing(x5),proper_q(x3,[quoted(foo,i13), fw_seq(x3,i13)],_in_p_loc(e2,x3,x5)))",
             "Enabled": true,
             "ID": "767c57ee-5234-4c6d-9dce-9f8a2c789711"
@@ -354,7 +354,7 @@
         },
         {
             "Command": "what is in \"/documents\"",
-            "Expected": "thing is not in '/documents'",
+            "Expected": "a thing is not in '/documents'",
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "bc7ebed2-b20c-4426-b0d1-124ffe2a5dd0"

@@ -39,6 +39,8 @@ def sstringify(origin, mrs, tree):
         indicator = match[1:-1]
         format_object = parse_s_string_element(indicator)
         value = format_object.format(mrs, tree)
+        if value is None:
+            value = "<unknown>"
         sstringified = sstringified.replace(match, value)
 
     return sstringified.replace("\x15", "{").replace("\x16", "}")

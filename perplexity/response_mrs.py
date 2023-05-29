@@ -174,6 +174,7 @@ def mrs_fragment_from_variable(mrs, tree, variable, determiner=None):
         for arg_item in predication.mrs_predication.args.items():
             if arg_item[0] != "CARG":
                 new_variables.add(arg_item[1])
+
         predication_data = parse_predication_name(predication.name)
         if predication_data["Pos"] == "q" and predication.args[0] == variable:
             predication_copy = copy.deepcopy(predication)
@@ -210,6 +211,11 @@ def mrs_fragment_from_variable(mrs, tree, variable, determiner=None):
                 return predication_copy
 
         else:
+            # Convert "which(x, thing(x), ...) to _a_q_(x, _thing_n_of-about(), ...) so it will generate
+            if predication.name == "thing":
+                predication.mrs_predication.predicate = "_thing_n_of-about"
+                predication.mrs_predication.args["ARG1"] = 'i99'
+
             new_eps.append(predication.mrs_predication)
 
     def used_hcons(old_hcons, new_eps):
@@ -489,15 +495,6 @@ if __name__ == '__main__':
     # Samples: https://www.corpusdata.org/formats.asp
     # https://storage.googleapis.com/books/ngrams/books/datasetsv3.html
 
-    # Feedback
-    # May of the parses are close like (no contraction of is not and isn't)(different punctuation):
-    #   Anyway, he was a philosophy major and the job market isn't exactly crying out for those, so he decided to become a rock legend.
-    #   Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
-    #   --> Might be a matter of not doing all the parses, need to to them all
-    # 20 -> twenty and never generates as 20
-    #
-    # It is very slow to generate all the parses to find the template: has to be at compile time
-    # It does mean that converting the nouns might be challenging.  Need to cache those? Or pregenerate?
 
     # with open(log_file_path, "a") as file:
     #     mrs_parser = MrsParser(log_file=file)

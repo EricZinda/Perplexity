@@ -54,13 +54,8 @@ def english_for_delphin_variable(failure_index, variable, tree_info, default_a_q
 
     else:
         # Try to generate using MRS generation and if not, fall back to old-style
-        generated_text = None
-        try:
-            recovered_mrs = simplemrs.loads(tree_info["MRS"])[0]
-            generated_text, best_index, new_mrs = english_for_variable_using_mrs(None, recovered_mrs, tree_info["Tree"], variable)
-        except MRSSyntaxError:
-            # pydelphin doesn't round trip strings with "" like "Blue" is in this folder
-            pass
+        recovered_mrs = simplemrs.loads(tree_info["MRS"])[0]
+        generated_text, best_index, new_mrs = english_for_variable_using_mrs(None, recovered_mrs, tree_info["Tree"], variable)
 
         if generated_text is not None:
             print(f"GENERATED: {generated_text}")

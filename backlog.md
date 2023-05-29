@@ -1,22 +1,20 @@
 Remaining work to be shown in the tutorial:
-- (fixed) "which files" generates to "which files" which is wrong
-- (fixed) "what is "foo" in?" generates "'foo' is not in what"
-- "59.txt" is in this folder
-- 
 - Generation issues:
-  people_n with NUM=sg doesn't generate person. But dice does
-
-- Bug: Test: the 2 files in a folder are 20 mb
-             There is more than 2 2 files in folders
-
-        Expected: There are more than the 2 file in a folder
-  the real error is "there are more than two files in a folder"
-  - We need a way to pluralize the noun phrase "files in a folder" properly
+  - people_n with NUM=sg doesn't generate person. But dice does
+  - 20 -> twenty and never generates as 20
+  - Many of the parses are close like (no contraction of is not and isn't)(different punctuation):
+    Anyway, he was a philosophy major and the job market isn't exactly crying out for those, so he decided to become a rock legend.
+    Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
+    --> Might be a matter of not doing all the parses, need to do them all
+    
+- START HERE NEXT: Bug: "What is a folder in?" can't generate 'thing'
+- 
+- We need a way to pluralize the noun phrase "files in a folder" properly
     We can do it with MRS Generation if we can get the MRS for it
     - Generate the MRS that round trips
     - Replace the BODY with unknown(x)
-- CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
 
+- CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
 - How to deal with "I want a strawberry" when we know about strawberries but there aren't any
   - Do we need different messages based on the state of the world? For example, in the doorway: ""
   - create an object called "CanonicalInstance()" if we are talking about a think "in principle" like "I'd like to order a strawberry"?
