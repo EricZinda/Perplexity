@@ -344,7 +344,7 @@ class FileSystemMock(FileSystem):
 
 class QuotedText(object):
     def __init__(self, name):
-        self.name = name.replace("\\\\>root111", "/").replace("\\\\>", "/")
+        self.name = name.replace("\\>root111", "/").replace("\\>", "/")
 
     def __repr__(self):
         return f"{self.name}"

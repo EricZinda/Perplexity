@@ -292,7 +292,7 @@
         {
             "Command": "\"foo\" is in \"/documents\"",
             "Expected": "'foo' is not in '/documents'",
-            "Tree": "proper_q(x10,[quoted(\\\\>documents,i15), fw_seq(x10,i15)],proper_q(x3,[quoted(foo,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
+            "Tree": "proper_q(x10,[quoted(\\>documents,i15), fw_seq(x10,i15)],proper_q(x3,[quoted(foo,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "086f2827-5653-4d90-8fe8-a5b3986df029"
         },
@@ -313,7 +313,7 @@
         {
             "Command": "go to \"/documents\"",
             "Expected": "You are now in Folder(name=/documents, size=0)",
-            "Tree": "proper_q(x9,[quoted(\\\\>documents,i14), fw_seq(x9,i14)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
+            "Tree": "proper_q(x9,[quoted(\\>documents,i14), fw_seq(x9,i14)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
             "Enabled": true,
             "ID": "2db0658c-8aac-484f-b120-f9c43de91e26"
         },
@@ -341,21 +341,21 @@
         {
             "Command": "what is in \"/documents\"",
             "Expected": "(File(name=/documents/file1.txt, size=1000),)",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "805cdc7d-1391-40c9-a686-a6ea6c2c58f7"
         },
         {
             "Command": "delete \"file1.txt\" in \"/documents\"",
             "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file1.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_delete_v_1(e2,x3,x8))))",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file1.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_delete_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "f95d74c8-3b08-401e-bc70-7a5517eee968"
         },
         {
             "Command": "what is in \"/documents\"",
             "Expected": "thing is not in '/documents'",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "bc7ebed2-b20c-4426-b0d1-124ffe2a5dd0"
         },
@@ -376,7 +376,7 @@
         {
             "Command": "copy \"file1.txt\" in \"/documents\"",
             "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file1.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file1.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "5a73a52a-fa97-4694-8120-8a47e0c99ce2"
         },
@@ -397,7 +397,7 @@
         {
             "Command": "what is in \"\\>root111\"",
             "Expected": "(Folder(name=/documents, size=0),)(there are more)",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>root111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\>root111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "87db9431-d91b-492f-844e-919dac3a392f"
         },
@@ -411,7 +411,7 @@
         {
             "Command": "copy \"\\>temp\\>59.txt\" in \"\\>documents\"",
             "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(\\\\>temp\\\\>59.txt,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(\\>temp\\>59.txt,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
             "Enabled": true,
             "ID": "bedac8b5-c170-423b-82bf-1e1c0fe5c199"
         },
@@ -432,7 +432,7 @@
         {
             "Command": "what is in '\\>documents'",
             "Expected": "(File(name=/documents/file1.txt, size=1000),)",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "3ddf1b4f-8ee5-4659-ab7b-1ba4b2235221"
         },
@@ -446,7 +446,7 @@
         {
             "Command": "copy 'blue' in '\\>documents'",
             "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(\\\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
             "Enabled": true,
             "ID": "a25651b5-b4b2-4b40-a2b3-945f6ece746c"
         },
