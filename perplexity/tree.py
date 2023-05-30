@@ -112,7 +112,10 @@ class TreePredication(object):
         self.name = name
         self.args = args
         self.arg_names = arg_names
-        self.mrs_predication = mrs_predication
+        if mrs_predication is not None:
+            # Make a copy in case this gets changed later so it doesn't
+            # mess up the original
+            self.mrs_predication = copy.deepcopy(mrs_predication)
 
         if arg_names is not None:
             self.arg_types = []

@@ -446,7 +446,7 @@
         },
         {
             "Command": "which 2 files in the folder are large?",
-            "Expected": "There is more than one the folder",
+            "Expected": "There is more than one folder",
             "Tree": "_the_q(x12,_folder_n_of(x12,i17),_which_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],_large_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "34457434-0312-48e3-a93b-f2badc6fb7d4"
@@ -467,7 +467,7 @@
         },
         {
             "Command": "only 2 files are large",
-            "Expected": "There is more than 2 2 large files",
+            "Expected": "There are more than 2 2 large file",
             "Tree": "udef_q(x3,[_file_n_of(x3,i11), _only_x_deg(e5,e6), card(2,e6,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "29ebc2f2-3fe3-4e9e-b62b-58050d28a0ad"

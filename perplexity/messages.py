@@ -139,15 +139,15 @@ def generate_message(tree_info, error_term):
     elif error_constant == "lessThan":
         arg1 = error_arguments[1]
         arg2 = error_arguments[2]
-        return sstringify("There are less than {*arg2} {arg1:sg@error_predicate_index}", tree_info)
+        return sstringify("There are less than {*arg2} {bare arg1:sg@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan":
         arg1 = error_arguments[1]
         return sstringify("There are more than {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan1":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"There is more than one {arg1}"
+        arg1 = error_arguments[1]
+        return sstringify("There is more than one {bare arg1}", tree_info)
 
     elif error_constant == "moreThanN":
         arg1 = error_arguments[1]

@@ -195,7 +195,10 @@ class SStringFormat(object):
                     # Use the English for this variable as if the
                     # error happened at the specified predication
                     # instead of where it really happened
-                    specified_meaning_at_index_value = variable_name[1].index
+                    if isinstance(variable_name[1], list):
+                        specified_meaning_at_index_value = variable_name[1][-1].index
+                    else:
+                        specified_meaning_at_index_value = variable_name[1].index
                     sstring_logger.debug(f"sstring: error predication index is: {specified_meaning_at_index_value}")
                     variable_name = variable_name[2]
 
