@@ -183,21 +183,23 @@ def mrs_fragment_from_variable(mrs, tree, variable, determiner=None):
 
             predication_copy.args[1] = rewrite_tree_predications(predication_copy.args[1], rewrite_tree_without_fragment_body, index_by_ref)
             pruned_body = predication_copy.args[2]
-            # pruned_body_label = pruned_body.mrs_predication.label if not isinstance(pruned_body, list) else pruned_body[0].mrs_predication.label
             # Assuming the index was introduced by something that got pruned,
             # that's why we can reuse it as ARG0
             index_predication = find_predication_from_introduced(pruned_body, mrs.index)
             if not index_predication:
                 pruned_body = None
             else:
-                if determiner in ["a", "an"]:
-                    predication.mrs_predication.predicate = "_a_q"
+                if determiner in ["a", "an"] or predication.mrs_predication.predicate in ["_which_q", "which_q"]:
+                    if "NUM" not in mrs.variables[variable] or mrs.variables[variable]["NUM"] == "sg":
+                        predication.mrs_predication.predicate = "_a_q"
+                    else:
+                        # Indefinite article with plural is no article
+                        predication.mrs_predication.predicate = "udef_q"
+
                 elif determiner == "the":
                     predication.mrs_predication.predicate = "_the_q"
                 elif determiner == "":
                     predication.mrs_predication.predicate = "udef_q"
-                elif predication.mrs_predication.predicate in ["_which_q", "which_q"]:
-                    predication.mrs_predication.predicate = "_a_q"
 
                 new_eps.append(predication.mrs_predication)
 

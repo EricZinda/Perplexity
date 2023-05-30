@@ -1,6 +1,9 @@
 # Much code and approach taken from https://github.com/rinslow/fstring
 import re
 import inspect
+
+from delphin.codecs import simplemrs
+
 from perplexity.response import PluralMode
 from perplexity.generation_mrs import english_for_variable_using_mrs, round_trip_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced
@@ -16,7 +19,14 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 #     y = 7
 #     print fstring("x is {x} and y is {y}")
 #     # Prints: x is 6 and y is 7
-def sstringify(origin, mrs=None, tree=None):
+def sstringify(origin, tree_info=None):
+    if tree_info is not None:
+        mrs = simplemrs.loads(tree_info["MRS"])[0]
+        tree = tree_info["Tree"]
+    else:
+        mrs = None
+        tree = None
+
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
     sstringified = re.sub(r"(?:{{)+?", "\x15", origin)[::-1]
@@ -228,7 +238,7 @@ if __name__ == '__main__':
     print(sstringify("raw text: {*raw_text}"))
 
     # Test Harness
-    phrase = "what is a folder in?"
+    phrase = "which files are large"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
@@ -248,11 +258,13 @@ if __name__ == '__main__':
                     print(f"\n{variable} --> {find_predication_from_introduced(tree, variable)}")
                     print_variable = False
 
-                print(sstringify("the singular: {the variable:sg}", mrs, tree))
-                print(sstringify("a singular:   {a variable:sg}", mrs, tree))
-                print(sstringify("the plural:   {the variable:pl}", mrs, tree))
-                print(sstringify("Bare plural:  {Bare variable:pl}", mrs, tree))
-                print(sstringify("bare singular: {variable:sg}", mrs, tree))
+                tree_info = {"Tree": tree, "MRS": mrs_parser.mrs_to_string(mrs)}
+                print(sstringify("raw: {variable}", tree_info))
+                print(sstringify("the singular: {the variable:sg}", tree_info))
+                print(sstringify("a singular:   {a variable:sg}", tree_info))
+                print(sstringify("the plural:   {the variable:pl}", tree_info))
+                print(sstringify("Bare plural:  {Bare variable:pl}", tree_info))
+                print(sstringify("bare singular: {variable:sg}", tree_info))
                 print()
 
             if print_variable:

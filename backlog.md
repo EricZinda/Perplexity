@@ -7,6 +7,7 @@ Remaining work to be shown in the tutorial:
     Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
     --> Might be a matter of not doing all the parses, need to do them all
 
+- Get verb matching to work
 - Make english_for_delphin_variable and english_for_delphin_variable_mrs work the same so one can be used for backup:
 - 
 - Make sstrings fall back to default generation if they fail

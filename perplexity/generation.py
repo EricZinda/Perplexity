@@ -7,7 +7,8 @@ from perplexity.utilities import parse_predication_name
 
 # Given the index where an error happened and a variable,
 # return what that variable "is" up to that point, in English
-def english_for_delphin_variable(failure_index, variable, tree_info, default_a_quantifier=True, singular_unquantified=False):
+def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None):
+# def english_for_delphin_variable(failure_index, variable, tree_info, default_a_quantifier=True, singular_unquantified=False):
     if isinstance(variable, list):
         if variable[0] == "AtPredication":
             # Use the English for this variable as if the
@@ -46,19 +47,7 @@ def english_for_delphin_variable(failure_index, variable, tree_info, default_a_q
 
     # Take the data we gathered and convert to English
     logger.debug(f"NLG data for {variable}: {nlg_data}")
-    if singular_unquantified:
-        return convert_to_singular_unquantified_english(nlg_data, default_a_quantifier)
-
-    else:
-        # Try to generate using MRS generation and if not, fall back to old-style
-        recovered_mrs = simplemrs.loads(tree_info["MRS"])[0]
-        generated_text, best_index, new_mrs = english_for_variable_using_mrs(None, recovered_mrs, tree_info["Tree"], variable)
-
-        if generated_text is not None:
-            print(f"GENERATED: {generated_text}")
-            return generated_text
-        else:
-            return convert_to_english(nlg_data, default_a_quantifier)
+    return convert_to_english(nlg_data, plural, determiner)
 
 
 # See if this predication in any way contributes words to
@@ -102,11 +91,11 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                     for arg_index in range(1, len(predication.arg_names)):
                         if predication.args[arg_index][0] == "i":
                             # Use 1000 to make sure we go through the whole tree
-                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info, default_a_quantifier=False))
+                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info))
 
                         elif predication.args[arg_index][0] == "x":
                             # Use 1000 to make sure we go through the whole tree
-                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info, default_a_quantifier=False))
+                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info))
 
                     # If the only thing consuming the introduced variable are other fw_seq predications
                     # Then this is not the final fw_seq, so don't put quotes around it
@@ -169,36 +158,21 @@ def pronoun_from_variable(tree_info, variable):
 
 # Takes the information gathered in the nlg_data dictionary
 # and converts it, in a very simplistic way, to English
-def convert_to_english(nlg_data, default_a_quantifier):
+def convert_to_english(nlg_data, plural=None, determiner=None):
     phrase = ""
+
+    if determiner is not None:
+        lower_determiner = determiner.lower()
+        if lower_determiner in ["a", "an"]:
+            nlg_data["Quantifier"] = "a"
+        elif lower_determiner == "the":
+            nlg_data["Quantifier"] = "the"
+        elif lower_determiner in ["bare", ""]:
+            nlg_data["Quantifier"] = "<none>"
 
     if "Quantifier" in nlg_data:
         if nlg_data["Quantifier"] != "<none>":
             phrase += nlg_data["Quantifier"] + " "
-    elif default_a_quantifier:
-        phrase += "a "
-
-    if "Modifiers" in nlg_data:
-        # " ".join() takes a list and turns it into a string
-        # with the string " " between each item
-        phrase += " ".join(nlg_data["Modifiers"]) + " "
-
-    if "Topic" in nlg_data:
-        phrase += nlg_data["Topic"] + " "
-    else:
-        phrase += "thing "
-
-    if "PostModifiers" in nlg_data:
-        phrase += " ".join(nlg_data["PostModifiers"]) + " "
-
-    return phrase.strip()
-
-
-def convert_to_singular_unquantified_english(nlg_data, default_a_quantifier):
-    phrase = ""
-
-    if default_a_quantifier and ("Quantifier" not in nlg_data or nlg_data["Quantifier"] == "<none>"):
-        phrase += "a "
 
     if "Modifiers" in nlg_data:
         # " ".join() takes a list and turns it into a string

@@ -3,6 +3,7 @@ import logging
 import perplexity.messages
 from perplexity.generation import english_for_delphin_variable
 from perplexity.set_utilities import append_if_unique, in_equals
+from perplexity.sstring import sstringify
 from perplexity.tree import find_predication, predication_from_index, \
     find_predication_from_introduced
 from perplexity.utilities import parse_predication_name, sentence_force, at_least_one_generator
@@ -26,8 +27,8 @@ def generate_message(tree_info, error_term):
 
     if error_constant == "adjectiveDoesntApply":
         arg1 = error_arguments[1]
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg2} is not {arg1}"
+        arg2 = error_arguments[2]
+        return sstringify("{A arg2} is not {*arg1}", tree_info)
 
     elif error_constant == "cantDo":
         arg1 = error_arguments[1]
