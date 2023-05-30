@@ -1,4 +1,5 @@
 # Much code and approach taken from https://github.com/rinslow/fstring
+import logging
 import re
 import inspect
 
@@ -8,7 +9,7 @@ from perplexity.generation import english_for_delphin_variable
 from perplexity.response import PluralMode
 from perplexity.generation_mrs import english_for_variable_using_mrs, round_trip_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced
-
+from perplexity.utilities import ShowLogging
 
 INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 
@@ -131,12 +132,15 @@ class SStringFormat(object):
         if self.value_is_delphin_variable():
             variable_name = self.resolve_variable(self.delphin_variable)
             formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable_name, plural=resolved_plural, determiner=self.determiner)
+            if formatted_string is not None:
+                pipeline_logger.debug(f"MRS: {variable_name}[{self}]={formatted_string}")
 
-            # If ACE can't be used, fall back to a simplistic approach
-            if formatted_string is None:
+            else:
+                # If ACE can't be used, fall back to a simplistic approach
                 if meaning_at_index is None:
                     meaning_at_index = find_predication_from_introduced(tree, variable_name)
-                return english_for_delphin_variable(meaning_at_index, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner)
+                formatted_string = english_for_delphin_variable(meaning_at_index, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner)
+                pipeline_logger.debug(f"Fallback: {variable_name}[{self}]={formatted_string}")
 
             return formatted_string
 
@@ -237,8 +241,12 @@ def parse_s_string_element(raw_string):
 
 mrs_parser = MrsParser()
 
+pipeline_logger = logging.getLogger('Pipeline')
+sstring_logger = logging.getLogger('SString')
 
 if __name__ == '__main__':
+    ShowLogging("Pipeline")
+
     # Bugs:
     # "The raging party in my house has started"
     # "Load the lofty goal"
