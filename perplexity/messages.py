@@ -113,9 +113,8 @@ def generate_message(tree_info, error_term):
         return f"Could you be more specific?"
 
     elif error_constant == "doesntExist":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg1 = arg1.strip("'\"")
-        return f"There isn't {s('a', arg1)} in the system"
+        arg1 = error_arguments[1]
+        return sstringify("There isn't {a arg1:sg} in the system", tree_info)
 
     # Used when you want to embed the error message directly in the code
     elif error_constant == "errorText":

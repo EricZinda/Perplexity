@@ -142,6 +142,29 @@ class SStringFormat(object):
             else:
                 raise SyntaxError(f"{variable} is not defined")
 
+    def _convert_complex_variable(self, variable_name):
+        if isinstance(variable_name, list):
+            sstring_logger.debug(f"sstring: variable is complex: '{variable_name}'")
+            if variable_name[0] == "AtPredication":
+                # Use the English for this variable as if the
+                # error happened at the specified predication
+                # instead of where it really happened
+                if isinstance(variable_name[1], list):
+                    specified_meaning_at_index_value = variable_name[1][-1].index
+                else:
+                    specified_meaning_at_index_value = variable_name[1].index
+                sstring_logger.debug(f"sstring: error predication index is: {specified_meaning_at_index_value}")
+                variable_name = variable_name[2]
+
+            elif variable_name[0] == "AfterFullPhrase":
+                specified_meaning_at_index_value = 100000000
+                variable_name = variable_name[1]
+
+            return variable_name, specified_meaning_at_index_value
+
+        else:
+            return variable_name, None
+
     def format(self, tree_info):
         if tree_info is not None:
             mrs = simplemrs.loads(tree_info["MRS"])[0]
@@ -156,6 +179,8 @@ class SStringFormat(object):
         if self.has_plural_template():
             if self.plural_template_is_delphin_variable():
                 template_variable_name = self.resolve_variable(self.plural_template_delphin)
+                template_variable_name, _ = self._convert_complex_variable(template_variable_name)
+
                 template_variable_properties = mrs.variables.get(template_variable_name, {})
                 plural_string = template_variable_properties.get("NUM", None)
 
@@ -189,22 +214,7 @@ class SStringFormat(object):
 
             # If the variable value is not just a variable value, decode it
             specified_meaning_at_index_value = None
-            if isinstance(variable_name, list):
-                sstring_logger.debug(f"sstring: variable is complex: '{variable_name}'")
-                if variable_name[0] == "AtPredication":
-                    # Use the English for this variable as if the
-                    # error happened at the specified predication
-                    # instead of where it really happened
-                    if isinstance(variable_name[1], list):
-                        specified_meaning_at_index_value = variable_name[1][-1].index
-                    else:
-                        specified_meaning_at_index_value = variable_name[1].index
-                    sstring_logger.debug(f"sstring: error predication index is: {specified_meaning_at_index_value}")
-                    variable_name = variable_name[2]
-
-                elif variable_name[0] == "AfterFullPhrase":
-                    specified_meaning_at_index_value = 100000000
-                    variable_name = variable_name[1]
+            variable_name, specified_meaning_at_index_value = self._convert_complex_variable(variable_name)
 
             # Now that we have the variable, resolve the meaning_at_index_variable
             predication_for_variable = find_predication_from_introduced(tree, variable_name)
