@@ -8,11 +8,13 @@ Remaining work to be shown in the tutorial:
     --> Might be a matter of not doing all the parses, need to do them all
 
 - Get verb matching to work
-- Make english_for_delphin_variable and english_for_delphin_variable_mrs work the same so one can be used for backup:
-- 
 - Make sstrings fall back to default generation if they fail
-
+  - Make english_for_delphin_variable and english_for_delphin_variable_mrs work the same so one can be used for backup:
+  - How to deal with failure_index?
 - convert lessThan error to use sstrings
+  - 3 files are large -> There are less than 3 <unknown>
+  - Problem 1: need to strip all determiners to generate a good message
+  - Problem 2: need to match 
   - How to generate strings that represent the variable at the end of the whole sentence?
   - Theory: Put a quantifier in front of the whole tree?
   - 

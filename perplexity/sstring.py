@@ -4,6 +4,7 @@ import inspect
 
 from delphin.codecs import simplemrs
 
+from perplexity.generation import english_for_delphin_variable
 from perplexity.response import PluralMode
 from perplexity.generation_mrs import english_for_variable_using_mrs, round_trip_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced
@@ -19,14 +20,7 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 #     y = 7
 #     print fstring("x is {x} and y is {y}")
 #     # Prints: x is 6 and y is 7
-def sstringify(origin, tree_info=None):
-    if tree_info is not None:
-        mrs = simplemrs.loads(tree_info["MRS"])[0]
-        tree = tree_info["Tree"]
-    else:
-        mrs = None
-        tree = None
-
+def sstringify(origin, tree_info=None, meaning_at_index=None):
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
     sstringified = re.sub(r"(?:{{)+?", "\x15", origin)[::-1]
@@ -48,7 +42,7 @@ def sstringify(origin, tree_info=None):
     for match in INDICATOR_PATTERN.findall(sstringified):
         indicator = match[1:-1]
         format_object = parse_s_string_element(indicator)
-        value = format_object.format(mrs, tree)
+        value = format_object.format(tree_info, meaning_at_index)
         if value is None:
             value = "<unknown>"
         sstringified = sstringified.replace(match, str(value))
@@ -66,6 +60,10 @@ class SStringFormat(object):
         self.determiner = determiner
         self.plural = plural
         self.initial_cap = initial_cap
+
+    def __repr__(self):
+        variable = f"delphin({self.delphin_variable})" if self.value_is_delphin_variable() else f"raw({self.raw_variable})" if self.value_is_raw_variable() else f"'{self.string_literal}'"
+        return f"{'CAP+' if self.initial_cap else ''}{self.determiner} {variable}:{self.plural}"
 
     def value_is_raw_variable(self):
         return self.raw_variable is not None
@@ -103,7 +101,14 @@ class SStringFormat(object):
         except SyntaxError:
             return eval(variable.replace("\n", ""), None, frame)  # pylint: disable=eval-used
 
-    def format(self, mrs, tree):
+    def format(self, tree_info, meaning_at_index=None):
+        if tree_info is not None:
+            mrs = simplemrs.loads(tree_info["MRS"])[0]
+            tree = tree_info["Tree"]
+        else:
+            mrs = None
+            tree = None
+
         # First resolve the template if it exists
         if self.has_plural_template():
             if self.plural_template_is_delphin_variable():
@@ -126,10 +131,13 @@ class SStringFormat(object):
         if self.value_is_delphin_variable():
             variable_name = self.resolve_variable(self.delphin_variable)
             formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable_name, plural=resolved_plural, determiner=self.determiner)
-            # if formatted_string is None:
-            #     return english_for_delphin_variable(failure_index, variable_name, tree_info, default_a_quantifier=True, singular_unquantified=False):
-            #
-            #     return english_for_variable_using_mrs()
+
+            # If ACE can't be used, fall back to a simplistic approach
+            if formatted_string is None:
+                if meaning_at_index is None:
+                    meaning_at_index = find_predication_from_introduced(tree, variable_name)
+                return english_for_delphin_variable(meaning_at_index, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner)
+
             return formatted_string
 
 
@@ -238,7 +246,7 @@ if __name__ == '__main__':
     print(sstringify("raw text: {*raw_text}"))
 
     # Test Harness
-    phrase = "which files are large"
+    phrase = "3 files are large"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")

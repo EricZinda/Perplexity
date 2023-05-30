@@ -137,12 +137,9 @@ def generate_message(tree_info, error_term):
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
     elif error_constant == "lessThan":
-        # arg1 = error_arguments[1]
-        # arg2 = error_arguments[2]
-        # return sstringify("There are less than {*arg2} {arg1:sg}", tree_info)
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, quantifier="bare", plural=PluralMode.singular)
+        arg1 = error_arguments[1]
         arg2 = error_arguments[2]
-        return f"There are less than {arg2} {s(None, arg1, count=int(arg2))}"
+        return sstringify("There are less than {*arg2} {arg1:sg}", tree_info)
 
     elif error_constant == "moreThan":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)

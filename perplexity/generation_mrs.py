@@ -2,14 +2,11 @@ import copy
 import difflib
 import logging
 import os
-import pathlib
 import re
 import sys
-
-from delphin.codecs import simplemrs
+import inflect
 from delphin.mrs import EP, MRS, is_well_formed, is_connected, has_intrinsic_variable_property, plausibly_scopes, \
     has_complete_intrinsic_variables, has_unique_intrinsic_variables
-
 from perplexity.response import PluralMode
 from perplexity.tree import MrsParser, walk_tree_predications_until, rewrite_tree_predications, TreePredication, \
     find_predication_from_introduced
@@ -118,35 +115,24 @@ def diff_generator(original, generated):
         yield " ".join(accumulator[0]), " ".join(accumulator[1])
 
 
-def compare_fragment_output(original, fragment):
-    diffs = []
-    for subtractions, additions in diff_generator(original.lower(), fragment.lower()):
-        # twenty-forth round trips to twenty forth
-        if len(subtractions) == len(additions) and additions.replace("-", " ") == subtractions:
-            continue
-
-        diffs.append(f"{additions} <--> {subtractions}")
-
-    return diffs
-
-
-def compare_generation_output(original, generated):
+def compare_generated_output(original, generated):
     # Basic cleaning of input
     original = original.strip(" .?!")
     generated = generated.strip(" .?!")
 
-    diffs = "   "
+    diffs = []
     for subtractions, additions in diff_generator(original.lower(), generated.lower()):
         # twenty-forth round trips to twenty forth
         if len(subtractions) == len(additions) and additions.replace("-", " ") == subtractions:
             continue
 
-        diffs += f"{additions} <--> {subtractions} | "
+        if additions.isdigit() and inflect_engine.number_to_words(additions) == subtractions or \
+            subtractions.isdigit() and inflect_engine.number_to_words(subtractions) == additions:
+            continue
 
-    if len(diffs.strip()) > 0:
-        return f"{generated}\n" + diffs
-    else:
-        return True
+        diffs.append(f"{additions} <--> {subtractions}")
+
+    return diffs
 
 
 def find_quantifier_from_variable(term, variable_name):
@@ -276,7 +262,7 @@ def best_generation_index(mrs, original_text):
     index = 0
     matches = []
     for generated_phrase in generate_parser.phrase_from_simple_mrs(new_mrs_string):
-        diff_list = compare_fragment_output(original_text, generated_phrase)
+        diff_list = compare_generated_output(original_text, generated_phrase)
         if len(diff_list) == 0:
             # Exact match! Stop now, not going to get better
             return index
@@ -400,13 +386,13 @@ def round_trip_mrs(mrs_parser, phrase):
             index = 0
             for generated_phrase in mrs_parser.phrase_from_simple_mrs(mrs_string):
                 this_generated.append(generated_phrase)
-                compare_result = compare_generation_output(phrase, generated_phrase)
-                if compare_result is True:
+                diffs = compare_generated_output(phrase, generated_phrase)
+                if len(diffs) == 0:
                     logger.info(f"MRS {mrs_index}, GEN {index}: Found round trip: {mrs}\n")
                     return index, generated_phrase, mrs
-
                 else:
-                    trace_report += f"MRS {mrs_index}, GEN {index}: {compare_result}\n"
+                    newline = "\n"
+                    trace_report += f"MRS {mrs_index}, GEN {index}: {newline.join(diffs)}\n"
 
                 index += 1
 
@@ -491,6 +477,9 @@ logger.addHandler(stdout_handler)
 # file_handler.setFormatter(formatter)
 #
 # logger.addHandler(file_handler)
+
+inflect_engine = inflect.engine()
+
 
 if __name__ == '__main__':
     # https://www.english-corpora.org/coca/
