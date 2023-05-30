@@ -142,21 +142,26 @@ def generate_message(tree_info, error_term):
         return sstringify("There are less than {*arg2} {arg1:sg@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"There are more than {arg1}"
+        arg1 = error_arguments[1]
+        return sstringify("There are more than {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan1":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
         return f"There is more than one {arg1}"
 
     elif error_constant == "moreThanN":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, quantifier="bare", plural=PluralMode.singular)
+        arg1 = error_arguments[1]
         arg2 = error_arguments[2]
-        return f"There is more than {arg2} {s(None, arg1, count=int(arg2))}"
+        # TODO: Make arg1 match arg2's plural
+        return sstringify("There {'is':<*arg2} more than {*arg2} {bare arg1:@error_predicate_index}", tree_info)  # s(None, arg1, count=int(arg2))}")
+
+        # arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, quantifier="bare", plural=PluralMode.singular)
+        # arg2 = error_arguments[2]
+        # return f"There is more than {arg2} {s(None, arg1, count=int(arg2))}"
 
     elif error_constant == "notTrueForAll":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"That isn't true for all {arg1}"
+        arg1 = error_arguments[1]
+        return sstringify("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "xIsNotY":
         arg1 = error_arguments[1]

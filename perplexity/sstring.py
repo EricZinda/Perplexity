@@ -2,11 +2,9 @@
 import logging
 import re
 import inspect
-
 from delphin.codecs import simplemrs
-
 from perplexity.generation import english_for_delphin_variable
-from perplexity.response import PluralMode
+from perplexity.response import PluralMode, is_plural_word, change_to_plural_mode
 from perplexity.generation_mrs import english_for_variable_using_mrs, round_trip_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced
 from perplexity.utilities import ShowLogging
@@ -17,8 +15,8 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 # Elements of an s-string have the format {determiner variable:format} or {determiner "string":format}
 #
 # - variable is interpreted as a variable that contains a string representing a DELPH-IN variable
-# - *variable is interpreted as a variable that contains a raw string
-# - "string" is interpreted as a raw string
+# - *variable is interpreted as a variable that contains a raw *singular form* word
+# - "string" is interpreted as a raw string that is in *singular form*
 #
 # The variable value can be a list in order to specify something richer:
 #   ["AtPredication", TreePredication, variable]: Evaluate variable English meaning at the index specified by TreePredication
@@ -32,8 +30,10 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 #       sg : singular
 #       pl : plural
 #       <nothing>: leave as-is
-#       <var: match the singular or plural of whatever DELPH-IN var contains
-#
+#       <var: match the singular or plural of whatever DELPH-IN variable contains
+#       <*noun_var: ditto but for a variable containing a *noun* that is not a DELPH-IN variable
+#       <"dogs": ditto but for a *noun* string literal
+
 # meaning_at_index: which predication index in the Tree should mark the end of converting to English
 #   @variable: variable holds the index that should be used
 #
@@ -77,6 +77,7 @@ class SStringFormat(object):
     def __init__(self, raw_variable=None,
                  delphin_variable=None,
                  string_literal=None,
+                 plural_template_delphin=None,
                  plural_template_variable=None,
                  plural_template_literal=None,
                  determiner=None,
@@ -87,6 +88,7 @@ class SStringFormat(object):
         self.delphin_variable = delphin_variable
         self.raw_variable = raw_variable
         self.string_literal = string_literal
+        self.plural_template_delphin = plural_template_delphin
         self.plural_template_variable = plural_template_variable
         self.plural_template_literal = plural_template_literal
         self.determiner = determiner
@@ -106,10 +108,10 @@ class SStringFormat(object):
         return self.delphin_variable is not None
 
     def has_plural_template(self):
-        return self.plural_template_literal or self.plural_template_variable
+        return self.plural_template_literal or self.plural_template_variable or self.plural_template_delphin
 
     def plural_template_is_delphin_variable(self):
-        return self.plural_template_variable is not None
+        return self.plural_template_delphin is not None
 
     # By default skip_to_level = 2 which means:
     # 0 skip this level
@@ -134,6 +136,11 @@ class SStringFormat(object):
         # Re-implement this using format()
         except SyntaxError:
             return eval(variable.replace("\n", ""), None, frame)  # pylint: disable=eval-used
+        except NameError:
+            if variable.find("@") != -1:
+                raise SyntaxError(f"{variable} is not defined. Did you forget a ':'?")
+            else:
+                raise SyntaxError(f"{variable} is not defined")
 
     def format(self, tree_info):
         if tree_info is not None:
@@ -148,23 +155,35 @@ class SStringFormat(object):
         # First resolve the template if it exists
         if self.has_plural_template():
             if self.plural_template_is_delphin_variable():
-                template_variable_name = self.resolve_variable(self.plural_template_variable)
+                template_variable_name = self.resolve_variable(self.plural_template_delphin)
                 template_variable_properties = mrs.variables.get(template_variable_name, {})
                 plural_string = template_variable_properties.get("NUM", None)
-                resolved_plural = {"pl": PluralMode.plural, "sg": PluralMode.singular, None: PluralMode.as_is}[plural_string]
 
             else:
-                assert False, "todo: look up plural based on word"
+                if self.plural_template_variable:
+                    plural_template_value = self.resolve_variable(self.plural_template_variable)
+                else:
+                    plural_template_value = self.plural_template_literal
+
+                sstring_logger.debug(f"sstring: plural template is: {plural_template_value}")
+
+                if str(plural_template_value).isnumeric():
+                    plural_string = "pl" if float(plural_template_value) > 1 else "sg"
+                else:
+                    plural_string = "pl" if is_plural_word(plural_template_value) else "sg"
+
+            resolved_plural = {"pl": PluralMode.plural, "sg": PluralMode.singular, None: PluralMode.as_is}[plural_string]
 
         else:
             resolved_plural = self.plural
 
-        # Next resolve the variable
-        if self.value_is_raw_variable():
-            variable_value = self.resolve_variable(self.raw_variable)
-            return variable_value
+        sstring_logger.debug(f"sstring: plural is: {resolved_plural}")
 
+        # Next resolve the variable
         if self.value_is_delphin_variable():
+            if tree_info is None:
+                raise SyntaxError("sstringify must have a tree_info argument if a DELPH-IN variable is being used")
+
             variable_name = self.resolve_variable(self.delphin_variable)
             sstring_logger.debug(f"sstring: variable_name is '{variable_name}'")
 
@@ -185,7 +204,15 @@ class SStringFormat(object):
                     variable_name = variable_name[1]
 
             # Now that we have the variable, resolve the meaning_at_index_variable
-            meaning_at_index_default = find_predication_from_introduced(tree, variable_name).index
+            predication_for_variable = find_predication_from_introduced(tree, variable_name)
+            if predication_for_variable is None:
+                raise SyntaxError(f"Can't find predication for variable '{variable_name}'. Are you missing a '*'?")
+
+            else:
+                # Add 1 since we want the meaning *after* the predication introducing it has been successfully
+                # processed. This is because we want the full RSTR this predication is in to have been processed
+                meaning_at_index_default = predication_for_variable.index + 1
+
             sstring_logger.debug(f"sstring: default meaning_at_index is '{meaning_at_index_default}'")
             if self.meaning_at_index_variable is None and specified_meaning_at_index_value is None:
                 meaning_at_index_value = meaning_at_index_default
@@ -219,6 +246,14 @@ class SStringFormat(object):
 
             return formatted_string
 
+        else:
+            if self.value_is_raw_variable():
+                singular_variable_value = self.resolve_variable(self.raw_variable)
+            else:
+                singular_variable_value = self.string_literal
+
+            return change_to_plural_mode(singular_variable_value, resolved_plural)
+
 
 def parse_s_string_element(raw_string):
     # Defaults are "leave as is" if nothing is specified
@@ -227,6 +262,7 @@ def parse_s_string_element(raw_string):
     plural = PluralMode.as_is
     plural_template_literal = None
     plural_template_variable = None
+    plural_template_delphin = None
     string_literal = None
     delphin_variable = None
     raw_variable = None
@@ -272,8 +308,10 @@ def parse_s_string_element(raw_string):
             plural_template_raw = plural_raw[1:].strip()
             if plural_template_raw[0] in ["\"", "'"]:
                 plural_template_literal = plural_template_raw[1:-1]
+            elif plural_template_raw[0] == "*":
+                plural_template_variable = plural_template_raw[1:]
             else:
-                plural_template_variable = plural_template_raw
+                plural_template_delphin = plural_template_raw
         else:
             raise SyntaxError(f"s-string: '{plural_raw}' is not a plural format.  Must be: 'sg', 'pl', pr '<var'")
 
@@ -300,6 +338,7 @@ def parse_s_string_element(raw_string):
                          string_literal=string_literal,
                          plural_template_variable=plural_template_variable,
                          plural_template_literal=plural_template_literal,
+                         plural_template_delphin=plural_template_delphin,
                          determiner=determiner,
                          plural=plural,
                          initial_cap=initial_cap,
@@ -317,11 +356,15 @@ if __name__ == '__main__':
     # Bugs:
     # "The raging party in my house has started"
     # "Load the lofty goal"
-    raw_text = "test"
+    raw_text = "is"
+    plural_word = "2"
+    print(sstringify("raw text: {*raw_text:<*plural_word}"))
+
     print(sstringify("raw text: {*raw_text}"))
 
+
     # Test Harness
-    phrase = "3 files are large"
+    phrase = "the 2 files are in 3 folders"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
@@ -353,6 +396,7 @@ if __name__ == '__main__':
                 print(sstringify("a singular:   {a variable:sg}", tree_info))
                 print(sstringify("the plural:   {the variable:pl}", tree_info))
                 print(sstringify("Bare plural:  {Bare variable:pl}", tree_info))
+                print(sstringify("Bare original:  {bare variable}", tree_info))
                 print(sstringify("bare singular: {variable:sg}", tree_info))
                 print()
 

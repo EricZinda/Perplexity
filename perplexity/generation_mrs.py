@@ -276,6 +276,7 @@ def best_generation_index(mrs, original_text):
         return matches[0][3], matches[0][1]
 
     else:
+        logger.debug(f"Nothing could be generated for: {original_text}: {new_mrs_string}")
         return None, None
 
 
@@ -462,14 +463,14 @@ def test_sentences(start_index=0):
 
 path = os.path.dirname(os.path.realpath(__file__))
 
-logger = logging.getLogger("response")
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(message)s')
-
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(formatter)
-logger.addHandler(stdout_handler)
+logger = logging.getLogger("SString")
+# logger.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(message)s')
+#
+# stdout_handler = logging.StreamHandler(sys.stdout)
+# stdout_handler.setLevel(logging.DEBUG)
+# stdout_handler.setFormatter(formatter)
+# logger.addHandler(stdout_handler)
 
 # log_file_path = os.path.join(path, "test_log.txt")
 # file_handler = logging.FileHandler(log_file_path)

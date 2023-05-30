@@ -6,21 +6,16 @@ Remaining work to be shown in the tutorial:
     Anyway, he was a philosophy major and the job market isn't exactly crying out for those, so he decided to become a rock legend.
     Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
     --> Might be a matter of not doing all the parses, need to do them all
-  
-- START HERE NEXT: a few files are large -> There are less than 3 a few large file
-  - Need to handle ['AfterFullPhrase', 'x3'] properly in lessThan
-  
+
+- Implement moreThan1
+
+
+- make fallback generation more robust
+- sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it
 - Get verb matching to work
-- Make sstrings fall back to default generation if they fail
-  - Make english_for_delphin_variable and english_for_delphin_variable_mrs work the same so one can be used for backup:
-  - How to deal with failure_index?
-- convert lessThan error to use sstrings
-  - 3 files are large -> There are less than 3 <unknown>
-  - Problem 1: need to strip all determiners to generate a good message
-  - Problem 2: need to match 
-  - How to generate strings that represent the variable at the end of the whole sentence?
+- How to MRS generate strings that represent the variable at the end of the whole sentence?
   - Theory: Put a quantifier in front of the whole tree?
-  - 
+  
 - We need a way to pluralize the noun phrase "files in a folder" properly
     We can do it with MRS Generation if we can get the MRS for it
     - Generate the MRS that round trips
