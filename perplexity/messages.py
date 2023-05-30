@@ -139,7 +139,7 @@ def generate_message(tree_info, error_term):
     elif error_constant == "lessThan":
         arg1 = error_arguments[1]
         arg2 = error_arguments[2]
-        return sstringify("There are less than {*arg2} {arg1:sg}", tree_info, error_predicate_index)
+        return sstringify("There are less than {*arg2} {arg1:sg@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
@@ -161,7 +161,7 @@ def generate_message(tree_info, error_term):
     elif error_constant == "xIsNotY":
         arg1 = error_arguments[1]
         arg2 = error_arguments[2]
-        return sstringify("{arg1} is not {arg2}", tree_info, error_predicate_index)
+        return sstringify("{arg1:@error_predicate_index} is not {arg2:@error_predicate_index}", tree_info)
 
     elif error_constant == "xIsNotYValue":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)

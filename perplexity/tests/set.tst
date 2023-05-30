@@ -123,7 +123,7 @@
         },
         {
             "Command": "1 file is 20 megabytes",
-            "Expected": "1 file is not twenty mb",
+            "Expected": "1 file is not 20 megabyte",
             "Tree": "udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],udef_q(x3,[_file_n_of(x3,i10), card(1,e9,x3)],loc_nonsp(e2,x3,x11)))",
             "Enabled": true,
             "ID": "883c4f0e-5d43-4ab5-86a8-7aa2ebc1a46d"

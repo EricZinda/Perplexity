@@ -1,6 +1,4 @@
 import logging
-from delphin.codecs import simplemrs
-from perplexity.generation_mrs import english_for_variable_using_mrs
 from perplexity.tree import walk_tree_predications_until, is_last_fw_seq
 from perplexity.utilities import parse_predication_name
 
@@ -8,20 +6,6 @@ from perplexity.utilities import parse_predication_name
 # Given the index where an error happened and a variable,
 # return what that variable "is" up to that point, in English
 def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None):
-# def english_for_delphin_variable(failure_index, variable, tree_info, default_a_quantifier=True, singular_unquantified=False):
-    if isinstance(variable, list):
-        if variable[0] == "AtPredication":
-            # Use the English for this variable as if the
-            # error happened at the specified predication
-            # instead of where it really happened
-            failure_index = variable[1].index
-            logger.debug(f"error predication index is: {failure_index}")
-            variable = variable[2]
-
-        elif variable[0] == "AfterFullPhrase":
-            failure_index = 100000000
-            variable = variable[1]
-
     # This function will be called for every predication in the MRS
     # as we walk it in execution order
     def record_predications_until_failure_index(predication):

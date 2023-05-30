@@ -14,14 +14,36 @@ from perplexity.utilities import ShowLogging
 INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 
 
-# Creates a formatted string using the format described in parse_s_string_element.
+# Elements of an s-string have the format {determiner variable:format} or {determiner "string":format}
 #
-# Usage:
-#     x = 6
-#     y = 7
-#     print fstring("x is {x} and y is {y}")
-#     # Prints: x is 6 and y is 7
-def sstringify(origin, tree_info=None, meaning_at_index=None):
+# - variable is interpreted as a variable that contains a string representing a DELPH-IN variable
+# - *variable is interpreted as a variable that contains a raw string
+# - "string" is interpreted as a raw string
+#
+# The variable value can be a list in order to specify something richer:
+#   ["AtPredication", TreePredication, variable]: Evaluate variable English meaning at the index specified by TreePredication
+#   ["AfterFullPhrase", variable]: Evaluate variable English meaning after the whole tree
+#
+# determiner: put "a", "an", "the" or "bare" as the first word in {} like {a arg1}
+#
+# format: how to shape the word represented by "string" or variable
+#   Capitalize: Capitalize the article if there is one OR use "Bare" as the article
+#   Format Specifiers: after ":" put:
+#       sg : singular
+#       pl : plural
+#       <nothing>: leave as-is
+#       <var: match the singular or plural of whatever DELPH-IN var contains
+#
+# meaning_at_index: which predication index in the Tree should mark the end of converting to English
+#   @variable: variable holds the index that should be used
+#
+# Examples:
+# g("{the arg2:sg}
+# g("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
+# g("{arg2:sg} {arg2:pl}
+#
+# returns a SStringFormat object
+def sstringify(origin, tree_info=None):
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
     sstringified = re.sub(r"(?:{{)+?", "\x15", origin)[::-1]
@@ -43,7 +65,7 @@ def sstringify(origin, tree_info=None, meaning_at_index=None):
     for match in INDICATOR_PATTERN.findall(sstringified):
         indicator = match[1:-1]
         format_object = parse_s_string_element(indicator)
-        value = format_object.format(tree_info, meaning_at_index)
+        value = format_object.format(tree_info)
         if value is None:
             value = "<unknown>"
         sstringified = sstringified.replace(match, str(value))
@@ -52,7 +74,16 @@ def sstringify(origin, tree_info=None, meaning_at_index=None):
 
 
 class SStringFormat(object):
-    def __init__(self, raw_variable=None, delphin_variable=None, string_literal=None, plural_template_variable=None, plural_template_literal=None, determiner=None, plural=None, initial_cap=None):
+    def __init__(self, raw_variable=None,
+                 delphin_variable=None,
+                 string_literal=None,
+                 plural_template_variable=None,
+                 plural_template_literal=None,
+                 determiner=None,
+                 plural=None,
+                 initial_cap=None,
+                 meaning_at_index_variable=None,
+                 original_text=None):
         self.delphin_variable = delphin_variable
         self.raw_variable = raw_variable
         self.string_literal = string_literal
@@ -61,10 +92,12 @@ class SStringFormat(object):
         self.determiner = determiner
         self.plural = plural
         self.initial_cap = initial_cap
+        self.meaning_at_index_variable = meaning_at_index_variable
+        self.original_text = original_text
 
     def __repr__(self):
         variable = f"delphin({self.delphin_variable})" if self.value_is_delphin_variable() else f"raw({self.raw_variable})" if self.value_is_raw_variable() else f"'{self.string_literal}'"
-        return f"{'CAP+' if self.initial_cap else ''}{self.determiner} {variable}:{self.plural}"
+        return f"{'CAP+' if self.initial_cap else ''}{self.determiner} {variable}:{self.plural}{('@' + self.meaning_at_index_variable) if self.meaning_at_index_variable is not None else ''}"
 
     def value_is_raw_variable(self):
         return self.raw_variable is not None
@@ -102,14 +135,16 @@ class SStringFormat(object):
         except SyntaxError:
             return eval(variable.replace("\n", ""), None, frame)  # pylint: disable=eval-used
 
-    def format(self, tree_info, meaning_at_index=None):
+    def format(self, tree_info):
         if tree_info is not None:
             mrs = simplemrs.loads(tree_info["MRS"])[0]
             tree = tree_info["Tree"]
+
         else:
             mrs = None
             tree = None
 
+        sstring_logger.debug(f"sstring: original text is: '{self.original_text}'")
         # First resolve the template if it exists
         if self.has_plural_template():
             if self.plural_template_is_delphin_variable():
@@ -131,42 +166,60 @@ class SStringFormat(object):
 
         if self.value_is_delphin_variable():
             variable_name = self.resolve_variable(self.delphin_variable)
-            formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable_name, plural=resolved_plural, determiner=self.determiner)
+            sstring_logger.debug(f"sstring: variable_name is '{variable_name}'")
+
+            # If the variable value is not just a variable value, decode it
+            specified_meaning_at_index_value = None
+            if isinstance(variable_name, list):
+                sstring_logger.debug(f"sstring: variable is complex: '{variable_name}'")
+                if variable_name[0] == "AtPredication":
+                    # Use the English for this variable as if the
+                    # error happened at the specified predication
+                    # instead of where it really happened
+                    specified_meaning_at_index_value = variable_name[1].index
+                    sstring_logger.debug(f"sstring: error predication index is: {specified_meaning_at_index_value}")
+                    variable_name = variable_name[2]
+
+                elif variable_name[0] == "AfterFullPhrase":
+                    specified_meaning_at_index_value = 100000000
+                    variable_name = variable_name[1]
+
+            # Now that we have the variable, resolve the meaning_at_index_variable
+            meaning_at_index_default = find_predication_from_introduced(tree, variable_name).index
+            sstring_logger.debug(f"sstring: default meaning_at_index is '{meaning_at_index_default}'")
+            if self.meaning_at_index_variable is None and specified_meaning_at_index_value is None:
+                meaning_at_index_value = meaning_at_index_default
+                sstring_logger.debug(f"sstring: meaning_at_index not specified, using default: '{meaning_at_index_value}'")
+
+            elif specified_meaning_at_index_value is not None:
+                meaning_at_index_value = int(specified_meaning_at_index_value)
+                sstring_logger.debug(f"sstring: meaning_at_index specified by complex variable: {meaning_at_index_value}")
+
+            else:
+                meaning_at_index_value = self.resolve_variable(self.meaning_at_index_variable)
+                sstring_logger.debug(f"sstring: meaning_at_index specified: '{meaning_at_index_value}'")
+
+            if meaning_at_index_value == meaning_at_index_default:
+                # We only know how to use ACE if we are talking about a variable's meaning
+                # from the point where it is introduced
+                sstring_logger.debug(f"sstring: default meaning_at_index: trying MRS generation")
+                formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable_name, plural=resolved_plural, determiner=self.determiner)
+            else:
+                sstring_logger.debug(f"sstring: non-default meaning_at_index: only use fallback")
+                formatted_string = None
+
             if formatted_string is not None:
-                pipeline_logger.debug(f"MRS: {variable_name}[{self}]={formatted_string}")
+                sstring_logger.debug(f"sstring MRS generated: {variable_name}[{self}]={formatted_string}")
 
             else:
                 # If ACE can't be used, fall back to a simplistic approach
-                if meaning_at_index is None:
-                    meaning_at_index = find_predication_from_introduced(tree, variable_name)
-                formatted_string = english_for_delphin_variable(meaning_at_index, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner)
-                pipeline_logger.debug(f"Fallback: {variable_name}[{self}]={formatted_string}")
+                sstring_logger.debug(f"sstring: MRS failed, try fallback")
+                formatted_string = english_for_delphin_variable(meaning_at_index_value, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner)
+                sstring_logger.debug(f"sstring: Fallback generated: {variable_name}[{self}]={formatted_string}")
 
             return formatted_string
 
 
-# Elements of an s-string have the format {determiner variable:format} or {determiner "string":format}
-#
-# - variable is interpreted as a variable that contains a string representing a DELPH-IN variable
-# - *variable is interpreted as a variable that contains a raw string
-# - "string" is interpreted as a raw string
-#
-# determiner: put "a", "an", "the" or "bare" as the first word in {} like {a arg1}
-#
-# format: how to shape the word represented by "string" or variable
-#   Capitalize: Capitalize the article if there is one OR use "Bare" as the article
-#   Format Specifiers: after ":" put:
-#       sg : singular
-#       pl : plural
-#       <nothing>: leave as-is
-#       <var: match the singular or plural of whatever DELPH-IN var contains
-#
-# Examples:
-# g("{the arg2:sg}
-# g("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
-# g("{arg2:sg} {arg2:pl}
-#
-# returns a SStringFormat object
 def parse_s_string_element(raw_string):
     # Defaults are "leave as is" if nothing is specified
     determiner = None
@@ -177,6 +230,7 @@ def parse_s_string_element(raw_string):
     string_literal = None
     delphin_variable = None
     raw_variable = None
+    meaning_at_index_variable = None
 
     # See if a determiner was specified
     # If so, use it to determine initial_cap and determiner
@@ -199,21 +253,33 @@ def parse_s_string_element(raw_string):
     if len(expression_parts) == 2:
         word_raw = expression_parts[0].strip()
         format_raw = expression_parts[1].strip()
-        if format_raw == "sg":
+        plural_index_raw = format_raw.split("@")
+        if len(plural_index_raw) == 2:
+            plural_raw = plural_index_raw[0]
+            index_raw = plural_index_raw[1]
+        else:
+            plural_raw = plural_index_raw[0]
+            index_raw = None
+
+        # Deal with the plural indicator
+        if plural_raw == "sg":
             plural = PluralMode.singular
-        elif format_raw == "pl":
+        elif plural_raw == "pl":
             plural = PluralMode.plural
-        elif format_raw == "":
+        elif plural_raw == "":
             plural = PluralMode.as_is
-        elif format_raw[0] == "<":
-            plural_template_raw = format_raw[1:].strip()
+        elif plural_raw[0] == "<":
+            plural_template_raw = plural_raw[1:].strip()
             if plural_template_raw[0] in ["\"", "'"]:
                 plural_template_literal = plural_template_raw[1:-1]
             else:
                 plural_template_variable = plural_template_raw
-
         else:
-            raise SyntaxError(f"s-string: '{format_raw}' is not a plural format.  Must be: 'sg', 'pl', pr '<var'")
+            raise SyntaxError(f"s-string: '{plural_raw}' is not a plural format.  Must be: 'sg', 'pl', pr '<var'")
+
+        # Deal with the meaning_at_index indicator
+        if index_raw is not None:
+            meaning_at_index_variable = index_raw
 
     elif len(expression_parts) == 1:
         word_raw = word_format_raw.strip()
@@ -236,16 +302,17 @@ def parse_s_string_element(raw_string):
                          plural_template_literal=plural_template_literal,
                          determiner=determiner,
                          plural=plural,
-                         initial_cap=initial_cap)
+                         initial_cap=initial_cap,
+                         meaning_at_index_variable=meaning_at_index_variable,
+                         original_text=raw_string)
 
 
 mrs_parser = MrsParser()
 
-pipeline_logger = logging.getLogger('Pipeline')
 sstring_logger = logging.getLogger('SString')
 
 if __name__ == '__main__':
-    ShowLogging("Pipeline")
+    ShowLogging("SString")
 
     # Bugs:
     # "The raging party in my house has started"
@@ -274,8 +341,14 @@ if __name__ == '__main__':
                     print(f"\n{variable} --> {find_predication_from_introduced(tree, variable)}")
                     print_variable = False
 
+                after_tree = 999
+                variable_after_phrase = ["AfterFullPhrase", variable]
+                variable_before_phrase = ["AtPredication", tree, variable]
                 tree_info = {"Tree": tree, "MRS": mrs_parser.mrs_to_string(mrs)}
-                print(sstringify("raw: {variable}", tree_info))
+                print(sstringify("raw default: {variable}", tree_info))
+                print(sstringify("raw before tree using 'AtPredication': {variable_before_phrase}", tree_info))
+                print(sstringify("raw after tree: {variable:@after_tree}", tree_info))
+                print(sstringify("raw after tree using 'AfterFullPhrase': {variable_after_phrase}", tree_info))
                 print(sstringify("the singular: {the variable:sg}", tree_info))
                 print(sstringify("a singular:   {a variable:sg}", tree_info))
                 print(sstringify("the plural:   {the variable:pl}", tree_info))

@@ -6,7 +6,10 @@ Remaining work to be shown in the tutorial:
     Anyway, he was a philosophy major and the job market isn't exactly crying out for those, so he decided to become a rock legend.
     Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
     --> Might be a matter of not doing all the parses, need to do them all
-
+  
+- START HERE NEXT: a few files are large -> There are less than 3 a few large file
+  - Need to handle ['AfterFullPhrase', 'x3'] properly in lessThan
+  
 - Get verb matching to work
 - Make sstrings fall back to default generation if they fail
   - Make english_for_delphin_variable and english_for_delphin_variable_mrs work the same so one can be used for backup:
@@ -24,6 +27,8 @@ Remaining work to be shown in the tutorial:
     - Replace the BODY with unknown(x)
 
 - CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
+  - same thing for card(e,x,c) becoming card(c,e,x)
+  
 - How to deal with "I want a strawberry" when we know about strawberries but there aren't any
   - Do we need different messages based on the state of the world? For example, in the doorway: ""
   - create an object called "CanonicalInstance()" if we are talking about a think "in principle" like "I'd like to order a strawberry"?
