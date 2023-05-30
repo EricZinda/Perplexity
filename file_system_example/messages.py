@@ -28,7 +28,7 @@ def generate_message(tree_info, error_term):
     if error_constant == "adjectiveDoesntApply":
         arg1 = error_arguments[1]
         arg2 = error_arguments[2]
-        return sstringify("{A arg2} is not {*arg1}", tree_info)
+        return sstringify("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
 
     elif error_constant == "cantDo":
         arg1 = error_arguments[1]

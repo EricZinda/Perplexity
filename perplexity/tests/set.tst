@@ -11,14 +11,14 @@
         },
         {
             "Command": "files are large",
-            "Expected": "files is not large",
+            "Expected": "files are not large",
             "Tree": "udef_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "331f555e-dd75-4836-88b3-6cde597eaebd"
         },
         {
             "Command": "which files are large",
-            "Expected": "files is not large",
+            "Expected": "files are not large",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "aa892111-3d4a-477e-8ae2-858d95d9074c"
@@ -488,17 +488,10 @@
         },
         {
             "Command": "which files are large?",
-            "Expected": "a file is not large",
+            "Expected": "files are not large",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "15e2683a-1847-462d-97b8-7e8ef2bb02fc"
-        },
-        {
-            "Command": "which files are large?",
-            "Expected": "a file is not large",
-            "Tree": "_which_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
-            "Enabled": true,
-            "ID": "8697be74-253b-42b4-a333-8b5efd521359"
         },
         {
             "Command": "/new examples.Example34_reset",
