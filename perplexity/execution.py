@@ -21,6 +21,7 @@ class ExecutionContext(object):
         self.vocabulary = vocabulary
         self._error = None
         self._error_predication_index = -1
+        self._error_was_forced = False
         self._predication_index = -1
         self._predication = None
         self._phrase_type = None
@@ -170,12 +171,15 @@ class ExecutionContext(object):
 
     def clear_error(self):
         self._error = None
+        self._error_was_forced = False
         self._error_predication_index = -1
 
     def report_error_for_index(self, predication_index, error, force=False):
-        if force or self._error_predication_index < predication_index:
+        if force or (not self._error_was_forced and self._error_predication_index < predication_index):
             self._error = error
             self._error_predication_index = predication_index
+            if force:
+                self._error_was_forced = True
 
     def report_error(self, error, force=False):
         self.report_error_for_index(self._predication_index, error, force)

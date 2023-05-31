@@ -8,9 +8,19 @@ Remaining work to be shown in the tutorial:
     --> Might be a matter of not doing all the parses, need to do them all
   - Looks like it never generates fw_seq terms? Try: "What is in this 'blue'?"
   
-- 
-  - It used to work...
-    - Fails because failureindex == 4 and 4 is "quoted()"
+- Now that we have proper indexes in conjunctions we aren't generating all terms in the conjunction
+- 3 files are in a folder together -> There is more than a folder together
+  - The wrong error is getting returned for the solution group
+  - (fixed) Suspect it is because we are interleaving generation of solutions with testing the groups
+    - Theory: The only time an error from generating solutions should be returned is if there were *no* solutions
+      - Otherwise, it should always be a criteria error
+    - Theory: If an error is force=True it should only be replaced by another force=True until it is reset
+  - Next problem: "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
+    - together requires sets of more than one be generated, and "a_q" means exactly one
+    - Probably should be a special case error if there is a min=1, max=1 constraint on a variable that only generates > 1?
+
+- 1 file is in a folder together
+  - udef(card(1)) is the determiner for this
 - make fallback generation more robust
 - sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it
 - Get verb matching to work

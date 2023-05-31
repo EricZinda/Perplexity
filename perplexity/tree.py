@@ -520,12 +520,18 @@ def gather_predication_metadata(vocabulary, tree_info):
                 if arg_name not in variable_metadata:
                     variable_metadata[arg_name] = {}
 
+                # "ValueSize" are all the values from the ValueSize enum:
+                # class ValueSize(enum.Enum):
+                #     exactly_one = 1  # default
+                #     more_than_one = 2
+                #     all = 3
                 if arg_metadata["VariableType"] == "x":
                     if "ValueSize" not in variable_metadata[arg_name]:
                         variable_metadata[arg_name]["ValueSize"] = None
 
                     if variable_metadata[arg_name]["ValueSize"] is None:
                         variable_metadata[arg_name]["ValueSize"] = arg_metadata["ValueSize"]
+
                     elif variable_metadata[arg_name]["ValueSize"] != ValueSize.all:
                         if variable_metadata[arg_name]["ValueSize"] != arg_metadata["ValueSize"]:
                             variable_metadata[arg_name]["ValueSize"] = ValueSize.all

@@ -483,7 +483,7 @@ class VariableCriteria(object):
             return CriteriaResult.fail_one
 
         elif values_count < self.min_size:
-            execution_context.report_error_for_index(self.predication_index, ["lessThan", self._after_phrase_error_location, self.min_size] ,force=True)
+            execution_context.report_error_for_index(self.predication_index, ["lessThan", self._after_phrase_error_location, self.min_size], force=True)
             return CriteriaResult.contender
 
         else:

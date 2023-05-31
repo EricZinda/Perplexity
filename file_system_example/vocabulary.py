@@ -359,7 +359,8 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
         else:
             report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    yield from in_style_predication_2(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values)
+    for new_state in in_style_predication_2(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values):
+        yield new_state
 
     report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
@@ -469,6 +470,9 @@ def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_bind
     yield state.add_to_e(e_target_binding.variable.name, "DeterminerSetLimiter", {"Value": info, "Originator": execution_context().current_predication_index()})
 
 
+# together_p(e,x) forces x to have values > 1 item
+# So it needs to declare that its x variable will have sets of > 1 variable
+# Otherwise, it won't get passed sets > 1 if its variables are bound
 @Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", ValueSize.more_than_one)])
 def together_p(state, e_introduced_binding, x_target_binding):
     for _, x_target_value in discrete_variable_set_generator(x_target_binding, ValueSize.more_than_one):

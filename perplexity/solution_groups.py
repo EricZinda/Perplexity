@@ -1,9 +1,11 @@
 import copy
 import logging
 from math import inf
+
+from perplexity.execution import execution_context
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
-from perplexity.tree import gather_quantifier_order
+from perplexity.tree import gather_quantifier_order, gather_predication_metadata
 from perplexity.utilities import at_least_one_generator
 
 
@@ -13,6 +15,8 @@ from perplexity.utilities import at_least_one_generator
 # but allow other types of phrases to get all answers in a group if needed
 #
 # It also provides a method to see if there is at least one other solution group available
+#
+# This will only actually generate a single solution group.
 class SingleSolutionGroupGenerator(object):
     def __init__(self, all_plural_groups_stream, variable_has_inf_max):
         self.all_plural_groups_stream = all_plural_groups_stream
@@ -26,7 +30,7 @@ class SingleSolutionGroupGenerator(object):
 
     def __next__(self):
         if self.current_group_generator is not None:
-            # Keep returning solutions from the original solution group
+            # Keep returning solutions from the current solution group
             try:
                 next_solution = next(self.current_group_generator)
                 return next_solution
@@ -38,7 +42,7 @@ class SingleSolutionGroupGenerator(object):
             raise StopIteration
 
         # Search for another solution group that descends from this solution group
-        # and return the new solution from it
+        # and return solutions from it
         while True:
             try:
                 group = next(self.all_plural_groups_stream)
@@ -48,6 +52,7 @@ class SingleSolutionGroupGenerator(object):
                 raise
 
             if self.chosen_solution_id is None:
+                # We haven't chosen a solution_id yet, so start with this one
                 self.chosen_solution_id = group[1]
                 self.current_group_generator = iter(group[0])
                 return self.__next__()
@@ -60,7 +65,8 @@ class SingleSolutionGroupGenerator(object):
                 return group[0][-1]
 
             else:
-                # Remember that there are multiple solution groups so we can say "there are more"
+                # This solution group is not a descendant of the one we are tracking so we should skip it
+                # But: remember that there are multiple solution groups so we can say "there are more"
                 self._has_multiple_groups = True
 
                 # If no variable has a between(N, inf) constraint,

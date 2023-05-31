@@ -200,7 +200,7 @@ def combinatorial_style_predication_1(state, binding, bound_function, unbound_fu
 
 
 # Yields each possible variable set from binding based on what type of value it is
-# "discrete" means it will generate specific all possible sets (i.e. not yield a combinatoric value)
+# "discrete" means it will generate all possible specific sets, one by one (i.e. not yield a combinatoric value)
 def discrete_variable_set_generator(binding, set_size):
     if binding.variable.combinatoric is False:
         binding_value = binding.value

@@ -365,7 +365,7 @@ mrs_parser = MrsParser()
 sstring_logger = logging.getLogger('SString')
 
 if __name__ == '__main__':
-    # ShowLogging("SString")
+    ShowLogging("SString")
 
     # Bugs:
     # "The raging party in my house has started"
@@ -378,7 +378,7 @@ if __name__ == '__main__':
 
 
     # Test Harness
-    phrase = "what is in this 'blue'?"
+    phrase = "1 file is in a folder together"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
@@ -395,6 +395,7 @@ if __name__ == '__main__':
             print_variable = True
             for tree in mrs_parser.trees_from_mrs(mrs):
                 if print_variable:
+                    print(f"\n{tree.repr_with_indices()}")
                     print(f"\n{variable} --> {find_predication_from_introduced(tree, variable)}")
                     print_variable = False
 

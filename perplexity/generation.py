@@ -114,6 +114,13 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
 
         nlg_data["Modifiers"].append(predication.args[0])
 
+    elif parsed_predication["Lemma"] == "loc_nonsp" and predication.args[1] == variable:
+
+        if "PostModifiers" not in nlg_data:
+            nlg_data["PostModifiers"] = []
+
+        nlg_data["PostModifiers"].append("that is " + english_for_delphin_variable(1000, predication.args[2], tree_info))
+
 
 pronouns = {1: {"sg": "I",
                 "pl": "we"},
