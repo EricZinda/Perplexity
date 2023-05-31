@@ -40,9 +40,9 @@ def generate_message(tree_info, error_term):
         return sstringify("I don't know who '{arg1}' is", tree_info)
 
     elif error_constant == "notFound":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg1 = arg1.strip("'\"")
-        return f"'{arg1}' was not found"
+        arg1 = error_arguments[1]
+        unquoted_value = sstringify("{arg1}", tree_info).strip("'\"")
+        return f"'{unquoted_value}' was not found"
 
     elif error_constant == "thingHasNoLocation":
         arg1 = error_arguments[1]
