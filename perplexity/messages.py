@@ -142,7 +142,7 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "moreThan":
         arg1 = error_arguments[1]
-        return sstringify("There are more than {arg1:@error_predicate_index}", tree_info)
+        return sstringify("There {'is':<arg1} more than {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan1":
         arg1 = error_arguments[1]

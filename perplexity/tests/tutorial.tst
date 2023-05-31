@@ -25,7 +25,7 @@
         },
         {
             "Command": "which files are small?",
-            "Expected": "There are less than 2 small files",
+            "Expected": "There are less than 2 small file",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),_small_a_1(e2,x3))",
             "Enabled": true,
             "ID": "ff2e71f2-ee1b-48eb-94f7-01272a7af8fa"

@@ -7,8 +7,8 @@ Remaining work to be shown in the tutorial:
     Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
     --> Might be a matter of not doing all the parses, need to do them all
 
-- Implement moreThan1
-
+- Implement lessThan
+- which files are small? -> There isn't file in the system
 
 - make fallback generation more robust
 - sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it

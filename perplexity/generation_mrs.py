@@ -150,12 +150,13 @@ def create_fragment(mrs, tree, variable):
     pass
 
 
-def mrs_fragment_from_variable(mrs, tree, variable, determiner=None):
+def mrs_fragment_from_variable(mrs, tree, variable, plural=None, determiner=None):
     def rewrite_tree_without_fragment_body(predication, index_by_ref):
         nonlocal pruned_body
         nonlocal mrs
         nonlocal new_eps
         nonlocal new_variables
+        nonlocal plural
         new_variables.add(predication.mrs_predication.label)
         for arg_item in predication.mrs_predication.args.items():
             if arg_item[0] != "CARG":
@@ -176,14 +177,19 @@ def mrs_fragment_from_variable(mrs, tree, variable, determiner=None):
                 pruned_body = None
             else:
                 if determiner in ["a", "an"] or predication.mrs_predication.predicate in ["_which_q", "which_q"]:
-                    if "NUM" not in mrs.variables[variable] or mrs.variables[variable]["NUM"] == "sg":
+                    will_be_plural = ("NUM" in mrs.variables[variable] and mrs.variables[variable]["NUM"] == "pl" and plural != PluralMode.singular) or \
+                        plural == PluralMode.plural
+
+                    if not will_be_plural:
                         predication.mrs_predication.predicate = "_a_q"
+
                     else:
                         # Indefinite article with plural is no article
                         predication.mrs_predication.predicate = "udef_q"
 
                 elif determiner == "the":
                     predication.mrs_predication.predicate = "_the_q"
+
                 elif determiner == "":
                     predication.mrs_predication.predicate = "udef_q"
 
@@ -287,7 +293,7 @@ def fragmentize_phrase(phrase):
 
 def english_for_variable_using_mrs(mrs_parser, mrs, tree, variable, plural=None, determiner=None):
     # Get the MRS fragment for the variable
-    new_mrs = mrs_fragment_from_variable(mrs, tree, variable, determiner)
+    new_mrs = mrs_fragment_from_variable(mrs, tree, variable, plural, determiner)
     if new_mrs is None:
         return None, None, None
     else:

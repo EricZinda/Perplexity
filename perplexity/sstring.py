@@ -377,7 +377,7 @@ if __name__ == '__main__':
 
 
     # Test Harness
-    phrase = "the 2 files are in 3 folders"
+    phrase = "which files are small?"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
@@ -401,6 +401,9 @@ if __name__ == '__main__':
                 variable_after_phrase = ["AfterFullPhrase", variable]
                 variable_before_phrase = ["AtPredication", tree, variable]
                 tree_info = {"Tree": tree, "MRS": mrs_parser.mrs_to_string(mrs)}
+
+                print(sstringify("a singular:   {a variable:sg}", tree_info))
+
                 print(sstringify("raw default: {variable}", tree_info))
                 print(sstringify("raw before tree using 'AtPredication': {variable_before_phrase}", tree_info))
                 print(sstringify("raw after tree: {variable:@after_tree}", tree_info))
