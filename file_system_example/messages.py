@@ -24,32 +24,27 @@ def generate_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+    arg_length = len(error_arguments)
+    arg1 = error_arguments[1] if arg_length > 1 else None
+    arg2 = error_arguments[2] if arg_length > 2 else None
+    arg3 = error_arguments[3] if arg_length > 3 else None
 
     if error_constant == "adjectiveDoesntApply":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
         return sstringify("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
 
     elif error_constant == "cantDo":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
         return sstringify("I can't {*arg1:<'I'} {arg2}", tree_info)
 
     elif error_constant == "dontKnowActor":
-        arg1 = error_arguments[1]
         return sstringify("I don't know who '{arg1}' is", tree_info)
 
     elif error_constant == "notFound":
-        arg1 = error_arguments[1]
         return sstringify("{arg1} was not found", tree_info)
 
     elif error_constant == "thingHasNoLocation":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
         return sstringify("{arg1} is not in {arg2}", tree_info)
 
     elif error_constant == "thingIsNotContainer":
-        arg1 = error_arguments[1]
         return sstringify("{arg1} can't contain things", tree_info)
 
     else:

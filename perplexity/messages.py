@@ -99,6 +99,10 @@ def generate_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+    arg_length = len(error_arguments)
+    arg1 = error_arguments[1] if arg_length > 1 else None
+    arg2 = error_arguments[2] if arg_length > 2 else None
+    arg3 = error_arguments[3] if arg_length > 3 else None
 
     if error_constant == "answerWithList":
         answer_items = list(error_arguments[2])
@@ -113,7 +117,6 @@ def generate_message(tree_info, error_term):
         return f"Could you be more specific?"
 
     elif error_constant == "doesntExist":
-        arg1 = error_arguments[1]
         return sstringify("There isn't {a arg1:sg} in the system", tree_info)
 
     # Used when you want to embed the error message directly in the code
@@ -136,50 +139,31 @@ def generate_message(tree_info, error_term):
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
     elif error_constant == "lessThan":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
         return sstringify("There are less than {*arg2} {bare arg1:sg@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan":
-        arg1 = error_arguments[1]
         return sstringify("There {'is':<arg1} more than {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan1":
-        arg1 = error_arguments[1]
         return sstringify("There is more than one {bare arg1}", tree_info)
 
     elif error_constant == "moreThanN":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
         # TODO: Make arg1 match arg2's plural
         return sstringify("There {'is':<*arg2} more than {*arg2} {bare arg1:@error_predicate_index}", tree_info)  # s(None, arg1, count=int(arg2))}")
 
-        # arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info, quantifier="bare", plural=PluralMode.singular)
-        # arg2 = error_arguments[2]
-        # return f"There is more than {arg2} {s(None, arg1, count=int(arg2))}"
-
     elif error_constant == "notTrueForAll":
-        arg1 = error_arguments[1]
         return sstringify("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "xIsNotY":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
         return sstringify("{arg1:@error_predicate_index} is not {arg2:@error_predicate_index}", tree_info)
 
     elif error_constant == "xIsNotYValue":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg2 = error_arguments[2]
-        return f"{arg1} is not {arg2}"
+        return sstringify("{arg1} is not {*arg2}", tree_info)
 
     elif error_constant == "valueIsNotX":
-        arg1 = error_arguments[1]
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not {arg2}"
+        return sstringify("{*arg1} is not {arg2}", tree_info)
 
     elif error_constant == "valueIsNotValue":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
         return f"{arg1} is not {arg2}"
 
     elif error_constant == "unexpected":
