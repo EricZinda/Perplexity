@@ -32,8 +32,8 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "cantDo":
         arg1 = error_arguments[1]
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"I can't {arg1} {arg2}"
+        arg2 = error_arguments[2]
+        return sstringify("I can't {*arg1:<'I'} {arg2}", tree_info)
 
     elif error_constant == "dontKnowActor":
         arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
