@@ -1,3 +1,4 @@
+import contextvars
 import copy
 import logging
 import os
@@ -5,9 +6,7 @@ import platform
 import sys
 from collections import defaultdict
 from delphin import ace
-from delphin.codecs.mrx import decode
-from delphin.codecs.simplemrs import encode, dumps
-
+from delphin.codecs.simplemrs import encode
 import perplexity.execution
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name
@@ -106,6 +105,9 @@ class MrsParser(object):
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 
 
+_tree_predication_context = contextvars.ContextVar('TreePredication', default=False)
+
+
 class TreePredication(object):
     def __init__(self, index, name, args, arg_names=None, mrs_predication=None):
         self.index = index
@@ -159,7 +161,18 @@ class TreePredication(object):
                 yield arg_index
 
     def __repr__(self):
-        return f"{self.name}({','.join([str(arg) for arg in self.args])})"
+        global _tree_predication_context
+        print_indices = _tree_predication_context.get()
+        return f"{self.name}{(':' + str(self.index)) if print_indices else ''}({','.join([str(arg) for arg in self.args])})"
+
+    # Uses a contextvar so that the indices are optionally printed out on __repr__
+    def repr_with_indices(self):
+        global _tree_predication_context
+        try:
+            old_context = _tree_predication_context.set(True)
+            return f"{self.name}:{self.index}({','.join([str(arg) for arg in self.args])})"
+        finally:
+            _tree_predication_context.reset(old_context)
 
 
 def tree_from_assignments(hole_label, assignments, predication_dict, mrs, current_index=None):
@@ -239,9 +252,16 @@ def sort_conjunctions(predication_list):
     topological_sort.topological_sort()
     assert not topological_sort.has_cycle, f"cyclic dependencies in predications {predication_list}"
 
+    # Get the original index of each predication and reassign those
+    # given the new order
+    predication_indices = [pred.index for pred in predication_list]
+    predication_indices.sort()
+
     sorted_predications = []
     for predication_index in topological_sort.sorted_nodes:
-        sorted_predications.append(predication_list[predication_index])
+        new_predication = predication_list[predication_index]
+        new_predication.index = predication_indices[len(sorted_predications)]
+        sorted_predications.append(new_predication)
 
     return sorted_predications
 

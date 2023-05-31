@@ -6,10 +6,11 @@ Remaining work to be shown in the tutorial:
     Anyway, he was a philosophy major and the job market isn't exactly crying out for those, so he decided to become a rock legend.
     Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
     --> Might be a matter of not doing all the parses, need to do them all
-
-- Implement lessThan
-- which files are small? -> There isn't file in the system
-
+  - Looks like it never generates fw_seq terms? Try: "What is in this 'blue'?"
+  
+- 
+  - It used to work...
+    - Fails because failureindex == 4 and 4 is "quoted()"
 - make fallback generation more robust
 - sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it
 - Get verb matching to work

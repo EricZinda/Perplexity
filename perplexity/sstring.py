@@ -169,6 +169,7 @@ class SStringFormat(object):
         if tree_info is not None:
             mrs = simplemrs.loads(tree_info["MRS"])[0]
             tree = tree_info["Tree"]
+            sstring_logger.debug(f"sstring: tree is: {tree.repr_with_indices()}")
 
         else:
             mrs = None
@@ -364,7 +365,7 @@ mrs_parser = MrsParser()
 sstring_logger = logging.getLogger('SString')
 
 if __name__ == '__main__':
-    ShowLogging("SString")
+    # ShowLogging("SString")
 
     # Bugs:
     # "The raging party in my house has started"
@@ -377,7 +378,7 @@ if __name__ == '__main__':
 
 
     # Test Harness
-    phrase = "which files are small?"
+    phrase = "what is in this 'blue'?"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
