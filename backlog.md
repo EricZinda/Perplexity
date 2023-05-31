@@ -13,14 +13,12 @@ Remaining work to be shown in the tutorial:
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
     - together requires sets of more than one be generated, and "a_q" means exactly one
     - Probably should be a special case error if there is a min=1, max=1 constraint on a variable that only generates > 1?
-
 - 1 file is in a folder together
   - udef(card(1)) is the determiner for this
 - make fallback generation more robust
-- sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it
-- Get verb matching to work
 - How to MRS generate strings that represent the variable at the end of the whole sentence?
   - Theory: Put a quantifier in front of the whole tree?
+  - sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it
   
 - We need a way to pluralize the noun phrase "files in a folder" properly
     We can do it with MRS Generation if we can get the MRS for it

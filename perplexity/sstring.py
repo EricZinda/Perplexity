@@ -43,6 +43,10 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 # g("{arg2:sg} {arg2:pl}
 #
 # returns a SStringFormat object
+def s(origin, tree_info=None):
+    return sstringify(origin, tree_info)
+
+
 def sstringify(origin, tree_info=None):
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
