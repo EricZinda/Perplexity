@@ -41,8 +41,7 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "notFound":
         arg1 = error_arguments[1]
-        unquoted_value = sstringify("{arg1}", tree_info).strip("'\"")
-        return f"'{unquoted_value}' was not found"
+        return sstringify("{arg1} was not found", tree_info)
 
     elif error_constant == "thingHasNoLocation":
         arg1 = error_arguments[1]
@@ -50,8 +49,8 @@ def generate_message(tree_info, error_term):
         return sstringify("{arg1} is not in {arg2}", tree_info)
 
     elif error_constant == "thingIsNotContainer":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"{arg1} can't contain things"
+        arg1 = error_arguments[1]
+        return sstringify("{arg1} can't contain things", tree_info)
 
     else:
         return str(error_term)
