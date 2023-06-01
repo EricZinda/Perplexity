@@ -361,7 +361,7 @@ The value is hello
 
 <p><code class="language-plaintext highlighter-rouge">s()</code> is the s-string function and it takes a string that will be processed. Anything enclosed in <code class="language-plaintext highlighter-rouge">{}</code> in the string will be converted to text by the system. Above we’ve used <code class="language-plaintext highlighter-rouge">*value1</code> as the value to be replaced.  The <code class="language-plaintext highlighter-rouge">*</code> means “put whatever is in <code class="language-plaintext highlighter-rouge">value1</code> in the string as-is”.</p>
 
-<p>S-strings also understand how MRS trees work and can convert a DELPH-IN variable like <code class="language-plaintext highlighter-rouge">x8</code> in the above example into the English that represents it. To do this it also requires the MRS tree that should be decoded. This is always available in a special <code class="language-plaintext highlighter-rouge">'tree'</code> variable in the <code class="language-plaintext highlighter-rouge">state</code> argument of a predication. It can be accessed by calling <code class="language-plaintext highlighter-rouge">state.get_binding('tree').value[0]</code>.</p>
+<p>S-strings also understand how MRS trees work and can convert a DELPH-IN variable like <code class="language-plaintext highlighter-rouge">x8</code> in the above example into the English that represents it. To do this it also requires passing the MRS tree that should be decoded. This is always available in a special <code class="language-plaintext highlighter-rouge">'tree'</code> variable in the <code class="language-plaintext highlighter-rouge">state</code> argument of a predication. It can be accessed by calling <code class="language-plaintext highlighter-rouge">state.get_binding('tree').value[0]</code>.</p>
 
 <p>So, we could print a message from the <code class="language-plaintext highlighter-rouge">_give_v_1</code> predication above like this:</p>
 
@@ -372,7 +372,7 @@ def give_v_1(state, e_introduced, x_giver_binding, x_what_binding, x_receiver_bi
     )
 </code></pre></div></div>
 
-<p>A term in <code class="language-plaintext highlighter-rouge">{}</code> without a <code class="language-plaintext highlighter-rouge">*</code> in front like: <code class="language-plaintext highlighter-rouge">{x_variable_binding.variable.name}</code> tells the system to interpret the expression as containing a DELPH-IN variable name. The system will convert the DELPH-IN variable to English by decoding the tree passed to <code class="language-plaintext highlighter-rouge">s()</code>, which is <code class="language-plaintext highlighter-rouge">state.get_binding('tree').value[0]</code>, and looking for all the terms that modify the variable. Then it will put that English representation in the string.</p>
+<p>A term in <code class="language-plaintext highlighter-rouge">{}</code> without a <code class="language-plaintext highlighter-rouge">*</code> in front like: <code class="language-plaintext highlighter-rouge">{x_variable_binding.variable.name}</code> tells the system to interpret the expression as containing a DELPH-IN variable name. The system will convert the DELPH-IN variable to English by decoding the tree passed to <code class="language-plaintext highlighter-rouge">s()</code>, and looking for all the terms that modify the variable. Then it will put that English representation in the string.</p>
 
 <p>Using our example of “Give me a long brown towel” with the code for <code class="language-plaintext highlighter-rouge">give_v_1()</code> above, the system will print out:</p>
 
@@ -398,7 +398,7 @@ def give_v_1(state, e_introduced, x_giver_binding, x_what_binding, x_receiver_bi
 "give me a towel on the chair" -&gt; There aren't any towels on the chair
 </code></pre></div></div>
 
-<p>Sometimes you need a word in the phrase to match the plurality of a word in the MRS. Let’s say we want to print the message, “[what the user said] is in the cupboard”</p>
+<p>Sometimes you need a word in the phrase to match the plurality of a word in the MRS. Let’s say we want to print the message, “[what the user said] is in the cupboard”. We could do that by writing this code:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_give_v_1"])
 def give_v_1(state, e_introduced, x_giver_binding, x_what_binding, x_receiver_binding):
@@ -422,7 +422,7 @@ give me some clean towels -&gt; some clean towels are in the cupboard
 
 <h1 id="s-string-reference">S-String Reference</h1>
 
-<p>Elements in an s-string have the format <code class="language-plaintext highlighter-rouge">{determiner value:pluralization@meaning_at_index}</code>.</p>
+<p>Elements in an s-string have the format <code class="language-plaintext highlighter-rouge">{determiner value:pluralization@meaning_at_index}</code>. The below sections go through each section of the format and describe all of the valid values.</p>
 
 <h2 id="value">Value</h2>
 <blockquote>
@@ -433,11 +433,11 @@ give me some clean towels -&gt; some clean towels are in the cupboard
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">value</code> is interpreted as a Python variable that contains a string representing a DELPH-IN variable such as <code class="language-plaintext highlighter-rouge">"x8"</code></li>
-  <li><code class="language-plaintext highlighter-rouge">*value</code> is interpreted as a Python variable that contains any text such as <code class="language-plaintext highlighter-rouge">"dog"</code> or <code class="language-plaintext highlighter-rouge">"is"</code></li>
+  <li><code class="language-plaintext highlighter-rouge">*value</code> is interpreted as a Python variable that can contain any text such as <code class="language-plaintext highlighter-rouge">"dog"</code>, <code class="language-plaintext highlighter-rouge">"is"</code> or <code class="language-plaintext highlighter-rouge">"the frying pan from my room"</code></li>
   <li><code class="language-plaintext highlighter-rouge">"value"</code> or <code class="language-plaintext highlighter-rouge">'value'</code> is interpreted as a raw string</li>
 </ul>
 
-<p>Note: When using the <code class="language-plaintext highlighter-rouge">*value</code> or <code class="language-plaintext highlighter-rouge">"value"</code> forms, any text can be used and will be inserted into the string. However, if <code class="language-plaintext highlighter-rouge">pluralization</code> is also being used to get the word transformed into a specific plural form, the text must be a singular noun form.  See below.</p>
+<p>Note: When using the <code class="language-plaintext highlighter-rouge">*value</code> or <code class="language-plaintext highlighter-rouge">"value"</code> forms, any text can be used and will be inserted into the string. However, if <code class="language-plaintext highlighter-rouge">pluralization</code> is also being used (see below) to get the word transformed into a specific plural form, the text must be a singular noun form.</p>
 
 <h2 id="determiner">Determiner</h2>
 <blockquote>
@@ -446,8 +446,8 @@ give me some clean towels -&gt; some clean towels are in the cupboard
 
 <p>Put one of the following as <code class="language-plaintext highlighter-rouge">determiner</code> to force that type of article to be used instead of what the user said:</p>
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">a</code> or <code class="language-plaintext highlighter-rouge">an</code> to include the proper indefinite article. Either works and will be changed to match the text when the string is evaluated.</li>
-  <li><code class="language-plaintext highlighter-rouge">the</code> to include the proper definite article</li>
+  <li><code class="language-plaintext highlighter-rouge">a</code> or <code class="language-plaintext highlighter-rouge">an</code> to include an indefinite article. Either works and will be changed to match the text when the string is evaluated.</li>
+  <li><code class="language-plaintext highlighter-rouge">the</code> to include a definite article</li>
   <li><code class="language-plaintext highlighter-rouge">bare</code> to remove all articles</li>
 </ul>
 
@@ -456,7 +456,8 @@ give me some clean towels -&gt; some clean towels are in the cupboard
 <p>Examples:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>User says 'the lively party':
 
-{an value} -&gt; "a lively party"
+{value}      -&gt; "the lively party"
+{an value}   -&gt; "a lively party"
 {bare value} -&gt; "lively party
 </code></pre></div></div>
 
@@ -488,18 +489,20 @@ give me some clean towels -&gt; some clean towels are in the cupboard
   <li><code class="language-plaintext highlighter-rouge">&lt;"noun value"</code>: match the singular or plural of a <em>noun</em> string literal</li>
 </ul>
 
-<p>Note that for pluralization to work when used with something that is not a DELPH-IN variable:</p>
+<p>Note that for pluralization to work when <code class="language-plaintext highlighter-rouge">value</code> is not a DELPH-IN variable:</p>
 <ul>
   <li><code class="language-plaintext highlighter-rouge">*value</code> must be a <em>singular form</em> word such as <code class="language-plaintext highlighter-rouge">"dog"</code> or <code class="language-plaintext highlighter-rouge">"is"</code></li>
   <li><code class="language-plaintext highlighter-rouge">"value"</code> or <code class="language-plaintext highlighter-rouge">'value'</code> must be a raw string that is similarly in <em>singular form</em></li>
 </ul>
 
-<h3 id="meaning_at_index">meaning_at_index</h3>
+<h3 id="meaning-at-index">Meaning at Index</h3>
 <blockquote>
   <p>s-string format: <code class="language-plaintext highlighter-rouge">{determiner value:pluralization@meaning_at_index}</code></p>
 </blockquote>
 
 <p>The meaning of a DELPH-IN variable in an MRS tree depends on where in the tree it gets evaluated.  <code class="language-plaintext highlighter-rouge">@meaning_at_index</code> tells the system to convert a DELPH-IN variable to what its meaning would be after evaluating all the predications up to, but not including, the predication at that index. The index represents the depth-first evaluation order the system uses, starting at zero.</p>
+
+<p><code class="language-plaintext highlighter-rouge">meaning_after_index</code> can be a numeric literal like <code class="language-plaintext highlighter-rouge">5</code>, or it can be a local variable like <code class="language-plaintext highlighter-rouge">x</code>.</p>
 
 <p>For example, the tree below for, “The dirty car is yellow” has the predication indexes represented before each predication:</p>
 
@@ -520,9 +523,9 @@ give me some clean towels -&gt; some clean towels are in the cupboard
 
 <p>If no <code class="language-plaintext highlighter-rouge">@meaning_at_index</code> is provided, the default is to generate the tree only to the point right after where the variable is introduced. That would be <code class="language-plaintext highlighter-rouge">@2</code> above.</p>
 
-<p>To facilitate generating errors when predications are being executed, <code class="language-plaintext highlighter-rouge">@meaning_at_index</code> can also be set by setting the non-string forms of <code class="language-plaintext highlighter-rouge">value</code> to be a Python <code class="language-plaintext highlighter-rouge">list</code> with specific values in it:</p>
+<p>To facilitate generating errors when predications are being executed, <code class="language-plaintext highlighter-rouge">@meaning_at_index</code> can also be set automatically if special values of <code class="language-plaintext highlighter-rouge">value</code> are used. The special values must be a Python <code class="language-plaintext highlighter-rouge">list</code> in one of these forms:</p>
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">["AtPredication", TreePredication, variable]</code>: Evaluate <code class="language-plaintext highlighter-rouge">variable</code>’s English meaning at the index where the predication in <code class="language-plaintext highlighter-rouge">TreePredication</code> is</li>
+  <li><code class="language-plaintext highlighter-rouge">["AtPredication", TreePredication, variable]</code>: Evaluate <code class="language-plaintext highlighter-rouge">variable</code>’s English meaning at the index from the predication object in <code class="language-plaintext highlighter-rouge">TreePredication</code></li>
   <li><code class="language-plaintext highlighter-rouge">["AfterFullPhrase", variable]</code>: Evaluate <code class="language-plaintext highlighter-rouge">variable</code>’s English meaning after the whole tree is evaluated</li>
 </ul>
 
