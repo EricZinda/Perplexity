@@ -1,14 +1,12 @@
 from file_system_example.objects import File, Folder, Actor, FileSystemMock
 from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation
 from perplexity.execution import report_error, execution_context
-from perplexity.generation import english_for_delphin_variable
 from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, \
     individual_style_predication_1, in_style_predication_2
-from perplexity.state import State
+from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
-from perplexity.utilities import ShowLogging
-from perplexity.vocabulary import Vocabulary, Predication, ValueSize, EventOption
+from perplexity.vocabulary import Predication, ValueSize, EventOption
 import perplexity.messages
 
 
@@ -336,43 +334,33 @@ def generate_custom_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+    arg_length = len(error_arguments)
+    arg1 = error_arguments[1] if arg_length > 1 else None
+    arg2 = error_arguments[2] if arg_length > 2 else None
+    arg3 = error_arguments[3] if arg_length > 3 else None
 
     if error_constant == "adjectiveDoesntApply":
-        arg1 = error_arguments[1]
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg2} is not {arg1}"
+        return s("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
 
     elif error_constant == "notAThing":
-        arg1 = error_arguments[1]
-        # english_for_delphin_variable() converts a variable name like 'x3' into the english words
+        # s() converts a variable name like 'x3' into the english words
         # that it represented in the MRS
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not {arg2}"
+        return s("{*arg1} is not {arg2}", tree_info)
 
     elif error_constant == "xIsNotYZ":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg2 = error_arguments[2]
-        arg3 = english_for_delphin_variable(error_predicate_index, error_arguments[3], tree_info)
-        return f"{arg1} is not {arg2} {arg3}"
+        return s("{arg1} is not {*arg2} {arg3}", tree_info)
 
     elif error_constant == "dontKnowActor":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg1 = arg1.strip("'\"")
-        return f"I don't know who '{arg1}' is"
+        return s("I don't know who '{arg1}' is", tree_info)
 
     elif error_constant == "cantXYTogether":
-        arg1 = error_arguments[1]
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"I can't {arg1} {arg2} *together*"
+        return s("I can't {*arg1} {arg2} *together*", tree_info)
 
     elif error_constant == "thingHasNoLocation":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not in {arg2}"
+        return s("{arg1} is not in {arg2}", tree_info)
 
     elif error_constant == "thingIsNotContainer":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"{arg1} can't contain things"
+        return s("{arg1} can't contain things", tree_info)
 
     else:
         # No custom message, just return the raw error for debugging

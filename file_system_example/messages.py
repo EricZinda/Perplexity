@@ -3,7 +3,7 @@ import logging
 import perplexity.messages
 from perplexity.generation import english_for_delphin_variable
 from perplexity.set_utilities import append_if_unique, in_equals
-from perplexity.sstring import sstringify
+from perplexity.sstring import sstringify, s
 from perplexity.tree import find_predication, predication_from_index, \
     find_predication_from_introduced
 from perplexity.utilities import parse_predication_name, sentence_force, at_least_one_generator
@@ -30,22 +30,22 @@ def generate_message(tree_info, error_term):
     arg3 = error_arguments[3] if arg_length > 3 else None
 
     if error_constant == "adjectiveDoesntApply":
-        return sstringify("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
+        return s("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
 
     elif error_constant == "cantDo":
-        return sstringify("I can't {*arg1:<'I'} {arg2}", tree_info)
+        return s("I can't {*arg1:<'I'} {arg2}", tree_info)
 
     elif error_constant == "dontKnowActor":
-        return sstringify("I don't know who '{arg1}' is", tree_info)
+        return s("I don't know who '{arg1}' is", tree_info)
 
     elif error_constant == "notFound":
-        return sstringify("{arg1} was not found", tree_info)
+        return s("{arg1} was not found", tree_info)
 
     elif error_constant == "thingHasNoLocation":
-        return sstringify("{arg1} is not in {arg2}", tree_info)
+        return s("{arg1} is not in {arg2}", tree_info)
 
     elif error_constant == "thingIsNotContainer":
-        return sstringify("{arg1} can't contain things", tree_info)
+        return s("{arg1} can't contain things", tree_info)
 
     else:
         return str(error_term)

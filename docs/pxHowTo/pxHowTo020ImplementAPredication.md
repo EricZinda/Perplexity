@@ -133,13 +133,15 @@ def generate_custom_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+    arg_length = len(error_arguments)
+    arg1 = error_arguments[1] if arg_length > 1 else None
+    arg2 = error_arguments[2] if arg_length > 2 else None
+    arg3 = error_arguments[3] if arg_length > 3 else None
 
-    if error_constant == "notAThing":
-        arg1 = error_arguments[1]
-        # english_for_delphin_variable() converts a variable name like 'x3' into the english words
+    elif error_constant == "notAThing":
+        # s() converts a variable name like 'x3' into the english words
         # that it represented in the MRS
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not {arg2}"
+        return s("{*arg1} is not {arg2}", tree_info)
 
     else:
         # No custom message, just return the raw error for debugging
@@ -147,13 +149,13 @@ def generate_custom_message(tree_info, error_term):
 
 ~~~
 
-You can use whatever logic you want for converting the error code to a string, this is just an example. Note the use of the:
+You can use whatever logic you want for converting the error code to a string, this is just an example. Note the use of the `s-string` function `s()`:
 
 ~~~
-arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+return s("{*arg1} is not {arg2}", tree_info)
 ~~~
 
-... call, however. This is how a variable name like `x3` gets converted to a string like "file".
+... call, however. This is how a variable name like `x3` gets converted to a string like "file". S-strings are a Perplexity feature described in a [separate topic](pxHowTo025SStrings).
 
 The logic the system uses for reporting errors is not obvious, it is worth reading the [section on errors](../devcon/devcon0080ErrorsChoosingWhichFailure) to understand how it works.
 
@@ -395,13 +397,15 @@ def generate_custom_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+    arg_length = len(error_arguments)
+    arg1 = error_arguments[1] if arg_length > 1 else None
+    arg2 = error_arguments[2] if arg_length > 2 else None
+    arg3 = error_arguments[3] if arg_length > 3 else None
 
-    if error_constant == "notAThing":
-        arg1 = error_arguments[1]
-        # english_for_delphin_variable() converts a variable name like 'x3' into the english words
+    elif error_constant == "notAThing":
+        # s() converts a variable name like 'x3' into the english words
         # that it represented in the MRS
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not {arg2}"
+        return s("{*arg1} is not {arg2}", tree_info)
 
     else:
         # No custom message, just return the raw error for debugging

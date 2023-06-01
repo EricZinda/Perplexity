@@ -1,8 +1,4 @@
-from delphin.codecs import simplemrs
-
-from perplexity.generation import english_for_delphin_variable
-from perplexity.response import s, PluralMode
-from perplexity.sstring import sstringify
+from perplexity.sstring import s
 from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication
 from perplexity.utilities import parse_predication_name, sentence_force
 
@@ -117,7 +113,7 @@ def generate_message(tree_info, error_term):
         return f"Could you be more specific?"
 
     elif error_constant == "doesntExist":
-        return sstringify("There isn't {a arg1:sg} in the system", tree_info)
+        return s("There isn't {a arg1:sg} in the system", tree_info)
 
     # Used when you want to embed the error message directly in the code
     elif error_constant == "errorText":
@@ -139,29 +135,29 @@ def generate_message(tree_info, error_term):
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
     elif error_constant == "lessThan":
-        return sstringify("There are less than {*arg2} {bare arg1:sg@error_predicate_index}", tree_info)
+        return s("There are less than {*arg2} {bare arg1:sg@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan":
-        return sstringify("There {'is':<arg1} more than {arg1:@error_predicate_index}", tree_info)
+        return s("There {'is':<arg1} more than {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan1":
-        return sstringify("There is more than one {bare arg1}", tree_info)
+        return s("There is more than one {bare arg1}", tree_info)
 
     elif error_constant == "moreThanN":
         # TODO: Make arg1 match arg2's plural
-        return sstringify("There {'is':<*arg2} more than {*arg2} {bare arg1:@error_predicate_index}", tree_info)  # s(None, arg1, count=int(arg2))}")
+        return s("There {'is':<*arg2} more than {*arg2} {bare arg1:@error_predicate_index}", tree_info)  # s(None, arg1, count=int(arg2))}")
 
     elif error_constant == "notTrueForAll":
-        return sstringify("That isn't true for all {arg1:@error_predicate_index}", tree_info)
+        return s("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "xIsNotY":
-        return sstringify("{arg1:@error_predicate_index} is not {arg2:@error_predicate_index}", tree_info)
+        return s("{arg1:@error_predicate_index} is not {arg2:@error_predicate_index}", tree_info)
 
     elif error_constant == "xIsNotYValue":
-        return sstringify("{arg1} is not {*arg2}", tree_info)
+        return s("{arg1} is not {*arg2}", tree_info)
 
     elif error_constant == "valueIsNotX":
-        return sstringify("{*arg1} is not {arg2}", tree_info)
+        return s("{*arg1} is not {arg2}", tree_info)
 
     elif error_constant == "valueIsNotValue":
         return f"{arg1} is not {arg2}"

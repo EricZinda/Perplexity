@@ -121,21 +121,17 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
 `loc_nonsp` is an "in-style" predication because if the location of `x` is `location1` and the location of `y` is `location`, then they are both there "together" or "separately" and it doesn't mean anything special, but also shouldn't be prohibited. This is a pretty straightforward implementation, just like the implementation of `_in_p_loc` in the [In-Style Predications topic](pxHowTo030InStylePredications).
 
-We've introduced two new location-based errors `thingHasNoLocation` and `thingIsNotContainer`, so we need to provide messages for them in `generate_custom_message()` as well:
+We've introduced two new location-based errors `thingHasNoLocation` and `thingIsNotContainer`, so we need to provide messages for them in `generate_custom_message()` as well (using [s-strings](pxHowTo025SStrings)):
 
 ~~~
 def generate_custom_message(tree_info, error_term):
     ...
 
-
     elif error_constant == "thingHasNoLocation":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not in {arg2}"
+        return s("{arg1} is not in {arg2}", tree_info)
 
     elif error_constant == "thingIsNotContainer":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"{arg1} can't contain things"
+        return s("{arg1} can't contain things", tree_info)
 
     ...
 ~~~
