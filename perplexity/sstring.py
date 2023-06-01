@@ -247,15 +247,17 @@ class SStringFormat(object):
                 meaning_at_index_value = self.resolve_variable(self.meaning_at_index_variable)
                 sstring_logger.debug(f"sstring: meaning_at_index specified: '{meaning_at_index_value}'")
 
-            if meaning_at_index_value == meaning_at_index_default:
-                # We only know how to use ACE if we are talking about a variable's meaning
-                # from the point where it is introduced
-                sstring_logger.debug(f"sstring: default meaning_at_index: trying MRS generation")
-                formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
-
-            else:
-                sstring_logger.debug(f"sstring: non-default meaning_at_index: only use fallback")
-                formatted_string = None
+            formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
+            #
+            # if meaning_at_index_value == meaning_at_index_default:
+            #     # We only know how to use ACE if we are talking about a variable's meaning
+            #     # from the point where it is introduced
+            #     sstring_logger.debug(f"sstring: default meaning_at_index: trying MRS generation")
+            #     formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
+            #
+            # else:
+            #     sstring_logger.debug(f"sstring: non-default meaning_at_index: only use fallback")
+            #     formatted_string = None
 
             if formatted_string is not None:
                 sstring_logger.debug(f"sstring MRS generated: {variable_name}[{self}]={formatted_string}")
@@ -415,7 +417,7 @@ if __name__ == '__main__':
                              "Tree": tree,
                              "MRS": mrs_parser.mrs_to_string(mrs)}
 
-                print(s("{variable:@2}", tree_info))
+                print(s("{variable:@4}", tree_info))
 
                 # print(sstringify("a singular:   {a variable:sg}", tree_info))
                 #

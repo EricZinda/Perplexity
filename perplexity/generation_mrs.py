@@ -150,13 +150,14 @@ def create_fragment(mrs, tree, variable):
     pass
 
 
-def mrs_fragment_from_variable(mrs, tree, variable, plural=None, determiner=None):
+def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, determiner=None):
     def rewrite_tree_without_fragment_body(predication, index_by_ref):
         nonlocal pruned_body
         nonlocal mrs
         nonlocal new_eps
         nonlocal new_variables
         nonlocal plural
+        nonlocal can_generate_fragment
         new_variables.add(predication.mrs_predication.label)
         for arg_item in predication.mrs_predication.args.items():
             if arg_item[0] != "CARG":
@@ -168,13 +169,27 @@ def mrs_fragment_from_variable(mrs, tree, variable, plural=None, determiner=None
             predication_copy.index = index_by_ref[0]
             index_by_ref[0] += 1
 
-            predication_copy.args[1] = rewrite_tree_predications(predication_copy.args[1], rewrite_tree_without_fragment_body, index_by_ref)
+            # Remove any predications in the RSTR that are >= failure_index
+            copy_rstr_arg_list = [predication_copy.args[1]] if not isinstance(predication_copy.args[1], list) else predication_copy.args[1]
+            new_arg_list = []
+            for pred in copy_rstr_arg_list:
+                if pred.index < failure_index:
+                    new_arg_list.append(pred)
+
+            # We only know how to generate the fragment if the failure_index is between
+            # the index of the quantifier that quantifiers the variable
+            # and the index of the first predication in the body
+            first_body_index = predication_copy.args[2].index if not isinstance(predication_copy.args[2], list) else predication_copy.args[2][0].index
+            can_generate_fragment = predication_copy.index < failure_index <= first_body_index
+
+            predication_copy.args[1] = rewrite_tree_predications(new_arg_list, rewrite_tree_without_fragment_body, index_by_ref)
             pruned_body = predication_copy.args[2]
             # Assuming the index was introduced by something that got pruned,
             # that's why we can reuse it as ARG0
             index_predication = find_predication_from_introduced(pruned_body, mrs.index)
             if not index_predication:
                 pruned_body = None
+
             else:
                 if determiner in ["a", "an"] or predication.mrs_predication.predicate in ["_which_q", "which_q"]:
                     will_be_plural = ("NUM" in mrs.variables[variable] and mrs.variables[variable]["NUM"] == "pl" and plural != PluralMode.singular) or \
@@ -238,9 +253,10 @@ def mrs_fragment_from_variable(mrs, tree, variable, plural=None, determiner=None
     pruned_body = None
     new_eps = []
     new_variables = set(["h0"])
+    can_generate_fragment = True
     new_tree = rewrite_tree_predications(tree, rewrite_tree_without_fragment_body, index_by_ref)
-    if pruned_body is None:
-        # This tree is not in a form we know how to prune
+    if pruned_body is None or not can_generate_fragment:
+        # This tree or the failure_index is not in a form we know how to prune
         return None
 
     else:
@@ -293,9 +309,10 @@ def fragmentize_phrase(phrase):
 
 def english_for_variable_using_mrs(mrs_parser, mrs, failure_index, variable, tree, plural=None, determiner=None):
     # Get the MRS fragment for the variable
-    new_mrs = mrs_fragment_from_variable(mrs, tree, variable, plural, determiner)
+    new_mrs = mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural, determiner)
     if new_mrs is None:
         return None, None, None
+
     else:
         if plural is not None and plural != PluralMode.as_is:
             # mrs = copy.deepcopy(mrs)

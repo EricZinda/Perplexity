@@ -7,7 +7,10 @@ Remaining work to be shown in the tutorial:
     Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
     --> Might be a matter of not doing all the parses, need to do them all
   - Looks like it never generates fw_seq terms? Try: "What is in this 'blue'?"
-  
+
+- How to make MRS generation use the meaning_at_index
+  - Don't include terms after the index
+  - 
 - Now that we have proper indexes in conjunctions we aren't generating text for all terms in the conjunction
 - 3 files are in a folder together -> There is more than a folder together
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"

@@ -229,7 +229,7 @@
         },
         {
             "Command": "the 3 files are large",
-            "Expected": "There are more than the 3 file",
+            "Expected": "There are more than the three files",
             "Tree": "_the_q(x3,[_file_n_of(x3,i10), card(3,e9,x3)],_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d5ea50ee-c182-4db4-b2d8-83e1cf19b254"
