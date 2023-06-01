@@ -1,6 +1,28 @@
+import enum
 import logging
+import inflect
 from perplexity.tree import walk_tree_predications_until, is_last_fw_seq
 from perplexity.utilities import parse_predication_name
+
+
+class PluralMode(enum.Enum):
+    plural = 0,
+    singular = 1,
+    as_is = 2
+
+
+def is_plural_word(word):
+    # Returns false if word is already singular
+    return p.singular_noun(word) is not False
+
+
+def change_to_plural_mode(singular_word, plural_mode):
+    if plural_mode == PluralMode.singular:
+        return singular_word
+    elif plural_mode == PluralMode.plural:
+        return p.plural(singular_word)
+    else:
+        return singular_word
 
 
 # Given the index where an error happened and a variable,
@@ -183,3 +205,4 @@ def convert_to_english(nlg_data, plural=None, determiner=None):
 
 logger = logging.getLogger('Generation')
 pipeline_logger = logging.getLogger('Pipeline')
+p = inflect.engine()
