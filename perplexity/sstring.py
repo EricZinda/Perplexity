@@ -377,6 +377,9 @@ sstring_logger = logging.getLogger('SString')
 if __name__ == '__main__':
     ShowLogging("SString")
 
+    test = "a dog"
+    print(sstringify("{the *test}"))
+
     # Bugs:
     # "The raging party in my house has started"
     # "Load the lofty goal"
@@ -388,7 +391,7 @@ if __name__ == '__main__':
 
 
     # Test Harness
-    phrase = "the yellow car is ruined"
+    phrase = "the dirty car is yellow"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
