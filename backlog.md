@@ -25,6 +25,7 @@ Remaining work to be shown in the tutorial:
     - Generate the MRS that round trips
     - Replace the BODY with unknown(x)
 
+- Will usability: error_priority_function should have a perplexity default that is not "no prioritization". Should at least deprioritize "I don't know word x"
 - CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
   - same thing for card(e,x,c) becoming card(c,e,x)
   

@@ -130,21 +130,24 @@ class SStringFormat(object):
 
         return frame.f_locals
 
-    def resolve_variable(self, variable):
-        frame = self.get_frame_by_variable_name(variable, skip_to_level=4)
+    def resolve_variable(self, indicator_expression):
+        # Lookup just the first variable name (i.e. foo) in an expression like foo.bar.goo
+        initial_variable_name = next(iter(filter(None, re.split(r"(\w+)", indicator_expression))))
+        frame = self.get_frame_by_variable_name(initial_variable_name, skip_to_level=4)
         try:
-            return eval(variable, None, frame)  # pylint: disable=eval-used
+            # ... but then evaluate the whole expression
+            return eval(indicator_expression, None, frame)  # pylint: disable=eval-used
 
         # This is to handle a multi-line string.
         # Once again, this is a dirty hack. I need to
         # Re-implement this using format()
         except SyntaxError:
-            return eval(variable.replace("\n", ""), None, frame)  # pylint: disable=eval-used
+            return eval(indicator_expression.replace("\n", ""), None, frame)  # pylint: disable=eval-used
         except NameError:
-            if variable.find("@") != -1:
-                raise SyntaxError(f"{variable} is not defined. Did you forget a ':'?")
+            if indicator_expression.find("@") != -1:
+                raise SyntaxError(f"{indicator_expression} is not defined. Did you forget a ':'?")
             else:
-                raise SyntaxError(f"{variable} is not defined")
+                raise SyntaxError(f"{indicator_expression} is not defined")
 
     def _convert_complex_variable(self, variable_name):
         if isinstance(variable_name, list):
@@ -228,7 +231,7 @@ class SStringFormat(object):
 
             else:
                 # Add 1 since we want the meaning *after* the predication introducing it has been successfully
-                # processed. This is because we want the full RSTR this predication is in to have been processed
+                # processed. This is because we want the word representing it to have been processed by default
                 meaning_at_index_default = predication_for_variable.index + 1
 
             sstring_logger.debug(f"sstring: default meaning_at_index is '{meaning_at_index_default}'")
@@ -248,7 +251,8 @@ class SStringFormat(object):
                 # We only know how to use ACE if we are talking about a variable's meaning
                 # from the point where it is introduced
                 sstring_logger.debug(f"sstring: default meaning_at_index: trying MRS generation")
-                formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable_name, plural=resolved_plural, determiner=self.determiner)
+                formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
+
             else:
                 sstring_logger.debug(f"sstring: non-default meaning_at_index: only use fallback")
                 formatted_string = None
@@ -382,7 +386,7 @@ if __name__ == '__main__':
 
 
     # Test Harness
-    phrase = "1 file is in a folder together"
+    phrase = "the yellow car is ruined"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
@@ -406,20 +410,25 @@ if __name__ == '__main__':
                 after_tree = 999
                 variable_after_phrase = ["AfterFullPhrase", variable]
                 variable_before_phrase = ["AtPredication", tree, variable]
-                tree_info = {"Tree": tree, "MRS": mrs_parser.mrs_to_string(mrs)}
+                tree_info = {"Index": mrs.index,
+                             "Variables": mrs.variables,
+                             "Tree": tree,
+                             "MRS": mrs_parser.mrs_to_string(mrs)}
 
-                print(sstringify("a singular:   {a variable:sg}", tree_info))
+                print(s("{variable:@2}", tree_info))
 
-                print(sstringify("raw default: {variable}", tree_info))
-                print(sstringify("raw before tree using 'AtPredication': {variable_before_phrase}", tree_info))
-                print(sstringify("raw after tree: {variable:@after_tree}", tree_info))
-                print(sstringify("raw after tree using 'AfterFullPhrase': {variable_after_phrase}", tree_info))
-                print(sstringify("the singular: {the variable:sg}", tree_info))
-                print(sstringify("a singular:   {a variable:sg}", tree_info))
-                print(sstringify("the plural:   {the variable:pl}", tree_info))
-                print(sstringify("Bare plural:  {Bare variable:pl}", tree_info))
-                print(sstringify("Bare original:  {bare variable}", tree_info))
-                print(sstringify("bare singular: {variable:sg}", tree_info))
+                # print(sstringify("a singular:   {a variable:sg}", tree_info))
+                #
+                # print(sstringify("raw default: {variable}", tree_info))
+                # print(sstringify("raw before tree using 'AtPredication': {variable_before_phrase}", tree_info))
+                # print(sstringify("raw after tree: {variable:@after_tree}", tree_info))
+                # print(sstringify("raw after tree using 'AfterFullPhrase': {variable_after_phrase}", tree_info))
+                # print(sstringify("the singular: {the variable:sg}", tree_info))
+                # print(sstringify("a singular:   {a variable:sg}", tree_info))
+                # print(sstringify("the plural:   {the variable:pl}", tree_info))
+                # print(sstringify("Bare plural:  {Bare variable:pl}", tree_info))
+                # print(sstringify("Bare original:  {bare variable}", tree_info))
+                # print(sstringify("bare singular: {variable:sg}", tree_info))
                 print()
 
             if print_variable:

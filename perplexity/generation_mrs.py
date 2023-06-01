@@ -291,7 +291,7 @@ def fragmentize_phrase(phrase):
     return phrase.strip(".?!")
 
 
-def english_for_variable_using_mrs(mrs_parser, mrs, tree, variable, plural=None, determiner=None):
+def english_for_variable_using_mrs(mrs_parser, mrs, failure_index, variable, tree, plural=None, determiner=None):
     # Get the MRS fragment for the variable
     new_mrs = mrs_fragment_from_variable(mrs, tree, variable, plural, determiner)
     if new_mrs is None:
@@ -328,37 +328,37 @@ def all_x_fragments(mrs_parser, phrase):
                 print(f"\n{variable} --> {find_predication_from_introduced(tree, variable)}")
                 print_variable = False
 
-            generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable)
+            generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, None, variable, tree)
             if generated_text is None:
                 print(f"{variable} = <no result>. mrs fragment: {new_mrs}")
             else:
                 print(f"{variable} = {generated_text} mrs fragment: {new_mrs}")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable, plural=False)
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, None, variable, tree, plural=False)
                 if generated_text is None:
                     print(f"{variable}(sg) = <no result>. mrs fragment: {new_mrs}")
                 else:
                     print(f"{variable}(sg) = {generated_text} mrs fragment: {new_mrs}")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable, plural=True)
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, None, variable, tree, plural=True)
                 if generated_text is None:
                     print(f"{variable}(pl) = <no result>. mrs fragment: {new_mrs}")
                 else:
                     print(f"{variable}(pl) = {generated_text} mrs fragment: {new_mrs}")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable, plural=False, determiner="a")
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, None, variable, tree, plural=False, determiner="a")
                 if generated_text is None:
                     print(f"{variable}(a) = <no result>. mrs fragment: {new_mrs}")
                 else:
                     print(f"{variable}(a) = {generated_text} mrs fragment: {new_mrs}")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable, plural=False, determiner="the")
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, None, variable, tree, plural=False, determiner="the")
                 if generated_text is None:
                     print(f"{variable}(the, sg) = <no result>. mrs fragment: {new_mrs}")
                 else:
                     print(f"{variable}(the, sg) = {generated_text} mrs fragment: {new_mrs}")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, tree, variable, plural=True, determiner="the")
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, None, variable, tree, plural=True, determiner="the")
                 if generated_text is None:
                     print(f"{variable}(the, pl) = <no result>. mrs fragment: {new_mrs}")
                 else:

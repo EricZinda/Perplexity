@@ -3,6 +3,7 @@ import copy
 from perplexity.execution import execution_context
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import quantifier_raw, combinatorial_style_predication_1
+from perplexity.sstring import s
 from perplexity.vocabulary import Predication, Vocabulary
 
 vocabulary = Vocabulary()
