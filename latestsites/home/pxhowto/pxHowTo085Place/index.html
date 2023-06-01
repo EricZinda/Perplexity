@@ -303,6 +303,8 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo090Prepositions/">Directional Propositions</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo025SStrings/">A. Generating English with S-strings</a></li>
+          
         </ul>
         
       </li>
@@ -463,20 +465,16 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
 <p><code class="language-plaintext highlighter-rouge">loc_nonsp</code> is an “in-style” predication because if the location of <code class="language-plaintext highlighter-rouge">x</code> is <code class="language-plaintext highlighter-rouge">location1</code> and the location of <code class="language-plaintext highlighter-rouge">y</code> is <code class="language-plaintext highlighter-rouge">location</code>, then they are both there “together” or “separately” and it doesn’t mean anything special, but also shouldn’t be prohibited. This is a pretty straightforward implementation, just like the implementation of <code class="language-plaintext highlighter-rouge">_in_p_loc</code> in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo030InStylePredications">In-Style Predications topic</a>.</p>
 
-<p>We’ve introduced two new location-based errors <code class="language-plaintext highlighter-rouge">thingHasNoLocation</code> and <code class="language-plaintext highlighter-rouge">thingIsNotContainer</code>, so we need to provide messages for them in <code class="language-plaintext highlighter-rouge">generate_custom_message()</code> as well:</p>
+<p>We’ve introduced two new location-based errors <code class="language-plaintext highlighter-rouge">thingHasNoLocation</code> and <code class="language-plaintext highlighter-rouge">thingIsNotContainer</code>, so we need to provide messages for them in <code class="language-plaintext highlighter-rouge">generate_custom_message()</code> as well (using <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo025SStrings">s-strings</a>):</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def generate_custom_message(tree_info, error_term):
     ...
 
-
     elif error_constant == "thingHasNoLocation":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        return f"{arg1} is not in {arg2}"
+        return s("{arg1} is not in {arg2}", tree_info)
 
     elif error_constant == "thingIsNotContainer":
-        arg1 = english_for_delphin_variable(error_predicate_index, error_arguments[1], tree_info)
-        return f"{arg1} can't contain things"
+        return s("{arg1} can't contain things", tree_info)
 
     ...
 </code></pre></div></div>
@@ -508,7 +506,7 @@ you is not in place
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-05-16 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md">edit</a>]</p>
+<p>Last update: 2023-06-01 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md">edit</a>]</p>
 
         
       </section>
