@@ -8,10 +8,6 @@ Remaining work to be shown in the tutorial:
     --> Might be a matter of not doing all the parses, need to do them all
   - Looks like it never generates fw_seq terms? Try: "What is in this 'blue'?"
 
-- How to make MRS generation use the meaning_at_index
-  - Don't include terms after the index
-  - 
-- Now that we have proper indexes in conjunctions we aren't generating text for all terms in the conjunction
 - 3 files are in a folder together -> There is more than a folder together
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
     - together requires sets of more than one be generated, and "a_q" means exactly one
@@ -23,11 +19,6 @@ Remaining work to be shown in the tutorial:
   - Theory: Put a quantifier in front of the whole tree?
   - sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it
   
-- We need a way to pluralize the noun phrase "files in a folder" properly
-    We can do it with MRS Generation if we can get the MRS for it
-    - Generate the MRS that round trips
-    - Replace the BODY with unknown(x)
-
 - Will usability: error_priority_function should have a perplexity default that is not "no prioritization". Should at least deprioritize "I don't know word x"
 - CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
   - same thing for card(e,x,c) becoming card(c,e,x)

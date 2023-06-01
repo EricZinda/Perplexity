@@ -4,6 +4,7 @@ import re
 import inspect
 from delphin.codecs import simplemrs
 from perplexity.generation import english_for_delphin_variable, PluralMode, is_plural_word, change_to_plural_mode
+from perplexity.generation_experimental import round_trip_mrs
 from perplexity.generation_mrs import english_for_variable_using_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced
 from perplexity.utilities import ShowLogging
@@ -419,7 +420,8 @@ if __name__ == '__main__':
                              "Tree": tree,
                              "MRS": mrs_parser.mrs_to_string(mrs)}
 
-                print(s("{variable:@4}", tree_info))
+                index_test = 4
+                print(s("{variable:@index_test}", tree_info))
 
                 # print(sstringify("a singular:   {a variable:sg}", tree_info))
                 #
