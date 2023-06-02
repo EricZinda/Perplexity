@@ -1,5 +1,5 @@
 ## Building Well-Formed MRS Trees
-> This section is designed to help application developers understand how to build well-formed trees from MRS documents. To understand this section, first make sure you have a [basic understanding of the MRS format](devhowto0010MRS) or for a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).  
+> This section is designed to help application developers understand how to build well-formed trees from MRS documents. To understand this section, first make sure you have a [basic understanding of the MRS format](devhowto0010MRS) or, for a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).  
 
 Let's use the sentence "every book is in a cave" as an example. If the phrase is parsed with [the ACE parser](http://sweaglesw.org/linguistics/ace/), you get an MRS document like this:
 
