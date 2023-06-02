@@ -171,25 +171,27 @@ def test_sentences(start_index=0):
                         yield sentence
 
 
-path = os.path.dirname(os.path.realpath(__file__))
-
 logger = logging.getLogger("SString")
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(message)s')
 
-stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(formatter)
-logger.addHandler(stdout_handler)
-
-log_file_path = os.path.join(path, "test_log.txt")
-file_handler = logging.FileHandler(log_file_path)
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
 
 if __name__ == '__main__':
+    path = os.path.dirname(os.path.realpath(__file__))
+
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(message)s')
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.DEBUG)
+    stdout_handler.setFormatter(formatter)
+    logger.addHandler(stdout_handler)
+
+    log_file_path = os.path.join(path, "test_log.txt")
+    file_handler = logging.FileHandler(log_file_path)
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+
     # This tests a corpus. Choose a different start_index to start deeper in the corpus
     # https://www.english-corpora.org/coca/
     # Samples: https://www.corpusdata.org/formats.asp

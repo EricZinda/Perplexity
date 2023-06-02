@@ -375,7 +375,7 @@ mrs_parser = MrsParser()
 sstring_logger = logging.getLogger('SString')
 
 if __name__ == '__main__':
-    ShowLogging("SString")
+    # ShowLogging("SString")
 
     test = "a dog"
     print(sstringify("{the *test}"))

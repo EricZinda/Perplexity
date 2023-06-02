@@ -1,3 +1,42 @@
+
+- Example25: which files are in folders
+  - should be: (File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/blue, size=10000000),)
+  - 
+There are several things going on here:
+
+Scenarios:
+  the yellow dog and the brown dog are large ->
+    - Does large() force individuals?  -> yes
+    - observation: this should be no different than: 2 dogs are large
+    - constraint is: requires these two things  
+
+1. What combinations are used:
+  - Sets that are created by other predications are always passed through
+  - sets get generated from combinatorial variables if predications declare that they need them
+  
+2. How truth of a predication gets checked.
+    - No matter how it is checked the sets should be preserved
+
+3. What kinds of sets a predication *can handle*:
+    - If it *can't handle* a set, it needs a chance to give an error
+    
+Styles:
+In style means:
+    - "together is OK but isn't handled specially".  Sets won't be generated from combinatorial variables
+
+lift style means:
+  - "together is handled specially"
+
+Design:
+def in_style_predication_2(state, binding1, binding2,
+                           both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
+                           binding1_set_size=ValueSize.all, binding1_set_size_error, 
+                           binding2_set_size=ValueSize.all, binding2_set_size_error):
+
+- Arguments to _style functions should take what kind of arguments are *allowed*
+  - If a set comes through that isn't right it shouldn't even get passed to the developer
+  - But it needs a way to get the right error
+
 Remaining work to be shown in the tutorial:
 - Generation issues:
   - people_n with NUM=sg doesn't generate person. But dice does

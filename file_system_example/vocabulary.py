@@ -399,7 +399,8 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
         report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    yield from in_style_predication_2(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values)
+    for new_state in in_style_predication_2(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values):
+        yield new_state
 
 
 # handles size only
