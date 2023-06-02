@@ -1,21 +1,30 @@
 import enum
 import itertools
-from perplexity.execution import get_variable_metadata, call, set_variable_execution_data, report_error
-from perplexity.set_utilities import count_set
-from perplexity.tree import TreePredication
+from perplexity.execution import get_variable_metadata, report_error
 from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
 
+# how a particular VariableDescriptor handles
+# a individual or group
 class VariableStyle(enum.Enum):
     # this size is semantically relevant
     semantic = 1
-    # this size is accepted, but treated as the semantic style
+    # this size is accepted but not semantically different than the semantic style
     ignored = 2
     # this size is not supported - should fail
     unsupported = 3
 
 
+# Describes the semantic for a particular argument of a predication:
+# Whether individuals or groups have a special semantic meaning, are allowed
+# but ignored, or are unsupported
+#
+# Examples:
+#   large:  VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.unsupported)
+#   met:    VariableDescriptor(individual=VariableStyle.unsupported, group=VariableStyle.semantic)
+#   in:     VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored), VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored)
+#   lift:   VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic), VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic)
 class VariableDescriptor(object):
     def __init__(self, individual, group):
         assert individual == VariableStyle.semantic or group == VariableStyle.semantic, "at least one of individual or group must be semantic"
@@ -73,10 +82,8 @@ def discrete_variable_generator(value, combinatoric, variable_size):
                 yield value_set
 
 
-def predication_1(state, binding,
-                  bound_function, unbound_function,
-                  binding_descriptor=None):
-
+# Main helper for a predication that takes 1 argument
+def predication_1(state, binding, bound_function, unbound_function, binding_descriptor=None):
     if binding.value is None:
         # Unbound
         for unbound_value in unbound_function():
@@ -136,33 +143,25 @@ def combinatorial_predication_1(state, binding, bound_function, unbound_function
             yield state.set_x(binding.variable.name, tuple(values), combinatoric)
 
 
-# binding1_descriptor terms:
-# semantic: this size is semantically relevant
-# ignored_sizes: this size is accepted, but treated as the semantic style
-# unsupported: this size is not supported - should fail
+# Main helper for a predication that takes 2 arguments
 #
-# Each variable has to say if:
-# exactly_one = semantic | ignored | unsupported
-# more_than_one = semantic | ignored | unsupported
+# There is a lot that gets done here automatically:
+# 1. What combinations are used:
+#   - Sets that are created by other predications are always passed through
+#   - Sets get generated from combinatorial variables if this or other predications declare that they need them
 #
-# examples:
-#   large(x = {"exactly_one": semantic, "more_than_one": unsupported})
-#   met(x = {"exactly_one": unsupported, "more_than_one": semantic})
-#   in(x = {"exactly_one": semantic, "more_than_one": ignored})
-#   lift(x = {"exactly_one": semantic, "more_than_one": semantic})
+# 2. How truth of a predication gets checked
+#     - Predications that only semantically handle single values use "cartesian product checking" to check sets
+#     - No matter how it is checked the variable sets are preserved
 #
-# Combinatorial variables:
-#   should always generate semantic sizes
-#   should generate ignored if other predications need them
-#   should never generate unsupported
-#
+# 3. What kinds of sets a predication *can handle*:
+#     - If this predication *can't handle* a size of set, an error will be generated automatically
 # TODO: BUG: if the user doesn't *also* declare it, upstream predications may not generate it.
 #       Should be able to assert this at runtime?
 def predication_2(state, binding1, binding2,
                   both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                   binding1_descriptor=None,
                   binding2_descriptor=None):
-
     # Build a generator that only generates the discrete values for the binding that are valid for these descriptors,
     # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
     if binding1.variable.combinatoric:
@@ -190,7 +189,7 @@ def predication_2(state, binding1, binding2,
     binding1_individual_check = binding1_descriptor.individual == VariableStyle.semantic and binding1_descriptor.group == VariableStyle.ignored
     binding2_individual_check = binding2_descriptor.individual == VariableStyle.semantic and binding2_descriptor.group == VariableStyle.ignored
 
-    # At this point the generators will *only* generate sets that the binding_descriptor has said the binding can handle
+    # At this point the generators will *only* be generating sets that the binding_descriptor has said the binding can handle
     # so we only need to decide how to check if the relation is true
     if binding1.value is None and binding2.value is None:
         if all_unbound_predication_function is None:
@@ -200,7 +199,7 @@ def predication_2(state, binding1, binding2,
             yield from all_unbound_predication_function()
 
     elif binding1.value is None or binding2.value is None:
-        # Only one binding is unbound remember which is which
+        # Only one binding is unbound: remember which is which
         bound_binding_generator = binding2_generator_reset() if binding1.value is None else binding1_generator
         bound_binding_individual_check = binding2_individual_check if binding1.value is None else binding1_individual_check
         bound_binding = binding2 if binding1.value is None else binding1
@@ -210,30 +209,25 @@ def predication_2(state, binding1, binding2,
         unbound_binding_variable_size = unbound_binding_descriptor.discrete_size()
 
         # This is a "what is in X" type question, that's why it is unbound
+        # This could be something like in([mary, john], X) (where mary and john are *together* in someplace)
+        # We are trying to build all the X sets that are true of [mary, john]
+        # Thus, bound_set could have more than one item, in which case we need to find the intersection of answers
+        # Do the intersection of answers from every item in the set to see end up with a single set
+        # where mary and john are *together*
         for bound_set in bound_binding_generator:
             # Check each item in bound_set individually if there is no set semantic
             bound_binding_item_generator = [(x,) for x in bound_set] if bound_binding_individual_check else [bound_set]
 
-            # This could be something like in([mary, john], X) (where are mary and john together)
-            # We are trying to build all the X sets that are true of [mary, john]
-            # Thus, bound_set could have more than one item, in which case we need to find the intersection of answers
-            # Do the intersection of answers from every item in the set to see end up with a single set
-            # where mary and john are *together*
             # This is a dict() because order matters for things like location
             intersection_last = dict()
             intersection_new = dict()
             first_bound_value = True
             for bound_value in bound_binding_item_generator:
-                # Get all the unbound items that are true for this bound item
-                # These items will be sets of 1 or more items that represent a place that
-                # one of the bound items is "in at the same time"
-                # if the unbound argument is individual
-                # Each bound_value generates a set of alternatives for which it is true
-                # Every alternatives that is true for everyone gets put into a set
-                # As long as a bound_value contains one of the alternatives that is true for everyone
-                # we keep going.
-                # As soon as one bound value does not have a shared value, we abort and none are true
-                # Then: All combinations of the set are returned
+                # Get all the unbound items that are true for this bound_value
+                # Each bound_value generates a group of unbound_sets for which it is true
+                # Every unbound_set that is true for *everyone* gets put into a set
+                # As long as a bound_value matches one of the unbound_sets that is true for everyone we keep going.
+                # As soon as one bound value does not match any, we abort and none are true
                 for unbound_set in unbound_predication_function(bound_value):
                     assert unbound_binding_descriptor.group == VariableStyle.semantic or \
                            (unbound_binding_descriptor.group == VariableStyle.ignored and len(unbound_set) == 1), \
@@ -241,13 +235,13 @@ def predication_2(state, binding1, binding2,
 
                     if first_bound_value:
                         # All of the unbound items from the first bound item succeed
-                        # Since there is nothing to intersect with yet
+                        # since there is nothing to intersect with yet
                         intersection_new[unbound_set] = None
 
                     elif unbound_set in intersection_last:
-                        # At least one unbound value for this bound value worked
-                        # intersection_new contains the unbound values that have
-                        # worked for all the bound values
+                        # At least one unbound value for this bound value worked.
+                        # intersection_new records each unbound_set that this bound_value
+                        # yielded which match something another bound_value yielded
                         intersection_new[unbound_set] = None
 
                 first_bound_value = False
@@ -259,16 +253,15 @@ def predication_2(state, binding1, binding2,
                     intersection_new = {}
 
             if len(intersection_last) > 0:
-                # Now we have a set of sets that have the relation for all elements of bound_set
+                # Now we have a set of sets that have the predication relation for all elements of bound_set
                 #
                 # If the unbound variable is group=semantic: Mary might be in [home, park] and each unbound value returned it true for all items in the list,
-                #                                                return them one by one
+                #                                                return items from the set one by one
                 # If the unbound variable is group=ignore: We should only get single values and we intersect them all to create a group,
                 #                                           Do the intersection of answers from every item in the set to see end up with a single set
-                #                                           where mary and john are *together*
-                #                                           all combinations of the final group are answers
+                #                                           where mary and john are *together*. All combinations of the final group are answers
                 if unbound_binding_descriptor.group == VariableStyle.semantic:
-                    # Each of the items in intersection_all is a set for which all bound value is true, return them one by one
+                    # Each of the items in intersection_last is a set for which all bound values is true, return them one by one
                     for group_semantic_item in intersection_last.keys():
                         yield state.set_x(bound_binding.variable.name,
                                           bound_set,
@@ -277,7 +270,7 @@ def predication_2(state, binding1, binding2,
                                                                     combinatoric=False)
                 else:
                     # unbound_binding_descriptor.group == VariableStyle.ignore
-                    # Each of the items in intersection_all is true for all bound values, return all combinations
+                    # Each of the items in intersection_last is true for all bound values, return all combinations
                     flattened_solutions = tuple(x[0] for x in intersection_last.keys())
                     for alternative in discrete_variable_generator(flattened_solutions, True, unbound_binding_variable_size):
                         yield state.set_x(bound_binding.variable.name,
@@ -287,8 +280,9 @@ def predication_2(state, binding1, binding2,
                                                                     combinatoric=False)
 
     else:
-        # To make it easy for a developer we will do the "cartesian product check" if descriptor.group == VariableStyle.ignored by calling the check
-        # function with every pair of individuals. Otherwise, we call the passed in function with the entire set
+        # To make it easy for a developer we will do the "cartesian product check" if descriptor.group == VariableStyle.ignored
+        # by calling the check function with every pair of individuals.
+        # Otherwise, we call the passed in function with the entire set
         if binding1.value is not None and binding2.value is not None:
             # See if everything in binding1_set has the prediction_function relationship to everything in binding2_set
             for binding1_set in binding1_generator:
@@ -303,6 +297,7 @@ def predication_2(state, binding1, binding2,
                             if not both_bound_function(binding1_item, binding2_item):
                                 sets_fail = True
                                 break
+
                         if sets_fail:
                             break
 
@@ -316,8 +311,7 @@ def predication_2(state, binding1, binding2,
 
 
 # Used for words like "large" and "small" that always force an answer to be individuals when used predicatively
-# Ensures that solutions are discrete (not combinatoric) and only passes through
-# individuals, even if it is given a combinatoric
+# Ensures that solutions are discrete (not combinatoric) and only passes through individuals, even if it is given a combinatoric
 def individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function, greater_than_one_error):
     def bound_function(value_set):
         return bound_predication_function(value_set[0])
