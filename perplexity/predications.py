@@ -7,31 +7,38 @@ from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
 
-# Used for words like "large" and "small" that always force an answer to be individuals when used predicatively
-# Ensures that solutions are sets (not combinatoric) and only passes through
-# individuals, even if it is given a combinatoric
-def individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function, greater_than_one_error):
+# "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
+# for any chosen subset of the set. So, it gives a combinatorial answer.
+# combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
+# not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
+# for example
+def combinatorial_style_predication_1(state, binding, bound_function, unbound_function):
     if binding.value is None:
-        # Unbound
-        for unbound_value in unbound_predication_function():
-            yield state.set_x(binding.variable.name, (unbound_value, ), False)
+        at_least_one = at_least_one_generator(unbound_function())
+        if at_least_one is not None:
+            yield state.set_x(binding.variable.name, tuple(at_least_one), True)
+
     else:
         if binding.variable.combinatoric is False:
-            # if it is > 1 item the predication_function should fail since it is individual_style
-            if len(binding.value) > 1:
-                report_error(greater_than_one_error)
-                return
-            else:
-                # Pass sets through,
-                iterator = [binding.value]
+            # This is a single set that needs to be kept intact
+            # and succeed or fail as a unit
+            all_must_succeed = True
+            value_type = False
 
         else:
-            # If it is combinatoric, only pass through individuals
-            iterator = [(value, ) for value in binding.value]
+            all_must_succeed = False
+            value_type = True
 
-        for value in iterator:
-            if bound_predication_function(value[0]):
-                yield state.set_x(binding.variable.name, value, False)
+        values = []
+        for value in binding.value:
+            if bound_function(value):
+                values.append(value)
+            elif all_must_succeed:
+                # One didn't work, so fail
+                return
+
+        if len(values) > 0:
+            yield state.set_x(binding.variable.name, tuple(values), value_type)
 
 
 class VariableStyle(enum.Enum):
@@ -96,6 +103,30 @@ def discrete_variable_generator(value, combinatoric, variable_size):
         for value_set_size in range(min_set_size, max_set_size + 1):
             for value_set in itertools.combinations(value, value_set_size):
                 yield value_set
+
+
+def predication_1(state, binding,
+                  bound_function, unbound_function,
+                  binding_descriptor=None):
+
+    if binding.value is None:
+        # Unbound
+        for unbound_value in unbound_function():
+            yield state.set_x(binding.variable.name, unbound_value, combinatoric=False)
+
+    else:
+        # Build a generator that only generates the discrete values for the binding that are valid for the descriptor,
+        # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
+        if binding.variable.combinatoric:
+            binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
+                                                            binding_descriptor.combinatoric_size(binding))
+        else:
+            binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
+                                                            binding_descriptor.discrete_size())
+
+        for value in binding_generator:
+            if bound_function(value):
+                yield state.set_x(binding.variable.name, value, False)
 
 
 # binding1_descriptor terms:
@@ -277,6 +308,22 @@ def predication_2(state, binding1, binding2,
                                                                     combinatoric=False)
 
 
+# Used for words like "large" and "small" that always force an answer to be individuals when used predicatively
+# Ensures that solutions are discrete (not combinatoric) and only passes through
+# individuals, even if it is given a combinatoric
+def individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function, greater_than_one_error):
+    def bound_function(value_set):
+        return bound_predication_function(value_set[0])
+
+    def unbound_function():
+        for item in unbound_predication_function():
+            yield (item, )
+
+    yield from predication_1(state, binding,
+                             bound_function, unbound_function,
+                             VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.unsupported))
+
+    
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
@@ -318,40 +365,6 @@ def in_style_predication_2(state, binding1, binding2,
                              all_unbound_predication_function,
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored),
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored))
-
-
-# "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
-# for any chosen subset of the set. So, it gives a combinatorial answer.
-# combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
-# not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
-# for example
-def combinatorial_style_predication_1(state, binding, bound_function, unbound_function):
-    if binding.value is None:
-        at_least_one = at_least_one_generator(unbound_function())
-        if at_least_one is not None:
-            yield state.set_x(binding.variable.name, tuple(at_least_one), True)
-
-    else:
-        if binding.variable.combinatoric is False:
-            # This is a single set that needs to be kept intact
-            # and succeed or fail as a unit
-            all_must_succeed = True
-            value_type = False
-
-        else:
-            all_must_succeed = False
-            value_type = True
-
-        values = []
-        for value in binding.value:
-            if bound_function(value):
-                values.append(value)
-            elif all_must_succeed:
-                # One didn't work, so fail
-                return
-
-        if len(values) > 0:
-            yield state.set_x(binding.variable.name, tuple(values), value_type)
 
 
 # Yields each possible variable set from binding based on what type of value it is
