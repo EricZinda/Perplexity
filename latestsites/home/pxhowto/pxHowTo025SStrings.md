@@ -26,7 +26,7 @@ The value is hello
 
 `s()` is the s-string function and it takes a string that will be processed. Anything enclosed in `{}` in the string will be converted to text by the system. Above we've used `*value1` as the value to be replaced.  The `*` means "put whatever is in `value1` in the string as-is".
 
-S-strings also understand how MRS trees work and can convert a DELPH-IN variable like `x8` in the above example into the English that represents it. To do this it also requires the MRS tree that should be decoded. This is always available in a special `'tree'` variable in the `state` argument of a predication. It can be accessed by calling `state.get_binding('tree').value[0]`. 
+S-strings also understand how MRS trees work and can convert a DELPH-IN variable like `x8` in the above example into the English that represents it. To do this it also requires passing the MRS tree that should be decoded. This is always available in a special `'tree'` variable in the `state` argument of a predication. It can be accessed by calling `state.get_binding('tree').value[0]`. 
 
 So, we could print a message from the `_give_v_1` predication above like this:
 
@@ -38,7 +38,7 @@ def give_v_1(state, e_introduced, x_giver_binding, x_what_binding, x_receiver_bi
     )
 ```
 
-A term in `{}` without a `*` in front like: `{x_variable_binding.variable.name}` tells the system to interpret the expression as containing a DELPH-IN variable name. The system will convert the DELPH-IN variable to English by decoding the tree passed to `s()`, which is `state.get_binding('tree').value[0]`, and looking for all the terms that modify the variable. Then it will put that English representation in the string.
+A term in `{}` without a `*` in front like: `{x_variable_binding.variable.name}` tells the system to interpret the expression as containing a DELPH-IN variable name. The system will convert the DELPH-IN variable to English by decoding the tree passed to `s()`, and looking for all the terms that modify the variable. Then it will put that English representation in the string.
 
 Using our example of "Give me a long brown towel" with the code for `give_v_1()` above, the system will print out:
 
@@ -68,7 +68,7 @@ By using `{bare x_what_binding.variable.name:pl}`, we've told the system to get 
 "give me a towel on the chair" -> There aren't any towels on the chair
 ```
 
-Sometimes you need a word in the phrase to match the plurality of a word in the MRS. Let's say we want to print the message, "[what the user said] is in the cupboard"
+Sometimes you need a word in the phrase to match the plurality of a word in the MRS. Let's say we want to print the message, "[what the user said] is in the cupboard". We could do that by writing this code:
 
 ```
 @Predication(vocabulary, names=["_give_v_1"])
@@ -92,7 +92,7 @@ give me some clean towels -> some clean towels are in the cupboard
 
 # S-String Reference
 
-Elements in an s-string have the format `{determiner value:pluralization@meaning_at_index}`.
+Elements in an s-string have the format `{determiner value:pluralization@meaning_at_index}`. The below sections go through each section of the format and describe all of the valid values.
 
 ## Value
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
@@ -101,18 +101,18 @@ Elements in an s-string have the format `{determiner value:pluralization@meaning
 The only required part of an s-string is: `value`:
 
 - `value` is interpreted as a Python variable that contains a string representing a DELPH-IN variable such as `"x8"`
-- `*value` is interpreted as a Python variable that contains any text such as `"dog"` or `"is"`
+- `*value` is interpreted as a Python variable that can contain any text such as `"dog"`, `"is"` or `"the frying pan from my room"`
 - `"value"` or `'value'` is interpreted as a raw string
 
-Note: When using the `*value` or `"value"` forms, any text can be used and will be inserted into the string. However, if `pluralization` is also being used to get the word transformed into a specific plural form, the text must be a singular noun form.  See below.
+Note: When using the `*value` or `"value"` forms, any text can be used and will be inserted into the string. However, if `pluralization` is also being used (see below) to get the word transformed into a specific plural form, the text must be a singular noun form.
 
 ## Determiner
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
 
 
 Put one of the following as `determiner` to force that type of article to be used instead of what the user said:
-- `a` or `an` to include the proper indefinite article. Either works and will be changed to match the text when the string is evaluated.
-- `the` to include the proper definite article
+- `a` or `an` to include an indefinite article. Either works and will be changed to match the text when the string is evaluated.
+- `the` to include a definite article
 - `bare` to remove all articles
 
 Providing no `determiner` uses the determiner (if any) that was in the user's phrase.
@@ -121,7 +121,8 @@ Examples:
 ```
 User says 'the lively party':
 
-{an value} -> "a lively party"
+{value}      -> "the lively party"
+{an value}   -> "a lively party"
 {bare value} -> "lively party
 ```
 
@@ -150,15 +151,17 @@ User says 'the lively party':
 - `<*noun_variable`: match the singular or plural of whatever *noun* is contained directly in `noun_variable`
 - `<"noun value"`: match the singular or plural of a *noun* string literal
 
-Note that for pluralization to work when used with something that is not a DELPH-IN variable:
+Note that for pluralization to work when `value` is not a DELPH-IN variable:
 - `*value` must be a *singular form* word such as `"dog"` or `"is"`
 - `"value"` or `'value'` must be a raw string that is similarly in *singular form*
 
-### meaning_at_index
+### Meaning at Index
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
 
 
 The meaning of a DELPH-IN variable in an MRS tree depends on where in the tree it gets evaluated.  `@meaning_at_index` tells the system to convert a DELPH-IN variable to what its meaning would be after evaluating all the predications up to, but not including, the predication at that index. The index represents the depth-first evaluation order the system uses, starting at zero.
+
+`meaning_after_index` can be a numeric literal like `5`, or it can be a local variable like `x`.
 
 For example, the tree below for, "The dirty car is yellow" has the predication indexes represented before each predication:
 
@@ -178,8 +181,8 @@ Assuming a variable `x3_variable = 'x3'` then we can generate the value of `x3` 
 
 If no `@meaning_at_index` is provided, the default is to generate the tree only to the point right after where the variable is introduced. That would be `@2` above. 
 
-To facilitate generating errors when predications are being executed, `@meaning_at_index` can also be set by setting the non-string forms of `value` to be a Python `list` with specific values in it:
-- `["AtPredication", TreePredication, variable]`: Evaluate `variable`'s English meaning at the index where the predication in `TreePredication` is
+To facilitate generating errors when predications are being executed, `@meaning_at_index` can also be set automatically if special values of `value` are used. The special values must be a Python `list` in one of these forms:
+- `["AtPredication", TreePredication, variable]`: Evaluate `variable`'s English meaning at the index from the predication object in `TreePredication`
 - `["AfterFullPhrase", variable]`: Evaluate `variable`'s English meaning after the whole tree is evaluated
 
 For example, if we have the following code:
