@@ -7,9 +7,9 @@ from perplexity.generation_mrs import english_for_variable_using_mrs, compare_ge
 from perplexity.tree import find_predication_from_introduced, MrsParser
 
 
-def print_all_x_fragments(mrs_parser, phrase):
+def print_all_x_fragments(mrs_parser, phrase, exact=False):
     # Get the best matching MRS for the phrase
-    gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
+    gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase, exact)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
         return
@@ -32,37 +32,37 @@ def print_all_x_fragments(mrs_parser, phrase):
                 print(f"\n{variable} --> {found_predication}")
                 print_variable = False
 
-            generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree)
+            generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=None, determiner=None, exact=exact)
             if generated_text is None:
                 print(f"{variable} = <no result>. [mrs fragment: {new_mrs}]")
             else:
                 print(f"{variable} = {generated_text} [mrs fragment: {new_mrs}]")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=False)
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=False, determiner=None, exact=exact)
                 if generated_text is None:
                     print(f"{variable}(sg) = <no result>. [mrs fragment: {new_mrs}]")
                 else:
                     print(f"{variable}(sg) = {generated_text} [mrs fragment: {new_mrs}]")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=True)
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=True, determiner=None, exact=exact)
                 if generated_text is None:
                     print(f"{variable}(pl) = <no result>. [mrs fragment: {new_mrs}]")
                 else:
                     print(f"{variable}(pl) = {generated_text} [mrs fragment: {new_mrs}]")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=False, determiner="a")
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=False, determiner="a", exact=exact)
                 if generated_text is None:
                     print(f"{variable}(a) = <no result>. [mrs fragment: {new_mrs}]")
                 else:
                     print(f"{variable}(a) = {generated_text} [mrs fragment: {new_mrs}]")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=False, determiner="the")
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=False, determiner="the", exact=exact)
                 if generated_text is None:
                     print(f"{variable}(the, sg) = <no result>. [mrs fragment: {new_mrs}]")
                 else:
                     print(f"{variable}(the, sg) = {generated_text} [mrs fragment: {new_mrs}]")
 
-                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=True, determiner="the")
+                generated_text, best_index, new_mrs = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index, variable, tree, plural=True, determiner="the", exact=exact)
                 if generated_text is None:
                     print(f"{variable}(the, pl) = <no result>. [mrs fragment: {new_mrs}]")
                 else:
@@ -73,7 +73,7 @@ def print_all_x_fragments(mrs_parser, phrase):
 
 
 # Find the MRS for phrase that round trips through ACE Generation
-def round_trip_mrs(mrs_parser, phrase):
+def round_trip_mrs(mrs_parser, phrase, exact=False):
     # Todo: add these back at the end somehow, they prevent parsing
     trace_report = ""
     phrase = phrase.strip(":")
@@ -97,7 +97,7 @@ def round_trip_mrs(mrs_parser, phrase):
             index = 0
             for generated_phrase in mrs_parser.phrase_from_simple_mrs(mrs_string):
                 this_generated.append(generated_phrase)
-                diffs = compare_generated_output(phrase, generated_phrase)
+                diffs = compare_generated_output(phrase, generated_phrase, exact)
                 if len(diffs) == 0:
                     logger.info(f"MRS {mrs_index}, GEN {index}: Found round trip: {mrs}\n")
                     return index, generated_phrase, mrs
@@ -196,14 +196,15 @@ if __name__ == '__main__':
     # https://www.english-corpora.org/coca/
     # Samples: https://www.corpusdata.org/formats.asp
     # https://storage.googleapis.com/books/ngrams/books/datasetsv3.html
-    with open(log_file_path, "a") as file:
-        mrs_parser = MrsParser(log_file=file)
-        start_index = 50
-        for sentence in test_sentences(start_index):
-            logger.info(f"\n\n***** sentence {start_index} *****")
-            round_trip(mrs_parser, sentence)
-            start_index += 1
+    # with open(log_file_path, "a") as file:
+    #     mrs_parser = MrsParser(log_file=file)
+    #     start_index = 50
+    #     for sentence in test_sentences(start_index):
+    #         logger.info(f"\n\n***** sentence {start_index} *****")
+    #         round_trip(mrs_parser, sentence)
+    #         start_index += 1
 
+    # This tries to round trip a single phrase
     mrs_parser = MrsParser()
-    print_all_x_fragments(mrs_parser, "files are large.")
+    print_all_x_fragments(mrs_parser, "The job market isn't exactly crying out for those.", exact=True)
 

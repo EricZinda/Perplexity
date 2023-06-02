@@ -1,19 +1,25 @@
+- Build a backend to use for ESL Scenarios
+- make fallback generation more robust
+  - at least getting form of words right
+- Test plurals:
+  - Implement negative
+    - No files ...
+    - files are not large
+    - which files are not in 2 folders
+      - requires "not" to run in phase 2
+  - each:
+    - the folders have 1 file each
 
-And scenarios:
-  the yellow dog and the brown dog are large ->
-    - Does large() force individuals?  -> yes
-    - observation: this should be no different than: 2 dogs are large
-    - constraint is: requires these two things  
+- NEED TO UPDATE DOCS FOR VERBS TO MAKE ALL THIS CLEAR:
+  - "I want ham" is a proposition that we want to interpret as a command
+  - For a verb: Succeeding means it "worked" and should add an operation to change the state
+    - it is not modelled as world state as in "I want a burger = True"
+    - Really think about a phrase as setting up all the various variables so that the verb can be called
+      - Really it just means: this is the proper interpretation, but it might be an error, in which case it can do a RespondOperation
+    - delegate to "give me" *as one alternative* if it works, great!
+      - If: it is a proposition and IF pron(I) and IF arguments are bound: There is something concrete they want, next determine how to deal with it
+          - in the doorway: "I want a table" -> give me a table, "I want a place to sit", "I want to eat " (different want_v), I want a burger" -> "Do you want take-out?"
 
-Remaining work to be shown in the tutorial:
-- Generation issues:
-  - people_n with NUM=sg doesn't generate person. But dice does
-  - 20 -> twenty and never generates as 20
-  - Many of the parses are close like (no contraction of is not and isn't)(different punctuation):
-    Anyway, he was a philosophy major and the job market isn't exactly crying out for those, so he decided to become a rock legend.
-    Anyway he was a philosophy major and the job market is not exactly crying out for those, so he decided to become a rock legend.
-    --> Might be a matter of not doing all the parses, need to do them all
-  - Looks like it never generates fw_seq terms? Try: "What is in this 'blue'?"
 
 - 3 files are in a folder together -> There is more than a folder together
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
@@ -22,11 +28,9 @@ Remaining work to be shown in the tutorial:
 - Really slow: (if at least one isn't) "file1.txt", "file2.txt" and "file3.txt" are in this folder
 - 1 file is in a folder together
   - udef(card(1)) is the determiner for this
-- make fallback generation more robust
 - How to MRS generate strings that represent the variable at the end of the whole sentence?
   - Theory: Put a quantifier in front of the whole tree?
   - sstring can use MRS generation even in non-default meaning_at_index cases if nothing will contribute english to it
-  
 - Will usability: error_priority_function should have a perplexity default that is not "no prioritization". Should at least deprioritize "I don't know word x"
 - CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
   - same thing for card(e,x,c) becoming card(c,e,x)
@@ -48,91 +52,14 @@ Remaining work to be shown in the tutorial:
         - Or there is some kind of global event that gets called to decide the pre and postamble?
           - Could it be a "solution group" event?
   - The question "is fish on the menu" should be answered with "yes"
-  
   - Look at what we did in adventure.pl with querySetAnswer()
     - Possibly we need different predications for attributive vs. predicative? Or index?
-    
-- Need a classic "push a context on the stack" for questions like "Do you want takeout?" know how to deal with responses like:
-  - "I want to sit down"
-  - "yes, I'd like a hamburger please"
-  - Need a conversation model? Discourse analysis?
+- Add chat_gpt code so we can play with using it for nouns
 
-- what about "I want two hamburgers"?
-  - If hamburgers don't exist it will fail on hamburger_n() with "I don't know the word"
-    - We kind of want "want" to get called with the text of what the user wants and fail in "want/give", right?
-    - with a message like "We don't have those here"
-    - Implies there is a generic noun_n() that gets called
-
-- ESL Features TODO
-  - Don't respond with items if the user added a response with RespondCommand
-  - Need a NLG realizer for strings
-    - https://delphinqa.ling.washington.edu/t/using-ace-via-pydelphin-to-generate-fragments/779/5
-    - https://delphinqa.ling.washington.edu/t/how-to-generate-english-sentence-from-a-parse-having-nn-u-unknown-jj-u-unknown/851
-    - Approach 1: 
-      - Focus on noun phrases only
-        - pick the parse that generates the original string when round tripped
-      - Create a template and fill with a phrase later.  Replace the quantifier, clean up MRS
-      - Compare output of ACE with the entire original string and only accept the one that has the same front and back
-      - How to generate the fragment:
-        - If given a word: [a, sayName(_1ObjectID)], [The, sayName(idDeer1, default, singular)]
-          - sayText("I don't know about [a door: object]", object=myObject), sayText("[The deer] quietly walks away", object)
-          - decide what kind of determiner (somehow)
-          - generate the mrs for the fragment
-          - plug it into the original
-        - If given a list: [is, sayListNames(an, _1Items, default)]
-          - fake it out by generating the phrase with plural or singular *words* and then replace with the whole string of comma delimited stuff
-        - If given a verb: [is, sayListNames(an, _1Items, default)]
-        - Cache everything but the runtime generation since it is expensive. Don't evaluate it until we actually show the user
-      - TODO: Handle words the engine doesn't know with the same POS and replace? But then you need to pluralize
-    - Approach 2:
-      - Focus on noun phrases only
-        - If given a word or phrase: [a, sayName(_1ObjectID)], [The, sayName(idDeer1, default, singular)]
-          - decide if it is uncountable or not  (somehow) 
-          - decide which indefinite article (somehow)
-            - https://stackoverflow.com/questions/20336524/verify-correct-use-of-a-and-an-in-english-texts-python
-            - 
-          - plug it into the original
-        - If given a verb: [is, sayListNames(an, _1Items, default)]
-          - Use something to generate the right form of verb
-          - 
-        - Give a way to replace a list with your own (like a global event for solution groups)
-        - Scenarios:
-          - "There is more than x y"
-            - Need to make y have no determiner and be singular
-        - Design:
-          - Have an object that can handle a single word: Determiner, Plural in any combination
-          - TODO: Get rid of determiners like "2"
-            - Probably have to have these in metadata so that we can properly report errors where there is no state to see if they added criteria
-    - The old prototype would gather up all responses in one answer and return it
-  - "What else is on the menu?" -> need to see if "else" is on "which"
-    - Not included in any predication
-  - Way to push a conversation so the system can ask "Do you want this?" and properly deal with responses
-  - Add chat_gpt code so we can play with using it for nouns
-  - NEED TO UPDATE DOCS FOR VERBS TO MAKE ALL THIS CLEAR:
-    - "I want ham" is a proposition that we want to interpret as a command
-    - For a verb: Succeeding means it "worked" and should add an operation to change the state
-      - it is not modelled as world state as in "I want a burger = True"
-      - Really think about a phrase as setting up all the various variables so that the verb can be called
-        - Really it just means: this is the proper interpretation, but it might be an error, in which case it can do a RespondOperation
-      - delegate to "give me" *as one alternative* if it works, great!
-        - If: it is a proposition and IF pron(I) and IF arguments are bound: There is something concrete they want, next determine how to deal with it
-            - in the doorway: "I want a table" -> give me a table, "I want a place to sit", "I want to eat " (different want_v), I want a burger" -> "Do you want take-out?"
-          
-- Put thing() in the system space.  Others?  "a few"?
-- Docs update:
-  - Figure out how to do examples in the internals section.  Just replicate the how-to?
-- Make old tests work
-- Bug: What is large? Will only return one item because it is singular
-
-
-- Rebuild the scenarios to get the tests to pass again
-- Build a backend to use for ESL Scenarios
-
-- Need to write a section on predication design
+- Docs: Need to write a section on predication design
   - Objects should be implemented purely and independently so that the magic of language and logic "just work"
   
 Plurals work 
-- Example 36: "delete files that are 20mb" -> crash
 - Example 33: "delete only 2 files in the folder" -> There are more than 2 file in the folder
   - delete only two files in the folder -> (are you sure, this will be random?)
 - delete the only two files in the folder -> should fail
@@ -167,14 +94,12 @@ Plurals work
   - Tests: 
           - https://aclanthology.org/P88-1003.pdf
           - https://aclanthology.org/W13-0202.pdf
-
   - Slow Scenarios
     - Options:
       - Get rid of sets that can't possibly be right so we don't keep checking them
         - which 3 files are in a folder: have to keep around all the old ones in case there are duplicates. Faster way to check them?
       - Use a tree structure to quickly add a solution to the right groups
         - Build a data structure like the one they use in 3d games to divide the world?
-    
     - Slow Scenarios:
       - Example33: which 2 files in the folder are large?
         - Very slow

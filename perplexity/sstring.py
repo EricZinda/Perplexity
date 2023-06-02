@@ -4,7 +4,6 @@ import re
 import inspect
 from delphin.codecs import simplemrs
 from perplexity.generation import english_for_delphin_variable, PluralMode, is_plural_word, change_to_plural_mode
-from perplexity.generation_experimental import round_trip_mrs
 from perplexity.generation_mrs import english_for_variable_using_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced
 from perplexity.utilities import ShowLogging
@@ -375,7 +374,7 @@ mrs_parser = MrsParser()
 sstring_logger = logging.getLogger('SString')
 
 if __name__ == '__main__':
-    # ShowLogging("SString")
+    ShowLogging("SString")
 
     test = "a dog"
     print(sstringify("{the *test}"))
@@ -391,7 +390,9 @@ if __name__ == '__main__':
 
 
     # Test Harness
-    phrase = "the dirty car is yellow"
+    from perplexity.generation_experimental import round_trip_mrs
+
+    phrase = "dice are large"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
@@ -421,20 +422,16 @@ if __name__ == '__main__':
                              "MRS": mrs_parser.mrs_to_string(mrs)}
 
                 index_test = 4
-                print(s("{variable:@index_test}", tree_info))
-
-                # print(sstringify("a singular:   {a variable:sg}", tree_info))
-                #
-                # print(sstringify("raw default: {variable}", tree_info))
-                # print(sstringify("raw before tree using 'AtPredication': {variable_before_phrase}", tree_info))
-                # print(sstringify("raw after tree: {variable:@after_tree}", tree_info))
-                # print(sstringify("raw after tree using 'AfterFullPhrase': {variable_after_phrase}", tree_info))
-                # print(sstringify("the singular: {the variable:sg}", tree_info))
-                # print(sstringify("a singular:   {a variable:sg}", tree_info))
-                # print(sstringify("the plural:   {the variable:pl}", tree_info))
-                # print(sstringify("Bare plural:  {Bare variable:pl}", tree_info))
-                # print(sstringify("Bare original:  {bare variable}", tree_info))
-                # print(sstringify("bare singular: {variable:sg}", tree_info))
+                print(sstringify("raw default: {variable}", tree_info))
+                print(sstringify("raw before tree using 'AtPredication': {variable_before_phrase}", tree_info))
+                print(sstringify("raw after tree: {variable:@after_tree}", tree_info))
+                print(sstringify("raw after tree using 'AfterFullPhrase': {variable_after_phrase}", tree_info))
+                print(sstringify("the singular: {the variable:sg}", tree_info))
+                print(sstringify("a singular:   {a variable:sg}", tree_info))
+                print(sstringify("the plural:   {the variable:pl}", tree_info))
+                print(sstringify("Bare plural:  {Bare variable:pl}", tree_info))
+                print(sstringify("Bare original:  {bare variable}", tree_info))
+                print(sstringify("bare singular: {variable:sg}", tree_info))
                 print()
 
             if print_variable:

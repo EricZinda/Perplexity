@@ -34,21 +34,22 @@ def diff_generator(original, generated):
 # Compare the original and ACE generated version of a text
 # Ignore non-important differences and return a list of diffs
 # if the list is [], they are effectively the same
-def compare_generated_output(original, generated):
+def compare_generated_output(original, generated, exact=False):
     # Basic cleaning of input
     original = original.strip(" .?!")
     generated = generated.strip(" .?!")
 
     diffs = []
     for subtractions, additions in diff_generator(original.lower(), generated.lower()):
-        # twenty-forth round trips to twenty forth
-        if len(subtractions) == len(additions) and additions.replace("-", " ") == subtractions:
-            continue
+        if not exact:
+            # twenty-forth round trips to twenty forth
+            if len(subtractions) == len(additions) and additions.replace("-", " ") == subtractions:
+                continue
 
-        # Make numbers and their textual versions compare the same
-        if additions.isdigit() and inflect_engine.number_to_words(additions) == subtractions or \
-                subtractions.isdigit() and inflect_engine.number_to_words(subtractions) == additions:
-            continue
+            # Make numbers and their textual versions compare the same
+            if additions.isdigit() and inflect_engine.number_to_words(additions) == subtractions or \
+                    subtractions.isdigit() and inflect_engine.number_to_words(subtractions) == additions:
+                continue
 
         diffs.append(f"{additions} <--> {subtractions}")
 
@@ -193,13 +194,13 @@ def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, 
         return new_mrs
 
 
-def best_generation_index(mrs, original_text):
+def best_generation_index(mrs, original_text, exact=False):
     generate_parser = MrsParser(generate_root="root_frag")
     new_mrs_string = generate_parser.mrs_to_string(mrs)
     index = 0
     matches = []
     for generated_phrase in generate_parser.phrase_from_simple_mrs(new_mrs_string):
-        diff_list = compare_generated_output(original_text, generated_phrase)
+        diff_list = compare_generated_output(original_text, generated_phrase, exact)
         if len(diff_list) == 0:
             # Exact match! Stop now, not going to get better
             return index
@@ -222,7 +223,7 @@ def fragmentize_phrase(phrase):
     return phrase.strip(".?!")
 
 
-def english_for_variable_using_mrs(mrs_parser, mrs, failure_index, variable, tree, plural=None, determiner=None):
+def english_for_variable_using_mrs(mrs_parser, mrs, failure_index, variable, tree, plural=None, determiner=None, exact=False):
     # Get the MRS fragment for the variable
     new_mrs = mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural, determiner)
     if new_mrs is None:
@@ -233,7 +234,7 @@ def english_for_variable_using_mrs(mrs_parser, mrs, failure_index, variable, tre
             mrs.variables[variable]["NUM"] = "pl" if plural == PluralMode.plural else "sg"
 
         # Figure out which generated text from the fragment best matches the original
-        best_index, generated_text = best_generation_index(new_mrs, mrs.surface)
+        best_index, generated_text = best_generation_index(new_mrs, mrs.surface, exact)
         return fragmentize_phrase(generated_text) if generated_text is not None else generated_text, best_index, new_mrs
 
 
