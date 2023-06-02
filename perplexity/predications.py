@@ -7,40 +7,6 @@ from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
 
-# "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
-# for any chosen subset of the set. So, it gives a combinatorial answer.
-# combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
-# not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
-# for example
-def combinatorial_style_predication_1(state, binding, bound_function, unbound_function):
-    if binding.value is None:
-        at_least_one = at_least_one_generator(unbound_function())
-        if at_least_one is not None:
-            yield state.set_x(binding.variable.name, tuple(at_least_one), True)
-
-    else:
-        if binding.variable.combinatoric is False:
-            # This is a single set that needs to be kept intact
-            # and succeed or fail as a unit
-            all_must_succeed = True
-            value_type = False
-
-        else:
-            all_must_succeed = False
-            value_type = True
-
-        values = []
-        for value in binding.value:
-            if bound_function(value):
-                values.append(value)
-            elif all_must_succeed:
-                # One didn't work, so fail
-                return
-
-        if len(values) > 0:
-            yield state.set_x(binding.variable.name, tuple(values), value_type)
-
-
 class VariableStyle(enum.Enum):
     # this size is semantically relevant
     semantic = 1
@@ -84,6 +50,8 @@ class VariableDescriptor(object):
             return ValueSize.exactly_one if individual_supported else ValueSize.more_than_one
 
 
+# Yields each possible variable set from binding based on what type of value it is
+# "discrete" means it will generate all possible specific sets, one by one (i.e. not yield a combinatoric value)
 # variable_size is the only sizes that should be generated or allowed
 def discrete_variable_generator(value, combinatoric, variable_size):
     if combinatoric is False:
@@ -127,6 +95,45 @@ def predication_1(state, binding,
         for value in binding_generator:
             if bound_function(value):
                 yield state.set_x(binding.variable.name, value, False)
+
+
+# "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
+# for any chosen subset of the set. So, it gives a combinatorial answer.
+#
+# Its binding is always of type VariableDescriptor(individual=semantic, group=ignored)
+#
+# combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
+# not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
+# for example
+def combinatorial_predication_1(state, binding, bound_function, unbound_function):
+    if binding.value is None:
+        # Unbound
+        at_least_one = at_least_one_generator(unbound_function())
+        if at_least_one is not None:
+            yield state.set_x(binding.variable.name, tuple(at_least_one), True)
+
+    else:
+        if binding.variable.combinatoric is False:
+            # This is a single set that needs to be kept intact
+            # and succeed or fail as a unit
+            all_must_succeed = True
+            combinatoric = False
+
+        else:
+            all_must_succeed = False
+            combinatoric = True
+
+        values = []
+        for value in binding.value:
+            if bound_function(value):
+                values.append(value)
+
+            elif all_must_succeed:
+                # One didn't work, so fail
+                return
+
+        if len(values) > 0:
+            yield state.set_x(binding.variable.name, tuple(values), combinatoric)
 
 
 # binding1_descriptor terms:
@@ -323,7 +330,7 @@ def individual_style_predication_1(state, binding, bound_predication_function, u
                              bound_function, unbound_function,
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.unsupported))
 
-    
+
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
@@ -365,77 +372,3 @@ def in_style_predication_2(state, binding1, binding2,
                              all_unbound_predication_function,
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored),
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored))
-
-
-# Yields each possible variable set from binding based on what type of value it is
-# "discrete" means it will generate all possible specific sets, one by one (i.e. not yield a combinatoric value)
-def discrete_variable_set_generator(binding, set_size):
-    if binding.variable.combinatoric is False:
-        binding_value = binding.value
-        if set_size == ValueSize.all or \
-           (set_size == ValueSize.more_than_one and count_set(binding_value) > 1) or \
-           (set_size == ValueSize.exactly_one and count_set(binding_value) == 1):
-            # This is a single set that needs to be kept intact
-            yield False, binding.value
-
-        return
-
-    else:
-        # Generate all possible sets
-        assert binding.variable.combinatoric
-
-        min_set_size = 2 if set_size == ValueSize.more_than_one else 1
-        max_set_size = 1 if set_size == ValueSize.exactly_one else len(binding.value)
-
-        for value_set_size in range(min_set_size, max_set_size + 1):
-            for value_set in itertools.combinations(binding.value, value_set_size):
-                yield False, value_set
-
-
-def discrete_variable_individual_generator(binding):
-    if binding.variable.combinatoric is False:
-        # This is a single set that needs to be kept intact
-        yield False, binding.value
-        return
-
-    else:
-        # Generate all possible sets of 1
-        assert binding.variable.combinatoric
-
-        min_set_size = 1
-        max_set_size = 1
-
-        for value_set_size in range(min_set_size, max_set_size + 1):
-            for value_set in itertools.combinations(binding.value, value_set_size):
-                yield False, value_set
-
-
-def rstr_reorderable(rstr):
-    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing"]
-
-
-# Yield all undetermined, unquantified answers
-def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
-    reverse = rstr_reorderable(h_rstr_orig)
-    h_rstr = h_body_orig if reverse else h_rstr_orig
-    h_body = h_rstr_orig if reverse else h_body_orig
-
-    variable_name = x_variable_binding.variable.name
-    rstr_values = []
-    for rstr_solution in call(state, h_rstr):
-        if criteria_predication is not None:
-            alternative_states = criteria_predication(rstr_solution, rstr_solution.get_binding(x_variable_binding.variable.name))
-        else:
-            alternative_states = [rstr_solution]
-
-        for alternative_state in alternative_states:
-            rstr_values.extend(alternative_state.get_binding(variable_name).value)
-            for body_solution in call(alternative_state, h_body):
-                yield body_solution
-
-    set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
-
-    if not reverse and len(rstr_values) == 0:
-        # If the rstr was actually run (i.e. not reversed) and produced no values:
-        # Ignore whatever error the RSTR produced, this is a better one
-        report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)

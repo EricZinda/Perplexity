@@ -1,5 +1,5 @@
 from perplexity.execution import report_error, execution_context
-from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, \
+from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
     individual_style_predication_1
 from perplexity.sstring import s
 from perplexity.state import State
@@ -48,7 +48,7 @@ def student_n_of(state, x_binding, i_binding):
         yield "Elsa"
         yield "Seo-Yun"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_table_n_1"])
@@ -63,7 +63,7 @@ def table_n_1(state, x_binding):
     def unbound_variable():
         yield "table1"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_file_n_of"])
@@ -78,7 +78,7 @@ def file_n_of(state, x_binding, i_binding):
     def unbound_variable():
         yield from state.all_individuals()
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary,
@@ -100,7 +100,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
         if criteria_bound("file2.txt"):
             yield "file2.txt"
 
-    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+    yield from combinatorial_predication_1(state, x_target_binding, criteria_bound, unbound_values)
 
 
 # This is a helper function that any predication that can
@@ -173,7 +173,7 @@ def pron(state, x_who_binding):
         else:
             report_error(["dontKnowActor", x_who_binding.variable.name])
 
-    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 
 
 # Generates all the responses that predications can

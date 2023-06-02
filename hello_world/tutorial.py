@@ -2,7 +2,7 @@ import copy
 
 from perplexity.execution import report_error
 from perplexity.generation import english_for_delphin_variable
-from perplexity.predications import combinatorial_style_predication_1, in_style_predication_2, lift_style_predication_2
+from perplexity.predications import combinatorial_predication_1, in_style_predication_2, lift_style_predication_2
 from perplexity.state import State
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
@@ -57,7 +57,7 @@ def pron(state, x_who_binding):
         else:
             report_error(["dontKnowActor", x_who_binding.variable.name])
 
-    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_pizza_n_1"])
@@ -73,7 +73,7 @@ def _pizza_n_1(state, x_binding):
     def unbound_variable():
         yield "pizza"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 @Predication(vocabulary, names=["_steak_n_1"])
 def _steak_n_1(state, x_binding):
@@ -87,7 +87,7 @@ def _steak_n_1(state, x_binding):
     def unbound_variable():
         yield "steak"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 @Predication(vocabulary, names=["_table_n_1"])
 def _table_n_1(state, x_binding):
@@ -101,7 +101,7 @@ def _table_n_1(state, x_binding):
     def unbound_variable():
         yield "table"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 @Predication(vocabulary, names=["_ham_n_1"])
 def _ham_n_1(state, x_binding):
@@ -115,7 +115,7 @@ def _ham_n_1(state, x_binding):
     def unbound_variable():
         yield "ham"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 @Predication(vocabulary, names=["_meat_n_1"])
 def _meat_n_1(state, x_binding):
     def bound_variable(value):
@@ -130,7 +130,7 @@ def _meat_n_1(state, x_binding):
         yield "steak"
         yield "meat"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 @Predication(vocabulary, names=["_food_n_1"])
 def _food_n_1(state, x_binding):
@@ -148,7 +148,7 @@ def _food_n_1(state, x_binding):
         yield "pizza"
         yield "food"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_menu_n_1"])
@@ -163,7 +163,7 @@ def _menu_n_1(state, x_binding):
     def unbound_variable():
         yield "menu"
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=("_on_p_loc",))
@@ -208,7 +208,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
         # Find all large things
         yield "file2.txt"
 
-    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+    yield from combinatorial_predication_1(state, x_target_binding, criteria_bound, unbound_values)
 
 @Predication(vocabulary, names=["_want_v_1"])
 def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):

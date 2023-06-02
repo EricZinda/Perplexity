@@ -1,7 +1,7 @@
 from file_system_example.objects import File, Folder, Actor, FileSystemMock
 from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation
 from perplexity.execution import report_error, execution_context
-from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, \
+from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
     individual_style_predication_1, in_style_predication_2
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
@@ -52,10 +52,10 @@ def student_n_of(state, x_binding, i_binding):
         yield "Elsa"
         yield "Seo-Yun"
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_binding,
-                                                 bound_variable,
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 @Predication(vocabulary, names=["_table_n_1"])
@@ -70,10 +70,10 @@ def table_n_1(state, x_binding):
     def unbound_variable():
         yield "table1"
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_binding,
-                                                 bound_variable,
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 # This is a helper function that any predication that can
@@ -114,10 +114,10 @@ def file_n_of(state, x_binding, i_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_binding,
-                                                 bound_variable,
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 # true for both sets and individuals as long as everything
@@ -136,10 +136,10 @@ def folder_n_of(state, x_binding, i_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_binding,
-                                                 bound_variable,
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 @Predication(vocabulary,
@@ -165,10 +165,10 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
             if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
                 yield value
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_target_binding,
-                                                 criteria_bound,
-                                                 unbound_values)
+    yield from combinatorial_predication_1(state,
+                                           x_target_binding,
+                                           criteria_bound,
+                                           unbound_values)
 
 
 # Delete only works on individual values: i.e. there is no semantic for deleting
@@ -212,7 +212,7 @@ def pron(state, x_who_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary)
@@ -230,10 +230,10 @@ def place_n(state, x_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_binding,
-                                                 bound_variable,
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 @Predication(vocabulary, names=["loc_nonsp"])

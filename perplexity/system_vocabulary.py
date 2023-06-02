@@ -1,9 +1,8 @@
 import copy
-
-from perplexity.execution import execution_context
+from perplexity.execution import execution_context, call, set_variable_execution_data, report_error
 from perplexity.plurals import VariableCriteria, GlobalCriteria
-from perplexity.predications import quantifier_raw, combinatorial_style_predication_1
-from perplexity.sstring import s
+from perplexity.predications import combinatorial_predication_1
+from perplexity.tree import TreePredication
 from perplexity.vocabulary import Predication, Vocabulary
 
 vocabulary = Vocabulary()
@@ -12,6 +11,37 @@ vocabulary = Vocabulary()
 # Merge the system vocabulary into new_vocabulary
 def system_vocabulary():
     return copy.deepcopy(vocabulary)
+
+
+def rstr_reorderable(rstr):
+    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing"]
+
+
+# Yield all undetermined, unquantified answers
+def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
+    reverse = rstr_reorderable(h_rstr_orig)
+    h_rstr = h_body_orig if reverse else h_rstr_orig
+    h_body = h_rstr_orig if reverse else h_body_orig
+
+    variable_name = x_variable_binding.variable.name
+    rstr_values = []
+    for rstr_solution in call(state, h_rstr):
+        if criteria_predication is not None:
+            alternative_states = criteria_predication(rstr_solution, rstr_solution.get_binding(x_variable_binding.variable.name))
+        else:
+            alternative_states = [rstr_solution]
+
+        for alternative_state in alternative_states:
+            rstr_values.extend(alternative_state.get_binding(variable_name).value)
+            for body_solution in call(alternative_state, h_body):
+                yield body_solution
+
+    set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
+
+    if not reverse and len(rstr_values) == 0:
+        # If the rstr was actually run (i.e. not reversed) and produced no values:
+        # Ignore whatever error the RSTR produced, this is a better one
+        report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
 @Predication(vocabulary)
@@ -23,7 +53,7 @@ def thing(state, x_binding):
         for item in state.all_individuals():
             yield item
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_a_q"])

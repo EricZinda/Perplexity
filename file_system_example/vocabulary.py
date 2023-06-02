@@ -2,11 +2,11 @@ from file_system_example.objects import File, Folder, Megabyte, Actor, QuotedTex
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
-from perplexity.predications import combinatorial_style_predication_1, lift_style_predication_2, in_style_predication_2, \
-    individual_style_predication_1, ValueSize, discrete_variable_set_generator, quantifier_raw
+from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, in_style_predication_2, \
+    individual_style_predication_1, discrete_variable_generator
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
-from perplexity.system_vocabulary import system_vocabulary
+from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.tree import used_predicatively, is_this_last_fw_seq
 from perplexity.variable_binding import VariableBinding
 from perplexity.virtual_arguments import scopal_argument
@@ -52,7 +52,7 @@ def this_q_dem(state, x_variable_binding, h_rstr, h_body):
                 if bound_variable(item):
                     yield item
 
-        yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+        yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope)
 
@@ -105,7 +105,7 @@ def file_n_of(state, x_binding, i_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 def handles_noun(noun_lemma):
@@ -145,7 +145,7 @@ def folder_n_of(state, x_binding, i_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_megabyte_n_1"])
@@ -160,7 +160,7 @@ def megabyte_n_1(state, x_binding, u_binding):
     def unbound_variable():
         yield Megabyte()
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary)
@@ -178,7 +178,7 @@ def place_n(state, x_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
@@ -236,7 +236,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
                 if bound_variable(item):
                     yield item
 
-        yield from combinatorial_style_predication_1(state, x_target_binding, bound_variable, unbound_variable)
+        yield from combinatorial_predication_1(state, x_target_binding, bound_variable, unbound_variable)
 
 
 # Arbitrarily decide that "small" means a size <= 1,000,000
@@ -286,7 +286,7 @@ def small_a_1(state, e_introduced_binding, x_target_binding):
                 if bound_variable(item):
                     yield item
 
-        yield from combinatorial_style_predication_1(state, x_target_binding, bound_variable, unbound_variable)
+        yield from combinatorial_predication_1(state, x_target_binding, bound_variable, unbound_variable)
 
 
 # This is a helper function that any predication that can
@@ -476,7 +476,7 @@ def default_cardinal_set_limiter_norm(state, e_introduced_binding, e_target_bind
 # Otherwise, it won't get passed sets > 1 if its variables are bound
 @Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", ValueSize.more_than_one)])
 def together_p(state, e_introduced_binding, x_target_binding):
-    for _, x_target_value in discrete_variable_set_generator(x_target_binding, ValueSize.more_than_one):
+    for x_target_value in discrete_variable_generator(x_target_binding.value, x_target_binding.variable.combinatoric, ValueSize.more_than_one):
         yield state.set_x(x_target_binding.variable.name, x_target_value, False)
 
 
@@ -681,7 +681,7 @@ def pron(state, x_who_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 
 
 # c_raw_text_value will always be set to a raw string
