@@ -34,54 +34,6 @@ def individual_style_predication_1(state, binding, bound_predication_function, u
                 yield state.set_x(binding.variable.name, value, False)
 
 
-# "'lift' style" means that:
-# - a group behaves differently than an individual (like "men lifted a table")
-# - thus the predication_function is called with sets of things
-def lift_style_predication_2(state, binding1, binding2,
-                             both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
-                             binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
-
-    # If nobody needs collective don't do it since it is expensive
-    binding1_metadata = get_variable_metadata(binding1.variable.name)
-    if binding1_metadata["ValueSize"] == ValueSize.exactly_one:
-        binding1_set_size = ValueSize.exactly_one
-
-    binding2_metadata = get_variable_metadata(binding2.variable.name)
-    if binding2_metadata["ValueSize"] == ValueSize.exactly_one:
-        binding2_set_size = ValueSize.exactly_one
-
-    if binding1.value is None and binding2.value is None:
-        if all_unbound_predication_function is None:
-            report_error(["beMoreSpecific"], force=True)
-
-        else:
-            yield from all_unbound_predication_function()
-
-    elif binding1.value is None:
-        if binding1_unbound_predication_function is None:
-            report_error(["beMoreSpecific"], force=True)
-        else:
-            assert False, "not yet implemented"
-
-    elif binding2.value is None:
-        if binding2_unbound_predication_function is None:
-            report_error(["beMoreSpecific"], force=True)
-        else:
-            assert False, "not yet implemented"
-
-    else:
-        # See if everything in binding1_set has the
-        # prediction_function relationship to binding2_set
-        for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
-            for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
-                # See if everything in binding1_set has the
-                # prediction_function relationship to binding2_set
-                success = both_bound_prediction_function(binding1_set, binding2_set)
-                if success:
-                    yield state.set_x(binding1.variable.name, binding1_set, binding1_set_type) \
-                        .set_x(binding2.variable.name, binding2_set, binding2_set_type)
-
-
 class VariableStyle(enum.Enum):
     # this size is semantically relevant
     semantic = 1
@@ -325,7 +277,26 @@ def predication_2(state, binding1, binding2,
                                                                     combinatoric=False)
 
 
-# The only difference between this and the original is that the original doesn't pass sets to functions
+# "'lift' style" means that:
+# - a group behaves differently than an individual (like "men lifted a table")
+# - thus the predication_function is called with sets of things
+def lift_style_predication_2(state, binding1, binding2,
+                             both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
+                             binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+
+    yield from predication_2(state, binding1, binding2,
+                             both_bound_prediction_function,
+                             binding1_unbound_predication_function,
+                             binding2_unbound_predication_function,
+                             all_unbound_predication_function,
+                             VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic),
+                             VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic))
+
+
+# "'in' style" means that:
+# - {a, b} predicate {x, y} can be checked (or do something) as {a} predicate {x}, {a} predicate {y}, etc.
+# - that collective and distributive are both ok, but nothing special happens (unlike lift)
+# - that the any combinatoric terms will be turned into single set terms (coll or dist)
 def in_style_predication_2(state, binding1, binding2,
                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                            binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
@@ -347,82 +318,6 @@ def in_style_predication_2(state, binding1, binding2,
                              all_unbound_predication_function,
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored),
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored))
-
-
-# def in_style_predication_2(state, binding1, binding2,
-#                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
-#                            binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
-#     # If nobody needs collective don't do it since it is expensive
-#     binding1_metadata = get_variable_metadata(binding1.variable.name)
-#     if binding1_metadata["ValueSize"] == ValueSize.exactly_one:
-#         binding1_set_size = ValueSize.exactly_one
-#
-#     binding2_metadata = get_variable_metadata(binding2.variable.name)
-#     if binding2_metadata["ValueSize"] == ValueSize.exactly_one:
-#         binding2_set_size = ValueSize.exactly_one
-#
-#     if binding1.value is None and binding2.value is None:
-#         if all_unbound_predication_function is None:
-#             report_error(["beMoreSpecific"], force=True)
-#
-#         else:
-#             yield from all_unbound_predication_function()
-#
-#     elif binding1.value is None or binding2.value is None:
-#         assert not(binding1.value is None and binding2.value is None)
-#         bound_binding = binding2 if binding1.value is None else binding1
-#         bound_set_size = binding2_set_size if binding1.value is None else binding1_set_size
-#         unbound_binding = binding1 if binding1.value is None else binding2
-#         unbound_predication_function = binding1_unbound_predication_function if binding1.value is None else binding2_unbound_predication_function
-#
-#         # This is a "what is in X" type question, that's why it is unbound
-#         for bound_set_type, bound_set in discrete_variable_set_generator(bound_binding, bound_set_size):
-#             # this could be in([mary, john], X) (where are mary and john together)
-#             # thus, binding1_set could have more than one item, in which case we need to find the intersection of answers
-#             # Do the intersection of answers from every item in the set to see where mary and john are *together*
-#             first_value = True
-#             # Order matters, so use a dict.  That way we return the first value first
-#             intersection_all = {}
-#             for bound_value in bound_set:
-#                 for unbound_value in unbound_predication_function(bound_value):
-#                     if first_value:
-#                         intersection_all[unbound_value] = None
-#                     else:
-#                         if unbound_value not in first_value:
-#                             return
-#
-#                 first_value = False
-#
-#             # Now we have a non-zero intersection of values for all items in binding1_set
-#             for unbound_value in intersection_all.keys():
-#                 yield state.set_x(bound_binding.variable.name,
-#                                   bound_set,
-#                                   bound_set_type).set_x(unbound_binding.variable.name,
-#                                                         (unbound_value, ),
-#                                                         False)
-#
-#     else:
-#         # See if everything in binding1_set has the
-#         # prediction_function relationship to binding2_set
-#         for binding1_set_type, binding1_set in discrete_variable_set_generator(binding1, binding1_set_size):
-#             for binding2_set_type, binding2_set in discrete_variable_set_generator(binding2, binding2_set_size):
-#                 # See if everything in binding1_set has the
-#                 # prediction_function relationship to binding2_set
-#                 sets_fail = False
-#                 for binding1_item in binding1_set:
-#                     for binding2_item in binding2_set:
-#                         if not both_bound_function(binding1_item, binding2_item):
-#                             sets_fail = True
-#                             break
-#                     if sets_fail:
-#                         break
-#
-#                 if not sets_fail:
-#                     yield state.set_x(binding1.variable.name,
-#                                       binding1_set,
-#                                       binding1_set_type).set_x(binding2.variable.name,
-#                                                                binding2_set,
-#                                                                binding2_set_type)
 
 
 # "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
