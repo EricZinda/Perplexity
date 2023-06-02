@@ -67,7 +67,7 @@ def discrete_variable_generator(value, combinatoric, variable_size):
         # Fail immediately if we don't support it
         if (len(value) == 1 and variable_size == ValueSize.more_than_one) or \
                 (len(value) > 1 and variable_size == ValueSize.exactly_one):
-            report_error()
+            report_error(["tooManyItemsTogether"])
 
         else:
             yield value

@@ -150,17 +150,8 @@ def generate_message(tree_info, error_term):
     elif error_constant == "notTrueForAll":
         return s("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
-    elif error_constant == "xIsNotY":
-        return s("{arg1:@error_predicate_index} is not {arg2:@error_predicate_index}", tree_info)
-
-    elif error_constant == "xIsNotYValue":
-        return s("{arg1} is not {*arg2}", tree_info)
-
-    elif error_constant == "valueIsNotX":
-        return s("{*arg1} is not {arg2}", tree_info)
-
-    elif error_constant == "valueIsNotValue":
-        return f"{arg1} is not {arg2}"
+    elif error_constant == "tooManyItemsTogether":
+        return "I don't understand using terms in a way that means 'together' in that sentence"
 
     elif error_constant == "unexpected":
         return "I'm not sure what that means."
@@ -183,6 +174,18 @@ def generate_message(tree_info, error_term):
             answers.append(f"I don't know the way you used: {', '.join(lemmas_form_known)}")
 
         return " and ".join(answers)
+
+    elif error_constant == "valueIsNotX":
+        return s("{*arg1} is not {arg2}", tree_info)
+
+    elif error_constant == "valueIsNotValue":
+        return f"{arg1} is not {arg2}"
+
+    elif error_constant == "xIsNotY":
+        return s("{arg1:@error_predicate_index} is not {arg2:@error_predicate_index}", tree_info)
+
+    elif error_constant == "xIsNotYValue":
+        return s("{arg1} is not {*arg2}", tree_info)
 
     else:
         return None

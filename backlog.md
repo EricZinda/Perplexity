@@ -19,6 +19,7 @@ Remaining work to be shown in the tutorial:
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
     - together requires sets of more than one be generated, and "a_q" means exactly one
     - Probably should be a special case error if there is a min=1, max=1 constraint on a variable that only generates > 1?
+- Really slow: (if at least one isn't) "file1.txt", "file2.txt" and "file3.txt" are in this folder
 - 1 file is in a folder together
   - udef(card(1)) is the determiner for this
 - make fallback generation more robust

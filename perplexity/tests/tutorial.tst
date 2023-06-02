@@ -477,6 +477,41 @@
             "Tree": "_please_v_1(e2,i3,i4)",
             "Enabled": true,
             "ID": "ed22ce42-3d7e-4b07-bfa2-3f6a48e2a2ff"
+        },
+        {
+            "Command": "/new examples.Example26_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "d07949c2-d346-40ce-92b6-febd84996a20"
+        },
+        {
+            "Command": "\"blue\" and \"bigfile.txt\" are in this folder",
+            "Expected": "Yes, that is true.(there are more)",
+            "Tree": "proper_q(x15,[quoted(bigfile.txt,i20), fw_seq(x15,i20)],_this_q_dem(x22,_folder_n_of(x22,i27),udef_q(x3,proper_q(x8,[quoted(blue,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),_in_p_loc(e2,x3,x22))))",
+            "Enabled": true,
+            "ID": "b34be073-7412-4ad4-9da7-a584e3255ecb"
+        },
+        {
+            "Command": "\"blue\" and \"59.txt\" are in this folder",
+            "Expected": "There are less than 2 ''blue', '59.txt'' in this folder",
+            "Tree": "proper_q(x15,[quoted(59.txt,i20), fw_seq(x15,i20)],_this_q_dem(x22,_folder_n_of(x22,i27),udef_q(x3,proper_q(x8,[quoted(blue,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),_in_p_loc(e2,x3,x22))))",
+            "Enabled": true,
+            "ID": "0a18a408-843e-4852-9e9b-547f8cfeb375"
+        },
+        {
+            "Command": "\"bigfile.txt\" and \"bigfile2.txt\" are large",
+            "Expected": "Yes, that is true.(there are more)",
+            "Tree": "proper_q(x15,[quoted(bigfile2.txt,i20), fw_seq(x15,i20)],udef_q(x3,proper_q(x8,[quoted(bigfile.txt,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),_large_a_1(e2,x3)))",
+            "Enabled": true,
+            "ID": "579f7805-b3e1-4a76-93c9-b485a1bb3642"
+        },
+        {
+            "Command": "\"bigfile.txt\" and \"59.txt\" are large",
+            "Expected": "There are less than 2 large ''bigfile.txt', '59.txt''",
+            "Tree": "proper_q(x15,[quoted(59.txt,i20), fw_seq(x15,i20)],udef_q(x3,proper_q(x8,[quoted(bigfile.txt,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),_large_a_1(e2,x3)))",
+            "Enabled": true,
+            "ID": "8e760db8-a939-4f26-a6a5-c82896108357"
         }
     ]
 }

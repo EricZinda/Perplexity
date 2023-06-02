@@ -120,3 +120,19 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
                                                               max_size=5))
 
 
+@Predication(vocabulary, names=["_and_c"])
+def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
+    size_total = len(x_binding_first.value) + len(x_binding_second.value)
+    yield state.set_x(x_binding_introduced.variable.name,
+                      x_binding_first.value + x_binding_second.value,
+                      combinatoric=True,
+                      determiner=VariableCriteria(execution_context().current_predication(),
+                                                  x_binding_introduced.variable.name,
+                                                  min_size=size_total,
+                                                  max_size=size_total)
+                      )
+
+
+@Predication(vocabulary, names=["implicit_conj"])
+def implicit_conj(state, x_binding_introduced, x_binding_first, x_binding_second):
+    yield from and_c(state, x_binding_introduced, x_binding_first, x_binding_second)

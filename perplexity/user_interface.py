@@ -26,7 +26,7 @@ def no_error_priority(error):
 
 class UserInterface(object):
     def __init__(self, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree):
-        self.max_holes = 13
+        self.max_holes = 14
         self.reset = reset
         self.state = reset()
         self.execution_context = ExecutionContext(vocabulary)
@@ -140,9 +140,11 @@ class UserInterface(object):
             else:
                 for tree in self.mrs_parser.trees_from_mrs(mrs):
                     tree_index += 1
-                    if self.run_tree_index is not None and self.run_tree_index != tree_index:
-                        continue
-
+                    if self.run_tree_index is not None:
+                        if self.run_tree_index > tree_index:
+                            continue
+                        elif self.run_tree_index < tree_index:
+                            break
                     tree_record = self.new_tree_record(tree=tree)
                     mrs_record["Trees"].append(tree_record)
 

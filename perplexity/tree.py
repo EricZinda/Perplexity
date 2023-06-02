@@ -14,7 +14,7 @@ from perplexity.vocabulary import ValueSize
 
 
 class MrsParser(object):
-    def __init__(self, max_holes=13, max_parses=None, log_file=None, generate_root=None):
+    def __init__(self, max_holes=14, max_parses=None, log_file=None, generate_root=None):
         self.max_holes = max_holes
         self.max_parses = max_parses
         self.log_file = log_file

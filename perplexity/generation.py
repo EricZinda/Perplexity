@@ -79,7 +79,14 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
             if parsed_predication["Surface"] is True:
                 # It is introducing it, thus it is the "main" description
                 # of the variable, usually a noun predication
-                nlg_data["Topic"] = parsed_predication["Lemma"].replace("+", " ")
+                if parsed_predication["Pos"] == "c" and parsed_predication["Lemma"] == "and":
+                    string_list = []
+                    string_list.append(english_for_delphin_variable(1000, predication.args[1], tree_info))
+                    string_list.append(english_for_delphin_variable(1000, predication.args[2], tree_info))
+                    nlg_data["Topic"] = f"'{', '.join(string_list)}'"
+
+                else:
+                    nlg_data["Topic"] = parsed_predication["Lemma"].replace("+", " ")
             else:
                 # Some abstract predications *should* contribute to the
                 # English description of a variable
@@ -109,6 +116,12 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                         nlg_data["Topic"] = f"'{' '.join(string_list)}'"
                     else:
                         nlg_data["Topic"] = f"{' '.join(string_list)}"
+
+                elif parsed_predication["Lemma"] == "implicit_conj":
+                    string_list = []
+                    string_list.append(english_for_delphin_variable(1000, predication.args[1], tree_info))
+                    string_list.append(english_for_delphin_variable(1000, predication.args[2], tree_info))
+                    nlg_data["Topic"] = f"'{', '.join(string_list)}'"
 
     # Assume that adjectives that take the variable as their first argument
     # are adding an adjective modifier to the phrase

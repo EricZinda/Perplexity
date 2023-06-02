@@ -42,7 +42,7 @@ def generate_message(tree_info, error_term):
         return s("{arg1} was not found", tree_info)
 
     elif error_constant == "thingHasNoLocation":
-        return s("{arg1} is not in {arg2}", tree_info)
+        return s("{arg1} {'is':<arg1} not in {arg2}", tree_info)
 
     elif error_constant == "thingIsNotContainer":
         return s("{arg1} can't contain things", tree_info)
