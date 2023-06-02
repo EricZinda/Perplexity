@@ -1,5 +1,5 @@
 {% raw %}## The Minimal Recursion Semantics (MRS) Format
-> This section provides an *overview* of the Minimal Recursion Semantics format which is the primary artifact used by DELPH-IN to represent the meaning of a phrase. It should be sufficient for understanding all of the rest of the material in the tutorial.  For a deeper dive into MRS, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).
+> This section is designed to give application developers an *overview* of the Minimal Recursion Semantics format which is the primary artifact used by DELPH-IN to represent the meaning of a phrase. For a deeper dive into MRS, or one that has a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).
 
 
 The DELPH-IN [English Resource Grammar (ERG)](https://blog.inductorsoftware.com/docsproto/erg/ErgTop/), [via the ACE parser](http://sweaglesw.org/linguistics/ace/), converts an English phrase into a text format called the ["Minimal Recursion Semantics" (MRS)](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) format which is designed to allow software to process human language. ACE can also be used with any of the [other DELPH-IN grammars](https://blog.inductorsoftware.com/docsproto/grammars/NorsourceTop/) to convert other natural languages into the MRS format. While the examples below use English, the concepts apply across the DELPH-IN grammars.
@@ -407,4 +407,4 @@ The next topic walks through the rules of creating "well-formed MRS trees", and 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}
+Last update: 2023-06-02 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}
