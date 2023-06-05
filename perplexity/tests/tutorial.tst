@@ -512,6 +512,34 @@
             "Tree": "proper_q(x15,[quoted(59.txt,i20), fw_seq(x15,i20)],udef_q(x3,proper_q(x8,[quoted(bigfile.txt,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),_large_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "8e760db8-a939-4f26-a6a5-c82896108357"
+        },
+        {
+            "Command": "/new examples.Example38_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "d0a05f0f-a999-4adb-9fb7-83bd3727ad8f"
+        },
+        {
+            "Command": "which files are in folders?",
+            "Expected": "I cannot respond to this",
+            "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "9a02fd1d-81fb-40d5-a7bd-15add7c6ab15"
+        },
+        {
+            "Command": "/new examples.Example39_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "aea30b9e-de33-490d-8920-a77ec169a136"
+        },
+        {
+            "Command": "which files are in folders",
+            "Expected": "('fakefile0',)('fakefile1',)('fakefile2',)('fakefile3',)(there are more)",
+            "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "75d771c6-b11a-4c34-a3ee-9495aa385c07"
         }
     ]
 }

@@ -7,7 +7,8 @@ from perplexity.predications import combinatorial_predication_1, lift_style_pred
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
-from perplexity.tree import used_predicatively, is_this_last_fw_seq
+from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predication
+from perplexity.utilities import sentence_force
 from perplexity.variable_binding import VariableBinding
 from perplexity.virtual_arguments import scopal_argument
 from perplexity.vocabulary import Vocabulary, Predication, EventOption, ValueSize
@@ -17,6 +18,34 @@ vocabulary = system_vocabulary()
 
 # Constants for creating virtual arguments from scopal arguments
 locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
+
+
+@Predication(vocabulary, names=["solution_group"])
+def solution_group(state_list):
+    test_binding = state_list[0].get_binding("test_solution_group")
+    if test_binding.value is not None:
+        if test_binding.value[0] == "cannotAnswer":
+            yield [state_list[0].record_operations([RespondOperation("I cannot respond to this")])]
+
+        elif test_binding.value[0] == "fakeValues":
+            tree = state_list[0].get_binding("tree").value[0]
+            sentence_force_type = sentence_force(tree["Variables"])
+            if sentence_force_type == "ques":
+                # See if this is a "WH" type question
+                wh_predication = find_predication(tree["Tree"], "_which_q")
+                if wh_predication is None:
+                    wh_predication = find_predication(tree["Tree"], "which_q")
+                    if wh_predication is None:
+                        return
+
+                wh_variable = wh_predication.introduced_variable()
+                new_group = []
+                index = 0
+                for state in state_list:
+                    new_group.append(state.set_x(wh_variable, ( "fakefile" + str(index),)))
+                    index += 1
+                yield new_group
+                yield True
 
 
 @Predication(vocabulary, names=["_this_q_dem"])

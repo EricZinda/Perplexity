@@ -1,3 +1,6 @@
+- Need to be able to run code on the solution group
+  - not() is going to require special processing
+  - 
 - Build a backend to use for ESL Scenarios
 - make fallback generation more robust
   - at least getting form of words right

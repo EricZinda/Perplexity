@@ -1,5 +1,7 @@
 import copy
+import inspect
 import logging
+import sys
 from math import inf
 
 from perplexity.execution import execution_context
@@ -124,13 +126,62 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         group_generator = SingleSolutionGroupGenerator(groups_stream, variable_has_inf_max)
         one_group = at_least_one_generator(group_generator)
         if one_group is not None:
-            yield one_group
+            # First see if there is a solution_group handler that should be called
+            solution_group_handlers = find_solution_group_handlers(execution_context, this_sentence_force)
+            if len(solution_group_handlers) > 0:
+                # Create a list since we may call more than one and the generator will be exhausted
+                solution_group_list = [solution for solution in one_group]
+                new_solution_group, has_more = solution_group_handler(solution_group_handlers, solution_group_list)
+                if new_solution_group is not None:
+                    yield new_solution_group
+                    if has_more:
+                        yield True
+                    return
 
-            # If there are multiple solution groups, we need to add one more (fake) group
-            # and yield it so that the caller thinks there are multiple answers and will give a message
-            # to the user. The answers aren't shown so it can be anything
-            if group_generator.has_multiple_groups():
-                yield True
+                # No handlers dealt with it, do the default behavior
+                yield solution_group_list
+                if group_generator.has_multiple_groups():
+                    yield True
+
+            else:
+                # No solution group handlers, just do the default behavior
+                yield one_group
+
+                # If there are multiple solution groups, we need to add one more (fake) group
+                # and yield it so that the caller thinks there are multiple answers and will give a message
+                # to the user. The answers aren't shown so it can be anything
+                if group_generator.has_multiple_groups():
+                    yield True
+
+
+def find_solution_group_handlers(execution_context, this_sentence_force):
+    handlers = []
+    for module_function in execution_context.vocabulary.predications("solution_group", [], this_sentence_force):
+        module = sys.modules[module_function[0]]
+        function = getattr(module, module_function[1])
+        handlers.append(function)
+
+    return handlers
+
+
+# If there is a solution_group_handler, call it
+def solution_group_handler(solution_group_handlers, group_generator):
+    created_solution_group = None
+    has_more = False
+    for function in solution_group_handlers:
+        for next_solution_group in function(group_generator):
+            if created_solution_group is None:
+                created_solution_group = next_solution_group
+
+            else:
+                has_more = True
+                break
+
+        # First solution_group handler that yields, wins
+        if created_solution_group:
+            break
+
+    return created_solution_group, has_more
 
 
 # Return the infos in the order they will be executed in

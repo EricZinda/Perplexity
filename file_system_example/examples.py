@@ -727,6 +727,42 @@ def Example37():
         user_interface.interact_once()
         print()
 
+
+def Example38_reset():
+    state = FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file3.txt", {"size": 10000}),
+                                           (True, "/documents/file4.txt", {"size": 10000000}),
+                                           (True, "/documents/file5.txt", {"size": 10000})],
+                                           "/Desktop"))
+    return state.set_x("test_solution_group", ("cannotAnswer", ))
+
+
+def Example38():
+    user_interface = UserInterface(Example38_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
+def Example39_reset():
+    state = FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file3.txt", {"size": 10000}),
+                                           (True, "/documents/file4.txt", {"size": 10000000}),
+                                           (True, "/documents/file5.txt", {"size": 10000})],
+                                           "/Desktop"))
+
+    return state.set_x("test_solution_group", ("fakeValues", ))
+
+
+def Example39():
+    user_interface = UserInterface(Example39_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 def build_solutions(spec):
     solutions = []
     for item in spec:
@@ -914,7 +950,7 @@ if __name__ == '__main__':
     # Example23()
     # Example24()
     # Example25()
-    Example26()
+    # Example26()
     # Example27()
     # Example28()
     # Example29()
@@ -926,6 +962,9 @@ if __name__ == '__main__':
     # Example34()
     # Example35()
     # Example36()
+    # Example37()
+    Example38()
+    # Example39()
     #
     # state_test()
 

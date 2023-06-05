@@ -125,7 +125,13 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
         # wrapper_function() actually wraps the predication function
         # and is the real function called at runtime
         def wrapper_function(*args, **kwargs):
+            # First make sure the function provided is a generator
+            if not inspect.isgenerator(function_to_decorate) and not inspect.isgeneratorfunction(function_to_decorate):
+                assert False, f"function {function_to_decorate.__name__} must be a generator"
+
             # First create any virtual args. This could fail and report an error
+            if function_to_decorate.__name__ == "fpp_solution_group":
+                print(1)
             if virtual_args is not None and len(virtual_args) > 0:
                 new_args = create_virtual_arguments(args, virtual_args)
                 if new_args is None:
@@ -137,7 +143,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
             # Make sure the event has a structure that will be properly
             # handled by the predication
-            if ensure_handles_event(args[0], handles, args[1]):
+            if is_solution_group or ensure_handles_event(args[0], handles, args[1]):
                 yield from function_to_decorate(*args, **kwargs)
 
         predication_names = names if names is not None else [function_to_decorate.__name__]
@@ -147,9 +153,11 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
         valid_match_all = is_match_all and len(predication_names) == 1 and matches_lemma_function is not None
         assert not is_match_all or (is_match_all and valid_match_all)
 
+        is_solution_group = any(name.startswith("solution_group") for name in predication_names)
         metadata = PredicationMetadata(argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
         final_arg_types = metadata.arg_types()
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
+
         vocabulary.add_predication(metadata, function_to_decorate.__module__, function_to_decorate.__name__, predication_names, final_arg_types, final_phrase_types)
 
         return wrapper_function
