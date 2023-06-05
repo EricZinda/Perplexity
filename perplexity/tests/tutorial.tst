@@ -540,6 +540,27 @@
             "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "75d771c6-b11a-4c34-a3ee-9495aa385c07"
+        },
+        {
+            "Command": "/new examples.Example40_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "8fd63e9e-605b-45be-946e-047d5023af3f"
+        },
+        {
+            "Command": "copy \"file4.txt\" in \"\\>documents\"",
+            "Expected": "Done!",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file4.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "67a6caf5-6b4d-4ad0-bdd9-fd5054f4c71f"
+        },
+        {
+            "Command": "copy \"file5.txt\" in \"documents\"",
+            "Expected": "I cannot copy that",
+            "Tree": "proper_q(x16,[quoted(documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file5.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "1a169fd6-1915-4c2a-bf7e-9f9b0d34ebaa"
         }
     ]
 }

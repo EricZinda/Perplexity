@@ -7,7 +7,7 @@ from math import inf
 from perplexity.execution import execution_context
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
-from perplexity.tree import gather_quantifier_order, gather_predication_metadata
+from perplexity.tree import gather_quantifier_order, gather_predication_metadata, find_predication_from_introduced
 from perplexity.utilities import at_least_one_generator
 
 
@@ -127,10 +127,8 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         one_group = at_least_one_generator(group_generator)
         if one_group is not None:
             # First see if there is a solution_group handler that should be called
-            solution_group_handlers = find_solution_group_handlers(execution_context, this_sentence_force)
+            solution_group_handlers, solution_group_list = find_solution_group_handlers(execution_context, this_sentence_force, one_group, tree_info)
             if len(solution_group_handlers) > 0:
-                # Create a list since we may call more than one and the generator will be exhausted
-                solution_group_list = [solution for solution in one_group]
                 new_solution_group, has_more = solution_group_handler(solution_group_handlers, solution_group_list)
                 if new_solution_group is not None:
                     yield new_solution_group
@@ -154,22 +152,53 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                     yield True
 
 
-def find_solution_group_handlers(execution_context, this_sentence_force):
+def find_solution_group_handlers(execution_context, this_sentence_force, solution_group_generator, tree_info):
+    solution_group_list = None
+
+    # Make this lazy so that we don't exhaust the generator if we don't have a handler
+    def lazy_get_solution_list():
+        nonlocal solution_group_list
+        if solution_group_list is None:
+            # Create a list since we may call more than one and the generator will be exhausted
+            solution_group_list = [solution for solution in solution_group_generator]
+        return solution_group_list
+
     handlers = []
-    for module_function in execution_context.vocabulary.predications("solution_group", [], this_sentence_force):
+    def get_function(module_function):
         module = sys.modules[module_function[0]]
         function = getattr(module, module_function[1])
-        handlers.append(function)
+        return function
 
-    return handlers
+    index_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+    for module_function in execution_context.vocabulary.predications("solution_group_" + index_predication.name, index_predication.argument_types(), this_sentence_force):
+        # Build up an arg structure to call the predication with that
+        # has the same arguments as the normal predication but has a list for each argument that represents the solution group
+        predication_args = []
+        for _ in range(len(index_predication.args)):
+            predication_args.append([])
+
+        state_list = lazy_get_solution_list()
+        for state in state_list:
+            for arg_index in range(len(index_predication.args)):
+                if index_predication.argument_types()[arg_index] == "c" or index_predication.argument_types()[arg_index] == "h":
+                    predication_args[arg_index].append(index_predication.args[arg_index])
+                else:
+                    predication_args[arg_index].append(state.get_binding(index_predication.args[arg_index]))
+
+        handlers.append((get_function(module_function), [state_list] + predication_args))
+
+    for module_function in execution_context.vocabulary.predications("solution_group", [], this_sentence_force):
+        handlers.append((get_function(module_function), (lazy_get_solution_list(), )))
+
+    return handlers, solution_group_list
 
 
 # If there is a solution_group_handler, call it
 def solution_group_handler(solution_group_handlers, group_generator):
     created_solution_group = None
     has_more = False
-    for function in solution_group_handlers:
-        for next_solution_group in function(group_generator):
+    for function_arguments in solution_group_handlers:
+        for next_solution_group in function_arguments[0](*function_arguments[1]):
             if created_solution_group is None:
                 created_solution_group = next_solution_group
 

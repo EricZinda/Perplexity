@@ -20,6 +20,16 @@ vocabulary = system_vocabulary()
 locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
 
 
+@Predication(vocabulary, names=["solution_group__copy_v_1"])
+def fail_to_copy(state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
+    test_binding = state_list[0].get_binding("test_solution_group")
+    if test_binding.value is not None:
+        for x_what_binding in x_what_binding_list:
+            x_what_binding_value = x_what_binding.value[0]
+            if hasattr(x_what_binding_value, "name") and x_what_binding_value.name == '/documents/file5.txt':
+                yield [state_list[0].record_operations([RespondOperation("I cannot copy that")])]
+
+
 @Predication(vocabulary, names=["solution_group"])
 def solution_group(state_list):
     test_binding = state_list[0].get_binding("test_solution_group")

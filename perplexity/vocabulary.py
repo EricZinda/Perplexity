@@ -154,6 +154,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
         assert not is_match_all or (is_match_all and valid_match_all)
 
         is_solution_group = any(name.startswith("solution_group") for name in predication_names)
+
         metadata = PredicationMetadata(argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
         final_arg_types = metadata.arg_types()
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
