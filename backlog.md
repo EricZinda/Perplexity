@@ -23,7 +23,7 @@
       - If: it is a proposition and IF pron(I) and IF arguments are bound: There is something concrete they want, next determine how to deal with it
           - in the doorway: "I want a table" -> give me a table, "I want a place to sit", "I want to eat " (different want_v), I want a burger" -> "Do you want take-out?"
 
-
+- Switch the code to use the term "scope-resolved MRS" instead of "well-formed tree" or "scope-resolved tree"
 - 3 files are in a folder together -> There is more than a folder together
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
     - together requires sets of more than one be generated, and "a_q" means exactly one
