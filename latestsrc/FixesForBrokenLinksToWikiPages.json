@@ -10,6 +10,9 @@
         {"Page": "devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/devcon/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/devcon/devcon0010MRSSolver.md", "Referrer": "home/docs/devcon/devcon0010MRSSolver.md", "FileMissing": true}
       ]},
       {"Section": "MRS Conceptual", "Pages": [
+        {"Page": "ErgTop.md", "SrcDir": "main", "SrcFile": "docs/mrscon/ErgTop.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
+        {"Page": "MrsRFC.md", "SrcDir": "main", "SrcFile": "docs/mrscon/MrsRFC.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
+        {"Page": "NorsourceTop.md", "SrcDir": "main", "SrcFile": "docs/mrscon/NorsourceTop.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
         {"Page": "devhowtoConceptualFailures", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowtoConceptualFailures.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
         {"Page": "devhowtoEvents", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowtoEvents.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
         {"Page": "devhowtoPredicationContract", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowtoPredicationContract.md", "BaseReferrer": "home/docs/mrscon/devhowto0020WellFormedTree.md", "Referrer": "home/docs/mrscon/devhowto0020WellFormedTree.md", "FileMissing": true},

@@ -2,7 +2,7 @@
 > This section is designed to give application developers an *overview* of the Minimal Recursion Semantics format which is the primary artifact used by DELPH-IN to represent the meaning of a phrase. For a deeper dive into MRS, or one that has a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).
 
 
-The DELPH-IN [English Resource Grammar (ERG)](https://blog.inductorsoftware.com/docsproto/erg/ErgTop/), [via the ACE parser](http://sweaglesw.org/linguistics/ace/), converts an English phrase into a text format called the ["Minimal Recursion Semantics" (MRS)](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) format which is designed to allow software to process human language. ACE can also be used with any of the [other DELPH-IN grammars](https://blog.inductorsoftware.com/docsproto/grammars/NorsourceTop/) to convert other natural languages into the MRS format. While the examples below use English, the concepts apply across the DELPH-IN grammars.
+The DELPH-IN English Resource Grammar (ERG) converts an English phrase into a data structure called an ["Minimal Recursion Semantics Formalism" (MRS)](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) which is a technical representation of human language. The [ACE processor](http://sweaglesw.org/linguistics/ace/), among other processors, processes the grammar and the phrase to produce the MRS formalism and represent it in one of several formats, such as Simple MRS. Processors can be used with any of the other DELPH-IN grammars to convert other natural languages into the MRS format. While the examples below use English, the concepts apply across the DELPH-IN grammars.
 
 Because language is ambiguous, most phrases parse into more than one MRS document, each representing a different interpretation of the phrase. Each MRS document encodes one high-level meaning of the phrase into a list of predicate-logic-like predicates (called *predications*).
 
@@ -130,7 +130,7 @@ These labels are used to turn the flat list of predications into the set of well
 ### Predication Names
 The name of a predication, for example, `_table_n_1`, encodes important information about it:
 - The "lemma" or root word (this is the first word you see): "table"
-- Whether it was actually seen in the text (starts with `_`) or added abstractly by the system (no initial `_`)
+- Whether it was actually seen in the text (starts with `_`) or added abstractly by the grammar (no initial `_`)
 - Its part of speech. The `_n_` in `_table_n_1` means "table" is a "noun". The `_q` in `_the_q` means "the" is a "quantifier" (quantifiers are described below)
 - It may have extras at the end like `_1` to indicate which "variant" or synonym of the word it represents
 
@@ -170,7 +170,7 @@ One final point: Every variable in an MRS is introduced by exactly one predicati
 #### H (Handle) Variables, aka "Scopal Arguments"
 The semantic meaning of an MRS is ultimately represented by a *tree* (described in the next topic) and handle variables passed to predications (aka "scopal arguments") provide the mechanism to build a tree from the list of predications.
 
-Handle variables represent the "holes" where branches of the tree can be placed. To do this, handle variables are set to the `LBL:` of another predication. As described above, the MRS `LBL:` field serves as a way to "label" each predication with a unique identifier. Thus, the `LBL:` of a predication can be assigned to a handle variable in a different predication to indicate that it should be placed there. By assigning `LBL:`s to holes like that, an entire tree can be built.
+Handle variables represent the "holes" where branches of the tree can be placed. To do this, handle variables are set to the `LBL` of another predication. As described above, the MRS `LBL` field serves as a way to "label" each predication with a unique identifier. Thus, the `LBL:` of a predication can be assigned to a handle variable in a different predication to indicate that it should be placed there. By assigning `LBL:`s to holes like that, an entire tree can be built.
 
 When a tree is built and being resolved, a predication with handle arguments is expected to use those branches to do ... whatever it is supposed to do. For example, the `_the_q` has two handle arguments, `h5` and `h6` in the MRS for "The dog is small":
 
@@ -195,7 +195,7 @@ _the_q(x3,RSTR,BODY)
 
 Think of this process like a lambda function being passed to a function in a programming language like C++ or C#.  The `the_q` predication itself will be responsible for "doing something" with the two branches it is passed.  What, exactly, is specific to the predication. We'll go into this more in a future topic in the tutorial. For now, think about scopal arguments as places to put other predications which are acting like programming language "lambda functions".
 
-Because the MRS is underspecified, it usually doesn't directly list which predication to put in which scopal argument. You figure that out by the process of creating a well-formed tree.  However, if a predication has a `LBL:` that is the same handle as a scopal argument, then that part of the tree *has* been specified and is "locked in place" (i.e. there is no hole there for something else to be).
+Because the MRS is underspecified, it usually doesn't directly list which predication to put in which scopal argument. You figure that out by the process of creating a well-formed tree.  However, if a predication has a `LBL` that is the same handle as a scopal argument, then that part of the tree *has* been specified and is "locked in place" (i.e. there is no hole there for something else to be).
 
 #### X (Instance) Variables
 Instance (`x`) variables are just like normal First Order Logic variables, or like variables in popular programming languages. The types of things they can contain are "individuals", which is another name for a "thing in the world".  They hold the things the speaker is talking about.
@@ -306,7 +306,7 @@ Instance (`x`) variables can have these properties:
 - Person (`PERS`): `1`,`2`, or `3` for first-person (speaker) I/we, second-person (hearer) you, and third-person otherwise
 - Individuated (`IND`): `+` or `-` (meaning true or false). Distinguishes individuated entities introduced by count nouns such as cat or cats from non-individuated referents for mass nouns such as rice
 - Gender (`GEN`): `m` for male, `f` for female, `n` otherwise
-- `PT`: ?
+- Pronoun Type(`PT`): ?
 
 Event (`e`) variables can have these properties:
 - Tense (`TENSE`): `past` for past, `pres` for present, `fut` for future, or `untensed`
@@ -358,7 +358,7 @@ Note that, unlike non-quantifier predications, the first (`ARG0`) argument of a 
 ## Constraints
 The `HCONS` section of the MRS is used when building a well-formed tree. It puts *CONS*traints on where the *H*andles for predications can be validly placed and still be a legal interpretation of the phrase. The only constraints used in "modern" MRS are `qeq` constraints so that's all you'll see in this section.  
 
-A `qeq` constraint always relates an `h` argument of one predication, called a "hole", to the handle (`LBL:`) of another predication. It states that the handle must be a direct or eventual child of the hole in the tree and, if not direct, the only things between the hole and the handle can be quantifiers.  Said a different way: 
+A `qeq` constraint always relates an `h` argument of one predication, called a "hole", to the handle (`LBL`) of another predication. It states that the handle must be a direct or eventual child of the hole in the tree and, if not direct, the only things between the hole and the handle can be quantifiers.  Said a different way: 
 
 > A qeq constraint of "X qeq Y" says that the direct path from X to Y must only contain quantifiers (except for the final predication Y).
 
@@ -380,6 +380,8 @@ RELS: <
 >
 HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > 
 ```
+The MRS will represent the syntactic head of the phrase with one or more predications. Index will point to the one that could (in principle) be used to further compose the phrase with other phrases [See HPSG Backgrounder]. In general, the index predication can be used to determine what the phrase is “about”, or what the phrase is “built around”.
+
 The `INDEX` part of the MRS indicates the variable introduced by the predication (or predications if there is a conjunction) that is the "main point of the phrase". It is "the thing being done", which is usually the main verb.  In the example above `INDEX: e2` is referring to the variable introduced by `_go_v_1__ex`.  This indicates that the verb `go` is the "main point of the phrase". This is called the "syntactic head" in linguistics.
 
 Note that the `INDEX` does not always point at a verb. In phrases that just state that something "is" something else, such is: "the flower is blue", "is" is not included. "blue" acts like the verb and is the `INDEX`:
@@ -407,4 +409,4 @@ The next topic walks through the rules of creating "well-formed MRS trees", and 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-06-02 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}
+Last update: 2023-06-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}

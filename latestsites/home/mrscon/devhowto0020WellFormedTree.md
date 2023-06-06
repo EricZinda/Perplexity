@@ -66,7 +66,7 @@ The MRS is a flat list of predications so that it avoids building a single tree 
 This interpretation is what we need in order to eventually "solve" the phrase for the variables it contains. This topic describes how to build that tree.
 
 ## Holes and Constraints
-"Holes" are `h` arguments in a predication that refer to a [predicate label](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) that is *not* defined. In the above MRS, `h0` (the `TOP:`), `h11`, `h12`, `h5`, and `h6` are all "holes" since none of the predicates use those names as their `LBL:`.
+"Holes" are `h` arguments in a predication that refer to a [predicate label](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) that is *not* defined. In the above MRS, `h0` (the `TOP:`), `h11`, `h12`, `h5`, and `h6` are all "holes" since none of the predicates use those names as their `LBL`.
 
 The `HCONS` section of the MRS puts *CONS*traints on which placement of *H*andles in holes is valid.
 
@@ -236,4 +236,4 @@ def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, node
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
 
-Last update: 2023-06-02 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}
+Last update: 2023-06-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}
