@@ -81,7 +81,7 @@ def this_q_dem(state, x_variable_binding, h_rstr, h_body):
     # which is *not* the object in the binding. So: we need contained_items()
     # to report an error that is not variable related, so we pass it None
     contained_binding = VariableBinding(None, current_directory)
-    contained_items = set(current_directory.contained_items(contained_binding))
+    contained_items = set(current_directory.contained_items(contained_binding.variable))
 
     def in_scope(state, x_binding):
         def bound_variable(value):

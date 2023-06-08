@@ -321,7 +321,11 @@ class VariableStats(object):
         else:
             prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
 
-        if prev_unique_value_count is not None and prev_unique_value_count > 1:
+        only_collective = prev_unique_value_count is None or prev_unique_value_count == 1
+        if not only_collective:
+            # Collective fails from here on out because prev_unique_value_count > 1
+            self.collective_state = CriteriaResult.fail_one
+
             # Cumulative
             if self.cumulative_state != CriteriaResult.fail_one:
                 self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
@@ -336,36 +340,21 @@ class VariableStats(object):
                     if self.distributive_state == CriteriaResult.fail_one:
                         break
 
-        if prev_unique_value_count is None or prev_unique_value_count == 1:
+        else:
             if self.collective_state != CriteriaResult.fail_one:
                 # Collective
                 self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
 
-        else:
-            self.collective_state = CriteriaResult.fail_one
-
         # Now figure out what to return
-        if self.collective_state == CriteriaResult.fail_all or \
-                self.distributive_state == CriteriaResult.fail_all or \
-                self.cumulative_state == CriteriaResult.fail_all:
-            self.current_state = CriteriaResult.fail_all
+        self.current_state = None
+        for test_state in [CriteriaResult.fail_all, CriteriaResult.meets_pending_global, CriteriaResult.meets, CriteriaResult.contender]:
+            if (only_collective and self.collective_state == test_state) or \
+                    (not only_collective and (self.distributive_state == test_state or \
+                    self.cumulative_state == test_state)):
+                self.current_state = test_state
+                break
 
-        elif self.collective_state == CriteriaResult.meets_pending_global or \
-                self.distributive_state == CriteriaResult.meets_pending_global or \
-                self.cumulative_state == CriteriaResult.meets_pending_global:
-            self.current_state = CriteriaResult.meets_pending_global
-
-        elif self.collective_state == CriteriaResult.meets or \
-                self.distributive_state == CriteriaResult.meets or \
-                self.cumulative_state == CriteriaResult.meets:
-            self.current_state = CriteriaResult.meets
-
-        elif self.collective_state == CriteriaResult.contender or \
-                self.distributive_state == CriteriaResult.contender or \
-                self.cumulative_state == CriteriaResult.contender:
-            self.current_state = CriteriaResult.contender
-
-        else:
+        if self.current_state is None:
             self.current_state = CriteriaResult.fail_one
 
         return new_individuals, self.current_state

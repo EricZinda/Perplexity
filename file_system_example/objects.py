@@ -249,7 +249,10 @@ class FileSystemMock(FileSystem):
                     yield item[1]
 
         else:
-            raise MessageException("notFound", [variable_data.name])
+            if variable_data is None:
+                raise MessageException("nothingHasLocation", [container])
+            else:
+                raise MessageException("notFound", [variable_data.name])
 
     # Will create a File object for a nonexistent path
     def item_from_path(self, path, is_file=True):

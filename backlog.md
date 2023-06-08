@@ -1,4 +1,5 @@
-- Fix the performance problem in combinatorics for will
+
+
 - Need to be able to run code on the solution group
   - not() is going to require special processing
   - 
@@ -67,6 +68,8 @@
   - files are not large
   - which files are not in 2 folders
 
+- Bug: It looks like collective only checks for one value???
+    - whole_group_unique_individuals.update(binding_value) never adds a set of individuals to the set
 - Build a backend to use for ESL Scenarios
 - make fallback generation more robust
   - at least getting form of words right
