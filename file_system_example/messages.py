@@ -41,6 +41,9 @@ def generate_message(tree_info, error_term):
     elif error_constant == "notFound":
         return s("{arg1} was not found", tree_info)
 
+    elif error_constant == "nothingHasLocation":
+        return s("Nothing is in {*arg1}", tree_info)
+
     elif error_constant == "thingHasNoLocation":
         return s("{arg1} {'is':<arg1} not in {arg2}", tree_info)
 
