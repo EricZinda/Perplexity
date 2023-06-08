@@ -782,6 +782,25 @@ def Example40():
         print()
 
 
+
+def Example41_reset():
+    state = FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file3.txt", {"size": 10000}),
+                                           (True, "/documents/file4.txt", {"size": 10000000}),
+                                           (True, "/documents/file5.txt", {"size": 10000})],
+                                           "/Desktop"))
+
+    return state.set_x("test_solution_group", ("failAll", ))
+
+
+def Example41():
+    user_interface = UserInterface(Example41_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
+
+    while True:
+        user_interface.interact_once()
+        print()
+
+
 def build_solutions(spec):
     solutions = []
     for item in spec:
@@ -984,7 +1003,7 @@ if __name__ == '__main__':
     # Example37()
     # Example38()
     # Example39()
-    Example40()
+    Example41()
     #
     # state_test()
 

@@ -561,6 +561,20 @@
             "Tree": "proper_q(x16,[quoted(documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file5.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "1a169fd6-1915-4c2a-bf7e-9f9b0d34ebaa"
+        },
+        {
+            "Command": "/new examples.Example41_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "695e8ec0-08b8-4811-addb-a566fc711845"
+        },
+        {
+            "Command": "a file is in this folder",
+            "Expected": "Could you be more specific?",
+            "Tree": "_this_q_dem(x9,_folder_n_of(x9,i14),_a_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "5902e55a-2d11-44bf-b86d-6c0af4a16e83"
         }
     ]
 }

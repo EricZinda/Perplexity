@@ -11,6 +11,109 @@ from perplexity.tree import gather_quantifier_order, gather_predication_metadata
 from perplexity.utilities import at_least_one_generator
 
 
+# Yields solutions in a single solution group
+# asks its solution_group_generator to give it more than the initial group
+# when necessary
+class SingleGroupGenerator(object):
+    def __init__(self, group_id, solution_group_generator, group_list):
+        self.group_id = group_id
+        self.solution_group_generator = solution_group_generator
+        self.group_list = group_list
+        self.last_yielded_index = -1
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.last_yielded_index == len(self.group_list) - 1:
+            # If no variable has a between(N, inf) constraint,
+            # Just stop now and the caller will get a subset solution group for the answer they care about
+            # Note that it may not be *minimal*, might be a subset, and might be maximal.
+            # If it does have an between(N, inf) constraint, return them all
+            if not self.solution_group_generator.variable_has_inf_max:
+                raise StopIteration
+
+            # See if we can get more items
+            elif not self.solution_group_generator.next_solution_in_group(self.group_id):
+                raise StopIteration
+
+        self.last_yielded_index += 1
+        return self.group_list[self.last_yielded_index]
+
+
+# yields a generator that yields solutions in a minimal solution group as quickly as it is found
+# but will continue returning solutions until it is maximal if requested. The idea is to make it easy
+# to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)
+# but allow other types of phrases to get all answers in a group if needed
+#
+# When a group is yielded from all_plural_groups_stream(), it has an id which is a "lineage"
+# If that lineage is just one group away from an existing group, it should be yielded from that group
+# Otherwise it should create a new group
+class SolutionGroupGenerator(object):
+    def __init__(self, all_plural_groups_stream, variable_has_inf_max):
+        self.all_plural_groups_stream = all_plural_groups_stream
+        self.variable_has_inf_max = variable_has_inf_max
+        self.solution_groups = {}
+        self.current_solution_group_index = -1
+        self.complete = False
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.current_solution_group_index += 1
+        if self.current_solution_group_index > len(self.solution_groups) - 1:
+            # Caller is asking for the next group and we don't have one yet
+            if not self.next_solution_in_group(""):
+                self.complete = True
+                raise StopIteration
+
+        return list(self.solution_groups.values())[self.current_solution_group_index]
+
+    # Returns true if there is another solution found for group.id == current_id
+    # If current_id == "" then returns true if there is a new group created
+    def next_solution_in_group(self, current_id):
+        while True:
+            try:
+                next_group, next_id = next(self.all_plural_groups_stream)
+
+            except StopIteration:
+                self.complete = True
+                return False
+
+            colon_index = next_id.rfind(":")
+            if colon_index == -1:
+                parent_id = ""
+            else:
+                parent_id = next_id[:colon_index]
+
+            if parent_id in self.solution_groups:
+                existing_solution_group_id = parent_id
+            elif next_id in self.solution_groups:
+                existing_solution_group_id = next_id
+            else:
+                existing_solution_group_id = ""
+
+            if existing_solution_group_id == "":
+                self.solution_groups[next_id] = SingleGroupGenerator(next_id, self, next_group)
+
+            else:
+                existing_solution_group = self.solution_groups[existing_solution_group_id]
+                existing_solution_group.group_list = next_group
+                existing_solution_group.group_id = next_id
+
+            if existing_solution_group_id == current_id:
+                return True
+
+    def has_multiple_groups(self):
+        if len(self.solution_groups) > 1:
+            return True
+        elif self.complete:
+            return False
+        else:
+            return self.next_solution_in_group("")
+
+
 # Create a generator that yields solutions in a minimal solution group as quickly as it is found
 # but will continue returning solutions until it is maximal if requested. The idea is to make it easy
 # to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)
@@ -109,6 +212,10 @@ class SingleSolutionGroupGenerator(object):
 #
 # A second solution group will be returned, if it exists, but will be bogus. It is just there so that the caller can see there is one. This is
 # to reduce the cost of generating the answer
+#
+# Allows the developer to choose which solution group to return
+#   if they return [], it means "skip this solution group" and we'll try the next one
+# yields an iterator that returns solution groups
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
 def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info):
     solutions = at_least_one_generator(solutions_orig)
@@ -123,94 +230,100 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
         groups_stream = all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
                                                  initial_stats_group, has_global_constraint, variable_has_inf_max)
-        group_generator = SingleSolutionGroupGenerator(groups_stream, variable_has_inf_max)
-        one_group = at_least_one_generator(group_generator)
-        if one_group is not None:
+        group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
+        at_least_one_group = at_least_one_generator(group_generator)
+        if at_least_one_group is not None:
             # First see if there is a solution_group handler that should be called
-            solution_group_handlers, solution_group_list = find_solution_group_handlers(execution_context, this_sentence_force, one_group, tree_info)
-            if len(solution_group_handlers) > 0:
-                new_solution_group, has_more = solution_group_handler(solution_group_handlers, solution_group_list)
-                if new_solution_group is not None:
-                    yield new_solution_group
-                    if has_more:
+            handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
+            for next_group in at_least_one_group:
+                created_solution_group, has_more, group_list = run_handlers(handlers, next_group, index_predication)
+                if created_solution_group is None:
+                    # No solution group handlers, or none handled it or failed: just do the default behavior
+                    yield group_list
+
+                    # If there are multiple solution groups, we need to add one more (fake) group
+                    # and yield it so that the caller thinks there are multiple answers and will give a message
+                    # to the user. The answers aren't shown so it can be anything
+                    if group_generator.has_multiple_groups():
                         yield True
+
                     return
 
-                # No handlers dealt with it, do the default behavior
-                yield solution_group_list
-                if group_generator.has_multiple_groups():
-                    yield True
+                elif isinstance(created_solution_group, list) and len(created_solution_group) == 0:
+                    # Handler said to skip this group
+                    continue
+
+                else:
+                    # Yield the group the handler generated
+                    yield created_solution_group
+                    if has_more:
+                        yield True
+
+                    return
+
+
+def run_handlers(handlers, group, index_predication):
+    created_solution_group = None
+    has_more = False
+    if len(handlers) > 0:
+        state_list = list(group)
+        for is_predication_handler in handlers:
+            handler_function = is_predication_handler[1]
+            if is_predication_handler[0]:
+                # This is a predication-style solution group handler
+                # Build up an arg structure to call the predication with that
+                # has the same arguments as the normal predication but has a list for each argument that represents the solution group
+                handler_args = []
+                for _ in range(len(index_predication.args)):
+                    handler_args.append([])
+
+                for state in state_list:
+                    for arg_index in range(len(index_predication.args)):
+                        if index_predication.argument_types()[arg_index] == "c" or index_predication.argument_types()[arg_index] == "h":
+                            handler_args[arg_index].append(index_predication.args[arg_index])
+                        else:
+                            handler_args[arg_index].append(state.get_binding(index_predication.args[arg_index]))
+                handler_args = [state_list] + handler_args
 
             else:
-                # No solution group handlers, just do the default behavior
-                yield one_group
+                handler_args = (state_list,)
 
-                # If there are multiple solution groups, we need to add one more (fake) group
-                # and yield it so that the caller thinks there are multiple answers and will give a message
-                # to the user. The answers aren't shown so it can be anything
-                if group_generator.has_multiple_groups():
-                    yield True
+            for next_solution_group in handler_function(*handler_args):
+                if created_solution_group is None:
+                    created_solution_group = next_solution_group
+                    if len(created_solution_group) == 0:
+                        # handler said to fail
+                        break
+                else:
+                    has_more = True
+                    break
 
+            # First solution_group handler that yields, wins
+            if created_solution_group:
+                break
 
-def find_solution_group_handlers(execution_context, this_sentence_force, solution_group_generator, tree_info):
-    solution_group_list = None
+        return created_solution_group, has_more, state_list
 
-    # Make this lazy so that we don't exhaust the generator if we don't have a handler
-    def lazy_get_solution_list():
-        nonlocal solution_group_list
-        if solution_group_list is None:
-            # Create a list since we may call more than one and the generator will be exhausted
-            solution_group_list = [solution for solution in solution_group_generator]
-        return solution_group_list
+    else:
+        return None, None, group
 
-    handlers = []
+# returns predication_handlers, global_handlers
+# with just an array of functions in each
+def find_solution_group_handlers(execution_context, this_sentence_force, tree_info):
     def get_function(module_function):
         module = sys.modules[module_function[0]]
         function = getattr(module, module_function[1])
         return function
 
+    handlers = []
     index_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     for module_function in execution_context.vocabulary.predications("solution_group_" + index_predication.name, index_predication.argument_types(), this_sentence_force):
-        # Build up an arg structure to call the predication with that
-        # has the same arguments as the normal predication but has a list for each argument that represents the solution group
-        predication_args = []
-        for _ in range(len(index_predication.args)):
-            predication_args.append([])
-
-        state_list = lazy_get_solution_list()
-        for state in state_list:
-            for arg_index in range(len(index_predication.args)):
-                if index_predication.argument_types()[arg_index] == "c" or index_predication.argument_types()[arg_index] == "h":
-                    predication_args[arg_index].append(index_predication.args[arg_index])
-                else:
-                    predication_args[arg_index].append(state.get_binding(index_predication.args[arg_index]))
-
-        handlers.append((get_function(module_function), [state_list] + predication_args))
+        handlers.append([True, get_function(module_function)])
 
     for module_function in execution_context.vocabulary.predications("solution_group", [], this_sentence_force):
-        handlers.append((get_function(module_function), (lazy_get_solution_list(), )))
+        handlers.append([False, get_function(module_function)])
 
-    return handlers, solution_group_list
-
-
-# If there is a solution_group_handler, call it
-def solution_group_handler(solution_group_handlers, group_generator):
-    created_solution_group = None
-    has_more = False
-    for function_arguments in solution_group_handlers:
-        for next_solution_group in function_arguments[0](*function_arguments[1]):
-            if created_solution_group is None:
-                created_solution_group = next_solution_group
-
-            else:
-                has_more = True
-                break
-
-        # First solution_group handler that yields, wins
-        if created_solution_group:
-            break
-
-    return created_solution_group, has_more
+    return handlers, index_predication
 
 
 # Return the infos in the order they will be executed in

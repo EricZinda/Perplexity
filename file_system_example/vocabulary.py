@@ -20,10 +20,17 @@ vocabulary = system_vocabulary()
 locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
 
 
+@Predication(vocabulary, names=["solution_group__in_p_loc"])
+def in_p_loc_fail(state_list, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
+    test_binding = state_list[0].get_binding("test_solution_group")
+    if test_binding.value is not None and test_binding.value[0] == "failAll":
+        report_error(["beMoreSpecific"], force=True)
+        yield []
+
 @Predication(vocabulary, names=["solution_group__copy_v_1"])
 def fail_to_copy(state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
     test_binding = state_list[0].get_binding("test_solution_group")
-    if test_binding.value is not None:
+    if test_binding.value is not None and test_binding.value[0] == "fakeValues":
         for x_what_binding in x_what_binding_list:
             x_what_binding_value = x_what_binding.value[0]
             if hasattr(x_what_binding_value, "name") and x_what_binding_value.name == '/documents/file5.txt':
@@ -362,6 +369,11 @@ def default_locative_preposition_norm(state, e_introduced_binding, x_actor_bindi
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc_norm(state, e_introduced_binding, x_actor_binding, x_location_binding):
     yield from default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding)
+
+
+# @Predication(vocabulary, names=["solution_group__in_p_loc"])
+# def in_p_loc_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
+#     yield []
 
 
 @Predication(vocabulary, names=["_in_p_loc"])

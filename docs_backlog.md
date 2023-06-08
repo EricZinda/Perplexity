@@ -20,4 +20,5 @@
   New: Thinking of MRS variables as variables in a math equation can help: The MRS is effectively defining a formula with variables. One way to use the formula is to find the set of all variable values that make the MRS true in a given world. Those values, combined with the predications they are used in, provide a valuable tool for getting at the meaning of the original phrase.
 
 - I haven’t read the whole thing, but the first thing that stood out was the use of “format” in the “MRS Format”. It is not a format, but a formalism; an abstract metalanguage for describing semantic structures and principles for their well-formedness. What I would call a “format” is one of the various serializations of a representation, such as SimpleMRS, Indexed MRS, MRS XML, etc.
-- 
+- Ahh. OK, I think I get my confusion now, there are really two “linked structures” going on in a scope-resolved MRS: one which is (as Emily proposes) the “scope tree of a scope-resolved MRS”, and the other is a graph, which is there for both a scope resolved and an un-scope-resolved MRS (maybe called a “variable graph”?). Is there an official term for that graph that I should use?
+  - https://delphinqa.ling.washington.edu/t/new-dev-docs-for-understanding-the-mrs-format/915/19

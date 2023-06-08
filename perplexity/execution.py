@@ -33,7 +33,9 @@ class ExecutionContext(object):
         self.old_context_token = set_execution_context(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        reset_execution_context(self.old_context_token)
+        if self.old_context_token is not None:
+            reset_execution_context(self.old_context_token)
+            self.old_context_token = None
 
     def solve_mrs_tree(self, state, tree_info):
         with self:

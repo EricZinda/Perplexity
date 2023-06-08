@@ -1,3 +1,4 @@
+- Fix the performance problem in combinatorics for will
 - Need to be able to run code on the solution group
   - not() is going to require special processing
   - 
@@ -12,6 +13,11 @@
       - requires "not" to run in phase 2
   - each:
     - the folders have 1 file each
+- 
+- Dealing with all the duplication of items and combinatorics seems like a waste. Seems like there must be a better way that involves symbolics. For example
+  - We want a steak
+  - If there are 10 steaks, then want_v_1 will get called 20 times (10 for each person). Whereas if "steak" was symbolic it would only get called twice
+
 
 - NEED TO UPDATE DOCS FOR VERBS TO MAKE ALL THIS CLEAR:
   - "I want ham" is a proposition that we want to interpret as a command
