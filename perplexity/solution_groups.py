@@ -340,12 +340,14 @@ def declared_determiner_infos(execution_context, state):
                 yield determiner
 
             # Then get the quantifier
-            yield quantifier_from_binding(state, binding)
+            quantifier_determiner = quantifier_from_binding(state, binding)
+            if quantifier_determiner is not None:
+                yield quantifier_determiner
 
 
 def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_question_variable):
-    min = 0
-    max = float(inf)
+    min_size = 0
+    max_size = float(inf)
     global_constraint = None
     exactly_constraint = None
     all_rstr_constraint = None
@@ -363,18 +365,18 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
 
         else:
             # Constraints with no global criteria just get merged to most restrictive
-            if constraint.min_size > min:
-                min = constraint.min_size
+            if constraint.min_size > min_size:
+                min_size = constraint.min_size
                 predication = constraint.predication
 
-            if constraint.max_size < max:
-                max = constraint.max_size
+            if constraint.max_size < max_size:
+                max_size = constraint.max_size
                 predication = constraint.predication
 
     if exactly_constraint is not None:
-        assert exactly_constraint.min_size >= min and exactly_constraint.max_size <= max
-        min = exactly_constraint.min_size
-        max = exactly_constraint.max_size
+        assert exactly_constraint.min_size >= min_size and exactly_constraint.max_size <= max_size
+        min_size = exactly_constraint.min_size
+        max_size = exactly_constraint.max_size
         global_constraint = GlobalCriteria.exactly
         predication = exactly_constraint.predication
 
@@ -393,7 +395,7 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
     if predication is None:
         predication = variable_info_list[0].predication
 
-    return [VariableCriteria(predication, variable_info_list[0].variable_name, min, max, global_criteria=global_constraint)]
+    return [VariableCriteria(predication, variable_info_list[0].variable_name, min_size, max_size, global_criteria=global_constraint)]
 
 
 def reduce_determiner_infos(determiner_info_list_orig, this_sentence_force, wh_question_variable):

@@ -1,4 +1,6 @@
 import enum
+
+from perplexity.execution import report_error
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
 from perplexity.tree import find_quantifier_from_variable
 from perplexity.utilities import is_plural_from_tree_info, parse_predication_name, is_plural
@@ -262,6 +264,11 @@ class StatsGroup(object):
 
         return new_group
 
+    # Return the index (or None) for the neg() predication that
+    # negated this variable
+    def negated_index_for_variable(self, negated_variable_name):
+        return None
+
 
 class VariableStats(object):
     def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None):
@@ -378,7 +385,6 @@ class VariableStats(object):
 #       collective if len(prev_unique_values) == 1 and len(unique_values) meets criteria
 #       distributive if len(prev_unique_values) > 1 and for each prev_unique_value: len(unique_values) meets criteria
 #       cumulative if len(prev_unique_values) > 1 and len(unique_values) meets criteria
-#
 def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new_solution):
     current_set_state = CriteriaResult.meets
     merge = True
@@ -386,11 +392,47 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         # Get the existing statistics for the variable at this index
         # and the criteria for the variable as well
         variable_stats = new_set_stats_group.variable_stats[index]
-        criteria = var_criteria[index]
 
-        # See what the CriteriaResult is for the whole solution group plus the new solution
-        # but only for this particular variable
-        new_individuals, state = variable_stats.add_solution(execution_context, criteria, new_solution)
+        state = None
+        negated_predications_binding = new_solution.get_binding("negated_predications")
+        if negated_predications_binding.value is not None:
+            # There are negated predications, see if this variable is scoped by one of them
+            negated_index = None
+            scopes_all = False
+            for negated_predication_item in negated_predications_binding.value.items():
+                if variable_stats.variable_name in negated_predication_item[1].scoped_variables:
+                    negated_index = negated_predication_item[0]
+                    scopes_all = negated_predication_item[1].scopes_all
+                    break
+
+            if negated_index is not None:
+                # This variable is under a neg() predication, see if it was a negative success
+                negated_binding = new_solution.get_binding("negated_successes")
+                if negated_binding.value is not None:
+                    # This variable is negated
+                    if negated_index in negated_binding.value:
+                        # This was a negative success: the tree is false, so it is true
+                        # If all variables are scoped by this neg()
+                        # then it is guaranteed to be a success since neg() applies to the entire tree
+                        if scopes_all:
+                            state = CriteriaResult.meets
+                        else:
+                            state = CriteriaResult.contender
+                        # TODO: should new_individuals be getting updated?
+                        new_individuals = None
+
+                if negated_binding.value is None or negated_index not in negated_binding.value:
+                    # This is a negative failure (i.e. the tree is true, so it is false)
+                    state = CriteriaResult.fail_one
+                    # Because we are failing due to negation, it is OK to force that as the real error
+                    report_error(["notClause"], force=True)
+
+        if state is None:
+            criteria = var_criteria[index]
+
+            # See what the CriteriaResult is for the whole solution group plus the new solution
+            # but only for this particular variable
+            new_individuals, state = variable_stats.add_solution(execution_context, criteria, new_solution)
 
         # Decide the new state of the entire solution group, so far, based on the previous variable
         # state and the new state
@@ -421,6 +463,13 @@ def check_only_global_criteria_all(execution_context, var_criteria, new_solution
             False
 
     return True
+
+
+class NegatedPredication(object):
+    def __init__(self, predication, scoped_variables, scopes_all):
+        self.predication = predication
+        self.scoped_variables = scoped_variables
+        self.scopes_all = scopes_all
 
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained

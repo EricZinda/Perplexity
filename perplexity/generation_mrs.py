@@ -187,10 +187,26 @@ def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, 
         # Get rid of any other properties in it
         new_variables_values[mrs.index] = {"SF": "prop"}
         new_mrs = MRS(top=mrs.top, index=mrs.index, rels=new_eps, hcons=new_hcons, variables=new_variables_values)
-        assert has_complete_intrinsic_variables(new_mrs)
-        assert has_unique_intrinsic_variables(new_mrs)
-        assert has_intrinsic_variable_property(new_mrs)
-        assert plausibly_scopes(new_mrs)
+        if not has_complete_intrinsic_variables(new_mrs):
+            logger.debug(f"Nothing could be generated because not has_complete_intrinsic_variables() for: {new_mrs}")
+            can_generate_fragment = False
+            return
+
+        if not has_unique_intrinsic_variables(new_mrs):
+            logger.debug(f"Nothing could be generated because not has_unique_intrinsic_variables() for: {new_mrs}")
+            can_generate_fragment = False
+            return
+
+        if not has_intrinsic_variable_property(new_mrs):
+            logger.debug(f"Nothing could be generated because not has_intrinsic_variable_property() for: {new_mrs}")
+            can_generate_fragment = False
+            return
+
+        if not plausibly_scopes(new_mrs):
+            logger.debug(f"Nothing could be generated because not plausibly_scopes() for: {new_mrs}")
+            can_generate_fragment = False
+            return
+
         return new_mrs
 
 

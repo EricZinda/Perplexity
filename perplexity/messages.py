@@ -150,6 +150,9 @@ def generate_message(tree_info, error_term):
     elif error_constant == "notTrueForAll":
         return s("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
+    elif error_constant == "notClause":
+        return s("That isn't true")
+
     elif error_constant == "tooManyItemsTogether":
         return "I don't understand using terms in a way that means 'together' in that sentence"
 

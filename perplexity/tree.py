@@ -148,12 +148,15 @@ class TreePredication(object):
         self.arg_types.append(self.type_from_argument(name, value))
 
     def x_args(self):
-        x_args = []
-        for arg_index in range(0, len(self.args)):
-            if self.arg_types[arg_index] == "x":
-                x_args.append(self.args[arg_index])
+        return self.args_with_types(["x"])
 
-        return x_args
+    def args_with_types(self, types):
+        found_args = []
+        for arg_index in range(0, len(self.args)):
+            if self.arg_types[arg_index] in types:
+                found_args.append(self.args[arg_index])
+
+        return found_args
 
     def scopal_arg_indices(self):
         for arg_index in range(0, len(self.args)):
@@ -417,9 +420,9 @@ def is_this_last_fw_seq(state):
 # TODO: Change this to the better approach for checking for attributively used adjectives
 # As per this thread: https://delphinqa.ling.washington.edu/t/converting-mrs-output-to-a-logical-form/413/29
 def used_predicatively(state):
-    this_tree = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
-    return this_predication.introduced_variable() == this_tree["Index"]
+    tree_info = state.get_binding("tree").value[0]
+    this_predication = predication_from_index(tree_info, perplexity.execution.execution_context().current_predication_index())
+    return not predication_in_conjunction(tree_info, this_predication.index)
 
 
 def is_last_fw_seq(tree, fw_seq_predication):
@@ -501,6 +504,33 @@ def gather_quantifier_order(tree_info):
     quantifier_order = []
     walk_tree_predications_until(tree_info["Tree"], gather_metadata)
     return quantifier_order
+
+
+def gather_scoped_variables_from_tree_at_index(tree, start_index):
+    def gather_scoped_variables(predication):
+        nonlocal scoped_variables, unscoped_variables
+        predication_data = parse_predication_name(predication.name)
+        if predication_data["Pos"] == "q":
+            variable_kind = scoped_variables if predication.index >= start_index else unscoped_variables
+            arg_name = predication.args[0]
+            if arg_name not in variable_kind:
+                variable_kind[arg_name] = None
+
+    scoped_variables = {}
+    unscoped_variables = {}
+    walk_tree_predications_until(tree, gather_scoped_variables)
+    return scoped_variables, unscoped_variables
+
+
+def gather_referenced_x_variables_from_tree(tree):
+    def gather_referenced_variables(predication):
+        nonlocal referenced_x_variables
+        for arg_name in predication.x_args():
+            referenced_x_variables.add(arg_name)
+
+    referenced_x_variables = set()
+    walk_tree_predications_until(tree, gather_referenced_variables)
+    return list(referenced_x_variables)
 
 
 # Gather the metadata that a developer has decorated a predication with
@@ -598,6 +628,21 @@ def find_predications_with_arg_types(term, predication_name, arg_filter):
     # predication_name
     walk_tree_predications_until(term, match_predication_name)
     return found_predications
+
+
+def predication_in_conjunction(tree_info, index):
+    def stop_at_index(predication):
+        nonlocal index
+
+        for arg in predication.args_with_types("h"):
+            if isinstance(arg, list):
+                for conjunction_predication in arg:
+                    if conjunction_predication.index == index:
+                        return True
+
+    in_conjunction = walk_tree_predications_until(tree_info["Tree"], stop_at_index)
+    return in_conjunction is True
+
 
 
 # Return the predication at a particular index
