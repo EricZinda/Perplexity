@@ -2,15 +2,75 @@
 - Need to be able to run code on the solution group
   - not() is going to require special processing
   - 
+- Implement negative
+  - MRSIndex 1, TreeIndex: 1: Example29_reset: files are not large-> that is true (wrong)
+                  ┌────── _file_n_of(x3,i8)
+      udef_q(x3,RSTR,BODY)         ┌─ _large_a_1(e11,x3)
+                       └─ neg(e2,ARG1)
+  
+  - (fixed) Make "files are not very large" work
+    - The problem is that solution groups only ever end up as contenders since a criteria never runs 
+      - since neg is at the front and all variables are scope *any* records that succeed are a success
+  - (fixed) Make ""which files in this folder are not large" work for Example28_reset
+  - (fixed) /runparse 0, 1 --> which files are not large? -> That isn't true
+    - 
+  - Give a better error for: "which files in this folder are not large" -> That isn't true
+  - which() needs to take wide scope
+    - Add this to the powerpoint:
+      - Calculating a truth value does not mean assigning values to variables. In some sentences, it is possible to do this, e.g. “Some rock is blue” is true if we can find x such that x is a rock and x is blue (in logical terminology, such an x is a “witness”). However, for a sentence like “Every student speaks two languages”, the languages vary according to the student, and so there is no way to represent the semantics merely in terms of a set of students and a set of languages.
+    - Fix the scope resolved trees docs?
+
+    - requires "not" to run in phase 2?
+    - files are not large:
+    - which files are not in 2 folders?
+      - first run as "files are in folders"
+      - Option 1:
+        - then run all the constraints under neg() as not()
+          - not(constraint(2,2)) == constraint(3, 0) or constraint(0,0)
+          - All constraints under a neg() should pay attention to neg()
+          - Won't return a file that isn't in any folder
+      - Option 2:
+        - Assume the job of everything under neg() is to simply return True or false
+        - Run everything under neg() as pass 1 and pass 2
+        - Everything outside of neg() gets every state that succeeded in a solution group?
+      - Option 3:
+        - Treat neg() tree as a black box that simply returns true or false
+        - Run the outer tree in phase 1 using the black box
+      - (this one) Option 4:
+        - Issue: if neg() is at the beginning, how do plurals get counted?
+          - The only criteria will be the plural/singular one since nothing runs
+          - Answer? "Which" should always take wide scope? and then we will always have one quantifier to process
+        - Any neg() has to remember all the states that passed through it and failed in its ARG1
+        - Anything that fails in pass 1 for neg() is definitely True, this can be done in the predication implementation directly
+          - This is how cases with no solutions are handled
+          - The part of the tree that has phase 1 successes by neg() need to be marked so that they are not included in phase 2 criteria testing at that point
+            - Maybe neg() marks the variables it scopes over and phase 2 knows to handle those specially
+          - Design: 
+            - 
+            - There are two cases here:
+              - Case 1: neg() has scope over unquantified predications like "large_a_1()"
+                - In this case it really just has to reverse the truth of its ARG1 since it won't be affecting phase 2
+              - Case 2: neg() has scope over quantified predications
+                - neg() marks the variables it scopes over in a special event variable
+                  - It records that the solution is a phase 1 negative success by putting something in state that says its index and that it was a negative success
+                    - something like {"Index": 2, "NegVariables": ['x2', 'x4']}
+                  - Phase 2 iterates through all the criteria and if it gets to one where the variable is in a negative group
+                    - it checks to see if this is a negative success for the index that represents that group
+                    - if so, it succeeds and skips the rest
+        - If there are solutions neg() needs to somehow say where in the tree False means True
+          - In pass 2 if something fails it is *also* on the list
+        - Implementation:
+          - neg() has scope over a certain set of variables
+            - If any in that group fail, before it would have just failed, with neg() it should succeed but also stop processing
+              - Then at the very end, any neg that was a success is now a fail
+  - No files ...
+  - files are not large
+  - which files are not in 2 folders
+
 - Build a backend to use for ESL Scenarios
 - make fallback generation more robust
   - at least getting form of words right
 - Test plurals:
-  - Implement negative
-    - No files ...
-    - files are not large
-    - which files are not in 2 folders
-      - requires "not" to run in phase 2
   - each:
     - the folders have 1 file each
 - 
