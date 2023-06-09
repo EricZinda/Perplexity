@@ -193,7 +193,8 @@ def neg(state, e_introduced_binding, h_scopal):
     scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], execution_context().current_predication_index())
 
     # TODO: For now, refuse to run anything that has a quantifier under it so that we don't have to
-    # run numeric criteria on the "not" clause
+    # run numeric criteria on the "not" clause. So that a phrase like
+    # "which files not in this folder are not large?" would work
     if len(scoped_variables) > 0:
         report_error(["notClause"], force=True)
         return
