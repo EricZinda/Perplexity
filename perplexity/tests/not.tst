@@ -85,6 +85,20 @@
             "Tree": "_which_q(x3,_this_q_dem(x10,_folder_n_of(x10,i15),[_file_n_of(x3,i8), _in_p_loc(e9,x3,x10)]),neg(e16,_large_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "f048ade0-0f33-4181-bc5e-b4b8376268a0"
+        },
+        {
+            "Command": "/new examples.Example27_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "345401ee-1396-4f4c-999e-d6bc96f2fa6f"
+        },
+        {
+            "Command": "which files are not in this folder?",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),_this_q_dem(x12,_folder_n_of(x12,i17),neg(e9,_in_p_loc(e2,x3,x12))))",
+            "Enabled": true,
+            "ID": "165915b2-ca79-4230-980a-4c0ed477bfeb"
         }
     ]
 }

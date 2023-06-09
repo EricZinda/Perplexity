@@ -239,7 +239,7 @@ def neg(state, e_introduced_binding, h_scopal):
 
     # return all combinations
     if len(unused_x_variables) > 0:
-        for negative_success_state in all_combinations_of_states(state, unused_x_variables):
+        for negative_success_state in all_combinations_of_states(new_state, unused_x_variables):
             # There were no solutions for this state, so it is false, and thus true
             # Record that this was a negative success
             # None of the determiner criteria for the subtree will have been added
