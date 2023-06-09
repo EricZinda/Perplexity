@@ -131,7 +131,7 @@
         {
             "Command": "where am i",
             "Expected": "(Folder(name=/Desktop, size=0),)(there are more)",
-            "Tree": "pronoun_q(x3,pron(x3),which_q(x4,place_n(x4),loc_nonsp(e2,x3,x4)))",
+            "Tree": "which_q(x4,place_n(x4),pronoun_q(x3,pron(x3),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
         },
@@ -145,7 +145,7 @@
         {
             "Command": "where am i",
             "Expected": "(Folder(name=/Desktop, size=0),)(there are more)",
-            "Tree": "pronoun_q(x3,pron(x3),which_q(x4,place_n(x4),loc_nonsp(e2,x3,x4)))",
+            "Tree": "which_q(x4,place_n(x4),pronoun_q(x3,pron(x3),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "44fe6fc2-2d63-4893-a2ac-e59ca7c9fb85"
         },
@@ -194,7 +194,7 @@
         {
             "Command": "what am i in?",
             "Expected": "(Folder(name=/Desktop, size=10000000),)(there are more)",
-            "Tree": "pronoun_q(x3,pron(x3),which_q(x5,thing(x5),_in_p_loc(e2,x3,x5)))",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_in_p_loc(e2,x3,x5)))",
             "Enabled": true,
             "ID": "25e8d164-7899-4861-beaa-075a3b479bcb"
         },
@@ -215,7 +215,7 @@
         {
             "Command": "which files are in this folder?",
             "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)(File(name=/Desktop/file3.txt, size=1000),)",
-            "Tree": "_this_q_dem(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),_this_q_dem(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "ecfb6513-af04-4b08-9ab0-de6f27873473"
         },
@@ -523,7 +523,7 @@
         {
             "Command": "which files are in folders?",
             "Expected": "I cannot respond to this",
-            "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "9a02fd1d-81fb-40d5-a7bd-15add7c6ab15"
         },
@@ -537,7 +537,7 @@
         {
             "Command": "which files are in folders",
             "Expected": "('fakefile0',)('fakefile1',)('fakefile2',)('fakefile3',)(there are more)",
-            "Tree": "udef_q(x9,_folder_n_of(x9,i14),_which_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "75d771c6-b11a-4c34-a3ee-9495aa385c07"
         },

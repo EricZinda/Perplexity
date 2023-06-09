@@ -60,15 +60,23 @@ Once this has run its course you will have all the valid well-formed trees for t
 '''
 
 
-def try_alternative_hole_assignments(all_holes_dict, node_remaining_holes_list_orig, node_remaining_floaters_list, node_assignment_list):
+def try_alternative_hole_assignments(all_holes_dict, node_remaining_holes_list_orig, node_remaining_floaters_list, node_assignment_list, force_hole_floater=None):
     spaces = "   " * (len(all_holes_dict) - len(node_remaining_floaters_list))
 
     # Grab the first hole to fill and remove it from the list
-    current_hole = all_holes_dict[node_remaining_holes_list_orig[0]]
-    node_remaining_holes_list = node_remaining_holes_list_orig[1:]
+    if force_hole_floater is not None:
+        current_hole = all_holes_dict[node_remaining_holes_list_orig[force_hole_floater[0]]]
+        node_remaining_holes_list = copy.deepcopy(node_remaining_holes_list_orig)
+        node_remaining_holes_list.pop(force_hole_floater[0])
+    else:
+        current_hole = all_holes_dict[node_remaining_holes_list_orig[0]]
+        node_remaining_holes_list = node_remaining_holes_list_orig[1:]
 
     # Try each remaining floater in this hole
     for index in range(0, len(node_remaining_floaters_list)):
+        if force_hole_floater is not None and index != force_hole_floater[1]:
+            continue
+
         # Grab the current floater and pull from the list for when we recurse
         current_floater = node_remaining_floaters_list[index]
         new_node_remaining_floaters_list = [x for i, x in enumerate(node_remaining_floaters_list) if i != index]
@@ -490,7 +498,7 @@ def find_unquantified_x_variables(mrs):
 # Also figure out which Label references are not defined as the Label of an EP, those are the holes
 #
 # is generator that returns a solution dictionary of all key = hole and value = predication handle that fills it each time it is iterated
-def valid_hole_assignments(mrs, max_holes, raw_mrs=""):
+def valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs=""):
     # Add the "top" Label as an ARG0 to an unused MRS predication, which makes it a hole,
     # just to make the logic simpler since we will later map floaters to holes and want to have
     # a way to indicate that any floater could be the "top"
@@ -538,8 +546,13 @@ def valid_hole_assignments(mrs, max_holes, raw_mrs=""):
 
     # Finally return each valid set of assignments
     logger.debug("Finding Hole assignments for: {}".format(raw_mrs))
-    yield from try_alternative_hole_assignments(hole_dict, [mrs.top], floater_list, {})
-
+    force_hole_floater = None
+    if required_root_label is not None:
+        for floater_index in range(len(floater_list)):
+            if floater_list[floater_index]["Label"] == required_root_label:
+                force_hole_floater = [0, floater_index]
+                break
+    yield from try_alternative_hole_assignments(hole_dict, [mrs.top], floater_list, {}, force_hole_floater=force_hole_floater)
 
 logger = logging.getLogger('TreeAlgorithm')
 pipeline_logger = logging.getLogger('Pipeline')

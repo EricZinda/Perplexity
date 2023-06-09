@@ -1,9 +1,10 @@
+- which() needs to take wide scope
+  - "which files are in a folder?" -> doesn't show all
 - which files not in this folder are not large? -> crashes
     - Tree: _this_q_dem(x13,_folder_n_of(x13,i18),neg(e19,_which_q(x3,[neg(e9,_in_p_loc(e12,x3,x13)), _file_n_of(x3,i8)],_large_a_1(e2,x3))))
 - which files are not in 2 folders
 - No files ...
 
-- which() needs to take wide scope
 - Need to be able to run code on the solution group
   - not() is going to require special processing
 

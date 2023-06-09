@@ -9,7 +9,7 @@ from delphin import ace
 from delphin.codecs.simplemrs import encode
 import perplexity.execution
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import parse_predication_name
+from perplexity.utilities import parse_predication_name, sentence_force
 from perplexity.vocabulary import ValueSize
 
 
@@ -64,13 +64,18 @@ class MrsParser(object):
         # Note that a single label could represent multiple predications
         # in conjunction so we need a list for each label
         mrs_predication_dict = {}
+        required_root_label = None
         for predication in mrs.predications:
+            # which_q should always have widest scope for questions
+            # See: https://delphinqa.ling.washington.edu/t/understanding-neg-e-h-which-rocks-are-not-blue/860
+            if predication.predicate in ["which_q", "_which_q"] and sentence_force(mrs.variables) in ["prop-or-ques", "ques"]:
+                required_root_label = predication.label
             if predication.label not in mrs_predication_dict.keys():
                 mrs_predication_dict[predication.label] = []
             mrs_predication_dict[predication.label].append(predication)
 
         # Iteratively return well-formed trees from the MRS
-        for holes_assignments in valid_hole_assignments(mrs, self.max_holes):
+        for holes_assignments in valid_hole_assignments(mrs, self.max_holes, required_root_label):
             # valid_hole_assignments can return None if the grammar returns something
             # that doesn't have the same number of holes and floaters (which is a grammar bug)
             if holes_assignments is not None:

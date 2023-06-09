@@ -103,106 +103,68 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
     sets = []
     set_id += 1
 
-    # Track the unique solution groups that are returned so we
-    # can stop after we have 2 since that is all we need
-    unique_solution_groups = []
-
     # Track solution groups that work so far, but need to wait till the end
     # because they require a global criteria to be true
     pending_global_criteria = []
 
-    # Cases when we know we have failed early (early_fail_quit) and when we know we
-    # have a solution early (early_success_quit)
+    # When we know we have failed early (early_fail_quit)
     early_fail_quit = False
-    early_success_quit = False
     for combinatorial_solution in solutions:
-        if early_success_quit:
-            # If there are global constraints, we still need to gather the stats for all possible
-            # rstrs (for GlobalCriteria.all_rstr_meet_criteria) or successful rstrs (for GlobalCriteria.exactly)
-            # But we no longer need to check for coll/dist/cuml so it can be faster
-            if not check_only_global_criteria_all(execution_context, var_criteria, combinatorial_solution):
-                early_fail_quit = True
-                break
+        for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
+            new_sets = []
+            was_merged = False
+            for existing_set in sets + [initial_empty_set]:
+                if len(existing_set[1]) == 0 and was_merged:
+                    # Don't create a brand new set by merging with the final empty set if it was
+                    # already merged into something. Because: it is already being tracked.
+                    continue
 
-        else:
-            for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
-                # unique_solution_groups tracks solution groups that we have returned so far
-                if unique_solution_groups is not None and len(unique_solution_groups) == 2:
-                    if not variable_has_inf_max:
-                        # We are looking for a minimal solution if max != inf, so we can quit early
-                        early_success_quit = True
-                        break
+                new_set_stats_group = existing_set[0].copy()
+                merge, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
 
-                    else:
-                        # Otherwise, just switch to only developing the two groups we need to return
-                        # By setting "sets" to be just those groups
-                        sets = unique_solution_groups
-                        unique_solution_groups = None
+                if state == CriteriaResult.fail_one:
+                    # Fail (doesn't meet criteria): don't add, don't yield
+                    continue
 
-                new_sets = []
-                was_merged = False
-                for existing_set in sets + [initial_empty_set]:
-                    if len(existing_set[1]) == 0 and was_merged:
-                        # Don't create a brand new set by merging with the final empty set if it was
-                        # already merged into something. Because: it is already being tracked.
-                        continue
-
-                    new_set_stats_group = existing_set[0].copy()
-                    merge, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
-
-                    if state == CriteriaResult.fail_one:
-                        # Fail (doesn't meet criteria): don't add, don't yield
-                        continue
-
-                    elif state == CriteriaResult.fail_all:
-                        # A global criteria wasn't met so none will ever work
-                        # Still run global constraints to get a good error
-                        early_fail_quit = True
-                        break
-
-                    else:
-                        # Didn't fail, decide whether to merge into the existing set or create a new one
-                        # Merge if the only variables that got updated had a criteria with an upper bound of inf
-                        # since alternatives won't be used anyway
-                        if merge:
-                            was_merged = True
-                            new_set = existing_set
-
-                        else:
-                            new_set = [None, None, existing_set[2] + ":" + str(set_id)]
-                            set_id += 1
-                            new_sets.append(new_set)
-
-                        new_set[0] = new_set_stats_group
-                        new_set[1] = existing_set[1] + [next_solution]
-
-                        if state == CriteriaResult.meets:
-                            yield new_set[1], new_set[2]
-
-                        elif state == CriteriaResult.meets_pending_global:
-                            pending_global_criteria.append([new_set[1], new_set[2]])
-
-                        elif state == CriteriaResult.contender:
-                            # Not yet a solution, don't track it as one
-                            pass
-
-                        # See if this is a new unique solution
-                        if (state == CriteriaResult.meets or state == CriteriaResult.meets_pending_global) and \
-                                unique_solution_groups is not None:
-                            # We still haven't transitioned to tracking only the two solution groups
-                            # So: add this one if it just transitioned from contender to solution group (to ensure we don't add it twice)
-                            # If we haven't yet found 2
-                            if existing_set[0].group_state not in [CriteriaResult.meets, CriteriaResult.meets_pending_global] and \
-                                    len(unique_solution_groups) < 2:
-                                unique_solution_groups.append(new_set)
-
-                sets += new_sets
-
-                if early_fail_quit:
+                elif state == CriteriaResult.fail_all:
+                    # A global criteria wasn't met so none will ever work
+                    # Still run global constraints to get a good error
+                    early_fail_quit = True
                     break
+
+                else:
+                    # Didn't fail, decide whether to merge into the existing set or create a new one
+                    # Merge if the only variables that got updated had a criteria with an upper bound of inf
+                    # since alternatives won't be used anyway
+                    if merge:
+                        was_merged = True
+                        new_set = existing_set
+
+                    else:
+                        new_set = [None, None, existing_set[2] + ":" + str(set_id)]
+                        set_id += 1
+                        new_sets.append(new_set)
+
+                    new_set[0] = new_set_stats_group
+                    new_set[1] = existing_set[1] + [next_solution]
+
+                    if state == CriteriaResult.meets:
+                        yield new_set[1], new_set[2]
+
+                    elif state == CriteriaResult.meets_pending_global:
+                        pending_global_criteria.append([new_set[1], new_set[2]])
+
+                    elif state == CriteriaResult.contender:
+                        # Not yet a solution, don't track it as one
+                        pass
+
+            sets += new_sets
 
             if early_fail_quit:
                 break
+
+        if early_fail_quit:
+            break
 
     # If early_fail_quit is True, the error should already be set
     if not early_fail_quit and has_global_constraint:

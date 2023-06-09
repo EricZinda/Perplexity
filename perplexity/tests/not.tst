@@ -82,7 +82,7 @@
         {
             "Command": "which files in this folder are not large?",
             "Expected": "That isn't true",
-            "Tree": "neg(e16,_this_q_dem(x10,_folder_n_of(x10,i15),_which_q(x3,[_file_n_of(x3,i8), _in_p_loc(e9,x3,x10)],_large_a_1(e2,x3))))",
+            "Tree": "_which_q(x3,_this_q_dem(x10,_folder_n_of(x10,i15),[_file_n_of(x3,i8), _in_p_loc(e9,x3,x10)]),neg(e16,_large_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "f048ade0-0f33-4181-bc5e-b4b8376268a0"
         }

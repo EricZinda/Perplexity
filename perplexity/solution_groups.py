@@ -49,6 +49,8 @@ class SingleGroupGenerator(object):
 # When a group is yielded from all_plural_groups_stream(), it has an id which is a "lineage"
 # If that lineage is just one group away from an existing group, it should be yielded from that group
 # Otherwise it should create a new group
+#
+# A yielded SingleSolutionGroupGenerator will "follow" the first lineage that matches it
 class SolutionGroupGenerator(object):
     def __init__(self, all_plural_groups_stream, variable_has_inf_max):
         self.all_plural_groups_stream = all_plural_groups_stream
@@ -87,20 +89,25 @@ class SolutionGroupGenerator(object):
             else:
                 parent_id = next_id[:colon_index]
 
-            if parent_id in self.solution_groups:
-                existing_solution_group_id = parent_id
-            elif next_id in self.solution_groups:
+            if next_id in self.solution_groups:
                 existing_solution_group_id = next_id
+            elif parent_id in self.solution_groups:
+                existing_solution_group_id = parent_id
             else:
                 existing_solution_group_id = ""
 
             if existing_solution_group_id == "":
+                # There wasn't an existing solution group, start tracking this as a new one
                 self.solution_groups[next_id] = SingleGroupGenerator(next_id, self, next_group)
 
             else:
+                # This is an update to an existing solution group
                 existing_solution_group = self.solution_groups[existing_solution_group_id]
                 existing_solution_group.group_list = next_group
                 existing_solution_group.group_id = next_id
+                # Update the index of this updated solution group
+                self.solution_groups.pop(existing_solution_group_id)
+                self.solution_groups[next_id] = existing_solution_group
 
             if existing_solution_group_id == current_id:
                 return True
