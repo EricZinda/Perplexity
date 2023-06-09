@@ -230,13 +230,27 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, curren
         return sort_conjunctions(conjunction_list)
 
 
+# yield all the variables that are consumed in the arg_value
+# arg_value can be a predication, conjunction or tree
+def consumed_variables(arg_value):
+    if isinstance(arg_value, str):
+        yield arg_value
+    elif isinstance(arg_value, list):
+        for item in list:
+            yield from consumed_variables(item)
+    elif isinstance(arg_value, TreePredication):
+        for item in arg_value.args:
+            yield from consumed_variables(item)
+    else:
+        assert False
+
 # Make sure a list of predications (like for a conjunction/"logical and")
 #   is sorted such that predications that *modify* e variables
 #   come before the *introducer* of them
 # and that predications that *modify* x variables
 #   come *after* the introducer of them
 def sort_conjunctions(predication_list):
-    # Build a dict with keys of introduced e args and values of the
+    # Build a dict with keys of introduced e and x args and values of the
     #   index of the predication that introduced them
     introduced_dict = {}
     for predication_index in range(0, len(predication_list)):
@@ -247,14 +261,14 @@ def sort_conjunctions(predication_list):
     # Build the graph that represents the dependencies
     topological_sort = Cormen2001(len(predication_list))
     for predication_index in range(0, len(predication_list)):
-        for arg_value in predication_list[predication_index].args:
-            if isinstance(arg_value, str) and arg_value in introduced_dict:
-                if predication_index != introduced_dict[arg_value]:
+        for consumed_variable in consumed_variables(predication_list[predication_index]):
+            if consumed_variable in introduced_dict:
+                if predication_index != introduced_dict[consumed_variable]:
                     # This argument uses the ARG0 event of another predication in the list
-                    if arg_value[0] == "x":
-                        topological_sort.add_edge(introduced_dict[arg_value], predication_index)
+                    if consumed_variable[0] == "x":
+                        topological_sort.add_edge(introduced_dict[consumed_variable], predication_index)
                     else:
-                        topological_sort.add_edge(predication_index, introduced_dict[arg_value])
+                        topological_sort.add_edge(predication_index, introduced_dict[consumed_variable])
 
     # Do the topological sort and return them
     topological_sort.topological_sort()

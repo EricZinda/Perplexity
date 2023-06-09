@@ -191,6 +191,13 @@ def neg(state, e_introduced_binding, h_scopal):
 
     # Record all the variables this neg() has scope over
     scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], execution_context().current_predication_index())
+
+    # TODO: For now, refuse to run anything that has a quantifier under it so that we don't have to
+    # run numeric criteria on the "not" clause
+    if len(scoped_variables) > 0:
+        report_error(["notClause"], force=True)
+        return
+
     new_state = state.add_to_e("negated_predications", execution_context().current_predication_index(), NegatedPredication(execution_context().current_predication(), scoped_variables, len(unscoped_variables) == 0))
 
 

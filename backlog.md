@@ -1,9 +1,21 @@
-- (fixed) which files are not in this folder? -> crashes
-  - Tree: _which_q(x3,_file_n_of(x3,i8),neg(e9,_this_q_dem(x12,_folder_n_of(x12,i17),_in_p_loc(e2,x3,x12))))
-  - 
-- which files not in this folder are not large? -> crashes
-  - Tree: _this_q_dem(x13,_folder_n_of(x13,i18),neg(e19,_which_q(x3,[neg(e9,_in_p_loc(e12,x3,x13)), _file_n_of(x3,i8)],_large_a_1(e2,x3))))
+- Example27: which files not in this folder are not large? -> none returned
+  - Tree: _which_q(x3,_this_q_dem(x13,_folder_n_of(x13,i18),[neg(e9,_in_p_loc(e12,x3,x13)), _file_n_of(x3,i8)]),neg(e19,_large_a_1(e2,x3)))
+  - Requires running inner neg() using negative successes...
+  - Theory 1:
+    - Inside neg() we are just going to check if something is true or not, the solution groups themselves don't matter, it is just whether or not the tree is true
+  - Theory 2:
+    - if we break the tree up into different neg() sections and run them separately and combine them?
+    - We need a natural place where we can call: solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info)
+      - and collect the solutions and then run them through the rest of the tree
+      - The RSTR of a quantifier is one place?
+      - Maybe we effectively run the plurals logic for a particular variable in parts?
+  - Option 1: Maybe we limit neg() to only those trees that don't have complicated counting -- no quantifiers
+      - means that find_unused_x_variables()
 - which files are not in 2 folders
+  - example27: /runparse 0,1: which files are not in 2 folders
+    - Could mean "not in any 2 folders"
+    - Could mean "get the folders it is in, make sure it isn't > 1"
+    - Interpreted as "Find 2 folders that files are not in, then return those files"
 - No files ...
 
 - Need to be able to run code on the solution group

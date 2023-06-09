@@ -80,6 +80,7 @@ error_priority_dict = {
     "unknownWords": 900,
     # Slightly better than not knowing the word at all
     "formNotUnderstood": 901,
+    "notClause": 910,
     "defaultPriority": 1000,
 
     # This is just used when sorting to indicate no error, i.e. success.
