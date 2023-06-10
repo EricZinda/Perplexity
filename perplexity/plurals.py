@@ -1,4 +1,5 @@
 import enum
+import logging
 
 from perplexity.execution import report_error
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
@@ -111,6 +112,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
     early_fail_quit = False
     for combinatorial_solution in solutions:
         for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
+            if groups_logger.level == logging.DEBUG:
+                groups_logger.debug(f"Processing solution: {next_solution}")
             new_sets = []
             was_merged = False
             for existing_set in sets + [initial_empty_set]:
@@ -370,29 +373,34 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
 
             if negated_index is not None:
                 # This variable is under a neg() predication at negated_index,
-                # see if it was a negative success
-                negated_success_binding = new_solution.get_binding("negated_successes")
-                if negated_success_binding.value is not None:
-                    # There were negated_successes in the tree somewhere
-                    if negated_index in negated_success_binding.value:
-                        # The neg() scoping this variable had a negative success:
-                        # the h_scopal for the neg() is false, thus it is true
-                        # If all variables are scoped by this neg()
-                        # then it is guaranteed to be a success since neg() applies to the entire tree
-                        if scopes_all:
-                            state = CriteriaResult.meets
-                        else:
-                            state = CriteriaResult.contender
-                        # TODO: should new_individuals be getting updated?
-                        new_individuals = None
+                # This means its plurals were already evaluated by neg(), and because it is here, they must be true
+                state = CriteriaResult.meets
+                # TODO: should new_individuals be getting updated?
+                new_individuals = None
 
-                if negated_success_binding.value is None or negated_index not in negated_success_binding.value:
-                    # This variable is under a neg() predication, and it isn't a negative success
-                    # So that means it succeeded, which in turn means it is a negative
-                    # failure (i.e. the tree is true, so it is false)
-                    state = CriteriaResult.fail_one
-                    # Because we are failing due to negation, it is OK to force that as the real error
-                    report_error(["notClause"], force=True)
+                # # see if it was a negative success
+                # negated_success_binding = new_solution.get_binding("negated_successes")
+                # if negated_success_binding.value is not None:
+                #     # There were negated_successes in the tree somewhere
+                #     if negated_index in negated_success_binding.value:
+                #         # The neg() scoping this variable had a negative success:
+                #         # the h_scopal for the neg() is false, thus it is true
+                #         # If all variables are scoped by this neg()
+                #         # then it is guaranteed to be a success since neg() applies to the entire tree
+                #         if scopes_all:
+                #             state = CriteriaResult.meets
+                #         else:
+                #             state = CriteriaResult.contender
+                #         # TODO: should new_individuals be getting updated?
+                #         new_individuals = None
+                #
+                # if negated_success_binding.value is None or negated_index not in negated_success_binding.value:
+                #     # This variable is under a neg() predication, and it isn't a negative success
+                #     # So that means it succeeded, which in turn means it is a negative
+                #     # failure (i.e. the tree is true, so it is false)
+                #     state = CriteriaResult.fail_one
+                #     # Because we are failing due to negation, it is OK to force that as the real error
+                #     report_error(["notClause"], force=True)
 
         if state is None:
             criteria = var_criteria[index]
@@ -582,3 +590,6 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
                                                   CriteriaResult.fail_one: CriteriaResult.fail_all,
                                                   CriteriaResult.fail_all: CriteriaResult.fail_all}
                         }
+
+
+groups_logger = logging.getLogger('SolutionGroups')

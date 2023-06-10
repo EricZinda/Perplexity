@@ -1,8 +1,9 @@
 import contextvars
+import copy
 import logging
 import sys
 import perplexity.tree
-from perplexity.utilities import sentence_force
+from perplexity.utilities import sentence_force, at_least_one_generator
 
 
 # Allows code to throw an exception that should get converted
@@ -36,6 +37,29 @@ class ExecutionContext(object):
         if self.old_context_token is not None:
             reset_execution_context(self.old_context_token)
             self.old_context_token = None
+
+    def resolve_fragment(self, state, tree_node):
+        this_sentence_force = sentence_force(self.tree_info["Variables"])
+        new_tree_info = copy.deepcopy(self.tree_info)
+        new_tree_info["Tree"] = tree_node
+        new_state = state.set_x("tree", (new_tree_info, ))
+        wh_phrase_variable = None
+        if this_sentence_force == "ques":
+            predication = perplexity.tree.find_predication(self.tree_info["Tree"], "_which_q")
+            if predication is not None:
+                wh_phrase_variable = predication.args[0]
+
+        solutions = self.call(new_state, tree_node)
+        solutions_list = list(solutions)
+        pipeline_logger.debug(f"Resolving fragment: {tree_node}")
+        # TODO: suspect the interleaving of resolve_fragment() with normal MRS solving is causing a subtle bug since
+        #         resolving it all up front doesn't have the bug. Fix that bug and then allow this to stream
+        groups = [group for group in perplexity.solution_groups.solution_groups(self, solutions_list, this_sentence_force, wh_phrase_variable, new_tree_info, all_groups=True)]
+        for group in groups:
+            solutions = [x for x in group]
+            yield from solutions
+
+        pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
 
     def solve_mrs_tree(self, state, tree_info):
         with self:
@@ -176,8 +200,16 @@ class ExecutionContext(object):
         self._error_was_forced = False
         self._error_predication_index = -1
 
+    def has_not_understood_error(self):
+        # System errors that indicate the phrase can't be understood can't be replaced
+        # since they aren't indicating a logical failure, they are indicating that the system didn't understand
+        # predications like neg() need to know if a branch failed due to a real logical failure or not
+        not_understood_failures = ["formNotUnderstood"]
+        return self._error is not None and self._error[0] in not_understood_failures
+
     def report_error_for_index(self, predication_index, error, force=False):
-        if force or (not self._error_was_forced and self._error_predication_index < predication_index):
+        if not self.has_not_understood_error() and \
+                (force or (not self._error_was_forced and self._error_predication_index < predication_index)):
             self._error = error
             self._error_predication_index = predication_index
             if force:

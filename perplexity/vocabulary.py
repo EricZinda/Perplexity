@@ -43,13 +43,13 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
                             break
 
                     if not foundItem:
-                        perplexity.execution.report_error(["formNotUnderstood", "notHandled", item])
+                        perplexity.execution.report_error(["formNotUnderstood", "notHandled", item], force=True)
                         return False
 
             # Look at everything it handles and make sure the required things are there
             for item in handles:
                 if item[1] == EventOption.required and (event_binding.value is None or item[0] not in event_binding.value):
-                    perplexity.execution.report_error(["formNotUnderstood", "missing", item])
+                    perplexity.execution.report_error(["formNotUnderstood", "missing", item], force=True)
                     return False
 
         return True

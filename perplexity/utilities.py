@@ -125,16 +125,15 @@ def import_function_from_names(module_name, function_name):
 def at_least_one_generator(generator):
     if isinstance(generator, (list, tuple)):
         if len(generator) > 0:
-            return iter(generator)
+            generator = iter(generator)
 
-    else:
-        try:
-            first_item = next(generator)
+    try:
+        first_item = next(generator)
 
-        except StopIteration:
-            return None
+    except StopIteration:
+        return None
 
-        return AtLeastOneIterator(first_item, generator)
+    return AtLeastOneIterator(first_item, generator)
 
 
 class AtLeastOneIterator(object):

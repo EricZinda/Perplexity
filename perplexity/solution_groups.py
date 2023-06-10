@@ -121,96 +121,6 @@ class SolutionGroupGenerator(object):
             return self.next_solution_in_group("")
 
 
-# Create a generator that yields solutions in a minimal solution group as quickly as it is found
-# but will continue returning solutions until it is maximal if requested. The idea is to make it easy
-# to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)
-# but allow other types of phrases to get all answers in a group if needed
-#
-# It also provides a method to see if there is at least one other solution group available
-#
-# This will only actually generate a single solution group.
-class SingleSolutionGroupGenerator(object):
-    def __init__(self, all_plural_groups_stream, variable_has_inf_max):
-        self.all_plural_groups_stream = all_plural_groups_stream
-        self.variable_has_inf_max = variable_has_inf_max
-        self.current_group_generator = None
-        self.chosen_solution_id = None
-        self._has_multiple_groups = False
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.current_group_generator is not None:
-            # Keep returning solutions from the current solution group
-            try:
-                next_solution = next(self.current_group_generator)
-                return next_solution
-
-            except StopIteration:
-                self.current_group_generator = None
-
-        if self.all_plural_groups_stream is None:
-            raise StopIteration
-
-        # Search for another solution group that descends from this solution group
-        # and return solutions from it
-        while True:
-            try:
-                group = next(self.all_plural_groups_stream)
-
-            except StopIteration:
-                self.all_plural_groups_stream = None
-                raise
-
-            if self.chosen_solution_id is None:
-                # We haven't chosen a solution_id yet, so start with this one
-                self.chosen_solution_id = group[1]
-                self.current_group_generator = iter(group[0])
-                return self.__next__()
-
-            elif group[1].startswith(self.chosen_solution_id):
-                # This group was created by adding a solution to our chosen solution group
-                # so it is just "a little more". We need to use this as our new ID so we don't accidentally
-                # return other alternative groups that have this same new solution added to them
-                self.chosen_solution_id = group[1]
-                return group[0][-1]
-
-            else:
-                # This solution group is not a descendant of the one we are tracking so we should skip it
-                # But: remember that there are multiple solution groups so we can say "there are more"
-                self._has_multiple_groups = True
-
-                # If no variable has a between(N, inf) constraint,
-                # Just stop now and the caller will get a subset solution group for the answer they care about
-                # Note that it may not be *minimal*, might be a subset, and might be maximal.
-                # If it does have an between(N, inf) constraint, return them all
-                if not self.variable_has_inf_max:
-                    raise StopIteration
-
-    # See if this generator has more solution groups than just its chosen group available
-    def has_multiple_groups(self):
-        if self._has_multiple_groups:
-            return True
-
-        else:
-            if self.all_plural_groups_stream is None:
-                # No more solutions to iterate through
-                return False
-
-            else:
-                # Keep working through solutions until we find another group
-                # Or the end of all solutions
-                while True:
-                    try:
-                        group = next(self.all_plural_groups_stream)
-                        if not group[1].startswith(self.chosen_solution_id):
-                            return True
-
-                    except StopIteration:
-                        return False
-
-
 # Group the unquantified solutions into "solution groups" that meet the criteria on each variable.
 # Designed to return the minimal solution that meets the criteria as quickly as possible.
 #
@@ -224,7 +134,8 @@ class SingleSolutionGroupGenerator(object):
 #   if they return [], it means "skip this solution group" and we'll try the next one
 # yields an iterator that returns solution groups
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info):
+def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info, all_groups=False, all_unprocessed_groups=None):
+    pipeline_logger.debug(f"Finding solution groups for {tree_info['Tree']}")
     solutions = at_least_one_generator(solutions_orig)
 
     if solutions:
@@ -238,35 +149,46 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         groups_stream = all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
                                                  initial_stats_group, has_global_constraint, variable_has_inf_max)
         group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
+        if all_unprocessed_groups is not None:
+            unprocessed_groups = []
+            for group in group_generator:
+                unprocessed_groups.append([x for x in group])
+            group_generator = unprocessed_groups
+            all_unprocessed_groups.append(unprocessed_groups)
+
         at_least_one_group = at_least_one_generator(group_generator)
         if at_least_one_group is not None:
-            # First see if there is a solution_group handler that should be called
-            handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
-            for next_group in at_least_one_group:
-                created_solution_group, has_more, group_list = run_handlers(handlers, next_group, index_predication)
-                if created_solution_group is None:
-                    # No solution group handlers, or none handled it or failed: just do the default behavior
-                    yield group_list
+            if all_groups:
+                yield from at_least_one_group
 
-                    # If there are multiple solution groups, we need to add one more (fake) group
-                    # and yield it so that the caller thinks there are multiple answers and will give a message
-                    # to the user. The answers aren't shown so it can be anything
-                    if group_generator.has_multiple_groups():
-                        yield True
+            else:
+                # First see if there is a solution_group handler that should be called
+                handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
+                for next_group in at_least_one_group:
+                    created_solution_group, has_more, group_list = run_handlers(handlers, next_group, index_predication)
+                    if created_solution_group is None:
+                        # No solution group handlers, or none handled it or failed: just do the default behavior
+                        yield group_list
 
-                    return
+                        # If there are multiple solution groups, we need to add one more (fake) group
+                        # and yield it so that the caller thinks there are multiple answers and will give a message
+                        # to the user. The answers aren't shown so it can be anything
+                        if len(group_generator) > 1 if isinstance(group_generator, list) else group_generator.has_multiple_groups():
+                            yield True
 
-                elif isinstance(created_solution_group, list) and len(created_solution_group) == 0:
-                    # Handler said to skip this group
-                    continue
+                        return
 
-                else:
-                    # Yield the group the handler generated
-                    yield created_solution_group
-                    if has_more:
-                        yield True
+                    elif isinstance(created_solution_group, list) and len(created_solution_group) == 0:
+                        # Handler said to skip this group
+                        continue
 
-                    return
+                    else:
+                        # Yield the group the handler generated
+                        yield created_solution_group
+                        if has_more:
+                            yield True
+
+                        return
 
 
 def run_handlers(handlers, group, index_predication):
@@ -448,3 +370,4 @@ def optimize_determiner_infos(determiner_info_list_orig, this_sentence_force, wh
 
 
 groups_logger = logging.getLogger('SolutionGroups')
+pipeline_logger = logging.getLogger('Pipeline')

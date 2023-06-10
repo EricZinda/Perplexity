@@ -1,11 +1,26 @@
+- 
+- START HERE NEXT: Logic for neg has been rewritten, it is probably correct now
+  - See if the errors shown in tests are correct and update the test baselines
+
+  - Fix reported errors to include "not" in them so they aren't confusing
+  - Test more scenarios
+- Build good errors for neg() by building up a tree for nlg_data that allows neg() to scope some terms
+- Not able to update tests for /runparse 0,1 to the actual response that happened
+- (fixed) Example27a: which files are not large in two folders -> crashes
+  - BUG: Failure of not understanding a predication like _in_p_state(e12,e2,x13), _large_a_1(e2,x3) is treated
+    - as a regular failure and neg() makes it true. It should fail for real and not be a logical failure
+  - 
 - which files are not in 2 folders
   - example27: /runparse 0,1: which files are not in 2 folders
-    - Could mean "not in any 2 folders"
-    - Could mean "get the folders it is in, make sure it isn't > 1"
-      - Requires not(folder(), card(2))
-      - Run the fragment as an MRS with the state pre-loaded with variable values
-    - Interpreted as "Find 2 folders that files are not in, then return those files"
-      - Obviously No files ...
+      - Could mean "not in any 2 folders"
+      - Could mean "get the folders it is in, make sure it isn't > 1"
+        - Requires not(folder(), card(2))
+        - Run the fragment as an MRS with the state pre-loaded with variable values
+      - Interpreted as "Find 2 folders that files are not in, then return those files"
+        - Obviously No files ...
+
+    - One problem is that we record which variables are used *independently*, we need to record them *together* and
+      - return all alternates that are not the together version
 
 - Need to be able to run code on the solution group
   - not() is going to require special processing

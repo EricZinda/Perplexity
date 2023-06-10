@@ -163,6 +163,7 @@ class UserInterface(object):
                         if predication is not None:
                             wh_phrase_variable = predication.args[0]
 
+
                     # if self.show_all_answers:
                     #     tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable))
                     #     tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
@@ -171,8 +172,14 @@ class UserInterface(object):
                     #     temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable)
                     #     tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
+                    unprocessed_groups = [] if self.show_all_answers else None
+                    def yield_from_first():
+                        if len(unprocessed_groups) > 0:
+                            yield from unprocessed_groups[0]
+
+                    tree_record["SolutionGroups"] = yield_from_first()
                     # solution_groups() should return an iterator that iterates *groups*
-                    solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
+                    solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_unprocessed_groups=unprocessed_groups))
 
                     # Collect any error that might have occurred from the first solution group
                     tree_record["Error"] = self.execution_context.error()
@@ -370,10 +377,9 @@ class UserInterface(object):
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
                 print(f"\nText Tree: {tree_info['Tree']}")
-                if isinstance(tree_info['SolutionGroups'], list) and len(tree_info['SolutionGroups']) > 0:
-                    print(f"\nSolution groups:")
+                if tree_info['SolutionGroups'] is not None:
                     for solution_group in tree_info['SolutionGroups']:
-                        print(f"")
+                        print(f"\nSolution group:")
                         for solution in solution_group:
                             print(f"{str(solution)}")
 

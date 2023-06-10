@@ -96,7 +96,7 @@
         {
             "Command": "which files are not in this folder?",
             "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)",
-            "Tree": "_which_q(x3,_file_n_of(x3,i8),_this_q_dem(x12,_folder_n_of(x12,i17),neg(e9,_in_p_loc(e2,x3,x12))))",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),neg(e9,_this_q_dem(x12,_folder_n_of(x12,i17),_in_p_loc(e2,x3,x12))))",
             "Enabled": true,
             "ID": "165915b2-ca79-4230-980a-4c0ed477bfeb"
         },
@@ -115,9 +115,16 @@
             "ID": "e1378c08-0c89-4c6b-8abd-1f294aceeb04"
         },
         {
+            "Command": "/runparse 0,0",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)",
+            "Tree": "_which_q(x3,_this_q_dem(x13,_folder_n_of(x13,i18),[_file_n_of(x3,i8), neg(e9,_in_p_loc(e12,x3,x13))]),neg(e19,_large_a_1(e2,x3)))",
+            "Enabled": true,
+            "ID": "832b2158-8a7b-415b-9160-a772bdb3f940"
+        },
+        {
             "Command": "which folder are files not in?",
             "Expected": "(Folder(name=/, size=0),)",
-            "Tree": "_which_q(x5,_folder_n_of(x5,i9),udef_q(x3,_file_n_of(x3,i14),neg(e15,_in_p_loc(e2,x3,x5))))",
+            "Tree": "_which_q(x5,_folder_n_of(x5,i9),neg(e15,udef_q(x3,_file_n_of(x3,i14),_in_p_loc(e2,x3,x5))))",
             "Enabled": true,
             "ID": "a3498188-b338-4e7c-99cc-f0bcff661159"
         }
