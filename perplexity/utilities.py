@@ -124,8 +124,7 @@ def import_function_from_names(module_name, function_name):
 # If the passed generator does not return any items, it returns None
 def at_least_one_generator(generator):
     if isinstance(generator, (list, tuple)):
-        if len(generator) > 0:
-            generator = iter(generator)
+        generator = iter(generator)
 
     try:
         first_item = next(generator)
