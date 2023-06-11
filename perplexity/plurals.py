@@ -364,7 +364,6 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
             # There are negated predications in this tree,
             # see if this variable is scoped by one of them
             negated_index = None
-            scopes_all = False
             for negated_predication_item in negated_predications_binding.value.items():
                 if variable_stats.variable_name in negated_predication_item[1].scoped_variables:
                     negated_index = negated_predication_item[0]
@@ -377,30 +376,6 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
                 state = CriteriaResult.meets
                 # TODO: should new_individuals be getting updated?
                 new_individuals = None
-
-                # # see if it was a negative success
-                # negated_success_binding = new_solution.get_binding("negated_successes")
-                # if negated_success_binding.value is not None:
-                #     # There were negated_successes in the tree somewhere
-                #     if negated_index in negated_success_binding.value:
-                #         # The neg() scoping this variable had a negative success:
-                #         # the h_scopal for the neg() is false, thus it is true
-                #         # If all variables are scoped by this neg()
-                #         # then it is guaranteed to be a success since neg() applies to the entire tree
-                #         if scopes_all:
-                #             state = CriteriaResult.meets
-                #         else:
-                #             state = CriteriaResult.contender
-                #         # TODO: should new_individuals be getting updated?
-                #         new_individuals = None
-                #
-                # if negated_success_binding.value is None or negated_index not in negated_success_binding.value:
-                #     # This variable is under a neg() predication, and it isn't a negative success
-                #     # So that means it succeeded, which in turn means it is a negative
-                #     # failure (i.e. the tree is true, so it is false)
-                #     state = CriteriaResult.fail_one
-                #     # Because we are failing due to negation, it is OK to force that as the real error
-                #     report_error(["notClause"], force=True)
 
         if state is None:
             criteria = var_criteria[index]

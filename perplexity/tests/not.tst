@@ -127,6 +127,13 @@
             "Tree": "_which_q(x5,_folder_n_of(x5,i9),neg(e15,udef_q(x3,_file_n_of(x3,i14),_in_p_loc(e2,x3,x5))))",
             "Enabled": true,
             "ID": "a3498188-b338-4e7c-99cc-f0bcff661159"
+        },
+        {
+            "Command": "/runparse",
+            "Expected": "(Folder(name=/, size=0),)",
+            "Tree": "_which_q(x5,_folder_n_of(x5,i9),neg(e15,udef_q(x3,_file_n_of(x3,i14),_in_p_loc(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "2a238526-69d8-4d64-ae83-05368f578335"
         }
     ]
 }

@@ -144,13 +144,6 @@ def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
 def implicit_conj(state, x_binding_introduced, x_binding_first, x_binding_second):
     yield from and_c(state, x_binding_introduced, x_binding_first, x_binding_second)
 
-
-def test():
-    data = iter([iter(all_nonempty_subsets(["a", "b"], min_size=1, max_size=1)),
-                 iter(all_nonempty_subsets(["c", "d"], min_size=1, max_size=1))])
-
-    yield from product_stream(*data)
-
 # h_scopal_x_variables are the only variables that were looked at in the scopal argument
 # original_state contains the values of those variables that neg() was called with originally
 #   (and some of these could have been combinatorial)
@@ -183,33 +176,6 @@ def all_combinations_of_states(original_state, h_scopal_x_variables, negative_fa
             yield new_state
 
 
-# # Yield a state where each variable in unused_x_variables has been assigned
-# # one of the values that wasn't used, but in every combination *across* the variables
-# def all_combinations_of_states(original_state, unused_x_variables):
-#     unused_x_variables_values = list(unused_x_variables.values())
-#     unused_x_variables_names = list(unused_x_variables.keys())
-#     data_list = []
-#     for variable_index in range(len(unused_x_variables_names)):
-#         # The values passed in with unused_x_variables are discrete (not combinatoric)
-#         # So, we want every combination of a single value from each variable
-#         data_list.append(iter(all_nonempty_subsets(unused_x_variables_values[variable_index],
-#                                                    min_size=1,
-#                                                    max_size=1)))
-#
-#     for combination in product_stream(*iter(data_list)):
-#         combination_list = list(combination)
-#         new_state = original_state
-#         for variable_index in range(len(unused_x_variables_names)):
-#             new_state = new_state.set_x(unused_x_variables_names[variable_index], combination_list[variable_index][0])
-#         yield new_state
-
-
-# def record_success_variables(referenced_x_variables, success_state):
-#     for item in referenced_x_variables.items():
-#         # TODO: break apart combinatorial variables
-#         referenced_x_variables[item[0]].append(success_state.get_binding(item[0]).value)
-
-
 # Get all possible values for each x variable in h_scopal_x_variables
 def discrete_x_variables(original_state, h_scopal_x_variables):
     discrete_x_values = {}
@@ -226,31 +192,6 @@ def discrete_x_variables(original_state, h_scopal_x_variables):
                                             variable_size)
 
     return discrete_x_values
-
-
-# # Find any values in any variables in h_scopal of original state that were not
-# # true for h_scopal. That means they will all be neg(False) == True
-# # for neg()
-# def find_unused_x_variables(original_state, used_h_scopal_x_variables):
-#     unused_x_variables = dict([[x, []] for x in used_h_scopal_x_variables])
-#     variable_size = {}
-#     for variable_name in unused_x_variables:
-#         binding_metadata = get_variable_metadata(variable_name)
-#         variable_size[variable_name] = binding_metadata["ValueSize"]
-#
-#     for item in used_h_scopal_x_variables.items():
-#         original_x_binding = original_state.get_binding(item[0])
-#         original_x = original_x_binding.value
-#         if original_x is not None:
-#             for combinatoric_item in discrete_variable_generator(original_x, original_x_binding.variable.combinatoric, variable_size[item[0]]):
-#                 if combinatoric_item not in used_h_scopal_x_variables[item[0]]:
-#                     unused_x_variables[item[0]].append(combinatoric_item)
-#
-#     non_empty_unused_x_variables = {}
-#     for item in unused_x_variables.items():
-#         if len(item[1]) > 0:
-#             non_empty_unused_x_variables[item[0]] = item[1]
-#     return non_empty_unused_x_variables
 
 
 @Predication(vocabulary, names=["neg"])
