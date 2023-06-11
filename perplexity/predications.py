@@ -1,6 +1,7 @@
 import enum
 import itertools
 from perplexity.execution import get_variable_metadata, report_error
+from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
@@ -141,6 +142,43 @@ def combinatorial_predication_1(state, binding, bound_function, unbound_function
 
         if len(values) > 0:
             yield state.set_x(binding.variable.name, tuple(values), combinatoric)
+
+
+# Yield a state where each variable in combinatorial_x_values has been assigned
+# one of the values that wasn't used, but in every combination *across* the variables
+def all_combinations_of_states(original_state, combinatorial_x_values):
+    if len(combinatorial_x_values) == 0:
+        yield original_state
+    else:
+        combinatorial_x_variables_values = list(combinatorial_x_values.values())
+        combinatorial_x_variables_names = list(combinatorial_x_values.keys())
+
+        # Build a list of generators for each combinatorial x value that generates all
+        # of the values that might be needed
+        data_list = []
+        for variable_index in range(len(combinatorial_x_variables_names)):
+            binding_metadata = get_variable_metadata(combinatorial_x_variables_names[variable_index])
+            variable_size = binding_metadata["ValueSize"]
+            if variable_size == ValueSize.exactly_one:
+                min_size = 1
+                max_size = 1
+            elif variable_size == ValueSize.more_than_one:
+                min_size = 2
+                max_size = len(combinatorial_x_variables_values[variable_index])
+            else:
+                min_size = 1
+                max_size = len(combinatorial_x_variables_values[variable_index])
+
+            data_list.append(iter(all_nonempty_subsets(combinatorial_x_variables_values[variable_index],
+                                                       min_size=min_size,
+                                                       max_size=max_size)))
+
+        for combination in product_stream(*iter(data_list)):
+            combination_list = list(combination)
+            new_state = original_state
+            for variable_index in range(len(combinatorial_x_variables_names)):
+                new_state = new_state.set_x(combinatorial_x_variables_names[variable_index], combination_list[variable_index])
+            yield new_state
 
 
 # Main helper for a predication that takes 2 arguments

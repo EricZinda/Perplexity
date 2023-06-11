@@ -1,25 +1,22 @@
-- 
-- START HERE NEXT: When running /runfolder only, this happens:
-  - examples.Example23_reset: "blue" is in this folder -> I don't know the words: blue
-    - Expected: Yes, that is true.
-    - Expect it is because the error doesn't get cleaned up and it sticks
+- We've generated all combinatorial states, now we need to call them
+  - and use the proper negated value of e[negated_predications] depending on whether it is scoped or not?
+  - To make which files are not in 2 folders work
+
+- Example27: which files are not in this folder?
+  - _which_q(x3,_file_n_of(x3,i8),neg(e9,_this_q_dem(x12,_folder_n_of(x12,i17),_in_p_loc(e2,x3,x12))))
+  - 
 - Logic for neg has been rewritten, it is probably correct now
   - Test more scenarios
 
 - Build good errors for neg() by building up a tree for nlg_data that allows neg() to scope some terms
 - Not able to update tests for /runparse 0,1 to the actual response that happened
 - which files are not in 2 folders
-  - example27: /runparse 0,1: which files are not in 2 folders
-      - Could mean "not in any 2 folders"
-      - Could mean "get the folders it is in, make sure it isn't > 1"
-        - Requires not(folder(), card(2))
-        - Run the fragment as an MRS with the state pre-loaded with variable values
-      - Interpreted as "Find 2 folders that files are not in, then return those files"
-        - Obviously No files ...
-
-    - One problem is that we record which variables are used *independently*, we need to record them *together* and
-      - return all alternates that are not the together version
-
+  - example27a: /runparse 0,0: which file is not in 2 folders
+    - runparse 0,0
+    - which_q(x3,_file_n_of(x3,i8),neg(e9,udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],_in_p_loc(e2,x3,x12))))
+      - x3 is combinatorial and it goes into the neg() and gets resolve_fragment() called there, which tries all the alternatives 
+        - AND does solution group checking of them
+      - Fix: If a variable is used in neg() but not quantified there AND is combinatorial, it need to turn discrete before going in
 - Need to be able to run code on the solution group
   - not() is going to require special processing
 

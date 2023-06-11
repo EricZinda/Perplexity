@@ -367,7 +367,6 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
             for negated_predication_item in negated_predications_binding.value.items():
                 if variable_stats.variable_name in negated_predication_item[1].scoped_variables:
                     negated_index = negated_predication_item[0]
-                    scopes_all = negated_predication_item[1].scopes_all
                     break
 
             if negated_index is not None:
@@ -416,10 +415,9 @@ def check_only_global_criteria_all(execution_context, var_criteria, new_solution
 
 
 class NegatedPredication(object):
-    def __init__(self, predication, scoped_variables, scopes_all):
+    def __init__(self, predication, scoped_variables):
         self.predication = predication
         self.scoped_variables = scoped_variables
-        self.scopes_all = scopes_all
 
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained

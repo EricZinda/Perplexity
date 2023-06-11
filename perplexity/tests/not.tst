@@ -123,17 +123,52 @@
         },
         {
             "Command": "which folder are files not in?",
-            "Expected": "(Folder(name=/, size=0),)",
+            "Expected": "(Folder(name=/temp, size=0),)(there are more)",
             "Tree": "_which_q(x5,_folder_n_of(x5,i9),neg(e15,udef_q(x3,_file_n_of(x3,i14),_in_p_loc(e2,x3,x5))))",
             "Enabled": true,
             "ID": "a3498188-b338-4e7c-99cc-f0bcff661159"
         },
         {
             "Command": "/runparse",
-            "Expected": "(Folder(name=/, size=0),)",
+            "Expected": "(Folder(name=/temp, size=0),)(there are more)",
             "Tree": "_which_q(x5,_folder_n_of(x5,i9),neg(e15,udef_q(x3,_file_n_of(x3,i14),_in_p_loc(e2,x3,x5))))",
             "Enabled": true,
             "ID": "2a238526-69d8-4d64-ae83-05368f578335"
+        },
+        {
+            "Command": "/new examples.Example27_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "71f9fe80-3337-41c4-9548-049aa54e7b06"
+        },
+        {
+            "Command": "which files are not in 2 folders?",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/bigfile3.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/green, size=10000000),)",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),neg(e9,udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],_in_p_loc(e2,x3,x12))))",
+            "Enabled": true,
+            "ID": "eded6930-5e46-4850-92f4-51cb3f81ebc3"
+        },
+        {
+            "Command": "/new examples.Example31_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "27f5936a-5de7-4b70-a047-e561f4b5a6ee"
+        },
+        {
+            "Command": "which files are not in 2 folders?",
+            "Expected": "That isn't true",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),neg(e9,udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],_in_p_loc(e2,x3,x12))))",
+            "Enabled": true,
+            "ID": "81a001f7-63be-4ec2-a1fe-13a44d672c78"
+        },
+        {
+            "Command": "/runparse",
+            "Expected": "That isn't true",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),neg(e9,udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],_in_p_loc(e2,x3,x12))))",
+            "Enabled": true,
+            "ID": "863f82ba-f37f-4ebd-a8f4-0fd35aafa5fb"
         }
     ]
 }
