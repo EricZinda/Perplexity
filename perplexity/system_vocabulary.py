@@ -145,6 +145,18 @@ def implicit_conj(state, x_binding_introduced, x_binding_first, x_binding_second
     yield from and_c(state, x_binding_introduced, x_binding_first, x_binding_second)
 
 
+def generate_not_error(unscoped_referenced_variables):
+    if len(unscoped_referenced_variables) == 0:
+        quantifier_variable = execution_context().current_predication().args[1].args[0]
+        report_error(["notAllError", quantifier_variable, ["AfterFullPhrase", quantifier_variable]], force=True)
+
+    elif len(unscoped_referenced_variables) == 1:
+        report_error(["notError", ["AfterFullPhrase", unscoped_referenced_variables[0]]], force=True)
+
+    else:
+        report_error(["notClause"], force=True)
+
+
 @Predication(vocabulary, names=["neg"])
 def neg(state, e_introduced_binding, h_scopal):
     # Gather all the bound x variables and their values that are referenced in h_scopal
@@ -156,7 +168,14 @@ def neg(state, e_introduced_binding, h_scopal):
             combinatorial_referenced_x_values[variable_name] = binding.value
 
     # Record all the variables this neg() has scope over so we can add it as an event later
-    scoped_variables, _ = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], execution_context().current_predication_index())
+    scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], execution_context().current_predication_index())
+
+    # Referenced variables that are not scoped in h_scopal
+    unscoped_referenced_variables = []
+    for referenced_x_variable in referenced_x_variables:
+        if referenced_x_variable in unscoped_variables:
+            unscoped_referenced_variables.append(referenced_x_variable)
+
     negated_predication_info = NegatedPredication(execution_context().current_predication(), scoped_variables)
 
     # If a state makes h_scopal True, this predication fails since it is neg(). That part is straightforward.
@@ -185,7 +204,7 @@ def neg(state, e_introduced_binding, h_scopal):
                 had_negative_success = False
                 for _ in execution_context().resolve_fragment(combination_state, h_scopal):
                     # This is true, don't yield it since neg() makes it False
-                    report_error(["notClause"], force=True)
+                    generate_not_error(unscoped_referenced_variables)
                     had_negative_success = True
 
                 if execution_context().has_not_understood_error():
@@ -212,7 +231,7 @@ def neg(state, e_introduced_binding, h_scopal):
                 had_negative_success = False
                 for _ in call(combination_state, h_scopal):
                     # This is true, don't yield it since neg() makes it False
-                    report_error(["notClause"], force=True)
+                    generate_not_error(unscoped_referenced_variables)
                     had_negative_success = True
 
                 if execution_context().has_not_understood_error():

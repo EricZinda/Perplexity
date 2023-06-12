@@ -1,7 +1,9 @@
+import copy
 import enum
 import logging
 import inflect
-from perplexity.tree import walk_tree_predications_until, is_last_fw_seq
+from perplexity.tree import walk_tree_predications_until, is_last_fw_seq, rewrite_tree_predications, \
+    find_predication_from_introduced
 from perplexity.utilities import parse_predication_name
 
 
@@ -25,31 +27,55 @@ def change_to_plural_mode(singular_word, plural_mode):
         return singular_word
 
 
-# Given the index where an error happened and a variable,
-# return what that variable "is" up to that point, in English
 def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None):
-    # This function will be called for every predication in the MRS
-    # as we walk it in execution order
-    def record_predications_until_failure_index(predication):
+    def record_predications_until_failure_index(predication, index_by_ref, nlg_data, local_tree_info):
+        nonlocal tree_info
         # Once we have hit the index where the failure happened, stop
         if predication.index == failure_index:
             logger.debug(f"(stop and ignore) error predication index {predication.index}: {predication.name}")
-            return False
+            # Stop recursing by returning the predication
+            return predication
+
         else:
             logger.debug(f"(refine NLG) error predication index {predication.index}: {predication.name}")
 
-            # See if this predication can contribute anything to the
-            # description of the variable we are describing. If so,
-            # collect it in nlg_data
-            refine_nlg_with_predication(tree_info, variable, predication, nlg_data)
-            return None
+            if predication.name == "neg":
+                if find_predication_from_introduced(predication.args[1], variable) is not None:
+                    # the variable is introduced in this subtree so it should not have "not" added
+                    def neg_nlg_func(predication, index_by_ref):
+                        return record_predications_until_failure_index(predication, index_by_ref, nlg_data, local_tree_info)
+                    return rewrite_tree_predications(predication.args[1], neg_nlg_func, index_by_ref)
+
+                else:
+                    neg_nlg_data = {"Quantifier": "<none>",
+                                    "Topic": ""}
+                    nlg_data["NotScope"] = neg_nlg_data
+
+                    subtree_info = copy.deepcopy(local_tree_info)
+                    subtree_info["Tree"] = predication.args[1]
+                    def neg_nlg_func(predication, index_by_ref):
+                        return record_predications_until_failure_index(predication, index_by_ref, neg_nlg_data, subtree_info)
+
+                    value = rewrite_tree_predications(predication.args[1], neg_nlg_func, index_by_ref)
+                    return value
+            else:
+                # See if this predication can contribute anything to the
+                # description of the variable we are describing. If so,
+                # collect it in nlg_data
+                refine_nlg_with_predication(local_tree_info, variable, predication, nlg_data)
+                return None
 
     nlg_data = {}
 
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
     # the function record_predications_until_failure_index(), until hits the
     # failure_index position
-    walk_tree_predications_until(tree_info["Tree"], record_predications_until_failure_index)
+    index_by_ref = [0]
+
+    def initial_nlg_data(predication, index_by_ref):
+        return record_predications_until_failure_index(predication, index_by_ref, nlg_data, tree_info)
+
+    rewrite_tree_predications(tree_info["Tree"], initial_nlg_data, index_by_ref)
 
     # Take the data we gathered and convert to English
     logger.debug(f"NLG data for {variable}: {nlg_data}")
@@ -212,6 +238,11 @@ def convert_to_english(nlg_data, plural=None, determiner=None):
 
     if "PostModifiers" in nlg_data:
         phrase += " ".join(nlg_data["PostModifiers"]) + " "
+
+    if "NotScope" in nlg_data:
+        not_english = convert_to_english(nlg_data["NotScope"])
+        if len(not_english.strip()):
+            phrase += "not " + not_english
 
     return phrase.strip()
 

@@ -375,6 +375,7 @@ sstring_logger = logging.getLogger('SString')
 
 if __name__ == '__main__':
     ShowLogging("SString")
+    ShowLogging("Generation")
 
     test = "a dog"
     print(sstringify("{the *test}"))
@@ -392,7 +393,7 @@ if __name__ == '__main__':
     # Test Harness
     from perplexity.generation_experimental import round_trip_mrs
 
-    phrase = "dice are large"
+    phrase = "which files in this folder are not large?"
     gen_index, _, mrs = round_trip_mrs(mrs_parser, phrase)
     if mrs is None:
         print(f"Couldn't round trip: {phrase}")
@@ -408,6 +409,8 @@ if __name__ == '__main__':
         for variable in variables:
             print_variable = True
             for tree in mrs_parser.trees_from_mrs(mrs):
+
+
                 if print_variable:
                     print(f"\n{tree.repr_with_indices()}")
                     print(f"\n{variable} --> {find_predication_from_introduced(tree, variable)}")
@@ -420,6 +423,9 @@ if __name__ == '__main__':
                              "Variables": mrs.variables,
                              "Tree": tree,
                              "MRS": mrs_parser.mrs_to_string(mrs)}
+
+                test = ["AfterFullPhrase", 'x3']
+                print(sstringify("{test}", tree_info))
 
                 index_test = 4
                 print(sstringify("raw default: {variable}", tree_info))

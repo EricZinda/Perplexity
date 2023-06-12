@@ -174,8 +174,9 @@ class UserInterface(object):
 
                     unprocessed_groups = [] if self.show_all_answers else None
                     def yield_from_first():
-                        if len(unprocessed_groups) > 0:
-                            yield from unprocessed_groups[0]
+                        if unprocessed_groups is not None:
+                            if len(unprocessed_groups) > 0:
+                                yield from unprocessed_groups[0]
 
                     tree_record["SolutionGroups"] = yield_from_first()
                     # solution_groups() should return an iterator that iterates *groups*
