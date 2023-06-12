@@ -1,11 +1,13 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
+from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
 from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
 from perplexity.execution import report_error, call, execution_context
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, in_style_predication_2, \
     individual_style_predication_1, discrete_variable_generator
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
+from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predication
 from perplexity.utilities import sentence_force
@@ -154,19 +156,28 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
+nouns_handled_directly = ["file", "folder"]
 def handles_noun(noun_lemma):
-    return noun_lemma in ["book"]
+    return noun_lemma not in nouns_handled_directly
 
 
 # Simple example of using match_all that doesn't do anything except
 # make sure we don't say "I don't know the word 'book'"
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
-def noun_n(noun_type, state, x_binding, i_binding):
+def noun_n_2(noun_type, state, x_binding, i_binding):
     if noun_type == "book":
         yield state.set_x(x_binding.variable.name, ("book1",))
-        # report_error(["errorText", "We don't sell books here!"])
+    elif noun_type not in nouns_handled_directly:
+        yield state.set_x(x_binding.variable.name, (noun_type,))
+
     if False:
         yield None
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
+def noun_n_1(noun_type, state, x_binding):
+    if noun_type not in nouns_handled_directly:
+        yield state.set_x(x_binding.variable.name, (noun_type,))
 
 
 @Predication(vocabulary, names=["_please_v_1"])
@@ -375,6 +386,22 @@ def in_p_loc_norm(state, e_introduced_binding, x_actor_binding, x_location_bindi
 # def in_p_loc_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
 #     yield []
 
+
+@Predication(vocabulary, names=["_in_p_loc"])
+def in_p_loc_open_ai(state, e_introduced_binding, x_actor_binding, x_location_binding):
+    if x_actor_binding.value is not None and x_location_binding.value is not None and \
+        len(x_actor_binding.value) == 1 and len(x_location_binding.value) == 1 and \
+            isinstance(x_actor_binding.value[0], str) and isinstance(x_location_binding.value[0], str):
+        request_text = s("{'is':<x_actor_binding.variable.name} {x_actor_binding.variable.name} sometimes in {x_location_binding.variable.name}?", state.get_binding("tree").value[0])
+        print(f"Asking ChatGPT: {request_text}")
+        request_info = StartOpenAIBooleanRequest("test", "in_loc_predication", request_text)
+        result = CompleteOpenAIRequest(request_info, wait=10)
+        if result == "true":
+            yield state
+        elif result is None:
+            report_error(["dontKnowRightNow"])
+        else:
+            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):

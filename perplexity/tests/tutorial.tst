@@ -459,8 +459,8 @@
         },
         {
             "Command": "where is a dog",
-            "Expected": "I don't know the words: dog",
-            "Tree": "None",
+            "Expected": "a dog is not in place",
+            "Tree": "which_q(x4,place_n(x4),_a_q(x3,_dog_n_1(x3),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "88b0aa71-c1a3-47b1-bc8b-393bef1b8d33"
         },

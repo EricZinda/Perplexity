@@ -38,6 +38,9 @@ def generate_message(tree_info, error_term):
     elif error_constant == "dontKnowActor":
         return s("I don't know who '{arg1}' is", tree_info)
 
+    elif error_constant == "dontKnowRightNow":
+        return s("I'm not sure right now, try again later", tree_info)
+
     elif error_constant == "notFound":
         return s("{arg1} was not found", tree_info)
 
