@@ -1,8 +1,5 @@
 - Demo for summit
   - card() not in rstr
-  - Every() (also each())
-    - converts the singular from min=1, max=1 to be min=1, max=inf and adds GlobalCriteria.all_rstr_meet_criteria
-    - 
 - Not issues: For Example23
   - large files are not in this folder -> Yes, that is true.
     - Interpreted as not(large files in this folder)
