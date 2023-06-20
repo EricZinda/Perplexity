@@ -241,11 +241,14 @@ class FileSystemMock(FileSystem):
         path = self.add_current_directory(container.name)
         is_file = isinstance(container, File)
         if self.exists(path, is_file=is_file):
+            path_obj = pathlib.Path(path)
             for item in self.items.items():
                 item_path = str(pathlib.PurePath(item[0]).parent)
+                item_path_obj = pathlib.Path(item_path)
+
                 # item_path == item[0] when it is the root ("/")
                 # don't say the root is in itself
-                if item_path != item[0] and item_path == path:
+                if item_path != item[0] and (item_path == path or path_obj in item_path_obj.parents):
                     yield item[1]
 
         else:

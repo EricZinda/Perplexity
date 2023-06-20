@@ -396,7 +396,7 @@
         },
         {
             "Command": "what is in \"\\>root111\"",
-            "Expected": "(Folder(name=/documents, size=0),)(there are more)",
+            "Expected": "(File(name=/documents/file1.txt, size=1000),)(there are more)",
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\>root111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "87db9431-d91b-492f-844e-919dac3a392f"
@@ -452,8 +452,8 @@
         },
         {
             "Command": "'blue' is in '\\>documents'",
-            "Expected": "File(name=/documents/file1.txt, size=1000)\nFile(name=/documents/blue, size=1000)\n",
-            "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\\\>documents,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
+            "Expected": "'blue' is not in '/documents'",
+            "Tree": "proper_q(x10,[quoted(\\>documents,i15), fw_seq(x10,i15)],proper_q(x3,[quoted(blue,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "8cad0fce-3ce7-4d96-a384-606ef10fd11f"
         },
@@ -536,7 +536,7 @@
         },
         {
             "Command": "which files are in folders",
-            "Expected": "('fakefile0',)('fakefile1',)('fakefile2',)('fakefile3',)(there are more)",
+            "Expected": "('fakefile0',)('fakefile1',)('fakefile2',)('fakefile3',)('fakefile4',)('fakefile5',)('fakefile6',)('fakefile7',)(there are more)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "75d771c6-b11a-4c34-a3ee-9495aa385c07"

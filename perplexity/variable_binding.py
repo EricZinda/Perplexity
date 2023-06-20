@@ -7,7 +7,10 @@ class VariableData(object):
         self.quantifier = quantifier
 
     def __repr__(self):
-        return f"{self.name}({self.combinatoric})"
+        if self.combinatoric:
+            return f"{self.name}(combinatoric)"
+        else:
+            return f"{self.name}"
 
     def copy_with_changes(self, combinatoric=None, determiner=None, quantifier=None):
         return VariableData(self.name,

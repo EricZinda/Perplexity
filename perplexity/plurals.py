@@ -419,6 +419,8 @@ class NegatedPredication(object):
         self.predication = predication
         self.scoped_variables = scoped_variables
 
+    def __repr__(self):
+        return str(self.predication)
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained
 # within a particular solution group. The count of that item *across* groups could be bigger.

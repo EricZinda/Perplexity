@@ -1,7 +1,9 @@
 - Demo for summit
   - card() not in rstr
   - Every()
-  - Example28: is a file not in 3 folders? -> yes.  /show: can't see the solution that led us there
+  - Example28: which files are in "/"?
+    - Now breaks: Example25: which files are in folders?
+    - 
 - Not issues: For Example23
   - large files are not in this folder -> Yes, that is true.
     - Interpreted as not(large files in this folder)

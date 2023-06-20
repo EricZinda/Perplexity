@@ -985,7 +985,7 @@ def state_test():
 
 if __name__ == '__main__':
     # ShowLogging("Execution")
-    ShowLogging("Generation")
+    # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     ShowLogging("Pipeline")
     # ShowLogging("SString")
@@ -1026,7 +1026,7 @@ if __name__ == '__main__':
     # Example23()
     # Example24()
     # Example25()
-    # Example26()
+    Example26()
     # Example27()
     # Example27a()
     # Example28()
@@ -1060,7 +1060,7 @@ if __name__ == '__main__':
 
     # Demo: Do with pipeline on
 
-    Example25()
+    # Example25()
     # which files are large?
     # Where am I? -> describe there are more
     # what is in this folder? -> what is singular, thus: there are more
