@@ -74,14 +74,11 @@ def a_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-# Several meanings:
-# 1. Means "this" which only succeeds for rstrs that are the single in scope x set and there are no others that are in scope
-#       "put the two keys in the lock": should only work if there are only two keys in scope:
-#       run the rstr, run the cardinal (potentially fail), the run the body (potentially fail)
-# 2. Means "the one and only" which only succeeds if the rstr is a single set and there are no other sets
-#       same approach
-@Predication(vocabulary, names=["_the_q"])
-def the_q(state, x_variable_binding, h_rstr, h_body):
+# The interpretation of "the x" which means "all of the x" is the same as "all x"
+# The key part here is GlobalCriteria.all_rstr_meet_criteria which ensures that every value of the RSTR is true
+# for the body
+@Predication(vocabulary, names=["_the_q", "_all_q"])
+def the_all_q(state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
     state = state.set_variable_data(x_variable_binding.variable.name,
