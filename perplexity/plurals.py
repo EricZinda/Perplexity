@@ -539,6 +539,7 @@ class GlobalCriteria(enum.Enum):
     all_rstr_meet_criteria = 1
 
 
+# If the previous variable is state x, and this variable is state y, then what is the whole state?
 criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaResult.meets,
                                                CriteriaResult.meets_pending_global: CriteriaResult.meets_pending_global,
                                                CriteriaResult.contender: CriteriaResult.contender,
@@ -550,7 +551,7 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
                                                               CriteriaResult.fail_one: CriteriaResult.fail_one,
                                                               CriteriaResult.fail_all: CriteriaResult.fail_all},
                         CriteriaResult.contender: {CriteriaResult.meets: CriteriaResult.contender,
-                                                   CriteriaResult.meets_pending_global: CriteriaResult.meets_pending_global,
+                                                   CriteriaResult.meets_pending_global: CriteriaResult.contender,
                                                    CriteriaResult.contender: CriteriaResult.contender,
                                                    CriteriaResult.fail_one: CriteriaResult.fail_one,
                                                    CriteriaResult.fail_all: CriteriaResult.fail_all},

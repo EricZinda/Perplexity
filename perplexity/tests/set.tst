@@ -520,6 +520,48 @@
             "Tree": "_which_q(x3,_a_q(x12,_folder_n_of(x12,i17),[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)]),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "105ed870-e509-4ba7-8e78-ea3991197c0a"
+        },
+        {
+            "Command": "/new examples.Example34_reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "8063e05b-15e7-4a1b-a284-b2df13c1c2f9"
+        },
+        {
+            "Command": "the files are in one folder",
+            "Expected": "Yes, that is true.(there are more)",
+            "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(1,e15,x9)],_the_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "b39e93c7-d7a1-4681-858a-4a15ae4ddd45"
+        },
+        {
+            "Command": "the files are in two folders",
+            "Expected": "Yes, that is true.(there are more)",
+            "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(2,e15,x9)],_the_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "a2a9c5eb-5be4-46b0-ad4d-d6da65b3a3f5"
+        },
+        {
+            "Command": "the files are in three folders",
+            "Expected": "Yes, that is true.(there are more)",
+            "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(3,e15,x9)],_the_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "a73e0df7-7737-43a0-861b-cabd732b41eb"
+        },
+        {
+            "Command": "the files are in four folders",
+            "Expected": "There are less than 2 file in 4 folder",
+            "Tree": "udef_q(x9,[_folder_n_of(x9,i16), card(4,e15,x9)],_the_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "be27ecc5-7138-4ed0-8dd9-76f7272753df"
+        },
+        {
+            "Command": "which files are in three folders?",
+            "Expected": "(File(name=/Desktop/file1.txt, size=10000000),)(File(name=/Desktop/file2.txt, size=10000000),)(File(name=/documents/file3.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(there are more)",
+            "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,[_folder_n_of(x9,i16), card(3,e15,x9)],_in_p_loc(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "5d924bb8-b229-44f4-a13a-28118017708a"
         }
     ]
 }
