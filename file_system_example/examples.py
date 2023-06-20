@@ -985,9 +985,9 @@ def state_test():
 
 if __name__ == '__main__':
     # ShowLogging("Execution")
-    # ShowLogging("Generation")
+    ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
@@ -1019,7 +1019,7 @@ if __name__ == '__main__':
     # Example16()
     # Example17()
     # Example18()
-    Example19()
+    # Example19()
     # Example20()
     # Example21()
     # Example22()
@@ -1058,3 +1058,33 @@ if __name__ == '__main__':
     #     stats.get_stats_profile()
     #     stats.print_stats()
 
+    # Demo: Do with pipeline on
+
+    Example25()
+    # which files are large?
+    # Where am I? -> describe there are more
+    # what is in this folder? -> what is singular, thus: there are more
+    # which files are in this folder?
+    # Which files are not in this folder? -> show how not() resolves the fragments
+    # Which 2 files are in 2 folders? -> distributive reading
+    # which 2 files are in 2 folders together? -> show the parse that failed,
+    # Example35()
+    # which 2 files are in 2 folders together? -> interprets "2 folders at the same time"?
+
+    # Example28()
+    # which files are very large? set of 3
+    # which files are 20 mb? -> also returns a set meaning "together"
+    # which 2 files in a folder together are 20 mb -> returns just those
+    # /soln all, Is a file in 3 folders? -> yes.
+    # /show -> prove it is
+    # where am i?
+    # go to "/temp"
+    # what is in this folder?
+    # Example37()
+    # which files are in folders?
+    # which files are in a folder
+    # which file is in a folder
+    # delete the file
+    # Where is the file?
+
+    # One more thing

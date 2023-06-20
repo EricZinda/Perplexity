@@ -155,6 +155,9 @@ class TreePredication(object):
     def x_args(self):
         return self.args_with_types(["x"])
 
+    def scopal_args(self):
+        return self.args_with_types(["h"])
+
     def args_with_types(self, types):
         found_args = []
         for arg_index in range(0, len(self.args)):
@@ -488,6 +491,22 @@ def find_predications_in_list_in_list(term, predication_name_list):
             found_predications.append(predication)
 
     return found_predications
+
+
+# Returns the conjunction (if any) that the predication that introduced this
+# variable is in
+def find_predication_conjunction_from_introduced(term, introduced_variable):
+    def match_introduced_variable(predication):
+        for scopal_arg_raw in predication.scopal_args():
+            scopal_arg_list = scopal_arg_raw if isinstance(scopal_arg_raw, list) else [scopal_arg_raw]
+            for scopal_arg_predication in scopal_arg_list:
+                if scopal_arg_predication.introduced_variable() == introduced_variable:
+                    predication_data = parse_predication_name(scopal_arg_predication.name)
+                    if predication_data["Pos"] != "q":
+                        return scopal_arg_list
+        return None
+
+    return walk_tree_predications_until(term, match_introduced_variable)
 
 
 def find_predication_from_introduced(term, introduced_variable):

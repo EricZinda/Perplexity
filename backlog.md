@@ -1,3 +1,12 @@
+- Demo for summit
+  - card() not in rstr
+  - Every()
+  - Example28: is a file not in 3 folders? -> yes.  /show: can't see the solution that led us there
+- Not issues: For Example23
+  - large files are not in this folder -> Yes, that is true.
+    - Interpreted as not(large files in this folder)
+
+
 - Not able to update tests for /runparse 0,1 to the actual response that happened
 - Need to be able to run code on the solution group
   - not() is going to require special processing

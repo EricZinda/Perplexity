@@ -5,7 +5,7 @@ import inspect
 from delphin.codecs import simplemrs
 from perplexity.generation import english_for_delphin_variable, PluralMode, is_plural_word, change_to_plural_mode
 from perplexity.generation_mrs import english_for_variable_using_mrs
-from perplexity.tree import MrsParser, find_predication_from_introduced
+from perplexity.tree import MrsParser, find_predication_from_introduced, find_predication_conjunction_from_introduced
 from perplexity.utilities import ShowLogging
 
 INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
@@ -224,14 +224,15 @@ class SStringFormat(object):
             variable_name, specified_meaning_at_index_value = self._convert_complex_variable(variable_name)
 
             # Now that we have the variable, resolve the meaning_at_index_variable
-            predication_for_variable = find_predication_from_introduced(tree, variable_name)
-            if predication_for_variable is None:
+            conjunction_for_variable = find_predication_conjunction_from_introduced(tree, variable_name)
+            if conjunction_for_variable is None:
                 raise SyntaxError(f"Can't find predication for variable '{variable_name}'. Are you missing a '*'?")
 
             else:
-                # Add 1 since we want the meaning *after* the predication introducing it has been successfully
-                # processed. This is because we want the word representing it to have been processed by default
-                meaning_at_index_default = predication_for_variable.index + 1
+                # Add 1 to the last predication in the conjunction since we want the meaning *after* the predication
+                # introducing it has been successfully processed. This is because we want the word representing it
+                # to have been processed by default
+                meaning_at_index_default = conjunction_for_variable[-1].index + 1
 
             sstring_logger.debug(f"sstring: default meaning_at_index is '{meaning_at_index_default}'")
             if self.meaning_at_index_variable is None and specified_meaning_at_index_value is None:
