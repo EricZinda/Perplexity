@@ -280,6 +280,7 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
     global_constraint = None
     exactly_constraint = None
     all_rstr_constraint = None
+    every_rstr_constraint = None
     predication = None
     for constraint in variable_info_list:
         if constraint.global_criteria == GlobalCriteria.exactly:
@@ -291,6 +292,11 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
             # ditto
             assert all_rstr_constraint is None
             all_rstr_constraint = constraint
+
+        elif constraint.global_criteria == GlobalCriteria.every_rstr_meet_criteria:
+            # ditto
+            assert every_rstr_constraint is None
+            every_rstr_constraint = constraint
 
         else:
             # Constraints with no global criteria just get merged to most restrictive
@@ -319,6 +325,23 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
 
         else:
             # This was the only constraint, use it
+            return [all_rstr_constraint]
+
+    if every_rstr_constraint is not None:
+        if len(variable_info_list) > 1:
+            if min_size == 1 and max_size == 1:
+                # Convert singular constraint (i.e. "every file is large") into plural
+                assert every_rstr_constraint.min_size == 1 and every_rstr_constraint.max_size == float(inf)
+                max_size = float(inf)
+
+            # Now that we have converted the singular to plural, it is just "all"
+            global_constraint = GlobalCriteria.all_rstr_meet_criteria
+            predication = every_rstr_constraint.predication
+
+        else:
+            # This was the only constraint, use it, but convert to all_rstr_meet_criteria
+            all_rstr_constraint = copy.deepcopy(every_rstr_constraint)
+            all_rstr_constraint.global_criteria = GlobalCriteria.all_rstr_meet_criteria
             return [all_rstr_constraint]
 
     if predication is None:

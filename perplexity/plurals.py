@@ -485,14 +485,7 @@ class VariableCriteria(object):
     # Only called at the very end after all solutions have been generated
     def meets_global_criteria(self, execution_context):
         if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-            # If there are more or less than the number the user said "the" of, return that error
-            # For "the" singular there must be only one
-            is_plural = is_plural_from_tree_info(execution_context.tree_info, self.variable_name)
             all_rstr_values = execution_context.get_variable_execution_data(self.variable_name)["AllRstrValues"]
-
-            if not is_plural and len(all_rstr_values) > 1:
-                execution_context.report_error_for_index(self.predication_index, ["moreThan1", ["AtPredication", self.predication.args[2], self.variable_name]], force=True)
-                return False
 
             if len(all_rstr_values) < self.min_size:
                 execution_context.report_error_for_index(self.predication_index, ["lessThan", self._predication_error_location, self.min_size, ], force=True)
@@ -536,7 +529,11 @@ class CriteriaResult(enum.Enum):
 
 class GlobalCriteria(enum.Enum):
     exactly = 0
+    # words like "the" and "all" require every RSTR to meet the body
     all_rstr_meet_criteria = 1
+    # words like "each" and "every" are said with a singular, but allow 1,inf in the answer
+    # so they must do a special transformation when being collapsed
+    every_rstr_meet_criteria = 2
 
 
 # If the previous variable is state x, and this variable is state y, then what is the whole state?

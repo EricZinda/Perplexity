@@ -91,6 +91,20 @@ def the_all_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
+@Predication(vocabulary, names=["_every_q", "_each_q", "_each+and+every_q"])
+def every_each_q(state, x_variable_binding, h_rstr, h_body):
+    # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
+    # whatever the determiner constraint gets set to will replace these
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=float('inf'),
+                                                                global_criteria=GlobalCriteria.every_rstr_meet_criteria))
+
+    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+
+
 @Predication(vocabulary, names=["which_q", "_which_q"])
 def which_q(state, x_variable_binding, h_rstr, h_body):
     current_predication = execution_context().current_predication()
