@@ -251,13 +251,13 @@ class Vocabulary(object):
                 else:
                     type_list.append((module, function))
 
-    def alternate_trees(self, tree):
+    def alternate_trees(self, tree_info):
         for transformer_root in self.transformers:
-            new_tree = build_transformed_tree(tree, transformer_root)
-            if new_tree:
-                yield new_tree
+            new_tree_info = build_transformed_tree(tree_info, transformer_root)
+            if new_tree_info:
+                yield new_tree_info
 
-        yield tree
+        yield tree_info
 
     def predications(self, name, arg_types, predication_type):
         name_key = self.name_key(name, arg_types, predication_type)

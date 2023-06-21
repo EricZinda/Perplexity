@@ -4,7 +4,7 @@ import logging
 from perplexity.execution import report_error
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
 from perplexity.tree import find_quantifier_from_variable
-from perplexity.utilities import is_plural_from_tree_info, parse_predication_name, is_plural
+from perplexity.utilities import plural_from_tree_info, parse_predication_name, is_plural
 from perplexity.vocabulary import ValueSize
 
 
@@ -14,15 +14,17 @@ def determiner_from_binding(state, binding):
 
     else:
         quantifier = find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
-        if is_plural(state, binding.variable.name):
+
+        pl_value = plural_from_tree_info(state.get_binding("tree").value[0], binding.variable.name)
+        if pl_value == "pl":
             # Plural determiner, mark this as coming from the quantifier for error reporting purposes
             return VariableCriteria(quantifier,
                                     binding.variable.name,
                                     min_size=2,
                                     max_size=float('inf'))
 
-        else:
-            # Singular determinter, mark this as coming from the quantifier for error reporting purposes
+        elif pl_value == "sg":
+            # Singular determiner, mark this as coming from the quantifier for error reporting purposes
             return VariableCriteria(quantifier,
                                     binding.variable.name,
                                     min_size=1,

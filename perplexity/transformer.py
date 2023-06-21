@@ -1,9 +1,31 @@
 import copy
 import logging
-
 from delphin.mrs import EP
-
 import perplexity.tree
+
+
+def replace_str_captures(value, captures):
+    items = value.split("$")
+    if len(items) == 1:
+        return value
+    else:
+        new_string = items[0]
+        for item in items[1:]:
+            item_split = item.split("|")
+            if len(item_split) == 1:
+                # No | separators
+                token = item
+                after_str = ""
+            else:
+                assert len(item_split) == 3
+                token = item_split[1]
+                after_str = item_split[2]
+                new_string += item_split[0]
+            assert token in captures, f"There is no capture named {token}"
+            new_string += captures[token]
+            new_string += after_str
+
+        return new_string
 
 
 class TransformerProduction(object):
@@ -29,46 +51,57 @@ class TransformerProduction(object):
 
     def transform_using_captures(self, value, captures, current_index):
         if isinstance(value, str):
-            items = value.split("$")
-            if len(items) == 1:
-                return value
-            else:
-                new_string = items[0]
-                for item in items[1:]:
-                    item_split = item.split("|")
-                    if len(item_split) == 1:
-                        # No | separators
-                        token = item
-                        after_str = ""
-                    else:
-                        assert len(item_split) == 3
-                        token = item_split[1]
-                        after_str = item_split[2]
-                        new_string += item_split[0]
-                    assert token in captures, f"There is no capture named {token}"
-                    new_string += captures[token]
-                    new_string += after_str
-
-                return new_string
-
+            return replace_str_captures(value, captures)
         else:
             return value.create(captures, current_index)
 
+
+# Runs at the very end
+class PropertyTransformerMatch(object):
+    # requires a dictionary where:
+    #   each key is a capture name of a variable
+    #   each value is a dictionary of properties and values to match
+    def __init__(self, variables_pattern):
+        self.variables_pattern = variables_pattern
+
+    def match(self, tree_info, captures):
+        for variable_reference_item in self.variables_pattern.items():
+            variable = replace_str_captures(variable_reference_item[0], captures)
+            properties = variable_reference_item[1]
+            if variable not in tree_info["Variables"]:
+                return False
+            existing_properties = tree_info["Variables"][variable]
+            for property_item in properties.items():
+                if property_item[0] not in existing_properties or \
+                        property_item[1] != existing_properties[property_item[0]]:
+                    return False
+        return True
+
+
 class AllMatchTransformer(object):
     def __init__(self):
-        self.is_root = False
+        pass
+
+    def this_repr(self):
+        return "<All Match>"
 
     def match(self, scopal_arg, captures):
         return True
 
+    def arg_transformer(self, index):
+        return AllMatchTransformer()
+
+    def is_root(self):
+        return False
 
 class TransformerMatch(object):
-    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, production=None):
+    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, property_transformer=None, production=None):
         self.name_pattern = name_pattern
         self.name_capture = name_capture if name_pattern is not None else [None] * len(name_pattern)
         self.args_pattern = args_pattern
         self.args_capture = args_capture if args_capture is not None else [None] * len(args_pattern)
         self.label_capture = label_capture
+        self.property_transformer = property_transformer
         self.production = production
         self.did_transform = False
 
@@ -108,11 +141,16 @@ class TransformerMatch(object):
     def record_transform(self):
         self.did_transform = True
 
+    def reset_transform(self, tree_info):
+        self.did_transform = False
+        self.tree_info = tree_info
+
     def is_root(self):
         return self.production is not None
 
+
 # rewrites the tree in place
-def build_transformed_tree(tree, transformer_root):
+def build_transformed_tree(tree_info, transformer_root):
     # When called with a root transformer will either return None or a new predication
     # Otherwise returns True for a match, or False
     def transformer_search(scopal_arg, transformer, capture, current_index):
@@ -149,10 +187,16 @@ def build_transformed_tree(tree, transformer_root):
                             break
 
                     if children_matched:
-                        # The children matched so now we just return the new node
-                        # and record that at least one transform occurred
-                        transformer.record_transform()
-                        return transformer.production.create(capture, current_index)
+                        # The children matched so now we need to check the properties
+                        properties_matched = True
+                        if transformer.property_transformer is not None:
+                            properties_matched = transformer.property_transformer.match(transformer.tree_info, capture)
+
+                        if properties_matched:
+                            # we just return the new node
+                            # and record that at least one transform occurred
+                            transformer.record_transform()
+                            return transformer.production.create(capture, current_index)
 
                 # This predication will stick around, update its index
                 predication.index = current_index[0]
@@ -188,12 +232,13 @@ def build_transformed_tree(tree, transformer_root):
                     return False
 
 
-    new_tree = copy.deepcopy(tree)
+    new_tree_info = copy.deepcopy(tree_info)
     current_index = [0]
-    transformer_search(new_tree, transformer_root, {}, current_index)
+    transformer_root.reset_transform(tree_info)
+    transformer_search(new_tree_info["Tree"], transformer_root, {}, current_index)
     if transformer_root.did_transform:
-        pipeline_logger.debug(f"Transformed Tree: {new_tree}")
-        return new_tree
+        pipeline_logger.debug(f"Transformed Tree: {new_tree_info['Tree']}")
+        return new_tree_info
 
 
 pipeline_logger = logging.getLogger('Pipeline')

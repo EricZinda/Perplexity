@@ -7,7 +7,7 @@ from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
-from perplexity.transformer import TransformerMatch, TransformerProduction
+from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
 from perplexity.tree import find_predication_from_introduced
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
@@ -32,6 +32,14 @@ def _would_v_modal(state, e_introduced_binding, h_binding):
     if False:
         yield None
 
+
+# @Transform(vocabulary)
+# def what_singular_transformer():
+#     production = TransformerProduction(name="_want_v_1", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
+#     properties = PropertyTransformerMatch({"x1": {"NUM": "sg"}})
+#     thing_match = TransformerMatch(name_pattern="thing", args_pattern=["x"])
+#     which_match = TransformerMatch(name_pattern="which_q", args_pattern=["x", thing_match, "h"], args_capture=["x1", None, None], property_transformer=properties, production=production)
+#     return which_match
 
 # Convert "would like <noun>" to "want <noun>"
 @Transform(vocabulary)
@@ -938,7 +946,7 @@ def reset():
     # return State([])
     # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
-                                          {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
+                                {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
                                 "responseState": "initial"
                                 })
     initial_state = initial_state.add_rel("table", "specializes", "thing")
@@ -1057,5 +1065,5 @@ def hello_world():
 if __name__ == '__main__':
     print("Hello there, what can I do for you?")
     ShowLogging("Pipeline")
-    # ShowLogging("Transformer")
+    ShowLogging("Transformer")
     hello_world()

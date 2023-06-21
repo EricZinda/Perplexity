@@ -139,22 +139,23 @@ class UserInterface(object):
 
             else:
                 for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
-                    for tree in self.execution_context.vocabulary.alternate_trees(tree_orig):
+                    # Collect all the solutions for this tree against the
+                    # current world state
+                    tree_info_orig = {"Index": mrs.index,
+                                      "Variables": mrs.variables,
+                                      "Tree": tree_orig}
+
+                    for tree_info in self.execution_context.vocabulary.alternate_trees(tree_info_orig):
+                        # Add afterwards since the mrs can't be deepcopied
+                        tree_info["MRS"] = self.mrs_parser.mrs_to_string(mrs)
                         tree_index += 1
                         if self.run_tree_index is not None:
                             if self.run_tree_index > tree_index:
                                 continue
                             elif self.run_tree_index < tree_index:
                                 break
-                        tree_record = self.new_tree_record(tree=tree)
+                        tree_record = self.new_tree_record(tree=tree_info["Tree"])
                         mrs_record["Trees"].append(tree_record)
-
-                        # Collect all the solutions for this tree against the
-                        # current world state
-                        tree_info = {"Index": mrs.index,
-                                     "Variables": mrs.variables,
-                                     "Tree": tree,
-                                     "MRS": self.mrs_parser.mrs_to_string(mrs)}
 
                         solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
                         this_sentence_force = sentence_force(tree_info["Variables"])
