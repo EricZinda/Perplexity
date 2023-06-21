@@ -95,7 +95,7 @@ def generate_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
-    arg_length = len(error_arguments)
+    arg_length = len(error_arguments) if error_arguments is not None else 0
     arg1 = error_arguments[1] if arg_length > 1 else None
     arg2 = error_arguments[2] if arg_length > 2 else None
     arg3 = error_arguments[3] if arg_length > 3 else None

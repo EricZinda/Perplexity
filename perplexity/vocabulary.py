@@ -2,6 +2,7 @@ import enum
 import inspect
 import logging
 import perplexity.execution
+from perplexity.transformer import build_transformed_tree
 from perplexity.utilities import parse_predication_name
 from perplexity.variable_binding import VariableBinding
 
@@ -21,6 +22,12 @@ class ValueSize(enum.Enum):
     more_than_one = 2
     all = 3
 
+
+def Transform(vocabulary):
+    def PredicationDecorator(function_to_decorate):
+        vocabulary.add_transform(function_to_decorate())
+
+    return PredicationDecorator
 
 def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None):
     # Work around Python's odd handling of default arguments that are objects
@@ -191,6 +198,7 @@ class Vocabulary(object):
         # index each DELPH-IN predication by name
         # then have a list of Metadata objects for each implementation of it
         self._metadata = dict()
+        self.transformers = []
 
     def metadata(self, delphin_name, arg_types):
         metadata_list = []
@@ -212,6 +220,9 @@ class Vocabulary(object):
     def version_exists(self, delphin_name):
         name_parts = parse_predication_name(delphin_name)
         return name_parts["Lemma"] in self.words
+
+    def add_transform(self, transformer_root):
+        self.transformers.append(transformer_root)
 
     def add_predication(self, predication_metadata, module, function, delphin_names, arg_types, phrase_types, first=False):
         if len(phrase_types) == 0:
@@ -239,6 +250,14 @@ class Vocabulary(object):
                     type_list.insert(0, (module, function))
                 else:
                     type_list.append((module, function))
+
+    def alternate_trees(self, tree):
+        for transformer_root in self.transformers:
+            new_tree = build_transformed_tree(tree, transformer_root)
+            if new_tree:
+                yield new_tree
+
+        yield tree
 
     def predications(self, name, arg_types, predication_type):
         name_key = self.name_key(name, arg_types, predication_type)
