@@ -29,6 +29,13 @@
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_salad_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4ee8d866-b726-444f-9abd-ba2db97f8caf"
+        },
+        {
+            "Command": "I would like a table",
+            "Expected": "Um... You're at a table. \nWaiter: Can I get you something to eat?",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "b5cfa314-b577-44c0-888c-e79450771d13"
         }
     ]
 }

@@ -1,17 +1,20 @@
 import copy
 import logging
 
+from delphin.mrs import EP
+
 import perplexity.tree
 
 
 class TransformerProduction(object):
-    def __init__(self, name, args):
+    def __init__(self, name, args, label="h999"):
         # Name can be a string that contains any number of $ replacements
         # args can be:
         #   a string that contains any number of $ replacements like foo$bar or foo$|bar|goo
         #   another TransformerProduction
         self.name = name
         self.args = args
+        self.label = label
 
     def create(self, captures, current_index):
         my_index = current_index[0]
@@ -19,7 +22,9 @@ class TransformerProduction(object):
         name = self.transform_using_captures(self.name, captures, current_index)
         args_values = [self.transform_using_captures(x, captures, current_index) for x in self.args.values()]
         args_names = list(self.args.keys())
-        new_predication = perplexity.tree.TreePredication(my_index, name, args_values, arg_names=args_names)
+        label = self.transform_using_captures(self.label, captures, current_index)
+        new_ep = EP(predicate=name, label=label, args=dict(zip(args_names, args_values)))
+        new_predication = perplexity.tree.TreePredication(my_index, name, args_values, arg_names=args_names, mrs_predication=new_ep)
         return new_predication
 
     def transform_using_captures(self, value, captures, current_index):
@@ -58,13 +63,17 @@ class AllMatchTransformer(object):
 
 
 class TransformerMatch(object):
-    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, production=None):
+    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, production=None):
         self.name_pattern = name_pattern
         self.name_capture = name_capture if name_pattern is not None else [None] * len(name_pattern)
         self.args_pattern = args_pattern
         self.args_capture = args_capture if args_capture is not None else [None] * len(args_pattern)
+        self.label_capture = label_capture
         self.production = production
         self.did_transform = False
+
+    def this_repr(self):
+        return f"{self.name_pattern}({', '.join([str(x) for x in self.args_pattern])})"
 
     def match(self, scopal_arg, captures):
         if isinstance(scopal_arg, perplexity.tree.TreePredication):
@@ -72,7 +81,8 @@ class TransformerMatch(object):
                 local_capture = {}
                 if self.name_capture is not None:
                     local_capture[self.name_capture] = scopal_arg.name
-
+                if self.label_capture is not None:
+                    local_capture[self.label_capture] = scopal_arg.mrs_predication.label
                 if len(self.args_pattern) == len(scopal_arg.args):
                     for arg_index in range(len(self.args_pattern)):
                         if self.args_pattern[arg_index] == "*" or \
@@ -128,6 +138,7 @@ def build_transformed_tree(tree, transformer_root):
             if transformer.is_root():
                 # Since this is the root: Need to return None for no new predication creation or a new predication
                 if predication_matched:
+                    transform_logger.debug(f"Root Match: {predication_matched}. Pattern:{transformer.this_repr()}, Predicate:{predication}")
                     # This is the transformer root: we are now just trying to finish the match
                     # and fill in the capture
                     children_matched = True
@@ -162,8 +173,9 @@ def build_transformed_tree(tree, transformer_root):
                 # This is not the transformer root so we are just finishing the match and
                 # filling in the capture
                 if predication_matched:
+                    transform_logger.debug(f"Child Match: {predication_matched}. Pattern:{transformer.this_repr()}, Predicate:{predication}")
                     for scopal_arg_index in predication.scopal_arg_indices():
-                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture):
+                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture, current_index):
                             # The child failed so this match fails
                             # Since this is not the root, we just end now
                             return False
@@ -185,3 +197,4 @@ def build_transformed_tree(tree, transformer_root):
 
 
 pipeline_logger = logging.getLogger('Pipeline')
+transform_logger = logging.getLogger('Transformer')

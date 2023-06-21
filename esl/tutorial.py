@@ -5,43 +5,99 @@ import perplexity.messages
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
-from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
-    lift_style_predication_2
-from perplexity.response import RespondOperation
-from perplexity.set_utilities import Measurement
-from perplexity.state import State
+from perplexity.predications import combinatorial_predication_1, in_style_predication_2
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction
-from perplexity.tree import find_predication_from_introduced, TreePredication
+from perplexity.tree import find_predication_from_introduced
 from perplexity.user_interface import UserInterface
-from perplexity.utilities import ShowLogging
-from perplexity.vocabulary import Predication, EventOption, ValueSize, Transform
+from perplexity.utilities import ShowLogging, sentence_force
+from perplexity.vocabulary import Predication, EventOption, Transform
 from esl.worldstate import *
 from esl.VerbTable import VerbTable
 
 vocabulary = system_vocabulary()
 
+# Declare words that get transformed away so we don't report them as unknown
+@Predication(vocabulary, names=["_like_v_1", "_want_v_1"])
+def _like_v_1_exh(state, e_introduced_binding, x_actor_binding, h_binding):
+    perplexity.execution.report_error(["formNotUnderstood"], force=True)
+    if False:
+        yield None
 
+
+# Declare words that get transformed away so we don't report them as unknown
+@Predication(vocabulary, names=["_would_v_modal","_could_v_modal", "_can_v_modal"])
+def _would_v_modal(state, e_introduced_binding, h_binding):
+    perplexity.execution.report_error(["formNotUnderstood"], force=True)
+    if False:
+        yield None
+
+
+# Convert "would like <noun>" to "want <noun>"
 @Transform(vocabulary)
-def would_v_modal_to_want_transformer():
+def would_like_to_want_transformer():
     production = TransformerProduction(name="_want_v_1", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
     like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None], production=production)
 
-#
-# @Predication(vocabulary, names=["_would_v_modal"])
-# def would_v_modal_to_want(state, e_introduced_binding, h_binding):
-#     if isinstance(h_binding, TreePredication) and h_binding.name == "_like_v_1" and h_binding.arg_types == ["e", "x", "x"]:
-#         yield from _want_v_1(state, state.get_binding(h_binding.args[0]), state.get_binding(h_binding.args[1]), state.get_binding(h_binding.args[2]))
-#
-# @Predication(vocabulary, names=["solution_group__would_v_modal"])
-# def would_v_modal_group_to_want(state_list, e_introduced_binding_list, h_binding_list):
-#     if isinstance(h_binding_list[0], TreePredication) and h_binding_list[0].name == "_like_v_1" and h_binding_list[0].arg_types == ["e", "x", "x"]:
-#         reset_operations(state_list[0])
-#         x_actor_binding_list = [state.get_binding(h_binding_list[0].args[1]) for state in state_list]
-#         x_what_binding_list = [state.get_binding(h_binding_list[0].args[2]) for state in state_list]
-#         yield (state_list[0].record_operations(state_list[0].user_wants_group(x_actor_binding_list, x_what_binding_list)),)
+# Convert "Can/could I x?", "I can/could x?" to "I x?"
+@Transform(vocabulary)
+def can_removal_intransitive_transformer():
+    production = TransformerProduction(name="$name", args={"ARG0":"$e1", "ARG1":"$x1"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None], production=production)
 
+
+# Convert "Can/could I x y?", "I can/could x y?" to "I x y?"
+@Transform(vocabulary)
+def can_removal_transitive_transformer():
+    production = TransformerProduction(name="$name", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None], production=production)
+
+
+# Convert "I want to x y" to "I x_request y"
+@Transform(vocabulary)
+def want_removal_transitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None], production=production)
+
+
+# Convert "I want to x" to "I x_request"
+@Transform(vocabulary)
+def want_removal_intransitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
+    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None], production=production)
+
+
+# Convert "I would like to x y" to "I x_request y"
+@Transform(vocabulary)
+def would_like_removal_transitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
+    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target], args_capture=[None, None, None])
+    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None], production=production)
+    return would_match
+
+
+# Convert "I would like to x" to "I x_request x"
+@Transform(vocabulary)
+def would_like_removal_intransitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
+    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target], args_capture=[None, None, None])
+    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None], production=production)
+    return would_match
+
+
+# Convert "I would x y" to "I x_request y" (i.e. "I would have a menu")
+@Transform(vocabulary)
+def want_removal_transitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", target], args_capture=["e1", None], production=production)
 
 
 
@@ -228,6 +284,8 @@ def match_all_n(noun_type, state, x_binding):
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_i(noun_type, state, x_binding, i_binding):
     yield from match_all_n(noun_type, state, x_binding)
+
+
 @Predication(vocabulary, names=["_some_q"])
 def the_q(state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
@@ -325,7 +383,7 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
                                       all_item2_containing_item1)
 
 
-@Predication(vocabulary, names=["_want_v_1"], handles=[("request_type", EventOption.optional)])
+@Predication(vocabulary, names=["_want_v_1"])
 def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if is_user_type(x_actor):
@@ -358,7 +416,8 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
             if not x_obj is None:
                 yield success_state.record_operations(state.handle_world_event(["user_wants", x_obj]))
 
-@Predication(vocabulary, names=["solution_group__want_v_1"], handles=[("request_type", EventOption.optional)])
+
+@Predication(vocabulary, names=["solution_group__want_v_1"])
 def want_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
     if len(state_list) == 1:
         yield (state_list[0],)
@@ -482,7 +541,7 @@ def def_implicit_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["_like_v_1"], handles=[("request_type", EventOption.optional)])
+@Predication(vocabulary, names=["_like_v_1"])
 def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_user_type(state.get_binding(x_actor_binding.variable.name).value[0]):
         if not state.get_binding(x_object_binding.variable.name).value[0] is None:
@@ -491,82 +550,6 @@ def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     else:
         yield state
 
-
-like_to_verbs = ["_like_v_1", "_want_v_1"]
-@Predication(vocabulary, names=like_to_verbs, handles=[("request_type", EventOption.optional)])
-def _like_v_1_exh(state, e_introduced_binding, x_actor_binding, h_binding):
-    if not h_binding.arg_types[0] == "e":
-        yield from call(state,h_binding)
-        return
-
-    event_to_mod = h_binding.args[0]
-
-    yield from call(state.add_to_e(event_to_mod, "request_type", True), h_binding)
-@Predication(vocabulary, names=["solution_group_" + x for x in like_to_verbs], handles=[("request_type", EventOption.optional)])
-def _like_v_1_exh_group(state_list, e_introduced_binding_list, x_actor_binding_list, h_binding_list):
-
-    verb_table = VerbTable()
-
-    for i in have.predicate_name_list:
-        verb_table.add(i,['e','x','x'],_have_v_1_group)
-    for i in see.predicate_name_list:
-        verb_table.add(i,['e','x','x'],_see_v_1_group)
-    for i in sit_down.predicate_name_list:
-        verb_table.add(i,['e','x'],_sit_v_down_group)
-
-
-    name = h_binding_list[0].name
-    arg_struct = h_binding_list[0].arg_types
-    if verb_table.lookup(name, arg_struct) is None:
-        yield []
-        return
-    argnum = len(h_binding_list[0].args)
-    actor_list = []
-    object_list = []
-    event_list = []
-
-    for i in range(len(h_binding_list)):
-        h = h_binding_list[i]
-        event_list += [state_list[i].get_binding(h.args[0])]
-        actor_list += [state_list[i].get_binding(h.args[1])]
-        if argnum > 2:
-            object_list += [state_list[i].get_binding(h.args[2])]
-    if argnum == 3:
-        yield from verb_table.lookup(name,arg_struct)(state_list,event_list,actor_list,object_list)
-    elif argnum == 2:
-        yield from verb_table.lookup(name,arg_struct)(state_list, event_list, actor_list)
-
-would_verbs = ["_would_v_modal","_could_v_modal", "_can_v_modal"]
-@Predication(vocabulary, names=would_verbs)
-def _would_v_modal(state, e_introduced_binding, h_binding):
-    yield from call(state, h_binding)
-
-@Predication(vocabulary, names=["solution_group_" + x for x in would_verbs], handles=[("request_type", EventOption.optional)])
-def _would_v_modal_group(state_list, e_introduced_binding_list, h_binding_list):
-
-    verb_table = VerbTable()
-
-    for i in like_to_verbs:
-        verb_table.add(i,['e','x','h'],_like_v_1_exh_group)
-
-    name = h_binding_list[0].name
-    arg_struct = h_binding_list[0].arg_types
-    if verb_table.lookup(name, arg_struct) is None:
-        yield []
-        return
-    argnum = len(h_binding_list[0].args)
-    assert(argnum == 3)
-    actor_list = []
-    h_list = []
-    event_list = []
-
-    for i in range(len(h_binding_list)):
-        h = h_binding_list[i]
-        event_list += [h.args[0]]
-        actor_list += [h.args[1]]
-        h_list += [h.args[2]]
-
-    yield from verb_table.lookup(name,arg_struct)(state_list,event_list,actor_list,h_list)
 
 
 
@@ -600,6 +583,13 @@ def _thanks_a_1(state, i_binding, h_binding):
 #                       combinatoric=True)
 
 
+def is_request_from_tree(tree_info):
+    introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+    return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
+        introduced_predication.name.endswith("_request") or \
+        tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
+
+
 class RequestVerbTransitive:
     def __init__(self, predicate_name_list, lemma, logic, group_logic):
         self.predicate_name_list = predicate_name_list
@@ -608,16 +598,7 @@ class RequestVerbTransitive:
         self.group_logic = group_logic
 
     def predicate_func(self, state, e_binding, x_actor_binding, x_object_binding):
-        j = state.get_binding("tree").value[0]["Index"]
-        is_request = False
-        if not e_binding is None:
-            if e_binding.value is not None:
-                if "request_type" in e_binding.value:
-                    is_request = e_binding.value["request_type"]
-
-        is_modal = find_predication_from_introduced(state.get_binding("tree").value[0]["Tree"], j).name in [
-            "_could_v_modal", "_can_v_modal", "_would_v_modal"]
-        is_future = (state.get_binding("tree").value[0]["Variables"][j]["TENSE"] == "fut")
+        is_request = is_request_from_tree(state.get_binding("tree").value[0])
 
         if self.lemma == "have":
             if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
@@ -627,7 +608,7 @@ class RequestVerbTransitive:
                     return
 
         def bound(x_actor, x_object):
-            if (is_modal or is_future or is_request) and (is_user_type(x_actor)):
+            if is_request and is_user_type(x_actor):
                 return True
             else:
                 if self.lemma in state.rel.keys():
@@ -672,28 +653,19 @@ class RequestVerbTransitive:
             x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
             x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
 
-            if (is_modal or is_future or is_request) and is_user_type(x_act):
+            if is_request and is_user_type(x_act):
                 if x_obj is not None:
                     yield success_state.record_operations(success_state.handle_world_event([self.logic, x_obj, x_act]))
             else:
                 yield success_state
+
         if not state_exists:
             report_error(["RequestVerbTransitiveFailure"])
+
     def group_predicate_func(self, state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
-
-
         should_call_want = False
         for i in range(len(state_list)):
-            is_request = False
-            if not e_introduced_binding_list[0] is None:
-                if e_introduced_binding_list[0].value is not None:
-                    if "request_type" in e_introduced_binding_list[0].value:
-                        is_request = e_introduced_binding_list[0].value["request_type"]
-            j = state_list[0].get_binding("tree").value[0]["Index"]
-            is_modal = find_predication_from_introduced(state_list[0].get_binding("tree").value[0]["Tree"], j).name in [
-                "_could_v_modal", "_can_v_modal", "_would_v_modal"]
-            is_future = (state_list[0].get_binding("tree").value[0]["Variables"][j]["TENSE"] == "fut")
-            if is_request or is_modal or is_future:
+            if is_request_from_tree(state_list[i].get_binding("tree").value[0]):
                 should_call_want = True
                 break
 
@@ -707,6 +679,7 @@ class RequestVerbTransitive:
                 yield (state_list[0].record_operations(state_list[0].handle_world_event([self.group_logic, x_actor_binding_list, x_what_binding_list])),)
 
 
+# use for sit_v_down
 class RequestVerbIntransitive:
     def __init__(self, predicate_name_list, lemma, logic, group_logic):
         self.predicate_name_list = predicate_name_list
@@ -715,18 +688,10 @@ class RequestVerbIntransitive:
         self.group_logic = group_logic
 
     def predicate_func(self, state, e_binding, x_actor_binding):
-        j = state.get_binding("tree").value[0]["Index"]
-        is_request = False
-        if not e_binding is None:
-            if e_binding.value is not None:
-                if "request_type" in e_binding.value:
-                    is_request = e_binding.value["request_type"]
-        is_modal = find_predication_from_introduced(state.get_binding("tree").value[0]["Tree"], j).name in [
-            "_could_v_modal", "_can_v_modal", "_would_v_modal"]
-        is_future = (state.get_binding("tree").value[0]["Variables"][j]["TENSE"] == "fut")
+        is_request = is_request_from_tree(state.get_binding("tree").value[0])
 
         def bound(x_actor):
-            if (is_modal or is_future or is_request) and is_user_type(x_actor):
+            if is_request and is_user_type(x_actor):
                 return True
             else:
                 if self.lemma in state.rel.keys():
@@ -749,23 +714,15 @@ class RequestVerbIntransitive:
         for success_state in combinatorial_predication_1(state, x_actor_binding, bound, unbound):
             x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
 
-            if (is_modal or is_future or is_request) and is_user_type(x_act):
+            if is_request and is_user_type(x_act):
                 yield success_state.record_operations(success_state.handle_world_event([self.logic, x_act]))
             else:
                 yield success_state
+
     def group_predicate_func(self,state_list,e_introduced_binding_list,x_actor_binding_list):
         should_call_want = False
         for i in range(len(state_list)):
-            is_request = False
-            if not e_introduced_binding_list[0] is None:
-                if e_introduced_binding_list[0].value is not None:
-                    if "request_type" in e_introduced_binding_list[0].value:
-                        is_request = e_introduced_binding_list[0].value["request_type"]
-            j = state_list[0].get_binding("tree").value[0]["Index"]
-            is_modal = find_predication_from_introduced(state_list[0].get_binding("tree").value[0]["Tree"], j).name in [
-                "_could_v_modal", "_can_v_modal", "_would_v_modal"]
-            is_future = (state_list[0].get_binding("tree").value[0]["Variables"][j]["TENSE"] == "fut")
-            if is_request or is_modal or is_future:
+            if is_request_from_tree(state_list[i].get_binding("tree").value[0]):
                 should_call_want = True
                 break
 
@@ -780,34 +737,40 @@ class RequestVerbIntransitive:
 
 
 
-have = RequestVerbTransitive(["_have_v_1", "_get_v_1", "_take_v_1"], "have", "user_wants", "user_wants_group")
-see = RequestVerbTransitive(["_see_v_1"], "see", "user_wants_to_see", "user_wants_to_see_group")
-sit_down = RequestVerbIntransitive(["_sit_v_down"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
+have = RequestVerbTransitive(["_have_v_1", "_get_v_1", "_take_v_1", "_have_v_1_request"], "have", "user_wants", "user_wants_group")
+see = RequestVerbTransitive(["_see_v_1", "_see_v_1_request"], "see", "user_wants_to_see", "user_wants_to_see_group")
+sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
 
 
-@Predication(vocabulary, names=have.predicate_name_list, handles=[("request_type", EventOption.optional)])
+@Predication(vocabulary, names=have.predicate_name_list)
 def _have_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     yield from have.predicate_func(state, e_introduced_binding, x_actor_binding, x_object_binding)
 
-@Predication(vocabulary, names=["solution_group_" + x for x in have.predicate_name_list], handles=[("request_type", EventOption.optional)])
+
+@Predication(vocabulary, names=["solution_group_" + x for x in have.predicate_name_list])
 def _have_v_1_group(state_list, e_list, x_act_list, x_obj_list):
     yield from have.group_predicate_func(state_list, e_list, x_act_list, x_obj_list)
 
-@Predication(vocabulary, names=see.predicate_name_list, handles=[("request_type", EventOption.optional)])
+
+@Predication(vocabulary, names=see.predicate_name_list)
 def _see_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     yield from see.predicate_func(state, e_introduced_binding, x_actor_binding, x_object_binding)
-@Predication(vocabulary, names=["solution_group_" + x for x in see.predicate_name_list], handles=[("request_type", EventOption.optional)])
+
+
+@Predication(vocabulary, names=["solution_group_" + x for x in see.predicate_name_list])
 def _see_v_1_group(state_list, e_list, x_act_list, x_obj_list):
     yield from see.group_predicate_func(state_list, e_list, x_act_list, x_obj_list)
 
 
-@Predication(vocabulary, names=sit_down.predicate_name_list, handles=[("request_type", EventOption.optional)])
+@Predication(vocabulary, names=sit_down.predicate_name_list)
 def _sit_v_down(state, e_introduced_binding, x_actor_binding):
     yield from sit_down.predicate_func(state, e_introduced_binding, x_actor_binding)
 
-@Predication(vocabulary, names=["solution_group_" + x for x in sit_down.predicate_name_list], handles=[("request_type", EventOption.optional)])
+
+@Predication(vocabulary, names=["solution_group_" + x for x in sit_down.predicate_name_list])
 def _sit_v_down_group(state_list, e_introduced_binding_list, x_actor_binding_list):
     yield from sit_down.group_predicate_func(state_list, e_introduced_binding_list, x_actor_binding_list)
+
 
 @Predication(vocabulary, names=["poss"])
 def poss(state, e_introduced_binding, x_object_binding, x_actor_binding):
@@ -1094,4 +1057,5 @@ def hello_world():
 if __name__ == '__main__':
     print("Hello there, what can I do for you?")
     ShowLogging("Pipeline")
+    # ShowLogging("Transformer")
     hello_world()

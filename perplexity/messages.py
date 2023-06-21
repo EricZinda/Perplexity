@@ -123,7 +123,7 @@ def generate_message(tree_info, error_term):
         predication = predication_from_index(tree_info, error_predicate_index)
         parsed_predicate = parse_predication_name(predication.name)
 
-        if error_arguments[1] == "notHandled":
+        if len(error_arguments) > 1 and error_arguments[1] == "notHandled":
             # The event had something that the predication didn't know how to handle
             # See if there is information about where it came from
             if "Originator" in error_arguments[2][1]:

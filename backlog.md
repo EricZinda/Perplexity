@@ -1,10 +1,50 @@
 - Will Code
-  - /runparse 0,3: I would like a table
+  - (done) convert: I would like a table to: I want a table
                ┌────── _table_n_1(x11)
     _a_q(x11,RSTR,BODY)               ┌────── pron(x3)
                     └─ pronoun_q(x3,RSTR,BODY)                    ┌─ _like_v_1(e10,x3,x11)
                                            └─ _would_v_modal(e2,ARG1)
-  - 
+  - simplify sit down:
+    - I want to sit down
+    - "I would like to [sit down]"
+    - "Can I sit down?"
+    - "Could I sit down?"
+  
+  - Conversions:
+    - Can I x y, Could I x y
+    - Can I x, Could I x
+    - I want to x, I would like to x
+    - I want to x y, I would like to x y
+    - x and y could have several variants
+      - 
+    
+  - convert everything to verb_request()
+    - (done) I would see a menu -> I see_request a menu
+    - 
+    - Goal: Can I sit down?
+      - Options:
+          - Could I x
+      
+    - Goal: Can I have/see x?
+      - Options:
+        - Could I x
+      
+    - Goal: I want to sit down
+      - Options
+          - I want to x
+          - I would like to x
+      - Convert to _request
+      - 
+  - _like_v_1_exh_group:
+    - Has to do a lot of mapping of synonyms because its scopal argument can be many things
+      - potential for transformation
+    - Converts scopal argument to a group call to _have_v_1_group, _see_v_1_group or _sit_v_down_group
+      - BUT: needs to add "request_type" to the e
+  
+- Notes
+  - _like_v_1_exh and _want_v_1_exh adds "request_type" to the verb if the verb has an initial e
+    - Handled by lots of different verbs
+    - 
 - Demo for summit
   - card() not in rstr
 - Not issues: For Example23
