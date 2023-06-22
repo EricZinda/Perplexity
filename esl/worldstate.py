@@ -285,11 +285,11 @@ class WorldState(State):
                 if ("user", "table") in self.rel["at"]:
                     if ("user", "menu1") not in self.rel["have"]:
                         return [AddRelOp(("user", "have", "menu1")), RespondOperation(
-                            "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $5\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
+                            "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
                                 ResponseStateOp("anticipate_dish")]
                     else:
                         return [RespondOperation(
-                            "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $5\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + self.get_reprompt())]
+                            "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + self.get_reprompt())]
             return [RespondOperation("Sorry, you must be seated to order")]
 
         if wanted == "bill1":
@@ -380,6 +380,7 @@ class WorldState(State):
 
     def user_wants_to_see_mulitple(self, wanted_list):
             return [RespondOperation("One thing at a time, please." + self.get_reprompt())]
+
     def user_wants_to_see_group(self, actor_list, wanted_list):
         all_menu = True
         for i in wanted_list:

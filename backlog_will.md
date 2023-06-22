@@ -1,3 +1,10 @@
+- ESL Architecture
+  - Command/Response
+    - Scenario: I'd like 2 steaks (at the front door) -> works and it shouldn't
+      - Individual solutions succeed with RespondOperations instead of failures
+      - Final response is handled by the group predications
+        - If it is a single thing, its operation is responded
+        - If it is multiple, its operation is overriden by whatever user_wants_multiple returns
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"

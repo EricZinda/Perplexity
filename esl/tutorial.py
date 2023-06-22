@@ -196,11 +196,11 @@ def card(state, c_number, e_binding, x_binding):
     if state.get_binding(x_binding.variable.name).value[0] == "generic_entity":
         if c_number.isnumeric():
             yield state.set_x(x_binding.variable.name, (Measurement("generic_cardinality", int(c_number)),))
-    else:
-        if state.get_binding(x_binding.variable.name).value[0] is str:
-            yield state.set_x(x_binding.variable.name,
-                              (Measurement(state.get_binding(x_binding.variable.name).value[0], int(c_number)),))
 
+@Predication(vocabulary, names=["card"])
+def card_system(state, c_number, e_binding, x_binding):
+    if state.get_binding(x_binding.variable.name).value[0] != "generic_entity":
+        yield from perplexity.system_vocabulary.card(state, c_number, e_binding, x_binding)
 
 @Predication(vocabulary, names=["_for_p"])
 def _for_p(state, e_binding, x_binding, x_binding2):
@@ -682,6 +682,7 @@ class RequestVerbTransitive:
 
         if not should_call_want:
             yield state_list
+
         else:
             if len(state_list) == 1:
                 yield (state_list[0],)
@@ -1067,6 +1068,6 @@ def hello_world():
 
 if __name__ == '__main__':
     print("Hello there, what can I do for you?")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("Transformer")
     hello_world()
