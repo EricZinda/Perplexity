@@ -206,6 +206,9 @@ def error_priority(error_string):
         return 0
 
     else:
+        if error_string[1] is None:
+            return error_priority_dict["defaultPriority"]
+
         error_constant = error_string[1][0]
         priority = error_priority_dict.get(error_constant, None)
         if priority is not None:
@@ -230,6 +233,8 @@ error_priority_dict = {
     # Slightly better than not knowing the word at all
     "formNotUnderstood": 901,
     "notClause": 910,
+    # Lots of misinterpretations can generate this, so make it lower than default
+    "doesntExist": 920,
     "defaultPriority": 1000,
 
     # This is just used when sorting to indicate no error, i.e. success.

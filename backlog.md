@@ -1,10 +1,8 @@
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
-- I'd like 2 tables at the front door -> There isn't a thing in the system
+
   
 
-      - 
-- How ESL is dealing with Cardinals?
 - Demo for summit
   - card() not in rstr
 - Not issues: For Example23
