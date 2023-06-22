@@ -144,7 +144,7 @@
         },
         {
             "Command": "which files are not in 2 folders?",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/bigfile3.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/green, size=10000000),)(there are more)",
+            "Expected": "(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/bigfile3.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/green, size=10000000),)(File(name=/temp/59.txt, size=1000),)(there are more)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],neg(e9,_in_p_loc(e2,x3,x12))))",
             "Enabled": true,
             "ID": "eded6930-5e46-4850-92f4-51cb3f81ebc3"

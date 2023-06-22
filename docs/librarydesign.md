@@ -1,0 +1,58 @@
+- If you overload and we allow them all, you will get duplicate answers and (there are more) if they solve the same problems
+- If they solve separate problems it will return (properly) different answers
+- Is the proper design to only include system commands if there isnt a user command?  How do libraries work then?
+- Scenarios:
+  - Include the system library
+  - Write your own card that replaces or enhances the other
+- Patterns:
+  - Use mine if it works, otherwise use the system
+  - Use mine and use the system as alternatives
+  - Use system if it works, otherwise use mine
+- Notes
+  - Some predicates don't care what is in them and should work for anything *that meets a certain contract*
+    - System:
+      - Requires measurement()
+      - Doesn't care about objects otherwise
+- Requirements
+  - If the dev writes multiple they are responsible for behavior
+  - Need a way for libraries to be used
+  - Libraries are included in an order
+- Design
+  - How #2
+    - predications in the same library can just exist, it is assumed the dev has designed them to do the right thing
+    - Libraries are included in a straight line order
+    - Each new library in the chain merges with the previous scope to create a new scope
+    - Overloads are at the predicate name level, NOT the implementation level
+    - names in current scope hide those below it
+      - When you hide something the system asserts until you mark your version as an "override"
+      - If you want the ones below it to still run you need to create a predicate and delegate to it directly using python in the order you want
+        - If you use multiple libraries that have conflicts, you need to hide them all, figure out the ordering that works, and implement delegations that do it
+    - Implementation:
+      - @vocabulary has a library="name" which defaults to "user"
+      - predications with the same library name are assumed to be in the same library
+      - Predications are streamed into the vocabulary, one by one
+      - a library="foo", "override" pragma can be streamed in to clear any predications of a particular name
+        - the current implementations in the scope will always be from a single library, by definition
+      - Loading
+        - Start with an empty scope
+        - if an override pragma is run for the current library it clears any predications of that name from the scope
+        - For each predication added
+          - If the name exists in the scope
+            - If it is from this library:
+              - add to the end of the order
+            - If it is not from this library:
+              - fail
+        - When finished, we have a single scope to use that might have implementations from multiple libraries
+      - Running
+        - Simply resolve as we do today, in order
+          - Predications will always try alternatives if they succeed, if the behavior is not wanted, code that up
+      - Scenarios
+        - Loading 2 libraries that have been designed to depend on system directly
+        - Loading them one after the other may not "just work" if there are conflicts
+        - The user library will need to figure out where the conflicts are and 
+          - add pragmas to clear the default behaviors
+          - insert shim predications if needed to delegate to defaults which is easy to do as long as the shim is before or after loading the file
+      - Implementation
+        - override("library", ["name"]) pragma clears that name from scope
+          - override is ignored if one has already been seen. First one wins. This is to allow combiners to group things together
+        - add "library" to vocabulary, defaults to "user"

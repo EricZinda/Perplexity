@@ -11,11 +11,12 @@ from perplexity.transformer import TransformerMatch, TransformerProduction, Prop
 from perplexity.tree import find_predication_from_introduced
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
-from perplexity.vocabulary import Predication, EventOption, Transform
+from perplexity.vocabulary import Predication, EventOption, Transform, override_predications
 from esl.worldstate import *
 from esl.VerbTable import VerbTable
 
 vocabulary = system_vocabulary()
+override_predications(vocabulary, "user", ["card__cex__"])
 
 # Declare words that get transformed away so we don't report them as unknown
 @Predication(vocabulary, names=["_like_v_1", "_want_v_1"])
@@ -186,6 +187,8 @@ def measure(state, e_binding, e_binding2, x_binding):
 @Predication(vocabulary, names=["abstr_deg"])
 def abstr_deg(state, x_binding):
     yield state.set_x(x_binding.variable.name, ("abstract_degree",))
+
+
 
 
 @Predication(vocabulary, names=["card"])

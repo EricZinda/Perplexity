@@ -1,7 +1,4 @@
-- "what are the specials?" -> fails because specials is plural and what is singular
-  - "which things are the specials" works
-  - Allow transforms to change MRS properties
-  
+- Do a good answer for "what are your specials?"
 - Demo for summit
   - card() not in rstr
 - Not issues: For Example23
