@@ -13,10 +13,10 @@ from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predic
 from perplexity.utilities import sentence_force
 from perplexity.variable_binding import VariableBinding
 from perplexity.virtual_arguments import scopal_argument
-from perplexity.vocabulary import Vocabulary, Predication, EventOption, ValueSize
-
+from perplexity.vocabulary import Vocabulary, Predication, EventOption, ValueSize, override_predications
 
 vocabulary = system_vocabulary()
+override_predications(vocabulary, "user", ["card__cex__"])
 
 # Constants for creating virtual arguments from scopal arguments
 locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
@@ -156,7 +156,7 @@ def file_n_of(state, x_binding, i_binding):
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
-nouns_handled_directly = ["file", "folder"]
+nouns_handled_directly = ["file", "folder", "place"]
 def handles_noun(noun_lemma):
     return noun_lemma not in nouns_handled_directly
 
@@ -176,7 +176,7 @@ def noun_n_2(noun_type, state, x_binding, i_binding):
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def noun_n_1(noun_type, state, x_binding):
-    if noun_type not in nouns_handled_directly:
+    if x_binding.value is None and noun_type not in nouns_handled_directly:
         yield state.set_x(x_binding.variable.name, (noun_type,))
 
 

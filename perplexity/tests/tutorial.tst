@@ -193,7 +193,7 @@
         },
         {
             "Command": "what am i in?",
-            "Expected": "(Folder(name=/Desktop, size=10000000),)(there are more)",
+            "Expected": "(Folder(name=/Desktop, size=10000000),)",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_in_p_loc(e2,x3,x5)))",
             "Enabled": true,
             "ID": "25e8d164-7899-4861-beaa-075a3b479bcb"

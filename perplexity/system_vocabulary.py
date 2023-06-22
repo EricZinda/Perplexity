@@ -51,7 +51,7 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
         report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
-@Predication(vocabulary)
+@Predication(vocabulary, library="system")
 def thing(state, x_binding):
     def bound_variable(_):
         return True
@@ -63,7 +63,7 @@ def thing(state, x_binding):
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
-@Predication(vocabulary, names=["_a_q"])
+@Predication(vocabulary, library="system", names=["_a_q"])
 def a_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(execution_context().current_predication(),
@@ -77,7 +77,7 @@ def a_q(state, x_variable_binding, h_rstr, h_body):
 # The interpretation of "the x" which means "all of the x" is the same as "all x"
 # The key part here is GlobalCriteria.all_rstr_meet_criteria which ensures that every value of the RSTR is true
 # for the body
-@Predication(vocabulary, names=["_the_q", "_all_q"])
+@Predication(vocabulary, library="system", names=["_the_q", "_all_q"])
 def the_all_q(state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
@@ -91,7 +91,7 @@ def the_all_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["_every_q", "_each_q", "_each+and+every_q"])
+@Predication(vocabulary, library="system", names=["_every_q", "_each_q", "_each+and+every_q"])
 def every_each_q(state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
@@ -105,7 +105,7 @@ def every_each_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["which_q", "_which_q"])
+@Predication(vocabulary, library="system", names=["which_q", "_which_q"])
 def which_q(state, x_variable_binding, h_rstr, h_body):
     current_predication = execution_context().current_predication()
 
@@ -118,7 +118,7 @@ def which_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["udef_q", "pronoun_q", "proper_q"])
+@Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(execution_context().current_predication(),
@@ -129,7 +129,7 @@ def generic_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["_a+few_a_1"])
+@Predication(vocabulary, library="system", names=["_a+few_a_1"])
 def a_few_a_1(state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
                                   determiner=VariableCriteria(execution_context().current_predication(),
@@ -138,7 +138,7 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
                                                               max_size=5))
 
 
-@Predication(vocabulary, names=["_and_c"])
+@Predication(vocabulary, library="system", names=["_and_c"])
 def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
     size_total = len(x_binding_first.value) + len(x_binding_second.value)
     yield state.set_x(x_binding_introduced.variable.name,
@@ -151,10 +151,18 @@ def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
                       )
 
 
-@Predication(vocabulary, names=["implicit_conj"])
+@Predication(vocabulary, library="system", names=["implicit_conj"])
 def implicit_conj(state, x_binding_introduced, x_binding_first, x_binding_second):
     yield from and_c(state, x_binding_introduced, x_binding_first, x_binding_second)
 
+
+@Predication(vocabulary, library="system", names=["card"])
+def card(state, c_count, e_introduced_binding, x_target_binding):
+    yield state.set_variable_data(x_target_binding.variable.name,
+                                  determiner=VariableCriteria(execution_context().current_predication(),
+                                                              x_target_binding.variable.name,
+                                                              min_size=int(c_count),
+                                                              max_size=int(c_count)))
 
 def generate_not_error(unscoped_referenced_variables):
     if len(unscoped_referenced_variables) == 0:
@@ -168,7 +176,7 @@ def generate_not_error(unscoped_referenced_variables):
         report_error(["notClause"], force=True)
 
 
-@Predication(vocabulary, names=["neg"])
+@Predication(vocabulary, library="system", names=["neg"])
 def neg(state, e_introduced_binding, h_scopal):
     # Gather all the bound x variables and their values that are referenced in h_scopal
     referenced_x_variables = gather_referenced_x_variables_from_tree(h_scopal)
@@ -213,7 +221,7 @@ def neg(state, e_introduced_binding, h_scopal):
                 # Use resolve_fragment to run numeric criteria on the "not" clause. So that a phrase like
                 # "which files not in this folder are not large?" would work
                 had_negative_success = False
-                for _ in execution_context().resolve_fragment(combination_state, h_scopal):
+                for temp in execution_context().resolve_fragment(combination_state, h_scopal):
                     # This is true, don't yield it since neg() makes it False
                     generate_not_error(unscoped_referenced_variables)
                     had_negative_success = True

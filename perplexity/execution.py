@@ -164,17 +164,12 @@ class ExecutionContext(object):
                 # that are a list by using "function(*function_args)"
                 # So: this is actually calling our function (which
                 # returns an iterator and thus we can iterate over it)
-                success = False
                 for next_state in function(*function_args):
-                    success = True
                     yield next_state
 
             except MessageException as error:
                 self.report_error(error.message_object())
 
-            # If an implementation works, don't call any others
-            if success:
-                break
 
     # Replace scopal arguments with an "h" and simply
     # return the others

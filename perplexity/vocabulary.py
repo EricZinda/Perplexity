@@ -23,18 +23,23 @@ class ValueSize(enum.Enum):
     all = 3
 
 
+def override_predications(vocabulary, library, name_list):
+    vocabulary.override_predications(library, name_list)
+
 def Transform(vocabulary):
     def PredicationDecorator(function_to_decorate):
         vocabulary.add_transform(function_to_decorate())
 
     return PredicationDecorator
 
-def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None):
+def Predication(vocabulary, library=None, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None):
     # Work around Python's odd handling of default arguments that are objects
     if handles is None:
         handles = []
     if virtual_args is None:
         virtual_args = []
+    if library is None:
+        library = "user"
 
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
@@ -162,7 +167,7 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
         is_solution_group = any(name.startswith("solution_group") for name in predication_names)
 
-        metadata = PredicationMetadata(argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
+        metadata = PredicationMetadata(library, argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
         final_arg_types = metadata.arg_types()
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
 
@@ -174,10 +179,11 @@ def Predication(vocabulary, names=None, arguments=None, phrase_types=None, handl
 
 
 class PredicationMetadata(object):
-    def __init__(self, args_metadata, match_all, matches_lemmas):
+    def __init__(self, library, args_metadata, match_all, matches_lemmas):
         self.args_metadata = args_metadata
         self._match_all = match_all
         self.matches_lemmas = matches_lemmas
+        self.library = library
 
     def arg_types(self):
         return [arg_metadata["VariableType"] for arg_metadata in self.args_metadata]
@@ -224,6 +230,17 @@ class Vocabulary(object):
     def add_transform(self, transformer_root):
         self.transformers.append(transformer_root)
 
+    def override_predications(self, library, name_list):
+        for name in name_list:
+            self._metadata.pop(name, None)
+            keys_to_remove = []
+            for key in self.all:
+                if key.startswith(name):
+                    keys_to_remove.append(key)
+
+            for key in keys_to_remove:
+                self.all.pop(key, None)
+
     def add_predication(self, predication_metadata, module, function, delphin_names, arg_types, phrase_types, first=False):
         if len(phrase_types) == 0:
             phrase_types = ["comm", "ques", "prop", "prop-or-ques", "norm"]
@@ -232,7 +249,8 @@ class Vocabulary(object):
             metadata_key = self.name_key(delphin_name, arg_types, "")
             if metadata_key not in self._metadata:
                 self._metadata[metadata_key] = []
-
+            elif self._metadata[metadata_key][0].library != predication_metadata.library:
+                assert False, f"Predication {metadata_key} already exists from library {self._metadata[metadata_key][0].library}. Use override('{predication_metadata.library}', ['{metadata_key}']) to hide it."
             self._metadata[metadata_key].append(predication_metadata)
 
             name_parts = parse_predication_name(delphin_name)
