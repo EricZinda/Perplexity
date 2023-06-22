@@ -5,6 +5,10 @@
       - Final response is handled by the group predications
         - If it is a single thing, its operation is responded
         - If it is multiple, its operation is overriden by whatever user_wants_multiple returns
+    - Seems like a better architecture would be:
+      - Let regular predications do basic error checking and logic checking for building up to the verb
+        - things like "on" for "on the menu" or "table near the window"
+      - Let the verb *group* do the heavy lifting
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"

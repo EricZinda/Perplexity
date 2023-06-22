@@ -378,9 +378,6 @@ class WorldState(State):
         else:
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
-    def user_wants_to_see_mulitple(self, wanted_list):
-            return [RespondOperation("One thing at a time, please." + self.get_reprompt())]
-
     def user_wants_to_see_group(self, actor_list, wanted_list):
         all_menu = True
         for i in wanted_list:

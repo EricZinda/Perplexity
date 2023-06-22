@@ -953,6 +953,8 @@ def reset():
 
 
     initial_state = initial_state.add_rel("menu1", "instanceOf", "menu")
+    initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
+    initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
 
 
     initial_state = initial_state.add_rel("soup", "specializes", "special")
