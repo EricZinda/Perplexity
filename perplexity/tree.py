@@ -646,6 +646,14 @@ def find_predications(term, predication_name):
     return found_predications
 
 
+def tree_contains_predication(term, predication_list):
+    def match_predication_name(predication):
+        if predication.name in predication_list:
+            return True
+
+    return walk_tree_predications_until(term, match_predication_name)
+
+
 def find_predications_with_arg_types(term, predication_name, arg_filter):
     # This function gets called for every predication
     # in the tree. It is a private function since it is

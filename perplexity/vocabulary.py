@@ -205,6 +205,9 @@ class Vocabulary(object):
         # then have a list of Metadata objects for each implementation of it
         self._metadata = dict()
         self.transformers = []
+        # Words that should not prevent trees from being built due to being unknown
+        # because a transformer removes them
+        self.transformer_removed = set()
 
     def metadata(self, delphin_name, arg_types):
         metadata_list = []
@@ -228,6 +231,8 @@ class Vocabulary(object):
         return name_parts["Lemma"] in self.words
 
     def add_transform(self, transformer_root):
+        for removed in transformer_root.removed_predications():
+            self.transformer_removed.add(removed)
         self.transformers.append(transformer_root)
 
     def override_predications(self, library, name_list):
@@ -269,13 +274,14 @@ class Vocabulary(object):
                 else:
                     type_list.append((module, function))
 
-    def alternate_trees(self, tree_info):
+    def alternate_trees(self, tree_info, yield_original):
         for transformer_root in self.transformers:
             new_tree_info = build_transformed_tree(tree_info, transformer_root)
             if new_tree_info:
                 yield new_tree_info
 
-        yield tree_info
+        if yield_original:
+            yield tree_info
 
     def predications(self, name, arg_types, predication_type):
         name_key = self.name_key(name, arg_types, predication_type)

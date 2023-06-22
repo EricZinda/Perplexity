@@ -95,7 +95,7 @@ class AllMatchTransformer(object):
         return False
 
 class TransformerMatch(object):
-    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, property_transformer=None, production=None):
+    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, property_transformer=None, removed=None, production=None):
         self.name_pattern = name_pattern
         self.name_capture = name_capture if name_pattern is not None else [None] * len(name_pattern)
         self.args_pattern = args_pattern
@@ -103,6 +103,7 @@ class TransformerMatch(object):
         self.label_capture = label_capture
         self.property_transformer = property_transformer
         self.production = production
+        self.removed = removed
         self.did_transform = False
 
     def this_repr(self):
@@ -148,6 +149,11 @@ class TransformerMatch(object):
     def is_root(self):
         return self.production is not None
 
+    def removed_predications(self):
+        if self.removed is None:
+            return []
+        else:
+            return self.removed
 
 # rewrites the tree in place
 def build_transformed_tree(tree_info, transformer_root):

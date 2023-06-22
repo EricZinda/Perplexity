@@ -1,8 +1,9 @@
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
-- I'd like 2 tables at the front door -> very slow and: There isn't a thing in the system
-  - First problem is that we execute all of the would_v terms even though we don't actually implement them
+- I'd like 2 tables at the front door -> There isn't a thing in the system
   
+
+      - 
 - How ESL is dealing with Cardinals?
 - Demo for summit
   - card() not in rstr

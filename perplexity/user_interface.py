@@ -11,7 +11,7 @@ from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, \
-    find_predication, MrsParser
+    find_predication, MrsParser, tree_contains_predication
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
     parse_predication_name
@@ -128,7 +128,8 @@ class UserInterface(object):
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 continue
 
-            mrs_record = self.new_mrs_record(mrs=mrs, unknown_words=self.unknown_words(mrs))
+            unknown, contingent = self.unknown_words(mrs)
+            mrs_record = self.new_mrs_record(mrs=mrs, unknown_words=unknown)
             self.interaction_record["Mrss"].append(mrs_record)
 
             if len(mrs_record["UnknownWords"]) > 0:
@@ -145,7 +146,7 @@ class UserInterface(object):
                                       "Variables": mrs.variables,
                                       "Tree": tree_orig}
 
-                    for tree_info in self.execution_context.vocabulary.alternate_trees(tree_info_orig):
+                    for tree_info in self.execution_context.vocabulary.alternate_trees(tree_info_orig, len(contingent) == 0):
                         # Add afterwards since the mrs can't be deepcopied
                         tree_info["MRS"] = self.mrs_parser.mrs_to_string(mrs)
                         tree_index += 1
@@ -157,6 +158,13 @@ class UserInterface(object):
                         tree_record = self.new_tree_record(tree=tree_info["Tree"])
                         mrs_record["Trees"].append(tree_record)
 
+                        if len(contingent) > 0:
+                            # Make sure the contingent words were removed by a transformer
+                            if tree_contains_predication(tree_info["Tree"], contingent):
+                                # It is still there, fail this tree
+                                tree_record["Error"] = f"One or more of these words not transformed out of tree: {contingent}"
+                                continue
+
                         solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
                         this_sentence_force = sentence_force(tree_info["Variables"])
                         wh_phrase_variable = None
@@ -164,15 +172,6 @@ class UserInterface(object):
                             predication = find_predication(tree_info["Tree"], "_which_q")
                             if predication is not None:
                                 wh_phrase_variable = predication.args[0]
-
-
-                        # if self.show_all_answers:
-                        #     tree_record["SolutionGroups"] = list(perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable))
-                        #     tree_record["Solutions"] = [solution for solution_group in tree_record["SolutionGroups"] for solution in solution_group]
-                        #
-                        # else:
-                        #     temp = perplexity.solution_groups.solution_groups(self.execution_context, duplicate_solutions, this_sentence_force, wh_phrase_variable)
-                        #     tree_record["SolutionGroups"] = at_least_one_generator(temp)
 
                         unprocessed_groups = [] if self.show_all_answers else None
                         def yield_from_first():
@@ -409,6 +408,7 @@ class UserInterface(object):
 
     def unknown_words(self, mrs):
         unknown_words = []
+        contingent_words = []
         phrase_type = sentence_force(mrs.variables)
         for predication in mrs.predications:
             argument_types = []
@@ -422,19 +422,26 @@ class UserInterface(object):
             all_metadata = [meta for meta in self.execution_context.vocabulary.metadata(predication.predicate, argument_types)]
             if len(predications) == 0 or \
                     (all(meta.is_match_all() for meta in all_metadata) and not self.in_match_all(predication, argument_types, all_metadata)):
-                # If there aren't any implementations for this predication, or they are all match_all and don't implement it...
-                # This predication is not implemented
-                unknown_words.append((predication.predicate,
-                                      argument_types,
-                                      phrase_type,
-                                      # Record if at least one form is understood for
-                                      # better error messages
-                                      self.execution_context.vocabulary.version_exists(predication.predicate)))
+
+                # BUT: if a transformer might remove it, return it as "contingent" so we can see if it did
+                if predication.predicate in self.execution_context.vocabulary.transformer_removed:
+                    contingent_words.append(predication.predicate)
+
+                else:
+                    # If there aren't any implementations for this predication, or they are all match_all and don't implement it...
+                    # This predication is not implemented
+                    unknown_words.append((predication.predicate,
+                                          argument_types,
+                                          phrase_type,
+                                          # Record if at least one form is understood for
+                                          # better error messages
+                                          self.execution_context.vocabulary.version_exists(predication.predicate)))
+
 
         if len(unknown_words) > 0:
             pipeline_logger.debug(f"Unknown predications: {unknown_words}")
 
-        return unknown_words
+        return unknown_words, contingent_words
 
     def apply_solutions_to_state(self, solutions):
         # Collect all of the operations that were done
