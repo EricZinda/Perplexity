@@ -1064,6 +1064,6 @@ def hello_world():
 
 if __name__ == '__main__':
     print("Hello there, what can I do for you?")
-    ShowLogging("Pipeline")
-    ShowLogging("Transformer")
+    # ShowLogging("Pipeline")
+    # ShowLogging("Transformer")
     hello_world()
