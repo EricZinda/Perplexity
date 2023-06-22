@@ -996,39 +996,17 @@ def reset():
 
 
 def error_priority(error_string):
-    global error_priority_dict
-    if error_string is None:
-        return 0
-
+    system_priority = perplexity.messages.error_priority(error_string)
+    if system_priority is not None:
+        return system_priority
     else:
-        if error_string[1] is None:
-            # No error specified
-            return error_priority_dict["noError"]
-
+        # Must be a message from our code
         error_constant = error_string[1][0]
-        priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
-        if error_constant == "unknownWords":
-            priority -= len(error_string[1][1])
-
-        return priority
+        return error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
 
 
 error_priority_dict = {
-    # No error specified
-    "noError": 100,
-    # Unknown words error should only be shown if
-    # there are no other errors, AND the number
-    # of unknown words is subtracted from it so
-    # lower constants should be defined below this:
-    # "unknownWordsMin": 800,
-    "unknownWords": 900,
-    # Slightly better than not knowing the word at all
-    "formNotUnderstood": 901,
-    "defaultPriority": 1000,
-
-    # This is just used when sorting to indicate no error, i.e. success.
-    # Nothing should be higher
-    "success": 10000000
+    "defaultPriority": 1000
 }
 
 
