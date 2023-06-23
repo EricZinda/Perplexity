@@ -1,5 +1,5 @@
 from esl import gtpyhop
-from esl.worldstate import sort_of
+from esl.worldstate import sort_of, AddRelOp, ResponseStateOp
 from perplexity.response import RespondOperation
 
 domain_name = __name__
@@ -64,12 +64,20 @@ the_domain = gtpyhop.Domain(domain_name)
 #             return state
 
 ###############################################################################
+# Helpers
+
+def unique_values(what_list):
+    all_set = set()
+    for what in what_list:
+        all_set.update(what)
+    return list(all_set)
+
+
+def are_group_items(items):
+    return isinstance(items, list)
+
+###############################################################################
 # Methods: Approaches to doing something that return a new list of something
-
-def get_menu_multiple(state, multi_who):
-    if len(multi_who) > 1:
-        return [('get_menu', (who, )) for who in multi_who]
-
 
 def get_menu_at_entrance(state, who):
     if len(who) > 1: return
@@ -77,24 +85,58 @@ def get_menu_at_entrance(state, who):
         if "at" not in state.rel.keys() or (who[0], "table") not in state.rel["at"]:
             return [('respond', "Sorry, you must be seated to order")]
 
-gtpyhop.declare_task_methods('get_menu', get_menu_multiple, get_menu_at_entrance)
+gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance)
 
-def satisfy_want_multiple(state, multi_who, multi_what):
-    if len(multi_who) > 1:
-        if len(multi_who) > 1:
-            return [('satisfy_want', (who,)) for who in multi_who]
+
+def get_table_at_entrance(state, who_multiple):
+    if all(who in ["user", "son1"] for who in who_multiple):
+        if len(who_multiple) == 2:
+            return [('respond',
+                     "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
+                     "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
+                    ('add_rel', "user", "at", "table"),
+                    ('set_response_state', "something_to_eat")]
+
+
+gtpyhop.declare_task_methods('get_table', get_table_at_entrance)
+
+
+# This task deals with a group, and group items must be in a list
+def satisfy_want_group(state, group_who, group_what):
+    if not are_group_items(group_who) or not are_group_items(group_what): return
+
+    # Things like the bill, or a table should be collapsed into a single item if they are the same
+    unique_whats = unique_values(group_what)
+    if len(unique_whats) == 1:
+        # Everybody wanted the same thing
+        wanted_item = unique_whats[0]
+        if sort_of(state, wanted_item, "table"):
+            return [("get_table", unique_values(group_who))]
+
+    # Otherwise, we don't care if someone "wants" something together or
+    # separately so we treat them as separate
+    tasks = []
+    for index in range(len(group_who)):
+        for who in group_who[index]:
+            for what in group_what[index]:
+                tasks.append(('satisfy_want', (who,), (what,)))
+
+    return tasks
+
 
 def satisfy_want(state, who, what):
+    if are_group_items(who) or are_group_items(what): return
     if len(who) > 1 or len(what) > 1: return
     if sort_of(state, what[0], "menu"):
         return [('get_menu', who)]
+
 
 # Last option should just report an error
 def satisfy_want_fail(state, who, what):
     return [('respond', "Sorry, I'm not sure what to do about that")]
 
 
-gtpyhop.declare_task_methods('satisfy_want', satisfy_want, satisfy_want_fail)
+gtpyhop.declare_task_methods('satisfy_want', satisfy_want, satisfy_want_group, satisfy_want_fail)
 
 ###############################################################################
 # Actions: Update state to a new value
@@ -102,10 +144,19 @@ gtpyhop.declare_task_methods('satisfy_want', satisfy_want, satisfy_want_fail)
 def respond(state, message):
     return state.record_operations([RespondOperation(message)])
 
-gtpyhop.declare_actions(respond)
+
+def add_rel(state, subject, rel, object):
+    return state.record_operations([AddRelOp((subject, rel, object))])
 
 
+def set_response_state(state, value):
+    return state.record_operations([ResponseStateOp("something_to_eat")])
 
+gtpyhop.declare_actions(respond, add_rel, set_response_state)
+
+# If it is "a table for 2" get both at the same table
+# If it is I would like a table, ask how many
+# If it is "we" would like a table, count the people and fail if it is > 2
 
 def do_task(state, task):
     result, result_state = gtpyhop.find_plan(state, task)

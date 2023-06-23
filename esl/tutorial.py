@@ -399,17 +399,23 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
                                                  wanters_of_obj, wanted_of_actor)
 
+def convert_noun_structure(binding_value):
+    new_list = []
+    for item in binding_value:
+        if isinstance(item, str) and item[0] == "{":
+            new_list.append(json.loads(item))
+        else:
+            new_list.append(item)
+    return tuple(new_list)
+
 # Once we get here, a phrase like "we want a menu" would have two solutions
 @Predication(vocabulary, names=["solution_group__want_v_1"])
 def want_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
     current_state = copy.deepcopy(state_list[0])
-    for solution_index in range(len(state_list)):
-        current_state = do_task(current_state,
-                                       [('satisfy_want',
-                                         x_actor_binding_list[solution_index].value,
-                                         x_what_binding_list[solution_index].value)])
-        assert current_state is not None
-
+    x_actors = [convert_noun_structure(x.value) for x in x_actor_binding_list]
+    x_whats = [convert_noun_structure(x.value) for x in x_what_binding_list]
+    current_state = do_task(current_state, [('satisfy_want', x_actors, x_whats)])
+    assert current_state is not None
     yield [current_state]
 
 

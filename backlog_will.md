@@ -13,7 +13,12 @@
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same
     - Really, we should put two messages in there and then merge them at the end if they are the same
-    - 
+  - Planning
+    - Always returns a single state in the state group
+      - Pass the first state in the group and list arguments for the different states
+    - Sometimes it is necessary to examine the whole solution group to decide what to do
+      - The planner should always get passed a StateGroup
+
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"

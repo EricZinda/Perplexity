@@ -241,7 +241,7 @@ class WorldState(State):
                         return True
         return False
 
-    def     user_wants(self, wanted):
+    def user_wants(self, wanted):
         # if wanted not in self.get_entities():
         #   return [RespondOperation("Sorry, we don't have that.")]
 
