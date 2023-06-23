@@ -66,15 +66,26 @@ the_domain = gtpyhop.Domain(domain_name)
 ###############################################################################
 # Helpers
 
-def unique_values(what_list):
-    all_set = set()
-    for what in what_list:
-        all_set.update(what)
-    return list(all_set)
+def unique_values(what_group):
+    all = list()
+    for what in what_group:
+        for what_item in what:
+            if what_item not in all:
+                all.append(what_item)
+    return all
 
 
 def are_group_items(items):
     return isinstance(items, list)
+
+def noun_structure(value, part):
+    if isinstance(value, dict):
+        # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
+        return value[part]
+
+    else:
+        if part == "noun":
+            return value
 
 ###############################################################################
 # Methods: Approaches to doing something that return a new list of something
@@ -85,20 +96,41 @@ def get_menu_at_entrance(state, who):
         if "at" not in state.rel.keys() or (who[0], "table") not in state.rel["at"]:
             return [('respond', "Sorry, you must be seated to order")]
 
+
 gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance)
 
 
-def get_table_at_entrance(state, who_multiple):
-    if all(who in ["user", "son1"] for who in who_multiple):
-        if len(who_multiple) == 2:
+def get_table_at_entrance(state, who_multiple, for_count):
+    if all(who in ["user", "son1"] for who in who_multiple) and \
+            ("at" not in state.rel.keys() or (who_multiple[0], "table") not in state.rel["at"]):
+        # If they say "we" or "table for 2" the size is implied
+        if len(who_multiple) == 2 or for_count == 2:
             return [('respond',
                      "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
                      "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
                     ('add_rel', "user", "at", "table"),
+                    ('add_rel', "son1", "at", "table"),
                     ('set_response_state', "something_to_eat")]
 
+        elif for_count is not None:
+            # They specified how big
+            if for_count < 2:
+                return [('respond', "Johnny: Hey! That's not enough seats!")]
+            elif for_count > 2:
+                return [('respond', "Host: Sorry, we don't have a table with that many seats")]
 
-gtpyhop.declare_task_methods('get_table', get_table_at_entrance)
+        else:
+            # didn't specify size
+            return [('respond', "How many in your party?"),
+                    ('set_response_state', "anticipate_party_size")]
+
+def get_table_repeat(state, who_multiple, for_count):
+    if all(who in ["user", "son1"] for who in who_multiple) and \
+            ("at" in state.rel.keys() and (who_multiple[0], "table") in state.rel["at"]):
+        return [('respond', "Um... You're at a table." + state.get_reprompt())]
+
+
+gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repeat)
 
 
 # This task deals with a group, and group items must be in a list
@@ -109,9 +141,9 @@ def satisfy_want_group(state, group_who, group_what):
     unique_whats = unique_values(group_what)
     if len(unique_whats) == 1:
         # Everybody wanted the same thing
-        wanted_item = unique_whats[0]
+        wanted_item = noun_structure(unique_whats[0], "noun")
         if sort_of(state, wanted_item, "table"):
-            return [("get_table", unique_values(group_who))]
+            return [("get_table", unique_values(group_who), noun_structure(unique_whats[0], "for_count"))]
 
     # Otherwise, we don't care if someone "wants" something together or
     # separately so we treat them as separate
