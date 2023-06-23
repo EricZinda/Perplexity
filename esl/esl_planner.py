@@ -1,5 +1,5 @@
 from esl import gtpyhop
-from esl.worldstate import sort_of, AddRelOp, ResponseStateOp
+from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of
 from perplexity.response import RespondOperation
 
 domain_name = __name__
@@ -87,22 +87,29 @@ def noun_structure(value, part):
         if part == "noun":
             return value
 
+
+def all_are_players(who_multiple):
+    return all(who in ["user", "son1"] for who in who_multiple)
+
+
 ###############################################################################
 # Methods: Approaches to doing something that return a new list of something
 
 def get_menu_at_entrance(state, who):
     if len(who) > 1: return
     if who[0] in ["user", "son1"]:
-        if "at" not in state.rel.keys() or (who[0], "table") not in state.rel["at"]:
+        if not location_of(state, who[0], "table"):
             return [('respond', "Sorry, you must be seated to order")]
+
+# def get_menu_seated(state, who):
 
 
 gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance)
 
 
 def get_table_at_entrance(state, who_multiple, for_count):
-    if all(who in ["user", "son1"] for who in who_multiple) and \
-            ("at" not in state.rel.keys() or (who_multiple[0], "table") not in state.rel["at"]):
+    if all_are_players(who_multiple) and \
+            not location_of(state, who_multiple[0], "table"):
         # If they say "we" or "table for 2" the size is implied
         if len(who_multiple) == 2 or for_count == 2:
             return [('respond',
@@ -125,8 +132,8 @@ def get_table_at_entrance(state, who_multiple, for_count):
                     ('set_response_state', "anticipate_party_size")]
 
 def get_table_repeat(state, who_multiple, for_count):
-    if all(who in ["user", "son1"] for who in who_multiple) and \
-            ("at" in state.rel.keys() and (who_multiple[0], "table") in state.rel["at"]):
+    if all_are_players(who_multiple) and \
+            location_of(state, who_multiple[0], "table"):
         return [('respond', "Um... You're at a table." + state.get_reprompt())]
 
 
@@ -168,7 +175,7 @@ def satisfy_want_fail(state, who, what):
     return [('respond', "Sorry, I'm not sure what to do about that")]
 
 
-gtpyhop.declare_task_methods('satisfy_want', satisfy_want, satisfy_want_group, satisfy_want_fail)
+gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group, satisfy_want, satisfy_want_fail)
 
 ###############################################################################
 # Actions: Update state to a new value

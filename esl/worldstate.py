@@ -93,6 +93,12 @@ def instance_of_what(state, thing):
         if i[0] == thing:
             return i[1]
 
+def location_of(state, who, where):
+    if "at" not in state.rel.keys():
+        return False
+    else:
+        return (who, where) in state.rel["at"]
+
 
 class AddRelOp(object):
     def __init__(self, rel):
@@ -297,7 +303,6 @@ class WorldState(State):
                 return [RespondOperation("How many in your party?"), ResponseStateOp("anticipate_party_size")]
 
         if sort_of(self, wanted, "menu"):
-
             if "at" in self.rel.keys():
                 if ("user", "table") in self.rel["at"]:
                     if ("user", "menu1") not in self.rel["have"]:
