@@ -138,8 +138,24 @@ class ResponseStateOp(object):
 class WorldState(State):
     def __init__(self, relations, system):
         super().__init__([])
+        self.__name__ = "state"
         self.rel = relations
         self.sys = system
+
+    #*********** Used for HTN
+    def copy(self,new_name=None):
+        return copy.deepcopy(self)
+
+    def display(self, heading=None):
+        """
+        Print the state's state-variables and their values.
+         - heading (optional) is a heading to print beforehand.
+        """
+        pass
+
+    def state_vars(self):
+        pass
+    # *********** Used for HTN
 
     def all_individuals(self):
         for i in self.get_entities():
@@ -225,7 +241,7 @@ class WorldState(State):
                         return True
         return False
 
-    def user_wants(self, wanted):
+    def     user_wants(self, wanted):
         # if wanted not in self.get_entities():
         #   return [RespondOperation("Sorry, we don't have that.")]
 
@@ -281,6 +297,7 @@ class WorldState(State):
                 return [RespondOperation("How many in your party?"), ResponseStateOp("anticipate_party_size")]
 
         if sort_of(self, wanted, "menu"):
+
             if "at" in self.rel.keys():
                 if ("user", "table") in self.rel["at"]:
                     if ("user", "menu1") not in self.rel["have"]:

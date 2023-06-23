@@ -1,4 +1,7 @@
+import copy
+
 import perplexity.messages
+from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
@@ -393,23 +396,21 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 if i[0] == x_actor:
                     yield i[1]
 
-    success_states = list(in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
-                                                 wanters_of_obj, wanted_of_actor))
-    for success_state in success_states:
-        x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
-        x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
-        if is_user_type(x_act):
-            if not x_obj is None:
-                yield success_state.record_operations(state.handle_world_event(["user_wants", x_obj]))
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+                                                 wanters_of_obj, wanted_of_actor)
 
-
+# Once we get here, a phrase like "we want a menu" would have two solutions
 @Predication(vocabulary, names=["solution_group__want_v_1"])
 def want_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
-    if len(state_list) == 1:
-        yield (state_list[0],)
-    else:
-        reset_operations(state_list[0])
-        yield (state_list[0].record_operations(state_list[0].user_wants_group(x_actor_binding_list, x_what_binding_list)),)
+    current_state = copy.deepcopy(state_list[0])
+    for solution_index in range(len(state_list)):
+        current_state = do_task(current_state,
+                                       [('satisfy_want',
+                                         x_actor_binding_list[solution_index].value,
+                                         x_what_binding_list[solution_index].value)])
+        assert current_state is not None
+
+    yield [current_state]
 
 
 @Predication(vocabulary, names=["_check_v_1"])

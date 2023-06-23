@@ -450,7 +450,9 @@ class UserInterface(object):
         for solution in solutions:
             for operation in solution.get_operations():
                 if isinstance(operation, RespondOperation):
-                    responses.append(operation.response_string())
+                    response_string = operation.response_string()
+                    if response_string not in responses:
+                        responses.append(response_string)
                 else:
                     all_operations.append(operation)
 

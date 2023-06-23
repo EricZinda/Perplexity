@@ -8,7 +8,12 @@
     - Seems like a better architecture would be:
       - Let regular predications do basic error checking and logic checking for building up to the verb
         - things like "on" for "on the menu" or "table near the window"
+      - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
+  - Dealing with multiple people in verbs
+    - We don't want to say the same thing twice if it is the same
+    - Really, we should put two messages in there and then merge them at the end if they are the same
+    - 
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"
