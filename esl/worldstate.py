@@ -100,6 +100,36 @@ def location_of(state, who, where):
         return (who, where) in state.rel["at"]
 
 
+def rel_check(state, subject, rel, object):
+    if rel not in state.rel.keys():
+        return False
+    else:
+        return (subject, object) in state.rel[rel]
+
+def rel_objects(state, subject, rel):
+    if rel not in state.rel.keys():
+        return
+    else:
+        for item in state.rel[rel]:
+            if item[0] == subject:
+                yield item[1]
+
+def rel_subjects(state, rel, object):
+    if rel not in state.rel.keys():
+        return
+    else:
+        for item in state.rel[rel]:
+            if item[1] == object:
+                yield item[0]
+
+def has_type(state, subject, type):
+    if "have" in state.rel.keys():
+        for item in state.rel["have"]:
+            if item[0] == subject and sort_of(state, item[1], type):
+                return True
+
+    return False
+
 class AddRelOp(object):
     def __init__(self, rel):
         self.toAdd = rel

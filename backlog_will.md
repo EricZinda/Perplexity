@@ -18,7 +18,20 @@
       - Pass the first state in the group and list arguments for the different states
     - Sometimes it is necessary to examine the whole solution group to decide what to do
       - The planner should always get passed a StateGroup
-
+  - Abstract statements: I want a menu
+    - How to tell the difference between "any menu" and "the specific menu that is in the variable"
+      - In theory this could work with a bogus abstract item
+    - Ditto with "I want two menus/two steaks"
+      - In theory this could also have "2" be bogus and count bogus items
+    - It seems like nouns should always return their types in addition to instances
+      - It means that predications need to always check for instances or not
+    - What about "menus from the kitchen are lost"
+    - Approach:
+      - We could use the approach will did and build up an abstract individual with a particular structure
+        - If a predication sees that it just adds its information to it?
+      - But then how does "I want a menu" decide which to use
+    - Approach 2:
+      - Nothing special happens, we just fail each one that is in use until we find one that isn't
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"

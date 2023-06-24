@@ -1,6 +1,7 @@
 from esl import gtpyhop
-from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of
+from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of, rel_check, has_type, all_instances, rel_subjects
 from perplexity.response import RespondOperation
+from perplexity.utilities import at_least_one_generator
 
 domain_name = __name__
 the_domain = gtpyhop.Domain(domain_name)
@@ -96,15 +97,30 @@ def all_are_players(who_multiple):
 # Methods: Approaches to doing something that return a new list of something
 
 def get_menu_at_entrance(state, who):
-    if len(who) > 1: return
-    if who[0] in ["user", "son1"]:
-        if not location_of(state, who[0], "table"):
-            return [('respond', "Sorry, you must be seated to order")]
+    if all_are_players(who) and not location_of(state, who[0], "table"):
+        return [('respond', "Sorry, you must be seated to order")]
 
-# def get_menu_seated(state, who):
+def get_menu_seated(state, who):
+    if all_are_players(who) and location_of(state, who[0], "table"):
+        if has_type(state, who[0], "menu"):
+            return [('respond',
+                     "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + state.get_reprompt())]
+        else:
+            # Find an unused menu
+            for menu in all_instances(state, "menu"):
+                taken = at_least_one_generator(rel_subjects(state, "have", menu))
+                if taken is None:
+                    return [('add_rel', who[0], "have", menu),
+                            ('respond',
+                             "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
+                            ('set_response_state', "anticipate_dish")]
+
+        return [('respond',
+                 "I'm sorry, we're all out of menus." + state.get_reprompt())]
 
 
-gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance)
+
+gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance, get_menu_seated)
 
 
 def get_table_at_entrance(state, who_multiple, for_count):
