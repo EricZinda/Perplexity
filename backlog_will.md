@@ -82,9 +82,31 @@
             - Option 1:
               - for this variable just assume they are true, the verb is responsible for failing if they aren't
               - Record something in the solution group that says which mode it is in , then the verb decides if it works
-            - Option 2:
-              - the verb is somehow involved in phase 2?
-                - 
+                - A particular variable:
+                  - Needs to meet the numeric criteria 
+                    - Distributive/collective: N individuals per previous variable set value
+                    - Cumulative: N individuals total
+              - Problem is that plurals won't know how many of this variable set values there are for the next variable
+                - Actually: we know of a *range* of values since we have the criteria, and the variable 
+                  must meet that criteria
+                - So we need to build solution groups that assume all possible criteria are met
+                  - 3 girls have the 2 menus
+                  - The trick is it needs to expand to the actual list to get the solution group alternatives
+                    - They will only return a single abstract item
+                    - We can convert it to the powerset of abstract items up front
+                    - OR just duplicate it once for each of cuml/dist/coll so we only have 3 and leave it 
+                    - OR just leave it and make the final verb break it up?
+                    - OR
+                      - In phase 1 have_v will get each combination of girls and an abstract menu
+                        - If it thinks it is true it should give each a menu
+                        - But at the end there will be a bunch of girls that all have the same menu
+                        - Maybe the group predication sorts it out?
+                        - Don't I have this problem now with "Give me 2 steaks"?
+                        - The answer might be that the operation is in charge of giving a *new* menu
+                          - and when the operations run the choose different ones
+              - Option 2:
+                - the verb is somehow involved in phase 2?
+                  - Imagine that the verb gets passed the raw list of solutions
     - Approach 2: It *seems* like this could be built automatically, just like I'm doing for generation
       - It would include the quantifier that quantifies the variable introduced by the noun
       - The problem is that in the case about, we really want "the menu I have heard so much about" to be resolved to an abstract thing
