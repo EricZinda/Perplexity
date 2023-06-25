@@ -281,7 +281,8 @@ class VariableStats(object):
 
         next_value = None if self.next_variable_stats is None else solution.get_binding(self.next_variable_stats.variable_name).value
 
-        # Update the unique values mapping that is used for distributive readings
+        # Update the unique set values mapping that is used for distributive readings
+        # Add the *individuals* of the next variable value to the *set value* of this variable
         if binding_value not in self.whole_group_unique_values:
             self.whole_group_unique_values[binding_value] = [set(next_value if next_value is not None else []), [solution]]
 

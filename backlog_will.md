@@ -10,6 +10,7 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
+- abstract-types
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same
     - Really, we should put two messages in there and then merge them at the end if they are the same
@@ -40,6 +41,88 @@
       - But then how does "I want a menu" decide which to use
     - Approach 2:
       - Nothing special happens, we just fail each one that is in use until we find one that isn't
+        - Option 2: There is a canonical menu, or a canonical noun
+          - "the menu I have heard so much about" resolves to that canonical thing
+          - What about "menus from the kitchen are always dirty"
+            - Definitely talking about abstract types in some way
+            - And facts about that abstract type
+            - Really this isn't something that we would have a fact about
+              - It is something we would try to prove or check
+          - "Can I have the menu" resolves to that canonical thing
+            - Ditto with "I want two menus/two steaks"
+            - In theory this could also have "2" be bogus and count bogus items
+          - "Can I have a menu" ditto
+            - this example is one that would just work naturally but iterate through all the menus
+            - But, how does the verb decide if the person asked for "my son's menu" or "a menu" since they will both return menu1?
+              - The menu could also belong to another customer
+              - This seems like the problematic one
+              - It seems like "a" might also be best to return an abstract type that then gets resolved to a specific type
+                - Then quantifiers like "this" or "the" or "my son's menu" would return instances
+          - "I want 2 menus that I have heard so much about"
+            - Could it be that the abstract type is something that can be resolved by the verb?
+            - this example is one that would just work naturally but iterate through all the menus
+          - Is it different than a type?
+            - If there is a menu type and a thisRestaurantMenu type
+          - What about "Do you have the blue menu?"
+            - Does the canonical type have properties that describe it?
+            - Or does it just come through and collect properties and someone needs to resolve it eventually?
+            - 
+    - Approach 1:
+      - Certain quantifiers push through "canonical instances"
+        - These instances can have facts about them too.  "I've heard about your menu" -> fact
+        - Predications that see a canonical instance can attempt to resolve it as a regular instance to see if we 
+          have a specific canonical instance with facts about it
+        - Assume these canonical instances are types
+          - Does the quantifier return all types and all derived types too?
+          - Yes
+        - Scenarios
+          - Can I have the menu?
+            - the_q generates abstract type with constraint
+            - if verb handles the abstract type it is responsible for checking the constraint too
+        - How do criteria work?
+          - I want 2 menus
+            - menus gets resolved to abstract instance in phase 1
+            - Information about criteria is passed to verb? and the verb has to resolve it?
+              - The constraint will be retrievable from the binding
+          - "I'd like 2 menus for each person" 
+            - "I'd like" indicates something the user wants to be true
+            - Really this should be translated to: give 2 menus to each person
+              - which resolves to give_to with an abstract 2 menus
+        - Design:
+          - Types flow through the system as well as instances and everything needs to be careful about what is what
+          - Plurals:
+            - Option 1:
+              - for this variable just assume they are true, the verb is responsible for failing if they aren't
+              - Record something in the solution group that says which mode it is in , then the verb decides if it works
+                - A particular variable:
+                  - Needs to meet the numeric criteria 
+                    - Distributive/collective: N individuals per previous variable set value
+                    - Cumulative: N individuals total
+              - Problem is that plurals won't know how many of this variable set values there are for the next variable
+                - Actually: we know of a *range* of values since we have the criteria, and the variable 
+                  must meet that criteria
+                - So we need to build solution groups that assume all possible criteria are met
+                  - 3 girls have the 2 menus
+                  - The trick is it needs to expand to the actual list to get the solution group alternatives
+                    - They will only return a single abstract item
+                    - We can convert it to the powerset of abstract items up front
+                    - OR just duplicate it once for each of cuml/dist/coll so we only have 3 and leave it 
+                    - OR just leave it and make the final verb break it up?
+                    - OR
+                      - In phase 1 have_v will get each combination of girls and an abstract menu
+                        - If it thinks it is true it should give each a menu
+                        - But at the end there will be a bunch of girls that all have the same menu
+                        - Maybe the group predication sorts it out?
+                        - Don't I have this problem now with "Give me 2 steaks"?
+                        - The answer might be that the operation is in charge of giving a *new* menu
+                          - and when the operations run the choose different ones
+              - Option 2:
+                - the verb is somehow involved in phase 2?
+                  - Imagine that the verb gets passed the raw list of solutions
+    - Approach 2: It *seems* like this could be built automatically, just like I'm doing for generation
+      - It would include the quantifier that quantifies the variable introduced by the noun
+      - The problem is that in the case about, we really want "the menu I have heard so much about" to be resolved to an abstract thing
+
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"
