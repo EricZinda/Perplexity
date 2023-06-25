@@ -9,6 +9,86 @@
       - Let regular predications do basic error checking and logic checking for building up to the verb
         - things like "on" for "on the menu" or "table near the window"
       - Let the verb *group* do the heavy lifting
+
+  - Dealing with multiple people in verbs
+    - We don't want to say the same thing twice if it is the same
+    - Really, we should put two messages in there and then merge them at the end if they are the same
+  - Planning
+    - Always returns a single state in the state group
+      - Pass the first state in the group and list arguments for the different states
+    - Sometimes it is necessary to examine the whole solution group to decide what to do
+      - The planner should always get passed a StateGroup
+  - Abstract statements: I want a menu
+    - How to tell the difference between "any menu" and "the specific menu that is in the variable"
+      - I.e. by the time you get to "want", how do you tell the difference between: 
+        - "I want a menu" and "I want the menu my son has"? - 
+          - Both have a specific menu in the variable
+        - What about "I want the menu"
+          - In theory this could work with a bogus abstract item
+          - Could be the same as "a taxi" as in "can I get a taxi?"
+          - Maybe it is the first one to be returned from nouns?
+          - Everything that operates on the abstract item builds up information about it that describes the item
+        - What about "I want the menu I have heard so much about?"
+        - Option 2: There is a canonical menu, or a canonical noun
+          - "the menu I have heard so much about" resolves to that canonical thing
+          - What about "menus from the kitchen are always dirty"
+            - Definitely talking about abstract types in some way
+            - And facts about that abstract type
+            - Really this isn't something that we would have a fact about
+              - It is something we would try to prove or check
+          - "Can I have the menu" resolves to that canonical thing
+            - Ditto with "I want two menus/two steaks"
+            - In theory this could also have "2" be bogus and count bogus items
+          - "Can I have a menu" ditto
+            - this example is one that would just work naturally but iterate through all the menus
+            - But, how does the verb decide if the person asked for "my son's menu" or "a menu" since they will both return menu1?
+              - The menu could also belong to another customer
+              - This seems like the problematic one
+              - It seems like "a" might also be best to return an abstract type that then gets resolved to a specific type
+                - Then quantifiers like "this" or "the" or "my son's menu" would return instances
+          - "I want 2 menus that I have heard so much about"
+            - Could it be that the abstract type is something that can be resolved by the verb?
+            - this example is one that would just work naturally but iterate through all the menus
+          - Is it different than a type?
+            - If there is a menu type and a thisRestaurantMenu type
+          - What about "Do you have the blue menu?"
+            - Does the canonical type have properties that describe it?
+            - Or does it just come through and collect properties and someone needs to resolve it eventually?
+            - 
+    - Approach 1:
+      - Certain quantifiers push through "canonical instances"
+        - These instances can have facts about them too.  "I've heard about your menu" -> fact
+        - Predications that see a canonical instance can attempt to resolve it as a regular instance to see if we 
+          have a specific canonical instance with facts about it
+        - Assume these canonical instances are types
+          - Does the quantifier return all types and all derived types too?
+          - Yes
+        - Scenarios
+          - Can I have the menu?
+            - the_q generates abstract type with constraint
+            - if verb handles the abstract type it is responsible for checking the constraint too
+        - How do criteria work?
+          - I want 2 menus
+            - menus gets resolved to abstract instance in phase 1
+            - Information about criteria is passed to verb? and the verb has to resolve it?
+              - The constraint will be retrievable from the binding
+          - "I'd like 2 menus for each person" 
+            - "I'd like" indicates something the user wants to be true
+            - Really this should be translated to: give 2 menus to each person
+              - which resolves to give_to with an abstract 2 menus
+        - Design:
+          - Types flow through the system as well as instances and everything needs to be careful about what is what
+          - Plurals:
+            - Option 1:
+              - for this variable just assume they are true, the verb is responsible for failing if they aren't
+              - Record something in the solution group that says which mode it is in , then the verb decides if it works
+            - Option 2:
+              - the verb is somehow involved in phase 2?
+                - 
+    - Approach 2: It *seems* like this could be built automatically, just like I'm doing for generation
+      - It would include the quantifier that quantifies the variable introduced by the noun
+      - The problem is that in the case about, we really want "the menu I have heard so much about" to be resolved to an abstract thing
+
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"
