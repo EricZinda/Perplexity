@@ -20,7 +20,15 @@
       - The planner should always get passed a StateGroup
   - Abstract statements: I want a menu
     - How to tell the difference between "any menu" and "the specific menu that is in the variable"
-      - In theory this could work with a bogus abstract item
+      - I.e. by the time you get to "want", how do you tell the difference between: 
+        - "I want a menu" and "I want the menu my son has"? - 
+          - Both have a specific menu in the variable
+        - What about "I want the menu"
+          - In theory this could work with a bogus abstract item
+          - Could be the same as "a taxi" as in "can I get a taxi?"
+          - Maybe it is the first one to be returned from nouns?
+          - Everything that operates on the abstract item builds up information about it that describes the item
+        - What about "I want the menu I have heard so much about?"
     - Ditto with "I want two menus/two steaks"
       - In theory this could also have "2" be bogus and count bogus items
     - It seems like nouns should always return their types in addition to instances
