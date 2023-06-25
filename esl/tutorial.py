@@ -265,6 +265,8 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
+        # Yield the abstract type first
+        yield noun_type
         yield from all_instances(state, noun_type)
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)

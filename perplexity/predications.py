@@ -404,3 +404,4 @@ def in_style_predication_2(state, binding1, binding2,
                              all_unbound_predication_function,
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored),
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored))
+

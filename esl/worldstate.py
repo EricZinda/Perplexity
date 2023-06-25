@@ -93,11 +93,16 @@ def instance_of_what(state, thing):
         if i[0] == thing:
             return i[1]
 
-def location_of(state, who, where):
-    if "at" not in state.rel.keys():
-        return False
-    else:
-        return (who, where) in state.rel["at"]
+def is_instance(state, thing):
+    return instance_of_what(state, thing) is not None
+
+
+def location_of_type(state, who, where_type):
+    for location in rel_objects(state, who, "at"):
+        if sort_of(state, location, where_type):
+            return True
+
+    return False
 
 
 def rel_check(state, subject, rel, object):

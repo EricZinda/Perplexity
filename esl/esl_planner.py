@@ -1,5 +1,6 @@
 from esl import gtpyhop
-from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of, rel_check, has_type, all_instances, rel_subjects
+from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
+    rel_subjects, is_instance
 from perplexity.response import RespondOperation
 from perplexity.utilities import at_least_one_generator
 
@@ -93,15 +94,22 @@ def all_are_players(who_multiple):
     return all(who in ["user", "son1"] for who in who_multiple)
 
 
+def find_unused_item(state, object_type):
+    for potential in all_instances(state, object_type):
+        taken = at_least_one_generator(rel_subjects(state, "have", potential))
+        if taken is None:
+            return potential
+
+
 ###############################################################################
 # Methods: Approaches to doing something that return a new list of something
 
 def get_menu_at_entrance(state, who):
-    if all_are_players(who) and not location_of(state, who[0], "table"):
+    if all_are_players(who) and not location_of_type(state, who[0], "table"):
         return [('respond', "Sorry, you must be seated to order")]
 
 def get_menu_seated(state, who):
-    if all_are_players(who) and location_of(state, who[0], "table"):
+    if all_are_players(who) and location_of_type(state, who[0], "table"):
         if has_type(state, who[0], "menu"):
             return [('respond',
                      "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + state.get_reprompt())]
@@ -125,15 +133,19 @@ gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance, get_menu_seated)
 
 def get_table_at_entrance(state, who_multiple, for_count):
     if all_are_players(who_multiple) and \
-            not location_of(state, who_multiple[0], "table"):
+            not location_of_type(state, who_multiple[0], "table"):
         # If they say "we" or "table for 2" the size is implied
         if len(who_multiple) == 2 or for_count == 2:
-            return [('respond',
-                     "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
-                     "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
-                    ('add_rel', "user", "at", "table"),
-                    ('add_rel', "son1", "at", "table"),
-                    ('set_response_state', "something_to_eat")]
+            unused_table = find_unused_item(state, "table")
+            if unused_table is not None:
+                return [('respond',
+                         "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
+                         "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
+                        ('add_rel', "user", "at", unused_table),
+                        ('add_rel', "son1", "at", unused_table),
+                        ('set_response_state', "something_to_eat")]
+            else:
+                return [('respond', "I'm sorry, we don't have any tables left...")]
 
         elif for_count is not None:
             # They specified how big
@@ -147,9 +159,10 @@ def get_table_at_entrance(state, who_multiple, for_count):
             return [('respond', "How many in your party?"),
                     ('set_response_state', "anticipate_party_size")]
 
+
 def get_table_repeat(state, who_multiple, for_count):
     if all_are_players(who_multiple) and \
-            location_of(state, who_multiple[0], "table"):
+            location_of_type(state, who_multiple[0], "table"):
         return [('respond', "Um... You're at a table." + state.get_reprompt())]
 
 
@@ -157,6 +170,7 @@ gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repea
 
 
 # This task deals with a group, and group items must be in a list
+# all of the things in the group will be applied to the single state
 def satisfy_want_group(state, group_who, group_what):
     if not are_group_items(group_who) or not are_group_items(group_what): return
 
@@ -166,7 +180,12 @@ def satisfy_want_group(state, group_who, group_what):
         # Everybody wanted the same thing
         wanted_item = noun_structure(unique_whats[0], "noun")
         if sort_of(state, wanted_item, "table"):
-            return [("get_table", unique_values(group_who), noun_structure(unique_whats[0], "for_count"))]
+            if is_instance(state, wanted_item):
+                # They are asking for a *particular* table
+                return [('respond', "Sorry, we don't allow requesting specific tables here.")]
+
+            else:
+                return [("get_table", unique_values(group_who), noun_structure(unique_whats[0], "for_count"))]
 
     # Otherwise, we don't care if someone "wants" something together or
     # separately so we treat them as separate
@@ -184,6 +203,12 @@ def satisfy_want(state, who, what):
     if len(who) > 1 or len(what) > 1: return
     if sort_of(state, what[0], "menu"):
         return [('get_menu', who)]
+    elif sort_of(state, what[0], "table"):
+        if is_instance(state, what[0]):
+            # They are asking for a *particular* table
+            return [('respond', "Sorry, we don't allow requesting specific tables here.")]
+        else:
+            return [('get_menu', who[0])]
 
 
 # Last option should just report an error

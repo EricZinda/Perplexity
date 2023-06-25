@@ -88,6 +88,8 @@
             - "I'd like" indicates something the user wants to be true
             - Really this should be translated to: give 2 menus to each person
               - which resolves to give_to with an abstract 2 menus
+          - "I'd like a table by the window"
+            - abstract 
         - Design:
           - Types flow through the system as well as instances and everything needs to be careful about what is what
           - Plurals:
@@ -102,20 +104,12 @@
                 - Actually: we know of a *range* of values since we have the criteria, and the variable 
                   must meet that criteria
                 - So we need to build solution groups that assume all possible criteria are met
-                  - 3 girls have the 2 menus
-                  - The trick is it needs to expand to the actual list to get the solution group alternatives
-                    - They will only return a single abstract item
-                    - We can convert it to the powerset of abstract items up front
-                    - OR just duplicate it once for each of cuml/dist/coll so we only have 3 and leave it 
-                    - OR just leave it and make the final verb break it up?
-                    - OR
-                      - In phase 1 have_v will get each combination of girls and an abstract menu
-                        - If it thinks it is true it should give each a menu
-                        - But at the end there will be a bunch of girls that all have the same menu
-                        - Maybe the group predication sorts it out?
-                        - Don't I have this problem now with "Give me 2 steaks"?
-                        - The answer might be that the operation is in charge of giving a *new* menu
-                          - and when the operations run the choose different ones
+                  - The 3 girls want 2 menus
+                  - In phase 1 want_v will get each combination of girls and an abstract menu
+                    - If it thinks it is true it should give each a menu
+                      - Because it is *want* it should return True if it is theoretically possible and let the group predicate sort it out
+                      - when the group predication runs, it tries to give all of the girls a menu, one after the other and
+                        - responds appropriately
               - Option 2:
                 - the verb is somehow involved in phase 2?
                   - Imagine that the verb gets passed the raw list of solutions
