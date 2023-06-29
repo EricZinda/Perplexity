@@ -511,10 +511,10 @@ def Example24():
 def Example25_reset():
     return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
                                            (True, "/documents/file1.txt", {"size": 1000}),
-                                           (False, "/Desktop", {"size": 10000000}),
                                            (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
-                                           (True, "/Desktop/blue", {"size": 10000000})],
-                                          "/Desktop"))
+                                           (True, "/Desktop/blue", {"size": 10000000}),
+                                           (False, "/Desktop", {"size": 10000000})],
+                                           "/Desktop"))
 
 
 def Example25():
@@ -589,7 +589,6 @@ def Example27a():
 def Example28_reset():
     return FileSystemState(FileSystemMock([(True, "/temp/59.txt", {"size": 1000}),
                                            (True, "/documents/file1.txt", {"size": 1000}),
-                                           (False, "/Desktop", {"size": 10000000}),
                                            (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
                                            (True, "/Desktop/bigfile.txt", {"size": 20000000}),
                                            (True, "/Desktop/bigfile2.txt", {"size": 20000000}),
@@ -1030,7 +1029,7 @@ if __name__ == '__main__':
     # Example27()
     # Example27a()
     # Example28()
-    Example29()
+    # Example29()
     # Example30()
     # Example31()
     # Example32()
@@ -1058,33 +1057,15 @@ if __name__ == '__main__':
     #     stats.get_stats_profile()
     #     stats.print_stats()
 
+
     # Demo: Do with pipeline on
 
-    # Example25()
-    # which files are large?
-    # Where am I? -> describe there are more
-    # what is in this folder? -> what is singular, thus: there are more
-    # which files are in this folder?
-    # Which files are not in this folder? -> show how not() resolves the fragments
-    # Which 2 files are in 2 folders? -> distributive reading
-    # which 2 files are in 2 folders together? -> show the parse that failed,
-    # Example35()
-    # which 2 files are in 2 folders together? -> interprets "2 folders at the same time"?
-
     # Example28()
-    # which files are very large? set of 3
-    # which files are 20 mb? -> also returns a set meaning "together"
-    # which 2 files in a folder together are 20 mb -> returns just those
-    # /soln all, Is a file in 3 folders? -> yes.
-    # /show -> prove it is
-    # where am i?
-    # go to "/temp"
-    # what is in this folder?
-    # Example37()
-    # which files are in folders?
-    # which files are in a folder
-    # which file is in a folder
-    # delete the file
-    # Where is the file?
-
-    # One more thing
+    Example25()
+    # /soln all
+    # which file is in this folder? -> what is singular, thus: there are more
+    # which files are in this folder?
+    # Which 2 files are in 2 folders? -> cumulative reading
+    # /show
+    # which 2 files are in 2 folders together? -> show the parse that worked
+    # /show
