@@ -7,6 +7,8 @@ import sys
 from collections import defaultdict
 from delphin import ace
 from delphin.codecs.simplemrs import encode
+from delphin.predicate import split
+
 import perplexity.execution
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name, sentence_force
@@ -58,7 +60,36 @@ class MrsParser(object):
     def mrs_to_string(self, mrs):
         return encode(mrs)
 
+    def unscoped_tree(self, mrs):
+        conjunction_list = []
+        current_index = 0
+        for predication in mrs.predications:
+            if split(predication.predicate)[1] == "q":
+                if predication.predicate not in ["udef_q", "pronoun_q", "proper_q", "_which_q", "which_q", "generic_q"]:
+                    return False
+                else:
+                    continue
+            else:
+                # If a predication takes a scopal argument it might need to get inserted into any place
+                # in the tree (i.e. neg()) so we need to return the different trees
+                for arg_name in predication.args.keys():
+                    original_value = predication.args[arg_name]
+
+                    # CARG arguments contain strings that are never
+                    # variables, they are constants
+                    if arg_name not in ["CARG"]:
+                        argType = original_value[0]
+                        if argType == "h":
+                            return False
+
+        return True
+
+        # If we got here, all predications don't need scope
     def trees_from_mrs(self, mrs):
+        # If the tree doesn't have any true scopes, then only return
+        # one tree since they will all be the same
+        unscoped = self.unscoped_tree(mrs)
+
         # Create a dict of predications using their labels as each key
         # for easy access when building trees
         # Note that a single label could represent multiple predications
@@ -87,6 +118,8 @@ class MrsParser(object):
                                                          mrs)
                 pipeline_logger.debug(f"Tree: {well_formed_tree}")
                 yield well_formed_tree
+                if unscoped:
+                    return
 
     def erg_file(self):
         if sys.platform == "linux":

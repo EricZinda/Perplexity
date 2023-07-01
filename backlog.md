@@ -1,8 +1,8 @@
+- Don't build trees for transparent quantifiers
+  - Make plurals work properly
+- 
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
-
-  
-
 - Demo for summit
   - card() not in rstr
 - Not issues: For Example23
