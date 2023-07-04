@@ -10,6 +10,7 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
+      - 
 - abstract-types
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same
@@ -104,18 +105,73 @@
                 - Actually: we know of a *range* of values since we have the criteria, and the variable 
                   must meet that criteria
                 - So we need to build solution groups that assume all possible criteria are met
-                  - The 3 girls want 2 menus
-                  - In phase 1 want_v will get each combination of girls and an abstract menu
-                    - If it thinks it is true it should give each a menu
-                      - Because it is *want* it should return True if it is theoretically possible and let the group predicate sort it out
-                      - when the group predication runs, it tries to give all of the girls a menu, one after the other and
-                        - responds appropriately
+                  - But then for a solution group it has to record which criteria this group should meet 
+                  - I want a menu/we want a menu, etc
+                    - In phase 1 want_v will get "I" and an abstract menu
+                      - If it thinks it is true it should give each a menu
+                        - Because it is *want* it should return True if it is theoretically possible and let the group predicate sort it out
+                        - when the group predication runs, it tries to give each person a menu, one after the other and
+                          - responds appropriately
+                  - I want 2 menus/are there 2 menus here?
+                    - Do you have 2 menus (when there are two *types* but only one of each)
+                      - Works because you'll get two abstract types
+                    - What's an example where menu is abstract but has 2
+                      - When there is one menu type but two of them: "which are the 2 menus?"
+                      - That could work with the group predication expanding it. What about "Could we get 2 menus for 4 people"?
+                        - One solution could be that solutions are expanded to meet criteria when we iterate through them
+                        - So this phrase gets, say, 8 solutions with abstract elements for each menu and person
+                        - Then the group has to resolve them to see if it is true
+                        - What about: "Are 2 children singing 2 songs?"
+                          - Group predication needs to solve the "group equation"?
+                            - which is meaningless in this case, or rather already solved by the instances so: ignored?
+                            - When are the abstract types really used?
+                      - Designs
+                        - Option 1: maybe abstract menus should be a measure() that returns however many are needed?
+                          - It seems like measure() is not being handled correctly in plural
+                          - But if it was, we could use it?
+                        - Option 2: 
+                          - If the user says "Can we have 2 menus for 6 people", we will get
+                            - a row with "menu", "person" (both abstract)
+                            - a row with "menu", "person1" for every person there
+                            - Thus collective would work normally if menus used measure() to count
+                            - If, somehow, menu was able to act as different unique items distributive would also work naturally
+                            - Idea: we could invert the constraint and ask it to generate a count that matches what is required
+                        - Option 3
+                          - Let's say we only ever return a collective answer for abstract types and just "pretend" that the
+                            abstract type variable meets the constraints
+                          - The group predication will get called once with every variable set to an abstract type
+                          - The other solution groups will have a mix of abstract and instances
+                          - Then the group predication would have to convert it to all the different modes?
+                          - We really do need the system to generate the alternatives so the user doesn't have to fish them out
+                          - The logic is something like:
+                            - If the previous variable is abstract and:
+                              - This variables values meets the criteria, it is collective or cuml
+                              - This variables values could be divided such that it meets the criteria, evenly with no remainder, it is dist
+                              
+                          - Implementation
+                            - (done) Implement a generic way to see if something is an abstract type
+                              - hasattr("is_abstract")
+                            - (done) Abstract types should not get mixed in with other types *in the same variable*
+                              - This should fail in add_solution()
+                            - (done) meets_criteria() should just return "true" if the variable is an abstract type
+                            - (done) add_solution() currently checks *either* collective *or* cuml/dist
+                              - It should have a different set of checks if the previous variable is abstract:
+                                - This variables values meets the criteria, it is collective or cuml
+                                - This variables values could be divided such that it meets the criteria, evenly with no remainder, it is dist
+                                - Also: if *this* variable is conceptual, it is going to match *all three* potential plural types
+                            - (done) Update abstract variables to use new Concept() object
+                            - Have a way for predications like "for" to add information to Concept variables 
+                            - The developer will have to ensure that abstract variables meet global constraints
+                            - The developer will have to see which kind of solution group this is: a cuml/coll group or a dist group
+                            - The developer will have divide up the group however makes sense
+                            - It *might* be helpful to have the system indicate which type of group a variable is
               - Option 2:
                 - the verb is somehow involved in phase 2?
                   - Imagine that the verb gets passed the raw list of solutions
     - Approach 2: It *seems* like this could be built automatically, just like I'm doing for generation
       - It would include the quantifier that quantifies the variable introduced by the noun
       - The problem is that in the case about, we really want "the menu I have heard so much about" to be resolved to an abstract thing
+      - 
 
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()

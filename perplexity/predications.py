@@ -1,3 +1,4 @@
+import copy
 import enum
 import itertools
 from perplexity.execution import get_variable_metadata, report_error
@@ -5,6 +6,24 @@ from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
+
+class Concept(object):
+    def __init__(self, concept_name, dict_modifications = None):
+        self.concept_name = concept_name
+        self._modifiers = {"noun": concept_name}
+        if dict_modifications is not None:
+            self._modifiers.update(dict_modifications)
+
+    def is_concept(self):
+        return True
+
+    def modifiers(self):
+        return self._modifiers
+
+    def update_modifiers(self, dict_modifications):
+        modified = copy.deepcopy(self)
+        modified._modifiers.update(dict_modifications)
+        return modified
 
 # how a particular VariableDescriptor handles
 # a individual or group

@@ -115,16 +115,15 @@ def get_menu_seated(state, who):
                      "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + state.get_reprompt())]
         else:
             # Find an unused menu
-            for menu in all_instances(state, "menu"):
-                taken = at_least_one_generator(rel_subjects(state, "have", menu))
-                if taken is None:
-                    return [('add_rel', who[0], "have", menu),
-                            ('respond',
-                             "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
-                            ('set_response_state', "anticipate_dish")]
-
-        return [('respond',
-                 "I'm sorry, we're all out of menus." + state.get_reprompt())]
+            unused_menu = find_unused_item(state, "menu")
+            if unused_menu:
+                return [('add_rel', who[0], "have", unused_menu),
+                        ('respond',
+                         "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
+                        ('set_response_state', "anticipate_dish")]
+            else:
+                return [('respond',
+                         "I'm sorry, we're all out of menus." + state.get_reprompt())]
 
 
 
@@ -186,6 +185,8 @@ def satisfy_want_group(state, group_who, group_what):
 
             else:
                 return [("get_table", unique_values(group_who), noun_structure(unique_whats[0], "for_count"))]
+        elif sort_of(state, wanted_item, "menu"):
+            return [("get_menu", unique_values(group_who))]
 
     # Otherwise, we don't care if someone "wants" something together or
     # separately so we treat them as separate
@@ -203,6 +204,7 @@ def satisfy_want(state, who, what):
     if len(who) > 1 or len(what) > 1: return
     if sort_of(state, what[0], "menu"):
         return [('get_menu', who)]
+
     elif sort_of(state, what[0], "table"):
         if is_instance(state, what[0]):
             # They are asking for a *particular* table

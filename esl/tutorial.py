@@ -5,7 +5,7 @@ from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
-from perplexity.predications import combinatorial_predication_1, in_style_predication_2
+from perplexity.predications import combinatorial_predication_1, in_style_predication_2, Concept
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
 from perplexity.tree import find_predication_from_introduced
@@ -190,9 +190,11 @@ def _for_p(state, e_binding, x_binding, x_binding2):
         what_measuring = what_for.measurement_type
         if not what_measuring == "generic_cardinality":
             yield state
+
         else:
-            yield state.set_x(x_binding.variable.name,
-                              (json.dumps({"structure": "noun_for", "noun": what_is, "for_count": what_for.count}),))
+            if hasattr(what_is, "is_concept"):
+                modified = what_is.update_modifiers({"structure": "noun_for", "noun": what_is.concept_name, "for_count": what_for.count})
+                yield state.set_x(x_binding.variable.name,(modified,))
 
 
 @Predication(vocabulary, names=["_cash_n_1"])
@@ -266,7 +268,7 @@ def match_all_n(noun_type, state, x_binding):
 
     def unbound_variable():
         # Yield the abstract type first
-        yield noun_type
+        yield Concept(noun_type)
         yield from all_instances(state, noun_type)
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
@@ -404,8 +406,8 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 def convert_noun_structure(binding_value):
     new_list = []
     for item in binding_value:
-        if isinstance(item, str) and item[0] == "{":
-            new_list.append(json.loads(item))
+        if hasattr(item, "is_concept"):
+            new_list.append(item.modifiers())
         else:
             new_list.append(item)
     return tuple(new_list)
