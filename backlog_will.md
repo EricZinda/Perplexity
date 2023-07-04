@@ -160,11 +160,28 @@
                                 - This variables values could be divided such that it meets the criteria, evenly with no remainder, it is dist
                                 - Also: if *this* variable is conceptual, it is going to match *all three* potential plural types
                             - (done) Update abstract variables to use new Concept() object
-                            - Have a way for predications like "for" to add information to Concept variables 
+                            - (done) Have a way for predications like "for" to add information to Concept variables
+                            - Need a way to get the constraints for a variable in the group hanlder.  Options:
+                              - Force the developer to ask
+                              - Pass as an argument
                             - The developer will have to ensure that abstract variables meet global constraints
                             - The developer will have to see which kind of solution group this is: a cuml/coll group or a dist group
                             - The developer will have divide up the group however makes sense
                             - It *might* be helpful to have the system indicate which type of group a variable is
+                            - Implement table fully
+                              - How to deal with 2 tables vs the table vs 3 tables?
+                              - Seems like there should be a way to say "This is what we have, this is what was required"
+                                what is the answer, if any?
+                            - Implement menu fully
+                            - Make pronouns implement abstract types?
+                            - Issues:
+                              - combinatoric logic also needs to not mix conceptual and instances
+                                - TODO: Might be easier to just prevent conceptual in combinatoric
+                              - Conceptual instances can come through in any order, if you want conceptual you 
+                                might need to wait for it
+                              - Need a way to return errors from the plan that get shown to the user
+                                for scenarios like "we don't allow specific tables"
+                                - 
               - Option 2:
                 - the verb is somehow involved in phase 2?
                   - Imagine that the verb gets passed the raw list of solutions

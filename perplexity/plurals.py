@@ -223,7 +223,7 @@ class StatsGroup(object):
         new_group = StatsGroup(self.variable_has_inf_max, self.group_state)
         previous_new_stat = None
         for stat in self.variable_stats:
-            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state)
+            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.is_concept)
             new_stat.prev_variable_stats = previous_new_stat
             if previous_new_stat is not None:
                 previous_new_stat.next_variable_stats = new_stat
@@ -239,7 +239,7 @@ class StatsGroup(object):
 
 
 class VariableStats(object):
-    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None):
+    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None, is_concept=False):
         self.variable_name = variable_name
         self.whole_group_unique_individuals = set() if whole_group_unique_individuals is None else whole_group_unique_individuals
         self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
@@ -250,7 +250,7 @@ class VariableStats(object):
         self.distributive_state = None if distributive_state is None else distributive_state
         self.collective_state = None if collective_state is None else collective_state
         self.cumulative_state = None if cumulative_state is None else cumulative_state
-        self.is_concept = False
+        self.is_concept = is_concept
 
     def __repr__(self):
         soln_modes = self.solution_modes()
@@ -276,9 +276,23 @@ class VariableStats(object):
         binding_value = solution.get_binding(self.variable_name).value
 
         # Solutions that have a conceptual variable cannot have instances or vice versa
-        is_conceptual = len(binding_value) == 1 and hasattr(binding_value[0], "is_concept") and binding_value[0].is_concept
+        is_conceptual = len(binding_value) == 1 and hasattr(binding_value[0], "is_concept") and binding_value[0].is_concept()
         if is_conceptual:
-            if not self.is_concept and len(self.whole_group_unique_individuals) > 0:
+            if not self.is_concept:
+                # Can't merge a conceptual variable value with non-conceptual
+                if len(self.whole_group_unique_individuals) > 0 :
+                    self.current_state = CriteriaResult.fail_one
+                    return False, self.current_state
+                else:
+                    self.is_concept = True
+
+            elif len(self.whole_group_unique_individuals) == 1 and \
+                     binding_value[0] in self.whole_group_unique_individuals:
+                # This was a conceptual group with one member, and this row is the same
+                self.is_concept = True
+
+            else:
+                # Was conceptual, but this solution isn't the same
                 self.current_state = CriteriaResult.fail_one
                 return False, self.current_state
 
@@ -320,6 +334,9 @@ class VariableStats(object):
                 prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
 
             if prev_unique_value_count is not None and self.prev_variable_stats.is_concept:
+                # Not used for conceptual since all 3 modes might work
+                only_collective = None
+
                 # The *previous* variable is conceptual, so we will pretend it meets the criteria for anything. Thus:
                 # If this variables values meets the criteria, it is collective or cuml
                 self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
@@ -373,10 +390,13 @@ class VariableStats(object):
 
             # Now figure out what to return
             self.current_state = None
+            # If the previous variable is conceptual all 3 modes may be supported
+            # Go through the possible states in an order that
             for test_state in [CriteriaResult.fail_all, CriteriaResult.meets_pending_global, CriteriaResult.meets, CriteriaResult.contender]:
-                if (only_collective and self.collective_state == test_state) or \
-                        (not only_collective and (self.distributive_state == test_state or \
-                        self.cumulative_state == test_state)):
+                if ((is_conceptual or only_collective) and self.collective_state == test_state) or \
+                        ((is_conceptual or not only_collective) and \
+                            (self.distributive_state == test_state or \
+                            self.cumulative_state == test_state)):
                     self.current_state = test_state
                     break
 

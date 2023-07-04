@@ -267,9 +267,10 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
-        # Yield the abstract type first
-        yield Concept(noun_type)
         yield from all_instances(state, noun_type)
+
+    # Yield the abstract type first, not as a combinatoric variable
+    yield state.set_x(x_binding.variable.name, (Concept(noun_type), ))
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
@@ -419,8 +420,10 @@ def want_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_wh
     x_actors = [convert_noun_structure(x.value) for x in x_actor_binding_list]
     x_whats = [convert_noun_structure(x.value) for x in x_what_binding_list]
     current_state = do_task(current_state, [('satisfy_want', x_actors, x_whats)])
-    assert current_state is not None
-    yield [current_state]
+    if current_state is None:
+        return []
+    else:
+        yield [current_state]
 
 
 @Predication(vocabulary, names=["_check_v_1"])
@@ -1033,6 +1036,14 @@ def hello_world():
 
 
 if __name__ == '__main__':
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    ShowLogging("Pipeline")
+    # ShowLogging("SString")
+    # ShowLogging("Determiners")
+    ShowLogging("SolutionGroups")
+
     print("Hello there, what can I do for you?")
     # ShowLogging("Pipeline")
     # ShowLogging("Transformer")

@@ -1,6 +1,7 @@
 from esl import gtpyhop
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance
+from perplexity.execution import report_error
 from perplexity.response import RespondOperation
 from perplexity.utilities import at_least_one_generator
 
@@ -83,7 +84,7 @@ def are_group_items(items):
 def noun_structure(value, part):
     if isinstance(value, dict):
         # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
-        return value[part]
+        return value.get(part, None)
 
     else:
         if part == "noun":
@@ -173,7 +174,8 @@ gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repea
 def satisfy_want_group(state, group_who, group_what):
     if not are_group_items(group_who) or not are_group_items(group_what): return
 
-    # Things like the bill, or a table should be collapsed into a single item if they are the same
+    # Things like the bill, or a table or a menu should be collapsed into a single item if everyone wants the same thing
+    # To support "we would like a table/the bill/etc"
     unique_whats = unique_values(group_what)
     if len(unique_whats) == 1:
         # Everybody wanted the same thing
@@ -181,10 +183,12 @@ def satisfy_want_group(state, group_who, group_what):
         if sort_of(state, wanted_item, "table"):
             if is_instance(state, wanted_item):
                 # They are asking for a *particular* table
-                return [('respond', "Sorry, we don't allow requesting specific tables here.")]
-
+                # report an error if this is the best we can do
+                # report_error(["errorText", "Sorry Sir, we don't allow requesting specific tables here."])
+                pass
             else:
                 return [("get_table", unique_values(group_who), noun_structure(unique_whats[0], "for_count"))]
+
         elif sort_of(state, wanted_item, "menu"):
             return [("get_menu", unique_values(group_who))]
 
@@ -208,7 +212,9 @@ def satisfy_want(state, who, what):
     elif sort_of(state, what[0], "table"):
         if is_instance(state, what[0]):
             # They are asking for a *particular* table
-            return [('respond', "Sorry, we don't allow requesting specific tables here.")]
+            # report an error if this is the best we can do
+            pass
+            # report_error(["errorText", "Sorry Sir, we don't allow requesting specific tables here."])
         else:
             return [('get_menu', who[0])]
 

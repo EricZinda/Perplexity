@@ -1,6 +1,8 @@
 import copy
 import enum
 import itertools
+import json
+
 from perplexity.execution import get_variable_metadata, report_error
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.utilities import at_least_one_generator
@@ -14,11 +16,24 @@ class Concept(object):
         if dict_modifications is not None:
             self._modifiers.update(dict_modifications)
 
+        self._hash = hash(json.dumps(self._modifiers))
+
+    # The only required property is that objects which compare equal have the same hash value
+    # But: objects with the same hash aren't required to be equal
+    # It must remain the same for the lifetime of the object
+    def __hash__(self):
+        return self._hash
+
+    def __eq__(self, other):
+        return self._hash == other._hash and self._modifiers == other._modifiers
+
     def is_concept(self):
         return True
 
     def modifiers(self):
-        return self._modifiers
+        # Make a copy since this object must be immutable due to
+        # the fact that hash is based on the modifiers
+        return copy.deepcopy(self._modifiers)
 
     def update_modifiers(self, dict_modifications):
         modified = copy.deepcopy(self)
