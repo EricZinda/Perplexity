@@ -58,24 +58,28 @@ class Concept(object):
 #   True if the user is talking about concepts and the concept count meets the constraints
 #   False if the same for instances
 #   None
-def meets_constraint(variable_constraints, concept_count, instance_count):
-    is_concept = False
-    count = instance_count
+
+def meets_constraint(variable_constraints, count, in_scope_count, check_concepts):
     if variable_constraints.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-        # This means the entire set of things the concept represents must meet the variable constraints
-        # If the user says "I'd like the menu" then there should be exactly 1 menu (conceptually),
-        # ditto for "the 2 (conceptual) menus"
-        is_concept = True
-        count = concept_count
+        # This means the entire set of things must meet the variable constraints
+        if check_concepts:
+            # If this is a concept we only ever check the in_scope_count here because the user
+            # said something with "the" like "the menu" and this only makes sense for concepts that are
+            # in scope not the generic version of "menu"
+            check_count = in_scope_count
+        else:
+            check_count = count
+    else:
+        check_count = count
 
     # Otherwise we are talking about instances as in "I'd like a/2/a few menus"
     # Constraints with no global criteria just get merged to most restrictive
-    if count >= variable_constraints.min_size and \
-        count >= variable_constraints.max_size:
-        return is_concept, True
+    if check_count >= variable_constraints.min_size and \
+        check_count >= variable_constraints.max_size:
+        return True
 
     else:
-        return None, False
+        return False
 
 
 

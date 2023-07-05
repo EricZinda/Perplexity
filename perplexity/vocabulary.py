@@ -247,8 +247,6 @@ class Vocabulary(object):
                 self.all.pop(key, None)
 
     def add_predication(self, predication_metadata, module, function, delphin_names, arg_types, phrase_types, first=False):
-        if "_this_q_dem" in delphin_names:
-            x = 1
         if len(phrase_types) == 0:
             phrase_types = ["comm", "ques", "prop", "prop-or-ques", "norm"]
 

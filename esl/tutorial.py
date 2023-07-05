@@ -422,33 +422,33 @@ def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_
     # This may be getting called with concepts or instances, before we call the planner
     # we need to decide if we have the requisite amount of them
     if is_concept(x_actor_variable_group.solution_values[0]):
-        # We don't want to deal with conceptual actors, ignore this solution group
-        return []
+        # We don't want to deal with conceptual actors, fail this solution group
+        # and wait for the one with real actors
+        yield []
 
+    # We do have lots of places where we deal with conceptual "wants", such as: "I want the menu", "I'll have a steak"
+    # In fact, we *never* deal with wanting a particular instance because that would mean "I want that particular steak right there"
+    # and we don't support that
+    # Only need to check the first because: If one item in the group is a concept, they all are
     first_x_what = x_what_variable_group.solution_values[0].value[0]
     if is_concept(first_x_what):
-        # If one item in the group is a concept they all are
-        concept_count, instance_count = count_of_instances_and_concepts(current_state, first_x_what)
-        concept_specified, meets = meets_constraint(x_what_variable_group.variable_constraints, concept_count, instance_count)
-        if not meets:
-            return []
-        else:
-            # We have enough concepts or instances to meet the request
+        # First we need to check to make sure that the specific concept "steak", "menu", etc meet the requirements
+        # If there are two preparations of steak on the menu and you say "I'll have the steak" you should get an error
+        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], first_x_what)
+        if meets_constraint(x_what_variable_group.variable_constraints, concept_count, concept_in_scope_count, check_concepts=True):
             # Give them the max of what they specified
             first_x_what_binding = copy.deepcopy(x_what_variable_group.solution_values[0])
             first_x_what_binding.value = [first_x_what_binding.value[0].update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})]
             x_what_variable_group.solution_values.clear()
             x_what_variable_group.solution_values.append(first_x_what_binding)
             current_state = do_task(current_state, [('satisfy_want', x_actor_variable_group, x_what_variable_group)])
+            if current_state is None:
+                yield []
+            else:
+                yield [current_state]
 
-    # x_actors = [convert_noun_structure(x.value) for x in x_actor_binding_list.solution_values]
-    # x_whats = [convert_noun_structure(x.value) for x in x_what_binding_list.solution_values]
-    current_state = do_task(current_state, [('satisfy_want', x_actor_variable_group, x_what_variable_group)])
-    if current_state is None:
-        return []
-    else:
-        yield [current_state]
-
+        else:
+            yield []
 
 @Predication(vocabulary, names=["_check_v_1"])
 def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
@@ -963,19 +963,20 @@ def reset():
     # return State([])
     # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
-                                {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
+                                {"prices": {"salad": 3, "steak": 10, "broiled steak": 8, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
                                 "responseState": "initial"
                                 })
+
+    # These concepts are "in scope" meaning it is OK to say "the X"
+    initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
+
     initial_state = initial_state.add_rel("table", "specializes", "thing")
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("person", "specializes", "thing")
     initial_state = initial_state.add_rel("son", "specializes", "person")
-
-
     initial_state = initial_state.add_rel("dish", "specializes", "food")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
-
     initial_state = initial_state.add_rel("pizza", "specializes", "dish")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
@@ -986,14 +987,14 @@ def reset():
 
     initial_state = initial_state.add_rel("table1", "instanceOf", "table")
     initial_state = initial_state.add_rel("table1", "maxCap", 4)
-
-
-
+    initial_state = initial_state.add_rel("table2", "instanceOf", "table")
+    initial_state = initial_state.add_rel("table2", "maxCap", 4)
+    initial_state = initial_state.add_rel("table3", "instanceOf", "table")
+    initial_state = initial_state.add_rel("table3", "maxCap", 4)
 
     initial_state = initial_state.add_rel("menu1", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
-
 
     initial_state = initial_state.add_rel("soup", "specializes", "special")
     initial_state = initial_state.add_rel("salad", "specializes", "special")
@@ -1014,6 +1015,7 @@ def reset():
     initial_state = initial_state.add_rel("user", "have", "bill1")
 
     initial_state = initial_state.add_rel("steak1", "on", "menu1")
+    initial_state = initial_state.add_rel("broiledsteak1", "on", "menu1")
     initial_state = initial_state.add_rel("chicken1", "on", "menu1")
     initial_state = initial_state.add_rel("salmon1", "on", "menu1")
     initial_state = initial_state.add_rel("bacon1", "on", "menu1")
@@ -1048,14 +1050,6 @@ def error_priority(error_string):
 error_priority_dict = {
     "defaultPriority": 1000
 }
-
-
-def in_scope_initialize(state):
-    return None
-
-
-def in_scope(initial_data, state, value):
-    return True
 
 
 def hello_world():

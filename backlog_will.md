@@ -74,7 +74,9 @@
         - Probably this should be two solutions?
         - And downstream predicates decide how to deal with it?
       - Phase 2 will deliver solutions where there is only the abstract instance in a variable and pass along the criteria
-        The developer needs to build up the right solution group
+        The developer needs to build up the right solution group by checking the context of the phrase and deciding whether to use the abstract version
+        or fail the group with the abstract version and wait for the instances solution group
+        - If they decide to use the abstract version, 
     - Questions
       - Are canonical instances and types different?
         - Let's say no, since there doesn't seem to be anything to distinguish them

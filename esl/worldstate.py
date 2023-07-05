@@ -1,8 +1,27 @@
 import copy
 import json
+
+from perplexity.predications import is_concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
+
+
+def in_scope_initialize(state):
+    in_scope_concepts = set()
+    for i in state.rel["conceptInScope"]:
+        if i[1] == "true":
+            in_scope_concepts.add(i[0])
+
+    return {"InScopeConcepts": in_scope_concepts}
+
+
+def in_scope(initial_data, state, value):
+    if is_concept(value):
+        return value in initial_data["InScopeConcepts"]
+    else:
+        return True
+
 
 def specializations(state, base_type):
     for i in state.rel["specializes"]:
@@ -111,9 +130,23 @@ def location_of_type(state, who, where_type):
 
 
 def count_of_instances_and_concepts(state, concept):
-    instance_count = len(list(all_instances(state, concept.concept_name)))
-    concept_count = len(list(specializations(state, concept.concept_name))) + 1
-    return concept_count, instance_count
+    instances =  list(all_instances(state, concept.concept_name))
+    instance_count = len(instances)
+
+    scope_data = in_scope_initialize(state)
+    instance_in_scope_count = 0
+    for instance in instances:
+        if in_scope(scope_data, state, instance):
+            instance_in_scope_count += 1
+
+    concepts = list(specializations(state, concept.concept_name))
+    concept_count = len(concepts) + 1
+    concept_in_scope_count = 0
+    for concept in concepts:
+        if in_scope(scope_data, state, concept):
+            concept_in_scope_count += 1
+
+    return concept_count, concept_in_scope_count, instance_count, instance_in_scope_count
 
 
 def rel_check(state, subject, rel, object):
