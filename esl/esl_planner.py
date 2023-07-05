@@ -1,6 +1,6 @@
 from esl import gtpyhop
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
-    rel_subjects, is_instance
+    rel_subjects, is_instance, instance_of_what
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -109,7 +109,7 @@ def find_unused_item(state, object_type):
 
 def get_menu_at_entrance(state, who):
     if all_are_players(who) and not location_of_type(state, who[0], "table"):
-        return [('respond', "Sorry, you must be seated to order")]
+        return [('respond', "Sorry, you must be seated to get a menu")]
 
 def get_menu_seated(state, who):
     if all_are_players(who) and location_of_type(state, who[0], "table"):
@@ -178,67 +178,86 @@ def get_table_repeat(state, who_multiple, table):
 gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repeat)
 
 
-# This task deals with a group, and group items must be in a list
-# all of the things in the group will be applied to the single state
-# what objects might be conceptual or instances (which are strings)
+# order_food methods are all passed single objects, not tuples
+# so we don't have to check
+def order_food_at_entrance(state, who, what):
+    if all_are_players([who]) and not location_of_type(state, who, "table"):
+        return [('respond', "Sorry, you must be seated to order")]
+
+
+def order_food_price_unknown(state, who, what):
+    if all_are_players([who]) and location_of_type(state, who, "table"):
+        if (what, "user") in state.rel["priceUnknownTo"]:
+            return [('respond', "Son: Wait, let's not order that before we know how much it costs." + state.get_reprompt())]
+
+
+def order_food_at_table(state, who, what):
+    if all_are_players([who]) and location_of_type(state, who, "table"):
+        return [('respond', "Excellent Choice! Can I get you anything else?"),
+                ('add_rel', who, "ordered", what),
+                ('set_response_state', "anything_else")]
+
+
+gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_at_table)
+
+
+# This task deals with GroupVariableValues only
+# Its job is to analyze the top level solution group would could have a lot of different collections
+# that need to be analyzed.  One or more people, one or more things wanted, etc.
+# For concepts, it requires that the caller has made sure that wanted concepts are valid, meaning "I want the (conceptual) table"
+# Should never get to this point
 def satisfy_want_group_group(state, group_who, group_what):
     if not isinstance(group_who, GroupVariableValues) or not isinstance(group_what, GroupVariableValues): return
 
-    # Things like the bill, or a table or a menu should be collapsed into a single item if everyone wants the same thing
-    # To support "we would like a table/the bill/etc"
+    # To support "we would like a table/the bill/etc" not going to every person,
+    # conceptual things like "the bill", or "a table" or "a menu" should be collapsed into a single item
+    # and handled once if everyone wants the same thing
     unique_whats = unique_group_variable_values(group_what)
     if len(unique_whats) == 1:
         # Everybody wanted the same thing
+        # Only need to check the first because: If one item in the group is a concept, they all are
         one_thing = unique_whats[0]
-        # At a restaurant we are always talking about conceptual things "a steak", "the menu", "a table", etc.
         if is_concept(one_thing):
             if one_thing.concept_name == "table":
                 # Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
                 return [("get_table", unique_group_variable_values(group_who), one_thing)]
+            elif one_thing.concept_name == "menu":
+                return [("get_menu", unique_group_variable_values(group_who))]
 
-            pass
         else:
-            # They are asking for a particular instance of something, fail
+            # They are asking for a particular instance of something, which should never work: fail
             return
 
-        wanted_item = noun_structure(unique_whats[0], "noun")
-        if sort_of(state, wanted_item, "table"):
-            if is_instance(state, wanted_item):
-                # They are asking for a *particular* table
-                # report an error if this is the best we can do
-                # report_error(["errorText", "Sorry Sir, we don't allow requesting specific tables here."])
-                pass
-            else:
-                return [("get_table", unique_group_variable_values(group_who), noun_structure(unique_whats[0], "for_count"))]
-
-        elif sort_of(state, wanted_item, "menu"):
-            return [("get_menu", unique_group_variable_values(group_who))]
-
     # Otherwise, we don't care if someone "wants" something together or
-    # separately so we treat them as separate
+    # separately (since it isn't semantically different) so we treat them as separate
+    # and plan them one at a time
     tasks = []
-    for index in range(len(group_who)):
-        for who in group_who[index]:
-            for what in group_what[index]:
+    for index in range(len(group_who.solution_values)):
+        for who in group_who.solution_values[index].value:
+            for what in group_what.solution_values[index].value:
                 tasks.append(('satisfy_want', (who,), (what,)))
 
     return tasks
 
 
 def satisfy_want(state, who, what):
-    if are_group_items(who) or are_group_items(what): return
+    if isinstance(who, GroupVariableValues) or isinstance(what, GroupVariableValues): return
     if len(who) > 1 or len(what) > 1: return
-    if sort_of(state, what[0], "menu"):
-        return [('get_menu', who)]
 
-    elif sort_of(state, what[0], "table"):
-        if is_instance(state, what[0]):
-            # They are asking for a *particular* table
-            # report an error if this is the best we can do
-            pass
-            # report_error(["errorText", "Sorry Sir, we don't allow requesting specific tables here."])
-        else:
+    if is_instance(state, what[0]):
+        # They are asking for a *particular instance of a table* (or whatever)
+        # report an error if this is the best we can do
+        return [('respond', "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
+    else:
+        concept = what[0].concept_name
+        if sort_of(state, concept, "menu"):
+            return [('get_menu', who)]
+
+        elif sort_of(state, concept, "table"):
             return [('get_menu', who[0])]
+
+        elif sort_of(state, concept, "food"):
+            return [('order_food', who[0], concept)]
 
 
 # Last option should just report an error
@@ -260,7 +279,7 @@ def add_rel(state, subject, rel, object):
 
 
 def set_response_state(state, value):
-    return state.record_operations([ResponseStateOp("something_to_eat")])
+    return state.record_operations([ResponseStateOp(value)])
 
 gtpyhop.declare_actions(respond, add_rel, set_response_state)
 

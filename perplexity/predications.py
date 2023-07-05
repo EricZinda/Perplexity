@@ -59,7 +59,7 @@ class Concept(object):
 #   False if the same for instances
 #   None
 
-def meets_constraint(variable_constraints, count, in_scope_count, check_concepts):
+def meets_constraint(variable_constraints, count, in_scope_count, check_concepts, variable):
     if variable_constraints.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
         # This means the entire set of things must meet the variable constraints
         if check_concepts:
@@ -74,12 +74,17 @@ def meets_constraint(variable_constraints, count, in_scope_count, check_concepts
 
     # Otherwise we are talking about instances as in "I'd like a/2/a few menus"
     # Constraints with no global criteria just get merged to most restrictive
-    if check_count >= variable_constraints.min_size and \
-        check_count >= variable_constraints.max_size:
-        return True
+    if check_count >= variable_constraints.min_size:
+        if check_count <= variable_constraints.max_size:
+            return True
+
+        else:
+            report_error(["moreThan", variable, variable_constraints.max_size], force=True)
 
     else:
-        return False
+        report_error(["lessThan", variable, variable_constraints.min_size], force=True)
+
+    return False
 
 
 

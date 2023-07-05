@@ -49,6 +49,7 @@
     - Analysis
       - There needs to be a way to tell the a difference between the canonical instance of menu for this restaurant "What is on the menu?"
         and one that is generic "what is on a menu?"
+        - This is done by putting concepts "in scope".  An in scope menu concept should support "the menu"
       - There needs to be a way to tell the difference between the user indicating a specific instance "Give me the menu my son is holding" and
         a generic instance "give me a menu"
       - For generic instances there might be a lot of extra data with them: 
@@ -76,7 +77,7 @@
       - Phase 2 will deliver solutions where there is only the abstract instance in a variable and pass along the criteria
         The developer needs to build up the right solution group by checking the context of the phrase and deciding whether to use the abstract version
         or fail the group with the abstract version and wait for the instances solution group
-        - If they decide to use the abstract version, 
+        - If they decide to use the abstract version, they need to be careful to properly check criteria so that
     - Questions
       - Are canonical instances and types different?
         - Let's say no, since there doesn't seem to be anything to distinguish them

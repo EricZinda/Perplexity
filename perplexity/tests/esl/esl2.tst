@@ -21,6 +21,20 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
+            "ID": "9e6ae622-0ad0-4c95-bfa2-305454e96a5e"
+        },
+        {
+            "Command": "I'd like a steak",
+            "Expected": "Sorry, you must be seated to order",
+            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "0b2e3855-cca5-4e43-8532-621909cc3094"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
             "ID": "4990c50f-5277-430b-9226-e1a266de9db4"
         },
         {

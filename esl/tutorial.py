@@ -168,8 +168,6 @@ def abstr_deg(state, x_binding):
     yield state.set_x(x_binding.variable.name, ("abstract_degree",))
 
 
-
-
 @Predication(vocabulary, names=["card"])
 def card(state, c_number, e_binding, x_binding):
     if state.get_binding(x_binding.variable.name).value[0] == "generic_entity":
@@ -432,10 +430,12 @@ def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_
     # Only need to check the first because: If one item in the group is a concept, they all are
     first_x_what = x_what_variable_group.solution_values[0].value[0]
     if is_concept(first_x_what):
+        first_x_what_variable = x_what_variable_group.solution_values[0].variable.name
+
         # First we need to check to make sure that the specific concept "steak", "menu", etc meet the requirements
-        # If there are two preparations of steak on the menu and you say "I'll have the steak" you should get an error
+        # I.e. if there are two preparations of steak on the menu and you say "I'll have the steak" you should get an error
         concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], first_x_what)
-        if meets_constraint(x_what_variable_group.variable_constraints, concept_count, concept_in_scope_count, check_concepts=True):
+        if meets_constraint(x_what_variable_group.variable_constraints, concept_count, concept_in_scope_count, check_concepts=True, variable=first_x_what_variable):
             # Give them the max of what they specified
             first_x_what_binding = copy.deepcopy(x_what_variable_group.solution_values[0])
             first_x_what_binding.value = [first_x_what_binding.value[0].update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})]
@@ -850,8 +850,7 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
             yield i
         yield x_object
 
-    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound,
-                                                unbound):
+    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound, unbound):
         x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
         x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
         if not x_obj[0] == "{":
