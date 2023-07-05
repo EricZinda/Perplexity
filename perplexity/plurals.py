@@ -354,7 +354,7 @@ class VariableStats(object):
                     if variable_criteria.max_size == float(inf):
                         self.distributive_state = CriteriaResult.meets
                     else:
-                        remainder = divmod(individual_count / variable_criteria.min_size)
+                        _, remainder = divmod(individual_count, variable_criteria.min_size)
                         min_max_delta = variable_criteria.max_size - variable_criteria.min_size
                         if remainder <= min_max_delta * group_count:
                             # The remainder can be divided into the groups and keep them all under the max

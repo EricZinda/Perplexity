@@ -10,7 +10,7 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
-      - 
+      -
 - abstract-types
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same
@@ -20,175 +20,101 @@
       - Pass the first state in the group and list arguments for the different states
     - Sometimes it is necessary to examine the whole solution group to decide what to do
       - The planner should always get passed a StateGroup
-  - Abstract statements: I want a menu
-    - How to tell the difference between "any menu" and "the specific menu that is in the variable"
-      - I.e. by the time you get to "want", how do you tell the difference between: 
-        - "I want a menu" and "I want the menu my son has"? - 
-          - Both have a specific menu in the variable
-        - What about "I want the menu"
-          - In theory this could work with a bogus abstract item
-          - Could be the same as "a taxi" as in "can I get a taxi?"
-          - Maybe it is the first one to be returned from nouns?
-          - Everything that operates on the abstract item builds up information about it that describes the item
-        - What about "I want the menu I have heard so much about?"
-    - Ditto with "I want two menus/two steaks"
-      - In theory this could also have "2" be bogus and count bogus items
-    - It seems like nouns should always return their types in addition to instances
-      - It means that predications need to always check for instances or not
-    - What about "menus from the kitchen are lost"
-    - Approach:
-      - We could use the approach will did and build up an abstract individual with a particular structure
-        - If a predication sees that it just adds its information to it?
-      - But then how does "I want a menu" decide which to use
-    - Approach 2:
-      - Nothing special happens, we just fail each one that is in use until we find one that isn't
-        - Option 2: There is a canonical menu, or a canonical noun
-          - "the menu I have heard so much about" resolves to that canonical thing
-          - What about "menus from the kitchen are always dirty"
-            - Definitely talking about abstract types in some way
-            - And facts about that abstract type
-            - Really this isn't something that we would have a fact about
-              - It is something we would try to prove or check
-          - "Can I have the menu" resolves to that canonical thing
-            - Ditto with "I want two menus/two steaks"
-            - In theory this could also have "2" be bogus and count bogus items
-          - "Can I have a menu" ditto
-            - this example is one that would just work naturally but iterate through all the menus
-            - But, how does the verb decide if the person asked for "my son's menu" or "a menu" since they will both return menu1?
-              - The menu could also belong to another customer
-              - This seems like the problematic one
-              - It seems like "a" might also be best to return an abstract type that then gets resolved to a specific type
-                - Then quantifiers like "this" or "the" or "my son's menu" would return instances
-          - "I want 2 menus that I have heard so much about"
-            - Could it be that the abstract type is something that can be resolved by the verb?
-            - this example is one that would just work naturally but iterate through all the menus
-          - Is it different than a type?
-            - If there is a menu type and a thisRestaurantMenu type
-          - What about "Do you have the blue menu?"
-            - Does the canonical type have properties that describe it?
-            - Or does it just come through and collect properties and someone needs to resolve it eventually?
-            - 
-    - Approach 1:
-      - Certain quantifiers push through "canonical instances"
-        - These instances can have facts about them too.  "I've heard about your menu" -> fact
-        - Predications that see a canonical instance can attempt to resolve it as a regular instance to see if we 
-          have a specific canonical instance with facts about it
-        - Assume these canonical instances are types
-          - Does the quantifier return all types and all derived types too?
-          - Yes
-        - Scenarios
-          - Can I have the menu?
-            - the_q generates abstract type with constraint
-            - if verb handles the abstract type it is responsible for checking the constraint too
-        - How do criteria work?
-          - I want 2 menus
-            - menus gets resolved to abstract instance in phase 1
-            - Information about criteria is passed to verb? and the verb has to resolve it?
-              - The constraint will be retrievable from the binding
-          - "I'd like 2 menus for each person" 
-            - "I'd like" indicates something the user wants to be true
-            - Really this should be translated to: give 2 menus to each person
-              - which resolves to give_to with an abstract 2 menus
-          - "I'd like a table by the window"
-            - abstract 
-        - Design:
-          - Types flow through the system as well as instances and everything needs to be careful about what is what
-          - Plurals:
-            - Option 1:
-              - for this variable just assume they are true, the verb is responsible for failing if they aren't
-              - Record something in the solution group that says which mode it is in , then the verb decides if it works
-                - A particular variable:
-                  - Needs to meet the numeric criteria 
-                    - Distributive/collective: N individuals per previous variable set value
-                    - Cumulative: N individuals total
-              - Problem is that plurals won't know how many of this variable set values there are for the next variable
-                - Actually: we know of a *range* of values since we have the criteria, and the variable 
-                  must meet that criteria
-                - So we need to build solution groups that assume all possible criteria are met
-                  - But then for a solution group it has to record which criteria this group should meet 
-                  - I want a menu/we want a menu, etc
-                    - In phase 1 want_v will get "I" and an abstract menu
-                      - If it thinks it is true it should give each a menu
-                        - Because it is *want* it should return True if it is theoretically possible and let the group predicate sort it out
-                        - when the group predication runs, it tries to give each person a menu, one after the other and
-                          - responds appropriately
-                  - I want 2 menus/are there 2 menus here?
-                    - Do you have 2 menus (when there are two *types* but only one of each)
-                      - Works because you'll get two abstract types
-                    - What's an example where menu is abstract but has 2
-                      - When there is one menu type but two of them: "which are the 2 menus?"
-                      - That could work with the group predication expanding it. What about "Could we get 2 menus for 4 people"?
-                        - One solution could be that solutions are expanded to meet criteria when we iterate through them
-                        - So this phrase gets, say, 8 solutions with abstract elements for each menu and person
-                        - Then the group has to resolve them to see if it is true
-                        - What about: "Are 2 children singing 2 songs?"
-                          - Group predication needs to solve the "group equation"?
-                            - which is meaningless in this case, or rather already solved by the instances so: ignored?
-                            - When are the abstract types really used?
-                      - Designs
-                        - Option 1: maybe abstract menus should be a measure() that returns however many are needed?
-                          - It seems like measure() is not being handled correctly in plural
-                          - But if it was, we could use it?
-                        - Option 2: 
-                          - If the user says "Can we have 2 menus for 6 people", we will get
-                            - a row with "menu", "person" (both abstract)
-                            - a row with "menu", "person1" for every person there
-                            - Thus collective would work normally if menus used measure() to count
-                            - If, somehow, menu was able to act as different unique items distributive would also work naturally
-                            - Idea: we could invert the constraint and ask it to generate a count that matches what is required
-                        - Option 3
-                          - Let's say we only ever return a collective answer for abstract types and just "pretend" that the
-                            abstract type variable meets the constraints
-                          - The group predication will get called once with every variable set to an abstract type
-                          - The other solution groups will have a mix of abstract and instances
-                          - Then the group predication would have to convert it to all the different modes?
-                          - We really do need the system to generate the alternatives so the user doesn't have to fish them out
-                          - The logic is something like:
-                            - If the previous variable is abstract and:
-                              - This variables values meets the criteria, it is collective or cuml
-                              - This variables values could be divided such that it meets the criteria, evenly with no remainder, it is dist
-                              
-                          - Implementation
-                            - (done) Implement a generic way to see if something is an abstract type
-                              - hasattr("is_abstract")
-                            - (done) Abstract types should not get mixed in with other types *in the same variable*
-                              - This should fail in add_solution()
-                            - (done) meets_criteria() should just return "true" if the variable is an abstract type
-                            - (done) add_solution() currently checks *either* collective *or* cuml/dist
-                              - It should have a different set of checks if the previous variable is abstract:
-                                - This variables values meets the criteria, it is collective or cuml
-                                - This variables values could be divided such that it meets the criteria, evenly with no remainder, it is dist
-                                - Also: if *this* variable is conceptual, it is going to match *all three* potential plural types
-                            - (done) Update abstract variables to use new Concept() object
-                            - (done) Have a way for predications like "for" to add information to Concept variables
-                            - Need a way to get the constraints for a variable in the group hanlder.  Options:
-                              - Force the developer to ask
-                              - Pass as an argument
-                            - The developer will have to ensure that abstract variables meet global constraints
-                            - The developer will have to see which kind of solution group this is: a cuml/coll group or a dist group
-                            - The developer will have divide up the group however makes sense
-                            - It *might* be helpful to have the system indicate which type of group a variable is
-                            - Implement table fully
-                              - How to deal with 2 tables vs the table vs 3 tables?
-                              - Seems like there should be a way to say "This is what we have, this is what was required"
-                                what is the answer, if any?
-                            - Implement menu fully
-                            - Make pronouns implement abstract types?
-                            - Issues:
-                              - combinatoric logic also needs to not mix conceptual and instances
-                                - TODO: Might be easier to just prevent conceptual in combinatoric
-                              - Conceptual instances can come through in any order, if you want conceptual you 
-                                might need to wait for it
-                              - Need a way to return errors from the plan that get shown to the user
-                                for scenarios like "we don't allow specific tables"
-                                - 
-              - Option 2:
-                - the verb is somehow involved in phase 2?
-                  - Imagine that the verb gets passed the raw list of solutions
-    - Approach 2: It *seems* like this could be built automatically, just like I'm doing for generation
-      - It would include the quantifier that quantifies the variable introduced by the noun
-      - The problem is that in the case about, we really want "the menu I have heard so much about" to be resolved to an abstract thing
-      - 
+  - Statements about canonical things
+    - Problems
+      - By the time the verb is executed: How to tell the difference between "any menu" and "the specific menu that is in the variable"
+        - Between: "I want the menu", "I want a menu" and "I want the menu my son has"?
+        - Both have a specific menu in the variable
+    - Scenarios
+      - "I want a taxi", can't say "I want *the* taxi"
+      - "I want the menu I have heard so much about"
+      - "I want two menus/two steaks"
+      - "Do you have 2 menus?"
+      - "menus from the kitchen are always dirty"
+      - "Do you have the blue menu": could be a class of menu or one that just has unusual blue ink on it
+      - "I have heard about your menu"
+      - "Can I get one of your steaks?"
+      - "Can I have the steak?" but not "Can I have the table?"
+      - "What is the menu?" but not "what is the table"
+      - "What is a menu?" "What is a table?"
+      - "Give me a job"
+      - "Give me the job"
+      - "I'd like a table by the window"
+      - "Are there 2 menus here?"
+      - "Are 2 children singing 2 songs?"
+      - "what is on the menu?"
+      - "what is on a menu?"
+      - "what is on today's menu?"
+      - "How hard is the job?"
+    - Analysis
+      - There needs to be a way to tell the a difference between the canonical instance of menu for this restaurant "What is on the menu?"
+        and one that is generic "what is on a menu?"
+      - There needs to be a way to tell the difference between the user indicating a specific instance "Give me the menu my son is holding" and
+        a generic instance "give me a menu"
+      - For generic instances there might be a lot of extra data with them: 
+        "I want the menu I have heard so much about"
+        "I want 2 menus"
+      - Sometimes extra data can be used to select a type: 
+        - "tell me about today's menu" should select the type that is for "today"
+        - "what is on your prix fixe menu?"
+      - Sometimes the extra data needs to be carried along:
+        - "give me 2 menus, please!"
+          - 2 should not filter the menus but should be part of the data
+      - Quantifiers shouldn't filter out abstract items. Even though "I want the taxi" seems like it could only be an instance
+        in a restaurant where "the taxi" is a burger choice it could be abstract
+    - Design
+      - The developer is going to get all the variations of solutions, they need to decide which is right
+      - nouns should always return types and instances
+      - just like instances, types can be:
+        - in or out of scope
+        - Filtered by other words in the phrase
+      - types can collect data as they are modified as in "give me today's menu"
+        - If that solution is used by the filtered data isn't, it should fail? Like if a word isn't understood?
+      - How does a predication like today() decide whether to add data or filter
+        - Probably this should be two solutions?
+        - And downstream predicates decide how to deal with it?
+      - Phase 2 will deliver solutions where there is only the abstract instance in a variable and pass along the criteria
+        The developer needs to build up the right solution group
+    - Questions
+      - Are canonical instances and types different?
+        - Let's say no, since there doesn't seem to be anything to distinguish them
+      - Is scoping built into the system or on top?
+     - Implementation
+        - (done) Implement a generic way to see if something is an abstract type
+          - hasattr("is_abstract")
+        - (done) Abstract types should not get mixed in with other types *in the same variable*
+          - This should fail in add_solution()
+        - (done) meets_criteria() should just return "true" if the variable is an abstract type
+        - (done) add_solution() currently checks *either* collective *or* cuml/dist
+          - It should have a different set of checks if the previous variable is abstract:
+            - This variables values meets the criteria, it is collective or cuml
+            - This variables values could be divided such that it meets the criteria, evenly with no remainder, it is dist
+            - Also: if *this* variable is conceptual, it is going to match *all three* potential plural types
+        - (done) Update abstract variables to use new Concept() object
+        - (done) Have a way for predications like "for" to add information to Concept variables
+        - Need a way to get the constraints for a variable in the group hanlder.  Options:
+          - Force the developer to ask
+          - Pass as an argument
+        - The developer will have to ensure that abstract variables meet global constraints
+        - The developer will have to see which kind of solution group this is: a cuml/coll group or a dist group
+        - The developer will have divide up the group however makes sense
+        - It *might* be helpful to have the system indicate which type of group a variable is
+        - Implement table fully
+          - How to deal with 2 tables vs "the table" vs 3 tables?
+          - Seems like there should be a way to say "This is what we have, this is what was required"
+            what is the answer, if any?
+        - Implement menu fully
+        - Make pronouns implement abstract types?
+        - Issues:
+          - combinatoric logic also needs to not mix conceptual and instances
+            - TODO: Might be easier to just prevent conceptual in combinatoric
+          - Conceptual instances can come through in any order, if you want conceptual you 
+            might need to wait for it
+          - Need a way to return errors from the plan that get shown to the user
+            for scenarios like "we don't allow specific tables"
+          - Something that processes a concept needs to understand all of it or fail
+            - How to enforce this?
+
 
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()

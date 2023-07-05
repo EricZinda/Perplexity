@@ -2,7 +2,9 @@ from esl import gtpyhop
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance
 from perplexity.execution import report_error
+from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
+from perplexity.solution_groups import GroupVariableValues
 from perplexity.utilities import at_least_one_generator
 
 domain_name = __name__
@@ -69,10 +71,10 @@ the_domain = gtpyhop.Domain(domain_name)
 ###############################################################################
 # Helpers
 
-def unique_values(what_group):
+def unique_group_variable_values(what_group):
     all = list()
-    for what in what_group:
-        for what_item in what:
+    for what in what_group.solution_values:
+        for what_item in what.value:
             if what_item not in all:
                 all.append(what_item)
     return all
@@ -82,9 +84,9 @@ def are_group_items(items):
     return isinstance(items, list)
 
 def noun_structure(value, part):
-    if isinstance(value, dict):
+    if isinstance(value, Concept):
         # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
-        return value.get(part, None)
+        return value.modifiers().get(part, None)
 
     else:
         if part == "noun":
@@ -131,10 +133,17 @@ def get_menu_seated(state, who):
 gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance, get_menu_seated)
 
 
-def get_table_at_entrance(state, who_multiple, for_count):
+# Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
+def get_table_at_entrance(state, who_multiple, table):
     if all_are_players(who_multiple) and \
-            not location_of_type(state, who_multiple[0], "table"):
-        # If they say "we" or "table for 2" the size is implied
+        not location_of_type(state, who_multiple[0], "table"):
+        # If the count of table is > 1, fail
+        table_count = noun_structure(table, "card")
+        for_count = noun_structure(table, "for_count")
+        if table_count is not None and table_count != 1:
+            return [('respond', "I suspect you want to sit together.")]
+
+        # If they say "we want a table" or "table for 2" the size is implied
         if len(who_multiple) == 2 or for_count == 2:
             unused_table = find_unused_item(state, "table")
             if unused_table is not None:
@@ -160,7 +169,7 @@ def get_table_at_entrance(state, who_multiple, for_count):
                     ('set_response_state', "anticipate_party_size")]
 
 
-def get_table_repeat(state, who_multiple, for_count):
+def get_table_repeat(state, who_multiple, table):
     if all_are_players(who_multiple) and \
             location_of_type(state, who_multiple[0], "table"):
         return [('respond', "Um... You're at a table." + state.get_reprompt())]
@@ -171,14 +180,27 @@ gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repea
 
 # This task deals with a group, and group items must be in a list
 # all of the things in the group will be applied to the single state
-def satisfy_want_group(state, group_who, group_what):
-    if not are_group_items(group_who) or not are_group_items(group_what): return
+# what objects might be conceptual or instances (which are strings)
+def satisfy_want_group_group(state, group_who, group_what):
+    if not isinstance(group_who, GroupVariableValues) or not isinstance(group_what, GroupVariableValues): return
 
     # Things like the bill, or a table or a menu should be collapsed into a single item if everyone wants the same thing
     # To support "we would like a table/the bill/etc"
-    unique_whats = unique_values(group_what)
+    unique_whats = unique_group_variable_values(group_what)
     if len(unique_whats) == 1:
         # Everybody wanted the same thing
+        one_thing = unique_whats[0]
+        # At a restaurant we are always talking about conceptual things "a steak", "the menu", "a table", etc.
+        if is_concept(one_thing):
+            if one_thing.concept_name == "table":
+                # Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
+                return [("get_table", unique_group_variable_values(group_who), one_thing)]
+
+            pass
+        else:
+            # They are asking for a particular instance of something, fail
+            return
+
         wanted_item = noun_structure(unique_whats[0], "noun")
         if sort_of(state, wanted_item, "table"):
             if is_instance(state, wanted_item):
@@ -187,10 +209,10 @@ def satisfy_want_group(state, group_who, group_what):
                 # report_error(["errorText", "Sorry Sir, we don't allow requesting specific tables here."])
                 pass
             else:
-                return [("get_table", unique_values(group_who), noun_structure(unique_whats[0], "for_count"))]
+                return [("get_table", unique_group_variable_values(group_who), noun_structure(unique_whats[0], "for_count"))]
 
         elif sort_of(state, wanted_item, "menu"):
-            return [("get_menu", unique_values(group_who))]
+            return [("get_menu", unique_group_variable_values(group_who))]
 
     # Otherwise, we don't care if someone "wants" something together or
     # separately so we treat them as separate
@@ -224,7 +246,7 @@ def satisfy_want_fail(state, who, what):
     return [('respond', "Sorry, I'm not sure what to do about that")]
 
 
-gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group, satisfy_want, satisfy_want_fail)
+gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group_group, satisfy_want, satisfy_want_fail)
 
 ###############################################################################
 # Actions: Update state to a new value

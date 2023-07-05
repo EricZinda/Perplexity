@@ -165,7 +165,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                 # First see if there is a solution_group handler that should be called
                 handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
                 for next_group in at_least_one_group:
-                    created_solution_group, has_more, group_list = run_handlers(handlers, next_group, index_predication)
+                    created_solution_group, has_more, group_list = run_handlers(handlers, optimized_criteria_list, next_group, index_predication)
                     if created_solution_group is None:
                         # No solution group handlers, or none handled it or failed: just do the default behavior
                         yield group_list
@@ -191,7 +191,13 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                         return
 
 
-def run_handlers(handlers, group, index_predication):
+class GroupVariableValues(object):
+    def __init__(self, variable_constraints):
+        self.variable_constraints = variable_constraints
+        self.solution_values = []
+
+
+def run_handlers(handlers, variable_constraints, group, index_predication):
     created_solution_group = None
     has_more = False
     if len(handlers) > 0:
@@ -203,19 +209,24 @@ def run_handlers(handlers, group, index_predication):
                 # Build up an arg structure to call the predication with that
                 # has the same arguments as the normal predication but has a list for each argument that represents the solution group
                 handler_args = []
-                for _ in range(len(index_predication.args)):
-                    handler_args.append([])
+                for arg in index_predication.args:
+                    found_constraint = None
+                    for constraint in variable_constraints:
+                        if constraint.variable_name == arg:
+                            found_constraint = constraint
+                            break
+                    handler_args.append(GroupVariableValues(found_constraint))
 
                 for state in state_list:
                     for arg_index in range(len(index_predication.args)):
                         if index_predication.argument_types()[arg_index] == "c" or index_predication.argument_types()[arg_index] == "h":
-                            handler_args[arg_index].append(index_predication.args[arg_index])
+                            handler_args[arg_index].solution_values.append(index_predication.args[arg_index])
                         else:
-                            handler_args[arg_index].append(state.get_binding(index_predication.args[arg_index]))
+                            handler_args[arg_index].solution_values.append(state.get_binding(index_predication.args[arg_index]))
                 handler_args = [state_list] + handler_args
 
             else:
-                handler_args = (state_list,)
+                handler_args = (state_list,) + tuple(variable_constraints)
 
             for next_solution_group in handler_function(*handler_args):
                 if created_solution_group is None:

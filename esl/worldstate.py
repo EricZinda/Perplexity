@@ -4,6 +4,11 @@ from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
 
+def specializations(state, base_type):
+    for i in state.rel["specializes"]:
+        if i[1] == base_type:
+            yield from specializations(state, i[0])
+            yield i[0]
 
 def sort_of(state, thing, possible_type):
     if thing == possible_type:
@@ -103,6 +108,12 @@ def location_of_type(state, who, where_type):
             return True
 
     return False
+
+
+def count_of_instances_and_concepts(state, concept):
+    instance_count = len(list(all_instances(state, concept.concept_name)))
+    concept_count = len(list(specializations(state, concept.concept_name))) + 1
+    return concept_count, instance_count
 
 
 def rel_check(state, subject, rel, object):

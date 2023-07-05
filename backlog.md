@@ -1,3 +1,5 @@
+- "I want the table" from the front door
+  - Should try to select an in scope type of "table" and fail
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
 

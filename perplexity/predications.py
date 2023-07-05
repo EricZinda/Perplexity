@@ -4,10 +4,14 @@ import itertools
 import json
 
 from perplexity.execution import get_variable_metadata, report_error
+from perplexity.plurals import GlobalCriteria
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
+
+def is_concept(o):
+    return hasattr(o, "is_concept") and o.is_concept()
 
 class Concept(object):
     def __init__(self, concept_name, dict_modifications = None):
@@ -25,7 +29,7 @@ class Concept(object):
         return self._hash
 
     def __eq__(self, other):
-        return self._hash == other._hash and self._modifiers == other._modifiers
+        return isinstance(other, Concept) and self._hash == other._hash and self._modifiers == other._modifiers
 
     def is_concept(self):
         return True
@@ -39,6 +43,42 @@ class Concept(object):
         modified = copy.deepcopy(self)
         modified._modifiers.update(dict_modifications)
         return modified
+
+
+# Return a new variable_constraints object that is the intersection of what the constraints
+# on the variable are, intersected with what is available
+# Find a value that is true for available_constraints that is also true for variable_constraints
+# Works because the solution group has been checked to make sure it is valid for the whole range that
+# variable_constraints defines
+# This gets called when a variable holds a concept and a constraint and we want to see if we can fulfil it
+# with instances.
+# Theory: we are talking about both concepts ("I'd like the menu", "I'd like the 2 menus", "I'd like a menu"
+# and instances "I'd like 2 menus" (instances),
+# Returns:
+#   True if the user is talking about concepts and the concept count meets the constraints
+#   False if the same for instances
+#   None
+def meets_constraint(variable_constraints, concept_count, instance_count):
+    is_concept = False
+    count = instance_count
+    if variable_constraints.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+        # This means the entire set of things the concept represents must meet the variable constraints
+        # If the user says "I'd like the menu" then there should be exactly 1 menu (conceptually),
+        # ditto for "the 2 (conceptual) menus"
+        is_concept = True
+        count = concept_count
+
+    # Otherwise we are talking about instances as in "I'd like a/2/a few menus"
+    # Constraints with no global criteria just get merged to most restrictive
+    if count >= variable_constraints.min_size and \
+        count >= variable_constraints.max_size:
+        return is_concept, True
+
+    else:
+        return None, False
+
+
+
 
 # how a particular VariableDescriptor handles
 # a individual or group

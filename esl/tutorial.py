@@ -5,7 +5,8 @@ from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
-from perplexity.predications import combinatorial_predication_1, in_style_predication_2, Concept
+from perplexity.predications import combinatorial_predication_1, in_style_predication_2, Concept, is_concept, \
+    meets_constraint
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
 from perplexity.tree import find_predication_from_introduced
@@ -413,13 +414,36 @@ def convert_noun_structure(binding_value):
             new_list.append(item)
     return tuple(new_list)
 
-# Once we get here, a phrase like "we want a menu" would have two solutions
+
 @Predication(vocabulary, names=["solution_group__want_v_1"])
-def want_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
+def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
-    x_actors = [convert_noun_structure(x.value) for x in x_actor_binding_list]
-    x_whats = [convert_noun_structure(x.value) for x in x_what_binding_list]
-    current_state = do_task(current_state, [('satisfy_want', x_actors, x_whats)])
+
+    # This may be getting called with concepts or instances, before we call the planner
+    # we need to decide if we have the requisite amount of them
+    if is_concept(x_actor_variable_group.solution_values[0]):
+        # We don't want to deal with conceptual actors, ignore this solution group
+        return []
+
+    first_x_what = x_what_variable_group.solution_values[0].value[0]
+    if is_concept(first_x_what):
+        # If one item in the group is a concept they all are
+        concept_count, instance_count = count_of_instances_and_concepts(current_state, first_x_what)
+        concept_specified, meets = meets_constraint(x_what_variable_group.variable_constraints, concept_count, instance_count)
+        if not meets:
+            return []
+        else:
+            # We have enough concepts or instances to meet the request
+            # Give them the max of what they specified
+            first_x_what_binding = copy.deepcopy(x_what_variable_group.solution_values[0])
+            first_x_what_binding.value = [first_x_what_binding.value[0].update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})]
+            x_what_variable_group.solution_values.clear()
+            x_what_variable_group.solution_values.append(first_x_what_binding)
+            current_state = do_task(current_state, [('satisfy_want', x_actor_variable_group, x_what_variable_group)])
+
+    # x_actors = [convert_noun_structure(x.value) for x in x_actor_binding_list.solution_values]
+    # x_whats = [convert_noun_structure(x.value) for x in x_what_binding_list.solution_values]
+    current_state = do_task(current_state, [('satisfy_want', x_actor_variable_group, x_what_variable_group)])
     if current_state is None:
         return []
     else:

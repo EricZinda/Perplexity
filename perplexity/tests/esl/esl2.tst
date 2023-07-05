@@ -7,6 +7,41 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
+            "ID": "d7181e3b-0f61-4291-b50f-90951c3e9202"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "4990c50f-5277-430b-9226-e1a266de9db4"
+        },
+        {
+            "Command": "I'd like a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(2,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
+        },
+        {
+            "Command": "we want a table",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
             "ID": "9e1086d8-cfd2-4762-b52d-2e421301b1da"
         },
         {
