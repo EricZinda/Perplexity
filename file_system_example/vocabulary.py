@@ -1,8 +1,8 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
-from perplexity.plurals import GlobalCriteria, VariableCriteria, CriteriaResult
-from perplexity.execution import report_error, call, execution_context
+from perplexity.plurals import GlobalCriteria, VariableCriteria
+from perplexity.execution import report_error, execution_context
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, in_style_predication_2, \
     individual_style_predication_1, discrete_variable_generator
 from perplexity.response import RespondOperation
@@ -13,13 +13,41 @@ from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predic
 from perplexity.utilities import sentence_force
 from perplexity.variable_binding import VariableBinding
 from perplexity.virtual_arguments import scopal_argument
-from perplexity.vocabulary import Vocabulary, Predication, EventOption, ValueSize, override_predications
+from perplexity.vocabulary import Predication, EventOption, ValueSize, override_predications
+
 
 vocabulary = system_vocabulary()
 override_predications(vocabulary, "user", ["card__cex__"])
 
 # Constants for creating virtual arguments from scopal arguments
 locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
+
+
+
+def in_scope_initialize(state):
+    # Some tests don't use the file system object so everything is in scope
+    if not hasattr(state, "user"):
+        return None
+
+    current_directory = state.user().current_directory()
+    # We are looking at the contained items in the user's current directory
+    # which is *not* the object in the binding. So: we need contained_items()
+    # to report an error that is not variable related, so we pass it None
+    contained_binding = VariableBinding(None, current_directory)
+    contained_items = set(current_directory.contained_items(contained_binding.variable))
+    return {"ContainedItems": contained_items, "CurrentDirectory": current_directory}
+
+
+def in_scope(initial_data, state, value):
+    # Some tests don't use the file system object so everything is in scope
+    if initial_data is None:
+        return True
+
+    if value in initial_data["ContainedItems"] or value == initial_data["CurrentDirectory"]:
+        return True
+    else:
+        report_error(["valueIsNotValue", value, "this"])
+        return False
 
 
 @Predication(vocabulary, names=["solution_group__in_p_loc"])
@@ -65,44 +93,6 @@ def solution_group(state_list, variable_constraints):
                     index += 1
                 yield new_group
                 yield True
-
-
-@Predication(vocabulary, names=["_this_q_dem"])
-def this_q_dem(state, x_variable_binding, h_rstr, h_body):
-    state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
-                                                                x_variable_binding.variable.name,
-                                                                min_size=1,
-                                                                max_size=1,
-                                                                global_criteria=None))
-
-    # Call quantifier_raw() with a criteria_predication=in_scope so that it only allows
-    # items that are in scope
-    current_directory = state.user().current_directory()
-    # We are looking at the contained items in the user's current directory
-    # which is *not* the object in the binding. So: we need contained_items()
-    # to report an error that is not variable related, so we pass it None
-    contained_binding = VariableBinding(None, current_directory)
-    contained_items = set(current_directory.contained_items(contained_binding.variable))
-
-    def in_scope(state, x_binding):
-        def bound_variable(value):
-            # In scope if binding.value is the folder the user is in
-            # and anything in it
-            if value in contained_items or value == current_directory:
-                return True
-            else:
-                report_error(["valueIsNotValue", value, "this"])
-                return False
-
-        def unbound_variable():
-            for item in state.all_individuals():
-                if bound_variable(item):
-                    yield item
-
-        yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
-
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope)
 
 
 def variable_is_megabyte(binding):

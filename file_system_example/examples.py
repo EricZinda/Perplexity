@@ -1,7 +1,7 @@
 from file_system_example.messages import error_priority, generate_message
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
-from file_system_example.vocabulary import vocabulary
+from file_system_example.vocabulary import vocabulary, in_scope_initialize, in_scope
 from perplexity.execution import ExecutionContext, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.messages import respond_to_mrs_tree
@@ -599,7 +599,7 @@ def Example28_reset():
 
 
 def Example28():
-    user_interface = UserInterface(Example28_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
+    user_interface = UserInterface(Example28_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree, scope_function=in_scope, scope_init_function=in_scope_initialize)
 
     while True:
         user_interface.interact_once()
@@ -1029,7 +1029,7 @@ if __name__ == '__main__':
     # Example26()
     # Example27()
     # Example27a()
-    # Example28()
+    Example28()
     # Example29()
     # Example30()
     # Example31()
@@ -1043,7 +1043,7 @@ if __name__ == '__main__':
     # Example37()
     # Example38()
     # Example39()
-    Example40()
+    # Example40()
     # Example41()
     #
     # state_test()

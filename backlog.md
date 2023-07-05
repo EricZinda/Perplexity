@@ -1,3 +1,5 @@
+- Implement "the_in_scope"
+  - Shouldn't run the "in_scope" "the" if the universal "the" worked because there is only 1 in the world and it will be
 - "I want the table" from the front door
   - Should try to select an in scope type of "table" and fail
 - Do a good answer for "what are your specials?"

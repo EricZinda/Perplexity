@@ -25,11 +25,12 @@ def no_error_priority(error):
 
 
 class UserInterface(object):
-    def __init__(self, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree):
+    def __init__(self, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
         self.max_holes = 14
         self.reset = reset
         self.state = reset()
         self.execution_context = ExecutionContext(vocabulary)
+        self.execution_context.set_in_scope_function(scope_function, scope_init_function)
         self.response_function = response_function
         self.message_function = message_function
         self.error_priority_function = error_priority_function

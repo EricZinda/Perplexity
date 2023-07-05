@@ -1050,9 +1050,17 @@ error_priority_dict = {
 }
 
 
+def in_scope_initialize(state):
+    return None
+
+
+def in_scope(initial_data, state, value):
+    return True
+
+
 def hello_world():
     user_interface = UserInterface(reset, vocabulary, message_function=generate_custom_message,
-                                   error_priority_function=error_priority)
+                                   error_priority_function=error_priority, scope_function=in_scope, scope_init_function=in_scope_initialize)
 
     while True:
         user_interface.interact_once()
