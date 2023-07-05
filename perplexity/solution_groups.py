@@ -226,7 +226,7 @@ def run_handlers(handlers, variable_constraints, group, index_predication):
                 handler_args = [state_list] + handler_args
 
             else:
-                handler_args = (state_list,) + tuple(variable_constraints)
+                handler_args = (state_list,) + (variable_constraints, )
 
             for next_solution_group in handler_function(*handler_args):
                 if created_solution_group is None:
