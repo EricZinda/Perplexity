@@ -4,7 +4,7 @@ import itertools
 import json
 
 from perplexity.execution import get_variable_metadata, report_error, execution_context
-from perplexity.plurals import GlobalCriteria
+import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
@@ -63,7 +63,7 @@ class Concept(object):
 #   None
 
 def meets_constraint(variable_constraints, count, in_scope_count, check_concepts, variable):
-    if variable_constraints.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+    if variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
         # This means the entire set of things must meet the variable constraints
         if check_concepts:
             # If this is a concept we only ever check the in_scope_count here because the user

@@ -1,4 +1,4 @@
-- Now that we have concepts, "the one and only" will never work because you'll also get the concept. Need to handle this properly
+
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
 

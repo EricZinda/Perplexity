@@ -1,8 +1,7 @@
 import enum
 import logging
 from math import inf
-
-from perplexity.execution import report_error
+import perplexity.predications
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
 from perplexity.tree import find_quantifier_from_variable
 from perplexity.utilities import plural_from_tree_info, parse_predication_name, is_plural
@@ -523,7 +522,8 @@ class VariableCriteria(object):
             # "Only/Exactly", much like the quantifier "the", does more than just group solutions into groups
             # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
             # So we need to track unique values across all answers in this case
-            self._unique_rstrs.update(value_list)
+            # BUT: Only track instances (things that aren't concepts) because concepts are handled by the developer manually
+            self._unique_rstrs.update([item for item in value_list if not perplexity.predications.is_concept(item)])
 
         if self.global_criteria == GlobalCriteria.exactly:
             # We can fail immediately if we have too many

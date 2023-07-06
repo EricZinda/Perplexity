@@ -11,7 +11,7 @@ def in_scope_initialize(state):
     in_scope_concepts = set()
     for i in state.rel["conceptInScope"]:
         if i[1] == "true":
-            in_scope_concepts.add(i[0])
+            in_scope_concepts.add(Concept(i[0]))
 
     return {"InScopeConcepts": in_scope_concepts}
 
