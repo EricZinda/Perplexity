@@ -83,10 +83,10 @@ def meets_constraint(variable_constraints, count, in_scope_count, check_concepts
 
         else:
             test = execution_context()
-            report_error(["moreThan", variable, variable_constraints.max_size], force=True)
+            report_error(["moreThan", ["AfterFullPhrase", variable], variable_constraints.max_size], force=True)
 
     else:
-        report_error(["lessThan", variable, variable_constraints.min_size], force=True)
+        report_error(["lessThan", ["AfterFullPhrase", variable], variable_constraints.min_size], force=True)
 
     return False
 

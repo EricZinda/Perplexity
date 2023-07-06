@@ -38,11 +38,39 @@
             "ID": "4990c50f-5277-430b-9226-e1a266de9db4"
         },
         {
+            "Command": "I'd like a table for 1",
+            "Expected": "Johnny: Hey! That's not enough seats!",
+            "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(1,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "d5f8a208-b881-4dae-a1b6-5fdfe526a1fb"
+        },
+        {
             "Command": "I'd like a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
             "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(2,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"
+            "ID": "66b5319c-66be-4787-b97b-4db8ea2effe5"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "70e0d89a-bec4-40c5-858f-6e9fe40265f9"
+        },
+        {
+            "Command": "I'd like a table for 3",
+            "Expected": "Host: Sorry, we don't have a table with that many seats",
+            "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(3,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "17cdb00c-6f14-458d-a810-639281544c82"
         },
         {
             "Command": "/new esl.tutorial.reset",
@@ -57,6 +85,41 @@
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "3213c6a6-304c-488d-a079-0e91fb0cc829"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "05cf91e2-b1d4-4dc6-82b2-8614bd04382b"
+        },
+        {
+            "Command": "My son and I want a table",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "pronoun_q(x13,pron(x13),pronoun_q(x20,pron(x20),_a_q(x25,_table_n_1(x25),udef_q(x3,def_explicit_q(x8,[_son_n_of(x8,i18), poss(e12,x8,x13)],_and_c(x3,x8,x20)),_want_v_1(e2,x3,x25)))))",
+            "Enabled": true,
+            "ID": "e3ce792d-b076-4fc4-b91d-7e13976d58f6"
+        },
+        {
+            "Command": "I want a menu",
+            "Expected": "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "bc1ce7b9-3611-48fa-9baf-5288edde5c55"
+        },
+        {
+            "Command": "My son wants the menu",
+            "Expected": "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x9,pron(x9),_the_q(x15,_menu_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "4ecab638-357a-43e6-b768-421b52437bdb"
+        },
+        {
+            "Command": "We would like the menus",
+            "Expected": "There are less than 2 menu",
+            "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "42d5f855-1b6d-4b48-9f8f-edecceec3774"
         },
         {
             "Command": "/new esl.tutorial.reset",
