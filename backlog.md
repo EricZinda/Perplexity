@@ -1,3 +1,6 @@
+
+- Get rid of old code that has been implemented differently
+- Fix ontology.  Right now there are instances on the menu, for example
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
 

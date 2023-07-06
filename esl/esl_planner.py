@@ -1,6 +1,6 @@
 from esl import gtpyhop
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
-    rel_subjects, is_instance, instance_of_what
+    rel_subjects, is_instance, instance_of_what, AddBillOp
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -195,14 +195,31 @@ def order_food_price_unknown(state, who, what):
             return [('respond', "Son: Wait, let's not order that before we know how much it costs." + state.get_reprompt())]
 
 
+def order_food_too_expensive(state, who, what):
+    if all_are_players([who]) and location_of_type(state, who, "table"):
+        assert what in state.sys["prices"]
+        if state.sys["prices"][what] + state.bill_total() > 15:
+            return [('respond', f"Son: Wait, we already spent ${str(state.bill_total())} so if we get that, we won't be able to pay for it with $15.{state.get_reprompt()}")]
+
+
+def order_food_out_of_stock(state, who, what):
+    if all_are_players([who]) and location_of_type(state, who, "table"):
+        if "ordered" in state.rel.keys():
+            for item in state.rel["ordered"]:
+                if item[1] == what:
+                    return [('respond',
+                             "Sorry, you got the last one of those. We don't have any more. Can I get you something else?" + state.get_reprompt())]
+
+
 def order_food_at_table(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
         return [('respond', "Excellent Choice! Can I get you anything else?"),
                 ('add_rel', who, "ordered", what),
+                ('add_bill', what),
                 ('set_response_state', "anything_else")]
 
 
-gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_at_table)
+gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
 
 
 # This task deals with GroupVariableValues only
@@ -285,7 +302,12 @@ def add_rel(state, subject, rel, object):
 def set_response_state(state, value):
     return state.record_operations([ResponseStateOp(value)])
 
-gtpyhop.declare_actions(respond, add_rel, set_response_state)
+
+def add_bill(state, wanted):
+    return state.record_operations([AddBillOp(wanted)])
+
+
+gtpyhop.declare_actions(respond, add_rel, set_response_state, add_bill)
 
 # If it is "a table for 2" get both at the same table
 # If it is I would like a table, ask how many

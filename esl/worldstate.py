@@ -192,10 +192,9 @@ class AddBillOp(object):
         self.toAdd = item
 
     def apply_to(self, state):
-        food_type = instance_of_what(state,self.toAdd)
         prices = state.sys["prices"]
-        assert (food_type in prices)
-        state.mutate_add_bill(prices[food_type])
+        assert self.toAdd in prices
+        state.mutate_add_bill(prices[self.toAdd])
 
 
 class SetKnownPriceOp(object):

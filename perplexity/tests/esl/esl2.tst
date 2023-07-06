@@ -10,11 +10,25 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
+            "Command": "We want tables",
+            "Expected": "I suspect you want to sit together.",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "12bd1de9-8b40-498f-9252-9c5b676c481c"
+        },
+        {
             "Command": "I want the table",
             "Expected": "There is more than 1 table",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+            "ID": "74092d64-1466-4b30-bf1d-486e17005e9e"
         },
         {
             "Command": "/new esl.tutorial.reset",
@@ -176,13 +190,6 @@
             "Tree": "udef_q(x4,[generic_entity(x4), card(2,e10,x4)],unknown(e2,x4))",
             "Enabled": true,
             "ID": "d078a2ea-e17c-44c5-9110-2600cea1e097"
-        },
-        {
-            "Command": "I want a salad",
-            "Expected": "Son: Wait, let's not order that before we know how much it costs. \nWaiter: Can I get you something to eat?",
-            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_salad_n_1(x8),_want_v_1(e2,x3,x8)))",
-            "Enabled": true,
-            "ID": "4ee8d866-b726-444f-9abd-ba2db97f8caf"
         },
         {
             "Command": "I would like a table",

@@ -968,6 +968,11 @@ def reset():
 
     # These concepts are "in scope" meaning it is OK to say "the X"
     initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("salmon", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("chicken", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("soup", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
 
     initial_state = initial_state.add_rel("table", "specializes", "thing")
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
