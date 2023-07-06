@@ -182,6 +182,27 @@ def get_table_repeat(state, who_multiple, table):
 gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repeat)
 
 
+def get_bill_at_entrance(state, who_multiple):
+    if all_are_players(who_multiple) and \
+        not location_of_type(state, who_multiple[0], "table"):
+        return [('respond', "But... you haven't got any food yet!" + state.get_reprompt())]
+
+
+def get_bill_at_table(state, who_multiple):
+    if all_are_players(who_multiple):
+        for i in state.rel["valueOf"]:
+            if i[1] == "bill1":
+                total = i[0]
+                if state.sys["responseState"] == "done_ordering":
+                    return [('respond',  f"Your total is f{str(total)} dollars. Would you like to pay by cash or card?"),
+                            ('set_response_state', "way_to_pay")]
+                else:
+                    return [('respond', "But... you haven't got any food yet!" + state.get_reprompt())]
+
+
+gtpyhop.declare_task_methods('get_bill', get_bill_at_entrance, get_bill_at_table)
+
+
 # order_food methods are all passed single objects, not tuples
 # so we don't have to check
 def order_food_at_entrance(state, who, what):
@@ -244,6 +265,8 @@ def satisfy_want_group_group(state, group_who, group_what):
                 return [("get_table", unique_group_variable_values(group_who), one_thing)]
             elif one_thing.concept_name == "menu":
                 return [("get_menu", unique_group_variable_values(group_who))]
+            elif one_thing.concept_name == "bill":
+                return [("get_bill", unique_group_variable_values(group_who))]
 
         else:
             # They are asking for a particular instance of something, which should never work: fail

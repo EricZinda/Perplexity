@@ -973,6 +973,7 @@ def reset():
     initial_state = initial_state.add_rel("soup", "conceptInScope", "true")
     initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
     initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
 
     initial_state = initial_state.add_rel("table", "specializes", "thing")
     initial_state = initial_state.add_rel("menu", "specializes", "thing")

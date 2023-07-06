@@ -1,6 +1,8 @@
-
+- Get the specials working
+- Get the bill working
 - Get rid of old code that has been implemented differently
 - Fix ontology.  Right now there are instances on the menu, for example
+- Handle concepts with extra information "bill for the food" failing if we don't know it
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
 
