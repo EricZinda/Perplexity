@@ -831,12 +831,7 @@ def poss(state, e_introduced_binding, x_object_binding, x_actor_binding):
 @Predication(vocabulary, names=["_be_v_id"])
 def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
-        if not x_object[0] == "{":
-            first_in_second = x_actor in all_instances_and_spec(state, x_object)
-            second_in_first = x_object in all_instances_and_spec(state, x_actor)
-
-            return first_in_second or second_in_first
-        else:
+        if isinstance(x_object, str) and x_object[0] == "{":
             x_object = json.loads(x_object)
             if x_object["structure"] == "price_type":
                 if type(x_object["relevant_var_value"]) is int:
@@ -845,17 +840,22 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
                         return False
             return True
 
+        else:
+            first_in_second = x_actor in all_instances_and_spec(state, x_object)
+            second_in_first = x_object in all_instances_and_spec(state, x_actor)
+
+            return first_in_second or second_in_first
+
     def unbound(x_object):
-        for i in all_instances(state, x_object):
-            yield i
-        yield x_object
+        if is_concept(x_object):
+            for i in all_instances(state, x_object.concept_name):
+                yield i
+            yield x_object.concept_name
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound, unbound):
         x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
         x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
-        if not x_obj[0] == "{":
-            yield success_state
-        else:
+        if isinstance(x_obj, str) and x_obj[0] == "{":
             x_obj = json.loads(x_obj)
             if x_obj["structure"] == "price_type":
                 if x_obj["relevant_var_value"] == "to_determine":
@@ -864,6 +864,8 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
                     else:
                         yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
+        else:
+            yield success_state
 
 
 @Predication(vocabulary, names=["_cost_v_1"])
