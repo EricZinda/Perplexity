@@ -475,7 +475,7 @@ def lift_style_predication_2(state, binding1, binding2,
 # "'in' style" means that:
 # - {a, b} predicate {x, y} can be checked (or do something) as {a} predicate {x}, {a} predicate {y}, etc.
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
-# - that the any combinatoric terms will be turned into single set terms (coll or dist)
+# - that any combinatoric terms will be turned into single set terms (coll or dist)
 def in_style_predication_2(state, binding1, binding2,
                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                            binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
