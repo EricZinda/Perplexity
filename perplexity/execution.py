@@ -64,17 +64,19 @@ class ExecutionContext(object):
 
         pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
 
+    # Needs to be called in a: with ExecutionContext() block
+    # so that the execution context is set up properly
+    # and maintained while all the solution groups are generated
     def solve_mrs_tree(self, state, tree_info):
-        with self:
-            self.clear_error()
-            self._predication_index = 0
-            self._phrase_type = sentence_force(tree_info["Variables"])
-            self.tree_info = tree_info
-            self.gather_tree_metadata()
-            if self._in_scope_initialize_function is not None:
-                self.in_scope_initialize_data = self._in_scope_initialize_function(state)
+        self.clear_error()
+        self._predication_index = 0
+        self._phrase_type = sentence_force(tree_info["Variables"])
+        self.tree_info = tree_info
+        self.gather_tree_metadata()
+        if self._in_scope_initialize_function is not None:
+            self.in_scope_initialize_data = self._in_scope_initialize_function(state)
 
-            yield from self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"])
+        yield from self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"])
 
     def gather_tree_metadata(self):
         self._variable_metadata = perplexity.tree.gather_predication_metadata(self.vocabulary, self.tree_info)

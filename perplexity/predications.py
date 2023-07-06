@@ -3,7 +3,7 @@ import enum
 import itertools
 import json
 
-from perplexity.execution import get_variable_metadata, report_error
+from perplexity.execution import get_variable_metadata, report_error, execution_context
 from perplexity.plurals import GlobalCriteria
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.utilities import at_least_one_generator
@@ -21,6 +21,9 @@ class Concept(object):
             self._modifiers.update(dict_modifications)
 
         self._hash = hash(json.dumps(self._modifiers))
+
+    def __repr__(self):
+        return f"concept({self.concept_name})"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
@@ -79,6 +82,7 @@ def meets_constraint(variable_constraints, count, in_scope_count, check_concepts
             return True
 
         else:
+            test = execution_context()
             report_error(["moreThan", variable, variable_constraints.max_size], force=True)
 
     else:

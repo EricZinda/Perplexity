@@ -1,9 +1,4 @@
-- If there is only one type of a thing like "table", saying "the table" shouldn't work even though it is "the one and only" concept
-  - It should instead *also* have to be in scope
 - Now that we have concepts, "the one and only" will never work because you'll also get the concept. Need to handle this properly
-- "I want the table" from the front door
-  - Should try to select an in scope type of "table" and fail
-  - 
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
 

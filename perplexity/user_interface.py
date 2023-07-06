@@ -165,73 +165,73 @@ class UserInterface(object):
                                 # It is still there, fail this tree
                                 tree_record["Error"] = f"One or more of these words not transformed out of tree: {contingent}"
                                 continue
+                        with self.execution_context:
+                            solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
+                            this_sentence_force = sentence_force(tree_info["Variables"])
+                            wh_phrase_variable = None
+                            if this_sentence_force == "ques":
+                                predication = find_predication(tree_info["Tree"], "_which_q")
+                                if predication is not None:
+                                    wh_phrase_variable = predication.args[0]
 
-                        solutions = self.execution_context.solve_mrs_tree(self.state, tree_info)
-                        this_sentence_force = sentence_force(tree_info["Variables"])
-                        wh_phrase_variable = None
-                        if this_sentence_force == "ques":
-                            predication = find_predication(tree_info["Tree"], "_which_q")
-                            if predication is not None:
-                                wh_phrase_variable = predication.args[0]
+                            unprocessed_groups = [] if self.show_all_answers else None
+                            def yield_from_first():
+                                if unprocessed_groups is not None:
+                                    if len(unprocessed_groups) > 0:
+                                        yield from unprocessed_groups[0]
 
-                        unprocessed_groups = [] if self.show_all_answers else None
-                        def yield_from_first():
-                            if unprocessed_groups is not None:
-                                if len(unprocessed_groups) > 0:
-                                    yield from unprocessed_groups[0]
+                            tree_record["SolutionGroups"] = yield_from_first()
+                            # solution_groups() should return an iterator that iterates *groups*
+                            solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_unprocessed_groups=unprocessed_groups))
 
-                        tree_record["SolutionGroups"] = yield_from_first()
-                        # solution_groups() should return an iterator that iterates *groups*
-                        solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_unprocessed_groups=unprocessed_groups))
+                            # Collect any error that might have occurred from the first solution group
+                            tree_record["Error"] = self.execution_context.error()
+                            tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(self.message_function, tree_info, solution_group_generator, tree_record["Error"]))
+                            if solution_group_generator is not None:
+                                # There were solutions, so this is our answer.
+                                # Return it and stop looking
+                                self.evaluate_best_response(solution_group_generator)
 
-                        # Collect any error that might have occurred from the first solution group
-                        tree_record["Error"] = self.execution_context.error()
-                        tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(self.message_function, tree_info, solution_group_generator, tree_record["Error"]))
-                        if solution_group_generator is not None:
-                            # There were solutions, so this is our answer.
-                            # Return it and stop looking
-                            self.evaluate_best_response(solution_group_generator)
+                                # Go through all the responses in this solution group
+                                for response, solution_group in tree_record["ResponseGenerator"]:
+                                    # Because this worked, we need to apply any Operations that were added to
+                                    # any solution to the current world state.
+                                    try:
+                                        operation_responses = self.apply_solutions_to_state([solution for solution in solution_group])
 
-                            # Go through all the responses in this solution group
-                            for response, solution_group in tree_record["ResponseGenerator"]:
-                                # Because this worked, we need to apply any Operations that were added to
-                                # any solution to the current world state.
-                                try:
-                                    operation_responses = self.apply_solutions_to_state([solution for solution in solution_group])
+                                    except MessageException as error:
+                                        response = self.response_function(self.message_function, tree_info, [], [0, error.message_object()])
+                                        tree_record["ResponseMessage"] += f"\n{str(response)}"
 
-                                except MessageException as error:
-                                    response = self.response_function(self.message_function, tree_info, [], [0, error.message_object()])
-                                    tree_record["ResponseMessage"] += f"\n{str(response)}"
+                                    if len(operation_responses) > 0:
+                                        response = "\n".join(operation_responses)
 
-                                if len(operation_responses) > 0:
-                                    response = "\n".join(operation_responses)
+                                    elif response is None:
+                                        if this_sentence_force == "comm":
+                                            # Only give a "Done!" message if it was a command and there were no responses given
+                                            response = "Done!"
 
-                                elif response is None:
-                                    if this_sentence_force == "comm":
-                                        # Only give a "Done!" message if it was a command and there were no responses given
-                                        response = "Done!"
+                                        elif this_sentence_force == "prop" or this_sentence_force == "prop-or-ques":
+                                            response = "Yes, that is true."
 
-                                    elif this_sentence_force == "prop" or this_sentence_force == "prop-or-ques":
-                                        response = "Yes, that is true."
+                                        else:
+                                            response = "(no response)"
 
-                                    else:
-                                        response = "(no response)"
+                                    tree_record["ResponseMessage"] += response
+                                    print(response)
 
-                                tree_record["ResponseMessage"] += response
-                                print(response)
+                                more_message = self.generate_more_message(tree_info, solution_group_generator)
+                                if more_message is not None:
+                                    tree_record["ResponseMessage"] += more_message
+                                    print(more_message)
 
-                            more_message = self.generate_more_message(tree_info, solution_group_generator)
-                            if more_message is not None:
-                                tree_record["ResponseMessage"] += more_message
-                                print(more_message)
+                                if not self.run_all_parses:
+                                    return
 
-                            if not self.run_all_parses:
-                                return
-
-                        else:
-                            # This failed, remember it if it is the "best" failure
-                            # which we currently define as the first one
-                            self.evaluate_best_response(solution_group_generator)
+                            else:
+                                # This failed, remember it if it is the "best" failure
+                                # which we currently define as the first one
+                                self.evaluate_best_response(solution_group_generator)
 
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_tree_record()

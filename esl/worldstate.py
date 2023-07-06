@@ -1,7 +1,7 @@
 import copy
 import json
 
-from perplexity.predications import is_concept
+from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
@@ -139,8 +139,8 @@ def count_of_instances_and_concepts(state, concept):
         if in_scope(scope_data, state, instance):
             instance_in_scope_count += 1
 
-    concepts = list(specializations(state, concept.concept_name))
-    concept_count = len(concepts) + 1
+    concepts = [concept] + [Concept(x) for x in specializations(state, concept.concept_name)]
+    concept_count = len(concepts)
     concept_in_scope_count = 0
     for concept in concepts:
         if in_scope(scope_data, state, concept):
