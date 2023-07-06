@@ -144,14 +144,6 @@ class VariableDescriptor(object):
         else:
             return ValueSize.exactly_one if combinatorial_exactly_one else ValueSize.more_than_one
 
-    def discrete_size(self):
-        group_supported = self.group == VariableStyle.semantic or self.group == VariableStyle.ignored
-        individual_supported = self.individual == VariableStyle.semantic or self.individual == VariableStyle.ignored
-        if group_supported and individual_supported:
-            return ValueSize.all
-        else:
-            return ValueSize.exactly_one if individual_supported else ValueSize.more_than_one
-
 
 # Yields each possible variable set from binding based on what type of value it is
 # "discrete" means it will generate all possible specific sets, one by one (i.e. not yield a combinatoric value)
@@ -186,12 +178,9 @@ def predication_1(state, binding, bound_function, unbound_function, binding_desc
     else:
         # Build a generator that only generates the discrete values for the binding that are valid for the descriptor,
         # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
-        if binding.variable.combinatoric:
-            binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
-                                                            binding_descriptor.combinatoric_size(binding))
-        else:
-            binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
-                                                            binding_descriptor.discrete_size())
+        # if binding.variable.combinatoric:
+        binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
+                                                        binding_descriptor.combinatoric_size(binding))
 
         for value in binding_generator:
             if bound_function(value):
@@ -295,25 +284,16 @@ def predication_2(state, binding1, binding2,
                   binding2_descriptor=None):
     # Build a generator that only generates the discrete values for the binding that are valid for these descriptors,
     # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
-    if binding1.variable.combinatoric:
-        binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
-    else:
-        binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.discrete_size())
+    binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
 
     # The binding2 generator needs to be a function because it can be iterated over multiple times
     # and needs a way to reset
-    if binding2.variable.combinatoric:
-        def binding2_generator_creator_combinatoric():
-            return discrete_variable_generator(binding2.value, binding2.variable.combinatoric,
-                                               binding2_descriptor.combinatoric_size(binding2))
+    # if binding2.variable.combinatoric:
+    def binding2_generator_creator_combinatoric():
+        return discrete_variable_generator(binding2.value, binding2.variable.combinatoric,
+                                           binding2_descriptor.combinatoric_size(binding2))
 
-        binding2_generator_reset = binding2_generator_creator_combinatoric
-
-    else:
-        def binding2_generator_creator_discrete():
-            return discrete_variable_generator(binding2.value, binding2.variable.combinatoric, binding2_descriptor.discrete_size())
-
-        binding2_generator_reset = binding2_generator_creator_discrete
+    binding2_generator_reset = binding2_generator_creator_combinatoric
 
     # If binding_descriptor.group == VariableStyle.unsupported no sets > 1 will even show up, and this means that
     # an individual_check is the same as a group check so we don't need to consider that case
@@ -337,7 +317,7 @@ def predication_2(state, binding1, binding2,
         unbound_predication_function = binding1_unbound_predication_function if binding1.value is None else binding2_unbound_predication_function
         unbound_binding = binding1 if binding1.value is None else binding2
         unbound_binding_descriptor = binding1_descriptor if binding1.value is None else binding2_descriptor
-        unbound_binding_variable_size = unbound_binding_descriptor.discrete_size()
+        unbound_binding_variable_size = unbound_binding_descriptor.combinatoric_size(binding1) if binding1.value is None else unbound_binding_descriptor.combinatoric_size(binding2)
 
         # This is a "what is in X" type question, that's why it is unbound
         # This could be something like in([mary, john], X) (where mary and john are *together* in someplace)
