@@ -62,28 +62,34 @@ class Concept(object):
 #   False if the same for instances
 #   None
 
-def meets_constraint(variable_constraints, count, in_scope_count, check_concepts, variable):
+def meets_constraint(variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
     if variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
         # This means the entire set of things must meet the variable constraints
         if check_concepts:
-            # If this is a concept we only ever check the in_scope_count here because the user
+            # If this is a concept check we only ever check the concept_in_scope_count here because the user
             # said something with "the" like "the menu" and this only makes sense for concepts that are
             # in scope not the generic version of "menu"
-            check_count = in_scope_count
+            check_count = concept_in_scope_count
         else:
-            check_count = count
+            check_count = instance_count
     else:
-        check_count = count
+        if check_concepts:
+            # Because we are not dealing with all_rstr_meet_criteria, the phrase was something like "we want menus"
+            # Which is talking about abstract menus which implies:
+            # 1. There is a single concept of "menu" that is obvious
+            # 2. There are enough instances of it to fulfil the request
+            if concept_count == 1:
+                check_count = instance_count
+            else:
+                report_error(["moreThan", ["AfterFullPhrase", variable], 1], force=True)
+        else:
+            check_count = instance_count
 
     # Otherwise we are talking about instances as in "I'd like a/2/a few menus"
     # Constraints with no global criteria just get merged to most restrictive
     if check_count >= variable_constraints.min_size:
-        if check_count <= variable_constraints.max_size:
-            return True
-
-        else:
-            test = execution_context()
-            report_error(["moreThan", ["AfterFullPhrase", variable], variable_constraints.max_size], force=True)
+        # As long as we meet the min size we can fulfil the request
+        return True
 
     else:
         report_error(["lessThan", ["AfterFullPhrase", variable], variable_constraints.min_size], force=True)

@@ -46,6 +46,7 @@
       - "what is on a menu?"
       - "what is on today's menu?"
       - "How hard is the job?"
+      - "we want menus"
     - Analysis
       - There needs to be a way to tell the a difference between the canonical instance of menu for this restaurant "What is on the menu?"
         and one that is generic "what is on a menu?"

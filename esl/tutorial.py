@@ -435,7 +435,7 @@ def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_
         # First we need to check to make sure that the specific concept "steak", "menu", etc meet the requirements
         # I.e. if there are two preparations of steak on the menu and you say "I'll have the steak" you should get an error
         concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], first_x_what)
-        if meets_constraint(x_what_variable_group.variable_constraints, concept_count, concept_in_scope_count, check_concepts=True, variable=first_x_what_variable):
+        if meets_constraint(x_what_variable_group.variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts=True, variable=first_x_what_variable):
             # Give them the max of what they specified
             first_x_what_binding = copy.deepcopy(x_what_variable_group.solution_values[0])
             first_x_what_binding.value = [first_x_what_binding.value[0].update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})]

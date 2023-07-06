@@ -126,6 +126,41 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
+            "ID": "b7f0482d-eba1-4031-82c3-5692d580660d"
+        },
+        {
+            "Command": "We want a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "udef_q(x14,[generic_entity(x14), card(2,e20,x14)],pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "94651de1-8fb4-409d-b16b-74193e50626d"
+        },
+        {
+            "Command": "We'd like menus",
+            "Expected": "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "15f839c0-6794-4359-b3e1-da9317c526e7"
+        },
+        {
+            "Command": "I'd like a menu",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "943804b0-79e4-4f79-8bdd-40d9fb0642b8"
+        },
+        {
+            "Command": "My son wants a menu",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x15,_menu_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "fcbf99da-9fa7-4f11-8b24-02f83fd8f4b4"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
             "ID": "9e1086d8-cfd2-4762-b52d-2e421301b1da"
         },
         {

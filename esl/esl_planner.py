@@ -113,20 +113,24 @@ def get_menu_at_entrance(state, who):
 
 def get_menu_seated(state, who):
     if all_are_players(who) and location_of_type(state, who[0], "table"):
-        if has_type(state, who[0], "menu"):
-            return [('respond',
-                     "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + state.get_reprompt())]
-        else:
-            # Find an unused menu
-            unused_menu = find_unused_item(state, "menu")
-            if unused_menu:
-                return [('add_rel', who[0], "have", unused_menu),
-                        ('respond',
-                         "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
-                        ('set_response_state', "anticipate_dish")]
+        tasks = []
+        for who_singular in who:
+            if has_type(state, who_singular, "menu"):
+                tasks += [('respond',
+                            "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + state.get_reprompt())]
             else:
-                return [('respond',
-                         "I'm sorry, we're all out of menus." + state.get_reprompt())]
+                # Find an unused menu
+                unused_menu = find_unused_item(state, "menu")
+                if unused_menu:
+                    tasks += [('add_rel', who_singular, "have", unused_menu),
+                              ('respond',
+                               "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
+                              ('set_response_state', "anticipate_dish")]
+                else:
+                    tasks += [('respond',
+                             "I'm sorry, we're all out of menus." + state.get_reprompt())]
+        if len(tasks) > 0:
+            return tasks
 
 
 
