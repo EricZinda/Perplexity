@@ -1,5 +1,3 @@
-import copy
-
 import perplexity.messages
 from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
@@ -320,14 +318,14 @@ class PastParticiple:
 
     def predicate_function(self, state, e_introduced_binding, i_binding, x_target_binding):
         def bound(value):
-            if (value, self.lemma) in state.rel["isAdj"]:
+            if (value, self.lemma) in state.all_rel("isAdj"):
                 return True
             else:
                 report_error(["Not" + self.lemma])
                 return False
 
         def unbound():
-            for i in state.rel["isAdj"]:
+            for i in state.all_rel("isAdj"):
                 if i[1] == self.lemma:
                     yield i[0]
 
@@ -349,7 +347,7 @@ def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
 def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def check_item_on_item(item1, item2):
         if "on" in state.rel.keys():
-            if (item1, item2) in state.rel["on"]:
+            if (item1, item2) in state.all_rel("on"):
                 return True
             else:
                 report_error(["notOn", item1, item2])
@@ -358,13 +356,13 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
     def all_item1_on_item2(item2):
         if "on" in state.rel.keys():
-            for i in state.rel["on"]:
+            for i in state.all_rel("on"):
                 if i[1] == item2:
                     yield i[0]
 
     def all_item2_containing_item1(item1):
         if "on" in state.rel.keys():
-            for i in state.rel["on"]:
+            for i in state.all_rel("on"):
                 if i[0] == item1:
                     yield i[1]
 
@@ -382,7 +380,7 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if is_user_type(x_actor):
             return True
         elif "want" in state.rel.keys():
-            if (x_actor, x_object) in state.rel["want"]:
+            if (x_actor, x_object) in state.all_rel("want"):
                 return True
         else:
             report_error(["notwant", "want", x_actor])
@@ -390,13 +388,13 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
     def wanters_of_obj(x_object):
         if "want" in state.rel.keys():
-            for i in state.rel["want"]:
+            for i in state.all_rel("want"):
                 if i[1] == x_object:
                     yield i[0]
 
     def wanted_of_actor(x_actor):
         if "want" in state.rel.keys():
-            for i in state.rel["want"]:
+            for i in state.all_rel("want"):
                 if i[0] == x_actor:
                     yield i[1]
 
@@ -499,17 +497,17 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_loc_binding):
         if item2 == "today":
             return True
 
-        if (item1, item2) in state.rel["contains"]:
+        if (item1, item2) in state.all_rel("contains"):
             return True
         return False
 
     def items_in_item1(item1):
-        for i in state.rel["contains"]:
+        for i in state.all_rel("contains"):
             if i[0] == item1:
                 yield i[1]
 
     def item1_in_items(item1):
-        for i in state.rel["contains"]:
+        for i in state.all_rel("contains"):
             if i[1] == item1:
                 yield i[0]
 
@@ -636,7 +634,7 @@ class RequestVerbTransitive:
                 return True
             else:
                 if self.lemma in state.rel.keys():
-                    if (x_actor, x_object) in state.rel[self.lemma]:
+                    if (x_actor, x_object) in state.all_rel(self.lemma):
                         return True
                     else:
                         report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
@@ -649,7 +647,7 @@ class RequestVerbTransitive:
         def actor_from_object(x_object):
             if self.lemma in state.rel.keys():
                 something_sees = False
-                for i in state.rel[self.lemma]:
+                for i in state.all_rel(self.lemma):
                     if i[1] == x_object:
                         yield i[0]
                         something_sees = True
@@ -661,7 +659,7 @@ class RequestVerbTransitive:
         def object_from_actor(x_actor):
             if self.lemma in state.rel.keys():
                 sees_something = False
-                for i in state.rel[self.lemma]:
+                for i in state.all_rel(self.lemma):
                     if i[0] == x_actor or i[0] == x_actor[0]:
                         yield i[1]
                         sees_something = True
@@ -720,7 +718,7 @@ class RequestVerbIntransitive:
                 return True
             else:
                 if self.lemma in state.rel.keys():
-                    for pair in state.rel[self.lemma]:
+                    for pair in state.all_rel(self.lemma):
                         if pair[0] == x_actor:
                             return True
 
@@ -733,7 +731,7 @@ class RequestVerbIntransitive:
 
         def unbound():
             if self.lemma in state.rel.keys():
-                for i in state.rel[self.lemma]:
+                for i in state.all_rel(self.lemma):
                     yield i[0]
 
         for success_state in combinatorial_predication_1(state, x_actor_binding, bound, unbound):
@@ -800,29 +798,21 @@ def _sit_v_down_group(state_list, e_introduced_binding_list, x_actor_binding_lis
 @Predication(vocabulary, names=["poss"])
 def poss(state, e_introduced_binding, x_object_binding, x_actor_binding):
     def bound(x_actor, x_object):
-
-        if "have" in state.rel.keys():
-            if (x_actor, x_object) in state.rel["have"]:
-                return True
-            else:
-                report_error(["verbDoesntApply", x_actor, "have", x_object])
-                return False
-
+        if (x_actor, x_object) in state.all_rel("have"):
+            return True
         else:
             report_error(["verbDoesntApply", x_actor, "have", x_object])
             return False
 
     def actor_from_object(x_object):
-        if "have" in state.rel.keys():
-            for i in state.rel["have"]:
-                if i[1] == x_object:
-                    yield i[0]
+        for i in state.all_rel("have"):
+            if i[1] == x_object:
+                yield i[0]
 
     def object_from_actor(x_actor):
-        if "have" in state.rel.keys():
-            for i in state.rel["have"]:
-                if i[0] == x_actor:
-                    yield i[1]
+        for i in state.all_rel("have"):
+            if i[0] == x_actor:
+                yield i[1]
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
@@ -1026,7 +1016,7 @@ def reset():
     initial_state = initial_state.add_rel("salad", "specializes", "veggie")
 
 
-    dish_types = ["soup","salad","bacon","salmon","steak","chicken"]
+    dish_types = ["soup", "salad", "bacon", "salmon", "steak", "chicken"]
     for j in dish_types:
         for i in range(3):
             initial_state = initial_state.add_rel(j+str(i), "instanceOf", j)

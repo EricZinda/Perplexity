@@ -190,7 +190,7 @@ def get_bill_at_entrance(state, who_multiple):
 
 def get_bill_at_table(state, who_multiple):
     if all_are_players(who_multiple):
-        for i in state.rel["valueOf"]:
+        for i in state.all_rel("valueOf"):
             if i[1] == "bill1":
                 total = i[0]
                 if state.sys["responseState"] == "done_ordering":
@@ -212,7 +212,7 @@ def order_food_at_entrance(state, who, what):
 
 def order_food_price_unknown(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
-        if (what, "user") in state.rel["priceUnknownTo"]:
+        if (what, "user") in state.all_rel("priceUnknownTo"):
             return [('respond', "Son: Wait, let's not order that before we know how much it costs." + state.get_reprompt())]
 
 
@@ -225,11 +225,10 @@ def order_food_too_expensive(state, who, what):
 
 def order_food_out_of_stock(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
-        if "ordered" in state.rel.keys():
-            for item in state.rel["ordered"]:
-                if item[1] == what:
-                    return [('respond',
-                             "Sorry, you got the last one of those. We don't have any more. Can I get you something else?" + state.get_reprompt())]
+        for item in state.all_rel("ordered"):
+            if item[1] == what:
+                return [('respond',
+                         "Sorry, you got the last one of those. We don't have any more. Can I get you something else?" + state.get_reprompt())]
 
 
 def order_food_at_table(state, who, what):

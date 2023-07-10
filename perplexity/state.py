@@ -26,9 +26,14 @@ class State(object):
         # Remember all the operations applied to the state object
         self.operations = []
 
+        self.frame_name = "default"
+
     # Defines what the default printed output of a state object is
     def __repr__(self):
         return ", ".join([str(variable_item[1]) for variable_item in self.variables.items() if variable_item[0] != 'tree'])
+
+    def frames(self):
+        yield self
 
     # A standard "class method" is just a function definition,
     # indented properly, with "self" as the first argument
