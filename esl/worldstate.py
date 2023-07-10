@@ -7,18 +7,43 @@ from perplexity.state import State
 
 
 def in_scope_initialize(state):
+    # Only concepts that are explicity marked as "in scope"
+    # are in scope
     in_scope_concepts = set()
     for i in state.all_rel("conceptInScope"):
         if i[1] == "true":
             in_scope_concepts.add(Concept(i[0]))
 
-    return {"InScopeConcepts": in_scope_concepts}
+    # Any instances that the user or son "have" are in scope
+    in_scope_instances = set()
+    for i in state.all_rel("have"):
+        if is_user_type(i[0]):
+            in_scope_instances.add(i[1])
+
+    # Any place where the user are son are "at" is in scope
+    for i in state.all_rel("at"):
+        if is_user_type(i[0]):
+            in_scope_instances.add(i[1])
+
+    return {"InScopeConcepts": in_scope_concepts,
+            "InScopeInstances": in_scope_instances}
 
 
 def in_scope(initial_data, state, value):
     if is_concept(value):
         return value in initial_data["InScopeConcepts"]
     else:
+        return value in initial_data["InScopeInstances"]
+
+
+def is_user_type(val):
+    if not isinstance(val,tuple):
+        return val in ["user","son1"]
+
+    else:
+        for i in val:
+            if val not in ["user","son1"]:
+                return False
         return True
 
 
@@ -211,11 +236,13 @@ class ResponseStateOp(object):
 
 
 class WorldState(State):
-    def __init__(self, relations, system):
+    def __init__(self, relations, system, name=None, world_state_frame=None):
         super().__init__([])
-        self.__name__ = "state"
+        self.__name__ = name
         self._rel = relations
         self.sys = system
+        self.frame_name = name
+        self._world_state_frame = world_state_frame
 
     #*********** Used for HTN
     def copy(self,new_name=None):
@@ -264,6 +291,39 @@ class WorldState(State):
 
     # ******* Base Operations ********
 
+    def frames(self):
+        # Start with just the in scope frame
+        in_scope = in_scope_initialize(self)
+
+        # Concept of "thing" isn't declared anywhere but is always in scope
+        # Nothing has "user" but they are always in scope
+        everything_in_scope = set(["thing", "user"])
+        everything_in_scope.update(in_scope["InScopeInstances"])
+        everything_in_scope.update([x.concept_name for x in in_scope["InScopeConcepts"]])
+
+        # All generic concepts are always in scope
+        everything_in_scope.update(x[0] for x in self.all_rel("specializes"))
+
+        # Now include all relations any of these in scope things have
+        new_rels = {}
+        for item in self._rel.items():
+            if item[0] not in new_rels:
+                new_rels[item[0]] = []
+
+            for relation in item[1]:
+                if relation[0] in everything_in_scope and (relation[1] == "true" or relation[1] in everything_in_scope):
+                    new_rels[item[0]] += [relation]
+
+        yield WorldState(new_rels, copy.deepcopy(self.sys), "in_scope", self)
+
+        # Then yield everything
+        yield self
+
+    def world_state_frame(self):
+        if self._world_state_frame is None:
+            return self
+        else:
+            return self._world_state_frame
 
     def all_individuals(self):
         for i in self.get_entities():

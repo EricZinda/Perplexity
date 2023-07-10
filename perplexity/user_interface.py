@@ -168,6 +168,8 @@ class UserInterface(object):
 
                         # Try the state from each frame that is available
                         for frame_state in self.state.frames():
+                            pipeline_logger.debug(
+                                f"Evaluating against frame '{frame_state.frame_name}'")
                             with self.execution_context:
                                 solutions = self.execution_context.solve_mrs_tree(frame_state, tree_info)
                                 this_sentence_force = sentence_force(tree_info["Variables"])

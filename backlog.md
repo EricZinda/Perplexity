@@ -1,7 +1,6 @@
 - Get the specials working
   - We have a solution group that has a mix of conceptual and instances, this seems wrong
     - It is because there is no constraint on the other variable so it never gets checked
-  - (fixed) be_v should return concepts that are the concept as well as instances
   - Group predicate should only return concepts for that particular query, much like want_v does
   - This is the same as "what are the menus?" or "what are the steaks?"
   - Could mean the concept of steak or the instances of steaks on the table
@@ -33,7 +32,13 @@
             - It runs custom code for the scenario
             - In the restaurant it first returns state filtered for the specific place the user is
               - Then it returns the global state
-              - Everything "in scope" is always in the frame
+          - Design
+            - Everything "in scope" is always in the frame
+            - All abstract concepts are always in the frame
+            - Really we are just trying to get things that are "in scope" to be the first answer
+            - Problem: We want to run the query against the frame, but allow the engine to manipulate the world state
+              - Need to include a way to get at the whole state
+              - 
 - Get the bill working
 - Get rid of old code that has been implemented differently
 - Fix ontology.  Right now there are instances on the menu, for example

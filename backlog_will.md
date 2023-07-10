@@ -120,7 +120,21 @@
             for scenarios like "we don't allow specific tables"
           - Something that processes a concept needs to understand all of it or fail
             - How to enforce this?
-
+- Dealing with all the different phrasings of "What are the specials?"
+  - Scenarios:
+    - "Are there any specials?"
+    - "Could you describe the specials?"
+  - Issues
+    - When asking for a description, the asker wants the long winded version
+    - When asking "What did I order?" the user just wants the world "the soup special"
+    - Even when ordering, the user could say "is anything vegetarian?" and the answer should probably be "the soup special" but a flowery description is ok
+  - Design
+    - Option 1:
+      - If the user explicitly asks for a description, give them the flowery one
+        - If the frame is "ordering"
+    - Option 2:
+      - If the answer to anything is one of the specials concepts, and we haven't described them, we should describe them all (or ask if we want to hear)
+      - Really this should be true of the menu as well
 
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()

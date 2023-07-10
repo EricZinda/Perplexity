@@ -10,9 +10,9 @@
             "ID": "1e80048b-0f0f-4d3b-9bd3-88468e8fe34c"
         },
         {
-            "Command": "I'd like a steak'",
-            "Expected": "Excellent Choice! Can I get you anything else?",
-            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Command": "I want the menu",
+            "Expected": "I'm sorry, we're all out of menus. \nWaiter: Can I get you something to eat?",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_menu_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "7468553a-0e89-44bf-950a-12ab5d805f84"
         }

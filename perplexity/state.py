@@ -35,6 +35,9 @@ class State(object):
     def frames(self):
         yield self
 
+    def world_state_frame(self):
+        return self
+
     # A standard "class method" is just a function definition,
     # indented properly, with "self" as the first argument
 

@@ -118,15 +118,6 @@ def pron(state, x_who_binding):
 
     yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 
-def is_user_type(val):
-    if not isinstance(val,tuple):
-        return val in ["user","son1"]
-
-    else:
-        for i in val:
-            if val not in ["user","son1"]:
-                return False
-        return True
 
 @Predication(vocabulary, names=["generic_entity"])
 def generic_entity(state, x_binding):
@@ -439,7 +430,7 @@ def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_
             first_x_what_binding.value = [first_x_what_binding.value[0].update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})]
             x_what_variable_group.solution_values.clear()
             x_what_variable_group.solution_values.append(first_x_what_binding)
-            current_state = do_task(current_state, [('satisfy_want', x_actor_variable_group, x_what_variable_group)])
+            current_state = do_task(current_state.world_state_frame(), [('satisfy_want', x_actor_variable_group, x_what_variable_group)])
             if current_state is None:
                 yield []
             else:
@@ -862,14 +853,14 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
 @Predication(vocabulary, names=["solution_group__be_v_id"])
 def _be_v_id_group(state_list, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
-    obj1_instance = x_obj1_variable_group.solution_values[0].value
-    if len(obj1_instance) == 1 and is_concept(obj1_instance[0]) and obj1_instance[0].concept_name == "special":
-        if is_concept(x_obj2_variable_group.solution_values[0].value[0]):
-            # "What are the specials"
-            current_state = copy.deepcopy(state_list[0])
-            current_state.operations.clear()
-            current_state.record_operations([RespondOperation("The specials are: ")])
-            yield [current_state]
+    # obj1_instance = x_obj1_variable_group.solution_values[0].value
+    # if len(obj1_instance) == 1 and is_concept(obj1_instance[0]) and obj1_instance[0].concept_name == "special":
+    #     if is_concept(x_obj2_variable_group.solution_values[0].value[0]):
+    #         # "What are the specials"
+    #         current_state = copy.deepcopy(state_list[0])
+    #         current_state.operations.clear()
+    #         current_state.record_operations([RespondOperation("The specials are: ")])
+    #         yield [current_state]
 
     yield state_list
 
@@ -974,16 +965,6 @@ def reset():
                                 "responseState": "initial"
                                 })
 
-    # These concepts are "in scope" meaning it is OK to say "the X"
-    initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("salmon", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("chicken", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("soup", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("special", "conceptInScope", "true")
-
     initial_state = initial_state.add_rel("table", "specializes", "thing")
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
     initial_state = initial_state.add_rel("food", "specializes", "thing")
@@ -999,6 +980,28 @@ def reset():
     initial_state = initial_state.add_rel("salmon", "specializes", "meat")
     initial_state = initial_state.add_rel("bacon", "specializes", "meat")
 
+    initial_state = initial_state.add_rel("soup", "specializes", "special")
+    initial_state = initial_state.add_rel("salad", "specializes", "special")
+    initial_state = initial_state.add_rel("soup", "specializes", "veggie")
+    initial_state = initial_state.add_rel("salad", "specializes", "veggie")
+
+    initial_state = initial_state.add_rel("bill", "specializes", "thing")
+    initial_state = initial_state.add_rel("check", "specializes", "thing")
+
+    # These concepts are "in scope" meaning it is OK to say "the X"
+    initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("salmon", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("chicken", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("soup", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("special", "conceptInScope", "true")
+
+    # Instances below here
+    # Location and "in scope" are modeled as who "has" a thing
+    # If user or son has it, it is "in scope"
+    # otherwise it is not
     initial_state = initial_state.add_rel("table1", "instanceOf", "table")
     initial_state = initial_state.add_rel("table1", "maxCap", 4)
     initial_state = initial_state.add_rel("table2", "instanceOf", "table")
@@ -1010,12 +1013,6 @@ def reset():
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
 
-    initial_state = initial_state.add_rel("soup", "specializes", "special")
-    initial_state = initial_state.add_rel("salad", "specializes", "special")
-    initial_state = initial_state.add_rel("soup", "specializes", "veggie")
-    initial_state = initial_state.add_rel("salad", "specializes", "veggie")
-
-
     dish_types = ["soup", "salad", "bacon", "salmon", "steak", "chicken"]
     for j in dish_types:
         for i in range(3):
@@ -1026,7 +1023,7 @@ def reset():
             if j == "salmon":
                 initial_state = initial_state.add_rel(j+str(i), "isAdj", "grilled")
 
-    initial_state = initial_state.add_rel("user", "have", "bill1")
+    initial_state = initial_state.add_rel("computer", "have", "bill1")
 
     initial_state = initial_state.add_rel("steak1", "on", "menu1")
     initial_state = initial_state.add_rel("broiledsteak1", "on", "menu1")
@@ -1034,8 +1031,6 @@ def reset():
     initial_state = initial_state.add_rel("salmon1", "on", "menu1")
     initial_state = initial_state.add_rel("bacon1", "on", "menu1")
 
-    initial_state = initial_state.add_rel("bill", "specializes", "thing")
-    initial_state = initial_state.add_rel("check", "specializes", "thing")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")
