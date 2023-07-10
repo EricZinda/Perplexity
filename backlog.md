@@ -1,4 +1,39 @@
 - Get the specials working
+  - We have a solution group that has a mix of conceptual and instances, this seems wrong
+    - It is because there is no constraint on the other variable so it never gets checked
+  - (fixed) be_v should return concepts that are the concept as well as instances
+  - Group predicate should only return concepts for that particular query, much like want_v does
+  - This is the same as "what are the menus?" or "what are the steaks?"
+  - Could mean the concept of steak or the instances of steaks on the table
+    - Predications should decide which we are talking about based on context
+      - If there are steaks on the table it could mean either
+      - If no steaks on the table but at the table probably means concepts
+      - The state that is available is different depending on (something) which happens to be location here
+      - This is different than scope, because various concepts and objects might be out of scope here too
+      - Seems like the world state should be one thing, and a "frame" is created from the world state
+    - The base theory is to answer with the most relevant answer
+      - Even if there aren't steaks on the table, the user could ask: 
+        "Are there steaks in the kitchen?" or "Are there steaks left?" which should get "yes"
+      - Is this really just a question of scope?
+        - No, it is different: it prioritizes what we're talking about. First try this, if it works, done. otherwise try this.
+        - Scope says "if the user says 'this' and nothing is in scope, fail"
+    - So, if the user is at the table, the conceptual answers are returned but the others are still available
+      - Try to get an answer in the current frame, but if it doesn't work, use the global frame
+      - Means running the solver over several state alternatives
+      - Which state alternatives to try first also depends on the state of the world
+        - Once there is food on the table, they are more likely to be talking about food instances "the steak is cold"
+        - Could it be as simple as prioritizing the data we search?
+          - start with in scope instances
+          - then do in scope concepts
+          - then out of scope, etc
+          - Seems complicated
+        - Alternative 2: Create a list of frames, from most specific to least
+          - Run the query against each
+          - The world state has a method to iterate through frames
+            - It runs custom code for the scenario
+            - In the restaurant it first returns state filtered for the specific place the user is
+              - Then it returns the global state
+              - Everything "in scope" is always in the frame
 - Get the bill working
 - Get rid of old code that has been implemented differently
 - Fix ontology.  Right now there are instances on the menu, for example

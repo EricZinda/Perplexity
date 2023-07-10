@@ -47,6 +47,8 @@
       - "what is on today's menu?"
       - "How hard is the job?"
       - "we want menus"
+      - "what are the specials?"
+        - in be_v_id, how to tell the difference between that and "which food on this table is a special?", which requires instances
     - Analysis
       - There needs to be a way to tell the a difference between the canonical instance of menu for this restaurant "What is on the menu?"
         and one that is generic "what is on a menu?"

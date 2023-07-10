@@ -850,7 +850,8 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if is_concept(x_object):
             for i in all_instances(state, x_object.concept_name):
                 yield i
-            yield x_object.concept_name
+            for i in specializations(state, x_object.concept_name):
+                yield Concept(i)
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound, unbound):
         x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
@@ -866,6 +867,21 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
                         yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
         else:
             yield success_state
+
+
+
+@Predication(vocabulary, names=["solution_group__be_v_id"])
+def _be_v_id_group(state_list, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
+    obj1_instance = x_obj1_variable_group.solution_values[0].value
+    if len(obj1_instance) == 1 and is_concept(obj1_instance[0]) and obj1_instance[0].concept_name == "special":
+        if is_concept(x_obj2_variable_group.solution_values[0].value[0]):
+            # "What are the specials"
+            current_state = copy.deepcopy(state_list[0])
+            current_state.operations.clear()
+            current_state.record_operations([RespondOperation("The specials are: ")])
+            yield [current_state]
+
+    yield state_list
 
 
 @Predication(vocabulary, names=["_cost_v_1"])
@@ -976,6 +992,7 @@ def reset():
     initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
     initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
     initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("special", "conceptInScope", "true")
 
     initial_state = initial_state.add_rel("table", "specializes", "thing")
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
