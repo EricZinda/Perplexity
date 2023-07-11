@@ -11,7 +11,7 @@ from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, \
-    find_predication, MrsParser, tree_contains_predication
+    find_predication, MrsParser, tree_contains_predication, find_predications_in_list_in_list
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
     parse_predication_name
@@ -168,16 +168,15 @@ class UserInterface(object):
 
                         # Try the state from each frame that is available
                         for frame_state in self.state.frames():
-                            pipeline_logger.debug(
-                                f"Evaluating against frame '{frame_state.frame_name}'")
+                            pipeline_logger.debug( f"Evaluating against frame '{frame_state.frame_name}'")
                             with self.execution_context:
                                 solutions = self.execution_context.solve_mrs_tree(frame_state, tree_info)
                                 this_sentence_force = sentence_force(tree_info["Variables"])
                                 wh_phrase_variable = None
                                 if this_sentence_force == "ques":
-                                    predication = find_predication(tree_info["Tree"], "_which_q")
-                                    if predication is not None:
-                                        wh_phrase_variable = predication.args[0]
+                                    predication = find_predications_in_list_in_list([tree_info["Tree"]], ["_which_q", "which_q"])
+                                    if predication is not None and len(predication) > 0:
+                                        wh_phrase_variable = predication[0].args[0]
 
                                 unprocessed_groups = [] if self.show_all_answers else None
                                 def yield_from_first():

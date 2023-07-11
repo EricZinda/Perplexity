@@ -202,6 +202,13 @@ class AddRelOp(object):
     def apply_to(self, state):
         state.mutate_add_rel(self.toAdd[0], self.toAdd[1], self.toAdd[2])
 
+class DeleteRelOp(object):
+    def __init__(self, rel):
+        self.toDelete = rel
+
+    def apply_to(self, state):
+        state.mutate_delete_rel(self.toDelete[0], self.toDelete[1], self.toDelete[2])
+
 
 class AddBillOp(object):
     def __init__(self, item):
@@ -260,6 +267,15 @@ class WorldState(State):
     # *********** Used for HTN
 
     # ******* Base Operations ********
+    def mutate_delete_rel(self, first, relation_name, second, frame=None):
+        new_relation = copy.deepcopy(self._rel)
+        if relation_name in new_relation:
+            for item in new_relation[relation_name]:
+                if item[0] == first and item[1] == second:
+                    new_relation[relation_name].remove(item)
+                    break
+        self._rel = new_relation
+
     def add_rel(self, first, relation_name, second, frame=None):
         new_relation = copy.deepcopy(self._rel)
         if relation_name not in new_relation:

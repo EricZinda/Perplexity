@@ -1,6 +1,7 @@
 from esl import gtpyhop
+from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
-    rel_subjects, is_instance, instance_of_what, AddBillOp
+    rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -320,6 +321,9 @@ def respond(state, message):
 def add_rel(state, subject, rel, object):
     return state.record_operations([AddRelOp((subject, rel, object))])
 
+def delete_rel(state, subject, rel, object):
+    return state.record_operations([DeleteRelOp((subject, rel, object))])
+
 
 def set_response_state(state, value):
     return state.record_operations([ResponseStateOp(value)])
@@ -329,7 +333,9 @@ def add_bill(state, wanted):
     return state.record_operations([AddBillOp(wanted)])
 
 
-gtpyhop.declare_actions(respond, add_rel, set_response_state, add_bill)
+gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bill)
+
+add_declarations(gtpyhop)
 
 # If it is "a table for 2" get both at the same table
 # If it is I would like a table, ask how many

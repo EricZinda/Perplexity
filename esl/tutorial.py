@@ -337,25 +337,20 @@ def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
 @Predication(vocabulary, names=("_on_p_loc",))
 def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def check_item_on_item(item1, item2):
-        if "on" in state.rel.keys():
-            if (item1, item2) in state.all_rel("on"):
-                return True
-            else:
-                report_error(["notOn", item1, item2])
+        if (item1, item2) in state.all_rel("on"):
+            return True
         else:
             report_error(["notOn", item1, item2])
 
     def all_item1_on_item2(item2):
-        if "on" in state.rel.keys():
-            for i in state.all_rel("on"):
-                if i[1] == item2:
-                    yield i[0]
+        for i in state.all_rel("on"):
+            if i[1] == item2:
+                yield i[0]
 
     def all_item2_containing_item1(item1):
-        if "on" in state.rel.keys():
-            for i in state.all_rel("on"):
-                if i[0] == item1:
-                    yield i[1]
+        for i in state.all_rel("on"):
+            if i[0] == item1:
+                yield i[1]
 
     yield from in_style_predication_2(state,
                                       x_actor_binding,
@@ -924,21 +919,31 @@ def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
                                                       state.get_binding(x_second_binding.variable.name).value[0],))
 
 
+# Any successful solution group that is a wh_question will call this
+@Predication(vocabulary, names=["solution_group_wh"])
+def wh_question(state_list, binding_list):
+    current_state = do_task(state_list[0].world_state_frame(), [('describe', [x.value for x in binding_list])])
+    if current_state is not None:
+        yield (current_state, )
+    else:
+        yield state_list
+
+
 # Generates all the responses that predications can
 # return when an error occurs
 def generate_custom_message(tree_info, error_term):
-    # See if the system can handle converting the error
-    # to a message first
-    system_message = perplexity.messages.generate_message(tree_info, error_term)
-    if system_message is not None:
-        return system_message
-
     # error_term is of the form: [index, error] where "error" is another
     # list like: ["name", arg1, arg2, ...]. The first item is the error
     # constant (i.e. its name). What the args mean depends on the error
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+
+    # See if the system can handle converting the error
+    # to a message first
+    system_message = perplexity.messages.generate_message(tree_info, error_term)
+    if system_message is not None:
+        return system_message
 
     if error_constant == "notAThing":
         arg1 = error_arguments[1]
@@ -962,7 +967,7 @@ def reset():
     # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
                                 {"prices": {"salad": 3, "steak": 10, "broiled steak": 8, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
-                                "responseState": "initial"
+                                 "responseState": "initial"
                                 })
 
     initial_state = initial_state.add_rel("table", "specializes", "thing")
@@ -1041,6 +1046,7 @@ def reset():
 
     initial_state = initial_state.add_rel("son1", "instanceOf", "son")
     initial_state = initial_state.add_rel("user", "have", "son1")
+    initial_state = initial_state.add_rel("user", "heardSpecials", "false")
 
 
     return initial_state

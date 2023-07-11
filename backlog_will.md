@@ -10,7 +10,7 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
-      -
+      
 - abstract-types
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same
@@ -120,21 +120,58 @@
             for scenarios like "we don't allow specific tables"
           - Something that processes a concept needs to understand all of it or fail
             - How to enforce this?
+            
 - Dealing with all the different phrasings of "What are the specials?"
   - Scenarios:
     - "Are there any specials?"
     - "Could you describe the specials?"
+    - "Do you have specials?"
+    - "Could you tell me the specials?"
+    - "Are there vegetarian dishes?" (before they have heard about the specials)
   - Issues
     - When asking for a description, the asker wants the long winded version
     - When asking "What did I order?" the user just wants the world "the soup special"
     - Even when ordering, the user could say "is anything vegetarian?" and the answer should probably be "the soup special" but a flowery description is ok
   - Design
-    - Option 1:
-      - If the user explicitly asks for a description, give them the flowery one
-        - If the frame is "ordering"
-    - Option 2:
-      - If the answer to anything is one of the specials concepts, and we haven't described them, we should describe them all (or ask if we want to hear)
-      - Really this should be true of the menu as well
+    - If the answer to anything is one of the specials concepts, and we haven't described them, we should first list the short them, then
+      describe them all (or ask if we want to hear)
+    - Really this should be true of the menu as well
+
+- Using Frames determine whether have we respond with instances or concepts
+  - Scenarios:
+    - "what are the menus?"
+    - "what are the steaks?"
+  - Could mean the concept of steak or the instances of steaks on the table
+    - Predications should decide which we are talking about based on context
+      - If there are steaks on the table it could mean either
+      - If no steaks on the table but at the table probably means concepts
+      - The state that is available is different depending on (something) which happens to be location here
+      - This is different than scope, because various concepts and objects might be out of scope here too
+      - Seems like the world state should be one thing, and a "frame" is created from the world state
+    - The base theory is to answer with the most relevant answer
+      - Even if there aren't steaks on the table, the user could ask: 
+        "Are there steaks in the kitchen?" or "Are there steaks left?" which should get "yes"
+      - Is this really just a question of scope?
+        - No, it is different: it prioritizes what we're talking about. First try this, if it works, done. otherwise try this.
+        - Scope says "if the user says 'this' and nothing is in scope, fail"
+    - So, if the user is at the table, the conceptual answers are returned but the others are still available
+      - Try to get an answer in the current frame, but if it doesn't work, use the global frame
+      - Means running the solver over several state alternatives
+      - Which state alternatives to try first also depends on the state of the world
+        - Once there is food on the table, they are more likely to be talking about food instances "the steak is cold"
+        - Approach: Create a list of frames, from most specific to least
+          - Run the query against each
+          - The world state has a method to iterate through frames
+            - It runs custom code for the scenario
+            - In the restaurant it first returns state filtered for the specific place the user is
+              - Then it returns the global state
+          - Design
+            - Everything "in scope" is always in the frame
+            - All abstract concepts are always in the frame
+            - Really we are just trying to get things that are "in scope" to be the first answer
+            - Problem: We want to run the query against the frame, but allow the engine to manipulate the world state
+              - Need to include a way to get at the whole state
+              - Add a method that allows access to the whole state
 
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()

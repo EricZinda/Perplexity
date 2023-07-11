@@ -18,8 +18,8 @@
         },
         {
             "Command": "What are the specials?",
-            "Expected": "(fail)",
-            "Tree": "_the_q(x11,_salmon_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Expected": "The specials are <description>",
+            "Tree": "which_q(x5,thing(x5),_the_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e9ec6d48-008b-4c51-82e2-3f8d8b844b2c"
         },
