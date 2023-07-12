@@ -1,7 +1,7 @@
 import enum
 import logging
-
-from perplexity.execution import report_error
+from math import inf
+import perplexity.predications
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
 from perplexity.tree import find_quantifier_from_variable
 from perplexity.utilities import plural_from_tree_info, parse_predication_name, is_plural
@@ -222,7 +222,7 @@ class StatsGroup(object):
         new_group = StatsGroup(self.variable_has_inf_max, self.group_state)
         previous_new_stat = None
         for stat in self.variable_stats:
-            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state)
+            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.is_concept)
             new_stat.prev_variable_stats = previous_new_stat
             if previous_new_stat is not None:
                 previous_new_stat.next_variable_stats = new_stat
@@ -238,7 +238,7 @@ class StatsGroup(object):
 
 
 class VariableStats(object):
-    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None):
+    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None, is_concept=False):
         self.variable_name = variable_name
         self.whole_group_unique_individuals = set() if whole_group_unique_individuals is None else whole_group_unique_individuals
         self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
@@ -249,6 +249,7 @@ class VariableStats(object):
         self.distributive_state = None if distributive_state is None else distributive_state
         self.collective_state = None if collective_state is None else collective_state
         self.cumulative_state = None if cumulative_state is None else cumulative_state
+        self.is_concept = is_concept
 
     def __repr__(self):
         soln_modes = self.solution_modes()
@@ -272,67 +273,136 @@ class VariableStats(object):
     # cumulative/collective/distributive across all variables
     def add_solution(self, execution_context, variable_criteria, solution):
         binding_value = solution.get_binding(self.variable_name).value
+
+        # Solutions that have a conceptual variable cannot have instances or vice versa
+        is_conceptual = len(binding_value) == 1 and hasattr(binding_value[0], "is_concept") and binding_value[0].is_concept()
+        if is_conceptual:
+            if not self.is_concept:
+                # Can't merge a conceptual variable value with non-conceptual
+                if len(self.whole_group_unique_individuals) > 0 :
+                    self.current_state = CriteriaResult.fail_one
+                    return False, self.current_state
+                else:
+                    self.is_concept = True
+
+            elif len(self.whole_group_unique_individuals) == 1 and \
+                     binding_value[0] in self.whole_group_unique_individuals:
+                # This was a conceptual group with one member, and this row is the same
+                self.is_concept = True
+
+            else:
+                # Was conceptual, but this solution isn't the same
+                self.current_state = CriteriaResult.fail_one
+                return False, self.current_state
+
+        elif self.is_concept:
+            self.current_state = CriteriaResult.fail_one
+            return False, self.current_state
+
+        # See if this binding_value has any *individuals* we haven't seen yet and track them
         if any([x not in self.whole_group_unique_individuals for x in binding_value]):
             new_individuals = True
             self.whole_group_unique_individuals.update(binding_value)
-
         else:
             new_individuals = False
 
         next_value = None if self.next_variable_stats is None else solution.get_binding(self.next_variable_stats.variable_name).value
 
-        # Update the unique set values mapping that is used for distributive readings
+        # Update the unique *set values* mapping that is used for distributive readings
         # Add the *individuals* of the next variable value to the *set value* of this variable
+        # This is done by maintaining self.whole_group_unique_values which is a dict that contains
+        # each set value as a key, with a value that is a list of the values the next variable has
+        # This data will be used *by the next variable* not by this one. It is just maintained by this one
         if binding_value not in self.whole_group_unique_values:
             self.whole_group_unique_values[binding_value] = [set(next_value if next_value is not None else []), [solution]]
-
         else:
             self.whole_group_unique_values[binding_value][0].update(next_value if next_value is not None else [])
             self.whole_group_unique_values[binding_value][1].append(solution)
 
-        if self.prev_variable_stats is None:
-            prev_unique_value_count = None
+        # Now we actually compare this variable to the previous value to see what kind of plural type this might be
+        if is_conceptual:
+            # If this variable is conceptual, we assume it is true and allow the group handler to finalize the decision
+            self.current_state = CriteriaResult.meets
+            return new_individuals, self.current_state
 
         else:
-            prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
+            # This variable is not conceptual
+            if self.prev_variable_stats is None:
+                prev_unique_value_count = None
+            else:
+                prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
 
-        only_collective = prev_unique_value_count is None or prev_unique_value_count == 1
-        if not only_collective:
-            # Collective fails from here on out because prev_unique_value_count > 1
-            self.collective_state = CriteriaResult.fail_one
+            if prev_unique_value_count is not None and self.prev_variable_stats.is_concept:
+                # Not used for conceptual since all 3 modes might work
+                only_collective = None
 
-            # Cumulative
-            if self.cumulative_state != CriteriaResult.fail_one:
+                # The *previous* variable is conceptual, so we will pretend it meets the criteria for anything. Thus:
+                # If this variables values meets the criteria, it is collective or cuml
                 self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+                self.collective_state = self.cumulative_state
 
-            # Distributive
-            # for each prev_unique_value: len(unique_values) meets criteria
-            if self.distributive_state != CriteriaResult.fail_one:
-                self.distributive_state = CriteriaResult.meets
-                for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
-                    distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0])
-                    self.distributive_state = criteria_transitions[self.distributive_state][distributive_value_state]
-                    if self.distributive_state == CriteriaResult.fail_one:
-                        break
+                # If this variable's values could be divided such that it meets the criteria, evenly with no remainder, it is dist
+                # The groups it is divided into must be between self.min_size and self.max_size
+                # So, if we divide by self.min_size, we have a count and a remainder.
+                # If the count is > 0 and the remainder is <= than:
+                # (the distance between min and max) * number of groups, it works
+                # then this is a valid distributive group
+                individual_count = len(self.whole_group_unique_individuals)
+                group_count = int(individual_count / variable_criteria.min_size)
+                if group_count > 0:
+                    if variable_criteria.max_size == float(inf):
+                        self.distributive_state = CriteriaResult.meets
+                    else:
+                        _, remainder = divmod(individual_count, variable_criteria.min_size)
+                        min_max_delta = variable_criteria.max_size - variable_criteria.min_size
+                        if remainder <= min_max_delta * group_count:
+                            # The remainder can be divided into the groups and keep them all under the max
+                            self.distributive_state = CriteriaResult.meets
+                        else:
+                            # too much remainder, if we add more solutions it'll divide evenly so: contender
+                            self.distributive_state = CriteriaResult.contender
 
-        else:
-            if self.collective_state != CriteriaResult.fail_one:
-                # Collective
-                self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+            else:
+                only_collective = prev_unique_value_count is None or prev_unique_value_count == 1
+                if not only_collective:
+                    # Collective fails from here on out because prev_unique_value_count > 1
+                    self.collective_state = CriteriaResult.fail_one
 
-        # Now figure out what to return
-        self.current_state = None
-        for test_state in [CriteriaResult.fail_all, CriteriaResult.meets_pending_global, CriteriaResult.meets, CriteriaResult.contender]:
-            if (only_collective and self.collective_state == test_state) or \
-                    (not only_collective and (self.distributive_state == test_state or \
-                    self.cumulative_state == test_state)):
-                self.current_state = test_state
-                break
+                    # Cumulative
+                    if self.cumulative_state != CriteriaResult.fail_one:
+                        self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
 
-        if self.current_state is None:
-            self.current_state = CriteriaResult.fail_one
+                    # Distributive
+                    # for each prev_unique_value: len(unique_values) meets criteria
+                    if self.distributive_state != CriteriaResult.fail_one:
+                        self.distributive_state = CriteriaResult.meets
+                        for prev_unique_value_item in self.prev_variable_stats.whole_group_unique_values.items():
+                            distributive_value_state = variable_criteria.meets_criteria(execution_context, prev_unique_value_item[1][0])
+                            self.distributive_state = criteria_transitions[self.distributive_state][distributive_value_state]
+                            if self.distributive_state == CriteriaResult.fail_one:
+                                break
 
-        return new_individuals, self.current_state
+                else:
+                    if self.collective_state != CriteriaResult.fail_one:
+                        # Collective
+                        self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
+
+            # Now figure out what to return
+            self.current_state = None
+            # If the previous variable is conceptual all 3 modes may be supported
+            # Go through the possible states in an order that
+            for test_state in [CriteriaResult.fail_all, CriteriaResult.meets_pending_global, CriteriaResult.meets, CriteriaResult.contender]:
+                if ((is_conceptual or only_collective) and self.collective_state == test_state) or \
+                        ((is_conceptual or not only_collective) and \
+                            (self.distributive_state == test_state or \
+                            self.cumulative_state == test_state)):
+                    self.current_state = test_state
+                    break
+
+            if self.current_state is None:
+                self.current_state = CriteriaResult.fail_one
+
+            return new_individuals, self.current_state
 
 
 # Distributive needs to create groups by unique variable value
@@ -449,10 +519,11 @@ class VariableCriteria(object):
         values_count = count_set(value_list)
 
         if self.global_criteria:
-            # "Only/Exactly", much like the quantifier "the" does more than just group solutions into groups
+            # "Only/Exactly", much like the quantifier "the", does more than just group solutions into groups
             # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
             # So we need to track unique values across all answers in this case
-            self._unique_rstrs.update(value_list)
+            # BUT: Only track instances (things that aren't concepts) because concepts are handled by the developer manually
+            self._unique_rstrs.update([item for item in value_list if not perplexity.predications.is_concept(item)])
 
         if self.global_criteria == GlobalCriteria.exactly:
             # We can fail immediately if we have too many

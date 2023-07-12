@@ -74,10 +74,40 @@ def a_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
+def in_scope(state, x_binding):
+    def bound_variable(value):
+        if execution_context().in_scope(state, value):
+            return True
+
+        else:
+            report_error(["valueIsNotValue", value, "this"])
+            return False
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+
+# We want the interpretations of the to be mutually exclusive to avoid duplication
+# since if there is only one "the" in the world, it can be duplicated if it is also in scope
+@Predication(vocabulary, library="system", names=["_the_q"])
+def the_selector_q(state, x_variable_binding, h_rstr, h_body):
+    solution_found = False
+    for solution in the_all_q(state, x_variable_binding, h_rstr, h_body):
+        solution_found = True
+        yield solution
+
+    if not solution_found:
+        yield from the_in_scope_q(state, x_variable_binding, h_rstr, h_body)
+
+
 # The interpretation of "the x" which means "all of the x" is the same as "all x"
 # The key part here is GlobalCriteria.all_rstr_meet_criteria which ensures that every value of the RSTR is true
 # for the body
-@Predication(vocabulary, library="system", names=["_the_q", "_all_q"])
+@Predication(vocabulary, library="system", names=["_all_q"])
 def the_all_q(state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
@@ -89,6 +119,21 @@ def the_all_q(state, x_variable_binding, h_rstr, h_body):
                                                                 global_criteria=GlobalCriteria.all_rstr_meet_criteria))
 
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+
+
+# Interpretation of "the" which means "the one in scope"
+@Predication(vocabulary, library="system", names=["_this_q_dem"])
+def the_in_scope_q(state, x_variable_binding, h_rstr, h_body):
+    # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
+    # whatever the determiner constraint gets set to will replace these
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=float('inf'),
+                                                                global_criteria=GlobalCriteria.all_rstr_meet_criteria))
+
+    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope)
 
 
 @Predication(vocabulary, library="system", names=["_every_q", "_each_q", "_each+and+every_q"])

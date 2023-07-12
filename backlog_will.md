@@ -1,4 +1,7 @@
 - ESL Architecture
+  - handle_world_event() is the one place where all interpretations go
+  - Most states of the world like "see" and "have" are modelled using those words as relations
+  - RequestVerbTransitive/Intransitive convert various request verb forms into requests
   - Command/Response
     - Scenario: I'd like 2 steaks (at the front door) -> works and it shouldn't
       - Individual solutions succeed with RespondOperations instead of failures
@@ -10,6 +13,10 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
+- Priniciples
+  - Make everything as general as possible:
+    - Interpret anything like "what do have [on the menu]" as meaning "show me the menu" if we are about to return everything on the menu/on the specials list
+- Change phrases like "I would like" to "I want" using Transforms
 - abstract-types
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same
@@ -19,110 +26,204 @@
       - Pass the first state in the group and list arguments for the different states
     - Sometimes it is necessary to examine the whole solution group to decide what to do
       - The planner should always get passed a StateGroup
-  - Abstract statements: I want a menu
-    - How to tell the difference between "any menu" and "the specific menu that is in the variable"
-      - I.e. by the time you get to "want", how do you tell the difference between: 
-        - "I want a menu" and "I want the menu my son has"? - 
-          - Both have a specific menu in the variable
-        - What about "I want the menu"
-          - In theory this could work with a bogus abstract item
-          - Could be the same as "a taxi" as in "can I get a taxi?"
-          - Maybe it is the first one to be returned from nouns?
-          - Everything that operates on the abstract item builds up information about it that describes the item
-        - What about "I want the menu I have heard so much about?"
-    - Ditto with "I want two menus/two steaks"
-      - In theory this could also have "2" be bogus and count bogus items
-    - It seems like nouns should always return their types in addition to instances
-      - It means that predications need to always check for instances or not
-    - What about "menus from the kitchen are lost"
-    - Approach:
-      - We could use the approach will did and build up an abstract individual with a particular structure
-        - If a predication sees that it just adds its information to it?
-      - But then how does "I want a menu" decide which to use
-    - Approach 2:
-      - Nothing special happens, we just fail each one that is in use until we find one that isn't
-        - Option 2: There is a canonical menu, or a canonical noun
-          - "the menu I have heard so much about" resolves to that canonical thing
-          - What about "menus from the kitchen are always dirty"
-            - Definitely talking about abstract types in some way
-            - And facts about that abstract type
-            - Really this isn't something that we would have a fact about
-              - It is something we would try to prove or check
-          - "Can I have the menu" resolves to that canonical thing
-            - Ditto with "I want two menus/two steaks"
-            - In theory this could also have "2" be bogus and count bogus items
-          - "Can I have a menu" ditto
-            - this example is one that would just work naturally but iterate through all the menus
-            - But, how does the verb decide if the person asked for "my son's menu" or "a menu" since they will both return menu1?
-              - The menu could also belong to another customer
-              - This seems like the problematic one
-              - It seems like "a" might also be best to return an abstract type that then gets resolved to a specific type
-                - Then quantifiers like "this" or "the" or "my son's menu" would return instances
-          - "I want 2 menus that I have heard so much about"
-            - Could it be that the abstract type is something that can be resolved by the verb?
-            - this example is one that would just work naturally but iterate through all the menus
-          - Is it different than a type?
-            - If there is a menu type and a thisRestaurantMenu type
-          - What about "Do you have the blue menu?"
-            - Does the canonical type have properties that describe it?
-            - Or does it just come through and collect properties and someone needs to resolve it eventually?
-            - 
-    - Approach 1:
-      - Certain quantifiers push through "canonical instances"
-        - These instances can have facts about them too.  "I've heard about your menu" -> fact
-        - Predications that see a canonical instance can attempt to resolve it as a regular instance to see if we 
-          have a specific canonical instance with facts about it
-        - Assume these canonical instances are types
-          - Does the quantifier return all types and all derived types too?
-          - Yes
-        - Scenarios
-          - Can I have the menu?
-            - the_q generates abstract type with constraint
-            - if verb handles the abstract type it is responsible for checking the constraint too
-        - How do criteria work?
-          - I want 2 menus
-            - menus gets resolved to abstract instance in phase 1
-            - Information about criteria is passed to verb? and the verb has to resolve it?
-              - The constraint will be retrievable from the binding
-          - "I'd like 2 menus for each person" 
-            - "I'd like" indicates something the user wants to be true
-            - Really this should be translated to: give 2 menus to each person
-              - which resolves to give_to with an abstract 2 menus
-        - Design:
-          - Types flow through the system as well as instances and everything needs to be careful about what is what
-          - Plurals:
-            - Option 1:
-              - for this variable just assume they are true, the verb is responsible for failing if they aren't
-              - Record something in the solution group that says which mode it is in , then the verb decides if it works
-                - A particular variable:
-                  - Needs to meet the numeric criteria 
-                    - Distributive/collective: N individuals per previous variable set value
-                    - Cumulative: N individuals total
-              - Problem is that plurals won't know how many of this variable set values there are for the next variable
-                - Actually: we know of a *range* of values since we have the criteria, and the variable 
-                  must meet that criteria
-                - So we need to build solution groups that assume all possible criteria are met
-                  - 3 girls have the 2 menus
-                  - The trick is it needs to expand to the actual list to get the solution group alternatives
-                    - They will only return a single abstract item
-                    - We can convert it to the powerset of abstract items up front
-                    - OR just duplicate it once for each of cuml/dist/coll so we only have 3 and leave it 
-                    - OR just leave it and make the final verb break it up?
-                    - OR
-                      - In phase 1 have_v will get each combination of girls and an abstract menu
-                        - If it thinks it is true it should give each a menu
-                        - But at the end there will be a bunch of girls that all have the same menu
-                        - Maybe the group predication sorts it out?
-                        - Don't I have this problem now with "Give me 2 steaks"?
-                        - The answer might be that the operation is in charge of giving a *new* menu
-                          - and when the operations run the choose different ones
-              - Option 2:
-                - the verb is somehow involved in phase 2?
-                  - Imagine that the verb gets passed the raw list of solutions
-    - Approach 2: It *seems* like this could be built automatically, just like I'm doing for generation
-      - It would include the quantifier that quantifies the variable introduced by the noun
-      - The problem is that in the case about, we really want "the menu I have heard so much about" to be resolved to an abstract thing
+  - Statements about canonical things
+    - Problems
+      - By the time the verb is executed: How to tell the difference between "any menu" and "the specific menu that is in the variable"
+        - Between: "I want the menu", "I want a menu" and "I want the menu my son has"?
+        - Both have a specific menu in the variable
+    - Scenarios
+      - "I want a taxi", can't say "I want *the* taxi"
+      - "I want the menu I have heard so much about"
+      - "I want two menus/two steaks"
+      - "Do you have 2 menus?"
+      - "menus from the kitchen are always dirty"
+      - "Do you have the blue menu": could be a class of menu or one that just has unusual blue ink on it
+      - "I have heard about your menu"
+      - "Can I get one of your steaks?"
+      - "Can I have the steak?" but not "Can I have the table?"
+      - "What is the menu?" but not "what is the table"
+      - "What is a menu?" "What is a table?"
+      - "Give me a job"
+      - "Give me the job"
+      - "I'd like a table by the window"
+      - "Are there 2 menus here?"
+      - "Are 2 children singing 2 songs?"
+      - "what is on the menu?"
+      - "what is on a menu?"
+      - "what is on today's menu?"
+      - "How hard is the job?"
+      - "we want menus"
+      - "what are the specials?"
+        - in be_v_id, how to tell the difference between that and "which food on this table is a special?", which requires instances
+    - Analysis
+      - There needs to be a way to tell the a difference between the canonical instance of menu for this restaurant "What is on the menu?"
+        and one that is generic "what is on a menu?"
+        - This is done by putting concepts "in scope".  An in scope menu concept should support "the menu"
+      - There needs to be a way to tell the difference between the user indicating a specific instance "Give me the menu my son is holding" and
+        a generic instance "give me a menu"
+      - For generic instances there might be a lot of extra data with them: 
+        "I want the menu I have heard so much about"
+        "I want 2 menus"
+      - Sometimes extra data can be used to select a type: 
+        - "tell me about today's menu" should select the type that is for "today"
+        - "what is on your prix fixe menu?"
+      - Sometimes the extra data needs to be carried along:
+        - "give me 2 menus, please!"
+          - 2 should not filter the menus but should be part of the data
+      - Quantifiers shouldn't filter out abstract items. Even though "I want the taxi" seems like it could only be an instance
+        in a restaurant where "the taxi" is a burger choice it could be abstract
+    - Design
+      - The developer is going to get all the variations of solutions, they need to decide which is right
+      - nouns should always return types and instances
+      - just like instances, types can be:
+        - in or out of scope
+        - Filtered by other words in the phrase
+      - types can collect data as they are modified as in "give me today's menu"
+        - If that solution is used by the filtered data isn't, it should fail? Like if a word isn't understood?
+      - How does a predication like today() decide whether to add data or filter
+        - Probably this should be two solutions?
+        - And downstream predicates decide how to deal with it?
+      - Phase 2 will deliver solutions where there is only the abstract instance in a variable and pass along the criteria
+        The developer needs to build up the right solution group by checking the context of the phrase and deciding whether to use the abstract version
+        or fail the group with the abstract version and wait for the instances solution group
+        - If they decide to use the abstract version, they need to be careful to properly check criteria so that
+    - Questions
+      - Are canonical instances and types different?
+        - Let's say no, since there doesn't seem to be anything to distinguish them
+      - Is scoping built into the system or on top?
+     - Implementation
+        - (done) Implement a generic way to see if something is an abstract type
+          - hasattr("is_abstract")
+        - (done) Abstract types should not get mixed in with other types *in the same variable*
+          - This should fail in add_solution()
+        - (done) meets_criteria() should just return "true" if the variable is an abstract type
+        - (done) add_solution() currently checks *either* collective *or* cuml/dist
+          - It should have a different set of checks if the previous variable is abstract:
+            - This variables values meets the criteria, it is collective or cuml
+            - This variables values could be divided such that it meets the criteria, evenly with no remainder, it is dist
+            - Also: if *this* variable is conceptual, it is going to match *all three* potential plural types
+        - (done) Update abstract variables to use new Concept() object
+        - (done) Have a way for predications like "for" to add information to Concept variables
+        - Need a way to get the constraints for a variable in the group hanlder.  Options:
+          - Force the developer to ask
+          - Pass as an argument
+        - The developer will have to ensure that abstract variables meet global constraints
+        - The developer will have to see which kind of solution group this is: a cuml/coll group or a dist group
+        - The developer will have divide up the group however makes sense
+        - It *might* be helpful to have the system indicate which type of group a variable is
+        - Implement table fully
+          - How to deal with 2 tables vs "the table" vs 3 tables?
+          - Seems like there should be a way to say "This is what we have, this is what was required"
+            what is the answer, if any?
+        - Implement menu fully
+        - Make pronouns implement abstract types?
+        - Issues:
+          - combinatoric logic also needs to not mix conceptual and instances
+            - TODO: Might be easier to just prevent conceptual in combinatoric
+          - Conceptual instances can come through in any order, if you want conceptual you 
+            might need to wait for it
+          - Need a way to return errors from the plan that get shown to the user
+            for scenarios like "we don't allow specific tables"
+          - Something that processes a concept needs to understand all of it or fail
+            - How to enforce this?
+            
+- Dealing with all the different phrasings of "What are the specials?"
+  - Scenarios:
+    - "Are there any specials?"
+    - "Could you describe the specials?"
+    - "Do you have specials?"
+    - "Could you tell me the specials?"
+    - "Are there vegetarian dishes?" (before they have heard about the specials)
+  - Issues
+    - When asking for a description, the asker wants the long winded version
+    - When asking "What did I order?" the user just wants the world "the soup special"
+    - Even when ordering, the user could say "is anything vegetarian?" and the answer should probably be "the soup special" but a flowery description is ok
+  - Design
+    - If the answer to anything is one of the specials concepts, and we haven't described them, we should first list the short them, then
+      describe them all (or ask if we want to hear)
+    - Really this should be true of the menu as well
 
+- Using Frames determine whether have we respond with instances or concepts
+  - Scenarios:
+    - "what are the menus?"
+    - "what are the steaks?"
+  - Could mean the concept of steak or the instances of steaks on the table
+    - Predications should decide which we are talking about based on context
+      - If there are steaks on the table it could mean either
+      - If no steaks on the table but at the table probably means concepts
+      - The state that is available is different depending on (something) which happens to be location here
+      - This is different than scope, because various concepts and objects might be out of scope here too
+      - Seems like the world state should be one thing, and a "frame" is created from the world state
+    - The base theory is to answer with the most relevant answer
+      - Even if there aren't steaks on the table, the user could ask: 
+        "Are there steaks in the kitchen?" or "Are there steaks left?" which should get "yes"
+      - Is this really just a question of scope?
+        - No, it is different: it prioritizes what we're talking about. First try this, if it works, done. otherwise try this.
+        - Scope says "if the user says 'this' and nothing is in scope, fail"
+    - So, if the user is at the table, the conceptual answers are returned but the others are still available
+      - Try to get an answer in the current frame, but if it doesn't work, use the global frame
+      - Means running the solver over several state alternatives
+      - Which state alternatives to try first also depends on the state of the world
+        - Once there is food on the table, they are more likely to be talking about food instances "the steak is cold"
+        - Approach: Create a list of frames, from most specific to least
+          - Run the query against each
+          - The world state has a method to iterate through frames
+            - It runs custom code for the scenario
+            - In the restaurant it first returns state filtered for the specific place the user is
+              - Then it returns the global state
+          - Design
+            - Everything "in scope" is always in the frame
+            - All abstract concepts are always in the frame
+            - Really we are just trying to get things that are "in scope" to be the first answer
+            - Problem: We want to run the query against the frame, but allow the engine to manipulate the world state
+              - Need to include a way to get at the whole state
+              - Add a method that allows access to the whole state
+
+- Make "how much is the soup" work
+  - the wh-variable is abstract_degree and thus isn't listed
+                                                                      ┌──── measure(e14,e15,x10)
+                                                                      │ ┌── generic_entity(x5)
+                  ┌────── abstr_deg(x10)                              │ │
+                  │                                       ┌────── and(0,1,2)
+    which_q(x10,RSTR,BODY)            ┌────── _soup_n_1(x3│               │
+                       │              │                   │               └ much-many_a(e15,x5)
+                       └─ _the_q(x3,RSTR,BODY)            │
+                                           └─ udef_q(x5,RSTR,BODY)
+                                                               └─ _be_v_id(e2,x3,x5)
+  - generic_entity(x5) is telling what measurement to use
+    - it is replaced by _dollar_n_1(x5,u16) if the question is "how many dollars is the soup?"
+  - measure(e14,e15,x10), much-many_a(e15,x5)
+    - measure tells much-many_a it is measuring something and putting its measure in x10
+  - much-many_a(e15,x5) is told to measure x5's "how muchness" and and put into x10
+  - be_v_id(x3=soup, x5=something you can measure)
+  - So 
+    - measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5), _be_v_id(e2,x3,x5) means: measure in generic units and put into x10
+      - measure() puts event information in much-many_a(e15, ...) saying what to measure *into*
+      - generic_entity(x5) puts the Concept("generic_entity") in x5
+      - much-many_a(e15,x5) replaces x5 with measurement with an unbound value
+      - be_v_id fills in the me
+    - measure(e14,e15,x10), _dollar_n_1(x5,u16), much-many_a(e15,x5), _be_v_id(e2,x3,x5) means: measure in dollars and put into x10
+      - dollar_n_1() puts the concept(dollar) in x5
+  - The problem is that x5 will already be filled by the time it gets to be_v_id
+      - In principle generic_entity is every possible measurement
+      - be_v_id
+  - Note that "the soup is 2" requires be_v_id to compare to a generic_entity
+    - Option 1:
+      - be_v_id needs to set x10 to a value based on what x5 is
+    - Option 2:
+      - treat x5 as a scopal arg? where e2 is modified by much-many_a
+    - Option 3:
+      - Treat x5 as holding a predication (much-many_a) that must be evaluated when seen
+    - Option 4:
+      - St x5 to be a measurement() object that has a type but not a value yet
+  - how big is the soup?
+                   ┌────── abstr_deg(x5)
+    which_q(x5,RSTR,BODY)            ┌────── _soup_n_1(x3)
+                        └─ _the_q(x3,RSTR,BODY)    ┌── measure(e9,e2,x5)
+                                            └─ and(0,1)
+                                                     └ _big_a_1(e2,x3)    
+    - big_a_1 is told to measure x3s "bigness" and put in x5
+    - 
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"

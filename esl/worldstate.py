@@ -1,18 +1,78 @@
 import copy
 import json
+import esl.esl_planner
+from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
 
 
+def noun_structure(value, part):
+    if isinstance(value, Concept):
+        # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
+        return value.modifiers().get(part, None)
+
+    else:
+        if part == "noun":
+            return value
+
+
+def in_scope_initialize(state):
+    # Only concepts that are explicity marked as "in scope"
+    # are in scope
+    in_scope_concepts = set()
+    for i in state.all_rel("conceptInScope"):
+        if i[1] == "true":
+            in_scope_concepts.add(Concept(i[0]))
+
+    # Any instances that the user or son "have" are in scope
+    in_scope_instances = set()
+    for i in state.all_rel("have"):
+        if is_user_type(i[0]):
+            in_scope_instances.add(i[1])
+
+    # Any place where the user are son are "at" is in scope
+    for i in state.all_rel("at"):
+        if is_user_type(i[0]):
+            in_scope_instances.add(i[1])
+
+    return {"InScopeConcepts": in_scope_concepts,
+            "InScopeInstances": in_scope_instances}
+
+
+def in_scope(initial_data, state, value):
+    if is_concept(value):
+        return value in initial_data["InScopeConcepts"]
+    else:
+        return value in initial_data["InScopeInstances"]
+
+
+def is_user_type(val):
+    if not isinstance(val,tuple):
+        return val in ["user","son1"]
+
+    else:
+        for i in val:
+            if val not in ["user","son1"]:
+                return False
+        return True
+
+
+def specializations(state, base_type):
+    for i in state.all_rel("specializes"):
+        if i[1] == base_type:
+            yield from specializations(state, i[0])
+            yield i[0]
+
+
 def sort_of(state, thing, possible_type):
     if thing == possible_type:
         return True
-    for i in state.rel["specializes"]:
+    for i in state.all_rel("specializes"):
         if i[1] == possible_type:
             if sort_of(state, thing, i[0]):
                 return True
-    for i in state.rel["instanceOf"]:
+    for i in state.all_rel("instanceOf"):
         if i[1] == possible_type:
             if sort_of(state, thing, i[0]):
                 return True
@@ -28,17 +88,14 @@ def all_instances(state, thing):
     proc_idx = 0
     inst = set()
 
-    # for i in state.rel["instanceOf"]:
-    #    if(i[0] == thing):
-    #        return thing
-
     while proc_idx < len(proc):
         to_process = proc[proc_idx]
-        for i in state.rel["specializes"]:
+        for i in state.all_rel("specializes"):
             if i[1] == to_process:
                 if i[0] not in proc:
                     proc += [i[0]]
-        for i in state.rel["instanceOf"]:
+
+        for i in state.all_rel("instanceOf"):
             if i[1] == to_process:
                 if i[0] not in inst:
                     yield i[0]
@@ -55,12 +112,13 @@ def all_instances_and_spec(state, thing):
 
     while proc_idx < len(proc):
         to_process = proc[proc_idx]
-        for i in state.rel["specializes"]:
+        for i in state.all_rel("specializes"):
             if i[1] == to_process:
                 if i[0] not in proc:
                     proc += [i[0]]
                     yield i[0]
-        for i in state.rel["instanceOf"]:
+
+        for i in state.all_rel("instanceOf"):
             if i[1] == to_process:
                 if i[0] not in inst:
                     yield i[0]
@@ -74,13 +132,13 @@ def all_ancestors(state, thing):
 
     while proc_idx < len(proc):
         to_process = proc[proc_idx]
-        for i in state.rel["instanceOf"]:
+        for i in state.all_rel("instanceOf"):
             if i[0] == to_process:
                 if i[1] not in proc:
                     yield i[1]
                     proc += [i[1]]
 
-        for i in state.rel["specializes"]:
+        for i in state.all_rel("specializes"):
             if i[0] == to_process:
                 if i[1] not in proc:
                     proc += [i[1]]
@@ -88,47 +146,83 @@ def all_ancestors(state, thing):
         proc_idx += 1
 
 
+def instance_of_or_type(state, thing):
+    if is_concept(thing):
+        return thing.concept_name
+    else:
+        return instance_of_what(state, thing)
+
 def instance_of_what(state, thing):
-    for i in state.rel["instanceOf"]:
+    for i in state.all_rel("instanceOf"):
         if i[0] == thing:
             return i[1]
 
-def location_of(state, who, where):
-    if "at" not in state.rel.keys():
-        return False
-    else:
-        return (who, where) in state.rel["at"]
+
+def is_instance(state, thing):
+    return instance_of_what(state, thing) is not None
+
+
+def location_of_type(state, who, where_type):
+    for location in rel_objects(state, who, "at"):
+        if sort_of(state, location, where_type):
+            return True
+
+    return False
+
+
+def count_of_instances_and_concepts(state, concepts_original):
+    concepts = copy.copy(concepts_original)
+    for concept in concepts:
+        concepts += [Concept(x) for x in specializations(state, concept.concept_name)]
+    concept_count = len(concepts)
+
+    instances = []
+    for concept in concepts:
+        instances += list(all_instances(state, concept.concept_name))
+    instance_count = len(instances)
+
+    scope_data = in_scope_initialize(state)
+    instance_in_scope_count = 0
+    for instance in instances:
+        if in_scope(scope_data, state, instance):
+            instance_in_scope_count += 1
+
+    concept_in_scope_count = 0
+    for concept in concepts:
+        if in_scope(scope_data, state, concept):
+            concept_in_scope_count += 1
+
+    return concept_count, concept_in_scope_count, instance_count, instance_in_scope_count
 
 
 def rel_check(state, subject, rel, object):
-    if rel not in state.rel.keys():
-        return False
-    else:
-        return (subject, object) in state.rel[rel]
+    return (subject, object) in state.all_rel(rel)
+
+
+def rel_subjects_objects(state, rel):
+    for item in state.all_rel(rel):
+        yield item
+
 
 def rel_objects(state, subject, rel):
-    if rel not in state.rel.keys():
-        return
-    else:
-        for item in state.rel[rel]:
-            if item[0] == subject:
-                yield item[1]
+    for item in state.all_rel(rel):
+        if item[0] == subject:
+            yield item[1]
+
 
 def rel_subjects(state, rel, object):
-    if rel not in state.rel.keys():
-        return
-    else:
-        for item in state.rel[rel]:
-            if item[1] == object:
-                yield item[0]
+    for item in state.all_rel(rel):
+        if item[1] == object:
+            yield item[0]
+
 
 def has_type(state, subject, type):
-    if "have" in state.rel.keys():
-        for item in state.rel["have"]:
-            if item[0] == subject and sort_of(state, item[1], type):
-                return True
+    for item in state.all_rel("have"):
+        if item[0] == subject and sort_of(state, item[1], type):
+            return True
 
     return False
+
 
 class AddRelOp(object):
     def __init__(self, rel):
@@ -137,16 +231,22 @@ class AddRelOp(object):
     def apply_to(self, state):
         state.mutate_add_rel(self.toAdd[0], self.toAdd[1], self.toAdd[2])
 
+class DeleteRelOp(object):
+    def __init__(self, rel):
+        self.toDelete = rel
+
+    def apply_to(self, state):
+        state.mutate_delete_rel(self.toDelete[0], self.toDelete[1], self.toDelete[2])
+
 
 class AddBillOp(object):
     def __init__(self, item):
         self.toAdd = item
 
     def apply_to(self, state):
-        food_type = instance_of_what(state,self.toAdd)
         prices = state.sys["prices"]
-        assert (food_type in prices)
-        state.mutate_add_bill(prices[food_type])
+        assert self.toAdd in prices
+        state.mutate_add_bill(prices[self.toAdd])
 
 
 class SetKnownPriceOp(object):
@@ -172,11 +272,13 @@ class ResponseStateOp(object):
 
 
 class WorldState(State):
-    def __init__(self, relations, system):
+    def __init__(self, relations, system, name=None, world_state_frame=None):
         super().__init__([])
-        self.__name__ = "state"
-        self.rel = relations
+        self.__name__ = name
+        self._rel = relations
         self.sys = system
+        self.frame_name = name
+        self._world_state_frame = world_state_frame
 
     #*********** Used for HTN
     def copy(self,new_name=None):
@@ -193,68 +295,120 @@ class WorldState(State):
         pass
     # *********** Used for HTN
 
+    # ******* Base Operations ********
+    def mutate_delete_rel(self, first, relation_name, second, frame=None):
+        new_relation = copy.deepcopy(self._rel)
+        if relation_name in new_relation:
+            for item in new_relation[relation_name]:
+                if item[0] == first and item[1] == second:
+                    new_relation[relation_name].remove(item)
+                    break
+        self._rel = new_relation
+
+    def add_rel(self, first, relation_name, second, frame=None):
+        new_relation = copy.deepcopy(self._rel)
+        if relation_name not in new_relation:
+            new_relation[relation_name] = [(first, second, frame)]
+        else:
+            new_relation[relation_name] += [(first, second, frame)]
+
+        return WorldState(new_relation, self.sys)
+
+    def mutate_add_rel(self, first, relation_name, second, frame=None):
+        new_relation = copy.deepcopy(self._rel)
+        if relation_name not in new_relation:
+            new_relation[relation_name] = [(first, second, frame)]
+        else:
+            new_relation[relation_name] += [(first, second, frame)]
+
+        self._rel = new_relation
+
+    def mutate_reset_rel(self, keyname):
+        new_relation = copy.deepcopy(self._rel)
+        new_relation.pop(keyname, None)
+        self._rel = new_relation
+
+    def all_rel(self, rel):
+        if rel not in self._rel.keys():
+            return
+        else:
+            yield from [(x[0], x[1]) for x in self._rel[rel]]
+
+    # ******* Base Operations ********
+
+    def frames(self):
+        # Start with just the in scope frame
+        in_scope = in_scope_initialize(self)
+
+        # Concept of "thing" isn't declared anywhere but is always in scope
+        # Nothing has "user" but they are always in scope
+        everything_in_scope = set(["thing", "user"])
+        everything_in_scope.update(in_scope["InScopeInstances"])
+        everything_in_scope.update([x.concept_name for x in in_scope["InScopeConcepts"]])
+
+        # All generic concepts are always in scope
+        everything_in_scope.update(x[0] for x in self.all_rel("specializes"))
+
+        # Now include all relations any of these in scope things have
+        new_rels = {}
+        for item in self._rel.items():
+            if item[0] not in new_rels:
+                new_rels[item[0]] = []
+
+            for relation in item[1]:
+                if relation[0] in everything_in_scope and (relation[1] == "true" or relation[1] in everything_in_scope):
+                    new_rels[item[0]] += [relation]
+
+        yield WorldState(new_rels, copy.deepcopy(self.sys), "in_scope", self)
+
+        # Then yield everything
+        yield self
+
+    def world_state_frame(self):
+        if self._world_state_frame is None:
+            return self
+        else:
+            return self._world_state_frame
+
     def all_individuals(self):
         for i in self.get_entities():
             yield i
 
-    # def instance_of(self, x, y):
-
     def bill_total(self):
-        for i in self.rel["valueOf"]:
+        for i in self.all_rel("valueOf"):
             if i[1] == "bill1":
                 return i[0]
 
     def mutate_remove_unknown_price(self, toRemove):
-        if (toRemove, "user") in self.rel["priceUnknownTo"]:
+        if (toRemove, "user") in self.all_rel("priceUnknownTo"):
             self.rel["priceUnknownTo"].remove((toRemove, "user"))
 
-    def add_rel(self, first, relation_name, second):
-        new_relation = copy.deepcopy(self.rel)
-        if relation_name not in new_relation:
-            new_relation[relation_name] = [(first, second)]
-        else:
-            new_relation[relation_name] += [(first, second)]
-        return WorldState(new_relation, self.sys)
-
-    def mutate_add_rel(self, first, relation_name, second):
-        new_relation = copy.deepcopy(self.rel)
-        if relation_name not in new_relation:
-            new_relation[relation_name] = [(first, second)]
-        else:
-            new_relation[relation_name] += [(first, second)]
-        self.rel = new_relation
-
-    def mutate_reset_rel(self, keyname):
-        new_relation = copy.deepcopy(self.rel)
-        new_relation.pop(keyname, None)
-        self.rel = new_relation
-
     def mutate_add_bill(self, addition):
-        new_relation = copy.deepcopy(self.rel)
+        new_relation = copy.deepcopy(self._rel)
         for i in range(len(new_relation["valueOf"])):
             if new_relation["valueOf"][i][1] == "bill1":
                 new_relation["valueOf"][i] = (addition + new_relation["valueOf"][i][0], "bill1")
-        self.rel = new_relation
+        self._rel = new_relation
 
     def mutate_reset_bill(self):
-        new_relation = copy.deepcopy(self.rel)
+        new_relation = copy.deepcopy(self._rel)
         for i in range(len(new_relation["valueOf"])):
             if new_relation["valueOf"][i][1] == "bill1":
                 new_relation["valueOf"][i] = (0, "bill1")
-        self.rel = new_relation
+        self._rel = new_relation
 
     def mutate_reset_order(self):
-        new_relation = copy.deepcopy(self.rel)
+        new_relation = copy.deepcopy(self._rel)
         new_relation["ordered"] = []
-        self.rel = new_relation
+        self._rel = new_relation
 
     def mutate_set_response_state(self, new_state):
         self.sys["responseState"] = new_state
 
     def get_entities(self):
         entities = set()
-        for i in self.rel.keys():
-            for j in self.rel[i]:
+        for i in self._rel.keys():
+            for j in self.all_rel(i):
                 entities.add(j[0])
                 entities.add(j[1])
         return entities
@@ -271,7 +425,7 @@ class WorldState(State):
     def user_ordered_veg(self):
         veggies = list(all_instances(self, "veggie"))
         if "ordered" in self.rel.keys():
-            for i in self.rel["ordered"]:
+            for i in self.all_rel("ordered"):
                 if i[0] == "user":
                     if i[1] in veggies:
                         return True
@@ -285,10 +439,9 @@ class WorldState(State):
             wanted_dict = json.loads(wanted)
             if wanted_dict["structure"] == "noun_for":
                 if wanted_dict["noun"] == "table1":
-                    if "at" in self.rel.keys():
-                        if ("user", "table") in self.rel["at"]:
-                            return [RespondOperation("Um... You're at a table." + self.get_reprompt()),
-                                    ResponseStateOp("anything_else")]
+                    if ("user", "table") in self.all_rel("at"):
+                        return [RespondOperation("Um... You're at a table." + self.get_reprompt()),
+                                ResponseStateOp("anything_else")]
                     if wanted_dict["for_count"] > 2:
                         return [RespondOperation("Host: Sorry, we don't have a table with that many seats")]
                     if wanted_dict["for_count"] < 2:
@@ -303,49 +456,46 @@ class WorldState(State):
                     wanted = wanted_dict["noun"]
 
         if sort_of(self, wanted, "food"):
-            if "at" in self.rel.keys():
-                if ("user", "table") in self.rel["at"]:
-                    if "ordered" in self.rel.keys():
-                        if ("user", wanted) in self.rel["ordered"]:
-                            return [RespondOperation(
-                                "Sorry, you got the last one of those. We don't have any more. Can I get you something else?"),
-                                ResponseStateOp("anything_else")]
-                    if (instance_of_what(self, wanted), "user") in self.rel["priceUnknownTo"]:
+            if ("user", "table") in self.all_rel("at"):
+                if "ordered" in self.rel.keys():
+                    if ("user", wanted) in self.all_rel("ordered"):
                         return [RespondOperation(
-                            "Son: Wait, let's not order that before we know how much it costs." + self.get_reprompt())]
-
-                    assert (instance_of_what(self,wanted) in self.sys["prices"])
-                    if self.sys["prices"][instance_of_what(self,wanted)] + self.bill_total() > 15:
-                        return [RespondOperation("Son: Wait, we already spent $" + str(
-                            self.bill_total()) + " so if we get that, we won't be able to pay for it with $15." + self.get_reprompt())]
-
-                    return [RespondOperation("Excellent Choice! Can I get you anything else?"),
-                            AddRelOp(("user", "ordered", wanted)), AddBillOp(wanted),
+                            "Sorry, you got the last one of those. We don't have any more. Can I get you something else?"),
                             ResponseStateOp("anything_else")]
+                if (instance_of_what(self, wanted), "user") in self.all_rel("priceUnknownTo"):
+                    return [RespondOperation(
+                        "Son: Wait, let's not order that before we know how much it costs." + self.get_reprompt())]
+
+                assert (instance_of_what(self,wanted) in self.sys["prices"])
+                if self.sys["prices"][instance_of_what(self,wanted)] + self.bill_total() > 15:
+                    return [RespondOperation("Son: Wait, we already spent $" + str(
+                        self.bill_total()) + " so if we get that, we won't be able to pay for it with $15." + self.get_reprompt())]
+
+                return [RespondOperation("Excellent Choice! Can I get you anything else?"),
+                        AddRelOp(("user", "ordered", wanted)), AddBillOp(wanted),
+                        ResponseStateOp("anything_else")]
 
             return [RespondOperation("Sorry, you must be seated to order")]
 
         for i in all_instances(self, "table"):
             if i == wanted:
-                if "at" in self.rel.keys():
-                    if ("user", "table") in self.rel["at"]:
-                        return [RespondOperation("Um... You're at a table." + self.get_reprompt())]
+                if ("user", "table") in self.all_rel("at"):
+                    return [RespondOperation("Um... You're at a table." + self.get_reprompt())]
                 return [RespondOperation("How many in your party?"), ResponseStateOp("anticipate_party_size")]
 
         if sort_of(self, wanted, "menu"):
-            if "at" in self.rel.keys():
-                if ("user", "table") in self.rel["at"]:
-                    if ("user", "menu1") not in self.rel["have"]:
-                        return [AddRelOp(("user", "have", "menu1")), RespondOperation(
-                            "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
-                                ResponseStateOp("anticipate_dish")]
-                    else:
-                        return [RespondOperation(
-                            "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + self.get_reprompt())]
+            if ("user", "table") in self.all_rel("at"):
+                if ("user", "menu1") not in self.all_rel("have"):
+                    return [AddRelOp(("user", "have", "menu1")), RespondOperation(
+                        "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
+                            ResponseStateOp("anticipate_dish")]
+                else:
+                    return [RespondOperation(
+                        "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + self.get_reprompt())]
             return [RespondOperation("Sorry, you must be seated to order")]
 
         if wanted == "bill1":
-            for i in self.rel["valueOf"]:
+            for i in self.all_rel("valueOf"):
                 if i[1] == "bill1":
                     total = i[0]
                     if self.sys["responseState"] == "done_ordering":
@@ -368,7 +518,7 @@ class WorldState(State):
 
         userKnowsPrices = True
         for i in wanted_tuple:
-            if (instance_of_what(self, i), "user") in self.rel["priceUnknownTo"]:
+            if (instance_of_what(self, i), "user") in self.all_rel("priceUnknownTo"):
                 return [RespondOperation(
                     "Son: Wait, let's not order anything before we know how much it costs." + self.get_reprompt())]
         total_price = 0
@@ -383,7 +533,7 @@ class WorldState(State):
 
         for i in wanted_tuple:
             if "ordered" in self.rel.keys():
-                if ("user", i) in self.rel["ordered"]:
+                if ("user", i) in self.all_rel("ordered"):
                     return [RespondOperation(
                         "Sorry, you got the last " + i + " . We don't have any more." + self.get_reprompt())]
         for i in wanted_tuple:
@@ -448,8 +598,8 @@ class WorldState(State):
                     "Son: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
                     ResponseStateOp("something_to_eat"), ResetOrderAndBillOp()]
 
-            items = [i for (x, i) in self.rel["ordered"]]
-            for i in self.rel["have"]:
+            items = [i for (x, i) in self.all_rel("ordered")]
+            for i in self.all_rel("have"):
                 if i[0] == "user":
                     if i[1] in items:
                         items.remove(i[1])
@@ -474,39 +624,39 @@ class WorldState(State):
         else:
             return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
+    # This should always be the answer to a question since it is a partial sentence that generated
+    # an unknown() predication in the MRS for the verb
     def unknown(self, x):
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash", "card", "card, credit"]:
                 return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
             else:
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
             if x in self.get_entities():
                 return self.handle_world_event(["user_wants", x])
             else:
                 return [RespondOperation("Sorry, we don't have that")]
+
         elif self.sys["responseState"] in ["anticipate_party_size"]:
-            if isinstance(x, Measurement):
-                return self.handle_world_event(["user_wants", json.dumps(
-                    {"structure": "noun_for", "noun": "table1", "for_count": x.count})])
+            if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
+                actors = [("user",)]
+                whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]
+                current_state = esl.esl_planner.do_task(self.world_state_frame(), [('satisfy_want', actors, whats)])
+                if current_state is not None:
+                    return current_state.get_operations()
+                else:
+                    return [RespondOperation("I'm not sure what to do about that." + self.get_reprompt())]
+
             else:
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+
         else:
             return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
-    def party_size(self, args):
-
-        x = args[1]
-        if isinstance(x, Measurement):
-            self.sys["responseState"] = "something_to_eat"
-            return self.handle_world_event(["user_wants", json.dumps(
-                {"structure": "noun_for", "noun": "table1", "for_count": x.count})])
-        else:
-            return [RespondOperation("Sorry, I didn't catch that. How many in your party?")]
 
     def handle_world_event(self, args):
-        if self.sys["responseState"] == "anticipate_party_size":
-            return self.party_size(args)
         if args[0] == "user_wants":
             return self.user_wants(args[1])
         elif args[0] == "user_wants_to_see":
@@ -518,6 +668,8 @@ class WorldState(State):
         elif args[0] == "yes":
             return self.yes()
         elif args[0] == "unknown":
+            # User said something that wasn't a full sentence that generated an
+            # unknown() predication
             return self.unknown(args[1])
         elif args[0] == "user_wants_to_sit":
             return self.user_wants("table1")

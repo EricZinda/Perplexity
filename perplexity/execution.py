@@ -29,6 +29,9 @@ class ExecutionContext(object):
         self._variable_execution_data = {}
         self.tree_info = None
         self._variable_metadata = None
+        self._in_scope_initialize_function = None
+        self._in_scope_initialize_data = None
+        self._in_scope_function = None
 
     def __enter__(self):
         self.old_context_token = set_execution_context(self)
@@ -61,15 +64,19 @@ class ExecutionContext(object):
 
         pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
 
+    # Needs to be called in a: with ExecutionContext() block
+    # so that the execution context is set up properly
+    # and maintained while all the solution groups are generated
     def solve_mrs_tree(self, state, tree_info):
-        with self:
-            self.clear_error()
-            self._predication_index = 0
-            self._phrase_type = sentence_force(tree_info["Variables"])
-            self.tree_info = tree_info
-            self.gather_tree_metadata()
+        self.clear_error()
+        self._predication_index = 0
+        self._phrase_type = sentence_force(tree_info["Variables"])
+        self.tree_info = tree_info
+        self.gather_tree_metadata()
+        if self._in_scope_initialize_function is not None:
+            self.in_scope_initialize_data = self._in_scope_initialize_function(state)
 
-            yield from self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"])
+        yield from self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"])
 
     def gather_tree_metadata(self):
         self._variable_metadata = perplexity.tree.gather_predication_metadata(self.vocabulary, self.tree_info)
@@ -189,6 +196,18 @@ class ExecutionContext(object):
                     arg_types.append("h")
 
         return arg_types
+
+    def set_in_scope_function(self, func, initialize_func = None):
+        self._in_scope_function = func
+        self._in_scope_initialize_function = initialize_func
+
+
+    # Test if an object is in scope, by default everything is
+    def in_scope(self, state, thing):
+        if self._in_scope_function is not None:
+            return self._in_scope_function(self.in_scope_initialize_data, state, thing)
+        else:
+            return True
 
     def clear_error(self):
         self._error = None

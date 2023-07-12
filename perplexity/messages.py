@@ -1,3 +1,4 @@
+from perplexity.response import RespondOperation
 from perplexity.sstring import s
 from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication
 from perplexity.utilities import parse_predication_name, sentence_force
@@ -49,7 +50,8 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
                 return
 
         else:
-            # This was a "WH" question. Return the values of the variable
+            # This was a "WH" question.
+            # Return the values of the variable
             # asked about from the solution
             # The phrase was "true" if there was at least one answer
             if solution_groups is not None:
@@ -57,23 +59,18 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
                 # to get the response
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
-
-                # Get unique items from all solutions
-                answer_items = set()
                 solution_group = next(solution_groups)
-                response = ""
-                for solution in solution_group:
-                    binding = solution.get_binding(wh_variable)
-                    if binding.variable.combinatoric:
-                        value_set = ((value, ) for value in binding.value)
-                        if value_set not in answer_items:
-                            answer_items.add(value_set)
-                            yield message_function(tree, [-1, ["answerWithList", index_predication, value_set]]), [solution]
 
-                    else:
-                        if binding.value not in answer_items:
-                            answer_items.add(binding.value)
-                            yield message_function(tree, [-1, ["answerWithList", index_predication, [binding.value]]]), [solution]
+                # If any solution in the group has a RespondOperation in it, assume that the response
+                # has been handled by that and just return an empty string
+                # This is how the user can replace the default behavior of listing out the answers
+                for solution in solution_group:
+                    for operation in solution.get_operations():
+                        if isinstance(operation, RespondOperation):
+                            yield "", solution_group
+                            return
+
+                yield message_function(tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group, solution_group[0]]]), solution_group
 
             else:
                 message = message_function(tree, error)
@@ -101,13 +98,33 @@ def generate_message(tree_info, error_term):
     arg3 = error_arguments[3] if arg_length > 3 else None
 
     if error_constant == "answerWithList":
-        answer_items = list(error_arguments[2])
+        # This is the default for a wh_question: just print out the values
+        def answer_variable_value(answer_items):
+            if len(answer_items) > 0:
+                message = "\n".join([str(answer_item) for answer_item in answer_items])
+                return message
+            else:
+                return ""
 
-        if len(answer_items) > 0:
-            message = "\n".join([str(answer_item) for answer_item in answer_items])
-            return message
-        else:
-            return ""
+        wh_variable = arg2
+        solution_group = arg3
+        response = ""
+        answer_items = set()
+        for solution in solution_group:
+            binding = solution.get_binding(wh_variable)
+            if binding.variable.combinatoric:
+                value_set = ((value, ) for value in binding.value)
+                if value_set not in answer_items:
+                    answer_items.add(value_set)
+                    response += answer_variable_value(value_set)
+
+            else:
+                if binding.value not in answer_items:
+                    answer_items.add(binding.value)
+                    response +=  answer_variable_value([binding.value])
+
+        return response
+
 
     elif error_constant == "beMoreSpecific":
         return f"Could you be more specific?"

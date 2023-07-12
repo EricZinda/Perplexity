@@ -1,9 +1,106 @@
+import copy
 import enum
 import itertools
-from perplexity.execution import get_variable_metadata, report_error
+import json
+
+from perplexity.execution import get_variable_metadata, report_error, execution_context
+import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
+
+
+def is_concept(o):
+    return hasattr(o, "is_concept") and o.is_concept()
+
+class Concept(object):
+    def __init__(self, concept_name, dict_modifications = None):
+        self.concept_name = concept_name
+        self._modifiers = {"noun": concept_name}
+        self._hash = None
+        if dict_modifications is not None:
+            self._modifiers.update(dict_modifications)
+
+    def __repr__(self):
+        return f"concept({self._modifiers})"
+
+    # The only required property is that objects which compare equal have the same hash value
+    # But: objects with the same hash aren't required to be equal
+    # It must remain the same for the lifetime of the object
+    def __hash__(self):
+        if self._hash is None:
+            # TODO: Make this more efficient
+            self._hash = hash(self.concept_name)
+
+        return self._hash
+
+    def __eq__(self, other):
+        return isinstance(other, Concept) and self._hash == other._hash and self._modifiers == other._modifiers
+
+    def is_concept(self):
+        return True
+
+    def modifiers(self):
+        # Make a copy since this object must be immutable due to
+        # the fact that hash is based on the modifiers
+        return copy.deepcopy(self._modifiers)
+
+    def update_modifiers(self, dict_modifications):
+        modified = copy.deepcopy(self)
+        modified._modifiers.update(dict_modifications)
+        modified._hash = None
+        return modified
+
+
+# Return a new variable_constraints object that is the intersection of what the constraints
+# on the variable are, intersected with what is available
+# Find a value that is true for available_constraints that is also true for variable_constraints
+# Works because the solution group has been checked to make sure it is valid for the whole range that
+# variable_constraints defines
+# This gets called when a variable holds a concept and a constraint and we want to see if we can fulfil it
+# with instances.
+# Theory: we are talking about both concepts ("I'd like the menu", "I'd like the 2 menus", "I'd like a menu"
+# and instances "I'd like 2 menus" (instances),
+# Returns:
+#   True if the user is talking about concepts and the concept count meets the constraints
+#   False if the same for instances
+#   None
+
+def meets_constraint(variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
+    if variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
+        # This means the entire set of things must meet the variable constraints
+        if check_concepts:
+            # If this is a concept check we only ever check the concept_in_scope_count here because the user
+            # said something with "the" like "the menu" and this only makes sense for concepts that are
+            # in scope not the generic version of "menu"
+            check_count = concept_in_scope_count
+        else:
+            check_count = instance_count
+    else:
+        if check_concepts:
+            # Because we are not dealing with all_rstr_meet_criteria, the phrase was something like "we want menus"
+            # Which is talking about abstract menus which implies:
+            # 1. There is a single concept of "menu" that is obvious
+            # 2. There are enough instances of it to fulfil the request
+            if concept_count == 1:
+                check_count = instance_count
+            else:
+                report_error(["moreThan", ["AfterFullPhrase", variable], 1], force=True)
+        else:
+            check_count = instance_count
+
+    # Otherwise we are talking about instances as in "I'd like a/2/a few menus"
+    # Constraints with no global criteria just get merged to most restrictive
+    if check_count >= variable_constraints.min_size:
+        # As long as we meet the min size we can fulfil the request
+        return True
+
+    else:
+        report_error(["lessThan", ["AfterFullPhrase", variable], variable_constraints.min_size], force=True)
+
+    return False
+
+
 
 
 # how a particular VariableDescriptor handles
@@ -51,14 +148,6 @@ class VariableDescriptor(object):
         else:
             return ValueSize.exactly_one if combinatorial_exactly_one else ValueSize.more_than_one
 
-    def discrete_size(self):
-        group_supported = self.group == VariableStyle.semantic or self.group == VariableStyle.ignored
-        individual_supported = self.individual == VariableStyle.semantic or self.individual == VariableStyle.ignored
-        if group_supported and individual_supported:
-            return ValueSize.all
-        else:
-            return ValueSize.exactly_one if individual_supported else ValueSize.more_than_one
-
 
 # Yields each possible variable set from binding based on what type of value it is
 # "discrete" means it will generate all possible specific sets, one by one (i.e. not yield a combinatoric value)
@@ -93,12 +182,9 @@ def predication_1(state, binding, bound_function, unbound_function, binding_desc
     else:
         # Build a generator that only generates the discrete values for the binding that are valid for the descriptor,
         # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
-        if binding.variable.combinatoric:
-            binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
-                                                            binding_descriptor.combinatoric_size(binding))
-        else:
-            binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
-                                                            binding_descriptor.discrete_size())
+        # if binding.variable.combinatoric:
+        binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
+                                                        binding_descriptor.combinatoric_size(binding))
 
         for value in binding_generator:
             if bound_function(value):
@@ -202,25 +288,16 @@ def predication_2(state, binding1, binding2,
                   binding2_descriptor=None):
     # Build a generator that only generates the discrete values for the binding that are valid for these descriptors,
     # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
-    if binding1.variable.combinatoric:
-        binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
-    else:
-        binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.discrete_size())
+    binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
 
     # The binding2 generator needs to be a function because it can be iterated over multiple times
     # and needs a way to reset
-    if binding2.variable.combinatoric:
-        def binding2_generator_creator_combinatoric():
-            return discrete_variable_generator(binding2.value, binding2.variable.combinatoric,
-                                               binding2_descriptor.combinatoric_size(binding2))
+    # if binding2.variable.combinatoric:
+    def binding2_generator_creator_combinatoric():
+        return discrete_variable_generator(binding2.value, binding2.variable.combinatoric,
+                                           binding2_descriptor.combinatoric_size(binding2))
 
-        binding2_generator_reset = binding2_generator_creator_combinatoric
-
-    else:
-        def binding2_generator_creator_discrete():
-            return discrete_variable_generator(binding2.value, binding2.variable.combinatoric, binding2_descriptor.discrete_size())
-
-        binding2_generator_reset = binding2_generator_creator_discrete
+    binding2_generator_reset = binding2_generator_creator_combinatoric
 
     # If binding_descriptor.group == VariableStyle.unsupported no sets > 1 will even show up, and this means that
     # an individual_check is the same as a group check so we don't need to consider that case
@@ -244,7 +321,7 @@ def predication_2(state, binding1, binding2,
         unbound_predication_function = binding1_unbound_predication_function if binding1.value is None else binding2_unbound_predication_function
         unbound_binding = binding1 if binding1.value is None else binding2
         unbound_binding_descriptor = binding1_descriptor if binding1.value is None else binding2_descriptor
-        unbound_binding_variable_size = unbound_binding_descriptor.discrete_size()
+        unbound_binding_variable_size = unbound_binding_descriptor.combinatoric_size(binding1) if binding1.value is None else unbound_binding_descriptor.combinatoric_size(binding2)
 
         # This is a "what is in X" type question, that's why it is unbound
         # This could be something like in([mary, john], X) (where mary and john are *together* in someplace)
@@ -382,7 +459,7 @@ def lift_style_predication_2(state, binding1, binding2,
 # "'in' style" means that:
 # - {a, b} predicate {x, y} can be checked (or do something) as {a} predicate {x}, {a} predicate {y}, etc.
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
-# - that the any combinatoric terms will be turned into single set terms (coll or dist)
+# - that any combinatoric terms will be turned into single set terms (coll or dist)
 def in_style_predication_2(state, binding1, binding2,
                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                            binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
@@ -404,3 +481,4 @@ def in_style_predication_2(state, binding1, binding2,
                              all_unbound_predication_function,
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored),
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored))
+

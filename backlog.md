@@ -1,8 +1,32 @@
-- Don't build trees for transparent quantifiers
-  - Make plurals work properly
-- 
+- How to properly deal with "what do you have?"
+  - By default we only get one answer
+  - We'd like to get the full answer set in a wh_question
+  - Need a flag that says "this is the final one"
+    - Or maybe "we need the full set"?
+    - Or maybe yes/no propositions stop early but other types (wh-questions and commands) always pull a complete answer
+      - This seems right: If it is not a yes/no or proposition, run it till the end because it could always get new values 
+        in variables that aren't tracked and the same ones in variables that are
+
+  - Right now:
+    - Handler is called twice to be able to say "there is more"
+    - 
+- Fixup RequestVerbTransitive
+  - What's it for?
+    - Turns future tense questions into requests
+    - Turns common ways of asking using verbs into a request
+    - 
+- Get rid of old code
+- Verbs should declare what tenses they deal with, if none, they should default to present only
+- Figure out how to make "I want 2 steaks and 1 salad" work
+  - it only sends "2 steaks" to want so that is all that gets checked
+- Get the bill working
+- Make "What is not on the menu?" work properly
+- Get rid of old code that has been implemented differently
+- Fix ontology.  Right now there are instances on the menu, for example
+- Handle concepts with extra information "bill for the food" failing if we don't know it
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
+
 - Demo for summit
   - card() not in rstr
 - Not issues: For Example23

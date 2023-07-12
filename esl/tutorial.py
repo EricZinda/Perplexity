@@ -5,7 +5,8 @@ from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
-from perplexity.predications import combinatorial_predication_1, in_style_predication_2
+from perplexity.predications import combinatorial_predication_1, in_style_predication_2, Concept, is_concept, \
+    meets_constraint, lift_style_predication_2
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
 from perplexity.tree import find_predication_from_introduced
@@ -19,6 +20,7 @@ vocabulary = system_vocabulary()
 override_predications(vocabulary, "user", ["card__cex__"])
 
 
+# ******** Transforms ************
 # Convert "would like <noun>" to "want <noun>"
 @Transform(vocabulary)
 def would_like_to_want_transformer():
@@ -86,9 +88,7 @@ def want_removal_transitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_would_v_modal"], production=production)
 
-
-
-
+# ***************************
 
 
 @Predication(vocabulary, names=["pron"])
@@ -119,26 +119,14 @@ def pron(state, x_who_binding):
 
     yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
 
-def is_user_type(val):
-    if not isinstance(val,tuple):
-        return val in ["user","son1"]
-
-    else:
-        for i in val:
-            if val not in ["user","son1"]:
-                return False
-        return True
 
 @Predication(vocabulary, names=["generic_entity"])
 def generic_entity(state, x_binding):
     def bound(val):
-        # return val in state.ent
-        return True
+        return val == Concept("generic_entity")
 
     def unbound():
-        # for i in state.ent:
-        #    yield i
-        yield "generic_entity"
+        yield Concept("generic_entity")
 
     yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
@@ -149,50 +137,85 @@ def _okay_a_1(state, i_binding, h_binding):
 
 
 
-@Predication(vocabulary, names=["much-many_a"], handles=[("relevant_var", EventOption.optional)])
+@Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.optional)])
 def much_many_a(state, e_binding, x_binding):
-    if "relevant_var" in e_binding.value.keys():
-        yield state.set_x(x_binding.variable.name, (json.dumps(
-            {"relevant_var_name": e_binding.value["relevant_var"], "relevant_var_value": "to_determine",
-             "structure": "price_type"}),))
+    if "Measure" in e_binding.value.keys():
+        measure_into_variable = e_binding.value["Measure"]["Value"]
+        # if we are measuring x_binding should have a Concept() that is the type of measurement
+        x_binding_value = x_binding.value
+        if len(x_binding_value) == 1 and is_concept(x_binding_value[0]):
+            # Set the actual value of the measurement to a string so that
+            # a predication that receives it knows we are looking to fill in an unbound value
+            measurement = Measurement(x_binding_value[0], measure_into_variable)
+
+            # Replace x5 with measurement
+            yield state.set_x(x_binding.variable.name, (measurement, ))
 
 
 @Predication(vocabulary, names=["measure"])
 def measure(state, e_binding, e_binding2, x_binding):
-    yield state.add_to_e(e_binding2.variable.name, "relevant_var", x_binding.variable.name)
+    yield state.add_to_e(e_binding2.variable.name, "Measure",
+                         {"Value": x_binding.variable.name,
+                          "Originator": execution_context().current_predication_index()})
 
 
 @Predication(vocabulary, names=["abstr_deg"])
 def abstr_deg(state, x_binding):
-    yield state.set_x(x_binding.variable.name, ("abstract_degree",))
-
-
+    yield state.set_x(x_binding.variable.name, (Concept("abstract_degree"),))
 
 
 @Predication(vocabulary, names=["card"])
 def card(state, c_number, e_binding, x_binding):
-    if state.get_binding(x_binding.variable.name).value[0] == "generic_entity":
-        if c_number.isnumeric():
-            yield state.set_x(x_binding.variable.name, (Measurement("generic_cardinality", int(c_number)),))
+    x_binding_value = state.get_binding(x_binding.variable.name).value
+    if len(x_binding_value) == 1 and is_concept(x_binding_value[0]) and c_number.isnumeric():
+        yield state.set_x(x_binding.variable.name, (x_binding_value[0].update_modifiers({"card": int(c_number)}),))
+
 
 @Predication(vocabulary, names=["card"])
 def card_system(state, c_number, e_binding, x_binding):
     if state.get_binding(x_binding.variable.name).value[0] != "generic_entity":
         yield from perplexity.system_vocabulary.card(state, c_number, e_binding, x_binding)
 
+
 @Predication(vocabulary, names=["_for_p"])
-def _for_p(state, e_binding, x_binding, x_binding2):
-    what_is = state.get_binding(x_binding.variable.name).value[0]
-    what_for = state.get_binding(x_binding2.variable.name).value[0]
-    if not isinstance(what_for, Measurement):
-        yield state
-    else:
-        what_measuring = what_for.measurement_type
-        if not what_measuring == "generic_cardinality":
-            yield state
-        else:
-            yield state.set_x(x_binding.variable.name,
-                              (json.dumps({"structure": "noun_for", "noun": what_is, "for_count": what_for.count}),))
+def _for_p(state, e_binding, x_what_binding, x_for_binding):
+    def both_bound_function(x_what, x_for):
+        return True
+
+    def x_what_unbound(x_for):
+        yield None
+
+    def x_for_unbound(x_what):
+        yield None
+
+    for solution in lift_style_predication_2(state, x_what_binding, x_for_binding,
+                                                both_bound_function,
+                                                x_what_unbound,
+                                                x_for_unbound):
+        x_what_value = solution.get_binding(x_what_binding.variable.name).value
+        x_for_value = solution.get_binding(x_for_binding.variable.name).value
+        if len(x_what_value) == 1 and is_concept(x_what_value[0]):
+            modified = x_what_value[0].update_modifiers({"for": x_for_value})
+            yield solution.set_x(x_what_binding.variable.name, (modified,))
+
+
+    # what_binding_value = x_what_binding.value
+    # if len(what_binding_value) == 1 and is_concept(what_binding_value[0]):
+    #     yield state
+    #
+    # what_is = state.get_binding(x_what_binding.variable.name).value[0]
+    # what_for = state.get_binding(x_for_binding.variable.name).value[0]
+    # if not isinstance(what_for, Measurement):
+    #     yield state
+    # else:
+    #     what_measuring = what_for.measurement_type
+    #     if not what_measuring == "generic_cardinality":
+    #         yield state
+    #
+    #     else:
+    #         if hasattr(what_is, "is_concept"):
+    #             modified = what_is.update_modifiers({"structure": "noun_for", "noun": what_is.concept_name, "for_count": what_for.count})
+    #             yield state.set_x(x_what_binding.variable.name, (modified,))
 
 
 @Predication(vocabulary, names=["_cash_n_1"])
@@ -267,6 +290,9 @@ def match_all_n(noun_type, state, x_binding):
     def unbound_variable():
         yield from all_instances(state, noun_type)
 
+    # Yield the abstract type first, not as a combinatoric variable
+    yield state.set_x(x_binding.variable.name, (Concept(noun_type), ))
+
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
@@ -316,14 +342,14 @@ class PastParticiple:
 
     def predicate_function(self, state, e_introduced_binding, i_binding, x_target_binding):
         def bound(value):
-            if (value, self.lemma) in state.rel["isAdj"]:
+            if (value, self.lemma) in state.all_rel("isAdj"):
                 return True
             else:
                 report_error(["Not" + self.lemma])
                 return False
 
         def unbound():
-            for i in state.rel["isAdj"]:
+            for i in state.all_rel("isAdj"):
                 if i[1] == self.lemma:
                     yield i[0]
 
@@ -344,25 +370,20 @@ def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
 @Predication(vocabulary, names=("_on_p_loc",))
 def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def check_item_on_item(item1, item2):
-        if "on" in state.rel.keys():
-            if (item1, item2) in state.rel["on"]:
-                return True
-            else:
-                report_error(["notOn", item1, item2])
+        if (item1, item2) in state.all_rel("on"):
+            return True
         else:
             report_error(["notOn", item1, item2])
 
     def all_item1_on_item2(item2):
-        if "on" in state.rel.keys():
-            for i in state.rel["on"]:
-                if i[1] == item2:
-                    yield i[0]
+        for i in state.all_rel("on"):
+            if i[1] == item2:
+                yield i[0]
 
     def all_item2_containing_item1(item1):
-        if "on" in state.rel.keys():
-            for i in state.rel["on"]:
-                if i[0] == item1:
-                    yield i[1]
+        for i in state.all_rel("on"):
+            if i[0] == item1:
+                yield i[1]
 
     yield from in_style_predication_2(state,
                                       x_actor_binding,
@@ -378,7 +399,7 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if is_user_type(x_actor):
             return True
         elif "want" in state.rel.keys():
-            if (x_actor, x_object) in state.rel["want"]:
+            if (x_actor, x_object) in state.all_rel("want"):
                 return True
         else:
             report_error(["notwant", "want", x_actor])
@@ -386,13 +407,13 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
     def wanters_of_obj(x_object):
         if "want" in state.rel.keys():
-            for i in state.rel["want"]:
+            for i in state.all_rel("want"):
                 if i[1] == x_object:
                     yield i[0]
 
     def wanted_of_actor(x_actor):
         if "want" in state.rel.keys():
-            for i in state.rel["want"]:
+            for i in state.all_rel("want"):
                 if i[0] == x_actor:
                     yield i[1]
 
@@ -402,21 +423,67 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 def convert_noun_structure(binding_value):
     new_list = []
     for item in binding_value:
-        if isinstance(item, str) and item[0] == "{":
-            new_list.append(json.loads(item))
+        if hasattr(item, "is_concept"):
+            new_list.append(item.modifiers())
         else:
             new_list.append(item)
     return tuple(new_list)
 
-# Once we get here, a phrase like "we want a menu" would have two solutions
+
 @Predication(vocabulary, names=["solution_group__want_v_1"])
-def want_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
+def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
-    x_actors = [convert_noun_structure(x.value) for x in x_actor_binding_list]
-    x_whats = [convert_noun_structure(x.value) for x in x_what_binding_list]
-    current_state = do_task(current_state, [('satisfy_want', x_actors, x_whats)])
-    assert current_state is not None
-    yield [current_state]
+
+    # This may be getting called with concepts or instances, before we call the planner
+    # we need to decide if we have the requisite amount of them
+    if is_concept(x_actor_variable_group.solution_values[0]):
+        # We don't want to deal with conceptual actors, fail this solution group
+        # and wait for the one with real actors
+        yield []
+
+    # We do have lots of places where we deal with conceptual "wants", such as: "I want the menu", "I'll have a steak"
+    # In fact, we *never* deal with wanting a particular instance because that would mean "I want that particular steak right there"
+    # and we don't support that
+    # These are concepts. Only need to check the first because:
+    # If one item in the group is a concept, they all are
+    if is_concept(x_what_variable_group.solution_values[0].value[0]):
+        x_what_variable = x_what_variable_group.solution_values[0].variable.name
+
+        # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
+        # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
+        # "I'll have the steak" you should get an error
+        x_what_values = [x.value for x in x_what_variable_group.solution_values]
+        x_what_individuals_set = set()
+        for value in x_what_values:
+            x_what_individuals_set.update(value)
+        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], list(x_what_individuals_set))
+        if meets_constraint(x_what_variable_group.variable_constraints,
+                            concept_count,
+                            concept_in_scope_count,
+                            instance_count,
+                            instance_in_scope_count,
+                            check_concepts=True,
+                            variable=x_what_variable):
+
+            # If there is more than one concept here, they said something like "we want steaks and fries" but doing the magic
+            # To figure that out how much of each is too much
+            if len(x_what_individuals_set) > 1:
+                yield [current_state.record_operations([RespondOperation("One thing at a time, please!")])]
+
+            # At this point we are only dealing with one concept
+            # Give them the max of what they specified
+            first_x_what_binding_value = copy.deepcopy(x_what_variable_group.solution_values[0].value[0])
+            first_x_what_binding_value = first_x_what_binding_value.update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})
+
+            actor_values = [x.value for x in x_actor_variable_group.solution_values]
+            current_state = do_task(current_state.world_state_frame(), [('satisfy_want', actor_values, [(first_x_what_binding_value,)])])
+            if current_state is None:
+                yield []
+            else:
+                yield [current_state]
+
+        else:
+            yield []
 
 
 @Predication(vocabulary, names=["_check_v_1"])
@@ -468,17 +535,17 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_loc_binding):
         if item2 == "today":
             return True
 
-        if (item1, item2) in state.rel["contains"]:
+        if (item1, item2) in state.all_rel("contains"):
             return True
         return False
 
     def items_in_item1(item1):
-        for i in state.rel["contains"]:
+        for i in state.all_rel("contains"):
             if i[0] == item1:
                 yield i[1]
 
     def item1_in_items(item1):
-        for i in state.rel["contains"]:
+        for i in state.all_rel("contains"):
             if i[1] == item1:
                 yield i[0]
 
@@ -566,16 +633,6 @@ def _thanks_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
 
-#
-# @Predication(vocabulary, names=["_and_c"])
-# def _and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
-#     assert(state.get_binding(x_binding_first.variable.name).value[0] is not None)
-#     assert (state.get_binding(x_binding_second.variable.name).value[0] is not None)
-#     yield state.set_x(x_binding_introduced.variable.name,
-#                       state.get_binding(x_binding_first.variable.name).value + state.get_binding(x_binding_second.variable.name).value,
-#                       combinatoric=True)
-
-
 def is_request_from_tree(tree_info):
     introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
@@ -583,6 +640,8 @@ def is_request_from_tree(tree_info):
         tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
 
 
+# If it is a future tense question with two bound arguments: turn it into a request
+# Otherwise: look up the lemma in the state
 class RequestVerbTransitive:
     def __init__(self, predicate_name_list, lemma, logic, group_logic):
         self.predicate_name_list = predicate_name_list
@@ -593,6 +652,7 @@ class RequestVerbTransitive:
     def predicate_func(self, state, e_binding, x_actor_binding, x_object_binding):
         is_request = is_request_from_tree(state.get_binding("tree").value[0])
 
+        # Convert "What do you have?" into a menu request
         if self.lemma == "have":
             if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
                 if state.get_binding(x_object_binding.variable.name).value is None:
@@ -604,40 +664,27 @@ class RequestVerbTransitive:
             if is_request and is_user_type(x_actor):
                 return True
             else:
-                if self.lemma in state.rel.keys():
-                    if (x_actor, x_object) in state.rel[self.lemma]:
-                        return True
-                    else:
-                        report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
-                        return False
-
+                if (x_actor, x_object) in rel_subjects_objects(state, self.lemma):
+                    return True
                 else:
                     report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
                     return False
 
         def actor_from_object(x_object):
-            if self.lemma in state.rel.keys():
-                something_sees = False
-                for i in state.rel[self.lemma]:
-                    if i[1] == x_object:
-                        yield i[0]
-                        something_sees = True
-                if not something_sees:
-                    report_error(["Nothing_VTRANS_X", self.lemma, x_object])
-            else:
-                report_error(["No_VTRANS", self.lemma, x_object])
+            found = False
+            for i in rel_subjects(state, self.lemma, x_object):
+                found = True
+                yield i
+            if not found:
+                report_error(["Nothing_VTRANS_X", self.lemma, x_object])
 
         def object_from_actor(x_actor):
-            if self.lemma in state.rel.keys():
-                sees_something = False
-                for i in state.rel[self.lemma]:
-                    if i[0] == x_actor or i[0] == x_actor[0]:
-                        yield i[1]
-                        sees_something = True
-                if not sees_something:
-                    report_error(["X_VTRANS_Nothing", self.lemma, x_actor])
-            else:
-                report_error(["No_VTRANS", self.lemma, x_actor])
+            found = False
+            for i in rel_objects(state, x_actor, self.lemma):
+                found = True
+                yield i
+            if not found:
+                report_error(["X_VTRANS_Nothing", self.lemma, x_actor])
 
         state_exists = False
         for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
@@ -689,7 +736,7 @@ class RequestVerbIntransitive:
                 return True
             else:
                 if self.lemma in state.rel.keys():
-                    for pair in state.rel[self.lemma]:
+                    for pair in state.all_rel(self.lemma):
                         if pair[0] == x_actor:
                             return True
 
@@ -702,7 +749,7 @@ class RequestVerbIntransitive:
 
         def unbound():
             if self.lemma in state.rel.keys():
-                for i in state.rel[self.lemma]:
+                for i in state.all_rel(self.lemma):
                     yield i[0]
 
         for success_state in combinatorial_predication_1(state, x_actor_binding, bound, unbound):
@@ -769,71 +816,95 @@ def _sit_v_down_group(state_list, e_introduced_binding_list, x_actor_binding_lis
 @Predication(vocabulary, names=["poss"])
 def poss(state, e_introduced_binding, x_object_binding, x_actor_binding):
     def bound(x_actor, x_object):
-
-        if "have" in state.rel.keys():
-            if (x_actor, x_object) in state.rel["have"]:
-                return True
-            else:
-                report_error(["verbDoesntApply", x_actor, "have", x_object])
-                return False
-
+        if (x_actor, x_object) in state.all_rel("have"):
+            return True
         else:
             report_error(["verbDoesntApply", x_actor, "have", x_object])
             return False
 
     def actor_from_object(x_object):
-        if "have" in state.rel.keys():
-            for i in state.rel["have"]:
-                if i[1] == x_object:
-                    yield i[0]
+        for i in state.all_rel("have"):
+            if i[1] == x_object:
+                yield i[0]
 
     def object_from_actor(x_actor):
-        if "have" in state.rel.keys():
-            for i in state.rel["have"]:
-                if i[0] == x_actor:
-                    yield i[1]
+        for i in state.all_rel("have"):
+            if i[0] == x_actor:
+                yield i[1]
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
 
+# Returns:
+# the variable to measure into, the units to measure
+# or None if not a measurement unbound variable
+def measurement_information(x):
+    if isinstance(x, Measurement) and isinstance(x.count, str):
+        # if x is a Measurement() with a string as a value,
+        # then we are being asked to measure x_actor
+        measure_into_variable = x.count
+        units = x.measurement_type
+        if is_concept(units):
+            return measure_into_variable, units.concept_name
+
+    return None, None
+
 @Predication(vocabulary, names=["_be_v_id"])
 def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
-        if not x_object[0] == "{":
-            first_in_second = x_actor in all_instances_and_spec(state, x_object)
-            second_in_first = x_object in all_instances_and_spec(state, x_actor)
-
-            return first_in_second or second_in_first
-        else:
-            x_object = json.loads(x_object)
-            if x_object["structure"] == "price_type":
-                if type(x_object["relevant_var_value"]) is int:
-                    if not (x_actor, x_object["relevant_var_value"]) in state.sys["prices"]:
-                        report_error("WrongPrice")
-                        return False
+        measure_into_variable, units = measurement_information(x_object)
+        if measure_into_variable is not None:
             return True
 
-    def unbound(x_object):
-        for i in all_instances(state, x_object):
-            yield i
-        yield x_object
-
-    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound,
-                                                unbound):
-        x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
-        x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
-        if not x_obj[0] == "{":
-            yield success_state
         else:
-            x_obj = json.loads(x_obj)
-            if x_obj["structure"] == "price_type":
-                if x_obj["relevant_var_value"] == "to_determine":
-                    if instance_of_what(state, x_act) in success_state.sys["prices"].keys():
-                        yield success_state.set_x(x_obj["relevant_var_name"], (str(instance_of_what(state, x_act)) + ": " + str(success_state.sys["prices"][instance_of_what(state, x_act)]) + " dollars",)).record_operations([SetKnownPriceOp(instance_of_what(state, x_act))])
+            first_in_second = x_actor in all_instances_and_spec(state, x_object)
+            second_in_first = x_object in all_instances_and_spec(state, x_actor)
+            return first_in_second or second_in_first
 
-                    else:
-                        yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
+    def unbound(x_object):
+        if is_concept(x_object):
+            for i in all_instances(state, x_object.concept_name):
+                yield i
+            for i in specializations(state, x_object.concept_name):
+                yield Concept(i)
+
+    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound, unbound):
+        x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
+        x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
+        measure_into_variable, units = measurement_information(x_object_value)
+        if measure_into_variable is not None:
+            # This is a "how much is x" question and we need to measure the value
+            # into the specified variable
+            concept_item = instance_of_or_type(state, x_actor_value)
+            if units in ["generic_entity", "dollar"]:
+                if concept_item in state.sys["prices"]:
+                    price = Measurement("dollar", state.sys["prices"][concept_item])
+                    # Remember that we now know the price
+                    yield success_state.set_x(measure_into_variable, (price,)).\
+                        record_operations([SetKnownPriceOp(concept_item)])
+
+                else:
+                    yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
+                    return False
+
+        else:
+            yield success_state
+
+
+
+@Predication(vocabulary, names=["solution_group__be_v_id"])
+def _be_v_id_group(state_list, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
+    # obj1_instance = x_obj1_variable_group.solution_values[0].value
+    # if len(obj1_instance) == 1 and is_concept(obj1_instance[0]) and obj1_instance[0].concept_name == "special":
+    #     if is_concept(x_obj2_variable_group.solution_values[0].value[0]):
+    #         # "What are the specials"
+    #         current_state = copy.deepcopy(state_list[0])
+    #         current_state.operations.clear()
+    #         current_state.record_operations([RespondOperation("The specials are: ")])
+    #         yield [current_state]
+
+    yield state_list
 
 
 @Predication(vocabulary, names=["_cost_v_1"])
@@ -895,21 +966,31 @@ def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
                                                       state.get_binding(x_second_binding.variable.name).value[0],))
 
 
+# Any successful solution group that is a wh_question will call this
+@Predication(vocabulary, names=["solution_group_wh"])
+def wh_question(state_list, binding_list):
+    current_state = do_task(state_list[0].world_state_frame(), [('describe', [x.value for x in binding_list])])
+    if current_state is not None:
+        yield (current_state, )
+    else:
+        yield state_list
+
+
 # Generates all the responses that predications can
 # return when an error occurs
 def generate_custom_message(tree_info, error_term):
-    # See if the system can handle converting the error
-    # to a message first
-    system_message = perplexity.messages.generate_message(tree_info, error_term)
-    if system_message is not None:
-        return system_message
-
     # error_term is of the form: [index, error] where "error" is another
     # list like: ["name", arg1, arg2, ...]. The first item is the error
     # constant (i.e. its name). What the args mean depends on the error
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+
+    # See if the system can handle converting the error
+    # to a message first
+    system_message = perplexity.messages.generate_message(tree_info, error_term)
+    if system_message is not None:
+        return system_message
 
     if error_constant == "notAThing":
         arg1 = error_arguments[1]
@@ -932,19 +1013,17 @@ def reset():
     # return State([])
     # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
-                                {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
-                                "responseState": "initial"
+                                {"prices": {"salad": 3, "steak": 10, "broiled steak": 8, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
+                                 "responseState": "initial"
                                 })
+
     initial_state = initial_state.add_rel("table", "specializes", "thing")
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("person", "specializes", "thing")
     initial_state = initial_state.add_rel("son", "specializes", "person")
-
-
     initial_state = initial_state.add_rel("dish", "specializes", "food")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
-
     initial_state = initial_state.add_rel("pizza", "specializes", "dish")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
@@ -953,24 +1032,41 @@ def reset():
     initial_state = initial_state.add_rel("salmon", "specializes", "meat")
     initial_state = initial_state.add_rel("bacon", "specializes", "meat")
 
-    initial_state = initial_state.add_rel("table1", "instanceOf", "table")
-    initial_state = initial_state.add_rel("table1", "maxCap", 4)
-
-
-
-
-    initial_state = initial_state.add_rel("menu1", "instanceOf", "menu")
-    initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
-    initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
-
-
     initial_state = initial_state.add_rel("soup", "specializes", "special")
     initial_state = initial_state.add_rel("salad", "specializes", "special")
     initial_state = initial_state.add_rel("soup", "specializes", "veggie")
     initial_state = initial_state.add_rel("salad", "specializes", "veggie")
 
+    initial_state = initial_state.add_rel("bill", "specializes", "thing")
+    initial_state = initial_state.add_rel("check", "specializes", "thing")
 
-    dish_types = ["soup","salad","bacon","salmon","steak","chicken"]
+    # These concepts are "in scope" meaning it is OK to say "the X"
+    initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("salmon", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("chicken", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("soup", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("steak", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("special", "conceptInScope", "true")
+
+    # Instances below here
+    # Location and "in scope" are modeled as who "has" a thing
+    # If user or son has it, it is "in scope"
+    # otherwise it is not
+    initial_state = initial_state.add_rel("table1", "instanceOf", "table")
+    initial_state = initial_state.add_rel("table1", "maxCap", 4)
+    initial_state = initial_state.add_rel("table2", "instanceOf", "table")
+    initial_state = initial_state.add_rel("table2", "maxCap", 4)
+    initial_state = initial_state.add_rel("table3", "instanceOf", "table")
+    initial_state = initial_state.add_rel("table3", "maxCap", 4)
+
+    initial_state = initial_state.add_rel("menu1", "instanceOf", "menu")
+    initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
+    initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
+
+    dish_types = ["soup", "salad", "bacon", "salmon", "steak", "chicken"]
     for j in dish_types:
         for i in range(3):
             initial_state = initial_state.add_rel(j+str(i), "instanceOf", j)
@@ -980,15 +1076,14 @@ def reset():
             if j == "salmon":
                 initial_state = initial_state.add_rel(j+str(i), "isAdj", "grilled")
 
-    initial_state = initial_state.add_rel("user", "have", "bill1")
+    initial_state = initial_state.add_rel("computer", "have", "bill1")
 
     initial_state = initial_state.add_rel("steak1", "on", "menu1")
+    initial_state = initial_state.add_rel("broiledsteak1", "on", "menu1")
     initial_state = initial_state.add_rel("chicken1", "on", "menu1")
     initial_state = initial_state.add_rel("salmon1", "on", "menu1")
     initial_state = initial_state.add_rel("bacon1", "on", "menu1")
 
-    initial_state = initial_state.add_rel("bill", "specializes", "thing")
-    initial_state = initial_state.add_rel("check", "specializes", "thing")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")
@@ -999,6 +1094,7 @@ def reset():
 
     initial_state = initial_state.add_rel("son1", "instanceOf", "son")
     initial_state = initial_state.add_rel("user", "have", "son1")
+    initial_state = initial_state.add_rel("user", "heardSpecials", "false")
 
 
     return initial_state
@@ -1021,7 +1117,7 @@ error_priority_dict = {
 
 def hello_world():
     user_interface = UserInterface(reset, vocabulary, message_function=generate_custom_message,
-                                   error_priority_function=error_priority)
+                                   error_priority_function=error_priority, scope_function=in_scope, scope_init_function=in_scope_initialize)
 
     while True:
         user_interface.interact_once()
@@ -1029,6 +1125,14 @@ def hello_world():
 
 
 if __name__ == '__main__':
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    ShowLogging("Pipeline")
+    # ShowLogging("SString")
+    # ShowLogging("Determiners")
+    ShowLogging("SolutionGroups")
+
     print("Hello there, what can I do for you?")
     # ShowLogging("Pipeline")
     # ShowLogging("Transformer")

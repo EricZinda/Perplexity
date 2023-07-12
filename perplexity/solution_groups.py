@@ -164,8 +164,9 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
             else:
                 # First see if there is a solution_group handler that should be called
                 handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
+                wh_handlers = find_wh_group_handlers(execution_context, this_sentence_force)
                 for next_group in at_least_one_group:
-                    created_solution_group, has_more, group_list = run_handlers(handlers, next_group, index_predication)
+                    created_solution_group, has_more, group_list = run_handlers(wh_handlers, handlers, optimized_criteria_list, next_group, index_predication, wh_question_variable)
                     if created_solution_group is None:
                         # No solution group handlers, or none handled it or failed: just do the default behavior
                         yield group_list
@@ -178,7 +179,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
                         return
 
-                    elif isinstance(created_solution_group, list) and len(created_solution_group) == 0:
+                    elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
                         # Handler said to skip this group
                         continue
 
@@ -191,7 +192,13 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                         return
 
 
-def run_handlers(handlers, group, index_predication):
+class GroupVariableValues(object):
+    def __init__(self, variable_constraints):
+        self.variable_constraints = variable_constraints
+        self.solution_values = []
+
+
+def run_handlers(wh_handlers, handlers, variable_constraints, group, index_predication, wh_question_variable):
     created_solution_group = None
     has_more = False
     if len(handlers) > 0:
@@ -203,23 +210,29 @@ def run_handlers(handlers, group, index_predication):
                 # Build up an arg structure to call the predication with that
                 # has the same arguments as the normal predication but has a list for each argument that represents the solution group
                 handler_args = []
-                for _ in range(len(index_predication.args)):
-                    handler_args.append([])
+                for arg in index_predication.args:
+                    found_constraint = None
+                    for constraint in variable_constraints:
+                        if constraint.variable_name == arg:
+                            found_constraint = constraint
+                            break
+                    handler_args.append(GroupVariableValues(found_constraint))
 
                 for state in state_list:
                     for arg_index in range(len(index_predication.args)):
                         if index_predication.argument_types()[arg_index] == "c" or index_predication.argument_types()[arg_index] == "h":
-                            handler_args[arg_index].append(index_predication.args[arg_index])
+                            handler_args[arg_index].solution_values.append(index_predication.args[arg_index])
                         else:
-                            handler_args[arg_index].append(state.get_binding(index_predication.args[arg_index]))
+                            handler_args[arg_index].solution_values.append(state.get_binding(index_predication.args[arg_index]))
+
                 handler_args = [state_list] + handler_args
 
             else:
-                handler_args = (state_list,)
+                handler_args = (state_list,) + (variable_constraints, )
 
             for next_solution_group in handler_function(*handler_args):
                 if created_solution_group is None:
-                    created_solution_group = next_solution_group
+                    created_solution_group = run_wh_group_handlers(wh_handlers, wh_question_variable, next_solution_group) if wh_question_variable is not None else next_solution_group
                     if len(created_solution_group) == 0:
                         # handler said to fail
                         break
@@ -236,14 +249,39 @@ def run_handlers(handlers, group, index_predication):
     else:
         return None, None, group
 
-# returns predication_handlers, global_handlers
+
+def get_function(module_function):
+    module = sys.modules[module_function[0]]
+    function = getattr(module, module_function[1])
+    return function
+
+
+def find_wh_group_handlers(execution_context, this_sentence_force):
+    # First get the list of handlers, if any
+    handlers = []
+    for module_function in execution_context.vocabulary.predications("solution_group_wh", [], this_sentence_force):
+        handlers.append(get_function(module_function))
+
+    return handlers
+
+
+# Called only if we have a successful solution group
+# Same semantic as solution group handlers: First wh_group handler that yields, wins
+def run_wh_group_handlers(wh_handlers, wh_question_variable, group):
+    if len(wh_handlers) > 0:
+        value_binding_list = [solution.get_binding(wh_question_variable) for solution in group]
+        for function in wh_handlers:
+            for resulting_group in function(group, value_binding_list):
+                if resulting_group is not None and len(resulting_group) > 0:
+                    return resulting_group
+
+    else:
+        return group
+
+
+# Returns predication_handlers, global_handlers
 # with just an array of functions in each
 def find_solution_group_handlers(execution_context, this_sentence_force, tree_info):
-    def get_function(module_function):
-        module = sys.modules[module_function[0]]
-        function = getattr(module, module_function[1])
-        return function
-
     handlers = []
     index_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     for module_function in execution_context.vocabulary.predications("solution_group_" + index_predication.name, index_predication.argument_types(), this_sentence_force):
