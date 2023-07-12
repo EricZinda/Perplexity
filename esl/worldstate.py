@@ -199,6 +199,11 @@ def rel_check(state, subject, rel, object):
     return (subject, object) in state.all_rel(rel)
 
 
+def rel_subjects_objects(state, rel):
+    for item in state.all_rel(rel):
+        yield item
+
+
 def rel_objects(state, subject, rel):
     for item in state.all_rel(rel):
         if item[0] == subject:

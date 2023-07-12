@@ -633,16 +633,6 @@ def _thanks_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
 
-#
-# @Predication(vocabulary, names=["_and_c"])
-# def _and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
-#     assert(state.get_binding(x_binding_first.variable.name).value[0] is not None)
-#     assert (state.get_binding(x_binding_second.variable.name).value[0] is not None)
-#     yield state.set_x(x_binding_introduced.variable.name,
-#                       state.get_binding(x_binding_first.variable.name).value + state.get_binding(x_binding_second.variable.name).value,
-#                       combinatoric=True)
-
-
 def is_request_from_tree(tree_info):
     introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
@@ -650,6 +640,8 @@ def is_request_from_tree(tree_info):
         tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
 
 
+# If it is a future tense question with two bound arguments: turn it into a request
+# Otherwise: look up the lemma in the state
 class RequestVerbTransitive:
     def __init__(self, predicate_name_list, lemma, logic, group_logic):
         self.predicate_name_list = predicate_name_list
@@ -660,6 +652,7 @@ class RequestVerbTransitive:
     def predicate_func(self, state, e_binding, x_actor_binding, x_object_binding):
         is_request = is_request_from_tree(state.get_binding("tree").value[0])
 
+        # Convert "What do you have?" into a menu request
         if self.lemma == "have":
             if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
                 if state.get_binding(x_object_binding.variable.name).value is None:
@@ -671,40 +664,27 @@ class RequestVerbTransitive:
             if is_request and is_user_type(x_actor):
                 return True
             else:
-                if self.lemma in state.rel.keys():
-                    if (x_actor, x_object) in state.all_rel(self.lemma):
-                        return True
-                    else:
-                        report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
-                        return False
-
+                if (x_actor, x_object) in rel_subjects_objects(state, self.lemma):
+                    return True
                 else:
                     report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
                     return False
 
         def actor_from_object(x_object):
-            if self.lemma in state.rel.keys():
-                something_sees = False
-                for i in state.all_rel(self.lemma):
-                    if i[1] == x_object:
-                        yield i[0]
-                        something_sees = True
-                if not something_sees:
-                    report_error(["Nothing_VTRANS_X", self.lemma, x_object])
-            else:
-                report_error(["No_VTRANS", self.lemma, x_object])
+            found = False
+            for i in rel_subjects(state, self.lemma, x_object):
+                found = True
+                yield i
+            if not found:
+                report_error(["Nothing_VTRANS_X", self.lemma, x_object])
 
         def object_from_actor(x_actor):
-            if self.lemma in state.rel.keys():
-                sees_something = False
-                for i in state.all_rel(self.lemma):
-                    if i[0] == x_actor or i[0] == x_actor[0]:
-                        yield i[1]
-                        sees_something = True
-                if not sees_something:
-                    report_error(["X_VTRANS_Nothing", self.lemma, x_actor])
-            else:
-                report_error(["No_VTRANS", self.lemma, x_actor])
+            found = False
+            for i in rel_objects(state, x_actor, self.lemma):
+                found = True
+                yield i
+            if not found:
+                report_error(["X_VTRANS_Nothing", self.lemma, x_actor])
 
         state_exists = False
         for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,

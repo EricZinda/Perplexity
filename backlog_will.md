@@ -1,4 +1,7 @@
 - ESL Architecture
+  - handle_world_event() is the one place where all interpretations go
+  - Most states of the world like "see" and "have" are modelled using those words as relations
+  - RequestVerbTransitive/Intransitive convert various request verb forms into requests
   - Command/Response
     - Scenario: I'd like 2 steaks (at the front door) -> works and it shouldn't
       - Individual solutions succeed with RespondOperations instead of failures
@@ -10,7 +13,9 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
-
+- Priniciples
+  - Make everything as general as possible:
+    - Interpret anything like "what do have [on the menu]" as meaning "show me the menu" if we are about to return everything on the menu/on the specials list
 - Change phrases like "I would like" to "I want" using Transforms
 - abstract-types
   - Dealing with multiple people in verbs
