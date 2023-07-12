@@ -1,9 +1,20 @@
 import copy
 import json
+import esl.esl_planner
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
+
+
+def noun_structure(value, part):
+    if isinstance(value, Concept):
+        # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
+        return value.modifiers().get(part, None)
+
+    else:
+        if part == "noun":
+            return value
 
 
 def in_scope_initialize(state):
@@ -52,6 +63,7 @@ def specializations(state, base_type):
         if i[1] == base_type:
             yield from specializations(state, i[0])
             yield i[0]
+
 
 def sort_of(state, thing, possible_type):
     if thing == possible_type:
@@ -134,10 +146,17 @@ def all_ancestors(state, thing):
         proc_idx += 1
 
 
+def instance_of_or_type(state, thing):
+    if is_concept(thing):
+        return thing.concept_name
+    else:
+        return instance_of_what(state, thing)
+
 def instance_of_what(state, thing):
     for i in state.all_rel("instanceOf"):
         if i[0] == thing:
             return i[1]
+
 
 def is_instance(state, thing):
     return instance_of_what(state, thing) is not None
@@ -151,8 +170,15 @@ def location_of_type(state, who, where_type):
     return False
 
 
-def count_of_instances_and_concepts(state, concept):
-    instances =  list(all_instances(state, concept.concept_name))
+def count_of_instances_and_concepts(state, concepts_original):
+    concepts = copy.copy(concepts_original)
+    for concept in concepts:
+        concepts += [Concept(x) for x in specializations(state, concept.concept_name)]
+    concept_count = len(concepts)
+
+    instances = []
+    for concept in concepts:
+        instances += list(all_instances(state, concept.concept_name))
     instance_count = len(instances)
 
     scope_data = in_scope_initialize(state)
@@ -161,8 +187,6 @@ def count_of_instances_and_concepts(state, concept):
         if in_scope(scope_data, state, instance):
             instance_in_scope_count += 1
 
-    concepts = [concept] + [Concept(x) for x in specializations(state, concept.concept_name)]
-    concept_count = len(concepts)
     concept_in_scope_count = 0
     for concept in concepts:
         if in_scope(scope_data, state, concept):
@@ -595,39 +619,39 @@ class WorldState(State):
         else:
             return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
+    # This should always be the answer to a question since it is a partial sentence that generated
+    # an unknown() predication in the MRS for the verb
     def unknown(self, x):
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash", "card", "card, credit"]:
                 return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
             else:
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
             if x in self.get_entities():
                 return self.handle_world_event(["user_wants", x])
             else:
                 return [RespondOperation("Sorry, we don't have that")]
+
         elif self.sys["responseState"] in ["anticipate_party_size"]:
-            if isinstance(x, Measurement):
-                return self.handle_world_event(["user_wants", json.dumps(
-                    {"structure": "noun_for", "noun": "table1", "for_count": x.count})])
+            if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
+                actors = [("user",)]
+                whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]
+                current_state = esl.esl_planner.do_task(self.world_state_frame(), [('satisfy_want', actors, whats)])
+                if current_state is not None:
+                    return current_state.get_operations()
+                else:
+                    return [RespondOperation("I'm not sure what to do about that." + self.get_reprompt())]
+
             else:
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+
         else:
             return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
-    def party_size(self, args):
-
-        x = args[1]
-        if isinstance(x, Measurement):
-            self.sys["responseState"] = "something_to_eat"
-            return self.handle_world_event(["user_wants", json.dumps(
-                {"structure": "noun_for", "noun": "table1", "for_count": x.count})])
-        else:
-            return [RespondOperation("Sorry, I didn't catch that. How many in your party?")]
 
     def handle_world_event(self, args):
-        if self.sys["responseState"] == "anticipate_party_size":
-            return self.party_size(args)
         if args[0] == "user_wants":
             return self.user_wants(args[1])
         elif args[0] == "user_wants_to_see":
@@ -639,6 +663,8 @@ class WorldState(State):
         elif args[0] == "yes":
             return self.yes()
         elif args[0] == "unknown":
+            # User said something that wasn't a full sentence that generated an
+            # unknown() predication
             return self.unknown(args[1])
         elif args[0] == "user_wants_to_sit":
             return self.user_wants("table1")

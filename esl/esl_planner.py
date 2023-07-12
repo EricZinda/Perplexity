@@ -1,10 +1,13 @@
+import numbers
+
 from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
-    rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp
+    rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
+from perplexity.set_utilities import Measurement
 from perplexity.solution_groups import GroupVariableValues
 from perplexity.utilities import at_least_one_generator
 
@@ -74,8 +77,8 @@ the_domain = gtpyhop.Domain(domain_name)
 
 def unique_group_variable_values(what_group):
     all = list()
-    for what in what_group.solution_values:
-        for what_item in what.value:
+    for what in what_group:
+        for what_item in what:
             if what_item not in all:
                 all.append(what_item)
     return all
@@ -83,15 +86,6 @@ def unique_group_variable_values(what_group):
 
 def are_group_items(items):
     return isinstance(items, list)
-
-def noun_structure(value, part):
-    if isinstance(value, Concept):
-        # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
-        return value.modifiers().get(part, None)
-
-    else:
-        if part == "noun":
-            return value
 
 
 def all_are_players(who_multiple):
@@ -137,6 +131,25 @@ def get_menu_seated(state, who):
 
 gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance, get_menu_seated)
 
+def count_entities(value_group):
+    if value_group is None:
+        return None
+
+    count = 0
+    for item in value_group:
+        if is_concept(item):
+            card = noun_structure(item, "card")
+            if card is not None:
+                count += card
+            else:
+                count += 1
+        elif isinstance(item, Measurement):
+            if isinstance(item.count, numbers.Number):
+                count += item.count
+        else:
+            count += 1
+
+    return count
 
 # Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
 def get_table_at_entrance(state, who_multiple, table):
@@ -144,10 +157,10 @@ def get_table_at_entrance(state, who_multiple, table):
         not location_of_type(state, who_multiple[0], "table"):
         # If the count of table is > 1, fail
         table_count = noun_structure(table, "card")
-        for_count = noun_structure(table, "for_count")
         if table_count is not None and table_count != 1:
             return [('respond', "I suspect you want to sit together.")]
-
+        for_structure = noun_structure(table, "for")
+        for_count = count_entities(for_structure)
         # If they say "we want a table" or "table for 2" the size is implied
         if len(who_multiple) == 2 or for_count == 2:
             unused_table = find_unused_item(state, "table")
@@ -243,13 +256,13 @@ def order_food_at_table(state, who, what):
 gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
 
 
-# This task deals with GroupVariableValues only
+# This task deals with lists that map to each other. I.e. the first who goes with the first what
 # Its job is to analyze the top level solution group would could have a lot of different collections
 # that need to be analyzed.  One or more people, one or more things wanted, etc.
 # For concepts, it requires that the caller has made sure that wanted concepts are valid, meaning "I want the (conceptual) table"
 # Should never get to this point
 def satisfy_want_group_group(state, group_who, group_what):
-    if not isinstance(group_who, GroupVariableValues) or not isinstance(group_what, GroupVariableValues): return
+    if not isinstance(group_who, list) or not isinstance(group_what, list): return
 
     # To support "we would like a table/the bill/etc" not going to every person,
     # conceptual things like "the bill", or "a table" or "a menu" should be collapsed into a single item
@@ -261,7 +274,8 @@ def satisfy_want_group_group(state, group_who, group_what):
         one_thing = unique_whats[0]
         if is_concept(one_thing):
             if one_thing.concept_name == "table":
-                # Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
+                # Tables are special in that, in addition to having a count ("2 tables")
+                # they can be "for 2" or "for my son and me"
                 return [("get_table", unique_group_variable_values(group_who), one_thing)]
             elif one_thing.concept_name == "menu":
                 return [("get_menu", unique_group_variable_values(group_who))]
@@ -276,9 +290,9 @@ def satisfy_want_group_group(state, group_who, group_what):
     # separately (since it isn't semantically different) so we treat them as separate
     # and plan them one at a time
     tasks = []
-    for index in range(len(group_who.solution_values)):
-        for who in group_who.solution_values[index].value:
-            for what in group_what.solution_values[index].value:
+    for index in range(len(group_who)):
+        for who in group_who[index]:
+            for what in group_what[index]:
                 tasks.append(('satisfy_want', (who,), (what,)))
 
     return tasks

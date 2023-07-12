@@ -1,3 +1,9 @@
+
+
+    
+- Get rid of old code
+- Figure out how to make "I want 2 steaks and 1 salad" work
+  - it only sends "2 steaks" to want so that is all that gets checked
 - Get the bill working
 - Make "What is not on the menu?" work properly
 - Get rid of old code that has been implemented differently
@@ -5,8 +11,6 @@
 - Handle concepts with extra information "bill for the food" failing if we don't know it
 - Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
-
-  
 
 - Demo for summit
   - card() not in rstr

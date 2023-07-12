@@ -146,18 +146,34 @@ def count_set(rstr_value):
         if len(rstr_value) == 1:
             value = next(iter(rstr_value))
             if isinstance(value, Measurement):
-                return value.count
+                if isinstance(value.count, str):
+                    # This means it is a representing an unbound variable
+                    # and it will be marked as singular
+                    return 1
+                else:
+                    return value.count
+
         return len(rstr_value)
 
     elif isinstance(rstr_value, (list, tuple)):
         if len(rstr_value) == 1 and isinstance(rstr_value[0], Measurement):
-            return rstr_value[0].count
+            if isinstance(rstr_value[0].count, str):
+                # This means it is a representing an unbound variable
+                # and it will be marked as singular
+                return 1
+            else:
+                return rstr_value[0].count
         else:
             return len(rstr_value)
 
     else:
         if isinstance(rstr_value, Measurement):
-            return rstr_value.count
+            if isinstance(rstr_value.count, str):
+                # This means it is a representing an unbound variable
+                # and it will be marked as singular
+                return 1
+            else:
+                return rstr_value.count
         else:
             return 1
 

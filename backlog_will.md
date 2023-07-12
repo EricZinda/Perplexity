@@ -10,7 +10,8 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
-      
+
+- Change phrases like "I would like" to "I want" using Transforms
 - abstract-types
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same
@@ -173,6 +174,51 @@
               - Need to include a way to get at the whole state
               - Add a method that allows access to the whole state
 
+- Make "how much is the soup" work
+  - the wh-variable is abstract_degree and thus isn't listed
+                                                                      ┌──── measure(e14,e15,x10)
+                                                                      │ ┌── generic_entity(x5)
+                  ┌────── abstr_deg(x10)                              │ │
+                  │                                       ┌────── and(0,1,2)
+    which_q(x10,RSTR,BODY)            ┌────── _soup_n_1(x3│               │
+                       │              │                   │               └ much-many_a(e15,x5)
+                       └─ _the_q(x3,RSTR,BODY)            │
+                                           └─ udef_q(x5,RSTR,BODY)
+                                                               └─ _be_v_id(e2,x3,x5)
+  - generic_entity(x5) is telling what measurement to use
+    - it is replaced by _dollar_n_1(x5,u16) if the question is "how many dollars is the soup?"
+  - measure(e14,e15,x10), much-many_a(e15,x5)
+    - measure tells much-many_a it is measuring something and putting its measure in x10
+  - much-many_a(e15,x5) is told to measure x5's "how muchness" and and put into x10
+  - be_v_id(x3=soup, x5=something you can measure)
+  - So 
+    - measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5), _be_v_id(e2,x3,x5) means: measure in generic units and put into x10
+      - measure() puts event information in much-many_a(e15, ...) saying what to measure *into*
+      - generic_entity(x5) puts the Concept("generic_entity") in x5
+      - much-many_a(e15,x5) replaces x5 with measurement with an unbound value
+      - be_v_id fills in the me
+    - measure(e14,e15,x10), _dollar_n_1(x5,u16), much-many_a(e15,x5), _be_v_id(e2,x3,x5) means: measure in dollars and put into x10
+      - dollar_n_1() puts the concept(dollar) in x5
+  - The problem is that x5 will already be filled by the time it gets to be_v_id
+      - In principle generic_entity is every possible measurement
+      - be_v_id
+  - Note that "the soup is 2" requires be_v_id to compare to a generic_entity
+    - Option 1:
+      - be_v_id needs to set x10 to a value based on what x5 is
+    - Option 2:
+      - treat x5 as a scopal arg? where e2 is modified by much-many_a
+    - Option 3:
+      - Treat x5 as holding a predication (much-many_a) that must be evaluated when seen
+    - Option 4:
+      - St x5 to be a measurement() object that has a type but not a value yet
+  - how big is the soup?
+                   ┌────── abstr_deg(x5)
+    which_q(x5,RSTR,BODY)            ┌────── _soup_n_1(x3)
+                        └─ _the_q(x3,RSTR,BODY)    ┌── measure(e9,e2,x5)
+                                            └─ and(0,1)
+                                                     └ _big_a_1(e2,x3)    
+    - big_a_1 is told to measure x3s "bigness" and put in x5
+    - 
 - Redo existing code using Perplexity ontology
 - Implement all nouns in terms of base engine using noun_n()
 - Implement "I want ham"

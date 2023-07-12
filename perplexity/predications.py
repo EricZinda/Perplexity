@@ -17,18 +17,21 @@ class Concept(object):
     def __init__(self, concept_name, dict_modifications = None):
         self.concept_name = concept_name
         self._modifiers = {"noun": concept_name}
+        self._hash = None
         if dict_modifications is not None:
             self._modifiers.update(dict_modifications)
 
-        self._hash = hash(json.dumps(self._modifiers))
-
     def __repr__(self):
-        return f"concept({self.concept_name})"
+        return f"concept({self._modifiers})"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
     # It must remain the same for the lifetime of the object
     def __hash__(self):
+        if self._hash is None:
+            # TODO: Make this more efficient
+            self._hash = hash(self.concept_name)
+
         return self._hash
 
     def __eq__(self, other):
@@ -45,6 +48,7 @@ class Concept(object):
     def update_modifiers(self, dict_modifications):
         modified = copy.deepcopy(self)
         modified._modifiers.update(dict_modifications)
+        modified._hash = None
         return modified
 
 

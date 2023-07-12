@@ -1,6 +1,8 @@
 from esl.worldstate import is_instance, instance_of_what, sort_of, rel_check
 from perplexity.predications import is_concept
+from perplexity.set_utilities import Measurement
 from perplexity.solution_groups import GroupVariableValues
+from perplexity.sstring import s
 
 
 # Handle describing specials in a detailed way in case the user
@@ -41,11 +43,19 @@ def describe_list(state, what_group):
 
 
 def describe_single_item(state, what):
-    if not is_concept(what):
-        return [('respond', instance_of_what(state, what))]
+    return [('respond', convert_to_english(state, what))]
+
+
+def convert_to_english(state, what):
+    if is_concept(what):
+        return what.concept_name
+
+    elif isinstance(what, Measurement):
+        return s("{*what.count} {*what.measurement_type:<*what.count}")
 
     else:
-        return [('respond', what.concept_name)]
+        type = instance_of_what(state, what)
+        return type if type is not None else "something"
 
 
 def add_declarations(gtpyhop):

@@ -1,10 +1,12 @@
+import copy
+
 import perplexity.messages
 from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, Concept, is_concept, \
-    meets_constraint
+    meets_constraint, lift_style_predication_2
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
 from perplexity.tree import find_predication_from_introduced
@@ -18,6 +20,7 @@ vocabulary = system_vocabulary()
 override_predications(vocabulary, "user", ["card__cex__"])
 
 
+# ******** Transforms ************
 # Convert "would like <noun>" to "want <noun>"
 @Transform(vocabulary)
 def would_like_to_want_transformer():
@@ -85,9 +88,7 @@ def want_removal_transitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_would_v_modal"], production=production)
 
-
-
-
+# ***************************
 
 
 @Predication(vocabulary, names=["pron"])
@@ -122,13 +123,10 @@ def pron(state, x_who_binding):
 @Predication(vocabulary, names=["generic_entity"])
 def generic_entity(state, x_binding):
     def bound(val):
-        # return val in state.ent
-        return True
+        return val == Concept("generic_entity")
 
     def unbound():
-        # for i in state.ent:
-        #    yield i
-        yield "generic_entity"
+        yield Concept("generic_entity")
 
     yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
@@ -139,50 +137,85 @@ def _okay_a_1(state, i_binding, h_binding):
 
 
 
-@Predication(vocabulary, names=["much-many_a"], handles=[("relevant_var", EventOption.optional)])
+@Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.optional)])
 def much_many_a(state, e_binding, x_binding):
-    if "relevant_var" in e_binding.value.keys():
-        yield state.set_x(x_binding.variable.name, (json.dumps(
-            {"relevant_var_name": e_binding.value["relevant_var"], "relevant_var_value": "to_determine",
-             "structure": "price_type"}),))
+    if "Measure" in e_binding.value.keys():
+        measure_into_variable = e_binding.value["Measure"]["Value"]
+        # if we are measuring x_binding should have a Concept() that is the type of measurement
+        x_binding_value = x_binding.value
+        if len(x_binding_value) == 1 and is_concept(x_binding_value[0]):
+            # Set the actual value of the measurement to a string so that
+            # a predication that receives it knows we are looking to fill in an unbound value
+            measurement = Measurement(x_binding_value[0], measure_into_variable)
+
+            # Replace x5 with measurement
+            yield state.set_x(x_binding.variable.name, (measurement, ))
 
 
 @Predication(vocabulary, names=["measure"])
 def measure(state, e_binding, e_binding2, x_binding):
-    yield state.add_to_e(e_binding2.variable.name, "relevant_var", x_binding.variable.name)
+    yield state.add_to_e(e_binding2.variable.name, "Measure",
+                         {"Value": x_binding.variable.name,
+                          "Originator": execution_context().current_predication_index()})
 
 
 @Predication(vocabulary, names=["abstr_deg"])
 def abstr_deg(state, x_binding):
-    yield state.set_x(x_binding.variable.name, ("abstract_degree",))
+    yield state.set_x(x_binding.variable.name, (Concept("abstract_degree"),))
 
 
 @Predication(vocabulary, names=["card"])
 def card(state, c_number, e_binding, x_binding):
-    if state.get_binding(x_binding.variable.name).value[0] == "generic_entity":
-        if c_number.isnumeric():
-            yield state.set_x(x_binding.variable.name, (Measurement("generic_cardinality", int(c_number)),))
+    x_binding_value = state.get_binding(x_binding.variable.name).value
+    if len(x_binding_value) == 1 and is_concept(x_binding_value[0]) and c_number.isnumeric():
+        yield state.set_x(x_binding.variable.name, (x_binding_value[0].update_modifiers({"card": int(c_number)}),))
+
 
 @Predication(vocabulary, names=["card"])
 def card_system(state, c_number, e_binding, x_binding):
     if state.get_binding(x_binding.variable.name).value[0] != "generic_entity":
         yield from perplexity.system_vocabulary.card(state, c_number, e_binding, x_binding)
 
-@Predication(vocabulary, names=["_for_p"])
-def _for_p(state, e_binding, x_binding, x_binding2):
-    what_is = state.get_binding(x_binding.variable.name).value[0]
-    what_for = state.get_binding(x_binding2.variable.name).value[0]
-    if not isinstance(what_for, Measurement):
-        yield state
-    else:
-        what_measuring = what_for.measurement_type
-        if not what_measuring == "generic_cardinality":
-            yield state
 
-        else:
-            if hasattr(what_is, "is_concept"):
-                modified = what_is.update_modifiers({"structure": "noun_for", "noun": what_is.concept_name, "for_count": what_for.count})
-                yield state.set_x(x_binding.variable.name,(modified,))
+@Predication(vocabulary, names=["_for_p"])
+def _for_p(state, e_binding, x_what_binding, x_for_binding):
+    def both_bound_function(x_what, x_for):
+        return True
+
+    def x_what_unbound(x_for):
+        yield None
+
+    def x_for_unbound(x_what):
+        yield None
+
+    for solution in lift_style_predication_2(state, x_what_binding, x_for_binding,
+                                                both_bound_function,
+                                                x_what_unbound,
+                                                x_for_unbound):
+        x_what_value = solution.get_binding(x_what_binding.variable.name).value
+        x_for_value = solution.get_binding(x_for_binding.variable.name).value
+        if len(x_what_value) == 1 and is_concept(x_what_value[0]):
+            modified = x_what_value[0].update_modifiers({"for": x_for_value})
+            yield solution.set_x(x_what_binding.variable.name, (modified,))
+
+
+    # what_binding_value = x_what_binding.value
+    # if len(what_binding_value) == 1 and is_concept(what_binding_value[0]):
+    #     yield state
+    #
+    # what_is = state.get_binding(x_what_binding.variable.name).value[0]
+    # what_for = state.get_binding(x_for_binding.variable.name).value[0]
+    # if not isinstance(what_for, Measurement):
+    #     yield state
+    # else:
+    #     what_measuring = what_for.measurement_type
+    #     if not what_measuring == "generic_cardinality":
+    #         yield state
+    #
+    #     else:
+    #         if hasattr(what_is, "is_concept"):
+    #             modified = what_is.update_modifiers({"structure": "noun_for", "noun": what_is.concept_name, "for_count": what_for.count})
+    #             yield state.set_x(x_what_binding.variable.name, (modified,))
 
 
 @Predication(vocabulary, names=["_cash_n_1"])
@@ -411,21 +444,39 @@ def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_
     # We do have lots of places where we deal with conceptual "wants", such as: "I want the menu", "I'll have a steak"
     # In fact, we *never* deal with wanting a particular instance because that would mean "I want that particular steak right there"
     # and we don't support that
-    # Only need to check the first because: If one item in the group is a concept, they all are
-    first_x_what = x_what_variable_group.solution_values[0].value[0]
-    if is_concept(first_x_what):
-        first_x_what_variable = x_what_variable_group.solution_values[0].variable.name
+    # These are concepts. Only need to check the first because:
+    # If one item in the group is a concept, they all are
+    if is_concept(x_what_variable_group.solution_values[0].value[0]):
+        x_what_variable = x_what_variable_group.solution_values[0].variable.name
 
-        # First we need to check to make sure that the specific concept "steak", "menu", etc meet the requirements
-        # I.e. if there are two preparations of steak on the menu and you say "I'll have the steak" you should get an error
-        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], first_x_what)
-        if meets_constraint(x_what_variable_group.variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts=True, variable=first_x_what_variable):
+        # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
+        # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
+        # "I'll have the steak" you should get an error
+        x_what_values = [x.value for x in x_what_variable_group.solution_values]
+        x_what_individuals_set = set()
+        for value in x_what_values:
+            x_what_individuals_set.update(value)
+        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], list(x_what_individuals_set))
+        if meets_constraint(x_what_variable_group.variable_constraints,
+                            concept_count,
+                            concept_in_scope_count,
+                            instance_count,
+                            instance_in_scope_count,
+                            check_concepts=True,
+                            variable=x_what_variable):
+
+            # If there is more than one concept here, they said something like "we want steaks and fries" but doing the magic
+            # To figure that out how much of each is too much
+            if len(x_what_individuals_set) > 1:
+                yield [current_state.record_operations([RespondOperation("One thing at a time, please!")])]
+
+            # At this point we are only dealing with one concept
             # Give them the max of what they specified
-            first_x_what_binding = copy.deepcopy(x_what_variable_group.solution_values[0])
-            first_x_what_binding.value = [first_x_what_binding.value[0].update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})]
-            x_what_variable_group.solution_values.clear()
-            x_what_variable_group.solution_values.append(first_x_what_binding)
-            current_state = do_task(current_state.world_state_frame(), [('satisfy_want', x_actor_variable_group, x_what_variable_group)])
+            first_x_what_binding_value = copy.deepcopy(x_what_variable_group.solution_values[0].value[0])
+            first_x_what_binding_value = first_x_what_binding_value.update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})
+
+            actor_values = [x.value for x in x_actor_variable_group.solution_values]
+            current_state = do_task(current_state.world_state_frame(), [('satisfy_want', actor_values, [(first_x_what_binding_value,)])])
             if current_state is None:
                 yield []
             else:
@@ -433,6 +484,7 @@ def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_
 
         else:
             yield []
+
 
 @Predication(vocabulary, names=["_check_v_1"])
 def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
@@ -804,22 +856,30 @@ def poss(state, e_introduced_binding, x_object_binding, x_actor_binding):
                                       object_from_actor)
 
 
+# Returns:
+# the variable to measure into, the units to measure
+# or None if not a measurement unbound variable
+def measurement_information(x):
+    if isinstance(x, Measurement) and isinstance(x.count, str):
+        # if x is a Measurement() with a string as a value,
+        # then we are being asked to measure x_actor
+        measure_into_variable = x.count
+        units = x.measurement_type
+        if is_concept(units):
+            return measure_into_variable, units.concept_name
+
+    return None, None
+
 @Predication(vocabulary, names=["_be_v_id"])
 def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
-        if isinstance(x_object, str) and x_object[0] == "{":
-            x_object = json.loads(x_object)
-            if x_object["structure"] == "price_type":
-                if type(x_object["relevant_var_value"]) is int:
-                    if not (x_actor, x_object["relevant_var_value"]) in state.sys["prices"]:
-                        report_error("WrongPrice")
-                        return False
+        measure_into_variable, units = measurement_information(x_object)
+        if measure_into_variable is not None:
             return True
 
         else:
             first_in_second = x_actor in all_instances_and_spec(state, x_object)
             second_in_first = x_object in all_instances_and_spec(state, x_actor)
-
             return first_in_second or second_in_first
 
     def unbound(x_object):
@@ -830,17 +890,24 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 yield Concept(i)
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound, unbound):
-        x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
-        x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
-        if isinstance(x_obj, str) and x_obj[0] == "{":
-            x_obj = json.loads(x_obj)
-            if x_obj["structure"] == "price_type":
-                if x_obj["relevant_var_value"] == "to_determine":
-                    if instance_of_what(state, x_act) in success_state.sys["prices"].keys():
-                        yield success_state.set_x(x_obj["relevant_var_name"], (str(instance_of_what(state, x_act)) + ": " + str(success_state.sys["prices"][instance_of_what(state, x_act)]) + " dollars",)).record_operations([SetKnownPriceOp(instance_of_what(state, x_act))])
+        x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
+        x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
+        measure_into_variable, units = measurement_information(x_object_value)
+        if measure_into_variable is not None:
+            # This is a "how much is x" question and we need to measure the value
+            # into the specified variable
+            concept_item = instance_of_or_type(state, x_actor_value)
+            if units in ["generic_entity", "dollar"]:
+                if concept_item in state.sys["prices"]:
+                    price = Measurement("dollar", state.sys["prices"][concept_item])
+                    # Remember that we now know the price
+                    yield success_state.set_x(measure_into_variable, (price,)).\
+                        record_operations([SetKnownPriceOp(concept_item)])
 
-                    else:
-                        yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
+                else:
+                    yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
+                    return False
+
         else:
             yield success_state
 
@@ -999,6 +1066,7 @@ def reset():
     initial_state = initial_state.add_rel("chicken", "conceptInScope", "true")
     initial_state = initial_state.add_rel("soup", "conceptInScope", "true")
     initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("steak", "conceptInScope", "true")
     initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
     initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
     initial_state = initial_state.add_rel("special", "conceptInScope", "true")

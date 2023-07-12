@@ -10,6 +10,20 @@
             "ID": "9e1086d8-cfd2-4762-b52d-2e421301b1da"
         },
         {
+            "Command": "how much is the soup?",
+            "Expected": "4 dollars",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),udef_q(x5,[measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5)],_be_v_id(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "e6c96c5b-b8c3-4f1e-af5d-881bb0e491d9"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "a5589109-1dc0-4fb4-b4ee-eda0ab9ce3d9"
+        },
+        {
             "Command": "we'd like a table for 2'",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
             "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(2,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
