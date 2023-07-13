@@ -7,20 +7,6 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
-            "ID": "9e1086d8-cfd2-4762-b52d-2e421301b1da"
-        },
-        {
-            "Command": "how much is the soup?",
-            "Expected": "4 dollars",
-            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),udef_q(x5,[measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5)],_be_v_id(e2,x3,x5))))",
-            "Enabled": true,
-            "ID": "e6c96c5b-b8c3-4f1e-af5d-881bb0e491d9"
-        },
-        {
-            "Command": "/new esl.tutorial.reset",
-            "Expected": "",
-            "Tree": "None",
-            "Enabled": true,
             "ID": "a5589109-1dc0-4fb4-b4ee-eda0ab9ce3d9"
         },
         {

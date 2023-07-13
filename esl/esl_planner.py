@@ -3,7 +3,8 @@ import numbers
 from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
-    rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure
+    rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
+    find_unused_item
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -91,12 +92,6 @@ def are_group_items(items):
 def all_are_players(who_multiple):
     return all(who in ["user", "son1"] for who in who_multiple)
 
-
-def find_unused_item(state, object_type):
-    for potential in all_instances(state, object_type):
-        taken = at_least_one_generator(rel_subjects(state, "have", potential))
-        if taken is None:
-            return potential
 
 
 ###############################################################################
@@ -299,7 +294,6 @@ def satisfy_want_group_group(state, group_who, group_what):
 
 
 def satisfy_want(state, who, what):
-    if isinstance(who, GroupVariableValues) or isinstance(what, GroupVariableValues): return
     if len(who) > 1 or len(what) > 1: return
 
     if is_instance(state, what[0]):
@@ -374,7 +368,7 @@ if __name__ == '__main__':
     expected = [('call_taxi', 'alice', 'home_a'), ('ride_taxi', 'alice', 'park'), ('pay_driver', 'alice', 'park')]
 
     print("-- If verbose=0, the planner will return the solution but print nothing.")
-    result, result_state = gtpyhop.find_plan(state1, [('travel', 'alice', 'park')])
+    # result, result_state = gtpyhop.find_plan(state1, [('travel', 'alice', 'park')])
 
     # The result will be a list of actions that must be taken to accomplish the task
     # handle_world_event() is the top level thing that happened

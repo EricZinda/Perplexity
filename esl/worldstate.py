@@ -5,6 +5,7 @@ from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
+from perplexity.utilities import at_least_one_generator
 
 
 def noun_structure(value, part):
@@ -146,7 +147,7 @@ def all_ancestors(state, thing):
         proc_idx += 1
 
 
-def instance_of_or_type(state, thing):
+def instance_of_or_concept_name(state, thing):
     if is_concept(thing):
         return thing.concept_name
     else:
@@ -156,6 +157,10 @@ def instance_of_what(state, thing):
     for i in state.all_rel("instanceOf"):
         if i[0] == thing:
             return i[1]
+
+
+def is_type(state, thing):
+    return isinstance(thing, str) and not is_instance(state, thing)
 
 
 def is_instance(state, thing):
@@ -193,6 +198,30 @@ def count_of_instances_and_concepts(state, concepts_original):
             concept_in_scope_count += 1
 
     return concept_count, concept_in_scope_count, instance_count, instance_in_scope_count
+
+
+def object_to_store(o):
+    return o.concept_name if is_concept(o) else o
+
+
+def store_to_object(state, s):
+    if not is_instance(state, s):
+        return Concept(s)
+    else:
+        return s
+
+
+def find_unused_item(state, object_type):
+    for potential in all_instances(state, object_type):
+        taken = at_least_one_generator(rel_subjects(state, "have", potential))
+        if taken is None:
+            return potential
+
+
+def has_item_of_type(state, object_type):
+    for item in rel_subjects_objects(state, "have"):
+        if sort_of(state, item[1], object_type):
+            yield item[0]
 
 
 def rel_check(state, subject, rel, object):
@@ -431,81 +460,81 @@ class WorldState(State):
                         return True
         return False
 
-    def user_wants(self, wanted):
-        # if wanted not in self.get_entities():
-        #   return [RespondOperation("Sorry, we don't have that.")]
-
-        if wanted[0] == "{":
-            wanted_dict = json.loads(wanted)
-            if wanted_dict["structure"] == "noun_for":
-                if wanted_dict["noun"] == "table1":
-                    if ("user", "table") in self.all_rel("at"):
-                        return [RespondOperation("Um... You're at a table." + self.get_reprompt()),
-                                ResponseStateOp("anything_else")]
-                    if wanted_dict["for_count"] > 2:
-                        return [RespondOperation("Host: Sorry, we don't have a table with that many seats")]
-                    if wanted_dict["for_count"] < 2:
-                        return [RespondOperation("Johnny: Hey! That's not enough seats!")]
-                    if wanted_dict["for_count"] == 2:
-                        return (RespondOperation(
-                            "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
-                            "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
-                                AddRelOp(("user", "at", "table")), ResponseStateOp("something_to_eat"))
-
-                else:
-                    wanted = wanted_dict["noun"]
-
-        if sort_of(self, wanted, "food"):
-            if ("user", "table") in self.all_rel("at"):
-                if "ordered" in self.rel.keys():
-                    if ("user", wanted) in self.all_rel("ordered"):
-                        return [RespondOperation(
-                            "Sorry, you got the last one of those. We don't have any more. Can I get you something else?"),
-                            ResponseStateOp("anything_else")]
-                if (instance_of_what(self, wanted), "user") in self.all_rel("priceUnknownTo"):
-                    return [RespondOperation(
-                        "Son: Wait, let's not order that before we know how much it costs." + self.get_reprompt())]
-
-                assert (instance_of_what(self,wanted) in self.sys["prices"])
-                if self.sys["prices"][instance_of_what(self,wanted)] + self.bill_total() > 15:
-                    return [RespondOperation("Son: Wait, we already spent $" + str(
-                        self.bill_total()) + " so if we get that, we won't be able to pay for it with $15." + self.get_reprompt())]
-
-                return [RespondOperation("Excellent Choice! Can I get you anything else?"),
-                        AddRelOp(("user", "ordered", wanted)), AddBillOp(wanted),
-                        ResponseStateOp("anything_else")]
-
-            return [RespondOperation("Sorry, you must be seated to order")]
-
-        for i in all_instances(self, "table"):
-            if i == wanted:
-                if ("user", "table") in self.all_rel("at"):
-                    return [RespondOperation("Um... You're at a table." + self.get_reprompt())]
-                return [RespondOperation("How many in your party?"), ResponseStateOp("anticipate_party_size")]
-
-        if sort_of(self, wanted, "menu"):
-            if ("user", "table") in self.all_rel("at"):
-                if ("user", "menu1") not in self.all_rel("have"):
-                    return [AddRelOp(("user", "have", "menu1")), RespondOperation(
-                        "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
-                            ResponseStateOp("anticipate_dish")]
-                else:
-                    return [RespondOperation(
-                        "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + self.get_reprompt())]
-            return [RespondOperation("Sorry, you must be seated to order")]
-
-        if wanted == "bill1":
-            for i in self.all_rel("valueOf"):
-                if i[1] == "bill1":
-                    total = i[0]
-                    if self.sys["responseState"] == "done_ordering":
-                        return [RespondOperation(
-                            "Your total is " + str(total) + " dollars. Would you like to pay by cash or card?"),
-                            ResponseStateOp("way_to_pay")]
-                    else:
-                        return [RespondOperation("But... you haven't got any food yet!" + self.get_reprompt())]
-
-        return [RespondOperation("Sorry, I can't get that for you at the moment.")]
+    # def user_wants(self, wanted):
+    #     # if wanted not in self.get_entities():
+    #     #   return [RespondOperation("Sorry, we don't have that.")]
+    #
+    #     if wanted[0] == "{":
+    #         wanted_dict = json.loads(wanted)
+    #         if wanted_dict["structure"] == "noun_for":
+    #             if wanted_dict["noun"] == "table1":
+    #                 if ("user", "table") in self.all_rel("at"):
+    #                     return [RespondOperation("Um... You're at a table." + self.get_reprompt()),
+    #                             ResponseStateOp("anything_else")]
+    #                 if wanted_dict["for_count"] > 2:
+    #                     return [RespondOperation("Host: Sorry, we don't have a table with that many seats")]
+    #                 if wanted_dict["for_count"] < 2:
+    #                     return [RespondOperation("Johnny: Hey! That's not enough seats!")]
+    #                 if wanted_dict["for_count"] == 2:
+    #                     return (RespondOperation(
+    #                         "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
+    #                         "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
+    #                             AddRelOp(("user", "at", "table")), ResponseStateOp("something_to_eat"))
+    #
+    #             else:
+    #                 wanted = wanted_dict["noun"]
+    #
+    #     if sort_of(self, wanted, "food"):
+    #         if ("user", "table") in self.all_rel("at"):
+    #             if "ordered" in self.rel.keys():
+    #                 if ("user", wanted) in self.all_rel("ordered"):
+    #                     return [RespondOperation(
+    #                         "Sorry, you got the last one of those. We don't have any more. Can I get you something else?"),
+    #                         ResponseStateOp("anything_else")]
+    #             if (instance_of_what(self, wanted), "user") in self.all_rel("priceUnknownTo"):
+    #                 return [RespondOperation(
+    #                     "Son: Wait, let's not order that before we know how much it costs." + self.get_reprompt())]
+    #
+    #             assert (instance_of_what(self,wanted) in self.sys["prices"])
+    #             if self.sys["prices"][instance_of_what(self,wanted)] + self.bill_total() > 15:
+    #                 return [RespondOperation("Son: Wait, we already spent $" + str(
+    #                     self.bill_total()) + " so if we get that, we won't be able to pay for it with $15." + self.get_reprompt())]
+    #
+    #             return [RespondOperation("Excellent Choice! Can I get you anything else?"),
+    #                     AddRelOp(("user", "ordered", wanted)), AddBillOp(wanted),
+    #                     ResponseStateOp("anything_else")]
+    #
+    #         return [RespondOperation("Sorry, you must be seated to order")]
+    #
+    #     for i in all_instances(self, "table"):
+    #         if i == wanted:
+    #             if ("user", "table") in self.all_rel("at"):
+    #                 return [RespondOperation("Um... You're at a table." + self.get_reprompt())]
+    #             return [RespondOperation("How many in your party?"), ResponseStateOp("anticipate_party_size")]
+    #
+    #     if sort_of(self, wanted, "menu"):
+    #         if ("user", "table") in self.all_rel("at"):
+    #             if ("user", "menu1") not in self.all_rel("have"):
+    #                 return [AddRelOp(("user", "have", "menu1")), RespondOperation(
+    #                     "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
+    #                         ResponseStateOp("anticipate_dish")]
+    #             else:
+    #                 return [RespondOperation(
+    #                     "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + self.get_reprompt())]
+    #         return [RespondOperation("Sorry, you must be seated to order")]
+    #
+    #     if wanted == "bill1":
+    #         for i in self.all_rel("valueOf"):
+    #             if i[1] == "bill1":
+    #                 total = i[0]
+    #                 if self.sys["responseState"] == "done_ordering":
+    #                     return [RespondOperation(
+    #                         "Your total is " + str(total) + " dollars. Would you like to pay by cash or card?"),
+    #                         ResponseStateOp("way_to_pay")]
+    #                 else:
+    #                     return [RespondOperation("But... you haven't got any food yet!" + self.get_reprompt())]
+    #
+    #     return [RespondOperation("Sorry, I can't get that for you at the moment.")]
 
     def user_wants_multiple(self, wanted_tuple):
         foods = list(all_instances(self, "food"))
@@ -643,11 +672,7 @@ class WorldState(State):
             if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
                 actors = [("user",)]
                 whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]
-                current_state = esl.esl_planner.do_task(self.world_state_frame(), [('satisfy_want', actors, whats)])
-                if current_state is not None:
-                    return current_state.get_operations()
-                else:
-                    return [RespondOperation("I'm not sure what to do about that." + self.get_reprompt())]
+                return self.find_plan([('satisfy_want', actors, whats)])
 
             else:
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
@@ -655,10 +680,16 @@ class WorldState(State):
         else:
             return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
+    def find_plan(self, tasks):
+        current_state = esl.esl_planner.do_task(self.world_state_frame(), tasks)
+        if current_state is not None:
+            return current_state.get_operations()
+        else:
+            return [RespondOperation("I'm not sure what to do about that." + self.get_reprompt())]
 
     def handle_world_event(self, args):
         if args[0] == "user_wants":
-            return self.user_wants(args[1])
+            return self.find_plan([('satisfy_want', [("user",)], [(args[1],)])])
         elif args[0] == "user_wants_to_see":
             return self.user_wants_to_see(args[1])
         elif args[0] == "user_wants_multiple":
@@ -676,6 +707,10 @@ class WorldState(State):
         elif args[0] == "user_wants_to_sit_group":
             return self.user_wants("table1")
         elif args[0] == "user_wants_group":
+            who_list = [binding.value for binding in args[1].solution_values]
+            what_list = [binding.value for binding in args[2].solution_values]
+            return self.find_plan([('satisfy_want', who_list, what_list)])
+
             return self.user_wants_group(args[1],args[2])
         elif args[0] == "user_wants_to_see_group":
             return self.user_wants_to_see_group(args[1],args[2])

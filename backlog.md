@@ -1,10 +1,17 @@
-- How to properly deal with "what do you have?"
-  - 
+- Need to get more precision on converting future tense and questions into request verbs
+  - "Do you have a table?" -> I want a table
+- "What do you have?"
+    - In the context of the entrance, this *could* mean "do you have a table for us?" or "Do you have a menu?"
+    - at the table it means the menu
 - Fixup RequestVerbTransitive
   - What's it for?
     - Turns future tense questions into requests
     - Turns common ways of asking using verbs into a request
-    - 
+
+- "you" can mean either "the waiter" or "the restaurant"
+  - Do you have a pencil?
+  - Do you have steak?
+- Make "how much are your dishes" work
 - Get rid of old code
 - Verbs should declare what tenses they deal with, if none, they should default to present only
 - Figure out how to make "I want 2 steaks and 1 salad" work

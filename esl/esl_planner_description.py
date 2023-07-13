@@ -1,54 +1,112 @@
-from esl.worldstate import is_instance, instance_of_what, sort_of, rel_check
+from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
+    has_item_of_type, is_type
 from perplexity.predications import is_concept
 from perplexity.set_utilities import Measurement
-from perplexity.solution_groups import GroupVariableValues
 from perplexity.sstring import s
+
+task_methods = []
+
+def describe_list_analyze(state, what_group):
+    # See how many of the items we are describing are "specials" or "menu items"
+    analysis = {"Specials": [],
+                "MenuItems": [],
+                "Bills": [],
+                "Others": [],
+                "UniqueItems": set()}
+    for item_value in what_group:
+        for item in item_value:
+            if item not in analysis["UniqueItems"]:
+                analysis["UniqueItems"].add(item)
+                store_object = object_to_store(item)
+                if sort_of(state, store_object, "special"):
+                    analysis["Specials"].append(store_object)
+                elif store_object in rel_subjects(state, "on", "menu"):
+                    analysis["MenuItems"].append(store_object)
+                elif sort_of(state, store_object, "bill"):
+                    analysis["Bills"].append(store_object)
+                else:
+                    analysis["Others"].append(store_object)
+
+    return [('describe_analyzed', analysis)]
+
+
+task_methods.append(['describe', describe_list_analyze])
+
+
+# If we're asked questions about the menu or specials at the entrance
+# tell them to be seated
+def describe_analyzed_at_entrance(state, analysis):
+    if location_of_type(state, "user", "table"): return
+
+    new_methods = []
+    if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
+        new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat."))
+    if len(analysis["Bills"]) > 0:
+        new_methods.append(('respond', "Let's talk about the bill once you've finished eating."))
+    for item in analysis["Others"]:
+        if isinstance(item, Measurement) and item.measurement_type == "dollar":
+            new_methods.append(('respond', "Let's talk about prices once you've been seated."))
+        else:
+            new_methods.append(('describe_item', item))
+
+    return new_methods
 
 
 # Handle describing specials in a detailed way in case the user
 # ask something like "do you have vegetarian dishes?" before they ask what the specials are
 # Any question that includes an answer that is special should trigger the waiter asking if
 # if the user wants to hear the detailed description of specials
-def describe_list(state, what_group):
-    if not isinstance(what_group, list): return
+def describe_analyzed_at_table(state, analysis):
+    if not location_of_type(state, "user", "table"): return
 
-    # Describe each item, and see how many of the items we are describing are "specials"
-    has_special = 0
     new_methods = []
-    unique_items = set()
-    for item_value in what_group:
-        for item in item_value:
-            if item not in unique_items:
-                unique_items.add(item)
-                if sort_of(state, item if not is_concept(item) else item.concept_name, "special"):
-                    has_special += 1
-            new_methods.append(('describe', item))
 
     # Has the player already heard the long description of the specials?
     heard_specials = not rel_check(state, "user", "heardSpecials", "false")
+    has_menu = any(menu_holder in ["son1", "user"] for menu_holder in has_item_of_type(state, "menu"))
 
-    if has_special == len(unique_items) and not heard_specials:
+    if len(analysis["Specials"]) == len(analysis["UniqueItems"]) and not heard_specials:
         # If we are being ask to describe only specials, use the special, detailed description
-        new_methods.clear()
         new_methods.append(('respond', "The specials are <description>"))
         new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
         new_methods.append(('add_rel', "user", "heardSpecials", "true"))
 
-    elif has_special > 0 and not heard_specials:
-        # If not all the items are specials, and we haven't described them, we should first list the short them, then
-        # ask if the user wants to hear the long description
-        new_methods.append(('respond', "Would you like me to describe the specials?"))
+    else:
+        for item in analysis["Specials"]:
+            new_methods.append(('describe_item', item))
+
+        if len(analysis["Specials"]) > 0 and not heard_specials:
+            # If not all the items are specials, and we haven't described them, we should first list the short version, then
+            # ask if the user wants to hear the long description
+            new_methods.append(('respond', "Would you like me to describe the specials?"))
+
+        for item in analysis["MenuItems"]:
+            new_methods.append(('describe_item', item))
+
+        if len(analysis["MenuItems"]) > 0 and not has_menu:
+            # If not all the items are menu items, and we haven't described them, we should first list the short version, then
+            # ask if the user wants to hear the long description
+            new_methods.append(('respond', "Would you like a menu?"))
+
+        for item in analysis["Others"] + analysis["Bills"]:
+            new_methods.append(('describe_item', item))
 
     return new_methods
 
 
-def describe_single_item(state, what):
+task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describe_analyzed_at_table])
+
+
+def describe_item(state, what):
     return [('respond', convert_to_english(state, what))]
 
 
+task_methods.append(['describe_item', describe_item])
+
+
 def convert_to_english(state, what):
-    if is_concept(what):
-        return what.concept_name
+    if is_type(state, what):
+        return what
 
     elif isinstance(what, Measurement):
         return s("{*what.count} {*what.measurement_type:<*what.count}")
@@ -59,4 +117,5 @@ def convert_to_english(state, what):
 
 
 def add_declarations(gtpyhop):
-    gtpyhop.declare_task_methods('describe', describe_list, describe_single_item)
+    for methods in task_methods:
+        gtpyhop.declare_task_methods(*methods)

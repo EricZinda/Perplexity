@@ -199,25 +199,6 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
             yield solution.set_x(x_what_binding.variable.name, (modified,))
 
 
-    # what_binding_value = x_what_binding.value
-    # if len(what_binding_value) == 1 and is_concept(what_binding_value[0]):
-    #     yield state
-    #
-    # what_is = state.get_binding(x_what_binding.variable.name).value[0]
-    # what_for = state.get_binding(x_for_binding.variable.name).value[0]
-    # if not isinstance(what_for, Measurement):
-    #     yield state
-    # else:
-    #     what_measuring = what_for.measurement_type
-    #     if not what_measuring == "generic_cardinality":
-    #         yield state
-    #
-    #     else:
-    #         if hasattr(what_is, "is_concept"):
-    #             modified = what_is.update_modifiers({"structure": "noun_for", "noun": what_is.concept_name, "for_count": what_for.count})
-    #             yield state.set_x(x_what_binding.variable.name, (modified,))
-
-
 @Predication(vocabulary, names=["_cash_n_1"])
 def _cash_n_1(state, x_bind):
     def bound(val):
@@ -633,6 +614,9 @@ def _thanks_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
 
+def is_present_tense(tree_info):
+    return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["pres", "untensed"]
+
 def is_request_from_tree(tree_info):
     introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
@@ -652,19 +636,19 @@ class RequestVerbTransitive:
     def predicate_func(self, state, e_binding, x_actor_binding, x_object_binding):
         is_request = is_request_from_tree(state.get_binding("tree").value[0])
 
-        # Convert "What do you have?" into a menu request
-        if self.lemma == "have":
-            if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
-                if state.get_binding(x_object_binding.variable.name).value is None:
-                    yield state.set_x(x_object_binding.variable.name, ("dummy_variable",)).record_operations(
-                        state.handle_world_event(["user_wants", "menu1"]))
-                    return
+        # # Convert "What do you have?" into a menu request
+        # if self.lemma == "have":
+        #     if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
+        #         if state.get_binding(x_object_binding.variable.name).value is None:
+        #             yield state.set_x(x_object_binding.variable.name, ("dummy_variable",)).record_operations(
+        #                 state.handle_world_event(["user_wants", Concept("menu")]))
+        #             return
 
         def bound(x_actor, x_object):
             if is_request and is_user_type(x_actor):
                 return True
             else:
-                if (x_actor, x_object) in rel_subjects_objects(state, self.lemma):
+                if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, self.lemma):
                     return True
                 else:
                     report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
@@ -674,7 +658,7 @@ class RequestVerbTransitive:
             found = False
             for i in rel_subjects(state, self.lemma, x_object):
                 found = True
-                yield i
+                yield store_to_object(i)
             if not found:
                 report_error(["Nothing_VTRANS_X", self.lemma, x_object])
 
@@ -682,7 +666,7 @@ class RequestVerbTransitive:
             found = False
             for i in rel_objects(state, x_actor, self.lemma):
                 found = True
-                yield i
+                yield store_to_object(state, i)
             if not found:
                 report_error(["X_VTRANS_Nothing", self.lemma, x_actor])
 
@@ -783,8 +767,46 @@ see = RequestVerbTransitive(["_see_v_1", "_see_v_1_request"], "see", "user_wants
 sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
 
 
+@Predication(vocabulary, names=["_have_v_1"])
+def present_have_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if not is_present_tense(state.get_binding("tree").value[0]): return
+
+    def bound(x_actor, x_object):
+        if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "have"):
+            return True
+        else:
+            report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
+            return False
+
+    def actor_from_object(x_object):
+        found = False
+        for i in rel_subjects(state, "have", x_object):
+            found = True
+            yield store_to_object(i)
+        if not found:
+            report_error(["Nothing_VTRANS_X", "have", x_object])
+
+    def object_from_actor(x_actor):
+        found = False
+        for i in rel_objects(state, x_actor, "have"):
+            found = True
+            yield store_to_object(state, i)
+        if not found:
+            report_error(["X_VTRANS_Nothing", "have", x_actor])
+
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
+                                                object_from_actor)
+
+
+@Predication(vocabulary, names=["solution_group__have_v_1"])
+def present_have_v_1_group(state_list, e_list, x_act_list, x_obj_list):
+    yield state_list
+
+
 @Predication(vocabulary, names=have.predicate_name_list)
 def _have_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if is_present_tense(state.get_binding("tree").value[0]): return
+
     yield from have.predicate_func(state, e_introduced_binding, x_actor_binding, x_object_binding)
 
 
@@ -876,13 +898,19 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if measure_into_variable is not None:
             # This is a "how much is x" question and we need to measure the value
             # into the specified variable
-            concept_item = instance_of_or_type(state, x_actor_value)
+            concept_item = instance_of_or_concept_name(state, x_actor_value)
             if units in ["generic_entity", "dollar"]:
                 if concept_item in state.sys["prices"]:
                     price = Measurement("dollar", state.sys["prices"][concept_item])
                     # Remember that we now know the price
                     yield success_state.set_x(measure_into_variable, (price,)).\
                         record_operations([SetKnownPriceOp(concept_item)])
+                elif concept_item == "bill":
+                    total = list(rel_objects(state, "bill1", "valueOf"))
+                    if len(total) == 0:
+                        total.append(0)
+                    price = Measurement("dollar", total[0])
+                    yield success_state.set_x(measure_into_variable, (price,))
 
                 else:
                     yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
@@ -1017,44 +1045,43 @@ def reset():
                                  "responseState": "initial"
                                 })
 
+    initial_state = initial_state.add_rel("bill", "specializes", "thing")
+    initial_state = initial_state.add_rel("check", "specializes", "thing")
+    initial_state = initial_state.add_rel("kitchen", "specializes", "thing")
     initial_state = initial_state.add_rel("table", "specializes", "thing")
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
-    initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("person", "specializes", "thing")
     initial_state = initial_state.add_rel("son", "specializes", "person")
+
+    initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("dish", "specializes", "food")
-    initial_state = initial_state.add_rel("special", "specializes", "dish")
-    initial_state = initial_state.add_rel("pizza", "specializes", "dish")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
+    initial_state = initial_state.add_rel("special", "specializes", "dish")
+
+    initial_state = initial_state.add_rel("pizza", "specializes", "meat")
     initial_state = initial_state.add_rel("steak", "specializes", "meat")
     initial_state = initial_state.add_rel("chicken", "specializes", "meat")
     initial_state = initial_state.add_rel("salmon", "specializes", "meat")
     initial_state = initial_state.add_rel("bacon", "specializes", "meat")
-
-    initial_state = initial_state.add_rel("soup", "specializes", "special")
-    initial_state = initial_state.add_rel("salad", "specializes", "special")
     initial_state = initial_state.add_rel("soup", "specializes", "veggie")
     initial_state = initial_state.add_rel("salad", "specializes", "veggie")
 
-    initial_state = initial_state.add_rel("bill", "specializes", "thing")
-    initial_state = initial_state.add_rel("check", "specializes", "thing")
 
     # These concepts are "in scope" meaning it is OK to say "the X"
-    initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("salmon", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("chicken", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("soup", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("salad", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("steak", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("bacon", "conceptInScope", "true")
-    initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
     initial_state = initial_state.add_rel("special", "conceptInScope", "true")
+
+    # These concepts are only in scope in the table frame
+    initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
+    initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
+
 
     # Instances below here
     # Location and "in scope" are modeled as who "has" a thing
     # If user or son has it, it is "in scope"
     # otherwise it is not
+    initial_state = initial_state.add_rel("kitchen1", "instanceOf", "kitchen")
+
     initial_state = initial_state.add_rel("table1", "instanceOf", "table")
     initial_state = initial_state.add_rel("table1", "maxCap", 4)
     initial_state = initial_state.add_rel("table2", "instanceOf", "table")
@@ -1066,31 +1093,39 @@ def reset():
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
 
-    dish_types = ["soup", "salad", "bacon", "salmon", "steak", "chicken"]
-    for j in dish_types:
+    menu_types = ["bacon", "salmon", "steak", "chicken", "pizza"]
+    special_types = ["soup", "salad"]
+    dish_types = menu_types + special_types
+    for dish_type in dish_types:
+        # The computer has the concepts of the items so it can answer "do you have steak?"
+        initial_state = initial_state.add_rel("computer", "have", dish_type)
+
+        # These concepts are "in scope" meaning it is OK to say "the X"
+        initial_state = initial_state.add_rel(dish_type, "conceptInScope", "true")
+
+        if dish_type in menu_types:
+            initial_state = initial_state.add_rel(dish_type, "on", "menu")
+        else:
+            initial_state = initial_state.add_rel(dish_type, "priceUnknownTo", "user")
+            initial_state = initial_state.add_rel(dish_type, "specializes", "special")
+
+        # Create the food instances
         for i in range(3):
-            initial_state = initial_state.add_rel(j+str(i), "instanceOf", j)
-            initial_state = initial_state.add_rel("computer", "have", j+str(i))
-            if j == "chicken":
-                initial_state = initial_state.add_rel(j+str(i), "isAdj", "roasted")
-            if j == "salmon":
-                initial_state = initial_state.add_rel(j+str(i), "isAdj", "grilled")
+            # Create an instance of this food
+            food_instance = dish_type+str(i)
+            initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)
 
-    initial_state = initial_state.add_rel("computer", "have", "bill1")
-
-    initial_state = initial_state.add_rel("steak1", "on", "menu1")
-    initial_state = initial_state.add_rel("broiledsteak1", "on", "menu1")
-    initial_state = initial_state.add_rel("chicken1", "on", "menu1")
-    initial_state = initial_state.add_rel("salmon1", "on", "menu1")
-    initial_state = initial_state.add_rel("bacon1", "on", "menu1")
+            # The kitchen is where all the food is
+            initial_state = initial_state.add_rel("kitchen1", "have", food_instance)
+            if dish_type == "chicken":
+                initial_state = initial_state.add_rel(food_instance, "isAdj", "roasted")
+            if dish_type == "salmon":
+                initial_state = initial_state.add_rel(food_instance, "isAdj", "grilled")
 
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")
     initial_state = initial_state.add_rel("room", "contains", "user")
-
-    initial_state = initial_state.add_rel("soup", "priceUnknownTo", "user")
-    initial_state = initial_state.add_rel("salad", "priceUnknownTo", "user")
 
     initial_state = initial_state.add_rel("son1", "instanceOf", "son")
     initial_state = initial_state.add_rel("user", "have", "son1")
