@@ -1,15 +1,5 @@
 - How to properly deal with "what do you have?"
-  - By default we only get one answer
-  - We'd like to get the full answer set in a wh_question
-  - Need a flag that says "this is the final one"
-    - Or maybe "we need the full set"?
-    - Or maybe yes/no propositions stop early but other types (wh-questions and commands) always pull a complete answer
-      - This seems right: If it is not a yes/no or proposition, run it till the end because it could always get new values 
-        in variables that aren't tracked and the same ones in variables that are
-
-  - Right now:
-    - Handler is called twice to be able to say "there is more"
-    - 
+  - 
 - Fixup RequestVerbTransitive
   - What's it for?
     - Turns future tense questions into requests

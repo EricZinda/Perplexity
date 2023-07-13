@@ -146,8 +146,11 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
         # solution. Otherwise, we can just stop when we have a solution and return a minimal solution
         variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
+
+        # We also set this if the user asks a wh_question so we ensure we get all of the values
+        variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
         groups_stream = all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
-                                                 initial_stats_group, has_global_constraint, variable_has_inf_max)
+                                                 initial_stats_group, has_global_constraint)
         group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
         if all_unprocessed_groups is not None:
             unprocessed_groups = []
