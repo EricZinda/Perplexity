@@ -1,11 +1,13 @@
 import copy
 import enum
+import inspect
 import itertools
 import json
 
 from perplexity.execution import get_variable_metadata, report_error, execution_context
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
+from perplexity.tree import find_predication_from_introduced, find_quantifier_from_variable
 from perplexity.utilities import at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
@@ -35,7 +37,7 @@ class Concept(object):
         return self._hash
 
     def __eq__(self, other):
-        return isinstance(other, Concept) and self._hash == other._hash and self._modifiers == other._modifiers
+        return isinstance(other, Concept) and self.__hash__() == other.__hash__() and self._modifiers == other._modifiers
 
     def is_concept(self):
         return True
@@ -66,8 +68,8 @@ class Concept(object):
 #   False if the same for instances
 #   None
 
-def meets_constraint(variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
-    if variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
+def meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
+    if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
         # This means the entire set of things must meet the variable constraints
         if check_concepts:
             # If this is a concept check we only ever check the concept_in_scope_count here because the user
@@ -78,8 +80,9 @@ def meets_constraint(variable_constraints, concept_count, concept_in_scope_count
             check_count = instance_count
     else:
         if check_concepts:
-            # Because we are not dealing with all_rstr_meet_criteria, the phrase was something like "we want menus"
-            # Which is talking about abstract menus which implies:
+            # Because we are not dealing with all_rstr_meet_criteria, the phrase was something like "we want menus" or
+            # "we want a menu" or "what do you have?"
+            # Which is talking about abstract menus, which implies:
             # 1. There is a single concept of "menu" that is obvious
             # 2. There are enough instances of it to fulfil the request
             if concept_count == 1:
@@ -91,12 +94,17 @@ def meets_constraint(variable_constraints, concept_count, concept_in_scope_count
 
     # Otherwise we are talking about instances as in "I'd like a/2/a few menus"
     # Constraints with no global criteria just get merged to most restrictive
-    if check_count >= variable_constraints.min_size:
+    if check_count >= (variable_constraints.min_size if variable_constraints is not None else 1):
         # As long as we meet the min size we can fulfil the request
         return True
 
     else:
-        report_error(["lessThan", ["AfterFullPhrase", variable], variable_constraints.min_size], force=True)
+        if check_count == 0:
+            introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
+            report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+
+        else:
+            report_error(["lessThan", ["AfterFullPhrase", variable], variable_constraints.min_size], force=True)
 
     return False
 
@@ -174,6 +182,9 @@ def discrete_variable_generator(value, combinatoric, variable_size):
 
 # Main helper for a predication that takes 1 argument
 def predication_1(state, binding, bound_function, unbound_function, binding_descriptor=None):
+    if not inspect.isgenerator(unbound_function) and not inspect.isgeneratorfunction(unbound_function):
+        assert False, f"function {unbound_function.__name__} must be a generator"
+
     if binding.value is None:
         # Unbound
         for unbound_value in unbound_function():
@@ -286,6 +297,13 @@ def predication_2(state, binding1, binding2,
                   both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                   binding1_descriptor=None,
                   binding2_descriptor=None):
+    for func in [binding1_unbound_predication_function,
+                 binding2_unbound_predication_function,
+                 all_unbound_predication_function if all_unbound_predication_function is not None else binding2_unbound_predication_function]:
+        if not inspect.isgenerator(func) and not inspect.isgeneratorfunction(func):
+            assert False, f"function {func.__name__} must be a generator"
+
+
     # Build a generator that only generates the discrete values for the binding that are valid for these descriptors,
     # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
     binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
@@ -446,6 +464,14 @@ def individual_style_predication_1(state, binding, bound_predication_function, u
 def lift_style_predication_2(state, binding1, binding2,
                              both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                              binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+    def default(_):
+        if False:
+            yield None
+
+    if binding1_unbound_predication_function is None:
+        binding1_unbound_predication_function = default
+    if binding2_unbound_predication_function is None:
+        binding2_unbound_predication_function = default
 
     yield from predication_2(state, binding1, binding2,
                              both_bound_prediction_function,

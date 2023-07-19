@@ -1,5 +1,5 @@
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
-    has_item_of_type, is_type
+    has_item_of_type, is_type, is_instance, rel_objects
 from perplexity.predications import is_concept
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
@@ -20,7 +20,7 @@ def describe_list_analyze(state, what_group):
                 store_object = object_to_store(item)
                 if sort_of(state, store_object, "special"):
                     analysis["Specials"].append(store_object)
-                elif store_object in rel_subjects(state, "on", "menu"):
+                elif sort_of(state, store_object, ["food", "menu"]):
                     analysis["MenuItems"].append(store_object)
                 elif sort_of(state, store_object, "bill"):
                     analysis["Bills"].append(store_object)
@@ -41,13 +41,15 @@ def describe_analyzed_at_entrance(state, analysis):
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
         new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat."))
+
     if len(analysis["Bills"]) > 0:
         new_methods.append(('respond', "Let's talk about the bill once you've finished eating."))
+
     for item in analysis["Others"]:
         if isinstance(item, Measurement) and item.measurement_type == "dollar":
             new_methods.append(('respond', "Let's talk about prices once you've been seated."))
         else:
-            new_methods.append(('describe_item', item))
+            new_methods.insert(0, ('describe_item', item))
 
     return new_methods
 
@@ -112,6 +114,14 @@ def convert_to_english(state, what):
         return s("{*what.count} {*what.measurement_type:<*what.count}")
 
     else:
+        # if it is an instance, with a name, return that
+        if is_instance(state, what):
+            names = list(rel_objects(state, what, "hasName"))
+            if len(names) > 0:
+                return names[0]
+
+        # Instances of commodities like steaks (i.e. steak1, steak2) that don't have
+        # a name should always just return their type name
         type = instance_of_what(state, what)
         return type if type is not None else "something"
 

@@ -485,6 +485,14 @@ def is_last_fw_seq(tree, fw_seq_predication):
     return len([predication for predication in consuming_predications if predication.name != "fw_seq"]) > 0
 
 
+def get_wh_question_variable(tree_info):
+    this_sentence_force = sentence_force(tree_info["Variables"])
+    if this_sentence_force in ["ques", "prop-or-ques"]:
+        predication = find_predications_in_list_in_list([tree_info["Tree"]], ["_which_q", "which_q"])
+        if predication is not None and len(predication) > 0:
+            return predication[0].args[0]
+
+
 def find_predications_using_variable(term, variable):
     def match_predication_using_variable(predication):
         for arg_index in range(1, len(predication.arg_types)):

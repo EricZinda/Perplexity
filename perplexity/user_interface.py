@@ -11,7 +11,7 @@ from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, \
-    find_predication, MrsParser, tree_contains_predication, find_predications_in_list_in_list
+    find_predication, MrsParser, tree_contains_predication, find_predications_in_list_in_list, get_wh_question_variable
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
     parse_predication_name
@@ -129,7 +129,7 @@ class UserInterface(object):
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 continue
 
-            unknown, contingent = self.unknown_words(mrs)
+            unknown, contingent = self.unknown_words(mrs, self.state)
             mrs_record = self.new_mrs_record(mrs=mrs, unknown_words=unknown)
             self.interaction_record["Mrss"].append(mrs_record)
 
@@ -147,7 +147,10 @@ class UserInterface(object):
                                       "Variables": mrs.variables,
                                       "Tree": tree_orig}
 
+                    alternate_tree_generated = False
                     for tree_info in self.execution_context.vocabulary.alternate_trees(tree_info_orig, len(contingent) == 0):
+                        alternate_tree_generated = True
+
                         # Add afterwards since the mrs can't be deepcopied
                         tree_info["MRS"] = self.mrs_parser.mrs_to_string(mrs)
                         tree_index += 1
@@ -161,9 +164,9 @@ class UserInterface(object):
 
                         if len(contingent) > 0:
                             # Make sure the contingent words were removed by a transformer
-                            if tree_contains_predication(tree_info["Tree"], contingent):
+                            if tree_contains_predication(tree_info["Tree"], [x[0] for x in contingent]):
                                 # It is still there, fail this tree
-                                tree_record["Error"] = f"One or more of these words not transformed out of tree: {contingent}"
+                                tree_record["Error"] = f"One or more of these words not transformed out of tree: {[x[0] for x in contingent]}"
                                 continue
 
                         # Try the state from each frame that is available
@@ -172,12 +175,7 @@ class UserInterface(object):
                             with self.execution_context:
                                 solutions = self.execution_context.solve_mrs_tree(frame_state, tree_info)
                                 this_sentence_force = sentence_force(tree_info["Variables"])
-                                wh_phrase_variable = None
-                                if this_sentence_force == "ques":
-                                    predication = find_predications_in_list_in_list([tree_info["Tree"]], ["_which_q", "which_q"])
-                                    if predication is not None and len(predication) > 0:
-                                        wh_phrase_variable = predication[0].args[0]
-
+                                wh_phrase_variable = get_wh_question_variable(tree_info)
                                 unprocessed_groups = [] if self.show_all_answers else None
                                 def yield_from_first():
                                     if unprocessed_groups is not None:
@@ -236,6 +234,13 @@ class UserInterface(object):
                                     # This failed, remember it if it is the "best" failure
                                     # which we currently define as the first one
                                     self.evaluate_best_response(solution_group_generator)
+
+                    if len(contingent) > 0 and not alternate_tree_generated:
+                        unknown_words_error = [0, ["unknownWords", contingent]]
+                        tree_record = self.new_error_tree_record(error=unknown_words_error,
+                                                                 response_generator=self.response_function(self.message_function, None, [], unknown_words_error))
+                        mrs_record["Trees"].append(tree_record)
+                        self.evaluate_best_response(None)
 
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_tree_record()
@@ -401,17 +406,17 @@ class UserInterface(object):
 
             tree_index += 1
 
-    def in_match_all(self, predication, argument_types, metadata_list):
+    def in_match_all(self, state, predication, argument_types, metadata_list):
         for metadata in metadata_list:
             if metadata.is_match_all():
                 predication_info = parse_predication_name(predication.predicate)
-                if metadata.matches_lemmas(predication_info["Lemma"]):
+                if metadata.matches_lemmas(state, predication_info["Lemma"]):
                     return True
 
         else:
             return False
 
-    def unknown_words(self, mrs):
+    def unknown_words(self, mrs, state):
         unknown_words = []
         contingent_words = []
         phrase_type = sentence_force(mrs.variables)
@@ -426,11 +431,16 @@ class UserInterface(object):
             predications = list(self.execution_context.vocabulary.predications(predication.predicate, argument_types, phrase_type))
             all_metadata = [meta for meta in self.execution_context.vocabulary.metadata(predication.predicate, argument_types)]
             if len(predications) == 0 or \
-                    (all(meta.is_match_all() for meta in all_metadata) and not self.in_match_all(predication, argument_types, all_metadata)):
+                    (all(meta.is_match_all() for meta in all_metadata) and not self.in_match_all(state, predication, argument_types, all_metadata)):
 
                 # BUT: if a transformer might remove it, return it as "contingent" so we can see if it did
                 if predication.predicate in self.execution_context.vocabulary.transformer_removed:
-                    contingent_words.append(predication.predicate)
+                    contingent_words.append((predication.predicate,
+                                          argument_types,
+                                          phrase_type,
+                                          # Record if at least one form is understood for
+                                          # better error messages
+                                          self.execution_context.vocabulary.version_exists(predication.predicate)))
 
                 else:
                     # If there aren't any implementations for this predication, or they are all match_all and don't implement it...

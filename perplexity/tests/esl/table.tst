@@ -10,11 +10,67 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
+            "Command": "Do you have a table?",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "7717fbcf-b6e4-4e72-b8a8-75070cf34374"
+        },
+        {
+            "Command": "Do you have the table?",
+            "Expected": "I'm not sure which table you mean.",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "cd3fae35-7dac-447a-bb2a-94230d411ed1"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "40f0f35a-9eed-4fc8-8e91-23f968ff3009"
+        },
+        {
+            "Command": "What can I have?",
+            "Expected": "Sorry, you must be seated to get a menu",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "324c870d-e826-4cdb-a4da-a209a1af334d"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "2984c240-567b-479f-9aa3-07c8abc18995"
+        },
+        {
+            "Command": "Can we have a table?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "817eaf3e-c2e5-4f6f-8953-812247c528ed"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "bf913033-2a48-41ff-bb83-c0299a893193"
+        },
+        {
             "Command": "I'd like a table for my son and me",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
             "Tree": "_a_q(x11,udef_q(x17,def_explicit_q(x22,pronoun_q(x27,pron(x27),[_son_n_of(x22,i32), poss(e26,x22,x27)]),pronoun_q(x34,pron(x34),_and_c(x17,x22,x34))),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+            "ID": "569f6ea4-c643-4d90-9eca-eed604923296"
         },
         {
             "Command": "/new esl.tutorial.reset",
@@ -39,7 +95,7 @@
         },
         {
             "Command": "I want the table",
-            "Expected": "There is more than 1 table",
+            "Expected": "I'm not sure which table you mean.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "74092d64-1466-4b30-bf1d-486e17005e9e"

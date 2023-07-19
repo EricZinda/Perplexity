@@ -1,15 +1,13 @@
-import copy
-
 import perplexity.messages
 from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
-from perplexity.predications import combinatorial_predication_1, in_style_predication_2, Concept, is_concept, \
+from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     meets_constraint, lift_style_predication_2
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
-from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
-from perplexity.tree import find_predication_from_introduced
+from perplexity.transformer import TransformerMatch, TransformerProduction
+from perplexity.tree import find_predication_from_introduced, get_wh_question_variable
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
 from perplexity.vocabulary import Predication, EventOption, Transform, override_predications
@@ -18,6 +16,55 @@ from esl.worldstate import *
 
 vocabulary = system_vocabulary()
 override_predications(vocabulary, "user", ["card__cex__"])
+
+# ******** Helpers ************
+def convert_noun_structure(binding_value):
+    new_list = []
+    for item in binding_value:
+        if hasattr(item, "is_concept"):
+            new_list.append(item.modifiers())
+        else:
+            new_list.append(item)
+    return tuple(new_list)
+
+
+def variable_group_values_to_list(variable_group):
+    return [binding.value for binding in variable_group.solution_values]
+
+
+def check_solution_group_constraints(state_list, x_what_variable_group):
+    # These are concepts. Only need to check the first because:
+    # If one item in the group is a concept, they all are
+    if is_concept(x_what_variable_group.solution_values[0].value[0]):
+        x_what_variable = x_what_variable_group.solution_values[0].variable.name
+
+        # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
+        # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
+        # "I'll have the steak" you should get an error
+        x_what_values = [x.value for x in x_what_variable_group.solution_values]
+        x_what_individuals_set = set()
+        for value in x_what_values:
+            x_what_individuals_set.update(value)
+        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], list(x_what_individuals_set))
+        return meets_constraint(state_list[0].get_binding("tree").value[0],
+                            x_what_variable_group.variable_constraints,
+                            concept_count,
+                            concept_in_scope_count,
+                            instance_count,
+                            instance_in_scope_count,
+                            check_concepts=True,
+                            variable=x_what_variable)
+
+
+def is_present_tense(tree_info):
+    return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["pres", "untensed"]
+
+
+def is_request_from_tree(tree_info):
+    introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+    return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
+        introduced_predication.name.endswith("_request") or \
+        tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
 
 
 # ******** Transforms ************
@@ -29,18 +76,20 @@ def would_like_to_want_transformer():
     return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"], production=production)
 
 
-# Convert "Can/could I x?", "I can/could x?" to "I x?"
+# Convert "Can/could I x?", "I can/could x?" to "I x_request x?"
+# "What can I x?"
 @Transform(vocabulary)
 def can_removal_intransitive_transformer():
-    production = TransformerProduction(name="$name", args={"ARG0":"$e1", "ARG1":"$x1"})
+    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_can_v_modal"], production=production)
 
 
-# Convert "Can/could I x y?", "I can/could x y?" to "I x y?"
+# Convert "can I have a table/steak/etc?" or "what can I have?"
+# To: able_to
 @Transform(vocabulary)
-def can_removal_transitive_transformer():
-    production = TransformerProduction(name="$name", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
+def can_to_able_transitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_can_v_modal"], production=production)
 
@@ -252,9 +301,14 @@ def _no_a_1(state, i_binding, h_binding):
     yield state.record_operations(state.handle_world_event(["no"]))
 
 
-def handles_noun(noun_lemma):
-    return noun_lemma in ["special", "food", "menu", "soup", "salad", "table", "thing", "steak", "meat", "bill",
-                          "check", "dish", "salmon", "chicken","bacon","son"]
+@Predication(vocabulary, names=["person"])
+def person(state, x_person_binding):
+    yield from match_all_n("person", state, x_person_binding)
+
+
+def handles_noun(state, noun_lemma):
+    handles = ["thing"] + list(specializations(state, "thing"))
+    return noun_lemma in handles
 
 
 # Simple example of using match_all that doesn't do anything except
@@ -338,15 +392,20 @@ class PastParticiple:
                                                bound,
                                                unbound)
 
+
 grilled = PastParticiple(["_grill_v_1"],"grilled")
 roasted = PastParticiple(["_roast_v_cause"],"roasted")
+
+
 @Predication(vocabulary, names=grilled.predicate_name_list)
 def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
     yield from grilled.predicate_function(state,e_introduced_binding,i_binding,x_target_binding)
 
+
 @Predication(vocabulary, names=roasted.predicate_name_list)
 def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
     yield from roasted.predicate_function(state,e_introduced_binding,i_binding,x_target_binding)
+
 
 @Predication(vocabulary, names=("_on_p_loc",))
 def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
@@ -401,18 +460,9 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
                                                  wanters_of_obj, wanted_of_actor)
 
-def convert_noun_structure(binding_value):
-    new_list = []
-    for item in binding_value:
-        if hasattr(item, "is_concept"):
-            new_list.append(item.modifiers())
-        else:
-            new_list.append(item)
-    return tuple(new_list)
-
 
 @Predication(vocabulary, names=["solution_group__want_v_1"])
-def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
 
     # This may be getting called with concepts or instances, before we call the planner
@@ -438,7 +488,8 @@ def want_group(state_list, e_introduced_binding_list, x_actor_variable_group, x_
         for value in x_what_values:
             x_what_individuals_set.update(value)
         concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], list(x_what_individuals_set))
-        if meets_constraint(x_what_variable_group.variable_constraints,
+        if meets_constraint(current_state.get_binding("tree").value[0],
+                            x_what_variable_group.variable_constraints,
                             concept_count,
                             concept_in_scope_count,
                             instance_count,
@@ -592,8 +643,6 @@ def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         yield state
 
 
-
-
 @Predication(vocabulary, names=["_please_a_1"])
 def _please_a_1(state, e_introduced_binding, e_binding):
     yield state
@@ -614,16 +663,6 @@ def _thanks_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
 
-def is_present_tense(tree_info):
-    return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["pres", "untensed"]
-
-def is_request_from_tree(tree_info):
-    introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
-    return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
-        introduced_predication.name.endswith("_request") or \
-        tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
-
-
 # If it is a future tense question with two bound arguments: turn it into a request
 # Otherwise: look up the lemma in the state
 class RequestVerbTransitive:
@@ -635,14 +674,6 @@ class RequestVerbTransitive:
 
     def predicate_func(self, state, e_binding, x_actor_binding, x_object_binding):
         is_request = is_request_from_tree(state.get_binding("tree").value[0])
-
-        # # Convert "What do you have?" into a menu request
-        # if self.lemma == "have":
-        #     if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
-        #         if state.get_binding(x_object_binding.variable.name).value is None:
-        #             yield state.set_x(x_object_binding.variable.name, ("dummy_variable",)).record_operations(
-        #                 state.handle_world_event(["user_wants", Concept("menu")]))
-        #             return
 
         def bound(x_actor, x_object):
             if is_request and is_user_type(x_actor):
@@ -761,12 +792,12 @@ class RequestVerbIntransitive:
                 yield (state_list[0].record_operations(state_list[0].handle_world_event([self.group_logic, x_actor_binding_list])),)
 
 
-
-have = RequestVerbTransitive(["_have_v_1", "_get_v_1", "_take_v_1", "_have_v_1_request"], "have", "user_wants", "user_wants_group")
+have = RequestVerbTransitive(["_get_v_1", "_take_v_1"], "have", "user_wants", "user_wants_group")
 see = RequestVerbTransitive(["_see_v_1", "_see_v_1_request"], "see", "user_wants_to_see", "user_wants_to_see_group")
 sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
 
 
+# Just purely answers questions about having things in the present tense
 @Predication(vocabulary, names=["_have_v_1"])
 def present_have_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
@@ -775,7 +806,7 @@ def present_have_v_1(state, e_introduced_binding, x_actor_binding, x_object_bind
         if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "have"):
             return True
         else:
-            report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
+            report_error(["verbDoesntApply", x_actor, "have", x_object])
             return False
 
     def actor_from_object(x_object):
@@ -787,32 +818,127 @@ def present_have_v_1(state, e_introduced_binding, x_actor_binding, x_object_bind
             report_error(["Nothing_VTRANS_X", "have", x_object])
 
     def object_from_actor(x_actor):
-        found = False
-        for i in rel_objects(state, x_actor, "have"):
-            found = True
-            yield store_to_object(state, i)
-        if not found:
-            report_error(["X_VTRANS_Nothing", "have", x_actor])
+        if x_actor == "computer":
+            # - "What do you have?"-->
+            #   - Conceptually, there are a lot of things the computer has
+            #     - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
+            #     - So it is a special case that we interpret as a request for a menu
+            yield Concept("menu")
+
+        else:
+            found = False
+            for i in rel_objects(state, x_actor, "have"):
+                found = True
+                yield store_to_object(state, i)
+            if not found:
+                report_error(["X_VTRANS_Nothing", "have", x_actor])
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                                 object_from_actor)
 
 
+# - "Do you have a menu?" --> implied request for a menu
+# - "Do you have a steak?" --> just asking about the steak, no implied request
+# - "Do you have a bill?" --> just asking about the bill, no implied request
 @Predication(vocabulary, names=["solution_group__have_v_1"])
-def present_have_v_1_group(state_list, e_list, x_act_list, x_obj_list):
+def present_have_v_1_group(state_list, has_more, e_list, x_act_list, x_obj_list):
+    # Ignore this group if it isn't present tense
+    if not is_present_tense(state_list[0].get_binding("tree").value[0]): return
+
+    # Fail this group if we don't meet the constraints
+    if not check_solution_group_constraints(state_list, x_obj_list):
+        yield []
+
+    if len(state_list) == 1:
+        if len(x_act_list.solution_values) == 1 and \
+            len(x_act_list.solution_values[0].value) == 1 and \
+            x_act_list.solution_values[0].value[0] == "computer":
+            if len(x_obj_list.solution_values) == 1 and \
+                len(x_obj_list.solution_values[0].value) == 1 and \
+                x_obj_list.solution_values[0].value[0] in [Concept("table"), Concept("menu")]:
+                    # "Do you have a table/menu?" --> implied request for a table/menu
+                    task = ('satisfy_want', [("user",)], variable_group_values_to_list(x_obj_list))
+                    final_state = do_task(state_list[0].world_state_frame(), [task])
+                    if final_state:
+                        yield [final_state]
+                        return
+                    else:
+                        yield []
+
     yield state_list
 
 
-@Predication(vocabulary, names=have.predicate_name_list)
-def _have_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if is_present_tense(state.get_binding("tree").value[0]): return
+# Used only when there is a form of have that means "able to"
+# The regular predication only checks if x is able to have y
+@Predication(vocabulary, names=["_have_v_1_able"])
+def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    # Things players can have
+    players_can_have = ["food", "table", "menu"]
 
-    yield from have.predicate_func(state, e_introduced_binding, x_actor_binding, x_object_binding)
+    def both_bound_prediction_function(x_actors, x_objects):
+        store_actors = [object_to_store(x) for x in x_actors]
+        store_objects = [object_to_store(x) for x in x_objects]
+
+        # Players are able to have any food, a table or a menu
+        if is_user_type(x_actors):
+            for store in store_objects:
+                if not sort_of(state, store, players_can_have):
+                    return False
+            return True
+
+        # Food is able to have ingredients, restaurant can have food, etc.
+        # Whatever we have modelled
+        else:
+            for store_actor in store_actors:
+                for store_object in store_objects:
+                    if not rel_check(state, store_actor, "have", store_object):
+                        return False
+
+            return True
+
+        pass
+
+    def actor_unbound(x_object):
+        if False:
+            yield None
+
+    def object_unbound(x_actor):
+        # This is a "What can I have?" type question
+        # - Conceptually, there are a lot of things the user is able to have: a table, a bill, a menu, a steak, etc.
+        #   - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
+        #     - So it is a special case that we interpret as a request for a menu
+        if is_user_type(x_actor):
+            yield (Concept("menu"),)
+
+    yield from lift_style_predication_2(state, x_actor_binding, x_object_binding,
+                                        both_bound_prediction_function,
+                                        actor_unbound,
+                                        object_unbound)
 
 
-@Predication(vocabulary, names=["solution_group_" + x for x in have.predicate_name_list])
-def _have_v_1_group(state_list, e_list, x_act_list, x_obj_list):
-    yield from have.group_predicate_func(state_list, e_list, x_act_list, x_obj_list)
+# The group predication for have_able can also generate an implied request,
+# but only if it was a question with a bound actor
+@Predication(vocabulary, names=["solution_group__have_v_1_able"])
+def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
+    # At this point they were *able* to have the item, now we see if this was an implicit request for it
+    # If this is a question, but not a wh question, involving the players, then it is also a request for something
+    tree_info = state_list[0].get_binding("tree").value[0]
+    force = sentence_force(tree_info["Variables"])
+    wh_variable = get_wh_question_variable(tree_info)
+    if force in ["ques", "prop-or-ques"] and \
+        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == Concept("menu")) or \
+         not get_wh_question_variable(tree_info)):
+        # The planner will only satisfy a want wrt the players
+        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group))
+        final_state = do_task(state_list[0].world_state_frame(), [task])
+        if final_state:
+            yield [final_state]
+    else:
+        # Not an implicit request
+        yield state_list
+
+        if has_more:
+            yield True
 
 
 @Predication(vocabulary, names=see.predicate_name_list)
@@ -821,7 +947,7 @@ def _see_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
 
 @Predication(vocabulary, names=["solution_group_" + x for x in see.predicate_name_list])
-def _see_v_1_group(state_list, e_list, x_act_list, x_obj_list):
+def _see_v_1_group(state_list, has_more, e_list, x_act_list, x_obj_list):
     yield from see.group_predicate_func(state_list, e_list, x_act_list, x_obj_list)
 
 
@@ -831,7 +957,7 @@ def _sit_v_down(state, e_introduced_binding, x_actor_binding):
 
 
 @Predication(vocabulary, names=["solution_group_" + x for x in sit_down.predicate_name_list])
-def _sit_v_down_group(state_list, e_introduced_binding_list, x_actor_binding_list):
+def _sit_v_down_group(state_list, has_more, e_introduced_binding_list, x_actor_binding_list):
     yield from sit_down.group_predicate_func(state_list, e_introduced_binding_list, x_actor_binding_list)
 
 
@@ -922,16 +1048,7 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
 
 @Predication(vocabulary, names=["solution_group__be_v_id"])
-def _be_v_id_group(state_list, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
-    # obj1_instance = x_obj1_variable_group.solution_values[0].value
-    # if len(obj1_instance) == 1 and is_concept(obj1_instance[0]) and obj1_instance[0].concept_name == "special":
-    #     if is_concept(x_obj2_variable_group.solution_values[0].value[0]):
-    #         # "What are the specials"
-    #         current_state = copy.deepcopy(state_list[0])
-    #         current_state.operations.clear()
-    #         current_state.record_operations([RespondOperation("The specials are: ")])
-    #         yield [current_state]
-
+def _be_v_id_group(state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
     yield state_list
 
 
@@ -996,7 +1113,7 @@ def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
 
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
-def wh_question(state_list, binding_list):
+def wh_question(state_list, has_more, binding_list):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', [x.value for x in binding_list])])
     if current_state is not None:
         yield (current_state, )
@@ -1048,8 +1165,17 @@ def reset():
     initial_state = initial_state.add_rel("bill", "specializes", "thing")
     initial_state = initial_state.add_rel("check", "specializes", "thing")
     initial_state = initial_state.add_rel("kitchen", "specializes", "thing")
+    # The computer has the concepts of the items so it can answer "do you have x?"
+    initial_state = initial_state.add_rel("computer", "have", "kitchen")
+
     initial_state = initial_state.add_rel("table", "specializes", "thing")
+    # The computer has the concepts of the items so it can answer "do you have x?"
+    initial_state = initial_state.add_rel("computer", "have", "table")
+
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
+    # The computer has the concepts of the items so it can answer "do you have x?"
+    initial_state = initial_state.add_rel("computer", "have", "menu")
+
     initial_state = initial_state.add_rel("person", "specializes", "thing")
     initial_state = initial_state.add_rel("son", "specializes", "person")
 
@@ -1075,6 +1201,9 @@ def reset():
     initial_state = initial_state.add_rel("menu", "conceptInScope", "true")
     initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
 
+    # The computer has the concepts of the items so it can answer "do you have steak?"
+    initial_state = initial_state.add_rel("computer", "have", "menu")
+    initial_state = initial_state.add_rel("computer", "have", "bill")
 
     # Instances below here
     # Location and "in scope" are modeled as who "has" a thing
@@ -1128,6 +1257,9 @@ def reset():
     initial_state = initial_state.add_rel("room", "contains", "user")
 
     initial_state = initial_state.add_rel("son1", "instanceOf", "son")
+    initial_state = initial_state.add_rel("son1", "hasName", "your son")
+    initial_state = initial_state.add_rel("user", "instanceOf", "person")
+    initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
     initial_state = initial_state.add_rel("user", "heardSpecials", "false")
 

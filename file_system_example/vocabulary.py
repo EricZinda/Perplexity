@@ -51,14 +51,15 @@ def in_scope(initial_data, state, value):
 
 
 @Predication(vocabulary, names=["solution_group__in_p_loc"])
-def in_p_loc_fail(state_list, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
+def in_p_loc_fail(state_list, has_more, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None and test_binding.value[0] == "failAll":
         report_error(["beMoreSpecific"], force=True)
         yield []
 
+
 @Predication(vocabulary, names=["solution_group__copy_v_1"])
-def fail_to_copy(state_list, e_introduced_binding_list, x_actor_group_variable_values, x_what_group_variable_values):
+def fail_to_copy(state_list, has_more, e_introduced_binding_list, x_actor_group_variable_values, x_what_group_variable_values):
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None and test_binding.value[0] == "fakeValues":
         for x_what_binding in x_what_group_variable_values.solution_values:
@@ -68,7 +69,7 @@ def fail_to_copy(state_list, e_introduced_binding_list, x_actor_group_variable_v
 
 
 @Predication(vocabulary, names=["solution_group"])
-def solution_group(state_list, variable_constraints):
+def solution_group(state_list, has_more, variable_constraints):
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None:
         if test_binding.value[0] == "cannotAnswer":
@@ -147,7 +148,7 @@ def file_n_of(state, x_binding, i_binding):
 
 
 nouns_handled_directly = ["file", "folder", "place"]
-def handles_noun(noun_lemma):
+def handles_noun(state, noun_lemma):
     return noun_lemma not in nouns_handled_directly
 
 
@@ -372,11 +373,6 @@ def in_p_loc_norm(state, e_introduced_binding, x_actor_binding, x_location_bindi
     yield from default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding)
 
 
-# @Predication(vocabulary, names=["solution_group__in_p_loc"])
-# def in_p_loc_group(state_list, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
-#     yield []
-
-
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc_open_ai(state, e_introduced_binding, x_actor_binding, x_location_binding):
     if x_actor_binding.value is not None and x_location_binding.value is not None and \
@@ -507,9 +503,13 @@ def loc_nonsp_size(state, e_introduced_binding, x_actor_binding, x_size_binding)
             return False
 
     def actor_unbound_criteria(size_set):
+        if False:
+            yield None
         assert False
 
     def size_unbound_criteria(actor_set):
+        if False:
+            yield None
         assert False
 
     # If a cardinal limiter like "together" is acting on this verb, it is unclear

@@ -213,6 +213,9 @@ def generate_message(tree_info, error_term):
     elif error_constant == "xIsNotYValue":
         return s("{arg1} is not {*arg2}", tree_info)
 
+    elif error_constant == "zeroCount":
+        return s("I'm not sure which {bare arg1:@error_predicate_index} you mean.", tree_info)
+
     else:
         return None
 

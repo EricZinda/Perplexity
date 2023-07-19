@@ -17,11 +17,53 @@
             "ID": "4a436537-1f34-4de5-8e2b-a4cb177c7605"
         },
         {
+            "Command": "I can have a steak",
+            "Expected": "Yes, that is true.",
+            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "e9ec6d48-008b-4c51-82e2-3f8d8b844b2c"
+        },
+        {
+            "Command": "Who can have a steak?",
+            "Expected": "you(there are more)",
+            "Tree": "which_q(x3,person(x3),_a_q(x11,_steak_n_1(x11),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "121251c1-efe2-47b5-a25f-a08648a34b5d"
+        },
+        {
+            "Command": "What can I have?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "9a9c9df7-aa60-4471-8afc-113bc4b32488"
+        },
+        {
+            "Command": "Can I have a steak?",
+            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "95ee387b-e08d-4263-b95e-a8f250546df3"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "4919a6c6-a36d-4c96-83fc-199d289eeb11"
+        },
+        {
+            "Command": "we'd like a table for 2'",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(2,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "4f7dd64f-df78-46b5-8700-3b4e2c5097f5"
+        },
+        {
             "Command": "What are the specials?",
             "Expected": "The specials are <description>",
             "Tree": "which_q(x5,thing(x5),_the_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
-            "ID": "e9ec6d48-008b-4c51-82e2-3f8d8b844b2c"
+            "ID": "169a1146-bc00-4e1c-936c-cc2b903e3f46"
         },
         {
             "Command": "/new esl.tutorial.reset",

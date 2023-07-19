@@ -64,7 +64,7 @@ class PropertyTransformerMatch(object):
     def __init__(self, variables_pattern):
         self.variables_pattern = variables_pattern
 
-    def match(self, tree_info, captures):
+    def match(self, tree_info, captures, metadata):
         for variable_reference_item in self.variables_pattern.items():
             variable = replace_str_captures(variable_reference_item[0], captures)
             properties = variable_reference_item[1]
@@ -85,7 +85,7 @@ class AllMatchTransformer(object):
     def this_repr(self):
         return "<All Match>"
 
-    def match(self, scopal_arg, captures):
+    def match(self, scopal_arg, captures, metadata):
         return True
 
     def arg_transformer(self, index):
@@ -93,6 +93,7 @@ class AllMatchTransformer(object):
 
     def is_root(self):
         return False
+
 
 class TransformerMatch(object):
     def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, property_transformer=None, removed=None, production=None):
@@ -109,8 +110,14 @@ class TransformerMatch(object):
     def this_repr(self):
         return f"{self.name_pattern}({', '.join([str(x) for x in self.args_pattern])})"
 
-    def match(self, scopal_arg, captures):
+    def match(self, scopal_arg, captures, metadata):
         if isinstance(scopal_arg, perplexity.tree.TreePredication):
+            # Remember all the which_q predications in case we need to match them
+            if scopal_arg.name in ["_which_q", "which_q"]:
+                if "SystemWH" not in metadata:
+                    metadata["SystemWH"] = []
+                metadata["SystemWH"].append(scopal_arg.args[0])
+
             if self.name_pattern == "*" or self.name_pattern == scopal_arg.name:
                 local_capture = {}
                 if self.name_capture is not None:
@@ -119,11 +126,31 @@ class TransformerMatch(object):
                     local_capture[self.label_capture] = scopal_arg.mrs_predication.label
                 if len(self.args_pattern) == len(scopal_arg.args):
                     for arg_index in range(len(self.args_pattern)):
-                        if self.args_pattern[arg_index] == "*" or \
-                                self.args_pattern[arg_index] == scopal_arg.arg_types[arg_index] or \
-                                isinstance(self.args_pattern[arg_index], TransformerMatch) and scopal_arg.arg_types[arg_index] == "h":
-                            if self.args_capture[arg_index] is not None:
-                                local_capture[self.args_capture[arg_index]] = scopal_arg.args[arg_index]
+                        pattern = self.args_pattern[arg_index]
+                        if isinstance(pattern, str) and len(pattern) > 2:
+                            assert pattern[0:2] == "wh", f"Unknown argument pattern: {pattern}"
+                            match_wh = pattern[2]
+                            assert match_wh in ["+", "-"]
+                            arg_pattern = pattern[3:]
+                        else:
+                            match_wh = None
+                            arg_pattern = pattern
+
+                        if arg_pattern == "*" or \
+                            arg_pattern == scopal_arg.arg_types[arg_index] or \
+                            isinstance(arg_pattern, TransformerMatch) and scopal_arg.arg_types[arg_index] == "h":
+                            # Ensure that this variable either is or isn't a wh_variable
+                            if "SystemWH" in metadata:
+                                is_wh = scopal_arg.args[arg_index] in metadata["SystemWH"]
+                            else:
+                                is_wh = False
+
+                            if match_wh == "+" and is_wh or match_wh == "-" and not is_wh or match_wh is None:
+                                if self.args_capture[arg_index] is not None:
+                                    local_capture[self.args_capture[arg_index]] = scopal_arg.args[arg_index]
+                            else:
+                                # WH didn't match
+                                return False
                         else:
                             # Args didn't match
                             return False
@@ -159,12 +186,12 @@ class TransformerMatch(object):
 def build_transformed_tree(tree_info, transformer_root):
     # When called with a root transformer will either return None or a new predication
     # Otherwise returns True for a match, or False
-    def transformer_search(scopal_arg, transformer, capture, current_index):
+    def transformer_search(scopal_arg, transformer, capture, metadata, current_index):
         if isinstance(scopal_arg, list):
             if transformer.is_root():
                 new_conjunction = []
                 for predication in scopal_arg:
-                    new_predication = transformer_search(predication, transformer, {}, current_index)
+                    new_predication = transformer_search(predication, transformer, {}, metadata, current_index)
                     if new_predication is None:
                         new_predication = predication
                     new_predication.index = current_index[0]
@@ -178,7 +205,7 @@ def build_transformed_tree(tree_info, transformer_root):
 
         else:
             predication = scopal_arg
-            predication_matched = transformer.match(predication, capture)
+            predication_matched = transformer.match(predication, capture, metadata)
             if transformer.is_root():
                 # Since this is the root: Need to return None for no new predication creation or a new predication
                 if predication_matched:
@@ -187,7 +214,7 @@ def build_transformed_tree(tree_info, transformer_root):
                     # and fill in the capture
                     children_matched = True
                     for scopal_arg_index in predication.scopal_arg_indices():
-                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture, current_index):
+                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture, metadata, current_index):
                             # The child failed so this match fails
                             children_matched = False
                             break
@@ -196,7 +223,7 @@ def build_transformed_tree(tree_info, transformer_root):
                         # The children matched so now we need to check the properties
                         properties_matched = True
                         if transformer.property_transformer is not None:
-                            properties_matched = transformer.property_transformer.match(transformer.tree_info, capture)
+                            properties_matched = transformer.property_transformer.match(transformer.tree_info, capture, metadata)
 
                         if properties_matched:
                             # we just return the new node
@@ -212,7 +239,7 @@ def build_transformed_tree(tree_info, transformer_root):
                 # try the root on the children
                 for scopal_arg_index in predication.scopal_arg_indices():
                     # transformer_search using the root transformer will return False or a new predication
-                    new_predication = transformer_search(predication.args[scopal_arg_index], transformer, {}, current_index)
+                    new_predication = transformer_search(predication.args[scopal_arg_index], transformer, {}, metadata, current_index)
                     if new_predication:
                         predication.args[scopal_arg_index] = new_predication
 
@@ -225,7 +252,7 @@ def build_transformed_tree(tree_info, transformer_root):
                 if predication_matched:
                     transform_logger.debug(f"Child Match: {predication_matched}. Pattern:{transformer.this_repr()}, Predicate:{predication}")
                     for scopal_arg_index in predication.scopal_arg_indices():
-                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture, current_index):
+                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture, metadata, current_index):
                             # The child failed so this match fails
                             # Since this is not the root, we just end now
                             return False
@@ -241,7 +268,8 @@ def build_transformed_tree(tree_info, transformer_root):
     new_tree_info = copy.deepcopy(tree_info)
     current_index = [0]
     transformer_root.reset_transform(tree_info)
-    transformer_search(new_tree_info["Tree"], transformer_root, {}, current_index)
+    metadata = {}
+    transformer_search(new_tree_info["Tree"], transformer_root, {}, metadata, current_index)
     if transformer_root.did_transform:
         pipeline_logger.debug(f"Transformed Tree: {new_tree_info['Tree']}")
         return new_tree_info

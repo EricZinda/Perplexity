@@ -1,16 +1,11 @@
 import copy
 import logging
-
-from perplexity.execution import execution_context, call, set_variable_execution_data, report_error, \
-    get_variable_metadata
+from perplexity.execution import execution_context, call, set_variable_execution_data, report_error
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
-from perplexity.predications import combinatorial_predication_1, discrete_variable_generator, all_combinations_of_states
-from perplexity.set_utilities import all_combinations_with_elements_from_all, product_stream, all_nonempty_subsets
-from perplexity.solution_groups import solution_groups
+from perplexity.predications import combinatorial_predication_1, all_combinations_of_states
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
     gather_referenced_x_variables_from_tree
-from perplexity.utilities import at_least_one_generator
-from perplexity.vocabulary import Predication, Vocabulary, ValueSize
+from perplexity.vocabulary import Predication, Vocabulary
 
 vocabulary = Vocabulary()
 
@@ -203,11 +198,12 @@ def implicit_conj(state, x_binding_introduced, x_binding_first, x_binding_second
 
 @Predication(vocabulary, library="system", names=["card"])
 def card(state, c_count, e_introduced_binding, x_target_binding):
-    yield state.set_variable_data(x_target_binding.variable.name,
-                                  determiner=VariableCriteria(execution_context().current_predication(),
-                                                              x_target_binding.variable.name,
-                                                              min_size=int(c_count),
-                                                              max_size=int(c_count)))
+    if c_count.isnumeric():
+        yield state.set_variable_data(x_target_binding.variable.name,
+                                      determiner=VariableCriteria(execution_context().current_predication(),
+                                                                  x_target_binding.variable.name,
+                                                                  min_size=int(c_count),
+                                                                  max_size=int(c_count)))
 
 def generate_not_error(unscoped_referenced_variables):
     if len(unscoped_referenced_variables) == 0:

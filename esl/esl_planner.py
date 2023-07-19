@@ -354,6 +354,7 @@ def do_task(state, task):
     # print(result)
     return result_state
 
+
 gtpyhop.verbose = 0
 
 

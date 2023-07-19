@@ -54,7 +54,7 @@ def is_user_type(val):
 
     else:
         for i in val:
-            if val not in ["user","son1"]:
+            if i not in ["user","son1"]:
                 return False
         return True
 
@@ -66,18 +66,37 @@ def specializations(state, base_type):
             yield i[0]
 
 
-def sort_of(state, thing, possible_type):
-    if thing == possible_type:
-        return True
-    for i in state.all_rel("specializes"):
-        if i[1] == possible_type:
-            if sort_of(state, thing, i[0]):
-                return True
-    for i in state.all_rel("instanceOf"):
-        if i[1] == possible_type:
-            if sort_of(state, thing, i[0]):
-                return True
-    return False
+def sort_of(state, thing_list, possible_types):
+    if not isinstance(thing_list, list) and not isinstance(thing_list, tuple):
+        thing_list = [thing_list]
+    if not isinstance(possible_types, list) and not isinstance(possible_types, tuple):
+        possible_types = [possible_types]
+
+    for thing in thing_list:
+        if thing in possible_types:
+            continue
+
+        found = False
+        for i in state.all_rel("specializes"):
+            if i[1] in possible_types:
+                if sort_of(state, thing, i[0]):
+                    found = True
+                    break
+        if found:
+            continue
+
+        found = False
+        for i in state.all_rel("instanceOf"):
+            if i[1] in possible_types:
+                if sort_of(state, thing, i[0]):
+                    found = True
+                    break
+        if found:
+            continue
+
+        return False
+
+    return True
 
 
 def reset_operations(state):

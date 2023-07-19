@@ -13,10 +13,33 @@
         - things like "on" for "on the menu" or "table near the window"
       - The verb itself doesn't do anything except for breaking apart combinatorials and basic validation
       - Let the verb *group* do the heavy lifting
-- Priniciples
+- Principles
   - Make everything as general as possible:
     - Interpret anything like "what do have [on the menu]" as meaning "show me the menu" if we are about to return everything on the menu/on the specials list
 - Change phrases like "I would like" to "I want" using Transforms
+
+- "can have" construct:
+  - Scenarios:
+    - The pizza can have meat?
+    - "Can/could I have x?", "I can/could have x?", "Can I have a steak and a salad?", "Can we have a table/steak together?" --> request for something
+    - (done) "I can/could have x." -> seems questionable but OK as a request for something
+    - 
+    - "Can I have hives?"
+    - wh-questions
+      - Which pizza can have meat?
+      - (done) "What can I have?" "What do you have?"--> 
+        - Conceptually, there are a lot of things the user is able to have: a table, a bill, a menu, a steak, etc.
+          - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
+          - So it is a special case that we interpret as a request for a menu
+      - (done) "Who can have a table/steak/etc?" -->
+  - Analysis:
+    - "can have" means "able_to_have"
+    - It also has an implied push to ask for it
+    - If wh-questions are involved it asks which x is able to have y
+  - Implementation
+    - Level 1: see if x is able to have y
+    - Level 2: actually request it if the actor is one or the other player
+    - 
 - abstract-types
   - Dealing with multiple people in verbs
     - We don't want to say the same thing twice if it is the same

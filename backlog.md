@@ -1,8 +1,7 @@
-- Need to get more precision on converting future tense and questions into request verbs
-  - "Do you have a table?" -> I want a table
-- "What do you have?"
-    - In the context of the entrance, this *could* mean "do you have a table for us?" or "Do you have a menu?"
-    - at the table it means the menu
+- Make "_get_v_1", "_take_v_1" be synonyms of have
+- Can we automatically call count_of_instances_and_concepts() for conceptual stuff? So that we don't have to call it in the group?
+ 
+
 - Fixup RequestVerbTransitive
   - What's it for?
     - Turns future tense questions into requests
@@ -11,6 +10,9 @@
 - "you" can mean either "the waiter" or "the restaurant"
   - Do you have a pencil?
   - Do you have steak?
+- "What do you have?"
+    - In the context of the entrance, this *could* mean "do you have a table for us?" or "Do you have a menu?"
+    - at the table it means the menu
 - Make "how much are your dishes" work
 - Get rid of old code
 - Verbs should declare what tenses they deal with, if none, they should default to present only

@@ -31,11 +31,18 @@
             "ID": "9ec2db5e-4c9c-4fb2-8fb8-2ef9a00e2f55"
         },
         {
+            "Command": "Do you have a bill?",
+            "Expected": "Yes.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_bill_n_of(x8,i13),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "1092aa0b-f721-4a0b-9e5c-e8ff7e3312f7"
+        },
+        {
             "Command": "I'd like the bill'",
             "Expected": "But... you haven't got any food yet! \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "_the_q(x11,_bill_n_of(x11,i16),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "1092aa0b-f721-4a0b-9e5c-e8ff7e3312f7"
+            "ID": "ff902a95-c906-4c0f-991b-82e6a6fc54be"
         }
     ]
 }
