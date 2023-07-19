@@ -799,7 +799,7 @@ sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitt
 
 # Just purely answers questions about having things in the present tense
 @Predication(vocabulary, names=["_have_v_1"])
-def present_have_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
 
     def bound(x_actor, x_object):
@@ -841,7 +841,7 @@ def present_have_v_1(state, e_introduced_binding, x_actor_binding, x_object_bind
 # - "Do you have a steak?" --> just asking about the steak, no implied request
 # - "Do you have a bill?" --> just asking about the bill, no implied request
 @Predication(vocabulary, names=["solution_group__have_v_1"])
-def present_have_v_1_group(state_list, has_more, e_list, x_act_list, x_obj_list):
+def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list):
     # Ignore this group if it isn't present tense
     if not is_present_tense(state_list[0].get_binding("tree").value[0]): return
 
