@@ -683,79 +683,6 @@ def polite(state, c_arg, i_binding, e_binding):
 def _thanks_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
-
-# If it is a future tense question with two bound arguments: turn it into a request
-# Otherwise: look up the lemma in the state
-class RequestVerbTransitive:
-    def __init__(self, predicate_name_list, lemma, logic, group_logic):
-        self.predicate_name_list = predicate_name_list
-        self.lemma = lemma
-        self.logic = logic
-        self.group_logic = group_logic
-
-    def predicate_func(self, state, e_binding, x_actor_binding, x_object_binding):
-        is_request = is_request_from_tree(state.get_binding("tree").value[0])
-
-        def bound(x_actor, x_object):
-            if is_request and is_user_type(x_actor):
-                return True
-            else:
-                if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, self.lemma):
-                    return True
-                else:
-                    report_error(["verbDoesntApply", x_actor, self.lemma, x_object])
-                    return False
-
-        def actor_from_object(x_object):
-            found = False
-            for i in rel_subjects(state, self.lemma, x_object):
-                found = True
-                yield store_to_object(i)
-            if not found:
-                report_error(["Nothing_VTRANS_X", self.lemma, x_object])
-
-        def object_from_actor(x_actor):
-            found = False
-            for i in rel_objects(state, x_actor, self.lemma):
-                found = True
-                yield store_to_object(state, i)
-            if not found:
-                report_error(["X_VTRANS_Nothing", self.lemma, x_actor])
-
-        state_exists = False
-        for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
-                                                    object_from_actor):
-            state_exists = True
-            x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
-            x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
-
-            if is_request and is_user_type(x_act):
-                if x_obj is not None:
-                    yield success_state.record_operations(success_state.handle_world_event([self.logic, x_obj, x_act]))
-            else:
-                yield success_state
-
-        if not state_exists:
-            report_error(["RequestVerbTransitiveFailure"])
-
-    def group_predicate_func(self, state_list, e_introduced_binding_list, x_actor_binding_list, x_what_binding_list):
-        should_call_want = False
-        for i in range(len(state_list)):
-            if is_request_from_tree(state_list[i].get_binding("tree").value[0]):
-                should_call_want = True
-                break
-
-        if not should_call_want:
-            yield state_list
-
-        else:
-            if len(state_list) == 1:
-                yield (state_list[0],)
-            else:
-                reset_operations(state_list[0])
-                yield (state_list[0].record_operations(state_list[0].handle_world_event([self.group_logic, x_actor_binding_list, x_what_binding_list])),)
-
-
 # use for sit_v_down
 class RequestVerbIntransitive:
     def __init__(self, predicate_name_list, lemma, logic, group_logic):
@@ -813,7 +740,6 @@ class RequestVerbIntransitive:
                 yield (state_list[0].record_operations(state_list[0].handle_world_event([self.group_logic, x_actor_binding_list])),)
 
 
-see = RequestVerbTransitive(["_see_v_1", "_see_v_1_request"], "see", "user_wants_to_see", "user_wants_to_see_group")
 sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
 
 # Scenarios:

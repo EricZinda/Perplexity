@@ -18,6 +18,11 @@
     - Interpret anything like "what do have [on the menu]" as meaning "show me the menu" if we are about to return everything on the menu/on the specials list
 - Change phrases like "I would like" to "I want" using Transforms
 
+- Overall observations:
+  - A ton of these are just pattern matching future, present, specific objects, specific items
+  - And either failing or transforming into a plan
+  - They are easy to write with examples
+  
 - "can have" construct:
   - Scenarios:
     - The pizza can have meat?
