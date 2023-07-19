@@ -10,11 +10,18 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
+            "Command": "I get a table?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_get_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+        },
+        {
             "Command": "Do you have a table?",
             "Expected": "How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+            "ID": "46c5774e-2bce-4015-ac80-768a09a28d80"
         },
         {
             "Command": "/new esl.tutorial.reset",

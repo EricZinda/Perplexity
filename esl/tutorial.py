@@ -534,7 +534,7 @@ def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
         yield success_state.record_operations(state.handle_world_event(["user_wants", "bill1"]))
 
 
-@Predication(vocabulary, names=["_give_v_1", "_get_v_1"])
+@Predication(vocabulary, names=["_give_v_1"])
 def _give_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
     if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
         if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
@@ -792,9 +792,19 @@ class RequestVerbIntransitive:
                 yield (state_list[0].record_operations(state_list[0].handle_world_event([self.group_logic, x_actor_binding_list])),)
 
 
-have = RequestVerbTransitive(["_get_v_1", "_take_v_1"], "have", "user_wants", "user_wants_group")
+have = RequestVerbTransitive(["_take_v_1"], "have", "user_wants", "user_wants_group")
 see = RequestVerbTransitive(["_see_v_1", "_see_v_1_request"], "see", "user_wants_to_see", "user_wants_to_see_group")
 sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
+
+
+# Present tense scenarios:
+#   "I get x?", "I get x" --> not great english, respond with an error
+@Predication(vocabulary, names=["_get_v_1"])
+def _get_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if not is_present_tense(state.get_binding("tree").value[0]): return
+
+    if False: yield None
+    report_error(["unexpected"])
 
 
 # Just purely answers questions about having things in the present tense
@@ -882,7 +892,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
 # The regular predication only checks if x is able to have y
 # Scenarios:
 #   "What can I have?" --> implied menu request
-@Predication(vocabulary, names=["_have_v_1_able"])
+@Predication(vocabulary, names=["_have_v_1_able", "_get_v_1_able"])
 def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
     # Things players can have
     players_can_have = ["food", "table", "menu"]
@@ -935,7 +945,7 @@ def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
 # - "who can have a steak?" -_> you, "there are more"
 # - "What can I have?" --> implicit menu request
 # - "Can I have a steak and a salad?" --> implicit order request
-@Predication(vocabulary, names=["solution_group__have_v_1_able"])
+@Predication(vocabulary, names=["solution_group__have_v_1_able", "solution_group__get_v_1_able"])
 def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # At this point they were *able* to have the item, now we see if this was an implicit request for it
     # If this is a question, but not a wh question, involving the players, then it is also a request for something

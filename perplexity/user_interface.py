@@ -432,7 +432,6 @@ class UserInterface(object):
             all_metadata = [meta for meta in self.execution_context.vocabulary.metadata(predication.predicate, argument_types)]
             if len(predications) == 0 or \
                     (all(meta.is_match_all() for meta in all_metadata) and not self.in_match_all(state, predication, argument_types, all_metadata)):
-
                 # BUT: if a transformer might remove it, return it as "contingent" so we can see if it did
                 if predication.predicate in self.execution_context.vocabulary.transformer_removed:
                     contingent_words.append((predication.predicate,

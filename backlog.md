@@ -1,5 +1,11 @@
 - Make "_get_v_1" be synonyms of have
-  - 
+  - get_able should be identical to have_able
+  - Present tense scenarios:
+    - "I get x?", "I get x" --> not great english
+
+- "Do I/my son have a menu?" doesn't work
+- implement future tense have/get
+- implement past tense get: "Did I get a steak?"
 - Make "_take_v_1" be synonyms of have
 - 
 - Can we automatically call count_of_instances_and_concepts() for conceptual stuff? So that we don't have to call it in the group?
