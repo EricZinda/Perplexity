@@ -24,6 +24,34 @@
             "ID": "46c5774e-2bce-4015-ac80-768a09a28d80"
         },
         {
+            "Command": "I will have a table",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "51920fb5-d90b-419c-beee-483c9525d2a2"
+        },
+        {
+            "Command": "I will have a table?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "91cc802b-2e88-4fcb-a251-26c5e6f88f68"
+        },
+        {
+            "Command": "Who will have a table?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "which_q(x3,person(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "c902a6e5-53ff-409f-ba7c-08d63590b422"
+        },
+        {
+            "Command": "Will you have a table?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "c09676b8-c43a-4e18-8a90-109e288eea32"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

@@ -45,6 +45,48 @@
             "ID": "95ee387b-e08d-4263-b95e-a8f250546df3"
         },
         {
+            "Command": "I will have a steak?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "73af9f66-e9d0-487a-9816-a582f7c3332f"
+        },
+        {
+            "Command": "I will have a steak",
+            "Expected": "Sorry, you got the last one of those. We don't have any more. Can I get you something else? \nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "76c09b78-40f9-4d01-ab0f-c7b9bd8946d9"
+        },
+        {
+            "Command": "You will have a steak?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "37a62861-89f7-4aa7-ab60-7fbff5ad071d"
+        },
+        {
+            "Command": "You will have a steak.",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "e80b2674-3527-4485-abc6-4368809ecb62"
+        },
+        {
+            "Command": "What will I have?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "a004ac87-0ab4-4ec1-bf9a-1d1940231aa8"
+        },
+        {
+            "Command": "Who will have a steak?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "which_q(x3,person(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "74aa2bec-f3d0-457a-98f0-afbbd59e9f88"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

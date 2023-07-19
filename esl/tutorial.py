@@ -64,12 +64,27 @@ def is_future_tense(tree_info):
     return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["fut"]
 
 
+def is_question(tree_info):
+    return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"]
+
+
 def is_request_from_tree(tree_info):
     introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
         introduced_predication.name.endswith("_request") or \
         tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
 
+
+def valid_player_request(state, x_objects):
+    # Things players can request
+    players_can_have = ["food", "table", "menu", "bill"]
+
+    store_objects = [object_to_store(x) for x in x_objects]
+    for store in store_objects:
+        if not sort_of(state, store, players_can_have):
+            return False
+
+    return True
 
 # ******** Transforms ************
 # Convert "would like <noun>" to "want <noun>"
@@ -810,13 +825,65 @@ def _get_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bind
     if False: yield None
     report_error(["unexpected"])
 
+
 # Scenarios:
-#   - "I will have a menu/a table" --> not good english
-#   - "I will have a steak" --> restaurant frame special case for ordering
+#   - "I will have a steak/menu/table." --> restaurant frame special case for requesting
+#   - "I will have a steak/menu/table?" --> Not good english
+#   - "You/they, etc will have x" --> Not good english
+#   - "Will I have a steak/menu/table?" --> Not good english
 #   - "Will you have a table?" --> Not good english
-# @Predication(vocabulary, names=["_have_v_1"])
-# def _have_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_binding):
-#     if not is_future_tense(state.get_binding("tree").value[0]): return
+#   - "What will I have?" --> Not good english
+#   - "Who will have x?" --> Not good english
+@Predication(vocabulary, names=["_have_v_1"])
+def _have_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    tree_info = state.get_binding("tree").value[0]
+    if not is_future_tense(tree_info): return
+    if is_question(tree_info):
+        # None of the future tense questions are valid english in this scenario
+        report_error(["unexpected"])
+        return
+
+    def both_bound_prediction_function(x_actors, x_objects):
+        if is_user_type(x_actors):
+            return valid_player_request(state, x_objects)
+        else:
+            # Anything about "you/they will have" is not good english
+            report_error(["unexpected"])
+            return False
+
+    def actor_unbound(x_object):
+        # Anything about "what will x have
+        report_error(["unexpected"])
+        if False:
+            yield None
+
+    def object_unbound(x_actor):
+        report_error(["unexpected"])
+        if False:
+            yield None
+
+    yield from lift_style_predication_2(state, x_actor_binding, x_object_binding,
+                                        both_bound_prediction_function,
+                                        actor_unbound,
+                                        object_unbound)
+
+
+@Predication(vocabulary, names=["solution_group__have_v_1"])
+def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
+    tree_info = state_list[0].get_binding("tree").value[0]
+    if not is_future_tense(tree_info): return
+
+    # The only valid scenarios for will have are requests, so ...
+    # The planner will only satisfy a want wrt the players
+    task = ('satisfy_want',
+            variable_group_values_to_list(x_actor_variable_group),
+            variable_group_values_to_list(x_object_variable_group))
+    final_state = do_task(state_list[0].world_state_frame(), [task])
+    if final_state:
+        yield [final_state]
+    else:
+        yield []
+
 
 # Just purely answers questions about having things in the present tense
 # Scenarios:
@@ -909,27 +976,22 @@ def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
     players_can_have = ["food", "table", "menu", "bill"]
 
     def both_bound_prediction_function(x_actors, x_objects):
-        store_actors = [object_to_store(x) for x in x_actors]
-        store_objects = [object_to_store(x) for x in x_objects]
-
         # Players are able to have any food, a table or a menu
         if is_user_type(x_actors):
-            for store in store_objects:
-                if not sort_of(state, store, players_can_have):
-                    return False
-            return True
+            return valid_player_request(state, x_objects)
 
         # Food is able to have ingredients, restaurant can have food, etc.
         # Whatever we have modelled
         else:
+            store_actors = [object_to_store(x) for x in x_actors]
+            store_objects = [object_to_store(x) for x in x_objects]
+
             for store_actor in store_actors:
                 for store_object in store_objects:
                     if not rel_check(state, store_actor, "have", store_object):
                         return False
 
             return True
-
-        pass
 
     def actor_unbound(x_object):
         if False:

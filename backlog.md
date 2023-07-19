@@ -1,10 +1,6 @@
-- implement future have
-  - "I will have a menu/a table" --> not good english
-  - "I will have a steak" --> restaurant frame special case for ordering
-
 - implement _take_v_1
   - present tense --> "I don't know what you mean"
-  - future tense --> same as I'll have
+  - future tense --> same as I will have
 - implement future tense have/get
 
 
