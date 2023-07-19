@@ -32,7 +32,7 @@
         },
         {
             "Command": "Do you have a bill?",
-            "Expected": "Yes.",
+            "Expected": "But... you haven't got any food yet! \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_bill_n_of(x8,i13),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "1092aa0b-f721-4a0b-9e5c-e8ff7e3312f7"

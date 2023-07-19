@@ -17,6 +17,13 @@
             "ID": "98aa8219-aea7-4a10-a917-21bd96368a2d"
         },
         {
+            "Command": "Do you have the menu?",
+            "Expected": "Sorry, you must be seated to get a menu",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "22a6851e-3314-4bc9-8067-ed352aceb570"
+        },
+        {
             "Command": "/reset",
             "Expected": "",
             "Tree": "None",
@@ -38,11 +45,25 @@
             "ID": "976df396-5503-40d5-90fe-93f121237afe"
         },
         {
+            "Command": "Do you have the menu?",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "0f81d780-5bdb-4976-aae2-6144f9c6b89b"
+        },
+        {
             "Command": "do you have a steak?",
             "Expected": "Yes.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "93451d18-612d-427f-bb67-ccea34c7aa58"
+        },
+        {
+            "Command": "do you have the steak?",
+            "Expected": "Yes.",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "ed01aa0e-79b0-4c3d-8443-f9bac852a7d4"
         }
     ]
 }

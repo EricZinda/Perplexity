@@ -798,6 +798,9 @@ sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitt
 
 
 # Just purely answers questions about having things in the present tense
+# Scenarios:
+#   "do you/I/we have x?" --> ask about the state of the world
+#   "what do you have?" --> implied menu request
 @Predication(vocabulary, names=["_have_v_1"])
 def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
@@ -837,8 +840,13 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
                                                 object_from_actor)
 
 
-# - "Do you have a menu?" --> implied request for a menu
-# - "Do you have a steak?" --> just asking about the steak, no implied request
+# Scenarios:
+# - "Do you have a table?" --> implied table request
+# - "Do you have the table?" --> Should fail due to "the table"
+# - "what do you have?" --> implied menu request
+# - "Do you have a/the menu?" --> implied menu request
+# - "Do you have a/the bill?" --> implied bill request
+# - "Do you have a/the steak?" --> just asking about the steak, no implied request
 # - "Do you have a bill?" --> just asking about the bill, no implied request
 @Predication(vocabulary, names=["solution_group__have_v_1"])
 def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list):
@@ -849,14 +857,15 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
     if not check_solution_group_constraints(state_list, x_obj_list):
         yield []
 
+    # Only these turn into implied requests
+    implied_request_concepts = [Concept("table"), Concept("menu"), Concept("bill")]
     if len(state_list) == 1:
         if len(x_act_list.solution_values) == 1 and \
             len(x_act_list.solution_values[0].value) == 1 and \
             x_act_list.solution_values[0].value[0] == "computer":
             if len(x_obj_list.solution_values) == 1 and \
                 len(x_obj_list.solution_values[0].value) == 1 and \
-                x_obj_list.solution_values[0].value[0] in [Concept("table"), Concept("menu")]:
-                    # "Do you have a table/menu?" --> implied request for a table/menu
+                x_obj_list.solution_values[0].value[0] in implied_request_concepts:
                     task = ('satisfy_want', [("user",)], variable_group_values_to_list(x_obj_list))
                     final_state = do_task(state_list[0].world_state_frame(), [task])
                     if final_state:
@@ -865,11 +874,14 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                     else:
                         yield []
 
+    # Everything else is just an ask about if something has something
     yield state_list
 
 
 # Used only when there is a form of have that means "able to"
 # The regular predication only checks if x is able to have y
+# Scenarios:
+#   "What can I have?" --> implied menu request
 @Predication(vocabulary, names=["_have_v_1_able"])
 def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
     # Things players can have
@@ -918,6 +930,11 @@ def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
 
 # The group predication for have_able can also generate an implied request,
 # but only if it was a question with a bound actor
+#
+# Scenarios:
+# - "who can have a steak?" -_> you, "there are more"
+# - "What can I have?" --> implicit menu request
+# - "Can I have a steak and a salad?" --> implicit order request
 @Predication(vocabulary, names=["solution_group__have_v_1_able"])
 def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # At this point they were *able* to have the item, now we see if this was an implicit request for it
