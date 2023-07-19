@@ -10,11 +10,18 @@
             "ID": "d32088e1-b1c1-406e-a849-c6b13efef46d"
         },
         {
+            "Command": "Can I see a menu?",
+            "Expected": "Sorry, you must be seated to get a menu",
+            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_see_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "98aa8219-aea7-4a10-a917-21bd96368a2d"
+        },
+        {
             "Command": "Do you have a menu?",
             "Expected": "Sorry, you must be seated to get a menu",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "98aa8219-aea7-4a10-a917-21bd96368a2d"
+            "ID": "9a11bb68-b6a7-4ae5-87da-ce2853e821a9"
         },
         {
             "Command": "Do you have the menu?",
@@ -22,6 +29,13 @@
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "22a6851e-3314-4bc9-8067-ed352aceb570"
+        },
+        {
+            "Command": "We will see a menu",
+            "Expected": "Sorry, you must be seated to get a menu",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_see_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8fd795d7-6127-4186-b87b-67680e2c551e"
         },
         {
             "Command": "/reset",

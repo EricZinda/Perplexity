@@ -1,8 +1,4 @@
-- implement _take_v_1
-  - (done) present tense --> same as "get_v_1" --> "I don't know what you mean"
-  - (done) future tense --> same as I will have
-  - (done) Can I take a table -> poor english
-
+- "I will see menus" --> works, but shouldn't
 - get rid of RequestVerbTransitive
 - implement future tense get
 

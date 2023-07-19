@@ -75,16 +75,18 @@ def is_request_from_tree(tree_info):
         tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
 
 
-def valid_player_request(state, x_objects):
+def valid_player_request(state, x_objects, valid_types=None):
     # Things players can request
-    players_can_have = ["food", "table", "menu", "bill"]
+    if valid_types is None:
+        valid_types = ["food", "table", "menu", "bill"]
 
     store_objects = [object_to_store(x) for x in x_objects]
     for store in store_objects:
-        if not sort_of(state, store, players_can_have):
+        if not sort_of(state, store, valid_types):
             return False
 
     return True
+
 
 # ******** Transforms ************
 # Convert "would like <noun>" to "want <noun>"
@@ -815,6 +817,122 @@ see = RequestVerbTransitive(["_see_v_1", "_see_v_1_request"], "see", "user_wants
 sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
 
 # Scenarios:
+#   "Can I see a menu? -> implied request
+#   "I can see a menu. -> poor english
+#   Anthing else --> don't understand
+@Predication(vocabulary, names=["_see_v_1_able"])
+def _see_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    tree_info = state.get_binding("tree").value[0]
+    if not is_question(tree_info):
+        report_error(["unexpected"])
+        return
+
+    def both_bound_prediction_function(x_actor, x_object):
+        if is_user_type(x_actor):
+            if valid_player_request(state, [x_object], valid_types=["menu"]):
+                return True
+            else:
+                report_error(["unexpected"])
+                return False
+
+        else:
+            # Anything about "you/they will have" is not good english
+            report_error(["unexpected"])
+            return False
+
+    def actor_unbound(x_object):
+        # Anything about "what will x have
+        report_error(["unexpected"])
+        if False:
+            yield None
+
+    def object_unbound(x_actor):
+        report_error(["unexpected"])
+        if False:
+            yield None
+
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding,
+                                        both_bound_prediction_function,
+                                        actor_unbound,
+                                        object_unbound)
+
+
+@Predication(vocabulary, names=["solution_group__see_v_1_able"])
+def _see_v_1_able_group(state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
+    # The only valid scenarios for will have are requests, so ...
+    # The planner will only satisfy a want wrt the players
+    task = ('satisfy_want',
+            variable_group_values_to_list(x_actor_variable_group),
+            variable_group_values_to_list(x_object_variable_group))
+    final_state = do_task(state_list[0].world_state_frame(), [task])
+    if final_state:
+        yield [final_state]
+    else:
+        yield []
+
+
+
+# Scenarios:
+#   "I/we will see a menu" -> implied request
+#   Poor English:
+#       "I will see a table/steak, etc"
+@Predication(vocabulary, names=["_see_v_1"])
+def _see_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    tree_info = state.get_binding("tree").value[0]
+    if not is_future_tense(tree_info): return
+    if is_question(tree_info):
+        # None of the future tense questions are valid english in this scenario
+        report_error(["unexpected"])
+        return
+
+    def both_bound_prediction_function(x_actor, x_object):
+        if is_user_type(x_actor):
+            if valid_player_request(state, [x_object], valid_types=["menu"]):
+                return True
+            else:
+                report_error(["unexpected"])
+                return False
+
+        else:
+            # Anything about "you/they will have" is not good english
+            report_error(["unexpected"])
+            return False
+
+    def actor_unbound(x_object):
+        # Anything about "what will x have
+        report_error(["unexpected"])
+        if False:
+            yield None
+
+    def object_unbound(x_actor):
+        report_error(["unexpected"])
+        if False:
+            yield None
+
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding,
+                                        both_bound_prediction_function,
+                                        actor_unbound,
+                                        object_unbound)
+
+
+@Predication(vocabulary, names=["solution_group__see_v_1"])
+def _see_v_1_future_group(state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
+    tree_info = state_list[0].get_binding("tree").value[0]
+    if not is_future_tense(tree_info): return
+
+    # The only valid scenarios for will have are requests, so ...
+    # The planner will only satisfy a want wrt the players
+    task = ('satisfy_want',
+            variable_group_values_to_list(x_actor_variable_group),
+            variable_group_values_to_list(x_object_variable_group))
+    final_state = do_task(state_list[0].world_state_frame(), [task])
+    if final_state:
+        yield [final_state]
+    else:
+        yield []
+
+
+# Scenarios:
 #   - "Can I take a menu/table/steak?"
 # All are poor english
 @Predication(vocabulary, names=["_take_v_1_able"])
@@ -825,7 +943,11 @@ def _take_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
 
 # Present tense scenarios:
 #   "I get x?", "I get x" --> not great english, respond with an error
-@Predication(vocabulary, names=["_get_v_1", "_take_v_1"])
+#   "What do I see?"
+#   "Who sees an x?
+#   "I see a menu?"
+#   "I see a menu"
+@Predication(vocabulary, names=["_get_v_1", "_take_v_1", "_see_v_1"])
 def invalid_present_transitive(state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
     report_error(["unexpected"])
@@ -1045,16 +1167,6 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
 
         if has_more:
             yield True
-
-
-@Predication(vocabulary, names=see.predicate_name_list)
-def _see_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
-    yield from see.predicate_func(state, e_introduced_binding, x_actor_binding, x_object_binding)
-
-
-@Predication(vocabulary, names=["solution_group_" + x for x in see.predicate_name_list])
-def _see_v_1_group(state_list, has_more, e_list, x_act_list, x_obj_list):
-    yield from see.group_predicate_func(state_list, e_list, x_act_list, x_obj_list)
 
 
 @Predication(vocabulary, names=sit_down.predicate_name_list)
