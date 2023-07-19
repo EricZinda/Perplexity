@@ -811,19 +811,25 @@ class RequestVerbIntransitive:
                 yield (state_list[0].record_operations(state_list[0].handle_world_event([self.group_logic, x_actor_binding_list])),)
 
 
-have = RequestVerbTransitive(["_take_v_1"], "have", "user_wants", "user_wants_group")
 see = RequestVerbTransitive(["_see_v_1", "_see_v_1_request"], "see", "user_wants_to_see", "user_wants_to_see_group")
 sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
+
+# Scenarios:
+#   - "Can I take a menu/table/steak?"
+# All are poor english
+@Predication(vocabulary, names=["_take_v_1_able"])
+def _take_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    report_error(["unexpected"])
+    if False: yield None
 
 
 # Present tense scenarios:
 #   "I get x?", "I get x" --> not great english, respond with an error
-@Predication(vocabulary, names=["_get_v_1"])
-def _get_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
+@Predication(vocabulary, names=["_get_v_1", "_take_v_1"])
+def invalid_present_transitive(state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
-
-    if False: yield None
     report_error(["unexpected"])
+    if False: yield None
 
 
 # Scenarios:
@@ -834,7 +840,7 @@ def _get_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bind
 #   - "Will you have a table?" --> Not good english
 #   - "What will I have?" --> Not good english
 #   - "Who will have x?" --> Not good english
-@Predication(vocabulary, names=["_have_v_1"])
+@Predication(vocabulary, names=["_have_v_1", "_take_v_1"])
 def _have_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_future_tense(tree_info): return
@@ -868,7 +874,7 @@ def _have_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_bind
                                         object_unbound)
 
 
-@Predication(vocabulary, names=["solution_group__have_v_1"])
+@Predication(vocabulary, names=["solution_group__have_v_1", "solution_group__take_v_1"])
 def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_future_tense(tree_info): return

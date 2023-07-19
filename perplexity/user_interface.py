@@ -148,7 +148,7 @@ class UserInterface(object):
                                       "Tree": tree_orig}
 
                     alternate_tree_generated = False
-                    for tree_info in self.execution_context.vocabulary.alternate_trees(tree_info_orig, len(contingent) == 0):
+                    for tree_info in self.execution_context.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0):
                         alternate_tree_generated = True
 
                         # Add afterwards since the mrs can't be deepcopied
@@ -406,16 +406,6 @@ class UserInterface(object):
 
             tree_index += 1
 
-    def in_match_all(self, state, predication, argument_types, metadata_list):
-        for metadata in metadata_list:
-            if metadata.is_match_all():
-                predication_info = parse_predication_name(predication.predicate)
-                if metadata.matches_lemmas(state, predication_info["Lemma"]):
-                    return True
-
-        else:
-            return False
-
     def unknown_words(self, mrs, state):
         unknown_words = []
         contingent_words = []
@@ -428,10 +418,7 @@ class UserInterface(object):
                 else:
                     argument_types.append(argument_item[1][0])
 
-            predications = list(self.execution_context.vocabulary.predications(predication.predicate, argument_types, phrase_type))
-            all_metadata = [meta for meta in self.execution_context.vocabulary.metadata(predication.predicate, argument_types)]
-            if len(predications) == 0 or \
-                    (all(meta.is_match_all() for meta in all_metadata) and not self.in_match_all(state, predication, argument_types, all_metadata)):
+            if self.execution_context.vocabulary.unknown_word(state, predication.predicate, argument_types, phrase_type):
                 # BUT: if a transformer might remove it, return it as "contingent" so we can see if it did
                 if predication.predicate in self.execution_context.vocabulary.transformer_removed:
                     contingent_words.append((predication.predicate,

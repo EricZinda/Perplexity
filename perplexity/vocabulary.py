@@ -274,9 +274,9 @@ class Vocabulary(object):
                 else:
                     type_list.append((module, function))
 
-    def alternate_trees(self, tree_info, yield_original):
+    def alternate_trees(self, state, tree_info, yield_original):
         for transformer_root in self.transformers:
-            new_tree_info = build_transformed_tree(tree_info, transformer_root)
+            new_tree_info = build_transformed_tree(self, state, tree_info, transformer_root)
             if new_tree_info:
                 yield new_tree_info
 
@@ -293,6 +293,29 @@ class Vocabulary(object):
         if generic_key in self.all:
             for module_function in self.all[generic_key]:
                 yield module_function + ([lemma], )
+
+    def unknown_word(self, state, predicate_name, argument_types, phrase_type):
+        predications = list(self.predications(predicate_name, argument_types, phrase_type))
+        all_metadata = [meta for meta in
+                        self.metadata(predicate_name, argument_types)]
+        if len(predications) == 0 or \
+                (all(meta.is_match_all() for meta in all_metadata) and not self._in_match_all(state, predicate_name,
+                                                                                             argument_types,
+                                                                                             all_metadata)):
+            return True
+
+        else:
+            return False
+
+    def _in_match_all(self, state, predication_name, argument_types, metadata_list):
+        for metadata in metadata_list:
+            if metadata.is_match_all():
+                predication_info = parse_predication_name(predication_name)
+                if metadata.matches_lemmas(state, predication_info["Lemma"]):
+                    return True
+
+        else:
+            return False
 
 
 pipeline_logger = logging.getLogger('Pipeline')

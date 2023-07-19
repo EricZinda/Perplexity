@@ -2,6 +2,7 @@ import copy
 import logging
 from delphin.mrs import EP
 import perplexity.tree
+from perplexity.utilities import sentence_force
 
 
 def replace_str_captures(value, captures):
@@ -38,7 +39,7 @@ class TransformerProduction(object):
         self.args = args
         self.label = label
 
-    def create(self, captures, current_index):
+    def create(self, vocabulary, state, tree_info, captures, current_index):
         my_index = current_index[0]
         current_index[0] += 1
         name = self.transform_using_captures(self.name, captures, current_index)
@@ -47,7 +48,12 @@ class TransformerProduction(object):
         label = self.transform_using_captures(self.label, captures, current_index)
         new_ep = EP(predicate=name, label=label, args=dict(zip(args_names, args_values)))
         new_predication = perplexity.tree.TreePredication(my_index, name, args_values, arg_names=args_names, mrs_predication=new_ep)
-        return new_predication
+        phrase_type = sentence_force(tree_info["Variables"])
+        if not vocabulary.unknown_word(state, new_predication.name, new_predication.argument_types(), phrase_type):
+            return new_predication
+        else:
+            transform_logger.debug(
+                f"Predication: {new_predication.name} could not be created by the transformer because it has not implementation")
 
     def transform_using_captures(self, value, captures, current_index):
         if isinstance(value, str):
@@ -183,7 +189,7 @@ class TransformerMatch(object):
             return self.removed
 
 # rewrites the tree in place
-def build_transformed_tree(tree_info, transformer_root):
+def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
     # When called with a root transformer will either return None or a new predication
     # Otherwise returns True for a match, or False
     def transformer_search(scopal_arg, transformer, capture, metadata, current_index):
@@ -226,10 +232,13 @@ def build_transformed_tree(tree_info, transformer_root):
                             properties_matched = transformer.property_transformer.match(transformer.tree_info, capture, metadata)
 
                         if properties_matched:
-                            # we just return the new node
-                            # and record that at least one transform occurred
-                            transformer.record_transform()
-                            return transformer.production.create(capture, current_index)
+                            # The node might not be able to be created if there is no implementation
+                            new_node = transformer.production.create(vocabulary, state, tree_info, capture, current_index)
+                            if new_node is not None:
+                                # we just return the new node
+                                # and record that at least one transform occurred
+                                transformer.record_transform()
+                                return new_node
 
                 # This predication will stick around, update its index
                 predication.index = current_index[0]

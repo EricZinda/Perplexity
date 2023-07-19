@@ -1,11 +1,14 @@
 - implement _take_v_1
-  - present tense --> "I don't know what you mean"
-  - future tense --> same as I will have
-- implement future tense have/get
+  - (done) present tense --> same as "get_v_1" --> "I don't know what you mean"
+  - (done) future tense --> same as I will have
+  - (done) Can I take a table -> poor english
 
+- get rid of RequestVerbTransitive
+- implement future tense get
 
 - Make "I take a steak" or "I get a steak" say "Did you mean X"
 - "Do I/my son have a menu?" doesn't work
+- "What did I order?" --> Make work for debugging
 - implement past tense get: "Did I get a steak?"
 - Make "_take_v_1" be synonyms of have
 - 

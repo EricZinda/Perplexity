@@ -22,6 +22,20 @@
             "Tree": "udef_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_get_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "2e777252-fd2c-4b4a-bce6-d29ceaa60eef"
+        },
+        {
+            "Command": "I'll take a table for 2",
+            "Expected": "Um... You're at a table.",
+            "Tree": "udef_q(x14,[generic_entity(x14), card(2,e20,x14)],pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_take_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "aa481f07-57c0-4d49-8138-a6748fbad2d1"
+        },
+        {
+            "Command": "we will take menus",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_menu_n_1(x8),_take_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8548f60e-cfe8-4cdd-b92d-6c95465ca488"
         }
     ]
 }
