@@ -1,10 +1,15 @@
-- Make "_get_v_1" be synonyms of have
-  - get_able should be identical to have_able
-  - Present tense scenarios:
-    - "I get x?", "I get x" --> not great english
+- implement future have
+  - "I will have a menu/a table" --> not good english
+  - "I will have a steak" --> restaurant frame special case for ordering
 
-- "Do I/my son have a menu?" doesn't work
+- implement _take_v_1
+  - present tense --> "I don't know what you mean"
+  - future tense --> same as I'll have
 - implement future tense have/get
+
+
+- Make "I take a steak" or "I get a steak" say "Did you mean X"
+- "Do I/my son have a menu?" doesn't work
 - implement past tense get: "Did I get a steak?"
 - Make "_take_v_1" be synonyms of have
 - 

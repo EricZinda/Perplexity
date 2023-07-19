@@ -43,6 +43,13 @@
             "Tree": "_the_q(x11,_bill_n_of(x11,i16),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "ff902a95-c906-4c0f-991b-82e6a6fc54be"
+        },
+        {
+            "Command": "Can I have the bill",
+            "Expected": "But... you haven't got any food yet! \nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "_the_q(x11,_bill_n_of(x11,i16),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "76892157-de31-423b-9717-632e623b2316"
         }
     ]
 }

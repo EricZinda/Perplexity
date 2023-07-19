@@ -60,6 +60,10 @@ def is_present_tense(tree_info):
     return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["pres", "untensed"]
 
 
+def is_future_tense(tree_info):
+    return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["fut"]
+
+
 def is_request_from_tree(tree_info):
     introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
@@ -806,6 +810,13 @@ def _get_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bind
     if False: yield None
     report_error(["unexpected"])
 
+# Scenarios:
+#   - "I will have a menu/a table" --> not good english
+#   - "I will have a steak" --> restaurant frame special case for ordering
+#   - "Will you have a table?" --> Not good english
+# @Predication(vocabulary, names=["_have_v_1"])
+# def _have_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_binding):
+#     if not is_future_tense(state.get_binding("tree").value[0]): return
 
 # Just purely answers questions about having things in the present tense
 # Scenarios:
@@ -895,7 +906,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
 @Predication(vocabulary, names=["_have_v_1_able", "_get_v_1_able"])
 def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
     # Things players can have
-    players_can_have = ["food", "table", "menu"]
+    players_can_have = ["food", "table", "menu", "bill"]
 
     def both_bound_prediction_function(x_actors, x_objects):
         store_actors = [object_to_store(x) for x in x_actors]
