@@ -31,6 +31,27 @@
             "ID": "51920fb5-d90b-419c-beee-483c9525d2a2"
         },
         {
+            "Command": "I will sit down",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "9cf12d44-d1bb-4c9a-bde8-915f7f8e0747"
+        },
+        {
+            "Command": "Can I sit?",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_1_able(e2,x3))",
+            "Enabled": true,
+            "ID": "efc994a2-94b6-481e-9f75-c09efc44d352"
+        },
+        {
+            "Command": "Can we sit down?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
+            "Enabled": true,
+            "ID": "1a4bbc05-6aee-4462-b9fb-c944eb2d5257"
+        },
+        {
             "Command": "I will have a table?",
             "Expected": "I'm not sure what that means.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",

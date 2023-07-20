@@ -68,6 +68,12 @@ def is_question(tree_info):
     return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"]
 
 
+def is_wh_question(tree_info):
+    if is_question(tree_info):
+        return get_wh_question_variable(tree_info)
+
+    return False
+
 def is_request_from_tree(tree_info):
     introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     return sentence_force(tree_info["Variables"]) in ["ques", "prop-or-ques"] or \
@@ -100,8 +106,8 @@ def would_like_to_want_transformer():
 # Convert "Can/could I x?", "I can/could x?" to "I x_request x?"
 # "What can I x?"
 @Transform(vocabulary)
-def can_removal_intransitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1"})
+def can_to_able_intransitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0":"$e1", "ARG1":"$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_can_v_modal"], production=production)
 
@@ -683,64 +689,101 @@ def polite(state, c_arg, i_binding, e_binding):
 def _thanks_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
-# use for sit_v_down
-class RequestVerbIntransitive:
-    def __init__(self, predicate_name_list, lemma, logic, group_logic):
-        self.predicate_name_list = predicate_name_list
-        self.lemma = lemma
-        self.logic = logic
-        self.group_logic = group_logic
+# Scenarios:
+#   - "I will sit down"
+#   - "Will I sit down?"
+@Predication(vocabulary, names=["_sit_v_down", "sit_v_1"])
+def _sit_v_down_future(state, e_introduced_binding, x_actor_binding):
+    tree_info = state.get_binding("tree").value[0]
+    if not is_future_tense(tree_info): return
+    if is_question(tree_info):
+        # None of the future tense questions are valid english in this scenario
+        report_error(["unexpected"])
+        return
 
-    def predicate_func(self, state, e_binding, x_actor_binding):
-        is_request = is_request_from_tree(state.get_binding("tree").value[0])
-
-        def bound(x_actor):
-            if is_request and is_user_type(x_actor):
-                return True
-            else:
-                if self.lemma in state.rel.keys():
-                    for pair in state.all_rel(self.lemma):
-                        if pair[0] == x_actor:
-                            return True
-
-                    report_error(["verbDoesntApply", x_actor, self.lemma])
-                    return False
-
-                else:
-                    report_error(["verbDoesntApply", x_actor, self.lemma])
-                    return False
-
-        def unbound():
-            if self.lemma in state.rel.keys():
-                for i in state.all_rel(self.lemma):
-                    yield i[0]
-
-        for success_state in combinatorial_predication_1(state, x_actor_binding, bound, unbound):
-            x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
-
-            if is_request and is_user_type(x_act):
-                yield success_state.record_operations(success_state.handle_world_event([self.logic, x_act]))
-            else:
-                yield success_state
-
-    def group_predicate_func(self,state_list,e_introduced_binding_list,x_actor_binding_list):
-        should_call_want = False
-        for i in range(len(state_list)):
-            if is_request_from_tree(state_list[i].get_binding("tree").value[0]):
-                should_call_want = True
-                break
-
-        if not should_call_want:
-            yield state_list
+    def bound(x_actor):
+        if is_user_type(x_actor):
+            return True
         else:
-            if len(state_list) == 1:
-                yield (state_list[0],)
-            else:
-                reset_operations(state_list[0])
-                yield (state_list[0].record_operations(state_list[0].handle_world_event([self.group_logic, x_actor_binding_list])),)
+            report_error(["unexpected"])
+            return
+
+    def unbound():
+        if False:
+            yield None
+
+    yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
 
 
-sit_down = RequestVerbIntransitive(["_sit_v_down", "_sit_v_down_request"], "sitting_down", "user_wants_to_sit", "user_wants_to_sit_group")
+@Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])
+def _sit_v_down_future_group(state_list, has_more, e_list, x_actor_variable_group):
+    tree_info = state_list[0].get_binding("tree").value[0]
+    if not is_future_tense(tree_info): return
+
+    # The planner will only satisfy a want wrt the players
+    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[Concept("table")]])
+    final_state = do_task(state_list[0].world_state_frame(), [task])
+    if final_state:
+        yield [final_state]
+    else:
+        yield []
+
+
+
+# Scenarios:
+#   "I sit down"
+#   "Who sits down?"
+@Predication(vocabulary, names=["_sit_v_down", "_sit_v_1"])
+def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
+    if not is_present_tense(state.get_binding("tree").value[0]): return
+    report_error(["unexpected"])
+    if False: yield None
+
+
+# Scenarios:
+#   - "Can I sit down?" "Can I sit?" --> request for table
+#   - "Who can sit down?"
+#   -
+#   Poor English:
+#   - "Who sits down?"
+#   - "Who is sitting down?"
+#   - "I can sit down."
+@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able"])
+def _sit_v_down_able(state, e_binding, x_actor_binding):
+    tree_info = state.get_binding("tree").value[0]
+    if not is_present_tense(tree_info): return
+    if not is_question(tree_info):
+        report_error(["unexpected"])
+        return
+
+    def bound(x_actor):
+        if is_user_type(x_actor):
+            return True
+        else:
+            report_error(["unexpected"])
+            return
+
+    def unbound():
+        yield "user"
+
+    yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
+
+
+@Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able"])
+def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
+    tree_info = state_list[0].get_binding("tree").value[0]
+    if not is_present_tense(tree_info): return
+
+    # If it is a wh_question, just answer it
+    if is_wh_question(tree_info):
+        yield state_list
+    else:
+        # The planner will only satisfy a want wrt the players
+        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[Concept("table")]])
+        final_state = do_task(state_list[0].world_state_frame(), [task])
+        if final_state:
+            yield [final_state]
+
 
 # Scenarios:
 #   "Can I see a menu? -> implied request
@@ -1026,9 +1069,6 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
 #   "What can I have?" --> implied menu request
 @Predication(vocabulary, names=["_have_v_1_able", "_get_v_1_able"])
 def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
-    # Things players can have
-    players_can_have = ["food", "table", "menu", "bill"]
-
     def both_bound_prediction_function(x_actors, x_objects):
         # Players are able to have any food, a table or a menu
         if is_user_type(x_actors):
@@ -1093,16 +1133,6 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
 
         if has_more:
             yield True
-
-
-@Predication(vocabulary, names=sit_down.predicate_name_list)
-def _sit_v_down(state, e_introduced_binding, x_actor_binding):
-    yield from sit_down.predicate_func(state, e_introduced_binding, x_actor_binding)
-
-
-@Predication(vocabulary, names=["solution_group_" + x for x in sit_down.predicate_name_list])
-def _sit_v_down_group(state_list, has_more, e_introduced_binding_list, x_actor_binding_list):
-    yield from sit_down.group_predicate_func(state_list, e_introduced_binding_list, x_actor_binding_list)
 
 
 @Predication(vocabulary, names=["poss"])

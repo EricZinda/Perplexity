@@ -78,6 +78,62 @@
             "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_see_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "ad7a32a4-cce3-4517-a576-3796abdb839c"
+        },
+        {
+            "Command": "I sit down",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "0fa04472-445c-481c-b247-6749f5cc46d5"
+        },
+        {
+            "Command": "I can sit down",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
+            "Enabled": true,
+            "ID": "76780ce0-5445-401f-85d5-aac3fba9bd12"
+        },
+        {
+            "Command": "Who sits down?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "which_q(x3,person(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "b625ae45-b225-479c-b46c-e0f75f2a7dfe"
+        },
+        {
+            "Command": "Who is sitting down?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "which_q(x3,person(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "008b37e8-f81e-41f3-bb3a-e1ecc88c1208"
+        },
+        {
+            "Command": "Who sits down?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "which_q(x3,person(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "91f5c871-4e97-4b6a-9161-6b62878abd8f"
+        },
+        {
+            "Command": "Who will sit down?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "which_q(x3,person(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "2c790d66-95f5-4e20-a8ef-70c01b0725cb"
+        },
+        {
+            "Command": "You will sit down",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "5138ec3b-eea1-4369-995d-3a7aa16d4194"
+        },
+        {
+            "Command": "Will I sit down?",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down(e2,x3))",
+            "Enabled": true,
+            "ID": "ed1aa6a9-6682-4412-9960-b5c1b570163f"
         }
     ]
 }

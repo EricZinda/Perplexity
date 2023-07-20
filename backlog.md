@@ -1,23 +1,19 @@
+- 
+ 
+- I want to sit down?
+- could I sit down?
+- 
 - "I will see menus" --> works, but shouldn't
-- get rid of RequestVerbTransitive
 - implement future tense get
-
+  - Will I get a menu?
 - Make "I take a steak" or "I get a steak" say "Did you mean X"
 - "Do I/my son have a menu?" doesn't work
 - "What did I order?" --> Make work for debugging
 - implement past tense get: "Did I get a steak?"
-- Make "_take_v_1" be synonyms of have
-- 
 - Can we automatically call count_of_instances_and_concepts() for conceptual stuff? So that we don't have to call it in the group?
 
-- Fixup RequestVerbTransitive
-  - What's it for?
-    - Turns future tense questions into requests
-    - Turns common ways of asking using verbs into a request
 
-- "you" can mean either "the waiter" or "the restaurant"
-  - Do you have a pencil?
-  - Do you have steak?
+- "what are your specials?" --> There isn't a special in the system
 - "What do you have?"
     - In the context of the entrance, this *could* mean "do you have a table for us?" or "Do you have a menu?"
     - at the table it means the menu
@@ -31,7 +27,6 @@
 - Get rid of old code that has been implemented differently
 - Fix ontology.  Right now there are instances on the menu, for example
 - Handle concepts with extra information "bill for the food" failing if we don't know it
-- Do a good answer for "what are your specials?"
 - I'd like 2 steaks at the front door -> doesn't work
 
 - Demo for summit
