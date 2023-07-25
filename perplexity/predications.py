@@ -81,7 +81,7 @@ def meets_constraint(tree_info, variable_constraints, concept_count, concept_in_
     else:
         if check_concepts:
             # Because we are not dealing with all_rstr_meet_criteria, the phrase was something like "we want menus" or
-            # "we want a menu" or "what do you have?"
+            # "we want a menu", "what are your specials?", "what do you have?"
             # Which is talking about abstract menus, which implies:
             # 1. There is a single concept of "menu" that is obvious
             # 2. There are enough instances of it to fulfil the request
