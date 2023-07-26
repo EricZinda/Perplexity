@@ -178,7 +178,15 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                     created_solution_group, has_more, group_list = run_handlers(wh_handlers, handlers, optimized_criteria_list, one_more, next_group, index_predication, wh_question_variable)
                     if created_solution_group is None:
                         # No solution group handlers, or none handled it or failed: just do the default behavior
-                        yield group_list
+                        if wh_question_variable is not None:
+                            wh_created_solution_group = run_wh_group_handlers(wh_handlers, wh_question_variable, one_more, group_list)
+                            if len(wh_created_solution_group) == 0:
+                                # wh_handler said to fail
+                                break
+                            else:
+                                yield wh_created_solution_group
+                        else:
+                            yield group_list
 
                         # If there are multiple solution groups, we need to add one more (fake) group
                         # and yield it so that the caller thinks there are multiple answers and will give a message
@@ -213,10 +221,10 @@ class GroupVariableValues(object):
 def run_handlers(wh_handlers, handlers, variable_constraints, one_more, group, index_predication, wh_question_variable):
     created_solution_group = None
     has_more = False
+    state_list = list(group)
     if len(handlers) > 0:
         pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
 
-        state_list = list(group)
         for is_predication_handler_name in handlers:
             handler_function = is_predication_handler_name[1]
             if is_predication_handler_name[0]:
@@ -271,7 +279,7 @@ def run_handlers(wh_handlers, handlers, variable_constraints, one_more, group, i
         return created_solution_group, has_more, state_list
 
     else:
-        return None, None, group
+        return None, None, state_list
 
 
 def get_function(module_function):
@@ -284,7 +292,7 @@ def find_wh_group_handlers(execution_context, this_sentence_force):
     # First get the list of handlers, if any
     handlers = []
     for module_function in execution_context.vocabulary.predications("solution_group_wh", [], this_sentence_force):
-        handlers.append(get_function(module_function))
+        handlers.append((get_function(module_function), module_function[0], module_function[1]))
 
     return handlers
 
@@ -300,8 +308,10 @@ def run_wh_group_handlers(wh_handlers, wh_question_variable, one_more, group):
 
     if len(wh_handlers) > 0:
         value_binding_list = [solution.get_binding(wh_question_variable) for solution in group]
-        for function in wh_handlers:
-            for resulting_group in function(group, one_more, value_binding_list):
+        for function_module_functionname in wh_handlers:
+            pipeline_logger.debug(f"Running {function_module_functionname[1]}.{function_module_functionname[2]} wh-solution group handler")
+
+            for resulting_group in function_module_functionname[0](group, one_more, value_binding_list):
                 if resulting_group is not None and len(resulting_group) > 0:
                     return resulting_group
 

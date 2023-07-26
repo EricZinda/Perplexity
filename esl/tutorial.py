@@ -1234,12 +1234,6 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
             yield success_state
 
 
-
-@Predication(vocabulary, names=["solution_group__be_v_id"])
-def _be_v_id_group(state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
-    yield state_list
-
-
 @Predication(vocabulary, names=["_cost_v_1"])
 def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):

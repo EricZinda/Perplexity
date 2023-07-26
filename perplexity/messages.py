@@ -60,17 +60,18 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 wh_variable = wh_predication.introduced_variable()
                 solution_group = next(solution_groups)
+                solution_group_list = list(solution_group)
 
                 # If any solution in the group has a RespondOperation in it, assume that the response
                 # has been handled by that and just return an empty string
                 # This is how the user can replace the default behavior of listing out the answers
-                for solution in solution_group:
+                for solution in solution_group_list:
                     for operation in solution.get_operations():
                         if isinstance(operation, RespondOperation):
-                            yield "", solution_group
+                            yield "", solution_group_list
                             return
 
-                yield message_function(tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group, solution_group[0]]]), solution_group
+                yield message_function(tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0]]]), solution_group_list
 
             else:
                 message = message_function(tree, error)
