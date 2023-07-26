@@ -1,5 +1,5 @@
+- What do I have? -> should say son
 - 
- 
 - I want to sit down?
 - could I sit down?
 - 

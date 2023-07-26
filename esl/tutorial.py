@@ -4,7 +4,7 @@ from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
-    meets_constraint, lift_style_predication_2
+    lift_style_predication_2, concept_meets_constraint
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction
 from perplexity.tree import find_predication_from_introduced, get_wh_question_variable
@@ -32,7 +32,7 @@ def variable_group_values_to_list(variable_group):
     return [binding.value for binding in variable_group.solution_values]
 
 
-def check_solution_group_constraints(state_list, x_what_variable_group):
+def check_concept_solution_group_constraints(state_list, x_what_variable_group, check_concepts):
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
     if is_concept(x_what_variable_group.solution_values[0].value[0]):
@@ -46,13 +46,13 @@ def check_solution_group_constraints(state_list, x_what_variable_group):
         for value in x_what_values:
             x_what_individuals_set.update(value)
         concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], list(x_what_individuals_set))
-        return meets_constraint(state_list[0].get_binding("tree").value[0],
+        return concept_meets_constraint(state_list[0].get_binding("tree").value[0],
                             x_what_variable_group.variable_constraints,
                             concept_count,
                             concept_in_scope_count,
                             instance_count,
                             instance_in_scope_count,
-                            check_concepts=True,
+                            check_concepts,
                             variable=x_what_variable)
 
 
@@ -505,27 +505,17 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
     if is_concept(x_what_variable_group.solution_values[0].value[0]):
-        x_what_variable = x_what_variable_group.solution_values[0].variable.name
-
-        # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
-        # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
-        # "I'll have the steak" you should get an error
-        x_what_values = [x.value for x in x_what_variable_group.solution_values]
-        x_what_individuals_set = set()
-        for value in x_what_values:
-            x_what_individuals_set.update(value)
-        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], list(x_what_individuals_set))
-        if meets_constraint(current_state.get_binding("tree").value[0],
-                            x_what_variable_group.variable_constraints,
-                            concept_count,
-                            concept_in_scope_count,
-                            instance_count,
-                            instance_in_scope_count,
-                            check_concepts=True,
-                            variable=x_what_variable):
-
+        # We first check to make sure the constraints are valid for this concept.
+        # Because in "I want x", 'x' is always a concept, but the constraint is on the instances
+        # (as in "I want a steak" meaning "I want 1 instance of the concept of steak", we tell
+        # check_concept_solution_group_constraints to check instances via check_concepts=False
+        if check_concept_solution_group_constraints(state_list, x_what_variable_group, check_concepts=False):
             # If there is more than one concept here, they said something like "we want steaks and fries" but doing the magic
             # To figure that out how much of each is too much
+            x_what_values = [x.value for x in x_what_variable_group.solution_values]
+            x_what_individuals_set = set()
+            for value in x_what_values:
+                x_what_individuals_set.update(value)
             if len(x_what_individuals_set) > 1:
                 yield [current_state.record_operations([RespondOperation("One thing at a time, please!")])]
 
@@ -984,7 +974,7 @@ def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_varia
 
 # Just purely answers questions about having things in the present tense
 # Scenarios:
-#   "do you/I/we have x?" --> ask about the state of the world
+#   "do I/we have x?" --> ask about the state of the world
 #   "what do you have?" --> implied menu request
 @Predication(vocabulary, names=["_have_v_1"])
 def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
@@ -1027,30 +1017,37 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
 
 # Scenarios:
 # - "Do you have a table?" --> implied table request
-# - "Do you have the table?" --> Should fail due to "the table"
 # - "what do you have?" --> implied menu request
 # - "Do you have a/the menu?" --> implied menu request
 # - "Do you have a/the bill?" --> implied bill request
+# - "what specials do you have?" --> implied request for description of specials
+#   "do I/we have x?" --> ask about the state of the world
+# - "Do you have the table?" --> Should fail due to "the table" since there is neither 1 table, nor one conceptual table in scope
 # - "Do you have a/the steak?" --> just asking about the steak, no implied request
 # - "Do you have a bill?" --> just asking about the bill, no implied request
+# - "Do you have menus?" --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
+# - "Do you have steaks?" --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
 @Predication(vocabulary, names=["solution_group__have_v_1"])
 def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list):
     # Ignore this group if it isn't present tense
     if not is_present_tense(state_list[0].get_binding("tree").value[0]): return
 
-    # Fail this group if we don't meet the constraints
-    if not check_solution_group_constraints(state_list, x_obj_list):
-        yield []
-
-    # Only these turn into implied requests
-    implied_request_concepts = [Concept("table"), Concept("menu"), Concept("bill")]
     if len(state_list) == 1:
         if len(x_act_list.solution_values) == 1 and \
             len(x_act_list.solution_values[0].value) == 1 and \
             x_act_list.solution_values[0].value[0] == "computer":
+            # Questions about "Do you have a table/menu/bill?" are really implied requests in a restaurant
+            # that mean "Can I have a table/menu/bill?"
+            implied_request_concepts = [Concept("table"), Concept("menu"), Concept("bill")]
             if len(x_obj_list.solution_values) == 1 and \
-                len(x_obj_list.solution_values[0].value) == 1 and \
-                x_obj_list.solution_values[0].value[0] in implied_request_concepts:
+                len(x_obj_list.solution_values[0].value) == 1:
+                if x_obj_list.solution_values[0].value[0] in implied_request_concepts:
+                    # "Can I have a table/menu/bill?" is really about the instances
+                    # thus check_concepts=False
+                    # Fail this group if we don't meet the constraints
+                    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
+                        yield []
+
                     task = ('satisfy_want', [("user",)], variable_group_values_to_list(x_obj_list))
                     final_state = do_task(state_list[0].world_state_frame(), [task])
                     if final_state:
@@ -1059,7 +1056,24 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                     else:
                         yield []
 
-    # Everything else is just an ask about if something has something
+                elif x_obj_list.solution_values[0].value[0] == Concept("special"):
+                    # "Do you have specials?" is really about the concept of specials, so check_concepts=True
+                    # Fail this group if we don't meet the constraints
+                    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
+                        yield []
+
+                    task = ('describe_item', "special")
+                    final_state = do_task(state_list[0].world_state_frame(), [task])
+                    if final_state:
+                        yield [final_state]
+                        return
+                    else:
+                        yield []
+
+    # Everything else is just an ask about if something has something like "Do I/we have x" or "Do you have a steak?"
+    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
+        yield []
+
     yield state_list
 
 
@@ -1425,6 +1439,7 @@ def reset():
             if dish_type == "salmon":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "grilled")
 
+    initial_state = initial_state.add_rel("computer", "have", "special")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")

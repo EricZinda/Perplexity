@@ -3,6 +3,7 @@ import enum
 import inspect
 import itertools
 import json
+from math import inf
 
 from perplexity.execution import get_variable_metadata, report_error, execution_context
 import perplexity.plurals
@@ -54,61 +55,110 @@ class Concept(object):
         return modified
 
 
-# Return a new variable_constraints object that is the intersection of what the constraints
-# on the variable are, intersected with what is available
-# Find a value that is true for available_constraints that is also true for variable_constraints
-# Works because the solution group has been checked to make sure it is valid for the whole range that
-# variable_constraints defines
-# This gets called when a variable holds a concept and a constraint and we want to see if we can fulfil it
-# with instances.
-# Theory: we are talking about both concepts ("I'd like the menu", "I'd like the 2 menus", "I'd like a menu"
-# and instances "I'd like 2 menus" (instances),
-# Returns:
-#   True if the user is talking about concepts and the concept count meets the constraints
-#   False if the same for instances
-#   None
-
-def meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
-    if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
-        # This means the entire set of things must meet the variable constraints
-        if check_concepts:
-            # If this is a concept check we only ever check the concept_in_scope_count here because the user
-            # said something with "the" like "the menu" and this only makes sense for concepts that are
-            # in scope not the generic version of "menu"
+# This function is used to check the constraints for a variable that is set to a *concept*.
+# The caller needs to decide if the meaning of the phrase is referring to instances or concepts and set check_concepts=True or False
+#   since the meaning can't always be inferred.
+#
+# For example:
+#
+# Examples where the speaker uses a concept but the constraint is really about the instances:
+#   "We want a menu" --> "We want 1 instance of a menu concept"
+#   "We want a table" --> "We want 1 instance of a table concept"
+#   "We want tables/menus" --> "We want instances of the tables"
+#   "We want the menu(s)" --> "We want an undefined number of instances of 'the one and only table concept in scope'"
+#   "We want the specials" --> "We want an undefined number of instances of 'the (undefined number of) the special concepts in scope'"
+#
+# Examples where the speaker almost certainly means the concept:
+#   "Are the 2 specials good?" --> It is possible this means "the two instances of a special" but very unlikely
+#
+# Examples where the speaker uses a concept and could mean *either* the concept or the instances:
+#   "What chairs do you have?" --> *could* mean: "Which instances of chairs do you have?" or "which "classes" of chairs do you have?"
+#   "Which/How many specials do you have?" --> *could* mean: "which instances of specials do you have left?" or "Which classes of special are available here?"
+#   "Do you have the steak?" (ditto)
+#   "Do you still have 2 menus?" --> (ditto)
+#   "Are 2 specials available?" --> (ditto)
+def concept_meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
+    min_size = variable_constraints.min_size if variable_constraints is not None else 1
+    max_size = variable_constraints.max_size if variable_constraints is not None else float(inf)
+    if check_concepts:
+        # We are making sure the constraints succeed against the concept count
+        if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
+            # If the user says "the specials" or "the 2 menus" they are putting a criteria on the *concept*, not the instances. I.e. there should be
+            # 2 *types* of menus in scope. Examples:
+            #
+            # "Do you have the 2 menus?" (interpreted as meaning classes of menus)
+            # "Are the 2 specials good?" (ditto)
+            # "Do you have the steak?" (ditto)
+            #
+            # Furthermore, because they said "the", they are referring to a "distinguished concept", i.e. "the menu", not
+            # just any old menu. It is a special one. This is modelled as having the concept be "in scope". The generic type, "menu"
+            # still exists, but is a type that is out of scope. If they said "What is generally on a menu?" they'd be referring to that generic type.
             check_count = concept_in_scope_count
-        else:
-            check_count = instance_count
-    else:
-        if check_concepts:
-            # Because we are not dealing with all_rstr_meet_criteria, the phrase was something like "we want menus" or
-            # "we want a menu", "what are your specials?", "what do you have?"
-            # Which is talking about abstract menus, which implies:
-            # 1. There is a single concept of "menu" that is obvious
-            # 2. There are enough instances of it to fulfil the request
-            if concept_count == 1:
-                check_count = instance_count
-            else:
-                report_error(["moreThan", ["AfterFullPhrase", variable], 1], force=True)
-        else:
-            check_count = instance_count
 
-    # Otherwise we are talking about instances as in "I'd like a/2/a few menus"
-    # Constraints with no global criteria just get merged to most restrictive
-    if check_count >= (variable_constraints.min_size if variable_constraints is not None else 1):
-        # As long as we meet the min size we can fulfil the request
-        return True
+        else:
+            # The user didn't say "the", so the concept doesn't need to be in scope and so
+            # they are talking about the generic type (as described above). Examples:
+            #
+            # "How many specials do you have?" (meaning classes of specials)
+            # "Are 2 specials available" (ditto)
+            # "What chairs do you have?" (ditto)
+            # "specials are cheaper" (ditto)
+            # "Are specials available?" (ditto)
+            # "Can I get a table?" (ditto)
+            check_count = concept_count
 
-    else:
         if check_count == 0:
             introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
             report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+            return False
 
-        else:
-            report_error(["lessThan", ["AfterFullPhrase", variable], variable_constraints.min_size], force=True)
+        if check_count < min_size:
+            report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            return False
 
-    return False
+        elif check_count > max_size:
+            report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+            return False
 
+        return True
 
+    else:
+        # The user is talking about a concept, but the constraint is on the instances. See above for examples.
+        #
+        # First, check to make sure we the system has the right number of "in scope" concepts if "the" is used,
+        # as in "I'd like the 2 menus" (if there are a drink menu and a food menu)
+        if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
+            check_count = concept_in_scope_count
+            if check_count == 0:
+                introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
+                report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+                return False
+
+            if check_count < min_size:
+                report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+                return False
+
+            elif check_count > max_size:
+                report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+                return False
+
+        # Then, whether or not "the" was used, check to make sure there are enough instances to meet the criteria
+        # Since that is what we are looking for
+        check_count = instance_count
+        if check_count == 0:
+            introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
+            report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+            return False
+
+        if check_count < min_size:
+            report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            return False
+
+        # As long as the instances are >= min_size, we are good because the caller is responsible
+        # for limiting the number of instances being dealt with.
+        # For example: "We'd like a table for 2". If there are 20 tables, the caller
+        # is responsible for giving only 1
+        return True
 
 
 # how a particular VariableDescriptor handles

@@ -18,7 +18,9 @@ def describe_list_analyze(state, what_group):
             if item not in analysis["UniqueItems"]:
                 analysis["UniqueItems"].add(item)
                 store_object = object_to_store(item)
-                if sort_of(state, store_object, "special"):
+                # If the response is the actual 'special' type, then describe the specials
+                # since we are talking about the whole class of them
+                if store_object != "special" and sort_of(state, store_object, "special"):
                     analysis["Specials"].append(store_object)
                 elif sort_of(state, store_object, ["food", "menu"]):
                     analysis["MenuItems"].append(store_object)
@@ -69,9 +71,7 @@ def describe_analyzed_at_table(state, analysis):
 
     if len(analysis["Specials"]) == len(analysis["UniqueItems"]) and not heard_specials:
         # If we are being ask to describe only specials, use the special, detailed description
-        new_methods.append(('respond', "The specials are <description>"))
-        new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
-        new_methods.append(('add_rel', "user", "heardSpecials", "true"))
+        new_methods.append(('describe_item', "special"))
 
     else:
         for item in analysis["Specials"]:
@@ -100,7 +100,12 @@ task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describ
 
 
 def describe_item(state, what):
-    return [('respond', convert_to_english(state, what))]
+    if what == "special":
+        return[('respond', "The specials are <description>"),
+               ('delete_rel', "user", "heardSpecials", "false"),
+               ('add_rel', "user", "heardSpecials", "true")]
+    else:
+        return [('respond', convert_to_english(state, what))]
 
 
 task_methods.append(['describe_item', describe_item])
