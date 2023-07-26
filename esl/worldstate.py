@@ -345,36 +345,44 @@ class WorldState(State):
 
     # ******* Base Operations ********
     def mutate_delete_rel(self, first, relation_name, second, frame=None):
-        new_relation = copy.deepcopy(self._rel)
+        world_state = self.world_state_frame()
+
+        new_relation = copy.deepcopy(world_state._rel)
         if relation_name in new_relation:
             for item in new_relation[relation_name]:
                 if item[0] == first and item[1] == second:
                     new_relation[relation_name].remove(item)
                     break
-        self._rel = new_relation
+        world_state._rel = new_relation
 
     def add_rel(self, first, relation_name, second, frame=None):
-        new_relation = copy.deepcopy(self._rel)
+        world_state = self.world_state_frame()
+
+        new_relation = copy.deepcopy(world_state._rel)
         if relation_name not in new_relation:
             new_relation[relation_name] = [(first, second, frame)]
         else:
             new_relation[relation_name] += [(first, second, frame)]
 
-        return WorldState(new_relation, self.sys)
+        return WorldState(new_relation, world_state.sys)
 
     def mutate_add_rel(self, first, relation_name, second, frame=None):
-        new_relation = copy.deepcopy(self._rel)
+        world_state = self.world_state_frame()
+
+        new_relation = copy.deepcopy(world_state._rel)
         if relation_name not in new_relation:
             new_relation[relation_name] = [(first, second, frame)]
         else:
             new_relation[relation_name] += [(first, second, frame)]
 
-        self._rel = new_relation
+        world_state._rel = new_relation
 
     def mutate_reset_rel(self, keyname):
-        new_relation = copy.deepcopy(self._rel)
+        world_state = self.world_state_frame()
+
+        new_relation = copy.deepcopy(world_state._rel)
         new_relation.pop(keyname, None)
-        self._rel = new_relation
+        world_state._rel = new_relation
 
     def all_rel(self, rel):
         if rel not in self._rel.keys():
@@ -382,8 +390,11 @@ class WorldState(State):
         else:
             yield from [(x[0], x[1]) for x in self._rel[rel]]
 
+    def rel_exists(self, rel):
+        return rel in self._rel.keys()
     # ******* Base Operations ********
 
+    # ******* Overrides of State ********
     def frames(self):
         # Start with just the in scope frame
         in_scope = in_scope_initialize(self)
@@ -422,36 +433,75 @@ class WorldState(State):
         for i in self.get_entities():
             yield i
 
+    # Operations are always applied to the world_state frame and thus
+    # create a new world_state frame. But if this world state is a different
+    # frame, then
+
+    # But we need to return a copy
+    # Call to apply a list of operations to
+    # a new State object
+    def record_operations(self, operation_list):
+        newState = copy.deepcopy(self)
+        world_state = newState.world_state_frame()
+        for operation in operation_list:
+            world_state.operations.append(operation)
+
+        return newState
+
+    # Call to apply a list of operations to
+    # a new State object
+    def apply_operations(self, operation_list, record_operations=True):
+        newState = copy.deepcopy(self)
+        world_state = newState.world_state_frame()
+        for operation in operation_list:
+            operation.apply_to(world_state)
+            if record_operations:
+                world_state.operations.append(operation)
+
+        return newState
+
+    def get_operations(self):
+        world_state = self.world_state_frame()
+        return copy.deepcopy(world_state.operations)
+
+    # ******* Overrides of State ********
+
+
     def bill_total(self):
         for i in self.all_rel("valueOf"):
             if i[1] == "bill1":
                 return i[0]
 
     def mutate_remove_unknown_price(self, toRemove):
-        if (toRemove, "user") in self.all_rel("priceUnknownTo"):
-            self.rel["priceUnknownTo"].remove((toRemove, "user"))
+        world_state = self.world_state_frame()
+        if (toRemove, "user") in world_state.all_rel("priceUnknownTo"):
+            world_state._rel["priceUnknownTo"].remove((toRemove, "user", None))
 
     def mutate_add_bill(self, addition):
-        new_relation = copy.deepcopy(self._rel)
+        world_state = self.world_state_frame()
+        new_relation = copy.deepcopy(world_state._rel)
         for i in range(len(new_relation["valueOf"])):
             if new_relation["valueOf"][i][1] == "bill1":
                 new_relation["valueOf"][i] = (addition + new_relation["valueOf"][i][0], "bill1")
-        self._rel = new_relation
+        world_state._rel = new_relation
 
     def mutate_reset_bill(self):
-        new_relation = copy.deepcopy(self._rel)
+        world_state = self.world_state_frame()
+        new_relation = copy.deepcopy(world_state._rel)
         for i in range(len(new_relation["valueOf"])):
             if new_relation["valueOf"][i][1] == "bill1":
                 new_relation["valueOf"][i] = (0, "bill1")
-        self._rel = new_relation
+        world_state._rel = new_relation
 
     def mutate_reset_order(self):
-        new_relation = copy.deepcopy(self._rel)
+        world_state = self.world_state_frame()
+        new_relation = copy.deepcopy(world_state._rel)
         new_relation["ordered"] = []
-        self._rel = new_relation
+        world_state._rel = new_relation
 
     def mutate_set_response_state(self, new_state):
-        self.sys["responseState"] = new_state
+        world_state = self.world_state_frame()
+        world_state.sys["responseState"] = new_state
 
     def get_entities(self):
         entities = set()
@@ -472,7 +522,7 @@ class WorldState(State):
 
     def user_ordered_veg(self):
         veggies = list(all_instances(self, "veggie"))
-        if "ordered" in self.rel.keys():
+        if self.rel_exists("ordered"):
             for i in self.all_rel("ordered"):
                 if i[0] == "user":
                     if i[1] in veggies:
