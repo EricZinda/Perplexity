@@ -14,7 +14,7 @@ from perplexity.utilities import at_least_one_generator
 
 # Yields solutions in a single solution group
 # asks its solution_group_generator to give it more than the initial group
-# when necessary
+# when it runs out of initial solutions
 class SingleGroupGenerator(object):
     def __init__(self, group_id, solution_group_generator, group_list):
         self.group_id = group_id
@@ -26,11 +26,14 @@ class SingleGroupGenerator(object):
         return self
 
     def __next__(self):
+        if groups_logger.level == logging.DEBUG:
+            groups_logger.debug(f"SingleGroupGenerator: Next solution requested, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
+
         if self.last_yielded_index == len(self.group_list) - 1:
             # If no variable has a between(N, inf) constraint,
             # Just stop now and the caller will get a subset solution group for the answer they care about
             # Note that it may not be *minimal*, might be a subset, and might be maximal.
-            # If it does have an between(N, inf) constraint, return them all
+            # If it does have a between(N, inf) constraint, return them all
             if not self.solution_group_generator.variable_has_inf_max:
                 raise StopIteration
 
@@ -42,36 +45,54 @@ class SingleGroupGenerator(object):
         return self.group_list[self.last_yielded_index]
 
 
-# yields a generator that yields solutions in a minimal solution group as quickly as it is found
+# Yields a generator that yields solutions in a minimal solution group as quickly as it is found
 # but will continue returning solutions until it is maximal if requested. The idea is to make it easy
 # to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)
 # but allow other types of phrases to get all answers in a group if needed
 #
-# When a group is yielded from all_plural_groups_stream(), it has an id which is a "lineage"
-# If that lineage is just one group away from an existing group, it should be yielded from that group
-# Otherwise it should create a new group
+# A group is only yielded from all_plural_groups_stream() when it meets the constraints. Then, if further
+# solutions can be added to it and still meet the constraints, it is given an id that shows it came from that original group
+# It will continue to grow until no more solutions exist that can be added and still keep the constraints. Note that
+# whether the solution group is cuml/coll/dist may change as it grows, even though it is a solution group throughout.
 #
-# A yielded SingleSolutionGroupGenerator will "follow" the first lineage that matches it
+# So, when a group is yielded from all_plural_groups_stream(), it has an id which is a "lineage"
+# If that lineage is just one group away from an existing SingleGroupGenerator, it should be yielded
+# from that SingleGroupGenerator and cause that generator to track the new group_id.  Otherwise, it should create a new group.
+#
+# Note that a single solution group may "fork" into multiple lineages if the original group gets different records added to
+# it that still meet its constraints. The SingleGroupGenerator will "follow" the first fork, arbitrarily, and the others will
+# be returned as other groups.
+#
+# So, a yielded SingleGroupGenerator will "follow" the first lineage that matches it
 class SolutionGroupGenerator(object):
     def __init__(self, all_plural_groups_stream, variable_has_inf_max):
         self.all_plural_groups_stream = all_plural_groups_stream
         self.variable_has_inf_max = variable_has_inf_max
         self.solution_groups = {}
-        self.current_solution_group_index = -1
+        # Use a dict so that we retain the order things got added in
+        # but also have a fast way to find ids
+        self.unyielded_solution_groups = dict()
         self.complete = False
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        self.current_solution_group_index += 1
-        if self.current_solution_group_index > len(self.solution_groups) - 1:
-            # Caller is asking for the next group and we don't have one yet
+        if len(self.unyielded_solution_groups) == 0:
+            # The caller is asking for the next group, and we don't have one yet
             if not self.next_solution_in_group(""):
                 self.complete = True
                 raise StopIteration
 
-        return list(self.solution_groups.values())[self.current_solution_group_index]
+        # Find the next unyielded item and remove it from the unyielded list
+        next_group_id = next(iter(self.unyielded_solution_groups))
+        self.unyielded_solution_groups.pop(next_group_id)
+
+        value = self.solution_groups[next_group_id]
+        if groups_logger.level == logging.DEBUG:
+            groups_logger.debug(f"SolutionGroupGenerator: Next solution group requested, returning id {next_group_id}: {value}")
+
+        return value
 
     # Returns true if there is another solution found for group.id == current_id
     # If current_id == "" then returns true if there is a new group created
@@ -84,12 +105,17 @@ class SolutionGroupGenerator(object):
                 self.complete = True
                 return False
 
+            # The ID reflects the lineage, so we can get the
+            # parent ID by grabbing the text before the last ":"
             colon_index = next_id.rfind(":")
             if colon_index == -1:
                 parent_id = ""
             else:
                 parent_id = next_id[:colon_index]
 
+            # See if the group returned is a descendant of
+            # an existing group by first comparing its ID
+            # and, if that doesn't work, then its parent_id
             if next_id in self.solution_groups:
                 existing_solution_group_id = next_id
             elif parent_id in self.solution_groups:
@@ -98,19 +124,38 @@ class SolutionGroupGenerator(object):
                 existing_solution_group_id = ""
 
             if existing_solution_group_id == "":
-                # There wasn't an existing solution group, start tracking this as a new one
+                # There wasn't an existing solution group to put this in, start tracking this as a new one
                 self.solution_groups[next_id] = SingleGroupGenerator(next_id, self, next_group)
+                self.unyielded_solution_groups[next_id] = None
 
             else:
-                # This is an update to an existing solution group
+                # This is an update to an existing solution group, either a parent or the exact id
+                # Replace the data in the SingleGroupGenerator and update its ID
+                # to the new value so it will properly track the lineage next time
                 existing_solution_group = self.solution_groups[existing_solution_group_id]
                 existing_solution_group.group_list = next_group
                 existing_solution_group.group_id = next_id
-                # Update the index of this updated solution group
+
+                # Update the group_id of this updated solution group so that, if yet another
+                # child of this group is created, it'll find it as its parent
+                # Note that this can be a NOOP if next_id was already a solution group
                 self.solution_groups.pop(existing_solution_group_id)
                 self.solution_groups[next_id] = existing_solution_group
 
+                # If the ID was unyielded, remove the old and add the new
+                # to the unyielded list
+                if next_id in self.unyielded_solution_groups:
+                    self.unyielded_solution_groups.pop(next_id)
+                    self.unyielded_solution_groups[next_id] = None
+
             if existing_solution_group_id == current_id:
+                # Only return True if there is new data for current_id.
+                # This happens if the requested group id (current_id)
+                # is the same as existing_solution_group_id, which happens if:
+                #   - current_id was "" and a new group was created (thus existing_solution_group_id == "")
+                #   - next_id was the current_id solution group and it existed (thus current_id == existing_solution_group_id)
+                #   - next_id's immediate parent was already a solution group and that group was current_id
+                #       in this case, we give the solution group that we're tracking a new id of next_id
                 return True
 
     def has_multiple_groups(self):
