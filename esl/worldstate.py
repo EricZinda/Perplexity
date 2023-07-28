@@ -725,6 +725,9 @@ class WorldState(State):
     # This should always be the answer to a question since it is a partial sentence that generated
     # an unknown() predication in the MRS for the verb
     def unknown(self, x):
+        concept_name = None
+        if isinstance(x,Concept):
+            concept_name = x.concept_name
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash", "card", "card, credit"]:
                 return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
@@ -732,10 +735,13 @@ class WorldState(State):
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
-            if x in self.get_entities():
-                return self.handle_world_event(["user_wants", x])
+            if concept_name is not None:
+                if concept_name in self.get_entities():
+                    return self.handle_world_event(["user_wants", x])
+                else:
+                    return [RespondOperation("Sorry, we don't have that")]
             else:
-                return [RespondOperation("Sorry, we don't have that")]
+                return [RespondOperation("Sorry, we don't allow ordering specific things like that")]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
             if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:

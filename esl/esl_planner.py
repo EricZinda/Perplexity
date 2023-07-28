@@ -153,7 +153,7 @@ def get_table_at_entrance(state, who_multiple, table):
         # If the count of table is > 1, fail
         table_count = noun_structure(table, "card")
         if table_count is not None and table_count != 1:
-            return [('respond', "I suspect you want to sit together.")]
+            return [('respond', "Johnny: Hey, let's sit together alright?")]
         for_structure = noun_structure(table, "for")
         for_count = count_entities(for_structure)
         # If they say "we want a table" or "table for 2" the size is implied
@@ -259,7 +259,9 @@ gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_pr
 def satisfy_want_group_group(state, group_who, group_what):
     if not isinstance(group_who, list) or not isinstance(group_what, list): return
 
-    # To support "we would like a table/the bill/etc" not going to every person,
+    # To support "we would like a table/the bill/etc" not going to every person,@Predication(vocabulary, names=["solution_group__be_v_id"])
+    # def _be_v_id_group(state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
+    #     yield state_list
     # conceptual things like "the bill", or "a table" or "a menu" should be collapsed into a single item
     # and handled once if everyone wants the same thing
     unique_whats = unique_group_variable_values(group_what)
@@ -296,7 +298,7 @@ def satisfy_want_group_group(state, group_who, group_what):
 def satisfy_want(state, who, what):
     if len(who) > 1 or len(what) > 1: return
 
-    if is_instance(state, what[0]):
+    if is_instance(state, what[0]): #TODO: Ask when could this be true
         # They are asking for a *particular instance of a table* (or whatever)
         # report an error if this is the best we can do
         return [('respond', "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
@@ -304,6 +306,9 @@ def satisfy_want(state, who, what):
         concept = what[0].concept_name
         if sort_of(state, concept, "menu"):
             return [('get_menu', who)]
+
+        elif concept == "special":
+            return [('describe_item',"special")]
 
         elif sort_of(state, concept, "table"):
             return [('get_menu', who[0])]

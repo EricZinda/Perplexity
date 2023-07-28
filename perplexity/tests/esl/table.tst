@@ -137,7 +137,7 @@
         },
         {
             "Command": "We want tables",
-            "Expected": "I suspect you want to sit together.",
+            "Expected": "Johnny: Hey, let's sit together alright?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35492138-e4fb-4a43-8bb8-994924f6c1f9"
