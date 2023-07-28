@@ -242,8 +242,10 @@ def order_food_out_of_stock(state, who, what):
 
 def order_food_at_table(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
+        food_instance = find_unused_item(state, what)
+
         return [('respond', "Excellent Choice! Can I get you anything else?"),
-                ('add_rel', who, "ordered", what),
+                ('add_rel', who, "ordered", food_instance),
                 ('add_bill', what),
                 ('set_response_state', "anything_else")]
 

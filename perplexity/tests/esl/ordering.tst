@@ -53,7 +53,7 @@
         },
         {
             "Command": "I will have a steak",
-            "Expected": "Sorry, you got the last one of those. We don't have any more. Can I get you something else? \nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $10 so if we get that, we won't be able to pay for it with $15. \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "76c09b78-40f9-4d01-ab0f-c7b9bd8946d9"
@@ -144,7 +144,7 @@
         },
         {
             "Command": "I'd like a steak'",
-            "Expected": "Sorry, you got the last one of those. We don't have any more. Can I get you something else? \nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $10 so if we get that, we won't be able to pay for it with $15. \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "ac9ca7b7-60b3-4d02-8b03-9fa62fb80095"

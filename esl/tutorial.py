@@ -1532,7 +1532,7 @@ def reset():
             initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)
 
             # The kitchen is where all the food is
-            initial_state = initial_state.add_rel("kitchen1", "have", food_instance)
+            initial_state = initial_state.add_rel("kitchen1", "contain", food_instance)
             if dish_type == "chicken":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "roasted")
             if dish_type == "salmon":
