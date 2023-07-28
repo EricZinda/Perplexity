@@ -49,12 +49,12 @@ def in_scope(initial_data, state, value):
 
 
 def is_user_type(val):
-    if not isinstance(val,tuple):
-        return val in ["user","son1"]
+    if not isinstance(val, tuple):
+        return val in ["user", "son1"]
 
     else:
         for i in val:
-            if i not in ["user","son1"]:
+            if i not in ["user", "son1"]:
                 return False
         return True
 
@@ -172,6 +172,7 @@ def instance_of_or_concept_name(state, thing):
     else:
         return instance_of_what(state, thing)
 
+
 def instance_of_what(state, thing):
     for i in state.all_rel("instanceOf"):
         if i[0] == thing:
@@ -230,6 +231,10 @@ def store_to_object(state, s):
         return s
 
 
+def serial_store_to_object(state, s_list):
+    return [store_to_object(state, s) for s in s_list]
+
+
 def find_unused_item(state, object_type):
     for potential in all_instances(state, object_type):
         taken = at_least_one_generator(rel_subjects(state, "have", potential))
@@ -278,6 +283,7 @@ class AddRelOp(object):
 
     def apply_to(self, state):
         state.mutate_add_rel(self.toAdd[0], self.toAdd[1], self.toAdd[2])
+
 
 class DeleteRelOp(object):
     def __init__(self, rel):
@@ -328,8 +334,8 @@ class WorldState(State):
         self.frame_name = name
         self._world_state_frame = world_state_frame
 
-    #*********** Used for HTN
-    def copy(self,new_name=None):
+    # *********** Used for HTN
+    def copy(self, new_name=None):
         return copy.deepcopy(self)
 
     def display(self, heading=None):
@@ -341,6 +347,7 @@ class WorldState(State):
 
     def state_vars(self):
         pass
+
     # *********** Used for HTN
 
     # ******* Base Operations ********
@@ -392,6 +399,7 @@ class WorldState(State):
 
     def rel_exists(self, rel):
         return rel in self._rel.keys()
+
     # ******* Base Operations ********
 
     # ******* Overrides of State ********
@@ -465,7 +473,6 @@ class WorldState(State):
         return copy.deepcopy(world_state.operations)
 
     # ******* Overrides of State ********
-
 
     def bill_total(self):
         for i in self.all_rel("valueOf"):
@@ -651,9 +658,9 @@ class WorldState(State):
         allTableRequests = True
 
         for i in wanted:
-            if not sort_of(self,i.value[0],"table"):
+            if not sort_of(self, i.value[0], "table"):
                 allTables = False
-            if not sort_of(self,i.value[0],"menu"):
+            if not sort_of(self, i.value[0], "menu"):
                 allMenus = False
             if not i.value[0][0] == "{":
                 allTableRequests = False
@@ -726,7 +733,7 @@ class WorldState(State):
     # an unknown() predication in the MRS for the verb
     def unknown(self, x):
         concept_name = None
-        if isinstance(x,Concept):
+        if isinstance(x, Concept):
             concept_name = x.concept_name
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash", "card", "card, credit"]:
@@ -786,6 +793,6 @@ class WorldState(State):
             what_list = [binding.value for binding in args[2].solution_values]
             return self.find_plan([('satisfy_want', who_list, what_list)])
 
-            return self.user_wants_group(args[1],args[2])
+            return self.user_wants_group(args[1], args[2])
         elif args[0] == "user_wants_to_see_group":
-            return self.user_wants_to_see_group(args[1],args[2])
+            return self.user_wants_to_see_group(args[1], args[2])

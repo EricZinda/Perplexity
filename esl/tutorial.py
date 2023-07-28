@@ -398,7 +398,7 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
-        yield from all_instances(state, noun_type)
+        yield from [store_to_object(state, x) for x in all_instances_and_spec(state, noun_type)]
 
     # Yield the abstract type first, not as a combinatoric variable
     yield state.set_x(x_binding.variable.name, (Concept(noun_type),))
@@ -428,17 +428,16 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1(state, e_introduced_binding, x_target_binding):
     def criteria_bound(value):
-        veg = all_instances(state, "veggie")
-        if value in veg:
+        veg = all_instances_and_spec(state, "veggie")
+        if value in serial_store_to_object(state,veg):
             return True
         else:
             report_error(["Not Veg"])
             return False
 
     def unbound_values():
-        # Find all large things
-        for i in all_instances(state, "veggie"):
-            yield i
+        for i in all_instances_and_spec(state, "veggie"):
+            yield store_to_object(state,i)
 
     yield from combinatorial_predication_1(state, x_target_binding,
                                            criteria_bound,
