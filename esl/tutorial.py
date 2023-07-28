@@ -399,9 +399,6 @@ def match_all_n(noun_type, state, x_binding):
     def unbound_variable():
         yield from [store_to_object(state, x) for x in all_instances_and_spec(state, noun_type)]
 
-    # Yield the abstract type first, not as a combinatoric variable
-    yield state.set_x(x_binding.variable.name, (Concept(noun_type),))
-
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
@@ -572,8 +569,9 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
                 {"card": x_what_variable_group.variable_constraints.max_size})
 
             actor_values = [x.value for x in x_actor_variable_group.solution_values]
+            what_values = [x.value for x in x_what_variable_group.solution_values]
             current_state = do_task(current_state.world_state_frame(),
-                                    [('satisfy_want', actor_values, [(first_x_what_binding_value,)])])
+                                    [('satisfy_want', actor_values, what_values)])
             if current_state is None:
                 yield []
             else:

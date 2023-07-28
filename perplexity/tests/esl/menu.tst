@@ -78,6 +78,34 @@
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "ed01aa0e-79b0-4c3d-8443-f9bac852a7d4"
+        },
+        {
+            "Command": "show me the menu",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x9,pron(x9),_the_q(x8,_menu_n_1(x8),pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "3abc1ec5-890e-4d20-83fd-58479d75bf6a"
+        },
+        {
+            "Command": "can you seat me?",
+            "Expected": "Um... You're at a table.",
+            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "5e54a63a-49e8-444f-9b6f-b50555f6f63c"
+        },
+        {
+            "Command": "2",
+            "Expected": "Sorry, we don't have that",
+            "Tree": "udef_q(x4,[generic_entity(x4), card(2,e10,x4)],unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "9dd7913d-e27e-4750-9204-6dc50b87c258"
+        },
+        {
+            "Command": "can you show me the menu?",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x12,pron(x12),_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_show_v_1_able(e2,x3,x11,x12))))",
+            "Enabled": true,
+            "ID": "21e7c526-6227-4537-be14-54a95bff30e7"
         }
     ]
 }
