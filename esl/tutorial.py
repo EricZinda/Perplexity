@@ -127,6 +127,25 @@ def can_to_able_transitive_transformer():
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal"], production=production)
 
+# Convert "May I x?"" to "I x_request x?"
+@Transform(vocabulary)
+def may_to_able_intransitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
+    return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_may_v_modal"], production=production)
+
+
+# Convert "may I have a table/steak/etc?" or "what may I have?"
+# To: able_to
+@Transform(vocabulary)
+def may_to_able_transitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
+                              args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_may_v_modal"], production=production)
+
 #Convert "Can you seat me" to "you seat_reqeuested me"
 
 @Transform(vocabulary)
