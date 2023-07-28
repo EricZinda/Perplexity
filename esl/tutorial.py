@@ -126,6 +126,16 @@ def can_to_able_transitive_transformer():
                               args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal"], production=production)
+#Convert "can you show me the menu" to "you show_able the menu"
+@Transform(vocabulary)
+def can_to_able_transitive_transformer_indir_obj():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG4": "$x3"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "x"],
+                              args_capture=[None, "x1", "x2","x3"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_can_v_modal"], production=production)
+
+
 
 # Convert "May I x?"" to "I x_request x?"
 @Transform(vocabulary)
@@ -145,17 +155,6 @@ def may_to_able_transitive_transformer():
                               args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_may_v_modal"], production=production)
-
-#Convert "Can you seat me" to "you seat_reqeuested me"
-
-@Transform(vocabulary)
-def can_to_requested_transitive_transformer():
-    production = TransformerProduction(name="$|name|_requested", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
-                              args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal"], production=production)
-
 
 # Convert "I want to x y" to "I x_request y"
 @Transform(vocabulary)
@@ -610,18 +609,41 @@ def _give_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_
                         ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
 
 
-@Predication(vocabulary, names=["_show_v_1"])
+@Predication(vocabulary, names=["_show_v_1","_show_v_1_able"])
 def _show_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
-    if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
-        if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
-            if not state.get_binding(x_object_binding.variable.name).value[0] is None:
-                if state.get_binding(x_object_binding.variable.name).value[0] == "menu1":
-                    yield state.record_operations(
-                        state.handle_world_event(
-                            ["user_wants_to_see", state.get_binding(x_object_binding.variable.name).value[0]]))
+    def criteria_bound(x_actor, x_object):
+        return True
+
+    def wanters_of_obj(x_object):
+        return #not currently going to support asking who is seating someone
+
+    def wanted_of_actor(x_actor):
+        return
+
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+                                      wanters_of_obj, wanted_of_actor)
+
+@Predication(vocabulary, names=["solution_group__show_v_1", "solution_group__show_v_1_able"])
+def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_object_variable_group, x_target_variable_group):
+    current_state = copy.deepcopy(state_list[0])
+    actor_values = [x.value for x in x_actor_variable_group.solution_values]
+    x_object_values = [x.value for x in x_object_variable_group.solution_values]
+    for obj in x_object_values:
+        if not obj == (Concept("menu"),):
+            yield [current_state.record_operations([RespondOperation("Sorry, I can't show you that")])]
+            return
 
 
-@Predication(vocabulary, names=["_seat_v_cause","_seat_v_cause_requested"])
+    current_state = do_task(current_state.world_state_frame(),
+                            [('satisfy_want', [('user',)], [(Concept("menu"),)])])
+    if current_state is None:
+        yield []
+    else:
+        yield [current_state]
+
+
+
+@Predication(vocabulary, names=["_seat_v_cause","_seat_v_cause_able"])
 def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         return is_user_type(x_object)
@@ -634,7 +656,7 @@ def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
                                       wanters_of_obj, wanted_of_actor)
-@Predication(vocabulary, names=["solution_group__seat_v_cause","solution_group__seat_v_cause_requested"])
+@Predication(vocabulary, names=["solution_group__seat_v_cause","solution_group__seat_v_cause_able"])
 def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
     actor_values = [x.value for x in x_actor_variable_group.solution_values]
