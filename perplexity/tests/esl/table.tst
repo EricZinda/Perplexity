@@ -137,7 +137,7 @@
         },
         {
             "Command": "We want tables",
-            "Expected": "Johnny: Hey, let's sit together alright?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35492138-e4fb-4a43-8bb8-994924f6c1f9"
@@ -348,7 +348,7 @@
         {
             "Command": "can you seat me?",
             "Expected": "How many in your party?",
-            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_requested(e2,x3,x11)))",
+            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "6504baec-0698-4d3e-a222-bd73c653588e"
         },
