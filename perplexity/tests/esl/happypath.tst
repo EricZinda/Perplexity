@@ -92,6 +92,13 @@
             "Tree": "pronoun_q(x3,pron(x3),[_please_a_1(e9,e2), _check_v_1(e2,x3,i8)])",
             "Enabled": true,
             "ID": "1108248a-eb0f-42cf-88d3-c93baa41a049"
+        },
+        {
+            "Command": "cash",
+            "Expected": "Ah. Perfect! Have a great rest of your day.(there are more)",
+            "Tree": "udef_q(x4,_cash_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "1b243ee9-08a0-4942-bc6f-d09ddd2e1856"
         }
     ]
 }

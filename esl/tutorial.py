@@ -511,6 +511,20 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
                                       all_item1_on_item2,
                                       all_item2_containing_item1)
 
+@Predication(vocabulary, names=("_with_p",))
+def _with_p(state, e_introduced_binding, e_main, x_binding):
+    yield state.add_to_e(e_main.variable.name, "With", x_binding.value[0])
+
+@Predication(vocabulary, names=["_pay_v_for"], handles=[("With", EventOption.optional)])
+def _pay_v_for(state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
+    if not state.sys["responseState"] == "way_to_pay":
+        yield do_task(state, [("respond", "It's not time to pay yet.")])
+        return
+    if not e_introduced_binding.value["With"] in ["cash","card"]:
+        yield do_task(state,[("respond","You can't pay with that.")])
+        return
+
+    yield state.record_operations(state.handle_world_event(["unknown", e_introduced_binding.value["With"]]))
 
 @Predication(vocabulary, names=["_want_v_1"])
 def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
