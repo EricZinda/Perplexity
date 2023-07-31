@@ -354,6 +354,15 @@ def _credit_n_1(state, x_bind):
 
     yield from combinatorial_predication_1(state, x_bind, bound, unbound)
 
+@Predication(vocabulary, names=["_tomato_n_1"])
+def _tomato_n_1(state, x_bind):
+    def bound(val):
+        report_error("no declarative tomato")
+
+    def unbound():
+        yield Concept("tomato")
+
+    yield from combinatorial_predication_1(state, x_bind, bound, unbound)
 
 @Predication(vocabulary, names=["unknown"])
 def unknown(state, e_binding, x_binding):
@@ -1413,9 +1422,15 @@ def _be_v_there(state, e_introduced_binding, x_object_binding):
 def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
     assert (x_first_binding is not None)
     assert (x_second_binding is not None)
-    yield state.set_x(x_first_binding.variable.name, (state.get_binding(x_first_binding.variable.name).value[0] + ", " +
+    if (x_second_binding.value[0] == Concept("tomato")):
+        yield state
+    else:
+        yield state.set_x(x_first_binding.variable.name, (state.get_binding(x_first_binding.variable.name).value[0] + ", " +
                                                       state.get_binding(x_second_binding.variable.name).value[0],))
 
+@Predication(vocabulary, names=["_green_a_2"])
+def compound(state, e_introduced_binding, x_first_binding):
+    yield state
 
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
