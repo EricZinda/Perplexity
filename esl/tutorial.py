@@ -599,11 +599,20 @@ def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
         return x == "computer"
 
     def unbound():
-        if False:
-            yield None
+        yield None
 
-    for success_state in combinatorial_predication_1(state, x_actor_binding, criteria_bound, unbound):
-        yield success_state.record_operations(state.handle_world_event(["user_wants", "bill1"]))
+    yield from combinatorial_predication_1(state, x_actor_binding, criteria_bound, unbound)
+
+
+@Predication(vocabulary, names=["solution_group__check_v_1"])
+def _check_v_1_group(state_list, has_more, e_introduced_binding, x_actor_binding, i_object_binding):
+    current_state = copy.deepcopy(state_list[0])
+    final_state = do_task(current_state.world_state_frame(), [('get_bill',)])
+    if final_state is None:
+        yield []
+    else:
+        yield[final_state]
+
 
 
 @Predication(vocabulary, names=["_give_v_1"])
@@ -1484,8 +1493,9 @@ def reset():
                                 "responseState": "initial"
                                 })
 
-    initial_state = initial_state.add_rel("bill", "specializes", "thing")
-    initial_state = initial_state.add_rel("check", "specializes", "thing")
+    initial_state = initial_state.add_rel("bill_type","specializes","thing")
+    initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
+    initial_state = initial_state.add_rel("check", "specializes", "bill_type")
     initial_state = initial_state.add_rel("kitchen", "specializes", "thing")
     # The computer has the concepts of the items so it can answer "do you have x?"
     initial_state = initial_state.add_rel("computer", "have", "kitchen")

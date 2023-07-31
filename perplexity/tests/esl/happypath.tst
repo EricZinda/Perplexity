@@ -85,6 +85,13 @@
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "ddb7c01a-a8c1-42af-9776-ffc933cb69d9"
+        },
+        {
+            "Command": "check, please",
+            "Expected": "Your total is 14 dollars. Would you like to pay by cash or card?",
+            "Tree": "pronoun_q(x3,pron(x3),[_please_a_1(e9,e2), _check_v_1(e2,x3,i8)])",
+            "Enabled": true,
+            "ID": "1108248a-eb0f-42cf-88d3-c93baa41a049"
         }
     ]
 }
