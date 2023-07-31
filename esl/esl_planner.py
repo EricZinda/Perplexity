@@ -4,7 +4,7 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item
+    find_unused_item, ResetOrderAndBillOp
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -252,6 +252,32 @@ def order_food_at_table(state, who, what):
 
 gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
 
+def complete_order(state):
+    if state.sys["responseState"] == "anything_else":
+        if not state.user_ordered_veg():
+            return [("respond", "Son: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
+                ("set_response_state", "something_to_eat"), ("reset_order_and_bill",)]
+
+        items = [i for (x, i) in state.all_rel("ordered")]
+        for i in state.all_rel("have"):
+            if i[0] == "user":
+                if i[1] in items:
+                    items.remove(i[1])
+
+        item_str = " ".join(items)
+
+        for i in items:
+            state.add_rel("user", "have", i)
+
+        return [("respond","Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with " + item_str + ".\nThe food is good, but nothing extraordinary."),
+            ("set_response_state", "done_ordering")]
+    elif state.sys["responseState"] == "something_to_eat":
+        return [("respond", "Well if you aren't going to order anything, you'll have to leave the restaurant, so I'll ask you again: can I get you something to eat?")]
+    else:
+        return [("respond", "Hmm. I didn't understand what you said." + state.get_reprompt())]
+
+gtpyhop.declare_task_methods('complete_order', complete_order)
+
 
 # This task deals with lists that map to each other. I.e. the first who goes with the first what
 # Its job is to analyze the top level solution group would could have a lot of different collections
@@ -347,8 +373,11 @@ def set_response_state(state, value):
 def add_bill(state, wanted):
     return state.record_operations([AddBillOp(wanted)])
 
+def reset_order_and_bill(state):
+    return state.record_operations([ResetOrderAndBillOp()])
 
-gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bill)
+
+gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill)
 
 add_declarations(gtpyhop)
 

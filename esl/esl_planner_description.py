@@ -101,7 +101,7 @@ task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describ
 
 def describe_item(state, what):
     if what == "special":
-        return[('respond', "The specials are <description>"),
+        return[('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and porkchops."),
                ('delete_rel', "user", "heardSpecials", "false"),
                ('add_rel', "user", "heardSpecials", "true")]
     else:

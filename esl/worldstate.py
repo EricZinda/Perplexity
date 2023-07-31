@@ -528,7 +528,7 @@ class WorldState(State):
         return ""
 
     def user_ordered_veg(self):
-        veggies = list(all_instances(self, "veggie"))
+        veggies = list(all_instances_and_spec(self, "veggie"))
         if self.rel_exists("ordered"):
             for i in self.all_rel("ordered"):
                 if i[0] == "user":
@@ -697,31 +697,7 @@ class WorldState(State):
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
     def no(self):
-        if self.sys["responseState"] == "anything_else":
-            if not self.user_ordered_veg():
-                return [RespondOperation(
-                    "Son: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
-                    ResponseStateOp("something_to_eat"), ResetOrderAndBillOp()]
-
-            items = [i for (x, i) in self.all_rel("ordered")]
-            for i in self.all_rel("have"):
-                if i[0] == "user":
-                    if i[1] in items:
-                        items.remove(i[1])
-
-            item_str = " ".join(items)
-
-            for i in items:
-                self.add_rel("user", "have", i)
-
-            return [RespondOperation(
-                "Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with " + item_str + ".\nThe food is good, but nothing extraordinary."),
-                ResponseStateOp("done_ordering")]
-        elif self.sys["responseState"] == "something_to_eat":
-            return [RespondOperation(
-                "Well if you aren't going to order anything, you'll have to leave the restaurant, so I'll ask you again: can I get you something to eat?")]
-        else:
-            return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+        return self.find_plan([('complete_order',)])
 
     def yes(self):
         if self.sys["responseState"] in ["anything_else", "something_to_eat"]:
