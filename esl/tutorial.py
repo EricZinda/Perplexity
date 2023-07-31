@@ -107,7 +107,7 @@ def would_like_to_want_transformer():
                             removed=["_would_v_modal", "_like_v_1"], production=production)
 
 
-# Convert "Can/could I x?", "I can/could x?" to "I x_request x?"
+# Convert "Can/could I x?", "I can/could x?" to "I x_able x?"
 # "What can I x?"
 @Transform(vocabulary)
 def can_to_able_intransitive_transformer():
@@ -843,14 +843,15 @@ def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
 #   - "Who sits down?"
 #   - "Who is sitting down?"
 #   - "I can sit down."
-@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able"])
+@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able","_sit_v_down_request", "_sit_v_1_request"])
 def _sit_v_down_able(state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_present_tense(tree_info): return
+    '''
     if not is_question(tree_info):
         report_error(["unexpected"])
         return
-
+    '''
     def bound(x_actor):
         if is_user_type(x_actor):
             return True
@@ -864,7 +865,7 @@ def _sit_v_down_able(state, e_binding, x_actor_binding):
     yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
 
 
-@Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able"])
+@Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
 def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_present_tense(tree_info): return
