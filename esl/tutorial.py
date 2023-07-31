@@ -496,8 +496,8 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
     def all_item1_on_item2(item2):
         for i in state.all_rel("on"):
-            if i[1] == item2:
-                yield i[0]
+            if i[1] == object_to_store(item2):
+                yield store_to_object(state,i[0])
 
     def all_item2_containing_item1(item1):
         for i in state.all_rel("on"):
@@ -1175,7 +1175,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                         yield []
 
     # Everything else is just an ask about if something has something like "Do I/we have x" or "Do you have a steak?"
-    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
+    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
         yield []
 
     yield state_list
@@ -1489,7 +1489,7 @@ def reset():
     # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
                                {"prices": {"salad": 3, "steak": 10, "broiled steak": 8, "soup": 4, "salmon": 12,
-                                           "chicken": 7, "bacon": 2},
+                                           "chicken": 7, "pork": 8},
                                 "responseState": "initial"
                                 })
 
@@ -1517,11 +1517,12 @@ def reset():
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
 
-    initial_state = initial_state.add_rel("pizza", "specializes", "meat")
+
     initial_state = initial_state.add_rel("steak", "specializes", "meat")
     initial_state = initial_state.add_rel("chicken", "specializes", "meat")
     initial_state = initial_state.add_rel("salmon", "specializes", "meat")
-    initial_state = initial_state.add_rel("bacon", "specializes", "meat")
+    initial_state = initial_state.add_rel("pork", "specializes", "meat")
+
     initial_state = initial_state.add_rel("soup", "specializes", "veggie")
     initial_state = initial_state.add_rel("salad", "specializes", "veggie")
 
@@ -1553,8 +1554,8 @@ def reset():
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
 
-    menu_types = ["bacon", "salmon", "steak", "chicken", "pizza"]
-    special_types = ["soup", "salad"]
+    menu_types = [ "salmon", "steak", "chicken"]
+    special_types = ["soup", "salad", "pork"]
     dish_types = menu_types + special_types
     for dish_type in dish_types:
         # The computer has the concepts of the items so it can answer "do you have steak?"
@@ -1581,6 +1582,8 @@ def reset():
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "roasted")
             if dish_type == "salmon":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "grilled")
+            if dish_type == "pork":
+                initial_state = initial_state.add_rel(food_instance, "isAdj", "smoked")
 
     initial_state = initial_state.add_rel("computer", "have", "special")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")

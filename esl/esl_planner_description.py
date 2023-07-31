@@ -88,7 +88,9 @@ def describe_analyzed_at_table(state, analysis):
         if len(analysis["MenuItems"]) > 0 and not has_menu:
             # If not all the items are menu items, and we haven't described them, we should first list the short version, then
             # ask if the user wants to hear the long description
-            new_methods.append(('respond', "Would you like a menu?"))
+
+            new_methods.append(("get_menu", ["user"]))
+            #new_methods.append(('respond', "Would you like a menu?"))
 
         for item in analysis["Others"] + analysis["Bills"]:
             new_methods.append(('describe_item', item))
@@ -101,7 +103,7 @@ task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describ
 
 def describe_item(state, what):
     if what == "special":
-        return[('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and porkchops."),
+        return[('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork."),
                ('delete_rel', "user", "heardSpecials", "false"),
                ('add_rel', "user", "heardSpecials", "true")]
     else:

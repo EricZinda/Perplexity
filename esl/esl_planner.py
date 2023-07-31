@@ -252,6 +252,12 @@ def complete_order(state):
                 ("set_response_state", "something_to_eat"), ("reset_order_and_bill",)]
 
         items = [i for (x, i) in state.all_rel("ordered")]
+
+        if len(items) < 2:
+            return [("respond",
+                     "You realize that you'll need at least two dishes for the two of you.\n Waiter: Can I get you something else to eat?"),
+                    ("set_response_state", "something_to_eat")]
+
         for i in state.all_rel("have"):
             if i[0] == "user":
                 if i[1] in items:
