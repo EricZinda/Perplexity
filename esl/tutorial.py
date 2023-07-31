@@ -135,6 +135,13 @@ def can_to_able_transitive_transformer_indir_obj():
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal"], production=production)
 
+#can i pay with cash
+@Transform(vocabulary)
+def can_paytype_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_can_v_modal"], production=production)
 
 
 # Convert "May I x?"" to "I x_request x?"
@@ -156,6 +163,16 @@ def may_to_able_transitive_transformer():
     return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_may_v_modal"], production=production)
 
+#may i pay with cash
+@Transform(vocabulary)
+def may_paytype_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_may_v_modal"], production=production)
+
+
+
 # Convert "I want to x y" to "I x_request y"
 @Transform(vocabulary)
 def want_removal_transitive_transformer():
@@ -173,6 +190,15 @@ def want_removal_intransitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
                             removed=["_want_v_1"], production=production)
+
+# Convert "I want to pay with x" to "I pay_for_request"
+@Transform(vocabulary)
+def want_removal_paytype_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
+                            removed=["_want_v_1"], production=production)
+
 
 
 # Convert "I would like to x y" to "I x_request y"
@@ -515,7 +541,7 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 def _with_p(state, e_introduced_binding, e_main, x_binding):
     yield state.add_to_e(e_main.variable.name, "With", x_binding.value[0])
 
-@Predication(vocabulary, names=["_pay_v_for"], handles=[("With", EventOption.optional)])
+@Predication(vocabulary, names=["_pay_v_for","_pay_v_for_able","_pay_v_for_request"], handles=[("With", EventOption.optional)])
 def _pay_v_for(state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
         yield do_task(state, [("respond", "It's not time to pay yet.")])
