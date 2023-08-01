@@ -163,7 +163,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
             # Check to see if the user specified a table "for x (i.e. 2)"
             # This needs to be done manually because there is no way, after the fact, to know
             # if the way they asked for the table specified how many people it should have
-            for_value = table.value_of_modifier_argument(eval_state.first_item, "_for_p", 2)
+            for_value = table.value_of_modifier_argument(eval_state.first_item[0], "_for_p", 2)
 
         # If they say "we want a table" (because we means 2 in this scenario) or "table for 2" the size is implied
         if for_value is not None and len(for_value) == 1 and isinstance(for_value[0], numbers.Number):

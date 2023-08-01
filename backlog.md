@@ -1,5 +1,15 @@
 - Do we really need frames()? Only one test breaks if we turn it off
+
+    
 - Make "find unused thing" use concept
+- Make "check conceptual constraints" properly use eval too
+
+- Make eval() and concepts work more systematically
+  - Option 4: Build the concept from the tree directly
+    - Find the quantifier for the noun variable
+    - Pull off the RSTR?
+    - It could literally be implemented by the quantifier converting the RSTR to a concept instead of evaluating it...
+    - This seems like the best way to go
 
   - what vegetarian dishes do you have?
   # - "what food/dishes/vegetarian dishes/food do you have?" --> implied request for description of menu

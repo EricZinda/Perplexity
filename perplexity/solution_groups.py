@@ -33,7 +33,10 @@ class SingleGroupGenerator(object):
             # If no variable has a between(N, inf) constraint,
             # Just stop now and the caller will get a subset solution group for the answer they care about
             # Note that it may not be *minimal*, might be a subset, and might be maximal.
+            # For example, if it is between(3, 10), we might stop at 4, which is correct, but not maximal
             # If it does have a between(N, inf) constraint, return them all
+            # This is a performance optimization that really improves the performance of
+            # "a few files are in a folder together"
             if not self.solution_group_generator.variable_has_inf_max:
                 raise StopIteration
 
@@ -180,13 +183,17 @@ class SolutionGroupGenerator(object):
 #   if they return [], it means "skip this solution group" and we'll try the next one
 # yields an iterator that returns solution groups
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info, all_groups=False, all_unprocessed_groups=None):
+def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info, all_groups=False, all_unprocessed_groups=None, criteria_list=None):
     pipeline_logger.debug(f"Finding solution groups for {tree_info['Tree']}")
     solutions = at_least_one_generator(solutions_orig)
 
     if solutions:
         # Go through each variable that has a quantifier in order and gather and optimize the criteria list
-        declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
+        # if it wasn't given to us
+        if criteria_list is not None:
+            declared_criteria_list = criteria_list
+        else:
+            declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
@@ -383,9 +390,10 @@ def find_solution_group_handlers(execution_context, this_sentence_force, tree_in
 
 
 # Return the infos in the order they will be executed in
-def declared_determiner_infos(execution_context, state):
+def declared_determiner_infos(execution_context, state, variables=None):
     tree_info = state.get_binding("tree").value[0]
-    variables = gather_quantifier_order(tree_info)
+    if variables is None:
+        variables = gather_quantifier_order(tree_info)
     for variable_name in variables:
         if variable_name[0] == "x":
             binding = state.get_binding(variable_name)
