@@ -59,6 +59,13 @@
             "ID": "76c09b78-40f9-4d01-ab0f-c7b9bd8946d9"
         },
         {
+            "Command": "What do the steak and the soup cost?",
+            "Expected": "steak : 10 dollars\nsoup : 4 dollars",
+            "Tree": "which_q(x5,thing(x5),_the_q(x13,_steak_n_1(x13),_the_q(x18,_soup_n_1(x18),udef_q(x3,_and_c(x3,x13,x18),_cost_v_1(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "988a743e-3192-46a0-8d3c-e20eaf3cfb4d"
+        },
+        {
             "Command": "You will have a steak?",
             "Expected": "I'm not sure what that means.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
