@@ -1188,6 +1188,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
             report_error(["Nothing_VTRANS_X", "have", x_object])
 
     def object_from_actor(x_actor):
+        '''
         if x_actor == "computer":
             # - "What do you have?"-->
             #   - Conceptually, there are a lot of things the computer has
@@ -1196,12 +1197,13 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
             yield concept_from_lemma("menu")
 
         else:
-            found = False
-            for i in rel_objects(state, x_actor, "have"):
-                found = True
-                yield store_to_object(state, i)
-            if not found:
-                report_error(["X_VTRANS_Nothing", "have", x_actor])
+        '''
+        found = False
+        for i in rel_objects(state, x_actor, "have"):
+            found = True
+            yield store_to_object(state, i)
+        if not found:
+            report_error(["X_VTRANS_Nothing", "have", x_actor])
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
@@ -1247,7 +1249,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                         return
                     else:
                         yield []
-
+                '''
                 elif x_obj_list.solution_values[0].value[0] == concept_from_lemma("special"):
                     # "Do you have specials?" is really about the concept of specials, so check_concepts=True
                     # Fail this group if we don't meet the constraints
@@ -1261,6 +1263,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                         return
                     else:
                         yield []
+                '''
 
     # Everything else is just an ask about if something has something like "Do I/we have x" or "Do you have a steak?"
     if not all_user_type([j.value for j in x_act_list.solution_values]):
@@ -1527,6 +1530,13 @@ def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
 @Predication(vocabulary, names=["_green_a_2"])
 def compound(state, e_introduced_binding, x_first_binding):
     yield state
+
+def computer_in_state(state):
+    for i in state.variables:
+        if i.value == ("computer",):
+            return True
+    return False
+
 
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
