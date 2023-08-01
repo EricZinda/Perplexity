@@ -8,6 +8,7 @@ from math import inf
 from perplexity.execution import get_variable_metadata, report_error, execution_context
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
+from perplexity.solution_groups import declared_determiner_infos
 from perplexity.tree import find_predication_from_introduced, find_quantifier_from_variable, TreePredication
 from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.vocabulary import ValueSize
@@ -93,6 +94,14 @@ class Concept(object):
         return modified
 
     def eval(self, state):
+        declared_constraints = list(declared_determiner_infos(execution_context, state, variables=[self.variable_name]))
+        if len(declared_constraints) == 0:
+            default_criteria = perplexity.plurals.VariableCriteria(self.noun_predication,
+                                                self.variable_name,
+                                                min_size=1,
+                                                max_size=1)
+            declared_constraints.append(default_criteria)
+
         # First set the variables to any bound values we received
         bound_state = state
         for variable_value in self.bound_variables.items():
@@ -101,12 +110,12 @@ class Concept(object):
         # Leave the noun itself unbound
         bound_state = bound_state.set_x(self.variable_name, None)
 
-        for solution in execution_context().resolve_fragment(bound_state, [self.noun_predication] + self.modifiers, extra_variables=self.extra_variables):
-            if is_concept(solution.get_binding(self.variable_name).value[0]):
+        for group in execution_context().resolve_fragment(bound_state, [self.noun_predication] + self.modifiers, extra_variables=self.extra_variables, criteria_list=declared_constraints):
+            if is_concept(group[0].get_binding(self.variable_name).value[0]):
                 # The caller already has the concept, don't return it again
                 continue
             else:
-                yield solution
+                yield group
 
     def value_of_modifier_argument(self, state, predicate_name, arg_index):
         for modifier in self.modifiers:

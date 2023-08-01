@@ -42,7 +42,7 @@ class ExecutionContext(object):
             reset_execution_context(self.old_context_token)
             self.old_context_token = None
 
-    def resolve_fragment(self, state, tree_node, extra_variables=None):
+    def resolve_fragment(self, state, tree_node, extra_variables=None, criteria_list=None):
         this_sentence_force = sentence_force(self.tree_info["Variables"])
         new_tree_info = copy.deepcopy(self.tree_info)
         if extra_variables is not None:
@@ -61,14 +61,13 @@ class ExecutionContext(object):
         pipeline_logger.debug(f"Resolving fragment: {tree_node}")
         # TODO: suspect the interleaving of resolve_fragment() with normal MRS solving is causing a subtle bug since
         #         resolving it all up front doesn't have the bug. Fix that bug and then allow this to stream
-        groups = [group for group in perplexity.solution_groups.solution_groups(self, solutions_list, this_sentence_force, wh_phrase_variable, new_tree_info, all_groups=True)]
-        for group in groups:
+        for group in perplexity.solution_groups.solution_groups(self, solutions_list, this_sentence_force, wh_phrase_variable, new_tree_info, all_groups=True, criteria_list=criteria_list):
             solutions = [x for x in group]
             if pipeline_logger.level == logging.DEBUG:
                 nl = '\n'
                 pipeline_logger.debug(
                     f"Found fragment solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in solutions])}")
-            yield from solutions
+            yield solutions
 
         pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
 

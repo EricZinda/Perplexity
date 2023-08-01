@@ -1741,7 +1741,7 @@ if __name__ == '__main__':
     ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
 
     print("Hello there, what can I do for you?")
     # ShowLogging("Pipeline")
