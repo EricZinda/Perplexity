@@ -853,6 +853,10 @@ def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 def _please_a_1(state, e_introduced_binding, e_binding):
     yield state
 
+@Predication(vocabulary, names=["_too_a_also"])
+def _too_a_also(state, e_introduced_binding, x_binding):
+    yield state
+
 
 @Predication(vocabulary, names=["_please_v_1"])
 def _please_v_1(state, e_introduced_binding, i_binding1, i_binding2):
@@ -935,6 +939,23 @@ def _sit_v_down_able(state, e_binding, x_actor_binding):
     if not is_question(tree_info):
         report_error(["unexpected"])
         return
+
+    def bound(x_actor):
+        if is_user_type(x_actor):
+            return True
+        else:
+            report_error(["unexpected"])
+            return
+
+    def unbound():
+        yield "user"
+
+    yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
+
+@Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
+def _sit_v_down_request(state, e_binding, x_actor_binding):
+    tree_info = state.get_binding("tree").value[0]
+    if not is_present_tense(tree_info): return
 
     def bound(x_actor):
         if is_user_type(x_actor):
