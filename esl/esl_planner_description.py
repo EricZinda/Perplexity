@@ -47,16 +47,15 @@ def describe_analyzed_at_entrance(state, analysis):
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
         new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat."))
-    '''
-    if len(analysis["Bills"]) > 0:
-        new_methods.append(('respond', "Let's talk about the bill once you've finished eating."))
 
-    for item in analysis["Others"]:
-        if isinstance(item, Measurement) and item.measurement_type == "dollar":
-            new_methods.append(('respond', "Let's talk about prices once you've been seated."))
-        else:
-            new_methods.insert(0, ('describe_item', item))
-    '''
+    elif len(analysis["Bills"]) > 0:
+        new_methods.append(('respond', "Let's talk about the bill once you've finished eating."))
+    else:
+        for item in analysis["Others"]:
+            if isinstance(item, Measurement) and item.measurement_type == "dollar":
+                new_methods.append(('respond', "Let's talk about prices once you've been seated."))
+            else:
+                new_methods.insert(0, ('describe_item', item))
     return new_methods
 
 
@@ -83,11 +82,16 @@ def describe_analyzed_at_table(state, analysis):
         # If not all the items are menu items, and we haven't described them, we should first list the short version, then
         # ask if the user wants to hear the long description
         new_methods.append(("get_menu", ["user"]))
-    elif len(analysis["Specials"]) > 0 and not heard_specials:
-        # If we are being ask to describe only specials, use the special, detailed description
-        new_methods.append(('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork."))
-        new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
-        new_methods.append(('add_rel', "user", "heardSpecials", "true"))
+    elif len(analysis["Specials"]) > 0:
+        if not heard_specials:
+            # If we are being ask to describe only specials, use the special, detailed description
+            new_methods.append(('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork."))
+            new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
+            new_methods.append(('add_rel', "user", "heardSpecials", "true"))
+        else:
+            new_methods.append(('respond',
+                                "So again, those specials are tomato soup, green salad, and smoked pork."))
+
     else:
         for i in analysis.keys():
             for j in analysis[i]:

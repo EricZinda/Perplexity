@@ -519,7 +519,7 @@ class PastParticiple:
             if (object_to_store(value), self.lemma) in state.all_rel("isAdj"):
                 return True
             else:
-                report_error(["Not" + self.lemma])
+                report_error(["not_adj", self.lemma])
                 return False
 
         def unbound():
@@ -1564,7 +1564,7 @@ def generate_custom_message(tree_info, error_term):
     # Override these
     if error_constant == "doesntExist":
         arg1 = error_arguments[1]
-        return s("Host: There isn't {a arg1:sg} here", tree_info)
+        return s("Host: There isn't such {a arg1:sg} here", tree_info)
 
     else:
         system_message = perplexity.messages.generate_message(tree_info, error_term)
@@ -1577,6 +1577,10 @@ def generate_custom_message(tree_info, error_term):
         # that it represented in the MRS
         arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
         return f"{arg1} is not {arg2}"
+    if error_constant == "X_VTRANS_Nothing":
+        return "Nothing."
+    if error_constant == "not_adj":
+        return "It's not " + error_arguments[1]
     if error_constant == "notOn":
         arg1 = error_arguments[1]
         arg2 = error_arguments[2]
