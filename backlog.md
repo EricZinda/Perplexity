@@ -1,9 +1,7 @@
 - Do we really need frames()? Only one test breaks if we turn it off
 
-- Fix merge issues:
-  - (fixed) "I want a table for 2" --> Sorry, I'm not sure what to do about that
-    - Because .eval() returns none
-  -  I want a salmon -> Sorry, I'm not sure what to do about that
+- Make "find unused thing" use concept
+
 - Goal: What do the steak and the soup cost?
   - Fixed Try allowing more than one concept through at a time! 
     - plurals.py
