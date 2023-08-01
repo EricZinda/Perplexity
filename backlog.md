@@ -1,6 +1,10 @@
 - Do we really need frames()? Only one test breaks if we turn it off
 
-    
+- Ditto for order food at table
+  - "I'd like a steak for me"
+  - "I'd like a steak for the kitchen"
+- Getting a menu should pass the menu concept all the way through so it can be evaluated
+  
 - Make "find unused thing" use concept
 - Make "check conceptual constraints" properly use eval too
 
