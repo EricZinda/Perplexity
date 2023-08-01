@@ -16,9 +16,9 @@ from perplexity.utilities import ShowLogging, sentence_force
 from perplexity.vocabulary import Predication, EventOption, Transform, override_predications, ValueSize
 from esl.worldstate import *
 
-
 vocabulary = system_vocabulary()
 override_predications(vocabulary, "user", ["card__cex__"])
+
 
 # ******** Helpers ************
 def convert_noun_structure(binding_value):
@@ -48,15 +48,16 @@ def check_concept_solution_group_constraints(state_list, x_what_variable_group, 
         x_what_individuals_set = set()
         for value in x_what_values:
             x_what_individuals_set.update(value)
-        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(state_list[0], list(x_what_individuals_set))
+        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(
+            state_list[0], list(x_what_individuals_set))
         return concept_meets_constraint(state_list[0].get_binding("tree").value[0],
-                            x_what_variable_group.variable_constraints,
-                            concept_count,
-                            concept_in_scope_count,
-                            instance_count,
-                            instance_in_scope_count,
-                            check_concepts,
-                            variable=x_what_variable)
+                                        x_what_variable_group.variable_constraints,
+                                        concept_count,
+                                        concept_in_scope_count,
+                                        instance_count,
+                                        instance_in_scope_count,
+                                        check_concepts,
+                                        variable=x_what_variable)
 
 
 def is_present_tense(tree_info):
@@ -76,6 +77,7 @@ def is_wh_question(tree_info):
         return get_wh_question_variable(tree_info)
 
     return False
+
 
 def is_request_from_tree(tree_info):
     introduced_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
@@ -105,71 +107,143 @@ def min_from_variable_group(variable_group):
 # Convert "would like <noun>" to "want <noun>"
 @Transform(vocabulary)
 def would_like_to_want_transformer():
-    production = TransformerProduction(name="_want_v_1", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
-    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"], production=production)
+    production = TransformerProduction(name="_want_v_1", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", "x"],
+                                  args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None],
+                            removed=["_would_v_modal", "_like_v_1"], production=production)
 
 
-# Convert "Can/could I x?", "I can/could x?" to "I x_request x?"
+# Convert "Can/could I x?", "I can/could x?" to "I x_able x?"
 # "What can I x?"
 @Transform(vocabulary)
 def can_to_able_intransitive_transformer():
-    production = TransformerProduction(name="$|name|_able", args={"ARG0":"$e1", "ARG1":"$x1"})
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
-    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_can_v_modal"], production=production)
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_can_v_modal"], production=production)
 
 
 # Convert "can I have a table/steak/etc?" or "what can I have?"
 # To: able_to
 @Transform(vocabulary)
 def can_to_able_transitive_transformer():
-    production = TransformerProduction(name="$|name|_able", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_can_v_modal"], production=production)
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
+                              args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_can_v_modal"], production=production)
+#Convert "can you show me the menu" to "you show_able the menu"
+@Transform(vocabulary)
+def can_to_able_transitive_transformer_indir_obj():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG4": "$x3"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "x"],
+                              args_capture=[None, "x1", "x2","x3"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_can_v_modal"], production=production)
+
+#can i pay with cash
+@Transform(vocabulary)
+def can_paytype_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_can_v_modal"], production=production)
+
+
+# Convert "May I x?"" to "I x_request x?"
+@Transform(vocabulary)
+def may_to_able_intransitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
+    return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_may_v_modal"], production=production)
+
+
+# Convert "may I have a table/steak/etc?" or "what may I have?"
+# To: able_to
+@Transform(vocabulary)
+def may_to_able_transitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
+                              args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_may_v_modal"], production=production)
+
+#may i pay with cash
+@Transform(vocabulary)
+def may_paytype_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_may_v_modal"], production=production)
+
 
 
 # Convert "I want to x y" to "I x_request y"
 @Transform(vocabulary)
 def want_removal_transitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None], removed=["_want_v_1"], production=production)
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
+                              args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
+                            removed=["_want_v_1"], production=production)
 
 
 # Convert "I want to x" to "I x_request"
 @Transform(vocabulary)
 def want_removal_intransitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1"})
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
-    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None], removed=["_want_v_1"], production=production)
+    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
+                            removed=["_want_v_1"], production=production)
+
+# Convert "I want to pay with x" to "I pay_for_request"
+@Transform(vocabulary)
+def want_removal_paytype_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
+                            removed=["_want_v_1"], production=production)
+
 
 
 # Convert "I would like to x y" to "I x_request y"
 @Transform(vocabulary)
 def would_like_removal_transitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
-    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target], args_capture=[None, None, None])
-    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"], production=production)
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
+                              args_capture=[None, "x1", "x2"])
+    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target],
+                                  args_capture=[None, None, None])
+    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match],
+                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"],
+                                   production=production)
     return would_match
 
 
 # Convert "I would like to x" to "I x_request x"
 @Transform(vocabulary)
 def would_like_removal_intransitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1"})
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
-    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target], args_capture=[None, None, None])
-    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"], production=production)
+    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target],
+                                  args_capture=[None, None, None])
+    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match],
+                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"],
+                                   production=production)
     return would_match
 
 
 # Convert "I would x y" to "I x_request y" (i.e. "I would have a menu")
 @Transform(vocabulary)
 def want_removal_transitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0":"$e1", "ARG1":"$x1", "ARG2":"$x2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", target], args_capture=["e1", None], removed=["_would_v_modal"], production=production)
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
+                              args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_would_v_modal"], production=production)
+
 
 # ***************************
 
@@ -219,7 +293,6 @@ def _okay_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
 
-
 @Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.optional)])
 def much_many_a(state, e_binding, x_binding):
     if "Measure" in e_binding.value.keys():
@@ -232,7 +305,7 @@ def much_many_a(state, e_binding, x_binding):
             measurement = Measurement(x_binding_value[0], measure_into_variable)
 
             # Replace x5 with measurement
-            yield state.set_x(x_binding.variable.name, (measurement, ))
+            yield state.set_x(x_binding.variable.name, (measurement,))
 
 
 @Predication(vocabulary, names=["measure"])
@@ -290,9 +363,9 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
     # Make this lift_style so that "for my son and I" gets properly interpreted as "together"
     # at least as an alternative
     for solution in lift_style_predication_2(state, x_what_binding, x_for_binding,
-                                                both_bound_function,
-                                                x_what_unbound,
-                                                x_for_unbound):
+                                             both_bound_function,
+                                             x_what_unbound,
+                                             x_for_unbound):
         x_what_value = solution.get_binding(x_what_binding.variable.name).value
         if is_concept(x_what_value[0]):
             e_what_value = solution.get_binding(e_binding.variable.name).value
@@ -336,6 +409,15 @@ def _credit_n_1(state, x_bind):
 
     yield from combinatorial_predication_1(state, x_bind, bound, unbound)
 
+@Predication(vocabulary, names=["_tomato_n_1"])
+def _tomato_n_1(state, x_bind):
+    def bound(val):
+        report_error("no declarative tomato")
+
+    def unbound():
+        yield Concept("tomato")
+
+    yield from combinatorial_predication_1(state, x_bind, bound, unbound)
 
 @Predication(vocabulary, names=["unknown"])
 def unknown(state, e_binding, x_binding):
@@ -379,10 +461,7 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
-        yield from all_instances(state, noun_type)
-
-    # Yield the abstract type first, not as a combinatoric variable
-    yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
+        yield from [store_to_object(state, x) for x in all_instances_and_spec(state, noun_type)]
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
@@ -409,17 +488,16 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1(state, e_introduced_binding, x_target_binding):
     def criteria_bound(value):
-        veg = all_instances(state, "veggie")
-        if value in veg:
+        veg = all_instances_and_spec(state, "veggie")
+        if value in serial_store_to_object(state,veg):
             return True
         else:
             report_error(["Not Veg"])
             return False
 
     def unbound_values():
-        # Find all large things
-        for i in all_instances(state, "veggie"):
-            yield i
+        for i in all_instances_and_spec(state, "veggie"):
+            yield store_to_object(state,i)
 
     yield from combinatorial_predication_1(state, x_target_binding,
                                            criteria_bound,
@@ -449,18 +527,18 @@ class PastParticiple:
                                                unbound)
 
 
-grilled = PastParticiple(["_grill_v_1"],"grilled")
-roasted = PastParticiple(["_roast_v_cause"],"roasted")
+grilled = PastParticiple(["_grill_v_1"], "grilled")
+roasted = PastParticiple(["_roast_v_cause"], "roasted")
 
 
 @Predication(vocabulary, names=grilled.predicate_name_list)
 def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
-    yield from grilled.predicate_function(state,e_introduced_binding,i_binding,x_target_binding)
+    yield from grilled.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
 
 
 @Predication(vocabulary, names=roasted.predicate_name_list)
 def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
-    yield from roasted.predicate_function(state,e_introduced_binding,i_binding,x_target_binding)
+    yield from roasted.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
 
 
 @Predication(vocabulary, names=("_on_p_loc",))
@@ -473,8 +551,8 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
     def all_item1_on_item2(item2):
         for i in state.all_rel("on"):
-            if i[1] == item2:
-                yield i[0]
+            if i[1] == object_to_store(item2):
+                yield store_to_object(state,i[0])
 
     def all_item2_containing_item1(item1):
         for i in state.all_rel("on"):
@@ -488,6 +566,20 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
                                       all_item1_on_item2,
                                       all_item2_containing_item1)
 
+@Predication(vocabulary, names=("_with_p",))
+def _with_p(state, e_introduced_binding, e_main, x_binding):
+    yield state.add_to_e(e_main.variable.name, "With", x_binding.value[0])
+
+@Predication(vocabulary, names=["_pay_v_for","_pay_v_for_able","_pay_v_for_request"], handles=[("With", EventOption.optional)])
+def _pay_v_for(state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
+    if not state.sys["responseState"] == "way_to_pay":
+        yield do_task(state, [("respond", "It's not time to pay yet.")])
+        return
+    if not e_introduced_binding.value["With"] in ["cash","card"]:
+        yield do_task(state,[("respond","You can't pay with that.")])
+        return
+
+    yield state.record_operations(state.handle_world_event(["unknown", e_introduced_binding.value["With"]]))
 
 @Predication(vocabulary, names=["_want_v_1"])
 def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
@@ -514,9 +606,8 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 if i[0] == x_actor:
                     yield i[1]
 
-    for new_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
-                                                 wanters_of_obj, wanted_of_actor):
-        yield new_state
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+                                      wanters_of_obj, wanted_of_actor)
 
 
 @Predication(vocabulary, names=["solution_group__want_v_1"])
@@ -581,11 +672,20 @@ def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
         return x == "computer"
 
     def unbound():
-        if False:
-            yield None
+        yield None
 
-    for success_state in combinatorial_predication_1(state, x_actor_binding, criteria_bound, unbound):
-        yield success_state.record_operations(state.handle_world_event(["user_wants", "bill1"]))
+    yield from combinatorial_predication_1(state, x_actor_binding, criteria_bound, unbound)
+
+
+@Predication(vocabulary, names=["solution_group__check_v_1"])
+def _check_v_1_group(state_list, has_more, e_introduced_binding, x_actor_binding, i_object_binding):
+    current_state = copy.deepcopy(state_list[0])
+    final_state = do_task(current_state.world_state_frame(), [('get_bill',)])
+    if final_state is None:
+        yield []
+    else:
+        yield[final_state]
+
 
 
 @Predication(vocabulary, names=["_give_v_1"])
@@ -598,22 +698,63 @@ def _give_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_
                         ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
 
 
-@Predication(vocabulary, names=["_show_v_1"])
+@Predication(vocabulary, names=["_show_v_1","_show_v_1_able"])
 def _show_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
-    if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
-        if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
-            if not state.get_binding(x_object_binding.variable.name).value[0] is None:
-                if state.get_binding(x_object_binding.variable.name).value[0] == "menu1":
-                    yield state.record_operations(
-                        state.handle_world_event(
-                            ["user_wants_to_see", state.get_binding(x_object_binding.variable.name).value[0]]))
+    def criteria_bound(x_actor, x_object):
+        return True
+
+    def wanters_of_obj(x_object):
+        return #not currently going to support asking who is seating someone
+
+    def wanted_of_actor(x_actor):
+        return
+
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+                                      wanters_of_obj, wanted_of_actor)
+
+@Predication(vocabulary, names=["solution_group__show_v_1", "solution_group__show_v_1_able"])
+def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_object_variable_group, x_target_variable_group):
+    current_state = copy.deepcopy(state_list[0])
+    actor_values = [x.value for x in x_actor_variable_group.solution_values]
+    x_object_values = [x.value for x in x_object_variable_group.solution_values]
+    for obj in x_object_values:
+        if not obj == (Concept("menu"),):
+            yield [current_state.record_operations([RespondOperation("Sorry, I can't show you that")])]
+            return
 
 
-@Predication(vocabulary, names=["_seat_v_cause"])
+    current_state = do_task(current_state.world_state_frame(),
+                            [('satisfy_want', [('user',)], [(Concept("menu"),)])])
+    if current_state is None:
+        yield []
+    else:
+        yield [current_state]
+
+
+
+@Predication(vocabulary, names=["_seat_v_cause","_seat_v_cause_able"])
 def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if is_user_type(state.get_binding(x_object_binding.variable.name).value[0]):
-        yield state.record_operations(state.handle_world_event(["user_wants", "table1"]))
+    def criteria_bound(x_actor, x_object):
+        return is_user_type(x_object)
 
+    def wanters_of_obj(x_object):
+        return #not currently going to support asking who is seating someone
+
+    def wanted_of_actor(x_actor):
+        return
+
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+                                      wanters_of_obj, wanted_of_actor)
+@Predication(vocabulary, names=["solution_group__seat_v_cause","solution_group__seat_v_cause_able"])
+def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
+    current_state = copy.deepcopy(state_list[0])
+    actor_values = [x.value for x in x_actor_variable_group.solution_values]
+    current_state = do_task(current_state.world_state_frame(),
+                            [('satisfy_want', [('user',)], [(Concept("table"),)])])
+    if current_state is None:
+        yield []
+    else:
+        yield [current_state]
 
 @Predication(vocabulary, names=["loc_nonsp"])
 def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_loc_binding):
@@ -716,6 +857,7 @@ def polite(state, c_arg, i_binding, e_binding):
 def _thanks_a_1(state, i_binding, h_binding):
     yield from call(state, h_binding)
 
+
 # Scenarios:
 #   - "I will sit down"
 #   - "Will I sit down?"
@@ -756,7 +898,6 @@ def _sit_v_down_future_group(state_list, has_more, e_list, x_actor_variable_grou
         yield []
 
 
-
 # Scenarios:
 #   "I sit down"
 #   "Who sits down?"
@@ -775,14 +916,15 @@ def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
 #   - "Who sits down?"
 #   - "Who is sitting down?"
 #   - "I can sit down."
-@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able"])
+@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able","_sit_v_down_request", "_sit_v_1_request"])
 def _sit_v_down_able(state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_present_tense(tree_info): return
+    '''
     if not is_question(tree_info):
         report_error(["unexpected"])
         return
-
+    '''
     def bound(x_actor):
         if is_user_type(x_actor):
             return True
@@ -796,7 +938,7 @@ def _sit_v_down_able(state, e_binding, x_actor_binding):
     yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
 
 
-@Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able"])
+@Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
 def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_present_tense(tree_info): return
@@ -848,9 +990,9 @@ def _see_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding
             yield None
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding,
-                                        both_bound_prediction_function,
-                                        actor_unbound,
-                                        object_unbound)
+                                      both_bound_prediction_function,
+                                      actor_unbound,
+                                      object_unbound)
 
 
 @Predication(vocabulary, names=["solution_group__see_v_1_able"])
@@ -866,7 +1008,6 @@ def _see_v_1_able_group(state_list, has_more, e_list, x_actor_variable_group, x_
         yield [final_state]
     else:
         yield []
-
 
 
 # Scenarios:
@@ -907,9 +1048,9 @@ def _see_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_bindi
             yield None
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding,
-                                        both_bound_prediction_function,
-                                        actor_unbound,
-                                        object_unbound)
+                                      both_bound_prediction_function,
+                                      actor_unbound,
+                                      object_unbound)
 
 
 @Predication(vocabulary, names=["solution_group__see_v_1"])
@@ -1052,7 +1193,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
                 report_error(["X_VTRANS_Nothing", "have", x_actor])
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
-                                                object_from_actor)
+                                      object_from_actor)
 
 
 # Scenarios:
@@ -1074,13 +1215,13 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
 
     if len(state_list) == 1:
         if len(x_act_list.solution_values) == 1 and \
-            len(x_act_list.solution_values[0].value) == 1 and \
-            x_act_list.solution_values[0].value[0] == "computer":
+                len(x_act_list.solution_values[0].value) == 1 and \
+                x_act_list.solution_values[0].value[0] == "computer":
             # Questions about "Do you have a table/menu/bill?" are really implied requests in a restaurant
             # that mean "Can I have a table/menu/bill?"
             implied_request_concepts = [concept_from_lemma("table"), concept_from_lemma("menu"), concept_from_lemma("bill")]
             if len(x_obj_list.solution_values) == 1 and \
-                len(x_obj_list.solution_values[0].value) == 1:
+                    len(x_obj_list.solution_values[0].value) == 1:
                 if x_obj_list.solution_values[0].value[0] in implied_request_concepts:
                     # "Can I have a table/menu/bill?" is really about the instances
                     # thus check_concepts=False
@@ -1111,7 +1252,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                         yield []
 
     # Everything else is just an ask about if something has something like "Do I/we have x" or "Do you have a steak?"
-    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
+    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
         yield []
 
     yield state_list
@@ -1226,6 +1367,7 @@ def measurement_information(x):
 
     return None, None
 
+
 @Predication(vocabulary, names=["_be_v_id"])
 def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
@@ -1245,7 +1387,8 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
             for i in specializations(state, x_object.concept_name):
                 yield concept_from_lemma(i)
 
-    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound, unbound):
+    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound,
+                                                unbound):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
         x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
         measure_into_variable, units = measurement_information(x_object_value)
@@ -1257,7 +1400,7 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 if concept_item in state.sys["prices"]:
                     price = Measurement("dollar", state.sys["prices"][concept_item])
                     # Remember that we now know the price
-                    yield success_state.set_x(measure_into_variable, (price,)).\
+                    yield success_state.set_x(measure_into_variable, (price,)). \
                         record_operations([SetKnownPriceOp(concept_item)])
                 elif concept_item == "bill":
                     total = list(rel_objects(state, "bill1", "valueOf"))
@@ -1274,12 +1417,21 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
             yield success_state
 
 
+@Predication(vocabulary, names=["solution_group__be_v_id"])
+def _be_v_id_group(state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
+    yield state_list
+
+
 @Predication(vocabulary, names=["_cost_v_1"])
 def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
-        if not x_object[0] == "{":
+        if not isinstance(x_object, Measurement):
             report_error("Have not dealt with declarative cost")
+            yield False
         else:
+            yield True  # will need to implement checking for price correctness in the future if user says "the soup costs one steak"
+
+            '''
             x_object = json.loads(x_object)
             if x_object["structure"] == "price_type":
                 if type(x_object["relevant_var_value"]) is int:
@@ -1287,32 +1439,58 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
                         report_error("WrongPrice")
                         return False
             return True
+            '''
 
     def get_actor(x_object):
         if False:
             yield None
 
     def get_object(x_actor):
-        if instance_of_what(state, x_act) in state.sys["prices"].keys():
-            yield str(instance_of_what(state, x_act)) + ": " + str(state.sys["prices"][instance_of_what(state, x_act)]) + " dollars"
+        if isinstance(x_actor, Concept):
+            concept_item = instance_of_or_concept_name(state, x_actor)
+            if concept_item in state.sys["prices"].keys():
+                yield concept_item + " : " + str(state.sys["prices"][concept_item]) + " dollars"
+            else:
+                yield "Ah. It's not for sale."
+        else:
+            yield None
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, get_actor,
                                                 get_object):
-        x_obj = success_state.get_binding(x_object_binding.variable.name).value[0]
-        x_act = success_state.get_binding(x_actor_binding.variable.name).value[0]
-        if not x_obj[0] == "{":
-            yield success_state
+        x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
+        x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
+        measure_into_variable, units = measurement_information(x_object_value)
+        if measure_into_variable is not None:
+            # This is a "how much is x" question and we need to measure the value
+            # into the specified variable
+            concept_item = instance_of_or_concept_name(state, x_actor_value)
+            if units in ["generic_entity", "dollar"]:
+                if concept_item in state.sys["prices"]:
+                    price = Measurement("dollar", state.sys["prices"][concept_item])
+                    # Remember that we now know the price
+                    yield success_state.set_x(measure_into_variable, (price,)). \
+                        record_operations([SetKnownPriceOp(concept_item)])
+                elif concept_item == "bill":
+                    total = list(rel_objects(state, "bill1", "valueOf"))
+                    if len(total) == 0:
+                        total.append(0)
+                    price = Measurement("dollar", total[0])
+                    yield success_state.set_x(measure_into_variable, (price,))
+
+                else:
+                    yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
+                    return False
+
         else:
-            x_obj = json.loads(x_obj)
-            if x_obj["structure"] == "price_type":
-                if x_obj["relevant_var_value"] == "to_determine":
-                    if instance_of_what(state, x_act) in success_state.sys["prices"].keys():
-                        yield success_state.set_x(x_obj["relevant_var_name"], (
-                            str(instance_of_what(state, x_act)) + ": " + str(success_state.sys["prices"][instance_of_what(state, x_act)]) + " dollars",))
-                    else:
-                        yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
+            yield success_state
 
-
+@Predication(vocabulary, names=["solution_group__cost_v_1"])
+def _cost_v_1_group(state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
+    if is_concept(x_act_variable_group.solution_values[0].value[0]):
+        if not check_concept_solution_group_constraints(state_list, x_act_variable_group, check_concepts=True):
+            yield []
+            return
+    yield state_list
 @Predication(vocabulary, names=["_be_v_there"])
 def _be_v_there(state, e_introduced_binding, x_object_binding):
     def bound_variable(value):
@@ -1329,16 +1507,22 @@ def _be_v_there(state, e_introduced_binding, x_object_binding):
 def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
     assert (x_first_binding is not None)
     assert (x_second_binding is not None)
-    yield state.set_x(x_first_binding.variable.name, (state.get_binding(x_first_binding.variable.name).value[0] + ", " +
+    if (x_second_binding.value[0] == Concept("tomato")):
+        yield state
+    else:
+        yield state.set_x(x_first_binding.variable.name, (state.get_binding(x_first_binding.variable.name).value[0] + ", " +
                                                       state.get_binding(x_second_binding.variable.name).value[0],))
 
+@Predication(vocabulary, names=["_green_a_2"])
+def compound(state, e_introduced_binding, x_first_binding):
+    yield state
 
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
 def wh_question(state_list, has_more, binding_list):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', [x.value for x in binding_list])])
     if current_state is not None:
-        yield (current_state, )
+        yield (current_state,)
     else:
         yield state_list
 
@@ -1387,12 +1571,14 @@ def reset():
     # return State([])
     # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
-                                {"prices": {"salad": 3, "steak": 10, "broiled steak": 8, "soup": 4, "salmon": 12, "chicken": 7, "bacon" : 2},
-                                 "responseState": "initial"
+                               {"prices": {"salad": 3, "steak": 10, "broiled steak": 8, "soup": 4, "salmon": 12,
+                                           "chicken": 7, "pork": 8},
+                                "responseState": "initial"
                                 })
 
-    initial_state = initial_state.add_rel("bill", "specializes", "thing")
-    initial_state = initial_state.add_rel("check", "specializes", "thing")
+    initial_state = initial_state.add_rel("bill_type","specializes","thing")
+    initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
+    initial_state = initial_state.add_rel("check", "specializes", "bill_type")
     initial_state = initial_state.add_rel("kitchen", "specializes", "thing")
     # The computer has the concepts of the items so it can answer "do you have x?"
     initial_state = initial_state.add_rel("computer", "have", "kitchen")
@@ -1414,14 +1600,14 @@ def reset():
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
 
-    initial_state = initial_state.add_rel("pizza", "specializes", "meat")
+
     initial_state = initial_state.add_rel("steak", "specializes", "meat")
     initial_state = initial_state.add_rel("chicken", "specializes", "meat")
     initial_state = initial_state.add_rel("salmon", "specializes", "meat")
-    initial_state = initial_state.add_rel("bacon", "specializes", "meat")
+    initial_state = initial_state.add_rel("pork", "specializes", "meat")
+
     initial_state = initial_state.add_rel("soup", "specializes", "veggie")
     initial_state = initial_state.add_rel("salad", "specializes", "veggie")
-
 
     # These concepts are "in scope" meaning it is OK to say "the X"
     initial_state = initial_state.add_rel("special", "conceptInScope", "true")
@@ -1451,8 +1637,8 @@ def reset():
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
 
-    menu_types = ["bacon", "salmon", "steak", "chicken", "pizza"]
-    special_types = ["soup", "salad"]
+    menu_types = [ "salmon", "steak", "chicken"]
+    special_types = ["soup", "salad", "pork"]
     dish_types = menu_types + special_types
     for dish_type in dish_types:
         # The computer has the concepts of the items so it can answer "do you have steak?"
@@ -1470,15 +1656,17 @@ def reset():
         # Create the food instances
         for i in range(3):
             # Create an instance of this food
-            food_instance = dish_type+str(i)
+            food_instance = dish_type + str(i)
             initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)
 
             # The kitchen is where all the food is
-            initial_state = initial_state.add_rel("kitchen1", "have", food_instance)
+            initial_state = initial_state.add_rel("kitchen1", "contain", food_instance)
             if dish_type == "chicken":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "roasted")
             if dish_type == "salmon":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "grilled")
+            if dish_type == "pork":
+                initial_state = initial_state.add_rel(food_instance, "isAdj", "smoked")
 
     initial_state = initial_state.add_rel("computer", "have", "special")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
@@ -1492,7 +1680,6 @@ def reset():
     initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
     initial_state = initial_state.add_rel("user", "heardSpecials", "false")
-
 
     return initial_state
 
@@ -1514,7 +1701,8 @@ error_priority_dict = {
 
 def hello_world():
     user_interface = UserInterface(reset, vocabulary, message_function=generate_custom_message,
-                                   error_priority_function=error_priority, scope_function=in_scope, scope_init_function=in_scope_initialize)
+                                   error_priority_function=error_priority, scope_function=in_scope,
+                                   scope_init_function=in_scope_initialize)
 
     while True:
         user_interface.interact_once()

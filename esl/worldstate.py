@@ -52,12 +52,12 @@ def in_scope(initial_data, state, value):
 
 
 def is_user_type(val):
-    if not isinstance(val,tuple):
-        return val in ["user","son1"]
+    if not isinstance(val, tuple):
+        return val in ["user", "son1"]
 
     else:
         for i in val:
-            if i not in ["user","son1"]:
+            if i not in ["user", "son1"]:
                 return False
         return True
 
@@ -175,6 +175,7 @@ def instance_of_or_concept_name(state, thing):
     else:
         return instance_of_what(state, thing)
 
+
 def instance_of_what(state, thing):
     for i in state.all_rel("instanceOf"):
         if i[0] == thing:
@@ -233,6 +234,10 @@ def store_to_object(state, s):
         return s
 
 
+def serial_store_to_object(state, s_list):
+    return [store_to_object(state, s) for s in s_list]
+
+
 def find_unused_item(state, object_type):
     for potential in all_instances(state, object_type):
         taken = at_least_one_generator(rel_subjects(state, "have", potential))
@@ -281,6 +286,7 @@ class AddRelOp(object):
 
     def apply_to(self, state):
         state.mutate_add_rel(self.toAdd[0], self.toAdd[1], self.toAdd[2])
+
 
 class DeleteRelOp(object):
     def __init__(self, rel):
@@ -331,8 +337,8 @@ class WorldState(State):
         self.frame_name = name
         self._world_state_frame = world_state_frame
 
-    #*********** Used for HTN
-    def copy(self,new_name=None):
+    # *********** Used for HTN
+    def copy(self, new_name=None):
         return copy.deepcopy(self)
 
     def display(self, heading=None):
@@ -344,6 +350,7 @@ class WorldState(State):
 
     def state_vars(self):
         pass
+
     # *********** Used for HTN
 
     # ******* Base Operations ********
@@ -395,6 +402,7 @@ class WorldState(State):
 
     def rel_exists(self, rel):
         return rel in self._rel.keys()
+
     # ******* Base Operations ********
 
     # ******* Overrides of State ********
@@ -469,7 +477,6 @@ class WorldState(State):
 
     # ******* Overrides of State ********
 
-
     def bill_total(self):
         for i in self.all_rel("valueOf"):
             if i[1] == "bill1":
@@ -524,7 +531,7 @@ class WorldState(State):
         return ""
 
     def user_ordered_veg(self):
-        veggies = list(all_instances(self, "veggie"))
+        veggies = list(all_instances_and_spec(self, "veggie"))
         if self.rel_exists("ordered"):
             for i in self.all_rel("ordered"):
                 if i[0] == "user":
@@ -654,9 +661,9 @@ class WorldState(State):
         allTableRequests = True
 
         for i in wanted:
-            if not sort_of(self,i.value[0],"table"):
+            if not sort_of(self, i.value[0], "table"):
                 allTables = False
-            if not sort_of(self,i.value[0],"menu"):
+            if not sort_of(self, i.value[0], "menu"):
                 allMenus = False
             if not i.value[0][0] == "{":
                 allTableRequests = False
@@ -693,31 +700,7 @@ class WorldState(State):
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
     def no(self):
-        if self.sys["responseState"] == "anything_else":
-            if not self.user_ordered_veg():
-                return [RespondOperation(
-                    "Son: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
-                    ResponseStateOp("something_to_eat"), ResetOrderAndBillOp()]
-
-            items = [i for (x, i) in self.all_rel("ordered")]
-            for i in self.all_rel("have"):
-                if i[0] == "user":
-                    if i[1] in items:
-                        items.remove(i[1])
-
-            item_str = " ".join(items)
-
-            for i in items:
-                self.add_rel("user", "have", i)
-
-            return [RespondOperation(
-                "Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with " + item_str + ".\nThe food is good, but nothing extraordinary."),
-                ResponseStateOp("done_ordering")]
-        elif self.sys["responseState"] == "something_to_eat":
-            return [RespondOperation(
-                "Well if you aren't going to order anything, you'll have to leave the restaurant, so I'll ask you again: can I get you something to eat?")]
-        else:
-            return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+        return self.find_plan([('complete_order',)])
 
     def yes(self):
         if self.sys["responseState"] in ["anything_else", "something_to_eat"]:
@@ -728,6 +711,9 @@ class WorldState(State):
     # This should always be the answer to a question since it is a partial sentence that generated
     # an unknown() predication in the MRS for the verb
     def unknown(self, x):
+        concept_name = None
+        if isinstance(x, Concept):
+            concept_name = x.concept_name
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash", "card", "card, credit"]:
                 return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
@@ -735,10 +721,13 @@ class WorldState(State):
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
-            if x in self.get_entities():
-                return self.handle_world_event(["user_wants", x])
+            if concept_name is not None:
+                if concept_name in self.get_entities():
+                    return self.handle_world_event(["user_wants", x])
+                else:
+                    return [RespondOperation("Sorry, we don't have that")]
             else:
-                return [RespondOperation("Sorry, we don't have that")]
+                return [RespondOperation("Sorry, we don't allow ordering specific things like that")]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
             if isinstance(x, numbers.Number):
@@ -794,6 +783,6 @@ class WorldState(State):
             what_list = [binding.value for binding in args[2].solution_values]
             return self.find_plan([('satisfy_want', who_list, what_list)])
 
-            return self.user_wants_group(args[1],args[2])
+            return self.user_wants_group(args[1], args[2])
         elif args[0] == "user_wants_to_see_group":
-            return self.user_wants_to_see_group(args[1],args[2])
+            return self.user_wants_to_see_group(args[1], args[2])

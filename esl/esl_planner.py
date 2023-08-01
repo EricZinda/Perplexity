@@ -4,7 +4,7 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item
+    find_unused_item, ResetOrderAndBillOp
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -150,9 +150,8 @@ def count_entities(value_group):
 def get_table_at_entrance(state, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
         not location_of_type(state, who_multiple[0], "table"):
-
         if min_size != 1:
-            return [('respond', "I suspect you want to sit together.")]
+            return [('respond', "Johnny: Hey, let's sit together alright?")]
 
         # Evaluate the noun to make sure we understand all the terms that were used with it
         # If we get back a state, it means the user said something that made sense
@@ -222,25 +221,18 @@ def get_table_repeat(state, who_multiple, table, min_size):
 gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repeat)
 
 
-def get_bill_at_entrance(state, who_multiple):
-    if all_are_players(who_multiple) and \
-        not location_of_type(state, who_multiple[0], "table"):
-        return [('respond', "But... you haven't got any food yet!" + state.get_reprompt())]
+def get_bill_at_table(state):
+    for i in state.all_rel("valueOf"):
+        if i[1] == "bill1":
+            total = i[0]
+            if state.sys["responseState"] == "done_ordering":
+                return [('respond',  f"Your total is {str(total)} dollars. Would you like to pay by cash or card?"),
+                        ('set_response_state', "way_to_pay")]
+            else:
+                return [('respond', "But... you haven't got any food yet!" + state.get_reprompt())]
 
 
-def get_bill_at_table(state, who_multiple):
-    if all_are_players(who_multiple):
-        for i in state.all_rel("valueOf"):
-            if i[1] == "bill1":
-                total = i[0]
-                if state.sys["responseState"] == "done_ordering":
-                    return [('respond',  f"Your total is f{str(total)} dollars. Would you like to pay by cash or card?"),
-                            ('set_response_state', "way_to_pay")]
-                else:
-                    return [('respond', "But... you haven't got any food yet!" + state.get_reprompt())]
-
-
-gtpyhop.declare_task_methods('get_bill', get_bill_at_entrance, get_bill_at_table)
+gtpyhop.declare_task_methods('get_bill', get_bill_at_table)
 
 
 # order_food methods are all passed single objects, not tuples
@@ -273,13 +265,47 @@ def order_food_out_of_stock(state, who, what):
 
 def order_food_at_table(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
+        food_instance = find_unused_item(state, what)
+
         return [('respond', "Excellent Choice! Can I get you anything else?"),
-                ('add_rel', who, "ordered", what),
+                ('add_rel', who, "ordered", food_instance),
                 ('add_bill', what),
                 ('set_response_state', "anything_else")]
 
 
 gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
+
+def complete_order(state):
+    if state.sys["responseState"] == "anything_else":
+        if not state.user_ordered_veg():
+            return [("respond", "Son: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
+                ("set_response_state", "something_to_eat"), ("reset_order_and_bill",)]
+
+        items = [i for (x, i) in state.all_rel("ordered")]
+
+        if len(items) < 2:
+            return [("respond",
+                     "You realize that you'll need at least two dishes for the two of you.\n Waiter: Can I get you something else to eat?"),
+                    ("set_response_state", "something_to_eat")]
+
+        for i in state.all_rel("have"):
+            if i[0] == "user":
+                if i[1] in items:
+                    items.remove(i[1])
+
+        item_str = " ".join(items)
+
+        for i in items:
+            state.add_rel("user", "have", i)
+
+        return [("respond","Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with " + item_str + ".\nThe food is good, but nothing extraordinary."),
+            ("set_response_state", "done_ordering")]
+    elif state.sys["responseState"] == "something_to_eat":
+        return [("respond", "Well if you aren't going to order anything, you'll have to leave the restaurant, so I'll ask you again: can I get you something to eat?")]
+    else:
+        return [("respond", "Hmm. I didn't understand what you said." + state.get_reprompt())]
+
+gtpyhop.declare_task_methods('complete_order', complete_order)
 
 
 # This task deals with lists that map to each other. I.e. the first who goes with the first what
@@ -290,7 +316,9 @@ gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_pr
 def satisfy_want_group_group(state, group_who, group_what, min_size):
     if not isinstance(group_who, list) or not isinstance(group_what, list): return
 
-    # To support "we would like a table/the bill/etc" not going to every person,
+    # To support "we would like a table/the bill/etc" not going to every person,@Predication(vocabulary, names=["solution_group__be_v_id"])
+    # def _be_v_id_group(state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
+    #     yield state_list
     # conceptual things like "the bill", or "a table" or "a menu" should be collapsed into a single item
     # and handled once if everyone wants the same thing
     unique_whats = unique_group_variable_values(group_what)
@@ -306,7 +334,7 @@ def satisfy_want_group_group(state, group_who, group_what, min_size):
             elif one_thing.concept_name == "menu":
                 return [("get_menu", unique_group_variable_values(group_who))]
             elif one_thing.concept_name == "bill":
-                return [("get_bill", unique_group_variable_values(group_who))]
+                return [("get_bill",)]
 
         else:
             # They are asking for a particular instance of something, which should never work: fail
@@ -335,6 +363,9 @@ def satisfy_want(state, who, what, min_size):
         concept = what[0].concept_name
         if sort_of(state, concept, "menu"):
             return [('get_menu', who)]
+
+        elif concept == "special":
+            return [('describe_item',"special")]
 
         elif sort_of(state, concept, "table"):
             return [('get_menu', who[0])]
@@ -371,8 +402,11 @@ def set_response_state(state, value):
 def add_bill(state, wanted):
     return state.record_operations([AddBillOp(wanted)])
 
+def reset_order_and_bill(state):
+    return state.record_operations([ResetOrderAndBillOp()])
 
-gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bill)
+
+gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill)
 
 add_declarations(gtpyhop)
 

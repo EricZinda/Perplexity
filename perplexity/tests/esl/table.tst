@@ -137,7 +137,7 @@
         },
         {
             "Command": "We want tables",
-            "Expected": "I suspect you want to sit together.",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35492138-e4fb-4a43-8bb8-994924f6c1f9"
@@ -323,6 +323,48 @@
             "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "b5cfa314-b577-44c0-888c-e79450771d13"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "012004e1-846f-4602-89dd-770941d992a1"
+        },
+        {
+            "Command": "seat me",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_seat_v_cause(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8037fad3-b057-44f7-98d4-6a6a801bdb87"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "37dc54db-2285-467b-8a6c-5ecf0f80c47b"
+        },
+        {
+            "Command": "can you seat me?",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "6504baec-0698-4d3e-a222-bd73c653588e"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "3dc77694-e6a5-412d-8548-2e25d1655745"
+        },
+        {
+            "Command": "may i have a table?",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "e0f65cc6-7f59-4532-9409-5a1baf503bb9"
         }
     ]
 }
