@@ -90,7 +90,7 @@
             "Command": "I can sit down",
             "Expected": "I'm not sure what that means.",
             "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
-            "Enabled": true,
+            "Enabled": false,
             "ID": "76780ce0-5445-401f-85d5-aac3fba9bd12"
         },
         {

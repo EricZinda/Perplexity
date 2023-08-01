@@ -102,14 +102,14 @@
         },
         {
             "Command": "What are the specials?",
-            "Expected": "The specials are <description>",
+            "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.",
             "Tree": "which_q(x5,thing(x5),_the_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "169a1146-bc00-4e1c-936c-cc2b903e3f46"
         },
         {
             "Command": "What specials do you have?",
-            "Expected": "The specials are <description>",
+            "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"

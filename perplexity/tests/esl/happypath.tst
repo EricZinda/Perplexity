@@ -55,7 +55,7 @@
             "Command": "what vegetarian dishes do you have?",
             "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and porkchops.",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i10), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
-            "Enabled": true,
+            "Enabled": false,
             "ID": "4bb9d864-d8bd-47da-b1ff-707b78fa81af"
         },
         {

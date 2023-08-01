@@ -482,7 +482,7 @@ class PastParticiple:
 
     def predicate_function(self, state, e_introduced_binding, i_binding, x_target_binding):
         def bound(value):
-            if (value, self.lemma) in state.all_rel("isAdj"):
+            if (object_to_store(value), self.lemma) in state.all_rel("isAdj"):
                 return True
             else:
                 report_error(["Not" + self.lemma])
@@ -490,7 +490,7 @@ class PastParticiple:
 
         def unbound():
             for i in state.all_rel("isAdj"):
-                if i[1] == self.lemma:
+                if object_to_store(i[1]) == self.lemma:
                     yield i[0]
 
         yield from combinatorial_predication_1(state, x_target_binding,
@@ -500,6 +500,7 @@ class PastParticiple:
 
 grilled = PastParticiple(["_grill_v_1"], "grilled")
 roasted = PastParticiple(["_roast_v_cause"], "roasted")
+smoked = PastParticiple(["_smoke_v_1"], "smoked")
 
 
 @Predication(vocabulary, names=grilled.predicate_name_list)
@@ -508,8 +509,13 @@ def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
 
 
 @Predication(vocabulary, names=roasted.predicate_name_list)
-def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
+def _roast_v_1(state, e_introduced_binding, i_binding, x_target_binding):
     yield from roasted.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
+
+@Predication(vocabulary, names=smoked.predicate_name_list)
+def _smoke_v_1(state, e_introduced_binding, i_binding, x_target_binding):
+    yield from smoked.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
+
 
 
 @Predication(vocabulary, names=("_on_p_loc",))
