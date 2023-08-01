@@ -412,6 +412,40 @@ class WorldState(State):
     # ******* Base Operations ********
 
     # ******* Overrides of State ********
+    def get_binding(self, variable_name):
+        # return super().get_binding(variable_name)
+        if self._world_state_frame is None:
+            return super().get_binding(variable_name)
+        else:
+            return self._world_state_frame.get_binding(variable_name)
+
+    def set_variable_data(self, variable_name, determiner=None, quantifier=None):
+        # return super().set_variable_data(variable_name, determiner, quantifier)
+        if self._world_state_frame is None:
+            return super().set_variable_data(variable_name, determiner, quantifier)
+        else:
+            newState = copy.deepcopy(self)
+            newState._world_state_frame = self._world_state_frame.set_variable_data(variable_name, determiner, quantifier)
+            return newState
+
+    def set_x(self, variable_name, item, combinatoric=False, determiner=None, quantifier=None):
+        # return super().set_x(variable_name, item, combinatoric, determiner, quantifier)
+        if self._world_state_frame is None:
+            return super().set_x(variable_name, item, combinatoric, determiner, quantifier)
+        else:
+            newState = copy.deepcopy(self)
+            newState._world_state_frame = self._world_state_frame.set_x(variable_name, item, combinatoric, determiner, quantifier)
+            return newState
+
+    def add_to_e(self, event_name, key, value):
+        # return super().add_to_e(event_name, key, value)
+        if self._world_state_frame is None:
+            return super().add_to_e(event_name, key, value)
+        else:
+            newState = copy.deepcopy(self)
+            newState._world_state_frame =self._world_state_frame.add_to_e(event_name, key, value)
+            return newState
+
     def frames(self):
         # Start with just the in scope frame
         in_scope = in_scope_initialize(self)
