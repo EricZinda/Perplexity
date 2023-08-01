@@ -948,6 +948,23 @@ def _sit_v_down_able(state, e_binding, x_actor_binding):
 
     yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
 
+@Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
+def _sit_v_down_request(state, e_binding, x_actor_binding):
+    tree_info = state.get_binding("tree").value[0]
+    if not is_present_tense(tree_info): return
+
+    def bound(x_actor):
+        if is_user_type(x_actor):
+            return True
+        else:
+            report_error(["unexpected"])
+            return
+
+    def unbound():
+        yield "user"
+
+    yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
+
 
 @Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
 def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
