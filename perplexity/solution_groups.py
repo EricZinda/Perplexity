@@ -267,6 +267,10 @@ def run_handlers(wh_handlers, handlers, variable_constraints, one_more, group, i
     created_solution_group = None
     has_more = False
     state_list = list(group)
+    if pipeline_logger.level == logging.DEBUG:
+        nl = '\n'
+        pipeline_logger.debug(f"Found solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in state_list])}")
+
     if len(handlers) > 0:
         pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
 

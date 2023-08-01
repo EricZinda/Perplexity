@@ -4,6 +4,7 @@ import logging
 import sys
 import perplexity.tree
 from perplexity.utilities import sentence_force, at_least_one_generator
+from perplexity.vocabulary import ValueSize
 
 
 # Allows code to throw an exception that should get converted
@@ -41,9 +42,12 @@ class ExecutionContext(object):
             reset_execution_context(self.old_context_token)
             self.old_context_token = None
 
-    def resolve_fragment(self, state, tree_node):
+    def resolve_fragment(self, state, tree_node, extra_variables=None):
         this_sentence_force = sentence_force(self.tree_info["Variables"])
         new_tree_info = copy.deepcopy(self.tree_info)
+        if extra_variables is not None:
+            new_tree_info["Variables"].update(extra_variables)
+
         new_tree_info["Tree"] = tree_node
         new_state = state.set_x("tree", (new_tree_info, ))
         wh_phrase_variable = None
@@ -60,6 +64,10 @@ class ExecutionContext(object):
         groups = [group for group in perplexity.solution_groups.solution_groups(self, solutions_list, this_sentence_force, wh_phrase_variable, new_tree_info, all_groups=True)]
         for group in groups:
             solutions = [x for x in group]
+            if pipeline_logger.level == logging.DEBUG:
+                nl = '\n'
+                pipeline_logger.debug(
+                    f"Found fragment solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in solutions])}")
             yield from solutions
 
         pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
@@ -251,7 +259,8 @@ class ExecutionContext(object):
         return self._variable_execution_data.get(variable_name, {})
 
     def get_variable_metadata(self, variable_name):
-        return self._variable_metadata.get(variable_name, {})
+        # TODO: This is a hack to enable metadata for eval(). Need to fix it
+        return self._variable_metadata.get(variable_name, {"ValueSize": ValueSize.all})
 
 
 # ContextVars is a thread-safe way to set the execution context

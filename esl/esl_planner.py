@@ -147,17 +147,44 @@ def count_entities(value_group):
     return count
 
 # Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
-def get_table_at_entrance(state, who_multiple, table):
+def get_table_at_entrance(state, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
         not location_of_type(state, who_multiple[0], "table"):
-        # If the count of table is > 1, fail
-        table_count = noun_structure(table, "card")
-        if table_count is not None and table_count != 1:
+        if min_size != 1:
             return [('respond', "Johnny: Hey, let's sit together alright?")]
-        for_structure = noun_structure(table, "for")
-        for_count = count_entities(for_structure)
-        # If they say "we want a table" or "table for 2" the size is implied
-        if len(who_multiple) == 2 or for_count == 2:
+
+        # Evaluate the noun to make sure we understand all the terms that were used with it
+        # If we get back a state, it means the user said something that made sense
+        # and they at least meant "a table" of some kind
+        eval_state = at_least_one_generator(table.eval(state))
+        if eval_state is None:
+            return
+        else:
+            # Check to see if the user specified a table "for x (i.e. 2)"
+            # This needs to be done manually because there is no way, after the fact, to know
+            # if the way they asked for the table specified how many people it should have
+            for_value = table.value_of_modifier_argument(eval_state.first_item, "_for_p", 2)
+
+        # If they say "we want a table" (because we means 2 in this scenario) or "table for 2" the size is implied
+        if for_value is not None and len(for_value) == 1 and isinstance(for_value[0], numbers.Number):
+            # "... table for N"
+            for_count = for_value[0]
+        elif for_value is not None and all_are_players(for_value):
+            # "... table for my son and I together"
+            # "... table for me"
+            for_count = len(for_value)
+        else:
+            if for_value is not None:
+                return [('respond', "I'm not sure what that means.")]
+            else:
+                if len(who_multiple) > 1:
+                    # "We want a table"
+                    for_count = len(who_multiple)
+                else:
+                    # "I want a table", "Do you have a table?"
+                    for_count = None
+
+        if for_count == 2:
             unused_table = find_unused_item(state, "table")
             if unused_table is not None:
                 return [('respond',
@@ -182,10 +209,13 @@ def get_table_at_entrance(state, who_multiple, table):
                     ('set_response_state', "anticipate_party_size")]
 
 
-def get_table_repeat(state, who_multiple, table):
+def get_table_repeat(state, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
             location_of_type(state, who_multiple[0], "table"):
-        return [('respond', "Um... You're at a table." + state.get_reprompt())]
+        if min_size != 1:
+            return [('respond', "I suspect you want to sit together.")]
+        else:
+            return [('respond', "Um... You're at a table." + state.get_reprompt())]
 
 
 gtpyhop.declare_task_methods('get_table', get_table_at_entrance, get_table_repeat)
@@ -283,7 +313,7 @@ gtpyhop.declare_task_methods('complete_order', complete_order)
 # that need to be analyzed.  One or more people, one or more things wanted, etc.
 # For concepts, it requires that the caller has made sure that wanted concepts are valid, meaning "I want the (conceptual) table"
 # Should never get to this point
-def satisfy_want_group_group(state, group_who, group_what):
+def satisfy_want_group_group(state, group_who, group_what, min_size):
     if not isinstance(group_who, list) or not isinstance(group_what, list): return
 
     # To support "we would like a table/the bill/etc" not going to every person,@Predication(vocabulary, names=["solution_group__be_v_id"])
@@ -293,14 +323,14 @@ def satisfy_want_group_group(state, group_who, group_what):
     # and handled once if everyone wants the same thing
     unique_whats = unique_group_variable_values(group_what)
     if len(unique_whats) == 1:
-        # Everybody wanted the same thing
+        # Everybody wanted the same kind of thing
         # Only need to check the first because: If one item in the group is a concept, they all are
         one_thing = unique_whats[0]
         if is_concept(one_thing):
             if one_thing.concept_name == "table":
                 # Tables are special in that, in addition to having a count ("2 tables")
                 # they can be "for 2" or "for my son and me"
-                return [("get_table", unique_group_variable_values(group_who), one_thing)]
+                return [("get_table", unique_group_variable_values(group_who), one_thing, min_size)]
             elif one_thing.concept_name == "menu":
                 return [("get_menu", unique_group_variable_values(group_who))]
             elif one_thing.concept_name == "bill":
@@ -317,20 +347,22 @@ def satisfy_want_group_group(state, group_who, group_what):
     for index in range(len(group_who)):
         for who in group_who[index]:
             for what in group_what[index]:
-                tasks.append(('satisfy_want', (who,), (what,)))
+                tasks.append(('satisfy_want', who, what, min_size))
 
     return tasks
 
 
-def satisfy_want(state, who, what):
-    if len(who) > 1 or len(what) > 1: return
+# Requires actual values not a list
+def satisfy_want(state, who, what, min_size):
+    # if len(who) != 1 or len(what) != 1: return
+    if isinstance(who, (list, tuple, set)) or isinstance(who, (list, tuple, set)): return
 
-    if is_instance(state, what[0]):
+    if is_instance(state, what):
         # They are asking for a *particular instance of a table* (or whatever)
         # report an error if this is the best we can do
         return [('respond', "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
     else:
-        concept = what[0].concept_name
+        concept = what.concept_name
         if sort_of(state, concept, "menu"):
             return [('get_menu', who)]
 
@@ -338,14 +370,14 @@ def satisfy_want(state, who, what):
             return [('describe_item',"special")]
 
         elif sort_of(state, concept, "table"):
-            return [('get_menu', who[0])]
+            return [('get_menu', who)]
 
         elif sort_of(state, concept, "food"):
-            return [('order_food', who[0], concept)]
+            return [('order_food', who, concept)]
 
 
 # Last option should just report an error
-def satisfy_want_fail(state, who, what):
+def satisfy_want_fail(state, who, what, min_size):
     return [('respond', "Sorry, I'm not sure what to do about that")]
 
 

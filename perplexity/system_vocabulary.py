@@ -1,5 +1,7 @@
 import copy
 import logging
+import numbers
+
 from perplexity.execution import execution_context, call, set_variable_execution_data, report_error
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, all_combinations_of_states
@@ -158,7 +160,7 @@ def which_q(state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q"])
+@Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q", "number_q"])
 def generic_q(state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(execution_context().current_predication(),
@@ -204,6 +206,28 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
                                                                   x_target_binding.variable.name,
                                                                   min_size=int(c_count),
                                                                   max_size=int(c_count)))
+
+
+# This version of card() is used to mean "the number x, on its own" and not "x of something"
+@Predication(vocabulary, library="system", names=["card"])
+def card(state, c_count, x_binding, i_binding):
+    def bound_variable(value):
+        if value == c_value:
+            return True
+        else:
+            report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+            yield c_value
+
+    if isinstance(c_count, numbers.Number) or (isinstance(c_count, str) and c_count.isnumeric()):
+        c_value = int(c_count)
+        yield from combinatorial_predication_1(state,
+                                               x_binding,
+                                               bound_variable,
+                                               unbound_variable)
+
 
 def generate_not_error(unscoped_referenced_variables):
     if len(unscoped_referenced_variables) == 0:

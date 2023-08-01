@@ -8,24 +8,36 @@ from math import inf
 from perplexity.execution import get_variable_metadata, report_error, execution_context
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
-from perplexity.tree import find_predication_from_introduced, find_quantifier_from_variable
-from perplexity.utilities import at_least_one_generator
+from perplexity.tree import find_predication_from_introduced, find_quantifier_from_variable, TreePredication
+from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.vocabulary import ValueSize
 
 
 def is_concept(o):
     return hasattr(o, "is_concept") and o.is_concept()
 
+
+def concept_from_lemma(lemma):
+    # TODO: Make this more robust
+    variable_name = "x999"
+    predication = TreePredication(0, f"_{lemma}_n_1", ["x999"], arg_names=["ARG0"])
+    return Concept(predication, variable_name)
+
+
 class Concept(object):
-    def __init__(self, concept_name, dict_modifications = None):
-        self.concept_name = concept_name
-        self._modifiers = {"noun": concept_name}
+    def __init__(self, noun_predication, variable_name):
+        self.noun_predication = noun_predication
+        self.variable_name = variable_name
+        self.modifiers = []
+        self.bound_variables ={}
+        self.extra_variables = {}
         self._hash = None
-        if dict_modifications is not None:
-            self._modifiers.update(dict_modifications)
+
+        parsed_predication = parse_predication_name(noun_predication.name)
+        self.concept_name = parsed_predication["Lemma"]
 
     def __repr__(self):
-        return f"concept({self._modifiers})"
+        return f"concept({self.concept_name}: {self.modifiers})"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
@@ -38,21 +50,112 @@ class Concept(object):
         return self._hash
 
     def __eq__(self, other):
-        return isinstance(other, Concept) and self.__hash__() == other.__hash__() and self._modifiers == other._modifiers
+        if isinstance(other, Concept) and self.__hash__() == other.__hash__():
+            if len(self.modifiers) != len(other.modifiers):
+                return False
+            else:
+                for index in range(len(self.modifiers)):
+                    if self.modifiers[index] != other.modifiers[index]:
+                        return False
+                    else:
+                        # Modifier matches, make sure any bound variables it has match too
+                        for arg in self.modifiers[index].args_with_types(["e", "x"]):
+                            self_bound_value = self.bound_variables.get(arg, None)
+                            other_bound_value = other.bound_variables.get(arg, None)
+                            if self_bound_value != other_bound_value:
+                                return False
+
+
+                return True
+
+    def add_modifier(self, predication):
+        modified = copy.deepcopy(self)
+        modified.modifiers.append(predication)
+        modified._hash = None
+        return modified
+
+    # Leave the variable that represents this concept unbound
+    # but bind all the reset of the variables
+    def add_bound_modifier(self, predication, bound_args, new_variables=None):
+        modified = copy.deepcopy(self)
+        modified.modifiers.append(predication)
+        for arg_index in range(len(predication.args)):
+            if predication.arg_types[arg_index] != "c":
+                arg_variable = predication.args[arg_index]
+                if arg_variable != modified.variable_name:
+                    if arg_variable in modified.bound_variables:
+                        assert bound_args[arg_index] == modified.bound_variables[arg_variable]
+                    else:
+                        modified.bound_variables[arg_variable] = bound_args[arg_index]
+        if new_variables:
+            self.extra_variables.update(new_variables)
+
+        return modified
+
+    def eval(self, state):
+        # First set the variables to any bound values we received
+        bound_state = state
+        for variable_value in self.bound_variables.items():
+            bound_state = bound_state.set_x(variable_value[0], variable_value[1])
+
+        # Leave the noun itself unbound
+        bound_state = bound_state.set_x(self.variable_name, None)
+
+        for solution in execution_context().resolve_fragment(bound_state, [self.noun_predication] + self.modifiers, extra_variables=self.extra_variables):
+            if is_concept(solution.get_binding(self.variable_name).value[0]):
+                # The caller already has the concept, don't return it again
+                continue
+            else:
+                yield solution
+
+    def value_of_modifier_argument(self, state, predicate_name, arg_index):
+        for modifier in self.modifiers:
+            if modifier.name == predicate_name:
+                arg_variable = modifier.args[arg_index]
+                return state.get_binding(arg_variable).value
+        return None
 
     def is_concept(self):
         return True
 
-    def modifiers(self):
-        # Make a copy since this object must be immutable due to
-        # the fact that hash is based on the modifiers
-        return copy.deepcopy(self._modifiers)
 
-    def update_modifiers(self, dict_modifications):
-        modified = copy.deepcopy(self)
-        modified._modifiers.update(dict_modifications)
-        modified._hash = None
-        return modified
+# class Concept(object):
+#     def __init__(self, concept_name, dict_modifications = None):
+#         self.concept_name = concept_name
+#         self._modifiers = {"noun": concept_name}
+#         self._hash = None
+#         if dict_modifications is not None:
+#             self._modifiers.update(dict_modifications)
+#
+#     def __repr__(self):
+#         return f"concept({self._modifiers})"
+#
+#     # The only required property is that objects which compare equal have the same hash value
+#     # But: objects with the same hash aren't required to be equal
+#     # It must remain the same for the lifetime of the object
+#     def __hash__(self):
+#         if self._hash is None:
+#             # TODO: Make this more efficient
+#             self._hash = hash(self.concept_name)
+#
+#         return self._hash
+#
+#     def __eq__(self, other):
+#         return isinstance(other, Concept) and self.__hash__() == other.__hash__() and self._modifiers == other._modifiers
+#
+#     def is_concept(self):
+#         return True
+#
+#     def modifiers(self):
+#         # Make a copy since this object must be immutable due to
+#         # the fact that hash is based on the modifiers
+#         return copy.deepcopy(self._modifiers)
+#
+#     def update_modifiers(self, dict_modifications):
+#         modified = copy.deepcopy(self)
+#         modified._modifiers.update(dict_modifications)
+#         modified._hash = None
+#         return modified
 
 
 # This function is used to check the constraints for a variable that is set to a *concept*.

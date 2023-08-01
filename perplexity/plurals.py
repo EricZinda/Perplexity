@@ -275,8 +275,8 @@ class VariableStats(object):
         binding_value = solution.get_binding(self.variable_name).value
 
         # Solutions that have a conceptual variable cannot have instances or vice versa
-        is_conceptual = len(binding_value) == 1 and hasattr(binding_value[0], "is_concept") and binding_value[0].is_concept()
-        if is_conceptual:
+        is_conceptual_solution = len(binding_value) == 1 and hasattr(binding_value[0], "is_concept") and binding_value[0].is_concept()
+        if is_conceptual_solution:
             if not self.is_concept:
                 # Can't merge a conceptual variable value with non-conceptual
                 if len(self.whole_group_unique_individuals) > 0 :
@@ -291,9 +291,11 @@ class VariableStats(object):
                 self.is_concept = True
 
             else:
+                # Is a conceptual solution, this group is conceptual
+                self.is_concept = True
                 # Was conceptual, but this solution isn't the same
-                self.current_state = CriteriaResult.fail_one
-                return False, self.current_state
+                # self.current_state = CriteriaResult.fail_one
+                # return False, self.current_state
 
         elif self.is_concept:
             self.current_state = CriteriaResult.fail_one
@@ -320,7 +322,7 @@ class VariableStats(object):
             self.whole_group_unique_values[binding_value][1].append(solution)
 
         # Now we actually compare this variable to the previous value to see what kind of plural type this might be
-        if is_conceptual:
+        if is_conceptual_solution:
             # If this variable is conceptual, we assume it is true and allow the group handler to finalize the decision
             self.current_state = CriteriaResult.meets
             return new_individuals, self.current_state
@@ -392,8 +394,8 @@ class VariableStats(object):
             # If the previous variable is conceptual all 3 modes may be supported
             # Go through the possible states in an order that
             for test_state in [CriteriaResult.fail_all, CriteriaResult.meets_pending_global, CriteriaResult.meets, CriteriaResult.contender]:
-                if ((is_conceptual or only_collective) and self.collective_state == test_state) or \
-                        ((is_conceptual or not only_collective) and \
+                if ((is_conceptual_solution or only_collective) and self.collective_state == test_state) or \
+                        ((is_conceptual_solution or not only_collective) and \
                             (self.distributive_state == test_state or \
                             self.cumulative_state == test_state)):
                     self.current_state = test_state
@@ -466,7 +468,8 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         # If the value in new_solution for the current variable added a new value to the set of values
         # being tracked by a variable without an upper bound of inf, then we need to create a new group
         # because we need to generate alternatives from it
-        if new_individuals and criteria.max_size != float('inf'):
+        # OR if this variable is conceptual, don't merge either so we get all the alternatives
+        if new_individuals and (criteria.max_size != float('inf') or variable_stats.is_concept):
             merge = False
 
     new_set_stats_group.group_state = current_set_state
