@@ -2,6 +2,7 @@ import numbers
 
 import perplexity.messages
 from esl.esl_planner import do_task
+from esl.esl_planner_description import convert_to_english
 from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
@@ -464,6 +465,7 @@ def match_all_n(noun_type, state, x_binding):
 
     def unbound_variable():
         yield from all_instances(state, noun_type)
+
 
     # Yield the abstract type first, not as a combinatoric variable
     yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
@@ -1197,7 +1199,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
         if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "have"):
             return True
         else:
-            report_error(["verbDoesntApply", x_actor, "have", x_object])
+            report_error(["verbDoesntApply", convert_to_english(state,x_actor), "have",convert_to_english(state,x_object)])
             return False
 
     def actor_from_object(x_object):
@@ -1224,7 +1226,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
             found = True
             yield store_to_object(state, i)
         if not found:
-            report_error(["X_VTRANS_Nothing", "have", x_actor])
+            report_error(["X_VTRANS_Nothing", "have", convert_to_english(state, x_actor)])
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
@@ -1636,6 +1638,7 @@ def reset():
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
     # The computer has the concepts of the items so it can answer "do you have x?"
     initial_state = initial_state.add_rel("computer", "have", "menu")
+    initial_state = initial_state.add_rel("computer", "instanceOf", "thing")
 
     initial_state = initial_state.add_rel("person", "specializes", "thing")
     initial_state = initial_state.add_rel("son", "specializes", "person")
@@ -1715,6 +1718,7 @@ def reset():
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "smoked")
 
     initial_state = initial_state.add_rel("computer", "have", "special")
+    initial_state = initial_state.add_rel("computer", "hasName", "host")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")
