@@ -162,6 +162,21 @@ class TreePredication(object):
             for arg_index in range(0, len(self.arg_names)):
                 self.arg_types.append(self.type_from_argument(self.arg_names[arg_index], self.args[arg_index]))
 
+    def __eq__(self, other):
+        if isinstance(other, TreePredication):
+            if self.name == other.name:
+                if len(self.args) == len(other.args):
+                    for arg_index in range(len(self.args)):
+                        if self.arg_types[arg_index] == other.arg_types[arg_index] and self.args[arg_index] == other.args[arg_index]:
+                            continue
+                        else:
+                            return False
+
+                    if self.index == other.index:
+                        return True
+
+        return False
+
     def type_from_argument(self, name, value):
         if name == "CARG":
             return "c"
@@ -415,18 +430,19 @@ def walk_tree_predications_until(term, func):
                 return result
 
     else:
-        # This is a single term, call func with it
-        result = func(term)
-        if result is not None:
-            return result
+        # This is a single term, call func with it if it is a predication
+        if isinstance(term, TreePredication):
+            result = func(term)
+            if result is not None:
+                return result
 
-        # If func didn't say to quit, see if any of its terms are scopal
-        # i.e. are predications themselves
-        for arg in term.args:
-            if not isinstance(arg, str):
-                result = walk_tree_predications_until(arg, func)
-                if result is not None:
-                    return result
+            # If func didn't say to quit, see if any of its terms are scopal
+            # i.e. are predications themselves
+            for arg in term.args:
+                if not isinstance(arg, str):
+                    result = walk_tree_predications_until(arg, func)
+                    if result is not None:
+                        return result
 
     return None
 

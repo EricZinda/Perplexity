@@ -1,10 +1,13 @@
 import copy
 import json
+import numbers
+
 import esl.esl_planner
-from perplexity.predications import is_concept, Concept
+from perplexity.predications import is_concept, Concept, concept_from_lemma
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
+from perplexity.tree import TreePredication
 from perplexity.utilities import at_least_one_generator
 
 
@@ -19,12 +22,12 @@ def noun_structure(value, part):
 
 
 def in_scope_initialize(state):
-    # Only concepts that are explicity marked as "in scope"
+    # Only concepts that are explicitly marked as "in scope"
     # are in scope
     in_scope_concepts = set()
     for i in state.all_rel("conceptInScope"):
         if i[1] == "true":
-            in_scope_concepts.add(Concept(i[0]))
+            in_scope_concepts.add(concept_from_lemma(i[0]))
 
     # Any instances that the user or son "have" are in scope
     in_scope_instances = set()
@@ -197,7 +200,7 @@ def location_of_type(state, who, where_type):
 def count_of_instances_and_concepts(state, concepts_original):
     concepts = copy.copy(concepts_original)
     for concept in concepts:
-        concepts += [Concept(x) for x in specializations(state, concept.concept_name)]
+        concepts += [concept_from_lemma(x) for x in specializations(state, concept.concept_name)]
     concept_count = len(concepts)
 
     instances = []
@@ -738,6 +741,17 @@ class WorldState(State):
                 return [RespondOperation("Sorry, we don't have that")]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
+            if isinstance(x, numbers.Number):
+                table_concept = concept_from_lemma("table")
+                # e_binding, x_what_binding, x_for_binding
+                args = ["e999", table_concept.variable_name, "x1000"]
+                table_concept = table_concept.add_bound_modifier(TreePredication(0, "_for_p", args, arg_names=["ARG0", "ARG1", "ARG2"]),
+                                                                 [None, None, (x, )],
+                                                                 {"x1000":[]})
+
+                actors = [("user",)]
+                whats = [(table_concept,)]
+                return self.find_plan([('satisfy_want', actors, whats, 1)])
             if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
                 actors = [("user",)]
                 whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]

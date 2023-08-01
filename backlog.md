@@ -1,3 +1,65 @@
+- Do we really need frames()? Only one test breaks if we turn it off
+
+- Goal: What do the steak and the soup cost?
+  - Fixed Try allowing more than one concept through at a time! 
+    - plurals.py
+    -        else:
+                # Was conceptual, but this solution isn't the same
+                self.current_state = CriteriaResult.fail_one
+                return False, self.current_state
+                # Was conceptual, and new solution is conceptual, but this solution isn't the same
+                pass
+                # self.current_state = CriteriaResult.fail_one
+                # return False, self.current_state
+  - But broke everything else ...
+
+
+- I want a table, 2 --> Fail
+  - Adding a new predication to a concept may introduce a new variable
+  - That variable won't have its execution metadata filled in because it wasn't part of the tree
+  - Fix: eval() needs its own execution context since it could have anything in it
+  - Need to fix the hack that says this:         # TODO: This is a hack to enable metadata for eval(). Need to fix it
+
+- Bug: I'd like a table for my son and me -> one thing at a time please
+  - Because it finds two concepts: {concept({'noun': 'table', 'for': ('son1',)}), concept({'noun': 'table', 'for': ('user',)})}
+  - Alternatives:
+    - Support "together" for want and only succeed on that one
+      - The other option where they are different really is asking for a table for each
+    - Deal with concepts that have extra goo properly
+      - (table for x) could be:
+        - table for me
+        - table for 2
+        - table for eating
+        - Conceptually, this is like events, if a predication is dealing with a concept it should add information to it
+          - that id abstract and can be interpreted later
+            - table for me: table(for a specific person)
+            - table for 2: table(that can hold 2 people)
+            - table for eating table(for a specific purpose)
+        - Need a way to mark what has been handled on an object and fail at the end if it hasn't been handled
+          - Maybe you just remove the information once handled?
+            - and we check every object in every state at the end and fail if stuff is there?
+          - Or you tack stuff onto something saying what you handled?
+            - and we compare everything at the end?
+            - we got away with this in perplexity 1 because we just used predications to filter the world
+          - Or maybe we somehow declare what happened at the end of doing something
+            - "I gave them a table for 2" and then you compare what they said with what happened and see if it completely
+              matches
+            - Or: if they say they want a table(properties) you compare the table you can give them with table(properties)
+            - Or: you resolve table(properties) to get the tables that match it and give one of those
+              - this seems promising
+          - Design
+            - predications add themselves in a standard way to concepts
+              - the concept can be evaluated and it runs and returns instances
+              - any predication that isn't understood fails
+            - they also put abstract information on it? Maybe? For cases where you don't eval?
+              - Do this second
+- Bug: I'd like a table for 2 -> one thing at a time please
+  - Because the two alternatives for cardinal generate different values that all get included in a group
+    - And then we fail on the first solution group, when the last one has what we want
+      - Should probably have Failures be errors so that alternatives are found if they exist
+
+- lift_style_predication_2
+  - should assert if the predication doesn't allow for > 1 in the set
 - What do I have? -> should say son
 - 
 - I want to sit down?

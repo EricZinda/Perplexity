@@ -1,3 +1,5 @@
+import numbers
+
 import perplexity.messages
 from esl.esl_planner import do_task
 from perplexity.execution import report_error, call, execution_context
@@ -5,12 +7,13 @@ from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
+from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction
-from perplexity.tree import find_predication_from_introduced, get_wh_question_variable
+from perplexity.tree import find_predication_from_introduced, get_wh_question_variable, TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
-from perplexity.vocabulary import Predication, EventOption, Transform, override_predications
+from perplexity.vocabulary import Predication, EventOption, Transform, override_predications, ValueSize
 from esl.worldstate import *
 
 
@@ -92,6 +95,10 @@ def valid_player_request(state, x_objects, valid_types=None):
             return False
 
     return True
+
+
+def min_from_variable_group(variable_group):
+    return variable_group.variable_constraints.min_size if variable_group.variable_constraints is not None else 1
 
 
 # ******** Transforms ************
@@ -199,10 +206,10 @@ def pron(state, x_who_binding):
 @Predication(vocabulary, names=["generic_entity"])
 def generic_entity(state, x_binding):
     def bound(val):
-        return val == Concept("generic_entity")
+        return val == Concept(execution_context().current_predication(), x_binding.variable.name)
 
     def unbound():
-        yield Concept("generic_entity")
+        yield  Concept(execution_context().current_predication(), x_binding.variable.name)
 
     yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
@@ -237,14 +244,17 @@ def measure(state, e_binding, e_binding2, x_binding):
 
 @Predication(vocabulary, names=["abstr_deg"])
 def abstr_deg(state, x_binding):
-    yield state.set_x(x_binding.variable.name, (Concept("abstract_degree"),))
+    yield state.set_x(x_binding.variable.name, (concept_from_lemma("abstract_degree"),))
 
 
 @Predication(vocabulary, names=["card"])
 def card(state, c_number, e_binding, x_binding):
     x_binding_value = state.get_binding(x_binding.variable.name).value
-    if len(x_binding_value) == 1 and is_concept(x_binding_value[0]) and c_number.isnumeric():
-        yield state.set_x(x_binding.variable.name, (x_binding_value[0].update_modifiers({"card": int(c_number)}),))
+    if len(x_binding_value) == 1 and is_concept(x_binding_value[0]) and isinstance(c_number, numbers.Number):
+        e_what_value = e_binding.value
+        modified = x_binding_value[0].add_bound_modifier(execution_context().current_predication(), [c_number, e_what_value, x_binding.value])
+
+        yield state.set_x(x_binding.variable.name, (modified,))
 
 
 @Predication(vocabulary, names=["card"])
@@ -253,26 +263,45 @@ def card_system(state, c_number, e_binding, x_binding):
         yield from perplexity.system_vocabulary.card(state, c_number, e_binding, x_binding)
 
 
-@Predication(vocabulary, names=["_for_p"])
+@Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _for_p(state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
-        return True
+        if len(x_what) == 1 and sort_of(state, object_to_store(x_what[0]), "table"):
+            # We only have tables for 2
+            if len(x_for) == 1 and isinstance(x_for[0], numbers.Number):
+                if x_for[0] == 2:
+                    return True
+                else:
+                    report_error(['errorText', "Host: Sorry, we don't have a table with that many seats"])
+
+            # Or for people
+            elif is_user_type(x_for):
+                return True
 
     def x_what_unbound(x_for):
-        yield None
+        if False:
+            yield None
 
     def x_for_unbound(x_what):
-        yield None
+        report_error(['errorText', "Host: Sorry, I'm not here to explain things to you ..."])
+        if False:
+            yield None
 
+    # Make this lift_style so that "for my son and I" gets properly interpreted as "together"
+    # at least as an alternative
     for solution in lift_style_predication_2(state, x_what_binding, x_for_binding,
                                                 both_bound_function,
                                                 x_what_unbound,
                                                 x_for_unbound):
         x_what_value = solution.get_binding(x_what_binding.variable.name).value
-        x_for_value = solution.get_binding(x_for_binding.variable.name).value
-        if len(x_what_value) == 1 and is_concept(x_what_value[0]):
-            modified = x_what_value[0].update_modifiers({"for": x_for_value})
+        if is_concept(x_what_value[0]):
+            e_what_value = solution.get_binding(e_binding.variable.name).value
+            x_for_value = solution.get_binding(x_for_binding.variable.name).value
+            modified = x_what_value[0].add_bound_modifier(execution_context().current_predication(), [e_what_value, x_what_value, x_for_value])
             yield solution.set_x(x_what_binding.variable.name, (modified,))
+
+        else:
+            yield solution
 
 
 @Predication(vocabulary, names=["_cash_n_1"])
@@ -353,7 +382,7 @@ def match_all_n(noun_type, state, x_binding):
         yield from all_instances(state, noun_type)
 
     # Yield the abstract type first, not as a combinatoric variable
-    yield state.set_x(x_binding.variable.name, (Concept(noun_type), ))
+    yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
@@ -465,6 +494,7 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if is_user_type(x_actor):
             return True
+
         elif "want" in state.rel.keys():
             if (x_actor, x_object) in state.all_rel("want"):
                 return True
@@ -484,8 +514,9 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 if i[0] == x_actor:
                     yield i[1]
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
-                                                 wanters_of_obj, wanted_of_actor)
+    for new_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+                                                 wanters_of_obj, wanted_of_actor):
+        yield new_state
 
 
 @Predication(vocabulary, names=["solution_group__want_v_1"])
@@ -517,15 +548,20 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
             for value in x_what_values:
                 x_what_individuals_set.update(value)
             if len(x_what_individuals_set) > 1:
-                yield [current_state.record_operations([RespondOperation("One thing at a time, please!")])]
+                report_error(["errorText", "One thing at a time, please!"])
+                yield []
 
             # At this point we are only dealing with one concept
-            # Give them the max of what they specified
             first_x_what_binding_value = copy.deepcopy(x_what_variable_group.solution_values[0].value[0])
-            first_x_what_binding_value = first_x_what_binding_value.update_modifiers({"card": x_what_variable_group.variable_constraints.max_size})
+
+            # Even though it is only one thing, they could have said something like "We want steaks" so they really want more than one
+            # Give them the minimum number by adding a card() predication into the concept
+            #   - card(state, c_number, e_binding, x_binding):
+            # args = [x_what_variable_group.variable_constraints.min_size, "e999", first_x_what_binding_value.variable_name]
+            # first_x_what_binding_value = first_x_what_binding_value.add_modifier(TreePredication(0, "card", args, arg_names=["CARG", "ARG0", "ARG1"]))
 
             actor_values = [x.value for x in x_actor_variable_group.solution_values]
-            current_state = do_task(current_state.world_state_frame(), [('satisfy_want', actor_values, [(first_x_what_binding_value,)])])
+            current_state = do_task(current_state.world_state_frame(), [('satisfy_want', actor_values, [(first_x_what_binding_value,)], min_from_variable_group(x_what_variable_group))])
             if current_state is None:
                 yield []
             else:
@@ -533,7 +569,8 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
 
         else:
             yield []
-
+    else:
+        yield []
 
 @Predication(vocabulary, names=["_check_v_1"])
 def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
@@ -711,7 +748,7 @@ def _sit_v_down_future_group(state_list, has_more, e_list, x_actor_variable_grou
     if not is_future_tense(tree_info): return
 
     # The planner will only satisfy a want wrt the players
-    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[Concept("table")]])
+    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[concept_from_lemma("table")]], 1)
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -769,7 +806,7 @@ def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_ac
         yield state_list
     else:
         # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[Concept("table")]])
+        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[concept_from_lemma("table")]], 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -822,7 +859,8 @@ def _see_v_1_able_group(state_list, has_more, e_list, x_actor_variable_group, x_
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
             variable_group_values_to_list(x_actor_variable_group),
-            variable_group_values_to_list(x_object_variable_group))
+            variable_group_values_to_list(x_object_variable_group),
+            min_from_variable_group(x_object_variable_group))
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -883,7 +921,8 @@ def _see_v_1_future_group(state_list, has_more, e_list, x_actor_variable_group, 
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
             variable_group_values_to_list(x_actor_variable_group),
-            variable_group_values_to_list(x_object_variable_group))
+            variable_group_values_to_list(x_object_variable_group),
+            min_from_variable_group(x_object_variable_group))
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -964,7 +1003,8 @@ def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_varia
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
             variable_group_values_to_list(x_actor_variable_group),
-            variable_group_values_to_list(x_object_variable_group))
+            variable_group_values_to_list(x_object_variable_group),
+            min_from_variable_group(x_object_variable_group))
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -1001,7 +1041,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
             #   - Conceptually, there are a lot of things the computer has
             #     - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
             #     - So it is a special case that we interpret as a request for a menu
-            yield Concept("menu")
+            yield concept_from_lemma("menu")
 
         else:
             found = False
@@ -1038,7 +1078,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
             x_act_list.solution_values[0].value[0] == "computer":
             # Questions about "Do you have a table/menu/bill?" are really implied requests in a restaurant
             # that mean "Can I have a table/menu/bill?"
-            implied_request_concepts = [Concept("table"), Concept("menu"), Concept("bill")]
+            implied_request_concepts = [concept_from_lemma("table"), concept_from_lemma("menu"), concept_from_lemma("bill")]
             if len(x_obj_list.solution_values) == 1 and \
                 len(x_obj_list.solution_values[0].value) == 1:
                 if x_obj_list.solution_values[0].value[0] in implied_request_concepts:
@@ -1048,7 +1088,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                     if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
                         yield []
 
-                    task = ('satisfy_want', [("user",)], variable_group_values_to_list(x_obj_list))
+                    task = ('satisfy_want', [("user",)], variable_group_values_to_list(x_obj_list), min_from_variable_group(x_obj_list))
                     final_state = do_task(state_list[0].world_state_frame(), [task])
                     if final_state:
                         yield [final_state]
@@ -1056,7 +1096,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                     else:
                         yield []
 
-                elif x_obj_list.solution_values[0].value[0] == Concept("special"):
+                elif x_obj_list.solution_values[0].value[0] == concept_from_lemma("special"):
                     # "Do you have specials?" is really about the concept of specials, so check_concepts=True
                     # Fail this group if we don't meet the constraints
                     if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
@@ -1111,7 +1151,7 @@ def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
         #   - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
         #     - So it is a special case that we interpret as a request for a menu
         if is_user_type(x_actor):
-            yield (Concept("menu"),)
+            yield (concept_from_lemma("menu"),)
 
     yield from lift_style_predication_2(state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
@@ -1134,10 +1174,10 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
     force = sentence_force(tree_info["Variables"])
     wh_variable = get_wh_question_variable(tree_info)
     if force in ["ques", "prop-or-ques"] and \
-        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == Concept("menu")) or \
+        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == concept_from_lemma("menu")) or \
          not get_wh_question_variable(tree_info)):
         # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group))
+        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -1203,7 +1243,7 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
             for i in all_instances(state, x_object.concept_name):
                 yield i
             for i in specializations(state, x_object.concept_name):
-                yield Concept(i)
+                yield concept_from_lemma(i)
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound, unbound):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
@@ -1314,10 +1354,17 @@ def generate_custom_message(tree_info, error_term):
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
 
     # See if the system can handle converting the error
-    # to a message first
-    system_message = perplexity.messages.generate_message(tree_info, error_term)
-    if system_message is not None:
-        return system_message
+    # to a message first except for those we are overriding
+
+    # Override these
+    if error_constant == "doesntExist":
+        arg1 = error_arguments[1]
+        return s("Host: There isn't {a arg1:sg} here", tree_info)
+
+    else:
+        system_message = perplexity.messages.generate_message(tree_info, error_term)
+        if system_message is not None:
+            return system_message
 
     if error_constant == "notAThing":
         arg1 = error_arguments[1]

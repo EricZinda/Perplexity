@@ -40,6 +40,10 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 # g("{the arg2:sg}
 # g("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
 # g("{arg2:sg} {arg2:pl}
+
+# g("{the x6:sg} x6=water
+# g("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
+# g("{arg2:sg} {arg2:pl}
 #
 # returns a SStringFormat object
 def s(origin, tree_info=None):
