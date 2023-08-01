@@ -61,6 +61,12 @@ def is_user_type(val):
                 return False
         return True
 
+def all_user_type(val):
+    assert isinstance(val,list)
+    for i in val:
+        if not is_user_type(i):
+            return False
+    return True
 
 def specializations(state, base_type):
     for i in state.all_rel("specializes"):
