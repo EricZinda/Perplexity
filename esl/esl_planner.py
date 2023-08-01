@@ -295,11 +295,13 @@ def complete_order(state):
 
         item_str = " ".join(items)
 
+
+        add_have_ops = []
         for i in items:
-            state.add_rel("user", "have", i)
+            add_have_ops += [("add_rel","user","have",i)]
 
         return [("respond","Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with " + item_str + ".\nThe food is good, but nothing extraordinary."),
-            ("set_response_state", "done_ordering")]
+            ("set_response_state", "done_ordering")] + add_have_ops
     elif state.sys["responseState"] == "something_to_eat":
         return [("respond", "Well if you aren't going to order anything, you'll have to leave the restaurant, so I'll ask you again: can I get you something to eat?")]
     else:
