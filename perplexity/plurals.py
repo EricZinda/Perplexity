@@ -46,7 +46,7 @@ def expand_combinatorial_variables(variable_metadata, solution):
             # If variable_name is combinatoric, all of its appropriate alternative combinations
             # have to be used. Thus, if the variable_plural_type is collective, we only add sets > 1, etc
             min_size = 1
-            max_size = None
+            max_size = float(inf)
             if variable_plural_type == ValueSize.exactly_one:
                 max_size = 1
 
