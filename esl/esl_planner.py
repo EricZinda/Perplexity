@@ -4,7 +4,7 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item, ResetOrderAndBillOp
+    find_unused_item, ResetOrderAndBillOp, find_unused_value_from_concept
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -156,7 +156,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
         # Evaluate the noun to make sure we understand all the terms that were used with it
         # If we get back a state, it means the user said something that made sense
         # and they at least meant "a table" of some kind
-        eval_state = at_least_one_generator(table.eval(state))
+        eval_state = at_least_one_generator(table.solution_groups(state))
         if eval_state is None:
             return
         else:
@@ -185,7 +185,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
                     for_count = None
 
         if for_count == 2:
-            unused_table = find_unused_item(state, "table")
+            unused_table = find_unused_value_from_concept(table, eval_state)
             if unused_table is not None:
                 return [('respond',
                          "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "

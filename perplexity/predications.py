@@ -93,7 +93,8 @@ class Concept(object):
 
         return modified
 
-    def eval(self, state):
+
+    def solution_groups(self, state):
         declared_constraints = list(declared_determiner_infos(execution_context, state, variables=[self.variable_name]))
         if len(declared_constraints) == 0:
             default_criteria = perplexity.plurals.VariableCriteria(self.noun_predication,
