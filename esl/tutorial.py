@@ -38,26 +38,26 @@ def variable_group_values_to_list(variable_group):
 def check_concept_solution_group_constraints(state_list, x_what_variable_group, check_concepts):
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
-    if is_concept(x_what_variable_group.solution_values[0].value[0]):
-        x_what_variable = x_what_variable_group.solution_values[0].variable.name
+    assert is_concept(x_what_variable_group.solution_values[0].value[0])
+    x_what_variable = x_what_variable_group.solution_values[0].variable.name
 
-        # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
-        # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
-        # "I'll have the steak" you should get an error
-        x_what_values = [x.value for x in x_what_variable_group.solution_values]
-        x_what_individuals_set = set()
-        for value in x_what_values:
-            x_what_individuals_set.update(value)
-        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(
-            state_list[0], list(x_what_individuals_set))
-        return concept_meets_constraint(state_list[0].get_binding("tree").value[0],
-                                        x_what_variable_group.variable_constraints,
-                                        concept_count,
-                                        concept_in_scope_count,
-                                        instance_count,
-                                        instance_in_scope_count,
-                                        check_concepts,
-                                        variable=x_what_variable)
+    # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
+    # etc meet the requirements I.e. if there are two preparations of steak on the menu and you say
+    # "I'll have the steak" you should get an error
+    x_what_values = [x.value for x in x_what_variable_group.solution_values]
+    x_what_individuals_set = set()
+    for value in x_what_values:
+        x_what_individuals_set.update(value)
+    concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(
+        state_list[0], list(x_what_individuals_set))
+    return concept_meets_constraint(state_list[0].get_binding("tree").value[0],
+                                    x_what_variable_group.variable_constraints,
+                                    concept_count,
+                                    concept_in_scope_count,
+                                    instance_count,
+                                    instance_in_scope_count,
+                                    check_concepts,
+                                    variable=x_what_variable)
 
 
 def is_present_tense(tree_info):
@@ -350,7 +350,9 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
             # Or for people
             elif is_user_type(x_for):
                 return True
-
+        else:
+            if is_user_type(x_for):
+                return True
     def x_what_unbound(x_for):
         if False:
             yield None
@@ -1261,9 +1263,9 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                         yield []
 
     # Everything else is just an ask about if something has something like "Do I/we have x" or "Do you have a steak?"
-    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
-        yield []
-
+    if not all_user_type([j.value for j in x_act_list.solution_values]):
+        if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
+            yield []
     yield state_list
 
 
