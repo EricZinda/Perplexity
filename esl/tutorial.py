@@ -853,6 +853,10 @@ def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 def _please_a_1(state, e_introduced_binding, e_binding):
     yield state
 
+@Predication(vocabulary, names=["_too_a_also"])
+def _too_a_also(state, e_introduced_binding, x_binding):
+    yield state
+
 
 @Predication(vocabulary, names=["_please_v_1"])
 def _please_v_1(state, e_introduced_binding, i_binding1, i_binding2):
