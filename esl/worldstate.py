@@ -229,7 +229,7 @@ def object_to_store(o):
 
 def store_to_object(state, s):
     if not is_instance(state, s):
-        return Concept(s)
+        return concept_from_lemma(s)
     else:
         return s
 
@@ -761,7 +761,7 @@ class WorldState(State):
 
     def handle_world_event(self, args):
         if args[0] == "user_wants":
-            return self.find_plan([('satisfy_want', [("user",)], [(args[1],)])])
+            return self.find_plan([('satisfy_want', [("user",)], [(args[1],)], 1)])
         elif args[0] == "user_wants_to_see":
             return self.user_wants_to_see(args[1])
         elif args[0] == "user_wants_multiple":

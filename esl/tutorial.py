@@ -461,7 +461,10 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
-        yield from [store_to_object(state, x) for x in all_instances_and_spec(state, noun_type)]
+        yield from all_instances(state, noun_type)
+
+    # Yield the abstract type first, not as a combinatoric variable
+    yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
@@ -718,13 +721,13 @@ def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_vari
     actor_values = [x.value for x in x_actor_variable_group.solution_values]
     x_object_values = [x.value for x in x_object_variable_group.solution_values]
     for obj in x_object_values:
-        if not obj == (Concept("menu"),):
+        if not obj == (concept_from_lemma("menu"),):
             yield [current_state.record_operations([RespondOperation("Sorry, I can't show you that")])]
             return
 
 
     current_state = do_task(current_state.world_state_frame(),
-                            [('satisfy_want', [('user',)], [(Concept("menu"),)])])
+                            [('satisfy_want', [('user',)], [(concept_from_lemma("menu"),)], 1)])
     if current_state is None:
         yield []
     else:
@@ -750,7 +753,7 @@ def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_vari
     current_state = copy.deepcopy(state_list[0])
     actor_values = [x.value for x in x_actor_variable_group.solution_values]
     current_state = do_task(current_state.world_state_frame(),
-                            [('satisfy_want', [('user',)], [(Concept("table"),)])])
+                            [('satisfy_want', [('user',)], [(concept_from_lemma("table"),)], 1)])
     if current_state is None:
         yield []
     else:
@@ -920,11 +923,11 @@ def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
 def _sit_v_down_able(state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_present_tense(tree_info): return
-    '''
+
     if not is_question(tree_info):
         report_error(["unexpected"])
         return
-    '''
+
     def bound(x_actor):
         if is_user_type(x_actor):
             return True
@@ -1716,7 +1719,7 @@ if __name__ == '__main__':
     ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
 
     print("Hello there, what can I do for you?")
     # ShowLogging("Pipeline")

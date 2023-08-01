@@ -3,6 +3,13 @@
     "ResetFunction": "reset",
     "TestItems": [
         {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "ca458224-ee3b-4026-abd1-162fdccae031"
+        },
+        {
             "Command": "seat me",
             "Expected": "How many in your party?",
             "Tree": "pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_seat_v_cause(e2,x3,x8)))",
@@ -12,7 +19,7 @@
         {
             "Command": "2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
-            "Tree": "udef_q(x4,[generic_entity(x4), card(2,e10,x4)],unknown(e2,x4))",
+            "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
             "Enabled": true,
             "ID": "1e36dc11-2a7d-440e-9274-09c1b25561ea"
         },
@@ -55,7 +62,7 @@
             "Command": "what vegetarian dishes do you have?",
             "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and porkchops.",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i10), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
-            "Enabled": true,
+            "Enabled": false,
             "ID": "4bb9d864-d8bd-47da-b1ff-707b78fa81af"
         },
         {

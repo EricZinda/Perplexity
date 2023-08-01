@@ -347,20 +347,22 @@ def satisfy_want_group_group(state, group_who, group_what, min_size):
     for index in range(len(group_who)):
         for who in group_who[index]:
             for what in group_what[index]:
-                tasks.append(('satisfy_want', (who,), (what,), min_size))
+                tasks.append(('satisfy_want', who, what, min_size))
 
     return tasks
 
 
+# Requires actual values not a list
 def satisfy_want(state, who, what, min_size):
-    if len(who) > 1 or len(what) > 1: return
+    # if len(who) != 1 or len(what) != 1: return
+    if isinstance(who, (list, tuple, set)) or isinstance(who, (list, tuple, set)): return
 
-    if is_instance(state, what[0]):
+    if is_instance(state, what):
         # They are asking for a *particular instance of a table* (or whatever)
         # report an error if this is the best we can do
         return [('respond', "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
     else:
-        concept = what[0].concept_name
+        concept = what.concept_name
         if sort_of(state, concept, "menu"):
             return [('get_menu', who)]
 
@@ -368,10 +370,10 @@ def satisfy_want(state, who, what, min_size):
             return [('describe_item',"special")]
 
         elif sort_of(state, concept, "table"):
-            return [('get_menu', who[0])]
+            return [('get_menu', who)]
 
         elif sort_of(state, concept, "food"):
-            return [('order_food', who[0], concept)]
+            return [('order_food', who, concept)]
 
 
 # Last option should just report an error

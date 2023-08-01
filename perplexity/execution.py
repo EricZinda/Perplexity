@@ -64,6 +64,10 @@ class ExecutionContext(object):
         groups = [group for group in perplexity.solution_groups.solution_groups(self, solutions_list, this_sentence_force, wh_phrase_variable, new_tree_info, all_groups=True)]
         for group in groups:
             solutions = [x for x in group]
+            if pipeline_logger.level == logging.DEBUG:
+                nl = '\n'
+                pipeline_logger.debug(
+                    f"Found fragment solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in solutions])}")
             yield from solutions
 
         pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
