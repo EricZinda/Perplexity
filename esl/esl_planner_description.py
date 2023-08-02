@@ -73,10 +73,7 @@ def describe_analyzed_at_table(state, analysis):
     has_menu = any(menu_holder in ["son1", "user"] for menu_holder in has_item_of_type(state, "menu"))
 
     if len(analysis["Instances"]) > 0: # no special behavior if there are instances
-        for i in analysis.keys():
-            for j in analysis[i]:
-                new_methods.append(('describe_item', j))
-        return new_methods
+        return [('describe_item', list(analysis["UniqueItems"]))]
 
     if len(analysis["MenuItems"]) > 0 and not has_menu:
         # If not all the items are menu items, and we haven't described them, we should first list the short version, then
@@ -103,11 +100,33 @@ def describe_analyzed_at_table(state, analysis):
 task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describe_analyzed_at_table])
 
 
+# Handles a list by returning a count
+def describe_item_list(state, whats):
+    if isinstance(whats, list):
+        english_count = {}
+        for what in whats:
+            english = convert_to_english(state, what)
+            if english not in english_count:
+                english_count[english] = 1
+            else:
+                english_count[english] += 1
+
+        new_tasks = []
+        for item in english_count.items():
+            if item[1] == 1:
+                new_tasks.append(('respond', item[0]))
+            else:
+                new_tasks.append(('respond', f"{item[1]} {item[0]}"))
+
+        return new_tasks
+
+
 def describe_item(state, what):
-    return [('respond', convert_to_english(state, what))]
+    if not isinstance(what, list):
+        return [('respond', convert_to_english(state, what))]
 
 
-task_methods.append(['describe_item', describe_item])
+task_methods.append(['describe_item', describe_item_list, describe_item])
 
 
 def convert_to_english(state, what):

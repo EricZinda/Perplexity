@@ -1,11 +1,12 @@
-- Do we really need frames()? Only one test breaks if we turn it off
-- Performance Issue
-- How much is the soup and salad doesn't make you as knowing the price
+
 - 
-- Implement "what did I order?"
-- "I want 2 steaks" only orders 1
+- Performance Issue
+- "What is not soup" --> crashes
+- How many steaks did I order --> doens't work
+- How much is the soup and salad doesn't mark you as knowing the price
 - Getting a menu should pass the menu concept all the way through so it can be evaluated
   
+- Do we really need frames()? Only one test breaks if we turn it off
 - Make "find unused thing" use concept
 - Make "check conceptual constraints" properly use eval too
 

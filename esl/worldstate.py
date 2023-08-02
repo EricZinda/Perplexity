@@ -244,20 +244,28 @@ def serial_store_to_object(state, s_list):
     return [store_to_object(state, s) for s in s_list]
 
 
-def find_unused_value_from_concept(concept, solution_group_generator):
+# Finds a solution group that has instances of whatever concept.variable_name holds
+# that are not in use by anyone.
+# Note that it will return as many items as the solution group has, since the user may have
+# said "I want 2 steaks" so they should get 2 of them, etc
+def find_unused_values_from_concept(concept, solution_group_generator):
     for solution_group in solution_group_generator:
+        found_items = []
         for solution in solution_group:
             concept_variable_value = solution.get_binding(concept.variable_name).value
             all_items_available = True
             for concept_variable_item in concept_variable_value:
                 taken = at_least_one_generator(rel_subjects(solution, "have", concept_variable_item))
-                if taken is not None:
+                if taken is None:
+                    found_items.append(concept_variable_item)
+                else:
                     # Someone already has this
                     all_items_available = False
                     break
 
-            if all_items_available:
-                return concept_variable_value
+        if all_items_available:
+            return found_items
+
 
 def find_unused_item(state, object_type):
     for potential in all_instances(state, object_type):
