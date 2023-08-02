@@ -589,6 +589,8 @@ class WorldState(State):
             return " \nWaiter: How many in your party?"
         if self.sys["responseState"] == "anything_else":
             return " \nWaiter: Can I get you something else before I put your order in?"
+        if self.sys["responseState"] == "way_to_pay":
+            return " \nWaiter: So did you want to pay with cash or card?"
         return ""
 
     def user_ordered_veg(self):
@@ -777,8 +779,10 @@ class WorldState(State):
             concept_name = x.concept_name
 
         if self.sys["responseState"] == "way_to_pay":
-            if x in ["cash", "card", "card, credit"]:
+            if x in ["cash"]:
                 return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
+            elif x in ["card", "card, credit"]:
+                return [RespondOperation("You reach into your pocket and realize you don’t have a credit card." + self.get_reprompt())]
             else:
                 return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
