@@ -346,6 +346,7 @@ def satisfy_want_group_group(state, group_who, group_what, min_size):
     # separately (since it isn't semantically different) so we treat them as separate
     # and plan them one at a time
     tasks = []
+    assert len(group_who) == len(group_what)
     for index in range(len(group_who)):
         for who in group_who[index]:
             for what in group_what[index]:
