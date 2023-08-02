@@ -476,11 +476,15 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
-        yield from all_instances(state, noun_type)
+        for i in all_instances_and_spec(state, noun_type):
+            if is_instance(state,i):
+                yield i
+            else:
+                yield store_to_object(state,i)
 
 
     # Yield the abstract type first, not as a combinatoric variable
-    yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
+    #yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
@@ -1751,7 +1755,7 @@ def reset():
             initial_state = initial_state.add_rel(dish_type, "specializes", "special")
 
         # Create the food instances
-        for i in range(3):
+        for i in range(2):
             # Create an instance of this food
             food_instance = dish_type + str(i)
             initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)
@@ -1816,7 +1820,7 @@ if __name__ == '__main__':
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
 
-    print("Hello there, what can I do for you?")
+    print("You’re going to a restaurant with your son, Johnny who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.")
     # ShowLogging("Pipeline")
     # ShowLogging("Transformer")
     hello_world()

@@ -22,6 +22,27 @@
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "cb23e458-9d38-437c-9600-1a35ca7e89ff"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "e8b1853a-d29e-436a-ae38-c9f25a20ffe0"
+        },
+        {
+            "Command": "can i sit down?",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
+            "Enabled": true,
+            "ID": "18ac5796-4c38-4731-869d-2937736ac2b4"
+        },
+        {
+            "Command": "two",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "08a0a47b-6c1a-4787-b5fe-87305fd9ac0f"
         }
     ]
 }

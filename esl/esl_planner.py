@@ -295,7 +295,7 @@ gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_pr
 def complete_order(state):
     if state.sys["responseState"] == "anything_else":
         if not state.user_ordered_veg():
-            return [("respond", "Son: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
+            return [("respond", "Johnny: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
                 ("set_response_state", "something_to_eat"), ("reset_order_and_bill",)]
 
         items = [i for (x, i) in state.all_rel("ordered")]
@@ -363,6 +363,7 @@ def satisfy_want_group_group(state, group_who, group_what, min_size):
     # separately (since it isn't semantically different) so we treat them as separate
     # and plan them one at a time
     tasks = []
+    assert len(group_who) == len(group_what)
     for index in range(len(group_who)):
         for who in group_who[index]:
             for what in group_what[index]:
