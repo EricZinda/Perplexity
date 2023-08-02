@@ -61,6 +61,10 @@ def check_concept_solution_group_constraints(state_list, x_what_variable_group, 
                                     variable=x_what_variable)
 
 
+def is_past_tense(tree_info):
+    return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["past"]
+
+
 def is_present_tense(tree_info):
     return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["pres", "untensed"]
 
@@ -1137,6 +1141,37 @@ def invalid_present_transitive(state, e_introduced_binding, x_actor_binding, x_o
     if not is_present_tense(state.get_binding("tree").value[0]): return
     report_error(["unexpected"])
     if False: yield None
+
+
+@Predication(vocabulary, names=["_order_v_1"])
+def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if not is_past_tense(state.get_binding("tree").value[0]): return
+
+    def bound(x_actor, x_object):
+        if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "ordered"):
+            return True
+        else:
+            report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order",convert_to_english(state,x_object)])
+            return False
+
+    def actor_from_object(x_object):
+        found = False
+        for i in rel_subjects(state, "ordered", x_object):
+            found = True
+            yield store_to_object(i)
+        if not found:
+            report_error(["Nothing_VTRANS_X", "order", x_object])
+
+    def object_from_actor(x_actor):
+        found = False
+        for i in rel_objects(state, x_actor, "ordered"):
+            found = True
+            yield store_to_object(state, i)
+        if not found:
+            report_error(["X_VTRANS_Nothing", "order", convert_to_english(state, x_actor)])
+
+    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
+                                      object_from_actor)
 
 
 # Scenarios:

@@ -365,6 +365,20 @@
             "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "e0f65cc6-7f59-4532-9409-5a1baf503bb9"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "3dc77694-e6a5-412d-8548-2e25d1655745"
+        },
+        {
+            "Command": "A table for two, please!",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "e0f65cc6-7f59-4532-9409-5a1baf503bb9"
         }
     ]
 }
