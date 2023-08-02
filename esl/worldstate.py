@@ -2,6 +2,7 @@ import copy
 import json
 import numbers
 import esl.esl_planner
+from perplexity.execution import report_error
 from perplexity.predications import is_concept, Concept, concept_from_lemma
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
@@ -772,8 +773,9 @@ class WorldState(State):
     # an unknown() predication in the MRS for the verb
     def unknown(self, x):
         concept_name = None
-        if isinstance(x, Concept):
+        if is_concept(x):
             concept_name = x.concept_name
+
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash", "card", "card, credit"]:
                 return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
@@ -790,27 +792,38 @@ class WorldState(State):
                 return [RespondOperation("Sorry, we don't allow ordering specific things like that")]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
-            if isinstance(x, numbers.Number):
+            if is_concept(x):
+                group_generator = at_least_one_generator(x.solution_groups(self.world_state_frame()))
+                if group_generator is not None:
+                    possible_count = self.get_binding(x.variable_name)
+                else:
+                    report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
+                    return
+            else:
+                possible_count = x
+
+            if isinstance(possible_count, numbers.Number):
                 table_concept = concept_from_lemma("table")
                 # e_binding, x_what_binding, x_for_binding
                 args = ["e999", table_concept.variable_name, "x1000"]
                 table_concept = table_concept.add_bound_modifier(TreePredication(0, "_for_p", args, arg_names=["ARG0", "ARG1", "ARG2"]),
-                                                                 [None, None, (x, )],
+                                                                 [None, None, (possible_count, )],
                                                                  {"x1000":[]})
 
                 actors = [("user",)]
                 whats = [(table_concept,)]
                 return self.find_plan([('satisfy_want', actors, whats, 1)])
-            if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
-                actors = [("user",)]
-                whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]
-                return self.find_plan([('satisfy_want', actors, whats)])
 
-            else:
-                return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
-        else:
-            return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+            # if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
+            #     actors = [("user",)]
+            #     whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]
+            #     return self.find_plan([('satisfy_want', actors, whats)])
+            #
+            # else:
+            #     return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+
+        report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 
     def find_plan(self, tasks):
         current_state = esl.esl_planner.do_task(self.world_state_frame(), tasks)

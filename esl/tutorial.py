@@ -284,7 +284,7 @@ def generic_entity(state, x_binding):
         return val == Concept(execution_context().current_predication(), x_binding.variable.name)
 
     def unbound():
-        yield  Concept(execution_context().current_predication(), x_binding.variable.name)
+        yield Concept(execution_context().current_predication(), x_binding.variable.name)
 
     yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
@@ -323,6 +323,12 @@ def abstr_deg(state, x_binding):
 
 @Predication(vocabulary, names=["card"])
 def card(state, c_number, e_binding, x_binding):
+    if isinstance(c_number,str):
+        if c_number.isnumeric():
+            c_number = int(c_number)
+        else:
+            report_error(["Notnumeric"])
+            return
     x_binding_value = state.get_binding(x_binding.variable.name).value
     if len(x_binding_value) == 1 and is_concept(x_binding_value[0]) and isinstance(c_number, numbers.Number):
         e_what_value = e_binding.value
@@ -331,10 +337,10 @@ def card(state, c_number, e_binding, x_binding):
         yield state.set_x(x_binding.variable.name, (modified,))
 
 
+
 @Predication(vocabulary, names=["card"])
 def card_system(state, c_number, e_binding, x_binding):
-    if state.get_binding(x_binding.variable.name).value[0] != "generic_entity":
-        yield from perplexity.system_vocabulary.card(state, c_number, e_binding, x_binding)
+    yield from perplexity.system_vocabulary.card_cex(state, c_number, e_binding, x_binding)
 
 
 @Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
@@ -424,7 +430,9 @@ def _tomato_n_1(state, x_bind):
 
 @Predication(vocabulary, names=["unknown"])
 def unknown(state, e_binding, x_binding):
-    yield state.record_operations(state.handle_world_event(["unknown", x_binding.value[0]]))
+    operations = state.handle_world_event(["unknown", x_binding.value[0]])
+    if operations is not None:
+        yield state.record_operations(operations)
 
 
 @Predication(vocabulary, names=["unknown"])
@@ -1415,7 +1423,10 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
         else:
             first_in_second = x_actor in all_instances_and_spec(state, x_object)
             second_in_first = x_object in all_instances_and_spec(state, x_actor)
-            return first_in_second or second_in_first
+            if first_in_second or second_in_first:
+                return True
+            else:
+                report_error(["is_not", convert_to_english(state,x_actor), convert_to_english(state,x_object)])
 
     def unbound(x_object):
         if is_concept(x_object):
@@ -1604,6 +1615,8 @@ def generate_custom_message(tree_info, error_term):
         return "Nothing."
     if error_constant == "not_adj":
         return "It's not " + error_arguments[1]
+    if error_constant == "is_not":
+        return f"{error_arguments[1]} is not {error_arguments[2]}"
     if error_constant == "notOn":
         arg1 = error_arguments[1]
         arg2 = error_arguments[2]

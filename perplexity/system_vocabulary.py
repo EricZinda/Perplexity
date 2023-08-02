@@ -199,7 +199,7 @@ def implicit_conj(state, x_binding_introduced, x_binding_first, x_binding_second
 
 
 @Predication(vocabulary, library="system", names=["card"])
-def card(state, c_count, e_introduced_binding, x_target_binding):
+def card_cex(state, c_count, e_introduced_binding, x_target_binding):
     if c_count.isnumeric():
         yield state.set_variable_data(x_target_binding.variable.name,
                                       determiner=VariableCriteria(execution_context().current_predication(),
@@ -210,7 +210,7 @@ def card(state, c_count, e_introduced_binding, x_target_binding):
 
 # This version of card() is used to mean "the number x, on its own" and not "x of something"
 @Predication(vocabulary, library="system", names=["card"])
-def card(state, c_count, x_binding, i_binding):
+def card_cxi(state, c_count, x_binding, i_binding):
     def bound_variable(value):
         if value == c_value:
             return True

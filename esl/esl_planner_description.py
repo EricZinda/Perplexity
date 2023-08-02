@@ -1,6 +1,6 @@
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects
-from perplexity.predications import is_concept
+from perplexity.predications import is_concept, Concept
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 
@@ -116,6 +116,9 @@ def convert_to_english(state, what):
 
     elif isinstance(what, Measurement):
         return s("{*what.count} {*what.measurement_type:<*what.count}")
+
+    if isinstance(what,Concept):
+        return object_to_store(what)
 
     else:
         # if it is an instance, with a name, return that
