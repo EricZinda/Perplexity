@@ -17,11 +17,39 @@
             "ID": "4a436537-1f34-4de5-8e2b-a4cb177c7605"
         },
         {
+            "Command": "What did I order?",
+            "Expected": "Nothing.",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "e9ec6d48-008b-4c51-82e2-3f8d8b844b2c"
+        },
+        {
+            "Command": "What did my son order?",
+            "Expected": "Nothing.",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "b202f65f-9778-4423-a925-395e1b0d8252"
+        },
+        {
+            "Command": "What did we order?",
+            "Expected": "Nothing.",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "8171037c-ba30-42bd-a9ce-ca63459df3c3"
+        },
+        {
+            "Command": "I ordered a steak",
+            "Expected": "No. you does not order steak",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "13ce708f-ec2a-41f8-b2dd-416711a3b810"
+        },
+        {
             "Command": "I can have a steak",
             "Expected": "Yes, that is true.",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "e9ec6d48-008b-4c51-82e2-3f8d8b844b2c"
+            "ID": "84e4fc9b-4d71-4538-8561-36449163906c"
         },
         {
             "Command": "Who can have a steak?",
@@ -43,6 +71,20 @@
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "95ee387b-e08d-4263-b95e-a8f250546df3"
+        },
+        {
+            "Command": "What did I order?",
+            "Expected": "steak",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "e0b92b58-14c2-40f2-a985-d36a356ed8dd"
+        },
+        {
+            "Command": "What did we order?",
+            "Expected": "There are less than 2 we",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "6e8ad609-7795-4d5c-96cd-cca160cf9f4e"
         },
         {
             "Command": "I will have a steak?",
@@ -183,6 +225,62 @@
             "Tree": "_the_q(x11,_salmon_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "3003a1eb-14b6-4dfe-9fe9-496d3a3e44a1"
+        },
+        {
+            "Command": "What did I order?",
+            "Expected": "salmon",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "cbe31443-8b30-48e9-a530-a131548fa6b5"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "2ba0af2c-9d36-4c23-abc3-9112283310d7"
+        },
+        {
+            "Command": "we'd like a table for 2'",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "5463c147-27e5-4920-934b-c6bfddc3741c"
+        },
+        {
+            "Command": "How much is the soup?",
+            "Expected": "4 dollars",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),udef_q(x5,[measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5)],_be_v_id(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "0c66d40d-000d-4f44-b15b-ec79e5bd018a"
+        },
+        {
+            "Command": "How much is the salad?",
+            "Expected": "3 dollars",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_salad_n_1(x3),udef_q(x5,[measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5)],_be_v_id(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "5d7616ff-0fe6-482a-a57b-67ea07f9cf72"
+        },
+        {
+            "Command": "I would like the salad",
+            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Tree": "_the_q(x11,_salad_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "7a84fe83-a358-4884-932d-cf00e69eb5bb"
+        },
+        {
+            "Command": "I would like the soup",
+            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Tree": "_the_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "ad7a56d1-f75d-4cef-9649-99aa5aaae31d"
+        },
+        {
+            "Command": "What did I order?",
+            "Expected": "salad\nsoup",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"
         }
     ]
 }
