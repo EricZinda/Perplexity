@@ -4,7 +4,7 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item, ResetOrderAndBillOp, find_unused_value_from_concept, object_to_store, all_ancestors
+    find_unused_item, ResetOrderAndBillOp, find_unused_values_from_concept, object_to_store, all_ancestors
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -185,16 +185,19 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
                     for_count = None
 
         if for_count == 2:
-            unused_table = find_unused_value_from_concept(table, eval_state)
-            if unused_table is not None:
+            unused_tables = find_unused_values_from_concept(table, eval_state)
+            if len(unused_tables) == 1:
                 return [('respond',
                          "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
                          "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
-                        ('add_rel', "user", "at", unused_table),
-                        ('add_rel', "son1", "at", unused_table),
+                        ('add_rel', "user", "at", unused_tables[0]),
+                        ('add_rel', "son1", "at", unused_tables[0]),
                         ('set_response_state', "something_to_eat")]
-            else:
+            elif unused_tables is None:
                 return [('respond', "I'm sorry, we don't have any tables left...")]
+
+            else:
+                return [('respond', "I suspect you want to sit together.")]
 
         elif for_count is not None:
             # They specified how big
@@ -275,13 +278,17 @@ def order_food_at_table(state, who, what):
         if eval_state is None:
             return
         else:
-            food_instance = find_unused_value_from_concept(what, eval_state)
-            if sort_of(state, [food_instance], "dish"):
-                return [('respond', "Excellent Choice! Can I get you anything else?"),
-                        ('add_rel', who, "ordered", food_instance[0]),
-                        ('add_bill', what.concept_name),
-                        ('set_response_state', "anything_else")]
-
+            food_instances = find_unused_values_from_concept(what, eval_state)
+            if len(food_instances) > 0:
+                new_tasks = [('respond', "Excellent Choice! Can I get you anything else?")]
+                for food_instance in food_instances:
+                    if sort_of(state, [food_instance], "dish"):
+                        new_tasks +=  [('add_rel', who, "ordered", food_instance),
+                                       ('add_bill', what.concept_name)]
+                    else:
+                        return
+                new_tasks.append(('set_response_state', "anything_else"))
+                return new_tasks
 
 gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
 
