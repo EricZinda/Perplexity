@@ -4,7 +4,7 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item, ResetOrderAndBillOp, find_unused_value_from_concept
+    find_unused_item, ResetOrderAndBillOp, find_unused_value_from_concept, object_to_store, all_ancestors
 from perplexity.execution import report_error
 from perplexity.predications import Concept, is_concept
 from perplexity.response import RespondOperation
@@ -244,33 +244,43 @@ def order_food_at_entrance(state, who, what):
 
 def order_food_price_unknown(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
-        if (what, "user") in state.all_rel("priceUnknownTo"):
+        if (object_to_store(what), "user") in state.all_rel("priceUnknownTo"):
             return [('respond', "Son: Wait, let's not order that before we know how much it costs." + state.get_reprompt())]
 
 
 def order_food_too_expensive(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
-        assert what in state.sys["prices"]
-        if state.sys["prices"][what] + state.bill_total() > 15:
+        store_what = object_to_store(what)
+        assert store_what in state.sys["prices"]
+        if state.sys["prices"][store_what] + state.bill_total() > 15:
             return [('respond', f"Son: Wait, we already spent ${str(state.bill_total())} so if we get that, we won't be able to pay for it with $15.{state.get_reprompt()}")]
 
 
 def order_food_out_of_stock(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
+        store_what = object_to_store(what)
         for item in state.all_rel("ordered"):
-            if item[1] == what:
+            if item[1] == store_what:
                 return [('respond',
                          "Sorry, you got the last one of those. We don't have any more. Can I get you something else?" + state.get_reprompt())]
 
 
 def order_food_at_table(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
-        food_instance = find_unused_item(state, what)
-
-        return [('respond', "Excellent Choice! Can I get you anything else?"),
-                ('add_rel', who, "ordered", food_instance),
-                ('add_bill', what),
-                ('set_response_state', "anything_else")]
+        # Evaluate the what concept to make sure we understand all the terms that were used with it
+        # The user could have said "steak" or "steak for 2" or "rare steak", etc
+        # If we get back a state, it means the user said something that made sense
+        # and they at least meant e.g. "a steak" of some kind, that exists in the system
+        eval_state = at_least_one_generator(what.solution_groups(state))
+        if eval_state is None:
+            return
+        else:
+            food_instance = find_unused_value_from_concept(what, eval_state)
+            if sort_of(state, [food_instance], "dish"):
+                return [('respond', "Excellent Choice! Can I get you anything else?"),
+                        ('add_rel', who, "ordered", food_instance[0]),
+                        ('add_bill', what.concept_name),
+                        ('set_response_state', "anything_else")]
 
 
 gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
@@ -375,7 +385,7 @@ def satisfy_want(state, who, what, min_size):
             return [('get_menu', who)]
 
         elif sort_of(state, concept, "food"):
-            return [('order_food', who, concept)]
+            return [('order_food', who, what)]
 
 
 # Last option should just report an error
