@@ -78,6 +78,13 @@
             "Tree": "udef_q(x11,udef_q(x17,def_explicit_q(x22,pronoun_q(x27,pron(x27),[_son_n_of(x22,i32), poss(e26,x22,x27)]),pronoun_q(x34,pron(x34),_and_c(x17,x22,x34))),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "cedf7d75-45ce-4d05-a74e-4e717b1ac5e7"
+        },
+        {
+            "Command": "I want the salmon",
+            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_salmon_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "0331458f-c733-4545-a0aa-fc8510f068df"
         }
     ]
 }
