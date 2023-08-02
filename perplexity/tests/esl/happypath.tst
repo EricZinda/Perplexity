@@ -53,7 +53,7 @@
         },
         {
             "Command": "no",
-            "Expected": "Son: Dad! I\u2019m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren\u2019t on the menu\u2026 You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?",
+            "Expected": "Johnny: Dad! I\u2019m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren\u2019t on the menu\u2026 You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "0b5e5bbd-48b0-4ebc-b51f-ca99f2023846"
