@@ -371,14 +371,14 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
-            "ID": "3dc77694-e6a5-412d-8548-2e25d1655745"
+            "ID": "836c4617-5582-40b1-acf3-f62cf65dd39f"
         },
         {
             "Command": "A table for two, please!",
-            "Expected": "How many in your party?",
-            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],[unknown(e2,x4), _please_a_1(e2,e2)]))",
             "Enabled": true,
-            "ID": "e0f65cc6-7f59-4532-9409-5a1baf503bb9"
+            "ID": "e8bd5597-ff18-4f78-b784-9ca3cd615e93"
         }
     ]
 }
