@@ -1,7 +1,6 @@
 import copy
 import json
 import numbers
-
 import esl.esl_planner
 from perplexity.predications import is_concept, Concept, concept_from_lemma
 from perplexity.response import RespondOperation
@@ -427,6 +426,12 @@ class WorldState(State):
     # ******* Base Operations ********
 
     # ******* Overrides of State ********
+    def __repr__(self):
+        if self._world_state_frame is None:
+            return super().__repr__()
+        else:
+            return self._world_state_frame.__repr__()
+
     def get_binding(self, variable_name):
         # return super().get_binding(variable_name)
         if self._world_state_frame is None:
