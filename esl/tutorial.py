@@ -472,11 +472,15 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
-        yield from all_instances(state, noun_type)
+        for i in all_instances_and_spec(state, noun_type):
+            if is_instance(state,i):
+                yield i
+            else:
+                yield store_to_object(state,i)
 
 
     # Yield the abstract type first, not as a combinatoric variable
-    yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
+    #yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 

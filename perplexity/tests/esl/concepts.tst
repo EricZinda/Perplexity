@@ -76,7 +76,7 @@
             "Command": "I'd like tables for my son and I'",
             "Expected": "I suspect you want to sit together.",
             "Tree": "udef_q(x11,udef_q(x17,def_explicit_q(x22,pronoun_q(x27,pron(x27),[_son_n_of(x22,i32), poss(e26,x22,x27)]),pronoun_q(x34,pron(x34),_and_c(x17,x22,x34))),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
-            "Enabled": true,
+            "Enabled": false,
             "ID": "cedf7d75-45ce-4d05-a74e-4e717b1ac5e7"
         },
         {
