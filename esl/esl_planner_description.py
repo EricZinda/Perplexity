@@ -86,13 +86,20 @@ def describe_analyzed_at_table(state, analysis):
             new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', "user", "heardSpecials", "true"))
         else:
+            for i in analysis.keys():
+                for j in analysis[i]:
+                    new_methods.append(('describe_item', j))
+                    '''
             new_methods.append(('respond',
                                 "So again, those specials are tomato soup, green salad, and smoked pork."))
+                    '''
 
     else:
+        have_rel = state.all_rel("have")
         for i in analysis.keys():
             for j in analysis[i]:
-                new_methods.append(('describe_item', j))
+                if ("computer", j) in have_rel:
+                    new_methods.append(('describe_item', j))
 
     return new_methods
 

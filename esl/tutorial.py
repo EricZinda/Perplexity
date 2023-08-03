@@ -1676,6 +1676,7 @@ def reset():
                                 "responseState": "initial"
                                 })
 
+
     initial_state = initial_state.add_rel("bill_type","specializes","thing")
     initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
     initial_state = initial_state.add_rel("check", "specializes", "bill_type")
@@ -1760,6 +1761,7 @@ def reset():
             food_instance = dish_type + str(i)
             initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)
 
+
             # The kitchen is where all the food is
             initial_state = initial_state.add_rel("kitchen1", "contain", food_instance)
             if dish_type == "chicken":
@@ -1782,6 +1784,10 @@ def reset():
     initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
     initial_state = initial_state.add_rel("user", "heardSpecials", "false")
+
+    initial_state = initial_state.add_rel("chicken", "isAdj", "roasted")
+    initial_state = initial_state.add_rel("salmon", "isAdj", "grilled")
+    initial_state = initial_state.add_rel("pork", "isAdj", "smoked")
 
     return initial_state
 
