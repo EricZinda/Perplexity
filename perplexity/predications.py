@@ -8,8 +8,7 @@ from math import inf
 from perplexity.execution import get_variable_metadata, report_error, execution_context
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
-from perplexity.solution_groups import declared_determiner_infos
-from perplexity.tree import find_predication_from_introduced, find_quantifier_from_variable, TreePredication
+from perplexity.tree import find_quantifier_from_variable, TreePredication
 from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.vocabulary import ValueSize
 
@@ -94,7 +93,8 @@ class Concept(object):
         return modified
 
     def solution_groups(self, state, ignore_global_constraints=True):
-        declared_constraints = list(declared_determiner_infos(execution_context, state, variables=[self.variable_name]))
+        import perplexity.solution_groups
+        declared_constraints = list(perplexity.solution_groups.declared_determiner_infos(execution_context, state, variables=[self.variable_name]))
         if len(declared_constraints) == 0:
             default_criteria = perplexity.plurals.VariableCriteria(self.noun_predication,
                                                 self.variable_name,

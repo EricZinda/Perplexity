@@ -325,6 +325,7 @@ def neg(state, e_introduced_binding, h_scopal):
                     # This is true, don't yield it since neg() makes it False
                     generate_not_error(unscoped_referenced_variables)
                     had_negative_success = True
+                    break
 
                 if execution_context().has_not_understood_error():
                     # this was not a logical failure, we simply didn't understand
