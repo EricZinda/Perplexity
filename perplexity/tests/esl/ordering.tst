@@ -18,28 +18,28 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "Nothing.",
+            "Expected": "Nothing. \nWaiter: Can I get you something to eat?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e9ec6d48-008b-4c51-82e2-3f8d8b844b2c"
         },
         {
             "Command": "What did my son order?",
-            "Expected": "Nothing.",
+            "Expected": "Nothing. \nWaiter: Can I get you something to eat?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "b202f65f-9778-4423-a925-395e1b0d8252"
         },
         {
             "Command": "What did we order?",
-            "Expected": "Nothing.",
+            "Expected": "Nothing. \nWaiter: Can I get you something to eat?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "8171037c-ba30-42bd-a9ce-ca63459df3c3"
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "No. you does not order steak",
+            "Expected": "No. you does not order steak  \nWaiter: Can I get you something to eat?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "13ce708f-ec2a-41f8-b2dd-416711a3b810"
@@ -158,14 +158,14 @@
         },
         {
             "Command": "What are the specials?",
-            "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.",
+            "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you something to eat?",
             "Tree": "which_q(x5,thing(x5),_the_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "169a1146-bc00-4e1c-936c-cc2b903e3f46"
         },
         {
             "Command": "What specials do you have?",
-            "Expected": "So again, we have tomato soup, green salad, and smoked pork.",
+            "Expected": "soup\nsalad\npork",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"
@@ -284,7 +284,7 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "salad\nsoup",
+            "Expected": "soup\nsalad",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"

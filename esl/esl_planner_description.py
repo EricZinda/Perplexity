@@ -46,16 +46,17 @@ def describe_analyzed_at_entrance(state, analysis):
 
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
-        new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat."))
+        new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat."+ state.get_reprompt()))
 
     elif len(analysis["Bills"]) > 0:
-        new_methods.append(('respond', "Let's talk about the bill once you've finished eating."))
+        new_methods.append(('respond', "Let's talk about the bill once you've finished eating."+ state.get_reprompt()))
     else:
         for item in analysis["Others"]:
             if isinstance(item, Measurement) and item.measurement_type == "dollar":
-                new_methods.append(('respond', "Let's talk about prices once you've been seated."))
+                new_methods.append(('respond', "Let's talk about prices once you've been seated."+ state.get_reprompt()))
             else:
                 new_methods.insert(0, ('describe_item', item))
+                new_methods.append(('respond',state.get_reprompt()))
     return new_methods
 
 
@@ -83,29 +84,33 @@ def describe_analyzed_at_table(state, analysis):
     if len(analysis["Specials"]) > 0:
         if not heard_specials:
             # If we are being ask to describe only specials, use the special, detailed description
-            new_methods.append(('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork."))
+            new_methods.append(('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
             new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', "user", "heardSpecials", "true"))
             return new_methods
-        if len(analysis["Specials"]) == len(analysis["UniqueItems"]):
+        '''
+        if len(analysis["Specials"]) == 1:
+            if object_to_store(analysis["Specials"])
             new_methods.append(('respond',
-                               "So again, we have tomato soup, green salad, and smoked pork."))
+                               "So again, we have tomato soup, green salad, and smoked pork."+ state.get_reprompt()))
             return new_methods
+        '''
 
 
-    rel = state.all_rel("describes")
+    rel = list(state.all_rel("describes"))
     for i in analysis.keys():
-        for j in analysis[i]:
-            if j in all_instances_and_spec(state,"thing"):
-                if ("computer", j) in rel:
-                    new_methods.append(('describe_item', j))
-            else:
-                j = object_to_store(j)
-                if j in all_instances_and_spec(state, "thing"):
+        if not i == "UniqueItems":
+            for j in analysis[i]:
+                if j in all_instances_and_spec(state,"thing"):
                     if ("computer", j) in rel:
                         new_methods.append(('describe_item', j))
                 else:
-                    new_methods.append(('describe_item', j))
+                    j = object_to_store(j)
+                    if j in all_instances_and_spec(state, "thing"):
+                        if ("computer", j) in rel:
+                            new_methods.append(('describe_item', j))
+                    else:
+                        new_methods.append(('describe_item', j))
 
     return new_methods
 
