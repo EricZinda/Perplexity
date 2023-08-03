@@ -147,9 +147,14 @@ class SolutionGroupGenerator(object):
 
                 # If the ID was unyielded, remove the old and add the new
                 # to the unyielded list
-                if next_id in self.unyielded_solution_groups:
-                    self.unyielded_solution_groups.pop(next_id)
+                # if next_id in self.unyielded_solution_groups:
+                #     self.unyielded_solution_groups.pop(next_id)
+
+                if existing_solution_group_id in self.unyielded_solution_groups:
+                    self.unyielded_solution_groups.pop(existing_solution_group_id)
                     self.unyielded_solution_groups[next_id] = None
+
+
 
             if existing_solution_group_id == current_id:
                 # Only return True if there is new data for current_id.
