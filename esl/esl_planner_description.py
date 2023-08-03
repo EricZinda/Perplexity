@@ -1,5 +1,5 @@
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
-    has_item_of_type, is_type, is_instance, rel_objects
+    has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec
 from perplexity.predications import is_concept, Concept
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
@@ -79,26 +79,32 @@ def describe_analyzed_at_table(state, analysis):
         # If not all the items are menu items, and we haven't described them, we should first list the short version, then
         # ask if the user wants to hear the long description
         new_methods.append(("get_menu", ["user"]))
-    elif len(analysis["Specials"]) > 0:
+        return new_methods
+    if len(analysis["Specials"]) > 0:
         if not heard_specials:
             # If we are being ask to describe only specials, use the special, detailed description
             new_methods.append(('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork."))
             new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', "user", "heardSpecials", "true"))
-        else:
-            for i in analysis.keys():
-                for j in analysis[i]:
-                    new_methods.append(('describe_item', j))
-                    '''
+            return new_methods
+        if len(analysis["Specials"]) == len(analysis["UniqueItems"]):
             new_methods.append(('respond',
-                                "So again, those specials are tomato soup, green salad, and smoked pork."))
-                    '''
+                               "So again, we have tomato soup, green salad, and smoked pork."))
+            return new_methods
 
-    else:
-        have_rel = state.all_rel("have")
-        for i in analysis.keys():
-            for j in analysis[i]:
-                if ("computer", j) in have_rel:
+
+    rel = state.all_rel("describes")
+    for i in analysis.keys():
+        for j in analysis[i]:
+            if j in all_instances_and_spec(state,"thing"):
+                if ("computer", j) in rel:
+                    new_methods.append(('describe_item', j))
+            else:
+                j = object_to_store(j)
+                if j in all_instances_and_spec(state, "thing"):
+                    if ("computer", j) in rel:
+                        new_methods.append(('describe_item', j))
+                else:
                     new_methods.append(('describe_item', j))
 
     return new_methods
