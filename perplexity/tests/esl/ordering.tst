@@ -284,7 +284,7 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "soup\nsalad",
+            "Expected": "salad\nsoup",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"
@@ -321,7 +321,7 @@
             "Command": "what did I order",
             "Expected": "2 steak",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "18d4ddaa-a0b5-4c6e-be76-f52dc41dda77"
         }
     ]
