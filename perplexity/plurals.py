@@ -275,7 +275,7 @@ class VariableStats(object):
         binding_value = solution.get_binding(self.variable_name).value
 
         # Solutions that have a conceptual variable cannot have instances or vice versa
-        is_conceptual_solution = len(binding_value) == 1 and hasattr(binding_value[0], "is_concept") and binding_value[0].is_concept()
+        is_conceptual_solution = any([perplexity.predications.is_concept(value) for value in binding_value])
         if is_conceptual_solution:
             if not self.is_concept:
                 # Can't merge a conceptual variable value with non-conceptual
@@ -293,9 +293,6 @@ class VariableStats(object):
             else:
                 # Is a conceptual solution, this group is conceptual
                 self.is_concept = True
-                # Was conceptual, but this solution isn't the same
-                # self.current_state = CriteriaResult.fail_one
-                # return False, self.current_state
 
         elif self.is_concept:
             self.current_state = CriteriaResult.fail_one
@@ -321,10 +318,17 @@ class VariableStats(object):
             self.whole_group_unique_values[binding_value][0].update(next_value if next_value is not None else [])
             self.whole_group_unique_values[binding_value][1].append(solution)
 
+        # See if there are any required_values criteria and make sure we meet them
+        required_values_state = variable_criteria.meets_required_values_criteria(self.whole_group_unique_individuals, self.whole_group_unique_values)
+        if required_values_state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
+            self.current_state = required_values_state
+            return new_individuals, required_values_state
+
         # Now we actually compare this variable to the previous value to see what kind of plural type this might be
         if is_conceptual_solution:
-            # If this variable is conceptual, we assume it is true and allow the group handler to finalize the decision
-            self.current_state = CriteriaResult.meets
+            # If this variable is conceptual, we assume it meets the numeric criteria
+            # and allow the group handler to finalize the decision
+            self.current_state = required_values_state
             return new_individuals, self.current_state
 
         else:
@@ -398,7 +402,20 @@ class VariableStats(object):
                         ((is_conceptual_solution or not only_collective) and \
                             (self.distributive_state == test_state or \
                             self.cumulative_state == test_state)):
-                    self.current_state = test_state
+                    # Merge together the results from the required_values and the test_state
+                    if required_values_state == CriteriaResult.contender:
+                        if test_state == CriteriaResult.meets:
+                            self.current_state = CriteriaResult.contender
+                        else:
+                            self.current_state = test_state
+                    elif required_values_state == CriteriaResult.meets:
+                        if test_state == CriteriaResult.meets:
+                            self.current_state = CriteriaResult.meets
+                        else:
+                            self.current_state = test_state
+                    else:
+                        assert False, "should never get here"
+
                     break
 
             if self.current_state is None:
@@ -501,12 +518,13 @@ class NegatedPredication(object):
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained
 # within a particular solution group. The count of that item *across* groups could be bigger.
 class VariableCriteria(object):
-    def __init__(self, predication, variable_name, min_size=1, max_size=float('inf'), global_criteria=None):
+    def __init__(self, predication, variable_name, min_size=1, max_size=float('inf'), global_criteria=None, required_values=None):
         self.predication_index = predication.index
         self.predication = predication
         self.variable_name = variable_name
         self.min_size = min_size
         self.max_size = max_size
+        self.required_values = required_values
         self._unique_rstrs = set()
         self.global_criteria = global_criteria
         self._after_phrase_error_location = ["AfterFullPhrase", self.variable_name]
@@ -516,11 +534,12 @@ class VariableCriteria(object):
             self._predication_error_location = ["AtPredication", predication, variable_name]
 
     def __repr__(self):
-        return f"{{{self.variable_name}: min={self.min_size}, max={self.max_size}, global={self.global_criteria}, pred={self.predication.name}({self.predication.args[0]})}}"
+        return f"{{{self.variable_name}: min={self.min_size}, max={self.max_size}, global={self.global_criteria}, required_values={self.required_values}, pred={self.predication.name}({self.predication.args[0]})}}"
 
     def meets_criteria(self, execution_context, value_list):
         values_count = count_set(value_list)
 
+        # Check global criteria
         if self.global_criteria:
             # "Only/Exactly", much like the quantifier "the", does more than just group solutions into groups
             # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
@@ -542,6 +561,7 @@ class VariableCriteria(object):
                 execution_context.report_error_for_index(self.predication_index, ["moreThanN", self._predication_error_location, self.max_size], force=True)
                 return CriteriaResult.fail_all
 
+        # Check numeric criteria
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
             execution_context.report_error_for_index(self.predication_index, ["moreThan", self._after_phrase_error_location, self.max_size], force=True)
@@ -552,12 +572,33 @@ class VariableCriteria(object):
             return CriteriaResult.contender
 
         else:
+            # Meets the numeric criteria
             # values_count >= self.min_size and values_count <= self.max_size
             if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
                 return CriteriaResult.meets_pending_global
 
             else:
                 return CriteriaResult.meets
+
+    def meets_required_values_criteria(self, unique_individuals_list, unique_values_list):
+        if self.required_values is not None:
+            # Ensure the values are all singles or a single collective
+            if len(unique_values_list) > 1:
+                if any([len(x) > 1 for x in unique_values_list]):
+                    return CriteriaResult.fail_one
+
+            # See if we have the right individuals
+            for value in unique_individuals_list:
+                if value not in self.required_values:
+                    return CriteriaResult.fail_one
+            if len(unique_individuals_list) == len(self.required_values):
+                # This constraint was met, whatever the count said is the answer
+                return CriteriaResult.meets
+            else:
+                # It is a contender for this constraint
+                return CriteriaResult.contender
+        else:
+            return CriteriaResult.meets
 
     # Only called at the very end after all solutions have been generated
     def meets_global_criteria(self, execution_context):

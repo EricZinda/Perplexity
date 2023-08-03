@@ -10,18 +10,11 @@
             "ID": "e679d41e-af04-4f80-8192-5cbf08eb33af"
         },
         {
-            "Command": "I want 2 steaks",
-            "Expected": "Excellent Choice! Can I get you anything else?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_want_v_1(e2,x3,x8)))",
+            "Command": "I want soup and steak",
+            "Expected": "Son: Wait, let's not order that before we know how much it costs. \nWaiter: Can I get you something to eat?",
+            "Tree": "udef_q(x13,_soup_n_1(x13),udef_q(x18,_steak_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
             "Enabled": true,
             "ID": "f412ffe0-207b-4b36-b8a4-b4e541ff3817"
-        },
-        {
-            "Command": "what did I order",
-            "Expected": "2 steak",
-            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
-            "Enabled": true,
-            "ID": "18d4ddaa-a0b5-4c6e-be76-f52dc41dda77"
         }
     ]
 }

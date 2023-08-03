@@ -4,7 +4,8 @@ import numbers
 
 from perplexity.execution import execution_context, call, set_variable_execution_data, report_error
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
-from perplexity.predications import combinatorial_predication_1, all_combinations_of_states
+from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, lift_style_predication_2, \
+    in_style_predication_2
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
     gather_referenced_x_variables_from_tree
 from perplexity.vocabulary import Predication, Vocabulary
@@ -180,17 +181,46 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
                                                               max_size=5))
 
 
+# "and" could have incoming combinatoric variables, but it also needs to combine
+# its x_binding_first, x_binding_second arguments into a single thing.
+# So it needs to call something to "uncombinatoric" the values
+# It calls in_style because the bound_check is always true
+# It sets its introduced variable to combinatoric because we want to allow
+# "My son and I want a steak" to have a solution group for:
+# Group:
+#   my son wants a steak
+#   I want a steak
+# Group:
+#   my son and I want a steak
 @Predication(vocabulary, library="system", names=["_and_c"])
 def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
-    size_total = len(x_binding_first.value) + len(x_binding_second.value)
-    yield state.set_x(x_binding_introduced.variable.name,
-                      x_binding_first.value + x_binding_second.value,
-                      combinatoric=True,
-                      determiner=VariableCriteria(execution_context().current_predication(),
-                                                  x_binding_introduced.variable.name,
-                                                  min_size=size_total,
-                                                  max_size=size_total)
-                      )
+    def both_bound_prediction_function(x_what, x_for):
+        return True
+
+    def binding1_unbound_predication_function():
+        assert False
+        if False:
+            yield None
+
+    def binding2_unbound_predication_function():
+        assert False
+        if False:
+            yield None
+
+    # Use lift_style_predication_2 simply to break out the combinatorial alternatives
+    for solution in in_style_predication_2(state, x_binding_first, x_binding_second,
+                             both_bound_prediction_function, binding1_unbound_predication_function,
+                             binding2_unbound_predication_function):
+        solution_first = solution.get_binding(x_binding_first.variable.name)
+        solution_second = solution.get_binding(x_binding_second.variable.name)
+        and_value = solution_first.value + solution_second.value
+        yield solution.set_x(x_binding_introduced.variable.name,
+                          and_value,
+                          combinatoric=True,
+                          determiner=VariableCriteria(execution_context().current_predication(),
+                                                      x_binding_introduced.variable.name,
+                                                      required_values=and_value)
+                          )
 
 
 @Predication(vocabulary, library="system", names=["implicit_conj"])
