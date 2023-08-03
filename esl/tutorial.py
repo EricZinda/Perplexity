@@ -1725,6 +1725,9 @@ def reset():
     # The computer has the concepts of the items so it can answer "do you have steak?"
     initial_state = initial_state.add_rel("computer", "have", "menu")
     initial_state = initial_state.add_rel("computer", "have", "bill")
+    initial_state = initial_state.add_rel("computer", "describes", "menu")
+    initial_state = initial_state.add_rel("computer", "describes", "bill")
+    initial_state = initial_state.add_rel("computer", "describes", "table")
 
     # Instances below here
     # Location and "in scope" are modeled as who "has" a thing
@@ -1749,6 +1752,7 @@ def reset():
     for dish_type in dish_types:
         # The computer has the concepts of the items so it can answer "do you have steak?"
         initial_state = initial_state.add_rel("computer", "have", dish_type)
+        initial_state = initial_state.add_rel("computer", "describes", dish_type)
 
         # These concepts are "in scope" meaning it is OK to say "the X"
         initial_state = initial_state.add_rel(dish_type, "conceptInScope", "true")

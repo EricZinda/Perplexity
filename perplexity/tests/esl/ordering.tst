@@ -158,7 +158,7 @@
         },
         {
             "Command": "What specials do you have?",
-            "Expected": "So again, those specials are tomato soup, green salad, and smoked pork.",
+            "Expected": "So again, we have tomato soup, green salad, and smoked pork.",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"
