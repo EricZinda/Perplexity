@@ -799,9 +799,9 @@ class WorldState(State):
                 if concept_name in self.get_entities():
                     return self.handle_world_event(["user_wants", x])
                 else:
-                    return [RespondOperation("Sorry, we don't have that")]
+                    return [RespondOperation("Sorry, we don't have that" + self.get_reprompt())]
             else:
-                return [RespondOperation("Sorry, we don't allow ordering specific things like that")]
+                return [RespondOperation("Sorry, we don't allow ordering specific things like that"+ self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
             if is_concept(x):

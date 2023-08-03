@@ -99,7 +99,7 @@ def all_are_players(who_multiple):
 
 def get_menu_at_entrance(state, who):
     if all_are_players(who) and not location_of_type(state, who[0], "table"):
-        return [('respond', "Sorry, you must be seated to get a menu")]
+        return [('respond', "Sorry, you must be seated to get a menu" + state.get_reprompt())]
 
 def get_menu_seated(state, who):
     if all_are_players(who) and location_of_type(state, who[0], "table"):
