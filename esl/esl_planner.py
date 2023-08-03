@@ -151,7 +151,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
         not location_of_type(state, who_multiple[0], "table"):
         if min_size != 1:
-            return [('respond', "Johnny: Hey, let's sit together alright?")]
+            return [('respond', "Johnny: Hey, let's sit together alright?"+ state.get_reprompt())]
 
         # Evaluate the noun to make sure we understand all the terms that were used with it
         # If we get back a state, it means the user said something that made sense
@@ -175,7 +175,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
             for_count = len(for_value)
         else:
             if for_value is not None:
-                return [('respond', "I'm not sure what that means.")]
+                return [('respond', "I'm not sure what that means."+ state.get_reprompt())]
             else:
                 if len(who_multiple) > 1:
                     # "We want a table"
@@ -194,17 +194,17 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
                         ('add_rel', "son1", "at", unused_tables[0]),
                         ('set_response_state', "something_to_eat")]
             elif unused_tables is None:
-                return [('respond', "I'm sorry, we don't have any tables left...")]
+                return [('respond', "I'm sorry, we don't have any tables left..."+ state.get_reprompt())]
 
             else:
-                return [('respond', "I suspect you want to sit together.")]
+                return [('respond', "I suspect you want to sit together."+ state.get_reprompt())]
 
         elif for_count is not None:
             # They specified how big
             if for_count < 2:
-                return [('respond', "Johnny: Hey! That's not enough seats!")]
+                return [('respond', "Johnny: Hey! That's not enough seats!"+ state.get_reprompt())]
             elif for_count > 2:
-                return [('respond', "Host: Sorry, we don't have a table with that many seats")]
+                return [('respond', "Host: Sorry, we don't have a table with that many seats"+ state.get_reprompt())]
 
         else:
             # didn't specify size
@@ -216,7 +216,7 @@ def get_table_repeat(state, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
             location_of_type(state, who_multiple[0], "table"):
         if min_size != 1:
-            return [('respond', "I suspect you want to sit together.")]
+            return [('respond', "I suspect you want to sit together."+ state.get_reprompt())]
         else:
             return [('respond', "Um... You're at a table." + state.get_reprompt())]
 
@@ -242,7 +242,7 @@ gtpyhop.declare_task_methods('get_bill', get_bill_at_table)
 # so we don't have to check
 def order_food_at_entrance(state, who, what):
     if all_are_players([who]) and not location_of_type(state, who, "table"):
-        return [('respond', "Sorry, you must be seated to order")]
+        return [('respond', "Sorry, you must be seated to order"+ state.get_reprompt())]
 
 
 def order_food_price_unknown(state, who, what):
@@ -322,7 +322,7 @@ def complete_order(state):
     elif state.sys["responseState"] == "something_to_eat":
         return [("respond", "Well if you aren't going to order anything, you'll have to leave the restaurant, so I'll ask you again: can I get you something to eat?")]
     else:
-        return [("respond", "Hmm. I didn't understand what you said." + state.get_reprompt())]
+        return [("respond", "Waiter: Hmm. I didn't understand what you said." + state.get_reprompt())]
 
 gtpyhop.declare_task_methods('complete_order', complete_order)
 
@@ -398,7 +398,7 @@ def satisfy_want(state, who, what, min_size):
 
 # Last option should just report an error
 def satisfy_want_fail(state, who, what, min_size):
-    return [('respond', "Sorry, I'm not sure what to do about that")]
+    return [('respond', "Sorry, I'm not sure what to do about that"+ state.get_reprompt())]
 
 
 gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group_group, satisfy_want, satisfy_want_fail)
