@@ -949,10 +949,12 @@ def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
 #   - "Who sits down?"
 #   - "Who is sitting down?"
 #   - "I can sit down."
-@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able","_sit_v_down_request", "_sit_v_1_request"])
+@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able"])
 def _sit_v_down_able(state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
-    if not is_present_tense(tree_info): return
+    if not is_present_tense(tree_info):
+        report_error(["unexpected"])
+        return
 
     if not is_question(tree_info):
         report_error(["unexpected"])
@@ -973,7 +975,6 @@ def _sit_v_down_able(state, e_binding, x_actor_binding):
 @Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
 def _sit_v_down_request(state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
-    if not is_present_tense(tree_info): return
 
     def bound(x_actor):
         if is_user_type(x_actor):
@@ -991,7 +992,6 @@ def _sit_v_down_request(state, e_binding, x_actor_binding):
 @Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
 def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
     tree_info = state_list[0].get_binding("tree").value[0]
-    if not is_present_tense(tree_info): return
 
     # If it is a wh_question, just answer it
     if is_wh_question(tree_info):
@@ -1676,6 +1676,7 @@ def reset():
                                 "responseState": "initial"
                                 })
 
+
     initial_state = initial_state.add_rel("bill_type","specializes","thing")
     initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
     initial_state = initial_state.add_rel("check", "specializes", "bill_type")
@@ -1760,6 +1761,7 @@ def reset():
             food_instance = dish_type + str(i)
             initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)
 
+
             # The kitchen is where all the food is
             initial_state = initial_state.add_rel("kitchen1", "contain", food_instance)
             if dish_type == "chicken":
@@ -1782,6 +1784,10 @@ def reset():
     initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
     initial_state = initial_state.add_rel("user", "heardSpecials", "false")
+
+    initial_state = initial_state.add_rel("chicken", "isAdj", "roasted")
+    initial_state = initial_state.add_rel("salmon", "isAdj", "grilled")
+    initial_state = initial_state.add_rel("pork", "isAdj", "smoked")
 
     return initial_state
 
@@ -1820,7 +1826,7 @@ if __name__ == '__main__':
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
 
-    print("You’re going to a restaurant with your son, Johnny who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.")
+    print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")
     # ShowLogging("Transformer")
     hello_world()
