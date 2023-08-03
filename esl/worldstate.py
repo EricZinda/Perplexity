@@ -777,7 +777,7 @@ class WorldState(State):
         if self.sys["responseState"] in ["anything_else", "something_to_eat"]:
             return [RespondOperation("Ok, what?"), ResponseStateOp("anticipate_dish")]
         else:
-            return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+            return [RespondOperation("Host: Hmm. I didn't understand what you said." + self.get_reprompt())]
 
     # This should always be the answer to a question since it is a partial sentence that generated
     # an unknown() predication in the MRS for the verb
@@ -792,7 +792,7 @@ class WorldState(State):
             elif x in ["card", "card, credit"]:
                 return [RespondOperation("You reach into your pocket and realize you don’t have a credit card." + self.get_reprompt())]
             else:
-                return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+                return [RespondOperation("Waiter: Hmm. I didn't understand what you said." + self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
             if concept_name is not None:

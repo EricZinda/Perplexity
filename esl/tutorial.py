@@ -1675,7 +1675,7 @@ def reset():
     # return State([])
     # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
-                               {"prices": {"salad": 3, "steak": 10, "broiled steak": 8, "soup": 4, "salmon": 12,
+                               {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12,
                                            "chicken": 7, "pork": 8},
                                 "responseState": "initial"
                                 })
