@@ -5,7 +5,7 @@ import numbers
 from perplexity.execution import execution_context, call, set_variable_execution_data, report_error
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, lift_style_predication_2, \
-    in_style_predication_2
+    in_style_predication_2, is_concept
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
     gather_referenced_x_variables_from_tree
 from perplexity.vocabulary import Predication, Vocabulary
@@ -214,6 +214,11 @@ def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
         solution_first = solution.get_binding(x_binding_first.variable.name)
         solution_second = solution.get_binding(x_binding_second.variable.name)
         and_value = solution_first.value + solution_second.value
+        are_concepts = [is_concept(x) for x in and_value]
+        if any(are_concepts) and not all(are_concepts):
+            # If anything is a concept, everything must be
+            continue
+
         yield solution.set_x(x_binding_introduced.variable.name,
                           and_value,
                           combinatoric=True,

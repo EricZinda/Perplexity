@@ -1,9 +1,8 @@
-- Performance Issue
 - "What is not soup" --> crashes
 - How many steaks did I order --> doesn't work
 - How much is the soup and salad doesn't mark you as knowing the price
 - Getting a menu should pass the menu concept all the way through so it can be evaluated
-  
+- Get rid of extra arg in relationships 
 - Do we really need frames()? Only one test breaks if we turn it off
 - Make "find unused thing" use concept
 - Make "check conceptual constraints" properly use eval too

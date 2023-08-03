@@ -66,11 +66,18 @@
             "ID": "9a9c9df7-aa60-4471-8afc-113bc4b32488"
         },
         {
+            "Command": "I want a steak and a soup",
+            "Expected": "One thing at a time, please!",
+            "Tree": "_a_q(x13,_steak_n_1(x13),_a_q(x18,_soup_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
+            "Enabled": true,
+            "ID": "95ee387b-e08d-4263-b95e-a8f250546df3"
+        },
+        {
             "Command": "Can I have a steak?",
             "Expected": "Excellent Choice! Can I get you anything else?",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "95ee387b-e08d-4263-b95e-a8f250546df3"
+            "ID": "30071c2b-e13e-4ff0-9fa8-fea5b58b1873"
         },
         {
             "Command": "What did I order?",
@@ -283,6 +290,13 @@
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"
         },
         {
+            "Command": "I ordered salad and soup",
+            "Expected": "Yes, that is true.",
+            "Tree": "udef_q(x13,_salad_n_1(x13),udef_q(x18,_soup_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_order_v_1(e2,x3,x8)))))",
+            "Enabled": true,
+            "ID": "bd6b1750-5480-4661-a1d6-600bb7dbbc2a"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
@@ -307,7 +321,7 @@
             "Command": "what did I order",
             "Expected": "2 steak",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "18d4ddaa-a0b5-4c6e-be76-f52dc41dda77"
         }
     ]
