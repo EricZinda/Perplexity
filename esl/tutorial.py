@@ -364,6 +364,7 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
         else:
             if is_user_type(x_for):
                 return True
+
     def x_what_unbound(x_for):
         if False:
             yield None
@@ -476,7 +477,7 @@ def match_all_n(noun_type, state, x_binding):
             return False
 
     def unbound_variable():
-        for i in all_instances_and_spec(state, noun_type):
+        for i in all_instances(state, noun_type):
             if is_instance(state,i):
                 yield i
             else:
@@ -484,7 +485,10 @@ def match_all_n(noun_type, state, x_binding):
 
 
     # Yield the abstract type first, not as a combinatoric variable
-    #yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
+    # because solutions can never mix conceptual and non-conceptual terms so it isn't
+    # true that it is combinatoric since you can't pick the conceptual and include it with another and have
+    # it be valid
+    yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
@@ -668,7 +672,7 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
             for value in x_what_values:
                 x_what_individuals_set.update(value)
             if len(x_what_individuals_set) > 1:
-                report_error(["errorText", "One thing at a time, please!"])
+                report_error(["errorText", "One thing at a time, please!"], force=True)
                 yield []
 
             # At this point we are only dealing with one concept

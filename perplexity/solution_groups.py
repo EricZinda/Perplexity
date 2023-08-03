@@ -27,7 +27,7 @@ class SingleGroupGenerator(object):
 
     def __next__(self):
         if groups_logger.level == logging.DEBUG:
-            groups_logger.debug(f"SingleGroupGenerator: Next solution requested, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
+            groups_logger.debug(f"SingleGroupGenerator: Next solution requested for {self.group_id}, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
 
         if self.last_yielded_index == len(self.group_list) - 1:
             # If no variable has a between(N, inf) constraint,
@@ -147,9 +147,6 @@ class SolutionGroupGenerator(object):
 
                 # If the ID was unyielded, remove the old and add the new
                 # to the unyielded list
-                # if next_id in self.unyielded_solution_groups:
-                #     self.unyielded_solution_groups.pop(next_id)
-
                 if existing_solution_group_id in self.unyielded_solution_groups:
                     self.unyielded_solution_groups.pop(existing_solution_group_id)
                     self.unyielded_solution_groups[next_id] = None
@@ -421,6 +418,7 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
     exactly_constraint = None
     all_rstr_constraint = None
     every_rstr_constraint = None
+    required_values_constraint = None
     predication = None
     for constraint in variable_info_list:
         if constraint.global_criteria == GlobalCriteria.exactly:
@@ -447,6 +445,12 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
             if constraint.max_size < max_size:
                 max_size = constraint.max_size
                 predication = constraint.predication
+
+        if constraint.required_values is not None:
+            if required_values_constraint is None:
+                required_values_constraint = constraint.required_values
+            else:
+                required_values_constraint += constraint.required_values
 
     if exactly_constraint is not None:
         assert exactly_constraint.min_size >= min_size and exactly_constraint.max_size <= max_size
@@ -487,7 +491,7 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
     if predication is None:
         predication = variable_info_list[0].predication
 
-    return [VariableCriteria(predication, variable_info_list[0].variable_name, min_size, max_size, global_criteria=global_constraint)]
+    return [VariableCriteria(predication, variable_info_list[0].variable_name, min_size, max_size, global_criteria=global_constraint, required_values=required_values_constraint)]
 
 
 def reduce_determiner_infos(determiner_info_list_orig, this_sentence_force, wh_question_variable):
@@ -519,9 +523,10 @@ def optimize_determiner_infos(determiner_info_list_orig, this_sentence_force, wh
 
     # Any constraint on a variable that is 1,inf is meaningless since it means "a value exists" which means that it has a value
     # but every variable must have a value, so it doesn't do anything, remove it
+    # UNLESS: it has a required_values constraint
     new_info_list = []
     for determiner_info in determiner_info_list:
-        if determiner_info.min_size == 1 and determiner_info.max_size == float(inf) and determiner_info.global_criteria is None:
+        if determiner_info.min_size == 1 and determiner_info.max_size == float(inf) and determiner_info.global_criteria is None and determiner_info.required_values is None:
             continue
 
         else:
