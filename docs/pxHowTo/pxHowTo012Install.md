@@ -74,7 +74,7 @@ Once everything in installed, to begin a session of Perplexity development you n
 2. Activate the environment
    - `source env/bin/activate`
 3. Tell Python that it should look in this directory for modules:
-   - `export PYTHONPATH=PYTHONPATH:<Perplexity repository path>`
+   - `export PYTHONPATH=$PYTHONPATH:<Perplexity repository path>`
 4. Start the Perplexity engine:
    - `python3 ./file_system_example/examples.py` 
 

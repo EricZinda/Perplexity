@@ -1,6 +1,6 @@
 from file_system_example.objects import File, Folder, Megabyte, Actor, QuotedText
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
-from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
+# from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
 from perplexity.plurals import GlobalCriteria, VariableCriteria
 from perplexity.execution import report_error, execution_context
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, in_style_predication_2, \
@@ -373,21 +373,21 @@ def in_p_loc_norm(state, e_introduced_binding, x_actor_binding, x_location_bindi
     yield from default_locative_preposition_norm(state, e_introduced_binding, x_actor_binding, x_location_binding)
 
 
-@Predication(vocabulary, names=["_in_p_loc"])
-def in_p_loc_open_ai(state, e_introduced_binding, x_actor_binding, x_location_binding):
-    if x_actor_binding.value is not None and x_location_binding.value is not None and \
-        len(x_actor_binding.value) == 1 and len(x_location_binding.value) == 1 and \
-            isinstance(x_actor_binding.value[0], str) and isinstance(x_location_binding.value[0], str):
-        request_text = s("{'is':<x_actor_binding.variable.name} {x_actor_binding.variable.name} sometimes in {x_location_binding.variable.name}?", state.get_binding("tree").value[0])
-        print(f"Asking ChatGPT: {request_text}")
-        request_info = StartOpenAIBooleanRequest("test", "in_loc_predication", request_text)
-        result = CompleteOpenAIRequest(request_info, wait=10)
-        if result == "true":
-            yield state
-        elif result is None:
-            report_error(["dontKnowRightNow"])
-        else:
-            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+# @Predication(vocabulary, names=["_in_p_loc"])
+# def in_p_loc_open_ai(state, e_introduced_binding, x_actor_binding, x_location_binding):
+#     if x_actor_binding.value is not None and x_location_binding.value is not None and \
+#         len(x_actor_binding.value) == 1 and len(x_location_binding.value) == 1 and \
+#             isinstance(x_actor_binding.value[0], str) and isinstance(x_location_binding.value[0], str):
+#         request_text = s("{'is':<x_actor_binding.variable.name} {x_actor_binding.variable.name} sometimes in {x_location_binding.variable.name}?", state.get_binding("tree").value[0])
+#         print(f"Asking ChatGPT: {request_text}")
+#         request_info = StartOpenAIBooleanRequest("test", "in_loc_predication", request_text)
+#         result = CompleteOpenAIRequest(request_info, wait=10)
+#         if result == "true":
+#             yield state
+#         elif result is None:
+#             report_error(["dontKnowRightNow"])
+#         else:
+#             report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
