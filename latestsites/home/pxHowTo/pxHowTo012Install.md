@@ -22,7 +22,7 @@ Now you can choose to run Perplexity in a Docker container or on your local mach
 
 0. Clone Perplexity using GitHub LFS as described above
 1. [Install Docker](https://docs.docker.com/engine/install/)
-2. Follow the instructions at the top of the `docker/Dockerfile` file in the Perplexity repository to build an image and run a sample
+2. Follow the instructions at the top of the [docker/Dockerfile](https://github.com/EricZinda/Perplexity/blob/main/docker/Dockerfile) file in the Perplexity repository to build an image and run a sample
 
 ### Option 2: Run Perplexity on Your Machine
 > VERY IMPORTANT: This project uses [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) for storing large grammar files. You won't be able to use it properly unless you install [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage), activate it for your account, and *then* clone the repository as described above.
