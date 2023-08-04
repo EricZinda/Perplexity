@@ -8,6 +8,9 @@
 # To run the image and start the esl app (you'll need to replace "something" with a unique image name):
 #   docker run --name something --env PYTHONPATH='/' -i p8y:latest /usr/src/Python-3.8.0/python /esl/tutorial.py
 #
+# To run the image and start the file system app (you'll need to replace "something" with a unique image name):
+#   docker run --name something --env PYTHONPATH='/' -i p8y:latest /usr/src/Python-3.8.0/python /file_system_example/examples.py
+
 # To push your image to docker hub so others can access it:
 # 1. Tag it with <your docker username>/<what you want to call it>, for example: inductorsoftware/p8y
 #   docker tag p8y:latest inductorsoftware/p8y
