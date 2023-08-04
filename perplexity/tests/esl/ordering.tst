@@ -39,7 +39,7 @@
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "No. you does not order steak  \nWaiter: Can I get you something to eat?",
+            "Expected": "No, you didn't order a steak",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "13ce708f-ec2a-41f8-b2dd-416711a3b810"
@@ -297,6 +297,13 @@
             "ID": "bd6b1750-5480-4661-a1d6-600bb7dbbc2a"
         },
         {
+            "Command": "I ordered the soup",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "c3b2b4ed-9938-468a-8567-250e7833d15f"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
@@ -323,6 +330,13 @@
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "18d4ddaa-a0b5-4c6e-be76-f52dc41dda77"
+        },
+        {
+            "Command": "I ordered 2 steaks",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "326fcaba-7595-4143-9309-9142c06b5607"
         }
     ]
 }

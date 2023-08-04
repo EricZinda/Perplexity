@@ -1159,11 +1159,15 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
     if not is_past_tense(state.get_binding("tree").value[0]): return
 
     def bound(x_actor, x_object):
-        if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "ordered"):
-            return True
-        else:
-            report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order",convert_to_english(state,x_object), state.get_reprompt()])
-            return False
+        if not is_concept(x_actor):
+            if is_concept(x_object):
+                return True
+            else:
+                if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "ordered"):
+                    return True
+
+        report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order",convert_to_english(state,x_object), state.get_reprompt()])
+        return False
 
     def actor_from_object(x_object):
         found = False
@@ -1183,6 +1187,65 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
+
+
+# "I ordered the (conceptual) soup"
+@Predication(vocabulary, names=["solution_group__order_v_1"])
+def _order_v_1_past_group(state_list, has_more, e_introduced_variable_group, x_actor_variable_group, x_object_variable_group):
+    if is_concept(x_actor_variable_group.solution_values[0]):
+        # We don't want to deal with conceptual actors, fail this solution group
+        # and wait for the one with real actors
+        yield []
+
+    # These are concepts. Only need to check the first because:
+    # If one item in the group is a concept, they all are
+    if is_concept(x_object_variable_group.solution_values[0].value[0]):
+        # At this point we are something like "I/We/He ordered x" where x is a referring expression
+        # Solve the referring expression and see if any of the solution groups map to what the user ordered
+        for solution_index in range(len(x_actor_variable_group.solution_values)):
+            actor_value = x_actor_variable_group.solution_values[solution_index].value
+            what_value = x_object_variable_group.solution_values[solution_index].value
+
+            # We can group them all together since ordering "steak and fries together" is the same as
+            # ordering them separately
+            for actor in actor_value:
+                actor_ordered = [x for x in rel_objects(state_list[0], actor, "ordered")]
+                for value in what_value:
+                    referring_group_generator = at_least_one_generator(value.solution_groups(state_list[0], ignore_global_constraints=True))
+                    if referring_group_generator:
+                        item_not_found = False
+                        # Now we have "I ordered concept"
+                        # See if concept generates a solution_group that is fully contained in what I ordered
+                        for referring_group in referring_group_generator:
+                            # Ensure that every item in referring_group is also a value that was ordered
+                            for solution in referring_group:
+                                referring_group_value = solution.get_binding(value.variable_name).value
+                                for referring_group_value_individual in referring_group_value:
+                                    if referring_group_value_individual not in actor_ordered:
+                                        item_not_found = True
+                                        break
+
+                                if item_not_found:
+                                    break
+
+                            if item_not_found is False:
+                                # This referring expression was fully ordered
+                                break
+
+                        if item_not_found:
+                            # this referring expression was not fully ordered
+                            report_error(["errorText", s("No, you didn't order {x_object_variable_group.solution_values[0].variable.name}", state_list[0].get_binding("tree").value[0])], force=True)
+                            yield []
+                            return
+                    else:
+                        # Referring group didn't generate anything
+                        yield []
+
+            # all referring expressions for all actors were completely ordered
+            yield state_list
+            return
+
+            # TODO: AND that the solution group matches the constraints?
 
 
 # Scenarios:
@@ -1601,19 +1664,21 @@ def _be_v_there(state, e_introduced_binding, x_object_binding):
     yield from combinatorial_predication_1(state, x_object_binding, bound_variable, unbound_variable)
 
 
-@Predication(vocabulary, names=["compound"])
-def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
-    assert (x_first_binding is not None)
-    assert (x_second_binding is not None)
-    if (x_second_binding.value[0] == Concept("tomato")):
-        yield state
-    else:
-        yield state.set_x(x_first_binding.variable.name, (state.get_binding(x_first_binding.variable.name).value[0] + ", " +
-                                                      state.get_binding(x_second_binding.variable.name).value[0],))
+# This needs to be rewritten given the conceptual changes we've made
+# @Predication(vocabulary, names=["compound"])
+# def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
+#     assert (x_first_binding is not None)
+#     assert (x_second_binding is not None)
+#     if x_second_binding.value[0] == concept_from_lemma("tomato"):
+#         yield state
+#     else:
+#         yield state.set_x(x_first_binding.variable.name, (state.get_binding(x_first_binding.variable.name).value[0] + ", " +
+#                                                       state.get_binding(x_second_binding.variable.name).value[0],))
 
-@Predication(vocabulary, names=["_green_a_2"])
-def compound(state, e_introduced_binding, x_first_binding):
-    yield state
+# This needs to be rewritten to actually do something
+# @Predication(vocabulary, names=["_green_a_2"])
+# def compound(state, e_introduced_binding, x_first_binding):
+#     yield state
 
 def computer_in_state(state):
     for i in state.variables:

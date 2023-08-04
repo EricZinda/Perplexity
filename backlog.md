@@ -1,14 +1,23 @@
-- (fixed) The soup is not vegetarian --> neg(e8,_the_q(x3,_soup_n_1(x3),_vegetarian_a_1(e2,x3)))
-  - for in scope frame: the right error gets returned but the logic for returning errors across frames is to return the error from the last frame
-  - For world frame: the problem is that _the_q(x3,_soup_n_1(x3),_vegetarian_a_1(e2,x3)) succeeds once for the concept, returning a good "not true" failure
-    - and then fails for each soup instance because there is more than one
-  - which is the error that should get returned?
-    - Should we start using the error prioritization function to replace errors?
-  - The error that gets returned is the one that says there is "more than one"
+- Bug: "I have the soup" should work when I have *a* soup
+ 
+- "I ordered the soup" should work when I ordered *a* soup
+- I ordered 2 soups should work right too
+- 
+- I don't have *the* soup works because:
+  - there is more than one soup so negation fails, and thus this works
+- "a table for two" crashes at startup
+- "I have the soup" --> There is more than the soup
+- I don't have soup / have soup both work when you have ordered soup
+  - because:
+    - for "I don't have soup" the first MRS is the proper interpretation meaning "not(I have soup)"
+      - but it fails since you *do* have soup, so we keep going
+    - the second interpretation of "I don't have soup" means "check each soup and see if you have it" and there are some that you don't have
+      - so it succeeds and we return this one
+  - Same thing will happen with "I don't have a soup"
+  - Posted a question on the forum for this
 
 - "What is not soup" --> crashes
   - Can't handle unbound variable in not()
-- I don't have soup / have soup both work when you have ordered soup
 - How many steaks did I order --> doesn't work
 - How much is the soup and salad doesn't mark you as knowing the price
 - Getting a menu should pass the menu concept all the way through so it can be evaluated

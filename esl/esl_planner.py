@@ -290,7 +290,9 @@ def order_food_at_table(state, who, what):
                 new_tasks.append(('set_response_state', "anything_else"))
                 return new_tasks
 
+
 gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
+
 
 def complete_order(state):
     if state.sys["responseState"] == "anything_else":

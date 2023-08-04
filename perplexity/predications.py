@@ -97,14 +97,13 @@ class Concept(object):
         declared_constraints = list(perplexity.solution_groups.declared_determiner_infos(execution_context, state, variables=[self.variable_name]))
         if len(declared_constraints) == 0:
             default_criteria = perplexity.plurals.VariableCriteria(self.noun_predication,
-                                                self.variable_name,
-                                                min_size=1,
-                                                max_size=1)
+                                                                   self.variable_name,
+                                                                   min_size=1,
+                                                                   max_size=1)
             declared_constraints.append(default_criteria)
         elif ignore_global_constraints:
             for constraint in declared_constraints:
                 constraint.global_criteria = None
-
 
         # First set the variables to any bound values we received
         bound_state = state
