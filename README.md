@@ -17,17 +17,27 @@ It has a [tutorial](https://blog.inductorsoftware.com/Perplexity/) that explains
 2. Install Python 3.8 or greater
 3. Open a command window, from within it:
 3. Create an environment:
-    python3 -m venv env
+~~~
+   python3 -m venv env
+~~~
 4. Activate the environment:
-    source env/bin/activate
+~~~
+   source env/bin/activate
+~~~
 5. Install the required libraries:
-    pip install pydelphin 
-    pip install inflect
+~~~
+   pip install pydelphin 
+   pip install inflect
+~~~
 
 Then, to run the ESL sample:
 1. Type this in the command window, where <path to root> is a fully qualified path to the repository root:
+~~~
     PYTHONPATH=<path to root>
     export PYTHONPATH
+~~~
 
 To run the ESL sample, from the root of the repository, run this from the same console window:
-    python3 ./esl/tutorial.py
+~~~
+   python3 ./esl/tutorial.py
+~~~
