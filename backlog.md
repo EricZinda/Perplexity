@@ -1,12 +1,9 @@
 - Bug: "I have the soup" should work when I have *a* soup
+  - "I have the soup" --> There is more than the soup
  
-- "I ordered the soup" should work when I ordered *a* soup
-- I ordered 2 soups should work right too
-- 
 - I don't have *the* soup works because:
   - there is more than one soup so negation fails, and thus this works
 - "a table for two" crashes at startup
-- "I have the soup" --> There is more than the soup
 - I don't have soup / have soup both work when you have ordered soup
   - because:
     - for "I don't have soup" the first MRS is the proper interpretation meaning "not(I have soup)"

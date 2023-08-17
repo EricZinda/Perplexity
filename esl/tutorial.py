@@ -1200,52 +1200,56 @@ def _order_v_1_past_group(state_list, has_more, e_introduced_variable_group, x_a
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
     if is_concept(x_object_variable_group.solution_values[0].value[0]):
-        # At this point we are something like "I/We/He ordered x" where x is a referring expression
-        # Solve the referring expression and see if any of the solution groups map to what the user ordered
-        for solution_index in range(len(x_actor_variable_group.solution_values)):
-            actor_value = x_actor_variable_group.solution_values[solution_index].value
-            what_value = x_object_variable_group.solution_values[solution_index].value
-
-            # We can group them all together since ordering "steak and fries together" is the same as
-            # ordering them separately
-            for actor in actor_value:
-                actor_ordered = [x for x in rel_objects(state_list[0], actor, "ordered")]
-                for value in what_value:
-                    referring_group_generator = at_least_one_generator(value.solution_groups(state_list[0], ignore_global_constraints=True))
-                    if referring_group_generator:
-                        item_not_found = False
-                        # Now we have "I ordered concept"
-                        # See if concept generates a solution_group that is fully contained in what I ordered
-                        for referring_group in referring_group_generator:
-                            # Ensure that every item in referring_group is also a value that was ordered
-                            for solution in referring_group:
-                                referring_group_value = solution.get_binding(value.variable_name).value
-                                for referring_group_value_individual in referring_group_value:
-                                    if referring_group_value_individual not in actor_ordered:
-                                        item_not_found = True
-                                        break
-
-                                if item_not_found:
-                                    break
-
-                            if item_not_found is False:
-                                # This referring expression was fully ordered
-                                break
-
-                        if item_not_found:
-                            # this referring expression was not fully ordered
-                            report_error(["errorText", s("No, you didn't order {x_object_variable_group.solution_values[0].variable.name}", state_list[0].get_binding("tree").value[0])], force=True)
-                            yield []
-                            return
-                    else:
-                        # Referring group didn't generate anything
-                        yield []
-
-            # all referring expressions for all actors were completely ordered
-            yield state_list
+        if not check_concept_solution_group_constraints(state_list, x_object_variable_group, check_concepts=False):
+            yield []
             return
 
-            # TODO: AND that the solution group matches the constraints?
+        else:
+            # At this point we are something like "I/We/He ordered x" where x is a referring expression
+            # Solve the referring expression and see if any of the solution groups map to what the user ordered
+            for solution_index in range(len(x_actor_variable_group.solution_values)):
+                actor_value = x_actor_variable_group.solution_values[solution_index].value
+                what_value = x_object_variable_group.solution_values[solution_index].value
+
+                # We can group them all together since ordering "steak and fries together" is the same as
+                # ordering them separately
+                for actor in actor_value:
+                    actor_ordered = [x for x in rel_objects(state_list[0], actor, "ordered")]
+                    for value in what_value:
+                        referring_group_generator = at_least_one_generator(value.solution_groups(state_list[0], ignore_global_constraints=True))
+                        if referring_group_generator:
+                            item_not_found = False
+                            # Now we have "I ordered concept"
+                            # See if concept generates a solution_group that is fully contained in what I ordered
+                            for referring_group in referring_group_generator:
+                                # Ensure that every item in referring_group is also a value that was ordered
+                                for solution in referring_group:
+                                    referring_group_value = solution.get_binding(value.variable_name).value
+                                    for referring_group_value_individual in referring_group_value:
+                                        if referring_group_value_individual not in actor_ordered:
+                                            item_not_found = True
+                                            break
+
+                                    if item_not_found:
+                                        break
+
+                                if item_not_found is False:
+                                    # This referring expression was fully ordered
+                                    break
+
+                            if item_not_found:
+                                # this referring expression was not fully ordered
+                                report_error(["errorText", s("No, you didn't order {x_object_variable_group.solution_values[0].variable.name}", state_list[0].get_binding("tree").value[0])], force=True)
+                                yield []
+                                return
+
+                        else:
+                            # Referring group didn't generate anything
+                            yield []
+
+                # all referring expressions for all actors were completely ordered
+                yield state_list
+                return
 
 
 # Scenarios:
@@ -1911,7 +1915,7 @@ if __name__ == '__main__':
     ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")

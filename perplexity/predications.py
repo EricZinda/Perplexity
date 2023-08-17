@@ -131,45 +131,6 @@ class Concept(object):
         return True
 
 
-# class Concept(object):
-#     def __init__(self, concept_name, dict_modifications = None):
-#         self.concept_name = concept_name
-#         self._modifiers = {"noun": concept_name}
-#         self._hash = None
-#         if dict_modifications is not None:
-#             self._modifiers.update(dict_modifications)
-#
-#     def __repr__(self):
-#         return f"concept({self._modifiers})"
-#
-#     # The only required property is that objects which compare equal have the same hash value
-#     # But: objects with the same hash aren't required to be equal
-#     # It must remain the same for the lifetime of the object
-#     def __hash__(self):
-#         if self._hash is None:
-#             # TODO: Make this more efficient
-#             self._hash = hash(self.concept_name)
-#
-#         return self._hash
-#
-#     def __eq__(self, other):
-#         return isinstance(other, Concept) and self.__hash__() == other.__hash__() and self._modifiers == other._modifiers
-#
-#     def is_concept(self):
-#         return True
-#
-#     def modifiers(self):
-#         # Make a copy since this object must be immutable due to
-#         # the fact that hash is based on the modifiers
-#         return copy.deepcopy(self._modifiers)
-#
-#     def update_modifiers(self, dict_modifications):
-#         modified = copy.deepcopy(self)
-#         modified._modifiers.update(dict_modifications)
-#         modified._hash = None
-#         return modified
-
-
 # This function is used to check the constraints for a variable that is set to a *concept*.
 # The caller needs to decide if the meaning of the phrase is referring to instances or concepts and set check_concepts=True or False
 #   since the meaning can't always be inferred.
