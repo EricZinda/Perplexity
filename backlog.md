@@ -1,3 +1,5 @@
+- "I ordered 2 steaks" shouldn't have to be conceptual at all, the system should try every steak
+- Doesn't seem like we should have to model the computer as "having the concept of menu?"
 - Bug: "I have the soup" should work when I have *a* soup
   - "I have the soup" --> There is more than the soup
  
