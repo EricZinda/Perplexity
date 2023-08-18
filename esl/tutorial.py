@@ -1159,29 +1159,30 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
     if not is_past_tense(state.get_binding("tree").value[0]): return
 
     def bound(x_actor, x_object):
-        if not is_concept(x_actor):
-            if is_concept(x_object):
-                return True
-            else:
-                if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "ordered"):
-                    return True
+        # See comment above _order_v_1_past_group for why we only handle conceptual
+        if not is_concept(x_actor) and is_concept(x_object):
+            return True
 
         report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order",convert_to_english(state,x_object), state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):
+        # "Who ordered X?"
         found = False
         for i in rel_subjects(state, "ordered", x_object):
             found = True
             yield store_to_object(i)
+
         if not found:
             report_error(["Nothing_VTRANS_X", "order", x_object, state.get_reprompt()])
 
     def object_from_actor(x_actor):
+        # "what did I order?"
         found = False
         for i in rel_objects(state, x_actor, "ordered"):
             found = True
             yield store_to_object(state, i)
+
         if not found:
             report_error(["X_VTRANS_Nothing", "order", convert_to_english(state, x_actor), state.get_reprompt()])
 
@@ -1189,7 +1190,12 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
                                       object_from_actor)
 
 
-# "I ordered the (conceptual) soup"
+# Only handle: "I ordered the (conceptual referring expression)"
+# We need to process the conceptual version of the referring expression
+# to properly handle "I ordered the soup" because "the soup" needs to be interpreted
+# as an "in-scope concept" and not "the one soup on the table" (or something similar)
+# And since we already have to process the conceptual referring expression, we will also
+# use conceptual for all phrases like "I ordered a soup" since they all work the same
 @Predication(vocabulary, names=["solution_group__order_v_1"])
 def _order_v_1_past_group(state_list, has_more, e_introduced_variable_group, x_actor_variable_group, x_object_variable_group):
     if is_concept(x_actor_variable_group.solution_values[0]):

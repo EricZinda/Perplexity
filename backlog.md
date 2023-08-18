@@ -1,7 +1,20 @@
-- "I ordered 2 steaks" shouldn't have to be conceptual at all, the system should try every steak
-- Doesn't seem like we should have to model the computer as "having the concept of menu?"
+- have_v and order_v are both just about verifying facts in the world, so they should be implemented the same
+  - Implementation
+      Only handle: "I ordered the (conceptual referring expression)"
+      We need to process the conceptual version of the referring expression
+      to properly handle "I ordered the soup" because "the soup" needs to be interpreted
+      as an "in-scope concept" and not "the one soup on the table" (or something similar)
+      And since we already have to process the conceptual referring expression, we will also
+      use conceptual for all phrases like "I ordered a soup" since they all work the same
+
+    - check_conceptual will ensure that there is "the soup"
+    - evaluating the referring expression will find all the things that the referring expression refers to
+      - then you can see if those things were "ordered" or "had"
+
 - Bug: "I have the soup" should work when I have *a* soup
   - "I have the soup" --> There is more than the soup
+      
+- Doesn't seem like we should have to model the computer as "having the concept of menu?"
  
 - I don't have *the* soup works because:
   - there is more than one soup so negation fails, and thus this works
