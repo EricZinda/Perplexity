@@ -1,4 +1,11 @@
+- Need to write up the model for conceptual stuff
+
 - have_v and order_v are both just about verifying facts in the world, so they should be implemented the same
+  - Alternative Implementation
+    - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
+      - Anything that needs special handling should go to another routine
+        - If it is implied request for something else, it should
+        
   - Implementation
       Only handle: "I ordered the (conceptual referring expression)"
       We need to process the conceptual version of the referring expression
@@ -10,12 +17,17 @@
     - check_conceptual will ensure that there is "the soup"
     - evaluating the referring expression will find all the things that the referring expression refers to
       - then you can see if those things were "ordered" or "had"
-
+    - If the user asks, "Do you have a steak" or "Do you have the steak" we have options:
+      - We could resolve the referring expression and make sure the computer has an instance of a steak
+      OR
+      - We could see if they have the concept of one
+      
 - Bug: "I have the soup" should work when I have *a* soup
   - "I have the soup" --> There is more than the soup
       
 - Doesn't seem like we should have to model the computer as "having the concept of menu?"
- 
+- "who has which dish" doesn't work
+
 - I don't have *the* soup works because:
   - there is more than one soup so negation fails, and thus this works
 - "a table for two" crashes at startup

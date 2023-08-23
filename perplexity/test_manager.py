@@ -6,6 +6,7 @@ import traceback
 import uuid
 from perplexity.utilities import module_name
 
+
 # Just a simple iterator that must return
 # a new test item each time it is asked
 # TestIterators must return test items when iterated
@@ -28,6 +29,8 @@ from perplexity.utilities import module_name
 # They must also support the "update_test()" method
 class TestIterator(object):
     def __init__(self, test_path_and_file):
+        print(f"**** Running test: {test_path_and_file}...\n")
+
         self.test_path_and_file = test_path_and_file
         with open(test_path_and_file, "r") as file:
             self.test = json.loads(file.read())
@@ -71,11 +74,13 @@ class TestIterator(object):
 class TestFolderIterator(object):
     def __init__(self, test_folder):
         self.test_folder = test_folder
+        self.test_path_and_file = None
 
     def __iter__(self):
         for filename in os.listdir(self.test_folder):
             if filename.lower().endswith(".tst"):
-                self.test_iterator = TestIterator(os.path.join(self.test_folder, filename))
+                self.test_path_and_file = os.path.join(self.test_folder, filename)
+                self.test_iterator = TestIterator(self.test_path_and_file)
                 yield from self.test_iterator
 
     def update_test(self, id, new_item):
@@ -111,7 +116,7 @@ class TestManager(object):
                 break
 
             if not self.check_result(test_iterator, test_item, ui.interaction_record):
-                print("**** Cancel test run")
+                print(f"**** Cancel test run: {test_iterator.test_path_and_file}")
                 break
         print("\n**** Testing Complete.\n")
 

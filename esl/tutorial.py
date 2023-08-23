@@ -1,3 +1,4 @@
+import copy
 import numbers
 
 import perplexity.messages
@@ -1327,17 +1328,19 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
     if not is_present_tense(state.get_binding("tree").value[0]): return
 
     def bound(x_actor, x_object):
-        if (object_to_store(x_actor), object_to_store(x_object)) in rel_subjects_objects(state, "have"):
+        # See comment above _order_v_1_past_group for why we only handle conceptual
+        if not is_concept(x_actor) and is_concept(x_object):
             return True
-        else:
-            report_error(["verbDoesntApply", convert_to_english(state,x_actor), "have",convert_to_english(state,x_object), state.get_reprompt()])
-            return False
+
+        report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state,x_object), state.get_reprompt()])
+        return False
 
     def actor_from_object(x_object):
         found = False
         for i in rel_subjects(state, "have", x_object):
             found = True
             yield store_to_object(i)
+
         if not found:
             report_error(["Nothing_VTRANS_X", "have", x_object, state.get_reprompt()])
 
@@ -1356,6 +1359,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
         for i in rel_objects(state, x_actor, "have"):
             found = True
             yield store_to_object(state, i)
+
         if not found:
             report_error(["X_VTRANS_Nothing", "have", convert_to_english(state, x_actor), state.get_reprompt()])
 
@@ -1378,14 +1382,20 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
 @Predication(vocabulary, names=["solution_group__have_v_1"])
 def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list):
     # Ignore this group if it isn't present tense
-    if not is_present_tense(state_list[0].get_binding("tree").value[0]): return
+    tree_info = state_list[0].get_binding("tree").value[0]
+    if not is_present_tense(tree_info): return
+    wh_variable = is_wh_question(tree_info)
 
+    # conceptual people aren't allowed by the solution function, so we don't need to fill those in
+    if wh_variable == x_act_list.solution_values[0].variable.name:
+        wh_variable = False
+
+    # Questions about "Do you have a table/menu/bill?" are really implied requests in a restaurant
+    # that mean "Can I have a table/menu/bill?"
     if len(state_list) == 1:
         if len(x_act_list.solution_values) == 1 and \
                 len(x_act_list.solution_values[0].value) == 1 and \
                 x_act_list.solution_values[0].value[0] == "computer":
-            # Questions about "Do you have a table/menu/bill?" are really implied requests in a restaurant
-            # that mean "Can I have a table/menu/bill?"
             implied_request_concepts = [concept_from_lemma("table"), concept_from_lemma("menu"), concept_from_lemma("bill")]
             if len(x_obj_list.solution_values) == 1 and \
                     len(x_obj_list.solution_values[0].value) == 1:
@@ -1403,27 +1413,90 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                         return
                     else:
                         yield []
-                '''
+
                 elif x_obj_list.solution_values[0].value[0] == concept_from_lemma("special"):
                     # "Do you have specials?" is really about the concept of specials, so check_concepts=True
                     # Fail this group if we don't meet the constraints
                     if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
                         yield []
 
-                    task = ('describe_item', "special")
+                    task = ('describe', [("special",)])
                     final_state = do_task(state_list[0].world_state_frame(), [task])
                     if final_state:
                         yield [final_state]
                         return
                     else:
                         yield []
-                '''
 
-    # Everything else is just an ask about if something has something like "Do I/we have x" or "Do you have a steak?"
-    if not all_user_type([j.value for j in x_act_list.solution_values]):
-        if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
-            yield []
-    yield state_list
+
+    if check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
+        new_state_list = copy.deepcopy(state_list)
+
+        # At this point we are something like "I/We/He ordered x" where x is a referring expression
+        # Solve the referring expression and see if any of the solution groups map to what the user has
+        for solution_index in range(len(x_act_list.solution_values)):
+            actor_value = x_act_list.solution_values[solution_index].value
+            what_value = x_obj_list.solution_values[solution_index].value
+            found_values = []
+
+            # We can group them all together since having "steak and fries together" is the same as
+            # having them separately
+            for actor in actor_value:
+                actor_have = [x for x in rel_objects(state_list[0], actor, "have")]
+                for value in what_value:
+                    # First see if the actor has the concept, as in "do you have a (conceptual) steak?"
+                    store_value = object_to_store(value)
+                    if store_value in actor_have:
+                        found_values.append(store_value)
+
+                    else:
+                        # Otherwise see if they have an instance
+                        referring_group_generator = at_least_one_generator(
+                            value.solution_groups(state_list[0], ignore_global_constraints=True))
+
+                        if referring_group_generator:
+                            item_not_found = False
+                            # Now we have "I have concept"
+                            # See if concept generates a solution_group that is fully contained in what I have
+                            for referring_group in referring_group_generator:
+                                # Ensure that every item in referring_group is also a value that is had
+                                for solution in referring_group:
+                                    referring_group_value = solution.get_binding(value.variable_name).value
+                                    for referring_group_value_individual in referring_group_value:
+                                        if referring_group_value_individual not in actor_have:
+                                            item_not_found = True
+                                            break
+                                        else:
+                                            found_values.append(referring_group_value_individual)
+
+                                    if item_not_found:
+                                        break
+
+                                if item_not_found is False:
+                                    # This referring expression was fully had
+                                    break
+
+                            if item_not_found:
+                                # this referring expression was not fully had
+                                report_error(["errorText",
+                                              s("No, you don't have {x_obj_list.solution_values[0].variable.name}",
+                                                state_list[0].get_binding("tree").value[0])], force=True)
+                                yield []
+                                return
+
+                        else:
+                            # Referring group didn't generate anything
+                            yield []
+
+                # If this is a wh_question() we need to fill in the variable with the values
+                if wh_variable:
+                    new_state_list[solution_index] = new_state_list[solution_index].set_x(wh_variable, tuple(found_values))
+
+            # all referring expressions for all actors were completely had
+            yield new_state_list
+            return
+
+    yield []
 
 
 # Used only when there is a form of have that means "able to"
@@ -1764,8 +1837,7 @@ def reset():
                                 "responseState": "initial"
                                 })
 
-
-    initial_state = initial_state.add_rel("bill_type","specializes","thing")
+    initial_state = initial_state.add_rel("bill_type", "specializes", "thing")
     initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
     initial_state = initial_state.add_rel("check", "specializes", "bill_type")
     initial_state = initial_state.add_rel("kitchen", "specializes", "thing")
@@ -1790,7 +1862,6 @@ def reset():
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
 
-
     initial_state = initial_state.add_rel("steak", "specializes", "meat")
     initial_state = initial_state.add_rel("chicken", "specializes", "meat")
     initial_state = initial_state.add_rel("salmon", "specializes", "meat")
@@ -1810,6 +1881,7 @@ def reset():
     # The computer has the concepts of the items so it can answer "do you have steak?"
     initial_state = initial_state.add_rel("computer", "have", "menu")
     initial_state = initial_state.add_rel("computer", "have", "food")
+    initial_state = initial_state.add_rel("computer", "have", "dish")
     initial_state = initial_state.add_rel("computer", "have", "meat")
     initial_state = initial_state.add_rel("computer", "have", "veggie")
     initial_state = initial_state.add_rel("user", "have", "bill1")
@@ -1918,7 +1990,7 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")

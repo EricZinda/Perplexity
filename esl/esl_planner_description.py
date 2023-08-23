@@ -6,14 +6,16 @@ from perplexity.sstring import s
 
 task_methods = []
 
+
 def describe_list_analyze(state, what_group):
     # See how many of the items we are describing are "specials" or "menu items"
     analysis = {"Specials": [],
                 "MenuItems": [],
                 "Bills": [],
-                "Instances":[],
+                "Instances": [],
                 "Others": [],
                 "UniqueItems": set()}
+
     for item_value in what_group:
         for item in item_value:
             if item not in analysis["UniqueItems"]:
@@ -21,8 +23,7 @@ def describe_list_analyze(state, what_group):
                 store_object = object_to_store(item)
                 # If the response is the actual 'special' type, then describe the specials
                 # since we are talking about the whole class of them
-                #if store_object
-                if is_instance(state,store_object):
+                if is_instance(state, store_object):
                     analysis["Instances"].append(store_object)
                 if sort_of(state, store_object, "special"):
                     analysis["Specials"].append(store_object)
@@ -46,17 +47,20 @@ def describe_analyzed_at_entrance(state, analysis):
 
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
-        new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat."+ state.get_reprompt()))
+        new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat." + state.get_reprompt()))
 
     elif len(analysis["Bills"]) > 0:
-        new_methods.append(('respond', "Let's talk about the bill once you've finished eating."+ state.get_reprompt()))
+        new_methods.append(('respond', "Let's talk about the bill once you've finished eating." + state.get_reprompt()))
+
     else:
         for item in analysis["Others"]:
             if isinstance(item, Measurement) and item.measurement_type == "dollar":
-                new_methods.append(('respond', "Let's talk about prices once you've been seated."+ state.get_reprompt()))
+                new_methods.append(('respond', "Let's talk about prices once you've been seated." + state.get_reprompt()))
+
             else:
                 new_methods.insert(0, ('describe_item', item))
-                new_methods.append(('respond',state.get_reprompt()))
+                new_methods.append(('respond', state.get_reprompt()))
+
     return new_methods
 
 
@@ -73,7 +77,8 @@ def describe_analyzed_at_table(state, analysis):
     heard_specials = not rel_check(state, "user", "heardSpecials", "false")
     has_menu = any(menu_holder in ["son1", "user"] for menu_holder in has_item_of_type(state, "menu"))
 
-    if len(analysis["Instances"]) > 0: # no special behavior if there are instances
+    # no special behavior if there are instances
+    if len(analysis["Instances"]) > 0:
         return [('describe_item', list(analysis["UniqueItems"]))]
 
     if len(analysis["MenuItems"]) > 0 and not has_menu:
@@ -81,6 +86,7 @@ def describe_analyzed_at_table(state, analysis):
         # ask if the user wants to hear the long description
         new_methods.append(("get_menu", ["user"]))
         return new_methods
+
     if len(analysis["Specials"]) > 0:
         if not heard_specials:
             # If we are being ask to describe only specials, use the special, detailed description
@@ -88,20 +94,17 @@ def describe_analyzed_at_table(state, analysis):
             new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', "user", "heardSpecials", "true"))
             return new_methods
-        '''
-        if len(analysis["Specials"]) == 1:
-            if object_to_store(analysis["Specials"])
-            new_methods.append(('respond',
-                               "So again, we have tomato soup, green salad, and smoked pork."+ state.get_reprompt()))
-            return new_methods
-        '''
 
+        if len(analysis["Specials"]) == 1 and analysis["Specials"][0] == "special":
+            new_methods.append(('respond',
+                               "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+            return new_methods
 
     rel = list(state.all_rel("describes"))
     for i in analysis.keys():
         if not i == "UniqueItems":
             for j in analysis[i]:
-                if j in all_instances_and_spec(state,"thing"):
+                if j in all_instances_and_spec(state, "thing"):
                     if ("computer", j) in rel:
                         new_methods.append(('describe_item', j))
                 else:

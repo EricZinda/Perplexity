@@ -3,6 +3,13 @@
     "ResetFunction": "reset",
     "TestItems": [
         {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "ca458224-ee3b-4026-abd1-162fdccae031"
+        },
+        {
             "Command": "we want to sit down",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
             "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_request(e2,x3))",

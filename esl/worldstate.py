@@ -61,12 +61,14 @@ def is_user_type(val):
                 return False
         return True
 
+
 def all_user_type(val):
     assert isinstance(val,list)
     for i in val:
         if not is_user_type(i):
             return False
     return True
+
 
 def specializations(state, base_type):
     for i in state.all_rel("specializes"):
@@ -206,7 +208,7 @@ def location_of_type(state, who, where_type):
 
 def count_of_instances_and_concepts(state, concepts_original):
     concepts = copy.copy(concepts_original)
-    for concept in concepts:
+    for concept in concepts_original:
         concepts += [concept_from_lemma(x) for x in specializations(state, concept.concept_name)]
     concept_count = len(concepts)
 

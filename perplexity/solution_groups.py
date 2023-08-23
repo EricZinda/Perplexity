@@ -102,7 +102,7 @@ class SolutionGroupGenerator(object):
     def next_solution_in_group(self, current_id):
         while True:
             try:
-                next_group, next_id = next(self.all_plural_groups_stream)
+                next_group, next_id, stats_group = next(self.all_plural_groups_stream)
 
             except StopIteration:
                 self.complete = True
@@ -110,11 +110,14 @@ class SolutionGroupGenerator(object):
 
             # The ID reflects the lineage, so we can get the
             # parent ID by grabbing the text before the last ":"
-            colon_index = next_id.rfind(":")
-            if colon_index == -1:
-                parent_id = ""
+            if not stats_group.is_concept():
+                colon_index = next_id.rfind(":")
+                if colon_index == -1:
+                    parent_id = ""
+                else:
+                    parent_id = next_id[:colon_index]
             else:
-                parent_id = next_id[:colon_index]
+                parent_id = ""
 
             # See if the group returned is a descendant of
             # an existing group by first comparing its ID

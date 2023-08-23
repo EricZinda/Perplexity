@@ -154,7 +154,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     new_set[1] = existing_set[1] + [next_solution]
 
                     if state == CriteriaResult.meets:
-                        yield new_set[1], new_set[2]
+                        yield new_set[1], new_set[2], new_set[0]
 
                     elif state == CriteriaResult.meets_pending_global:
                         pending_global_criteria.append([new_set[1], new_set[2]])
@@ -230,6 +230,12 @@ class StatsGroup(object):
             previous_new_stat = new_stat
 
         return new_group
+
+    def is_concept(self):
+        for stat in self.variable_stats:
+            if stat.is_concept:
+                return True
+        return False
 
     # Return the index (or None) for the neg() predication that
     # negated this variable
