@@ -13,31 +13,31 @@ from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.vocabulary import ValueSize
 
 
-def is_concept(o):
-    return hasattr(o, "is_concept") and o.is_concept()
+def is_referring_expr(o):
+    return hasattr(o, "is_referring_expr") and o.is_referring_expr()
 
 
-def concept_from_lemma(lemma):
+def referring_expr_from_lemma(lemma):
     # TODO: Make this more robust
     variable_name = "x999"
     predication = TreePredication(0, f"_{lemma}_n_1", ["x999"], arg_names=["ARG0"])
-    return Concept(predication, variable_name)
+    return ReferringExpr(predication, variable_name)
 
 
-class Concept(object):
+class ReferringExpr(object):
     def __init__(self, noun_predication, variable_name):
         self.noun_predication = noun_predication
         self.variable_name = variable_name
         self.modifiers = []
-        self.bound_variables ={}
+        self.bound_variables = {}
         self.extra_variables = {}
         self._hash = None
 
         parsed_predication = parse_predication_name(noun_predication.name)
-        self.concept_name = parsed_predication["Lemma"]
+        self.referring_expr_name = parsed_predication["Lemma"]
 
     def __repr__(self):
-        return f"concept({self.concept_name}: {self.modifiers})"
+        return f"referring_expr({self.referring_expr_name}: {self.modifiers})"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
@@ -45,12 +45,12 @@ class Concept(object):
     def __hash__(self):
         if self._hash is None:
             # TODO: Make this more efficient
-            self._hash = hash(self.concept_name)
+            self._hash = hash(self.referring_expr_name)
 
         return self._hash
 
     def __eq__(self, other):
-        if isinstance(other, Concept) and self.__hash__() == other.__hash__():
+        if isinstance(other, ReferringExpr) and self.__hash__() == other.__hash__():
             if len(self.modifiers) != len(other.modifiers):
                 return False
             else:
@@ -64,7 +64,6 @@ class Concept(object):
                             other_bound_value = other.bound_variables.get(arg, None)
                             if self_bound_value != other_bound_value:
                                 return False
-
 
                 return True
 
@@ -114,8 +113,8 @@ class Concept(object):
         bound_state = bound_state.set_x(self.variable_name, None)
 
         for group in execution_context().resolve_fragment(bound_state, [self.noun_predication] + self.modifiers, extra_variables=self.extra_variables, criteria_list=declared_constraints):
-            if is_concept(group[0].get_binding(self.variable_name).value[0]):
-                # The caller already has the concept, don't return it again
+            if is_referring_expr(group[0].get_binding(self.variable_name).value[0]):
+                # The caller already has the referring expression, don't return it again
                 continue
             else:
                 yield group
@@ -127,11 +126,11 @@ class Concept(object):
                 return state.get_binding(arg_variable).value
         return None
 
-    def is_concept(self):
+    def is_referring_expr(self):
         return True
 
 
-# This function is used to check the constraints for a variable that is set to a *concept*.
+# This function is used to check the constraints for a variable that is set to a *referring expression*.
 # The caller needs to decide if the meaning of the phrase is referring to instances or concepts and set check_concepts=True or False
 #   since the meaning can't always be inferred.
 #
@@ -153,7 +152,7 @@ class Concept(object):
 #   "Do you have the steak?" (ditto)
 #   "Do you still have 2 menus?" --> (ditto)
 #   "Are 2 specials available?" --> (ditto)
-def concept_meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
+def referring_expr_meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
     min_size = variable_constraints.min_size if variable_constraints is not None else 1
     max_size = variable_constraints.max_size if variable_constraints is not None else float(inf)
     if check_concepts:

@@ -110,7 +110,7 @@ class SolutionGroupGenerator(object):
 
             # The ID reflects the lineage, so we can get the
             # parent ID by grabbing the text before the last ":"
-            if not stats_group.is_concept():
+            if not stats_group.is_referring_expr():
                 colon_index = next_id.rfind(":")
                 if colon_index == -1:
                     parent_id = ""

@@ -4,9 +4,9 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item, ResetOrderAndBillOp, find_unused_values_from_concept, object_to_store, all_ancestors
+    find_unused_item, ResetOrderAndBillOp, find_unused_values_from_referring_expr, object_to_store, all_ancestors
 from perplexity.execution import report_error
-from perplexity.predications import Concept, is_concept
+from perplexity.predications import ReferringExpr, is_referring_expr
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.solution_groups import GroupVariableValues
@@ -123,8 +123,8 @@ def get_menu_seated(state, who):
             return tasks
 
 
-
 gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance, get_menu_seated)
+
 
 def count_entities(value_group):
     if value_group is None:
@@ -132,7 +132,7 @@ def count_entities(value_group):
 
     count = 0
     for item in value_group:
-        if is_concept(item):
+        if is_referring_expr(item):
             card = noun_structure(item, "card")
             if card is not None:
                 count += card
@@ -185,7 +185,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
                     for_count = None
 
         if for_count == 2:
-            unused_tables = find_unused_values_from_concept(table, eval_state)
+            unused_tables = find_unused_values_from_referring_expr(table, eval_state)
             if len(unused_tables) == 1:
                 return [('respond',
                          "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
@@ -278,13 +278,13 @@ def order_food_at_table(state, who, what):
         if eval_state is None:
             return
         else:
-            food_instances = find_unused_values_from_concept(what, eval_state)
+            food_instances = find_unused_values_from_referring_expr(what, eval_state)
             if len(food_instances) > 0:
                 new_tasks = [('respond', "Excellent Choice! Can I get you anything else?")]
                 for food_instance in food_instances:
                     if sort_of(state, [food_instance], "dish"):
                         new_tasks +=  [('add_rel', who, "ordered", food_instance),
-                                       ('add_bill', what.concept_name)]
+                                       ('add_bill', what.referring_expr_name)]
                     else:
                         return
                 new_tasks.append(('set_response_state', "anything_else"))
@@ -347,14 +347,14 @@ def satisfy_want_group_group(state, group_who, group_what, min_size):
         # Everybody wanted the same kind of thing
         # Only need to check the first because: If one item in the group is a concept, they all are
         one_thing = unique_whats[0]
-        if is_concept(one_thing):
-            if one_thing.concept_name == "table":
+        if is_referring_expr(one_thing):
+            if one_thing.referring_expr_name == "table":
                 # Tables are special in that, in addition to having a count ("2 tables")
                 # they can be "for 2" or "for my son and me"
                 return [("get_table", unique_group_variable_values(group_who), one_thing, min_size)]
-            elif one_thing.concept_name == "menu":
+            elif one_thing.referring_expr_name == "menu":
                 return [("get_menu", unique_group_variable_values(group_who))]
-            elif one_thing.concept_name == "bill":
+            elif one_thing.referring_expr_name == "bill":
                 return [("get_bill",)]
 
         else:
@@ -384,7 +384,7 @@ def satisfy_want(state, who, what, min_size):
         # report an error if this is the best we can do
         return [('respond', "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
     else:
-        concept = what.concept_name
+        concept = what.referring_expr_name
         if sort_of(state, concept, "menu"):
             return [('get_menu', who)]
 

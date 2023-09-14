@@ -1,7 +1,12 @@
 have_v and order_v are both just about verifying facts in the world, so they should be implemented the same. Many predications will be like these.
 
+Key insights:
+    you can mean restaurant or waiter
+    referring expressions are different than types. A referring expression can generate types
+        Need to rename these to "referring expressions"
+
 Approach:
-    - Start with "you" meaning restaurant
+    - (done) Start with "you" meaning restaurant
     - Start with only bound variables and make that work
     - Start by not worrying about what errors are returned
     - Key: For "you", it can mean either "the restaurant" or "the waiter"
@@ -17,11 +22,15 @@ How does a human process this?
     - Decide if it is an implied request or a factual question
         - Can be determined by context
 
+Conceptual cues:
+    - If "you" is "restaurant" we are always talking about concepts
+        The referring expression should always return concepts *that aren't the same as the original*
+
 Interpretation 1: non-conceptual query
 "Did I order an (instance of) a steak?"
 "What dishes do I have?"
     - "dishes" refers to instances
-"Do you have a steak?" --> implied request if something is on the menu
+"Do you have a steak?" --> does the restaurant have the concept of a steak
 "Do you have steaks?" --> implied request if something is on the menu
 
 Interpretation 2: in-scope concepts query
@@ -31,6 +40,7 @@ Analysis:
 "Do you have a (concept of) a steak?"
 "Do you have the steak?" -> refers to having an inscope concept of "the steak"
 "Do you have the table?" -> There is no in-scope concept of a table
+"which steaks do you (restaurant) have?" -> which inscope concepts of steaks are there?
 
 Interpretation 3: implied requests
 Analysis:

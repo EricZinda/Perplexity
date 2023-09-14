@@ -222,7 +222,7 @@ class StatsGroup(object):
         new_group = StatsGroup(self.variable_has_inf_max, self.group_state)
         previous_new_stat = None
         for stat in self.variable_stats:
-            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.is_concept)
+            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.is_referring_expr)
             new_stat.prev_variable_stats = previous_new_stat
             if previous_new_stat is not None:
                 previous_new_stat.next_variable_stats = new_stat
@@ -231,9 +231,9 @@ class StatsGroup(object):
 
         return new_group
 
-    def is_concept(self):
+    def is_referring_expr(self):
         for stat in self.variable_stats:
-            if stat.is_concept:
+            if stat.is_referring_expr:
                 return True
         return False
 
@@ -244,7 +244,7 @@ class StatsGroup(object):
 
 
 class VariableStats(object):
-    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None, is_concept=False):
+    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None, is_referring_expr=False):
         self.variable_name = variable_name
         self.whole_group_unique_individuals = set() if whole_group_unique_individuals is None else whole_group_unique_individuals
         self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
@@ -255,7 +255,7 @@ class VariableStats(object):
         self.distributive_state = None if distributive_state is None else distributive_state
         self.collective_state = None if collective_state is None else collective_state
         self.cumulative_state = None if cumulative_state is None else cumulative_state
-        self.is_concept = is_concept
+        self.is_referring_expr = is_referring_expr
 
     def __repr__(self):
         soln_modes = self.solution_modes()
@@ -281,26 +281,26 @@ class VariableStats(object):
         binding_value = solution.get_binding(self.variable_name).value
 
         # Solutions that have a conceptual variable cannot have instances or vice versa
-        is_conceptual_solution = any([perplexity.predications.is_concept(value) for value in binding_value])
+        is_conceptual_solution = any([perplexity.predications.is_referring_expr(value) for value in binding_value])
         if is_conceptual_solution:
-            if not self.is_concept:
+            if not self.is_referring_expr:
                 # Can't merge a conceptual variable value with non-conceptual
                 if len(self.whole_group_unique_individuals) > 0 :
                     self.current_state = CriteriaResult.fail_one
                     return False, self.current_state
                 else:
-                    self.is_concept = True
+                    self.is_referring_expr = True
 
             elif len(self.whole_group_unique_individuals) == 1 and \
                      binding_value[0] in self.whole_group_unique_individuals:
                 # This was a conceptual group with one member, and this row is the same
-                self.is_concept = True
+                self.is_referring_expr = True
 
             else:
                 # Is a conceptual solution, this group is conceptual
-                self.is_concept = True
+                self.is_referring_expr = True
 
-        elif self.is_concept:
+        elif self.is_referring_expr:
             self.current_state = CriteriaResult.fail_one
             return False, self.current_state
 
@@ -344,7 +344,7 @@ class VariableStats(object):
             else:
                 prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
 
-            if prev_unique_value_count is not None and self.prev_variable_stats.is_concept:
+            if prev_unique_value_count is not None and self.prev_variable_stats.is_referring_expr:
                 # Not used for conceptual since all 3 modes might work
                 only_collective = None
 
@@ -492,7 +492,7 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         # being tracked by a variable without an upper bound of inf, then we need to create a new group
         # because we need to generate alternatives from it
         # OR if this variable is conceptual, don't merge either so we get all the alternatives
-        if new_individuals and (criteria.max_size != float('inf') or variable_stats.is_concept):
+        if new_individuals and (criteria.max_size != float('inf') or variable_stats.is_referring_expr):
             merge = False
 
     new_set_stats_group.group_state = current_set_state
@@ -551,7 +551,7 @@ class VariableCriteria(object):
             # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
             # So we need to track unique values across all answers in this case
             # BUT: Only track instances (things that aren't concepts) because concepts are handled by the developer manually
-            self._unique_rstrs.update([item for item in value_list if not perplexity.predications.is_concept(item)])
+            self._unique_rstrs.update([item for item in value_list if not perplexity.predications.is_referring_expr(item)])
 
         if self.global_criteria == GlobalCriteria.exactly:
             # We can fail immediately if we have too many

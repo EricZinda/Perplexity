@@ -3,7 +3,7 @@ import json
 import numbers
 import esl.esl_planner
 from perplexity.execution import report_error
-from perplexity.predications import is_concept, Concept, concept_from_lemma
+from perplexity.predications import is_referring_expr, ReferringExpr, referring_expr_from_lemma
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.state import State
@@ -12,7 +12,7 @@ from perplexity.utilities import at_least_one_generator
 
 
 def noun_structure(value, part):
-    if isinstance(value, Concept):
+    if isinstance(value, ReferringExpr):
         # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
         return value.modifiers().get(part, None)
 
@@ -27,7 +27,7 @@ def in_scope_initialize(state):
     in_scope_concepts = set()
     for i in state.all_rel("conceptInScope"):
         if i[1] == "true":
-            in_scope_concepts.add(concept_from_lemma(i[0]))
+            in_scope_concepts.add(referring_expr_from_lemma(i[0]))
 
     # Any instances that the user or son "have" are in scope
     in_scope_instances = set()
@@ -45,7 +45,7 @@ def in_scope_initialize(state):
 
 
 def in_scope(initial_data, state, value):
-    if is_concept(value):
+    if is_referring_expr(value):
         return value in initial_data["InScopeConcepts"]
     else:
         return value in initial_data["InScopeInstances"]
@@ -177,9 +177,9 @@ def all_ancestors(state, thing):
         proc_idx += 1
 
 
-def instance_of_or_concept_name(state, thing):
-    if is_concept(thing):
-        return thing.concept_name
+def instance_of_or_referring_expr_name(state, thing):
+    if is_referring_expr(thing):
+        return thing.referring_expr_name
     else:
         return instance_of_what(state, thing)
 
@@ -209,12 +209,12 @@ def location_of_type(state, who, where_type):
 def count_of_instances_and_concepts(state, concepts_original):
     concepts = copy.copy(concepts_original)
     for concept in concepts_original:
-        concepts += [concept_from_lemma(x) for x in specializations(state, concept.concept_name)]
+        concepts += [referring_expr_from_lemma(x) for x in specializations(state, concept.referring_expr_name)]
     concept_count = len(concepts)
 
     instances = []
     for concept in concepts:
-        instances += list(all_instances(state, concept.concept_name))
+        instances += list(all_instances(state, concept.referring_expr_name))
     instance_count = len(instances)
 
     scope_data = in_scope_initialize(state)
@@ -232,12 +232,12 @@ def count_of_instances_and_concepts(state, concepts_original):
 
 
 def object_to_store(o):
-    return o.concept_name if is_concept(o) else o
+    return o.referring_expr_name if is_referring_expr(o) else o
 
 
 def store_to_object(state, s):
     if not is_instance(state, s):
-        return concept_from_lemma(s)
+        return referring_expr_from_lemma(s)
     else:
         return s
 
@@ -246,15 +246,15 @@ def serial_store_to_object(state, s_list):
     return [store_to_object(state, s) for s in s_list]
 
 
-# Finds a solution group that has instances of whatever concept.variable_name holds
+# Finds a solution group that has instances of whatever referring_expr.variable_name holds
 # that are not in use by anyone, or currently ordered.
 # Note that it will return as many items as the solution group has, since the user may have
 # said "I want 2 steaks" so they should get 2 of them, etc
-def find_unused_values_from_concept(concept, solution_group_generator):
+def find_unused_values_from_referring_expr(referring_expr, solution_group_generator):
     for solution_group in solution_group_generator:
         found_items = []
         for solution in solution_group:
-            concept_variable_value = solution.get_binding(concept.variable_name).value
+            concept_variable_value = solution.get_binding(referring_expr.variable_name).value
             all_items_available = True
             for concept_variable_item in concept_variable_value:
                 taken = at_least_one_generator(rel_subjects(solution, "have", concept_variable_item))
@@ -493,7 +493,7 @@ class WorldState(State):
         # Nothing has "user" but they are always in scope
         everything_in_scope = set(["thing", "user"])
         everything_in_scope.update(in_scope["InScopeInstances"])
-        everything_in_scope.update([x.concept_name for x in in_scope["InScopeConcepts"]])
+        everything_in_scope.update([x.referring_expr_name for x in in_scope["InScopeConcepts"]])
 
         # All generic concepts are always in scope
         everything_in_scope.update(x[0] for x in self.all_rel("specializes"))
@@ -793,8 +793,8 @@ class WorldState(State):
     # an unknown() predication in the MRS for the verb
     def unknown(self, x):
         concept_name = None
-        if is_concept(x):
-            concept_name = x.concept_name
+        if is_referring_expr(x):
+            concept_name = x.referring_expr_name
 
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash"]:
@@ -814,7 +814,7 @@ class WorldState(State):
                 return [RespondOperation("Sorry, we don't allow ordering specific things like that"+ self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
-            if is_concept(x):
+            if is_referring_expr(x):
                 group_generator = at_least_one_generator(x.solution_groups(self.world_state_frame()))
                 if group_generator is not None:
                     possible_count = self.get_binding(x.variable_name)
@@ -825,7 +825,7 @@ class WorldState(State):
                 possible_count = x
 
             if isinstance(possible_count, numbers.Number):
-                table_concept = concept_from_lemma("table")
+                table_concept = referring_expr_from_lemma("table")
                 # e_binding, x_what_binding, x_for_binding
                 args = ["e999", table_concept.variable_name, "x1000"]
                 table_concept = table_concept.add_bound_modifier(TreePredication(0, "_for_p", args, arg_names=["ARG0", "ARG1", "ARG2"]),
@@ -835,15 +835,6 @@ class WorldState(State):
                 actors = [("user",)]
                 whats = [(table_concept,)]
                 return self.find_plan([('satisfy_want', actors, whats, 1)])
-
-
-            # if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
-            #     actors = [("user",)]
-            #     whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]
-            #     return self.find_plan([('satisfy_want', actors, whats)])
-            #
-            # else:
-            #     return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
 
         report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 

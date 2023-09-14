@@ -1,6 +1,6 @@
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec
-from perplexity.predications import is_concept, Concept
+from perplexity.predications import is_referring_expr, ReferringExpr
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 
@@ -105,12 +105,12 @@ def describe_analyzed_at_table(state, analysis):
         if not i == "UniqueItems":
             for j in analysis[i]:
                 if j in all_instances_and_spec(state, "thing"):
-                    if ("computer", j) in rel:
+                    if ("restaurant", j) in rel:
                         new_methods.append(('describe_item', j))
                 else:
                     j = object_to_store(j)
                     if j in all_instances_and_spec(state, "thing"):
-                        if ("computer", j) in rel:
+                        if ("restaurant", j) in rel:
                             new_methods.append(('describe_item', j))
                     else:
                         new_methods.append(('describe_item', j))
@@ -157,7 +157,7 @@ def convert_to_english(state, what):
     elif isinstance(what, Measurement):
         return s("{*what.count} {*what.measurement_type:<*what.count}")
 
-    if isinstance(what,Concept):
+    if isinstance(what, ReferringExpr):
         return object_to_store(what)
 
     else:

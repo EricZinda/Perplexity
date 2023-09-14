@@ -1,4 +1,17 @@
-- Need to write up the model for conceptual stuff
+- Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
+
+- referring expressions are different than types. A referring expression can generate types
+  - Need to rename these to "referring expressions"
+  - Need to rethink what it means for a solution group to have a referring expression in it
+    - Does this mean that the solution group handler is looking for the referring expression to return *types*? and we have to check if those *types* meet the criteria?
+    - This is a pretty different way of thinking about "concepts" as they were referred to before and may cause lots of code to get rethought
+    - BUT: This seems like a clearer way to think about what is going on:
+      - The solver generates solution groups with referring expressions
+      - Those get resolved into types and instances which get processed
+      - etc.
+- If you say "which dishes do you have?" no concepts are returned since they are filtered out by referring expression
+  - But if we return all concepts, it will include "dishes" too
+    - The referring expression should always return concepts *that aren't the same as the original*
 
 - have_v and order_v are both just about verifying facts in the world, so they should be implemented the same
   - Alternative Implementation

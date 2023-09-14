@@ -8,7 +8,7 @@ from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
-    lift_style_predication_2, concept_meets_constraint
+    lift_style_predication_2, referring_expr_meets_constraint
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction
@@ -40,7 +40,7 @@ def variable_group_values_to_list(variable_group):
 def check_concept_solution_group_constraints(state_list, x_what_variable_group, check_concepts):
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
-    assert is_concept(x_what_variable_group.solution_values[0].value[0])
+    assert is_referring_expr(x_what_variable_group.solution_values[0].value[0])
     x_what_variable = x_what_variable_group.solution_values[0].variable.name
 
     # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
@@ -52,14 +52,14 @@ def check_concept_solution_group_constraints(state_list, x_what_variable_group, 
         x_what_individuals_set.update(value)
     concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(
         state_list[0], list(x_what_individuals_set))
-    return concept_meets_constraint(state_list[0].get_binding("tree").value[0],
-                                    x_what_variable_group.variable_constraints,
-                                    concept_count,
-                                    concept_in_scope_count,
-                                    instance_count,
-                                    instance_in_scope_count,
-                                    check_concepts,
-                                    variable=x_what_variable)
+    return referring_expr_meets_constraint(state_list[0].get_binding("tree").value[0],
+                                           x_what_variable_group.variable_constraints,
+                                           concept_count,
+                                           concept_in_scope_count,
+                                           instance_count,
+                                           instance_in_scope_count,
+                                           check_concepts,
+                                           variable=x_what_variable)
 
 
 def is_past_tense(tree_info):
@@ -262,7 +262,7 @@ def pron(state, x_who_binding):
         plurality = (state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["NUM"])
 
     def bound_variable(value):
-        if person == 2 and value == "computer":
+        if person == 2 and value == "restaurant":
             return True
         if person == 1 and is_user_type(value):
             return True
@@ -271,7 +271,7 @@ def pron(state, x_who_binding):
 
     def unbound_variable():
         if person == 2:
-            yield "computer"
+            yield "restaurant"
         if person == 1:
             if plurality == "pl":
                 yield "user"
@@ -286,10 +286,10 @@ def pron(state, x_who_binding):
 @Predication(vocabulary, names=["generic_entity"])
 def generic_entity(state, x_binding):
     def bound(val):
-        return val == Concept(execution_context().current_predication(), x_binding.variable.name)
+        return val == ReferringExpr(execution_context().current_predication(), x_binding.variable.name)
 
     def unbound():
-        yield Concept(execution_context().current_predication(), x_binding.variable.name)
+        yield ReferringExpr(execution_context().current_predication(), x_binding.variable.name)
 
     yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
@@ -303,9 +303,9 @@ def _okay_a_1(state, i_binding, h_binding):
 def much_many_a(state, e_binding, x_binding):
     if "Measure" in e_binding.value.keys():
         measure_into_variable = e_binding.value["Measure"]["Value"]
-        # if we are measuring x_binding should have a Concept() that is the type of measurement
+        # if we are measuring x_binding should have a ReferringExpr() that is the type of measurement
         x_binding_value = x_binding.value
-        if len(x_binding_value) == 1 and is_concept(x_binding_value[0]):
+        if len(x_binding_value) == 1 and is_referring_expr(x_binding_value[0]):
             # Set the actual value of the measurement to a string so that
             # a predication that receives it knows we are looking to fill in an unbound value
             measurement = Measurement(x_binding_value[0], measure_into_variable)
@@ -323,7 +323,7 @@ def measure(state, e_binding, e_binding2, x_binding):
 
 @Predication(vocabulary, names=["abstr_deg"])
 def abstr_deg(state, x_binding):
-    yield state.set_x(x_binding.variable.name, (concept_from_lemma("abstract_degree"),))
+    yield state.set_x(x_binding.variable.name, (referring_expr_from_lemma("abstract_degree"),))
 
 
 @Predication(vocabulary, names=["card"])
@@ -335,7 +335,7 @@ def card(state, c_number, e_binding, x_binding):
             report_error(["Notnumeric",state.get_reprompt()])
             return
     x_binding_value = state.get_binding(x_binding.variable.name).value
-    if len(x_binding_value) == 1 and is_concept(x_binding_value[0]) and isinstance(c_number, numbers.Number):
+    if len(x_binding_value) == 1 and is_referring_expr(x_binding_value[0]) and isinstance(c_number, numbers.Number):
         e_what_value = e_binding.value
         modified = x_binding_value[0].add_bound_modifier(execution_context().current_predication(), [c_number, e_what_value, x_binding.value])
 
@@ -382,7 +382,7 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
                                              x_what_unbound,
                                              x_for_unbound):
         x_what_value = solution.get_binding(x_what_binding.variable.name).value
-        if is_concept(x_what_value[0]):
+        if is_referring_expr(x_what_value[0]):
             e_what_value = solution.get_binding(e_binding.variable.name).value
             x_for_value = solution.get_binding(x_for_binding.variable.name).value
             modified = x_what_value[0].add_bound_modifier(execution_context().current_predication(), [e_what_value, x_what_value, x_for_value])
@@ -430,7 +430,7 @@ def _tomato_n_1(state, x_bind):
         report_error(["errorText","no declarative tomato",state.get_reprompt()])
 
     def unbound():
-        yield Concept("tomato")
+        yield ReferringExpr("tomato")
 
     yield from combinatorial_predication_1(state, x_bind, bound, unbound)
 
@@ -489,7 +489,7 @@ def match_all_n(noun_type, state, x_binding):
     # because solutions can never mix conceptual and non-conceptual terms so it isn't
     # true that it is combinatoric since you can't pick the conceptual and include it with another and have
     # it be valid
-    yield state.set_x(x_binding.variable.name, (Concept(execution_context().current_predication(), x_binding.variable.name), ))
+    yield state.set_x(x_binding.variable.name, (ReferringExpr(execution_context().current_predication(), x_binding.variable.name),))
 
     all_sandi = list(all_instances_and_spec(state,noun_type))
     all_sandi.remove(noun_type)
@@ -657,7 +657,7 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
 
     # This may be getting called with concepts or instances, before we call the planner
     # we need to decide if we have the requisite amount of them
-    if is_concept(x_actor_variable_group.solution_values[0]):
+    if is_referring_expr(x_actor_variable_group.solution_values[0]):
         # We don't want to deal with conceptual actors, fail this solution group
         # and wait for the one with real actors
         yield []
@@ -667,7 +667,7 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
     # and we don't support that
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
-    if is_concept(x_what_variable_group.solution_values[0].value[0]):
+    if is_referring_expr(x_what_variable_group.solution_values[0].value[0]):
         # We first check to make sure the constraints are valid for this concept.
         # Because in "I want x", 'x' is always a concept, but the constraint is on the instances
         # (as in "I want a steak" meaning "I want 1 instance of the concept of steak", we tell
@@ -710,7 +710,7 @@ def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
         return
 
     def criteria_bound(x):
-        return x == "computer"
+        return x == "restaurant"
 
     def unbound():
         yield None
@@ -731,7 +731,7 @@ def _check_v_1_group(state_list, has_more, e_introduced_binding, x_actor_binding
 
 @Predication(vocabulary, names=["_give_v_1"])
 def _give_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
-    if state.get_binding(x_actor_binding.variable.name).value[0] == "computer":
+    if state.get_binding(x_actor_binding.variable.name).value[0] == "restaurant":
         if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
             if not state.get_binding(x_object_binding.variable.name).value[0] is None:
                 yield state.record_operations(
@@ -759,13 +759,13 @@ def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_vari
     actor_values = [x.value for x in x_actor_variable_group.solution_values]
     x_object_values = [x.value for x in x_object_variable_group.solution_values]
     for obj in x_object_values:
-        if not obj == (concept_from_lemma("menu"),):
+        if not obj == (referring_expr_from_lemma("menu"),):
             yield [current_state.record_operations([RespondOperation("Sorry, I can't show you that")])]
             return
 
 
     current_state = do_task(current_state.world_state_frame(),
-                            [('satisfy_want', [('user',)], [(concept_from_lemma("menu"),)], 1)])
+                            [('satisfy_want', [('user',)], [(referring_expr_from_lemma("menu"),)], 1)])
     if current_state is None:
         yield []
     else:
@@ -791,7 +791,7 @@ def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_vari
     current_state = copy.deepcopy(state_list[0])
     actor_values = [x.value for x in x_actor_variable_group.solution_values]
     current_state = do_task(current_state.world_state_frame(),
-                            [('satisfy_want', [('user',)], [(concept_from_lemma("table"),)], 1)])
+                            [('satisfy_want', [('user',)], [(referring_expr_from_lemma("table"),)], 1)])
     if current_state is None:
         yield []
     else:
@@ -935,7 +935,7 @@ def _sit_v_down_future_group(state_list, has_more, e_list, x_actor_variable_grou
     if not is_future_tense(tree_info): return
 
     # The planner will only satisfy a want wrt the players
-    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[concept_from_lemma("table")]], 1)
+    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[referring_expr_from_lemma("table")]], 1)
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -1010,7 +1010,7 @@ def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_ac
         yield state_list
     else:
         # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[concept_from_lemma("table")]], 1)
+        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[referring_expr_from_lemma("table")]], 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -1161,7 +1161,7 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
 
     def bound(x_actor, x_object):
         # See comment above _order_v_1_past_group for why we only handle conceptual
-        if not is_concept(x_actor) and is_concept(x_object):
+        if not is_referring_expr(x_actor) and is_referring_expr(x_object):
             return True
 
         report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order",convert_to_english(state,x_object), state.get_reprompt()])
@@ -1199,14 +1199,14 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
 # use conceptual for all phrases like "I ordered a soup" since they all work the same
 @Predication(vocabulary, names=["solution_group__order_v_1"])
 def _order_v_1_past_group(state_list, has_more, e_introduced_variable_group, x_actor_variable_group, x_object_variable_group):
-    if is_concept(x_actor_variable_group.solution_values[0]):
+    if is_referring_expr(x_actor_variable_group.solution_values[0]):
         # We don't want to deal with conceptual actors, fail this solution group
         # and wait for the one with real actors
         yield []
 
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
-    if is_concept(x_object_variable_group.solution_values[0].value[0]):
+    if is_referring_expr(x_object_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(state_list, x_object_variable_group, check_concepts=False):
             yield []
             return
@@ -1329,7 +1329,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
 
     def bound(x_actor, x_object):
         # See comment above _order_v_1_past_group for why we only handle conceptual
-        if not is_concept(x_actor) and is_concept(x_object):
+        if not is_referring_expr(x_actor) and is_referring_expr(x_object):
             return True
 
         report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state,x_object), state.get_reprompt()])
@@ -1346,7 +1346,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
 
     def object_from_actor(x_actor):
         '''
-        if x_actor == "computer":
+        if x_actor == "restaurant":
             # - "What do you have?"-->
             #   - Conceptually, there are a lot of things the computer has
             #     - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
@@ -1395,8 +1395,8 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
     if len(state_list) == 1:
         if len(x_act_list.solution_values) == 1 and \
                 len(x_act_list.solution_values[0].value) == 1 and \
-                x_act_list.solution_values[0].value[0] == "computer":
-            implied_request_concepts = [concept_from_lemma("table"), concept_from_lemma("menu"), concept_from_lemma("bill")]
+                x_act_list.solution_values[0].value[0] == "restaurant":
+            implied_request_concepts = [referring_expr_from_lemma("table"), referring_expr_from_lemma("menu"), referring_expr_from_lemma("bill")]
             if len(x_obj_list.solution_values) == 1 and \
                     len(x_obj_list.solution_values[0].value) == 1:
                 if x_obj_list.solution_values[0].value[0] in implied_request_concepts:
@@ -1414,7 +1414,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                     else:
                         yield []
 
-                elif x_obj_list.solution_values[0].value[0] == concept_from_lemma("special"):
+                elif x_obj_list.solution_values[0].value[0] == referring_expr_from_lemma("special"):
                     # "Do you have specials?" is really about the concept of specials, so check_concepts=True
                     # Fail this group if we don't meet the constraints
                     if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
@@ -1427,7 +1427,6 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                         return
                     else:
                         yield []
-
 
     if check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
         new_state_list = copy.deepcopy(state_list)
@@ -1533,7 +1532,7 @@ def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
         #   - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
         #     - So it is a special case that we interpret as a request for a menu
         if is_user_type(x_actor):
-            yield (concept_from_lemma("menu"),)
+            yield (referring_expr_from_lemma("menu"),)
 
     yield from lift_style_predication_2(state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
@@ -1556,7 +1555,7 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
     force = sentence_force(tree_info["Variables"])
     wh_variable = get_wh_question_variable(tree_info)
     if force in ["ques", "prop-or-ques"] and \
-        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == concept_from_lemma("menu")) or \
+        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == referring_expr_from_lemma("menu")) or \
          not get_wh_question_variable(tree_info)):
         # The planner will only satisfy a want wrt the players
         task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))
@@ -1603,8 +1602,8 @@ def measurement_information(x):
         # then we are being asked to measure x_actor
         measure_into_variable = x.count
         units = x.measurement_type
-        if is_concept(units):
-            return measure_into_variable, units.concept_name
+        if is_referring_expr(units):
+            return measure_into_variable, units.referring_expr_name
 
     return None, None
 
@@ -1625,11 +1624,11 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 report_error(["is_not", convert_to_english(state,x_actor), convert_to_english(state,x_object), state.get_reprompt()])
 
     def unbound(x_object):
-        if is_concept(x_object):
-            for i in all_instances(state, x_object.concept_name):
+        if is_referring_expr(x_object):
+            for i in all_instances(state, x_object.referring_expr_name):
                 yield i
-            for i in specializations(state, x_object.concept_name):
-                yield concept_from_lemma(i)
+            for i in specializations(state, x_object.referring_expr_name):
+                yield referring_expr_from_lemma(i)
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound,
                                                 unbound):
@@ -1639,7 +1638,7 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if measure_into_variable is not None:
             # This is a "how much is x" question and we need to measure the value
             # into the specified variable
-            concept_item = instance_of_or_concept_name(state, x_actor_value)
+            concept_item = instance_of_or_referring_expr_name(state, x_actor_value)
             if units in ["generic_entity", "dollar"]:
                 if concept_item in state.sys["prices"]:
                     price = Measurement("dollar", state.sys["prices"][concept_item])
@@ -1690,8 +1689,8 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
             yield None
 
     def get_object(x_actor):
-        if isinstance(x_actor, Concept):
-            concept_item = instance_of_or_concept_name(state, x_actor)
+        if isinstance(x_actor, ReferringExpr):
+            concept_item = instance_of_or_referring_expr_name(state, x_actor)
             if concept_item in state.sys["prices"].keys():
                 yield concept_item + " : " + str(state.sys["prices"][concept_item]) + " dollars"
             else:
@@ -1707,7 +1706,7 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if measure_into_variable is not None:
             # This is a "how much is x" question and we need to measure the value
             # into the specified variable
-            concept_item = instance_of_or_concept_name(state, x_actor_value)
+            concept_item = instance_of_or_referring_expr_name(state, x_actor_value)
             if units in ["generic_entity", "dollar"]:
                 if concept_item in state.sys["prices"]:
                     price = Measurement("dollar", state.sys["prices"][concept_item])
@@ -1728,13 +1727,16 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         else:
             yield success_state
 
+
 @Predication(vocabulary, names=["solution_group__cost_v_1"])
 def _cost_v_1_group(state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
-    if is_concept(x_act_variable_group.solution_values[0].value[0]):
+    if is_referring_expr(x_act_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(state_list, x_act_variable_group, check_concepts=True):
             yield []
             return
     yield state_list
+
+
 @Predication(vocabulary, names=["_be_v_there"])
 def _be_v_there(state, e_introduced_binding, x_object_binding):
     def bound_variable(value):
@@ -1765,7 +1767,7 @@ def _be_v_there(state, e_introduced_binding, x_object_binding):
 
 def computer_in_state(state):
     for i in state.variables:
-        if i.value == ("computer",):
+        if i.value == ("restaurant",):
             return True
     return False
 
@@ -1830,7 +1832,7 @@ def generate_custom_message(tree_info, error_term):
 
 def reset():
     # return State([])
-    # initial_state = WorldState({}, ["pizza", "computer", "salad", "soup", "steak", "ham", "meat","special"])
+    # initial_state = WorldState({}, ["pizza", "restaurant", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
                                {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12,
                                            "chicken": 7, "pork": 8},
@@ -1841,17 +1843,17 @@ def reset():
     initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
     initial_state = initial_state.add_rel("check", "specializes", "bill_type")
     initial_state = initial_state.add_rel("kitchen", "specializes", "thing")
-    # The computer has the concepts of the items so it can answer "do you have x?"
-    initial_state = initial_state.add_rel("computer", "have", "kitchen")
+    # The restaurant has the concepts of the items so it can answer "do you have x?"
+    initial_state = initial_state.add_rel("restaurant", "have", "kitchen")
 
     initial_state = initial_state.add_rel("table", "specializes", "thing")
-    # The computer has the concepts of the items so it can answer "do you have x?"
-    initial_state = initial_state.add_rel("computer", "have", "table")
+    # The restaurant has the concepts of the items so it can answer "do you have x?"
+    initial_state = initial_state.add_rel("restaurant", "have", "table")
 
     initial_state = initial_state.add_rel("menu", "specializes", "thing")
-    # The computer has the concepts of the items so it can answer "do you have x?"
-    initial_state = initial_state.add_rel("computer", "have", "menu")
-    initial_state = initial_state.add_rel("computer", "instanceOf", "thing")
+    # The restaurant has the concepts of the items so it can answer "do you have x?"
+    initial_state = initial_state.add_rel("restaurant", "have", "menu")
+    initial_state = initial_state.add_rel("restaurant", "instanceOf", "thing")
 
     initial_state = initial_state.add_rel("person", "specializes", "thing")
     initial_state = initial_state.add_rel("son", "specializes", "person")
@@ -1878,17 +1880,17 @@ def reset():
     initial_state = initial_state.add_rel("bill", "conceptInScope", "true")
     initial_state = initial_state.add_rel("check", "conceptInScope", "true")
 
-    # The computer has the concepts of the items so it can answer "do you have steak?"
-    initial_state = initial_state.add_rel("computer", "have", "menu")
-    initial_state = initial_state.add_rel("computer", "have", "food")
-    initial_state = initial_state.add_rel("computer", "have", "dish")
-    initial_state = initial_state.add_rel("computer", "have", "meat")
-    initial_state = initial_state.add_rel("computer", "have", "veggie")
+    # The restaurant has the concepts of the items so it can answer "do you have steak?"
+    initial_state = initial_state.add_rel("restaurant", "have", "menu")
+    initial_state = initial_state.add_rel("restaurant", "have", "food")
+    initial_state = initial_state.add_rel("restaurant", "have", "dish")
+    initial_state = initial_state.add_rel("restaurant", "have", "meat")
+    initial_state = initial_state.add_rel("restaurant", "have", "veggie")
     initial_state = initial_state.add_rel("user", "have", "bill1")
-    initial_state = initial_state.add_rel("computer", "describes", "menu")
-    initial_state = initial_state.add_rel("computer", "describes", "bill")
-    initial_state = initial_state.add_rel("computer", "have", "bill")
-    initial_state = initial_state.add_rel("computer", "describes", "table")
+    initial_state = initial_state.add_rel("restaurant", "describes", "menu")
+    initial_state = initial_state.add_rel("restaurant", "describes", "bill")
+    initial_state = initial_state.add_rel("restaurant", "have", "bill")
+    initial_state = initial_state.add_rel("restaurant", "describes", "table")
 
     # Instances below here
     # Location and "in scope" are modeled as who "has" a thing
@@ -1911,9 +1913,9 @@ def reset():
     special_types = ["soup", "salad", "pork"]
     dish_types = menu_types + special_types
     for dish_type in dish_types:
-        # The computer has the concepts of the items so it can answer "do you have steak?"
-        initial_state = initial_state.add_rel("computer", "have", dish_type)
-        initial_state = initial_state.add_rel("computer", "describes", dish_type)
+        # The restaurant has the concepts of the items so it can answer "do you have steak?"
+        initial_state = initial_state.add_rel("restaurant", "have", dish_type)
+        initial_state = initial_state.add_rel("restaurant", "describes", dish_type)
 
         # These concepts are "in scope" meaning it is OK to say "the X"
         initial_state = initial_state.add_rel(dish_type, "conceptInScope", "true")
@@ -1930,7 +1932,6 @@ def reset():
             food_instance = dish_type + str(i)
             initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)
 
-
             # The kitchen is where all the food is
             initial_state = initial_state.add_rel("kitchen1", "contain", food_instance)
             if dish_type == "chicken":
@@ -1940,8 +1941,8 @@ def reset():
             if dish_type == "pork":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "smoked")
 
-    initial_state = initial_state.add_rel("computer", "have", "special")
-    initial_state = initial_state.add_rel("computer", "hasName", "host")
+    initial_state = initial_state.add_rel("restaurant", "have", "special")
+    initial_state = initial_state.add_rel("restaurant", "hasName", "host")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")
