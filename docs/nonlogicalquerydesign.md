@@ -3,7 +3,13 @@ have_v and order_v are both just about verifying facts in the world, so they sho
 Key insights:
     you can mean restaurant or waiter
     referring expressions are different than types. A referring expression can generate types
-        Need to rename these to "referring expressions"
+        (done) Need to rename these to "referring expressions"
+    There are only two reasons you actually need to inspect the referring expression is if interpretation of the phrase requires it
+        1. If the code wants to require that the the user asked for a table "for 2", there is no way to know that after the fact
+        They could have asked for "a table", and it just so happens that all are for 2, so you won't know how specific they were.
+        2. When you want to defer listing the potential outcomes of the referring expression. For example, when processing the phrase
+        "Do you have (a menu)" we want to check to see if we are talking about "menus" and, if so, treat this as an implied request, 
+        and find one (using the referring expression) that is not in use.
 
 Approach:
     - (done) Start with "you" meaning restaurant
@@ -30,14 +36,12 @@ Interpretation 1: non-conceptual query
 "Did I order an (instance of) a steak?"
 "What dishes do I have?"
     - "dishes" refers to instances
-"Do you have a steak?" --> does the restaurant have the concept of a steak
-"Do you have steaks?" --> implied request if something is on the menu
 
 Interpretation 2: in-scope concepts query
 Analysis:
     Could be an inscope concept OR an instance, seems like we should always try for the instance first
 
-"Do you have a (concept of) a steak?"
+"Do you have a (concept of) a steak?" --> does the restaurant have the concept of a steak
 "Do you have the steak?" -> refers to having an inscope concept of "the steak"
 "Do you have the table?" -> There is no in-scope concept of a table
 "which steaks do you (restaurant) have?" -> which inscope concepts of steaks are there?
@@ -49,6 +53,8 @@ Analysis:
     By the time we get to "have_v" we need to know if the user actually asked for a specific table or "a table" which can't be determined by just looking at the atom
         Is this really true?
         I think really we just need to know if there is an inscope concept that is being referred to or not
+
+"Do you have steaks?" --> implied request if something is on the menu
 
 Design:
     If this is a "computer have x?" pattern:

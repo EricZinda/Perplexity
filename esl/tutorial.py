@@ -491,7 +491,7 @@ def match_all_n(noun_type, state, x_binding):
     # it be valid
     yield state.set_x(x_binding.variable.name, (ReferringExpr(execution_context().current_predication(), x_binding.variable.name),))
 
-    all_sandi = list(all_instances_and_spec(state,noun_type))
+    all_sandi = list(all_instances_and_spec(state, noun_type))
     all_sandi.remove(noun_type)
     all_s = [store_to_object(state,x) for x in all_sandi if not is_instance(state,x)]
     if len(all_s) > 0:
@@ -1328,7 +1328,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
     if not is_present_tense(state.get_binding("tree").value[0]): return
 
     def bound(x_actor, x_object):
-        # See comment above _order_v_1_past_group for why we only handle conceptual
+        # See comment above _order_v_1_past_group for why we only handle referring expressions
         if not is_referring_expr(x_actor) and is_referring_expr(x_object):
             return True
 

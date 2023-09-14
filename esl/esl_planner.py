@@ -93,13 +93,12 @@ def all_are_players(who_multiple):
     return all(who in ["user", "son1"] for who in who_multiple)
 
 
-
 ###############################################################################
 # Methods: Approaches to doing something that return a new list of something
-
 def get_menu_at_entrance(state, who):
     if all_are_players(who) and not location_of_type(state, who[0], "table"):
         return [('respond', "Sorry, you must be seated to get a menu" + state.get_reprompt())]
+
 
 def get_menu_seated(state, who):
     if all_are_players(who) and location_of_type(state, who[0], "table"):
@@ -146,10 +145,11 @@ def count_entities(value_group):
 
     return count
 
+
 # Tables are special in that, in addition to having a count ("2 tables") they can be ("for 2")
 def get_table_at_entrance(state, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
-        not location_of_type(state, who_multiple[0], "table"):
+            not location_of_type(state, who_multiple[0], "table"):
         if min_size != 1:
             return [('respond', "Johnny: Hey, let's sit together alright?"+ state.get_reprompt())]
 
