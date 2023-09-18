@@ -4,7 +4,6 @@ import inspect
 import itertools
 import json
 from math import inf
-
 from perplexity.execution import get_variable_metadata, report_error, execution_context
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
@@ -13,8 +12,21 @@ from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.vocabulary import ValueSize
 
 
+class VariableValueType(enum.Enum):
+    instance = 1,
+    concept = 2,
+    referring_expression = 3
+
+
+def value_type(o):
+    if hasattr(o, "value_type"):
+        return o.value_type()
+    else:
+        return VariableValueType.instance
+
+
 def is_referring_expr(o):
-    return hasattr(o, "is_referring_expr") and o.is_referring_expr()
+    return hasattr(o, "value_type") and o.value_type() == VariableValueType.referring_expression
 
 
 def referring_expr_from_lemma(lemma):
@@ -126,8 +138,8 @@ class ReferringExpr(object):
                 return state.get_binding(arg_variable).value
         return None
 
-    def is_referring_expr(self):
-        return True
+    def value_type(self):
+        return VariableValueType.referring_expression
 
 
 # This function is used to check the constraints for a variable that is set to a *referring expression*.

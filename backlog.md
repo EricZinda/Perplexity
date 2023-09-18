@@ -1,7 +1,8 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 
-
-
+- what specials do you have?
+  - treats types as referring expressions
+  - 
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
   - Need to rethink what it means for a solution group to have a referring expression in it

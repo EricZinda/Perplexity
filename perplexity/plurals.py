@@ -222,7 +222,7 @@ class StatsGroup(object):
         new_group = StatsGroup(self.variable_has_inf_max, self.group_state)
         previous_new_stat = None
         for stat in self.variable_stats:
-            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.is_referring_expr)
+            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.variable_value_type)
             new_stat.prev_variable_stats = previous_new_stat
             if previous_new_stat is not None:
                 previous_new_stat.next_variable_stats = new_stat
@@ -231,11 +231,11 @@ class StatsGroup(object):
 
         return new_group
 
-    def is_referring_expr(self):
+    def only_instances(self):
         for stat in self.variable_stats:
-            if stat.is_referring_expr:
-                return True
-        return False
+            if perplexity.predications.value_type(stat) != perplexity.predications.VariableValueType.instance:
+                return False
+        return True
 
     # Return the index (or None) for the neg() predication that
     # negated this variable
@@ -244,7 +244,7 @@ class StatsGroup(object):
 
 
 class VariableStats(object):
-    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None, is_referring_expr=False):
+    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None, variable_value_type=None):
         self.variable_name = variable_name
         self.whole_group_unique_individuals = set() if whole_group_unique_individuals is None else whole_group_unique_individuals
         self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
@@ -255,7 +255,7 @@ class VariableStats(object):
         self.distributive_state = None if distributive_state is None else distributive_state
         self.collective_state = None if collective_state is None else collective_state
         self.cumulative_state = None if cumulative_state is None else cumulative_state
-        self.is_referring_expr = is_referring_expr
+        self.variable_value_type = variable_value_type
 
     def __repr__(self):
         soln_modes = self.solution_modes()
@@ -280,27 +280,14 @@ class VariableStats(object):
     def add_solution(self, execution_context, variable_criteria, solution):
         binding_value = solution.get_binding(self.variable_name).value
 
-        # Solutions that have a conceptual variable cannot have instances or vice versa
-        is_conceptual_solution = any([perplexity.predications.is_referring_expr(value) for value in binding_value])
-        if is_conceptual_solution:
-            if not self.is_referring_expr:
-                # Can't merge a conceptual variable value with non-conceptual
-                if len(self.whole_group_unique_individuals) > 0 :
-                    self.current_state = CriteriaResult.fail_one
-                    return False, self.current_state
-                else:
-                    self.is_referring_expr = True
+        # Solutions can't have different types of values in the same solution group
+        binding_value_type = perplexity.predications.value_type(binding_value[0])
+        is_instance_solution = binding_value_type == perplexity.predications.VariableValueType.instance
+        if len(self.whole_group_unique_individuals) == 0:
+            # This is the first value, so nothing has to match
+            self.variable_value_type = binding_value_type
 
-            elif len(self.whole_group_unique_individuals) == 1 and \
-                     binding_value[0] in self.whole_group_unique_individuals:
-                # This was a conceptual group with one member, and this row is the same
-                self.is_referring_expr = True
-
-            else:
-                # Is a conceptual solution, this group is conceptual
-                self.is_referring_expr = True
-
-        elif self.is_referring_expr:
+        elif self.variable_value_type != binding_value_type:
             self.current_state = CriteriaResult.fail_one
             return False, self.current_state
 
@@ -331,25 +318,25 @@ class VariableStats(object):
             return new_individuals, required_values_state
 
         # Now we actually compare this variable to the previous value to see what kind of plural type this might be
-        if is_conceptual_solution:
-            # If this variable is conceptual, we assume it meets the numeric criteria
+        if not is_instance_solution:
+            # If this variable is not an instance, we assume it meets the numeric criteria
             # and allow the group handler to finalize the decision
             self.current_state = required_values_state
             return new_individuals, self.current_state
 
         else:
-            # This variable is not conceptual
+            # This variable is an instance
             if self.prev_variable_stats is None:
                 prev_unique_value_count = None
             else:
                 prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
 
-            if prev_unique_value_count is not None and self.prev_variable_stats.is_referring_expr:
+            if prev_unique_value_count is not None and self.prev_variable_stats.variable_value_type != perplexity.predications.VariableValueType.instance:
                 # Not used for conceptual since all 3 modes might work
                 only_collective = None
 
-                # The *previous* variable is conceptual, so we will pretend it meets the criteria for anything. Thus:
-                # If this variables values meets the criteria, it is collective or cuml
+                # The *previous* variable is not an instance, so we will pretend it meets the criteria for anything. Thus:
+                # If this variable's values meets the criteria, it is collective or cuml
                 self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
                 self.collective_state = self.cumulative_state
 
@@ -375,6 +362,7 @@ class VariableStats(object):
                             self.distributive_state = CriteriaResult.contender
 
             else:
+                # The *previous* variable is an instance
                 only_collective = prev_unique_value_count is None or prev_unique_value_count == 1
                 if not only_collective:
                     # Collective fails from here on out because prev_unique_value_count > 1
@@ -400,25 +388,27 @@ class VariableStats(object):
                         self.collective_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
 
             # Now figure out what to return
-            self.current_state = None
             # If the previous variable is conceptual all 3 modes may be supported
             # Go through the possible states in an order that
+            self.current_state = None
             for test_state in [CriteriaResult.fail_all, CriteriaResult.meets_pending_global, CriteriaResult.meets, CriteriaResult.contender]:
-                if ((is_conceptual_solution or only_collective) and self.collective_state == test_state) or \
-                        ((is_conceptual_solution or not only_collective) and \
-                            (self.distributive_state == test_state or \
-                            self.cumulative_state == test_state)):
+                if ((not is_instance_solution or only_collective) and self.collective_state == test_state) or \
+                        ((not is_instance_solution or not only_collective) and
+                            (self.distributive_state == test_state or
+                             self.cumulative_state == test_state)):
                     # Merge together the results from the required_values and the test_state
                     if required_values_state == CriteriaResult.contender:
                         if test_state == CriteriaResult.meets:
                             self.current_state = CriteriaResult.contender
                         else:
                             self.current_state = test_state
+
                     elif required_values_state == CriteriaResult.meets:
                         if test_state == CriteriaResult.meets:
                             self.current_state = CriteriaResult.meets
                         else:
                             self.current_state = test_state
+
                     else:
                         assert False, "should never get here"
 
@@ -491,8 +481,8 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         # If the value in new_solution for the current variable added a new value to the set of values
         # being tracked by a variable without an upper bound of inf, then we need to create a new group
         # because we need to generate alternatives from it
-        # OR if this variable is conceptual, don't merge either so we get all the alternatives
-        if new_individuals and (criteria.max_size != float('inf') or variable_stats.is_referring_expr):
+        # OR if this variable is not an instance, don't merge either so we get all the alternatives
+        if new_individuals and (criteria.max_size != float('inf') or variable_stats.variable_value_type != perplexity.predications.VariableValueType.instance):
             merge = False
 
     new_set_stats_group.group_state = current_set_state
@@ -520,6 +510,7 @@ class NegatedPredication(object):
 
     def __repr__(self):
         return str(self.predication)
+
 
 # if global_criteria is not set, then this only guarantees that the min and max size will be retained
 # within a particular solution group. The count of that item *across* groups could be bigger.
@@ -550,8 +541,8 @@ class VariableCriteria(object):
             # "Only/Exactly", much like the quantifier "the", does more than just group solutions into groups
             # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
             # So we need to track unique values across all answers in this case
-            # BUT: Only track instances (things that aren't concepts) because concepts are handled by the developer manually
-            self._unique_rstrs.update([item for item in value_list if not perplexity.predications.is_referring_expr(item)])
+            # BUT: Only track instances because non-instances are handled by the developer manually
+            self._unique_rstrs.update([item for item in value_list if perplexity.predications.value_type(item) != perplexity.predications.VariableValueType.instance])
 
         if self.global_criteria == GlobalCriteria.exactly:
             # We can fail immediately if we have too many
@@ -597,9 +588,11 @@ class VariableCriteria(object):
             for value in unique_individuals_list:
                 if value not in self.required_values:
                     return CriteriaResult.fail_one
+
             if len(unique_individuals_list) == len(self.required_values):
                 # This constraint was met, whatever the count said is the answer
                 return CriteriaResult.meets
+
             else:
                 # It is a contender for this constraint
                 return CriteriaResult.contender
