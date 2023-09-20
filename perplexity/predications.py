@@ -29,11 +29,34 @@ def is_referring_expr(o):
     return hasattr(o, "value_type") and o.value_type() == VariableValueType.referring_expression
 
 
+def is_concept(o):
+    return hasattr(o, "value_type") and o.value_type() == VariableValueType.concept
+
+
 def referring_expr_from_lemma(lemma):
     # TODO: Make this more robust
     variable_name = "x999"
     predication = TreePredication(0, f"_{lemma}_n_1", ["x999"], arg_names=["ARG0"])
     return ReferringExpr(predication, variable_name)
+
+
+class Concept(object):
+    def __init__(self, concept_name):
+        self.concept_name = concept_name
+
+    def __repr__(self):
+        return f"Concept({self.concept_name})"
+
+    def value_type(self):
+        return VariableValueType.concept
+
+    # return instances of whatever the concept represents
+    def instances(self):
+        return None
+
+    # return specializations of whatever the concept represents
+    def concepts(self):
+        return None
 
 
 class ReferringExpr(object):
@@ -229,7 +252,7 @@ def referring_expr_meets_constraint(tree_info, variable_constraints, concept_cou
                 report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
                 return False
 
-        # Then, whether or not "the" was used, check to make sure there are enough instances to meet the criteria
+        # Then, whether "the" was used, check to make sure there are enough instances to meet the criteria
         # Since that is what we are looking for
         check_count = instance_count
         if check_count == 0:

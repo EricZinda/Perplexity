@@ -40,7 +40,7 @@ def variable_group_values_to_list(variable_group):
 def check_concept_solution_group_constraints(state_list, x_what_variable_group, check_concepts):
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
-    assert is_referring_expr(x_what_variable_group.solution_values[0].value[0])
+    assert is_concept(x_what_variable_group.solution_values[0].value[0])
     x_what_variable = x_what_variable_group.solution_values[0].variable.name
 
     # First we need to check to make sure that the specific concepts in the solution group like "steak", "menu",
@@ -351,20 +351,24 @@ def card_system(state, c_number, e_binding, x_binding):
 @Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _for_p(state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
-        if len(x_what) == 1 and sort_of(state, object_to_store(x_what[0]), "table"):
-            # We only have tables for 2
-            if len(x_for) == 1 and isinstance(x_for[0], numbers.Number):
-                if x_for[0] == 2:
-                    return True
-                else:
-                    report_error(['errorText', "Host: Sorry, we don't have a table with that many seats",state.get_reprompt()])
+        if len(x_what) == 1:
+            x_what_type = perplexity.predications.value_type(x_what[0])
+            if x_what_type == perplexity.predications.VariableValueType.referring_expression:
+                # Is a referring expression, we'll add ourself to it below
+                # Concepts just flow through
+                return True
+            elif x_what_type in [perplexity.predications.VariableValueType.instance, perplexity.predications.VariableValueType.concept]:
+                if sort_of(state, object_to_store(x_what[0]), "table"):
+                    # We only have tables for 2
+                    if len(x_for) == 1 and isinstance(x_for[0], numbers.Number):
+                        if x_for[0] == 2:
+                            return True
+                        else:
+                            report_error(['errorText', "Host: Sorry, we don't have a table with that many seats",
+                                          state.get_reprompt()])
 
-            # Or for people
-            elif is_user_type(x_for):
-                return True
-        else:
-            if is_user_type(x_for):
-                return True
+        elif is_user_type(x_for):
+            return True
 
     def x_what_unbound(x_for):
         if False:
@@ -382,7 +386,12 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
                                              x_what_unbound,
                                              x_for_unbound):
         x_what_value = solution.get_binding(x_what_binding.variable.name).value
-        if is_referring_expr(x_what_value[0]):
+        if is_concept(x_what_value[0]):
+            x_for_value = solution.get_binding(x_for_binding.variable.name).value
+            modified = x_what_value[0].add_criteria(rel_subjects, "maxCapacity", x_for_value[0])
+            yield solution.set_x(x_what_binding.variable.name, (modified,))
+
+        elif is_referring_expr(x_what_value[0]):
             e_what_value = solution.get_binding(e_binding.variable.name).value
             x_for_value = solution.get_binding(x_for_binding.variable.name).value
             modified = x_what_value[0].add_bound_modifier(execution_context().current_predication(), [e_what_value, x_what_value, x_for_value])
@@ -477,28 +486,26 @@ def match_all_n(noun_type, state, x_binding):
             report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
             return False
 
-    def unbound_variable():
-        for i in all_instances(state, noun_type):
-            if is_instance(state,i):
-                yield i
-            else:
-                yield store_to_object(state,i)
+    def unbound_variable_instances():
+        for item in all_instances(state, noun_type):
+            yield item
 
+    def unbound_variable_concepts():
+        yield store_to_object(state, noun_type)
+        for item in specializations(state, noun_type):
+            yield store_to_object(state, item)
 
-    # Yield the abstract type first, not as a combinatoric variable
+    # Yield the referring expression first, and not as a combinatoric variable
     # because solutions can never mix conceptual and non-conceptual terms so it isn't
     # true that it is combinatoric since you can't pick the conceptual and include it with another and have
     # it be valid
     yield state.set_x(x_binding.variable.name, (ReferringExpr(execution_context().current_predication(), x_binding.variable.name),))
 
-    all_sandi = list(all_instances_and_spec(state, noun_type))
-    all_sandi.remove(noun_type)
-    all_s = [store_to_object(state,x) for x in all_sandi if not is_instance(state,x)]
-    if len(all_s) > 0:
-        yield state.set_x(x_binding.variable.name, tuple(all_s), combinatoric=True)
+    # Then yield a combinatorial value of all types
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_concepts)
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
-
+    # Then instances
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_instances)
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
@@ -622,6 +629,7 @@ def _pay_v_for(state, e_introduced_binding, x_actor_binding, i_binding1,i_bindin
 
     yield state.record_operations(state.handle_world_event(["unknown", e_introduced_binding.value["With"]]))
 
+
 @Predication(vocabulary, names=["_want_v_1"])
 def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
@@ -667,7 +675,7 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
     # and we don't support that
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
-    if is_referring_expr(x_what_variable_group.solution_values[0].value[0]):
+    if is_concept(x_what_variable_group.solution_values[0].value[0]):
         # We first check to make sure the constraints are valid for this concept.
         # Because in "I want x", 'x' is always a concept, but the constraint is on the instances
         # (as in "I want a steak" meaning "I want 1 instance of the concept of steak", we tell
@@ -703,6 +711,7 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
             yield []
     else:
         yield []
+
 
 @Predication(vocabulary, names=["_check_v_1"])
 def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
@@ -1899,11 +1908,11 @@ def reset():
     initial_state = initial_state.add_rel("kitchen1", "instanceOf", "kitchen")
 
     initial_state = initial_state.add_rel("table1", "instanceOf", "table")
-    initial_state = initial_state.add_rel("table1", "maxCap", 4)
+    initial_state = initial_state.add_rel("table1", "maxCapacity", 2)
     initial_state = initial_state.add_rel("table2", "instanceOf", "table")
-    initial_state = initial_state.add_rel("table2", "maxCap", 4)
+    initial_state = initial_state.add_rel("table2", "maxCapacity", 2)
     initial_state = initial_state.add_rel("table3", "instanceOf", "table")
-    initial_state = initial_state.add_rel("table3", "maxCap", 4)
+    initial_state = initial_state.add_rel("table3", "maxCapacity", 2)
 
     initial_state = initial_state.add_rel("menu1", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
@@ -1991,7 +2000,7 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")

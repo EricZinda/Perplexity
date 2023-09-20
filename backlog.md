@@ -1,7 +1,14 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 
+- "I want a table for 2"
+  - Requires a concept table(for 2)
+
+- Can I have a steak?
+  - concepts are included in combinatoric with instances
 - what specials do you have?
   - treats types as referring expressions
+  - Need to convert to Concepts
+  - look for all object_to_store() references and make sure they shouldn't be referring_expression
   - 
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"

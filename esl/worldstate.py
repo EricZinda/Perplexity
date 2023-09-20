@@ -3,9 +3,8 @@ import json
 import numbers
 import esl.esl_planner
 from perplexity.execution import report_error
-from perplexity.predications import is_referring_expr, ReferringExpr, referring_expr_from_lemma
+from perplexity.predications import is_referring_expr, ReferringExpr, referring_expr_from_lemma, is_concept, Concept
 from perplexity.response import RespondOperation
-from perplexity.set_utilities import Measurement
 from perplexity.state import State
 from perplexity.tree import TreePredication
 from perplexity.utilities import at_least_one_generator
@@ -27,7 +26,7 @@ def in_scope_initialize(state):
     in_scope_concepts = set()
     for i in state.all_rel("conceptInScope"):
         if i[1] == "true":
-            in_scope_concepts.add(referring_expr_from_lemma(i[0]))
+            in_scope_concepts.add(ESLConcept(i[0]))
 
     # Any instances that the user or son "have" are in scope
     in_scope_instances = set()
@@ -45,7 +44,7 @@ def in_scope_initialize(state):
 
 
 def in_scope(initial_data, state, value):
-    if is_referring_expr(value):
+    if is_concept(value):
         return value in initial_data["InScopeConcepts"]
     else:
         return value in initial_data["InScopeInstances"]
@@ -209,12 +208,12 @@ def location_of_type(state, who, where_type):
 def count_of_instances_and_concepts(state, concepts_original):
     concepts = copy.copy(concepts_original)
     for concept in concepts_original:
-        concepts += [referring_expr_from_lemma(x) for x in specializations(state, concept.referring_expr_name)]
+        concepts += concept.concepts(state)
     concept_count = len(concepts)
 
     instances = []
     for concept in concepts:
-        instances += list(all_instances(state, concept.referring_expr_name))
+        instances += list(concept.instances(state))
     instance_count = len(instances)
 
     scope_data = in_scope_initialize(state)
@@ -232,18 +231,25 @@ def count_of_instances_and_concepts(state, concepts_original):
 
 
 def object_to_store(o):
-    return o.referring_expr_name if is_referring_expr(o) else o
+    return o.concept_name if is_concept(o) else o
 
 
 def store_to_object(state, s):
     if not is_instance(state, s):
-        return referring_expr_from_lemma(s)
+        return ESLConcept(s)
     else:
         return s
 
 
 def serial_store_to_object(state, s_list):
     return [store_to_object(state, s) for s in s_list]
+
+
+def find_unused_instances_from_concept(state, concept):
+    for instance in concept.instances(state):
+        taken = at_least_one_generator(rel_subjects(state, "have", instance))
+        if taken is None:
+            yield instance
 
 
 # Finds a solution group that has instances of whatever referring_expr.variable_name holds
@@ -365,6 +371,83 @@ class ResponseStateOp(object):
 
     def apply_to(self, state):
         state.mutate_set_response_state(self.toAdd)
+
+
+class ESLConcept(Concept):
+    def __init__(self, concept_name):
+        super().__init__(concept_name)
+        self.criteria = [(rel_subjects, "instanceOf", concept_name)]
+        self._hash = None
+
+    def __repr__(self):
+        return f"ESLConcept({self.concept_name}: {[x for x in self.criteria]} )"
+
+    # The only required property is that objects which compare equal have the same hash value
+    # But: objects with the same hash aren't required to be equal
+    # It must remain the same for the lifetime of the object
+    def __hash__(self):
+        if self._hash is None:
+            # TODO: Make this more efficient
+            self._hash = hash(self.concept_name)
+
+        return self._hash
+
+    def __eq__(self, other):
+        if isinstance(other, ESLConcept) and self.__hash__() == other.__hash__():
+            if len(self.criteria) != len(other.criteria):
+                return False
+            else:
+                for index in range(len(self.criteria)):
+                    if self.modifiers[index] != other.modifiers[index]:
+                        return False
+
+                return True
+
+    def add_criteria(self, function, arg1, arg2):
+        self_copy = copy.deepcopy(self)
+        self_copy.criteria.append((function, arg1, arg2))
+        return self_copy
+
+    # Pass None to any argument that should be ignored
+    def find_criteria(self, function, arg1, arg2):
+        for c in self.criteria:
+            if function is not None and function != c[0]:
+                continue
+            if arg1 is not None and arg1 != c[1]:
+                continue
+            if arg2 is not None and arg2 != c[2]:
+                continue
+            return c
+
+    # return any instances that meet all the criteria in self.criteria
+    def instances(self, state):
+        return self._meets_criteria(state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria)
+
+    def concepts(self, state):
+        # get the actual identifiers of all concepts that meet all the criteria
+        raw_concepts = self._meets_criteria(state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria)
+
+        # ... and return them wrapped in a Concept() with the same criteria
+        return [self._replace_concept_name(x) for x in raw_concepts]
+
+    def _replace_concept_name(self, new_concept_name):
+        new_concept = copy.deepcopy(self)
+        new_concept.concept_name = new_concept_name
+        return new_concept
+
+    def _meets_criteria(self, state, final_criteria):
+        found_cumulative = None
+        for current_criteria in final_criteria:
+            found = []
+            for result in current_criteria[0](state, current_criteria[1], current_criteria[2]):
+                if found_cumulative is None or result in found_cumulative:
+                    found.append(result)
+
+            found_cumulative = found
+            if len(found_cumulative) == 0:
+                break
+
+        return found_cumulative
 
 
 class WorldState(State):
@@ -493,7 +576,7 @@ class WorldState(State):
         # Nothing has "user" but they are always in scope
         everything_in_scope = set(["thing", "user"])
         everything_in_scope.update(in_scope["InScopeInstances"])
-        everything_in_scope.update([x.referring_expr_name for x in in_scope["InScopeConcepts"]])
+        everything_in_scope.update([x.concept_name for x in in_scope["InScopeConcepts"]])
 
         # All generic concepts are always in scope
         everything_in_scope.update(x[0] for x in self.all_rel("specializes"))

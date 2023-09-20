@@ -4,9 +4,10 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
     rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item, ResetOrderAndBillOp, find_unused_values_from_referring_expr, object_to_store, all_ancestors
+    find_unused_item, ResetOrderAndBillOp, find_unused_values_from_referring_expr, object_to_store, all_ancestors, \
+    find_unused_instances_from_concept
 from perplexity.execution import report_error
-from perplexity.predications import ReferringExpr, is_referring_expr
+from perplexity.predications import ReferringExpr, is_referring_expr, is_concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.solution_groups import GroupVariableValues
@@ -156,26 +157,28 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
         # Evaluate the noun to make sure we understand all the terms that were used with it
         # If we get back a state, it means the user said something that made sense
         # and they at least meant "a table" of some kind
-        eval_state = at_least_one_generator(table.solution_groups(state))
-        if eval_state is None:
+        instances = at_least_one_generator(table.instances(state))
+        if instances is None:
             return
         else:
             # Check to see if the user specified a table "for x (i.e. 2)"
-            # This needs to be done manually because there is no way, after the fact, to know
-            # if the way they asked for the table specified how many people it should have
-            for_value = table.value_of_modifier_argument(eval_state.first_item[0], "_for_p", 2)
+            # This needs to be done against the concept (not the instance) because there is no way, after the fact, to know
+            # if the way they asked for the table specified how many people it should have or if it just happened to have
+            # that many
+            for_criteria = table.find_criteria(rel_subjects, "maxCapacity", None)
+            for_value = for_criteria[2] if for_criteria is not None else None
 
         # If they say "we want a table" (because we means 2 in this scenario) or "table for 2" the size is implied
-        if for_value is not None and len(for_value) == 1 and isinstance(for_value[0], numbers.Number):
+        if for_value is not None and not isinstance(for_value, tuple) and isinstance(for_value, numbers.Number):
             # "... table for N"
-            for_count = for_value[0]
-        elif for_value is not None and all_are_players(for_value):
+            for_count = for_value
+        elif for_value is not None and isinstance(for_value, (list, tuple)) and all_are_players(for_value):
             # "... table for my son and I together"
             # "... table for me"
             for_count = len(for_value)
         else:
             if for_value is not None:
-                return [('respond', "I'm not sure what that means."+ state.get_reprompt())]
+                return [('respond', "I'm not sure what that means." + state.get_reprompt())]
             else:
                 if len(who_multiple) > 1:
                     # "We want a table"
@@ -185,19 +188,19 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
                     for_count = None
 
         if for_count == 2:
-            unused_tables = find_unused_values_from_referring_expr(table, eval_state)
-            if len(unused_tables) == 1:
-                return [('respond',
-                         "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
-                         "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
-                        ('add_rel', "user", "at", unused_tables[0]),
-                        ('add_rel', "son1", "at", unused_tables[0]),
-                        ('set_response_state', "something_to_eat")]
-            elif unused_tables is None:
-                return [('respond', "I'm sorry, we don't have any tables left..."+ state.get_reprompt())]
-
-            else:
+            if min_size > 1:
                 return [('respond', "I suspect you want to sit together."+ state.get_reprompt())]
+            else:
+                unused_table = at_least_one_generator(find_unused_instances_from_concept(state, table))
+                if unused_table is not None:
+                    return [('respond',
+                             "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
+                             "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
+                            ('add_rel', "user", "at", unused_table.first_item),
+                            ('add_rel', "son1", "at", unused_table.first_item),
+                            ('set_response_state', "something_to_eat")]
+                else:
+                    return [('respond', "I'm sorry, we don't have any tables left..." + state.get_reprompt())]
 
         elif for_count is not None:
             # They specified how big
@@ -347,14 +350,12 @@ def satisfy_want_group_group(state, group_who, group_what, min_size):
         # Everybody wanted the same kind of thing
         # Only need to check the first because: If one item in the group is a concept, they all are
         one_thing = unique_whats[0]
-        if is_referring_expr(one_thing):
-            if one_thing.referring_expr_name == "table":
-                # Tables are special in that, in addition to having a count ("2 tables")
-                # they can be "for 2" or "for my son and me"
+        if is_concept(one_thing):
+            if one_thing.concept_name == "table":
                 return [("get_table", unique_group_variable_values(group_who), one_thing, min_size)]
-            elif one_thing.referring_expr_name == "menu":
+            elif one_thing.concept_name == "menu":
                 return [("get_menu", unique_group_variable_values(group_who))]
-            elif one_thing.referring_expr_name == "bill":
+            elif one_thing.concept_name == "bill":
                 return [("get_bill",)]
 
         else:

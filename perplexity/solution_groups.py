@@ -191,7 +191,6 @@ class SolutionGroupGenerator(object):
 def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info, all_groups=False, all_unprocessed_groups=None, criteria_list=None):
     pipeline_logger.debug(f"Finding solution groups for {tree_info['Tree']}")
     solutions = at_least_one_generator(solutions_orig)
-
     if solutions:
         # Go through each variable that has a quantifier in order and gather and optimize the criteria list
         # if it wasn't given to us
