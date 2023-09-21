@@ -120,7 +120,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             was_merged = False
             for existing_set in sets + [initial_empty_set]:
                 if len(existing_set[1]) == 0 and was_merged:
-                    # Don't create a brand new set by merging with the final empty set if it was
+                    # Don't create a brand-new set by merging with the final empty set if it was
                     # already merged into something. Because: it is already being tracked.
                     continue
 

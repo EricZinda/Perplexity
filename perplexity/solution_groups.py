@@ -321,7 +321,7 @@ def run_handlers(wh_handlers, handlers, variable_constraints, one_more, group, i
                         # handler said to fail
                         break
                     pipeline_logger.debug(f"{debug_name} succeeded with first solution")
-                    if wh_question_variable is not None :
+                    if wh_question_variable is not None:
                         created_solution_group = run_wh_group_handlers(wh_handlers, wh_question_variable, one_more, created_solution_group)
                         if len(created_solution_group) == 0:
                             # handler said to fail
@@ -522,19 +522,6 @@ def optimize_determiner_infos(determiner_info_list_orig, this_sentence_force, wh
 
     # First combine the determiners into 1 if possible
     determiner_info_list = reduce_determiner_infos(determiner_info_list, this_sentence_force, wh_question_variable)
-
-    # Any constraint on a variable that is 1,inf is meaningless since it means "a value exists" which means that it has a value
-    # but every variable must have a value, so it doesn't do anything, remove it
-    # UNLESS: it has a required_values constraint
-    new_info_list = []
-    for determiner_info in determiner_info_list:
-        if determiner_info.min_size == 1 and determiner_info.max_size == float(inf) and determiner_info.global_criteria is None and determiner_info.required_values is None:
-            continue
-
-        else:
-            new_info_list.append(determiner_info)
-
-    determiner_info_list = new_info_list
 
     return determiner_info_list
 

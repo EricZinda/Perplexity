@@ -1329,41 +1329,38 @@ def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_varia
 
 
 # Just purely answers questions about having things in the present tense
-# Scenarios:
-#   "do I/we have x?" --> ask about the state of the world
-#   "what do you have?" --> implied menu request
+# See group handler for scenarios
 @Predication(vocabulary, names=["_have_v_1"])
 def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if not is_present_tense(state.get_binding("tree").value[0]): return
+    if not is_present_tense(state.get_binding("tree").value[0]):
+        return
 
     def bound(x_actor, x_object):
-        # See comment above _order_v_1_past_group for why we only handle referring expressions
-        if not is_referring_expr(x_actor) and is_referring_expr(x_object):
-            return True
+        # If everything is instances, just answer if x has y
+        if perplexity.predications.value_type(x_actor) == perplexity.predications.VariableValueType.instance and \
+                perplexity.predications.value_type(x_object) == perplexity.predications.VariableValueType.instance:
+            return rel_check(state, x_actor, "have", x_object)
+
+        elif not is_concept(x_actor) and is_concept(x_object):
+            if x_actor == "restaurant" and is_concept(x_object):
+                # "Do you (the restaurant) have (the concept of) x?"
+                # Let the group handler perform the implied request action
+                # or just answer the question, as long as we do have it
+                return rel_check(state, x_actor, "have", x_object.concept_name)
 
         report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state,x_object), state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):
         found = False
-        for i in rel_subjects(state, "have", x_object):
+        for i in rel_subjects(state, "have", object_to_store(x_object)):
             found = True
-            yield store_to_object(i)
+            yield store_to_object(state, i)
 
         if not found:
             report_error(["Nothing_VTRANS_X", "have", x_object, state.get_reprompt()])
 
     def object_from_actor(x_actor):
-        '''
-        if x_actor == "restaurant":
-            # - "What do you have?"-->
-            #   - Conceptually, there are a lot of things the computer has
-            #     - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
-            #     - So it is a special case that we interpret as a request for a menu
-            yield concept_from_lemma("menu")
-
-        else:
-        '''
         found = False
         for i in rel_objects(state, x_actor, "have"):
             found = True
@@ -1393,116 +1390,60 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
     # Ignore this group if it isn't present tense
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_present_tense(tree_info): return
-    wh_variable = is_wh_question(tree_info)
 
-    # conceptual people aren't allowed by the solution function, so we don't need to fill those in
-    if wh_variable == x_act_list.solution_values[0].variable.name:
-        wh_variable = False
+    # The solution predication guarantees that this is either actor and object instances or
+    # actor instance and object concept. We only have to check once since they will all be the same
+    first_x_obj = x_obj_list.solution_values[0].value[0]
+    object_concepts = is_concept(first_x_obj)
 
-    # Questions about "Do you have a table/menu/bill?" are really implied requests in a restaurant
-    # that mean "Can I have a table/menu/bill?"
-    if len(state_list) == 1:
-        if len(x_act_list.solution_values) == 1 and \
-                len(x_act_list.solution_values[0].value) == 1 and \
-                x_act_list.solution_values[0].value[0] == "restaurant":
-            implied_request_concepts = [referring_expr_from_lemma("table"), referring_expr_from_lemma("menu"), referring_expr_from_lemma("bill")]
-            if len(x_obj_list.solution_values) == 1 and \
-                    len(x_obj_list.solution_values[0].value) == 1:
-                if x_obj_list.solution_values[0].value[0] in implied_request_concepts:
-                    # "Can I have a table/menu/bill?" is really about the instances
-                    # thus check_concepts=False
-                    # Fail this group if we don't meet the constraints
-                    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
-                        yield []
+    if object_concepts:
+        # Since this is a concept, the solution handler already checked that the actor is
+        # "restaurant" and that the restaurant "has" the solution group concepts.
 
-                    task = ('satisfy_want', [("user",)], variable_group_values_to_list(x_obj_list), min_from_variable_group(x_obj_list))
-                    final_state = do_task(state_list[0].world_state_frame(), [task])
-                    if final_state:
-                        yield [final_state]
-                        return
-                    else:
-                        yield []
+        final_states = []
+        for solution_index in range(len(state_list)):
+            # Deal with the user saying "do you have x and y *together*"
+            x_obj_value = x_obj_list.solution_values[solution_index].value
+            if len(x_obj_value) > 1:
+                report_error(["errorText", "One thing at a time, please!", state_list[solution_index].get_reprompt()], force=True)
+                yield []
+                return
 
-                elif x_obj_list.solution_values[0].value[0] == referring_expr_from_lemma("special"):
-                    # "Do you have specials?" is really about the concept of specials, so check_concepts=True
-                    # Fail this group if we don't meet the constraints
-                    if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=True):
-                        yield []
+            x_obj = x_obj_value[0]
+            # wh-questions aren't implied requests.  I.e. "which tables do you have?"
+            wh_variable = is_wh_question(tree_info)
+            if not wh_variable and x_obj.concept_name in ["bill", "table", "menu"]:
+                # Questions like "Do you have *the* steak" must be conceptual
+                # Anything else can be instance based
 
-                    task = ('describe', [("special",)])
-                    final_state = do_task(state_list[0].world_state_frame(), [task])
-                    if final_state:
-                        yield [final_state]
-                        return
-                    else:
-                        yield []
+                # "Can I have a table/menu/bill?" is really about the instances
+                # thus check_concepts=False
+                # Fail this group if we don't meet the constraints
+                if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
+                    yield []
+                    return
 
-    if check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
-        new_state_list = copy.deepcopy(state_list)
+                # Questions about "Do you have a (concept of a) table/menu/bill?" are really implied requests in a restaurant
+                # that mean "Can I have a table/menu/bill?"
+                task = ('satisfy_want', [("user",)], [(x_obj,)], 1)
+                final_state = do_task(state_list[0].world_state_frame(), [task])
+                if final_state:
+                    final_states.append(final_state)
+                else:
+                    yield []
+                    return
 
-        # At this point we are something like "I/We/He ordered x" where x is a referring expression
-        # Solve the referring expression and see if any of the solution groups map to what the user has
-        for solution_index in range(len(x_act_list.solution_values)):
-            actor_value = x_act_list.solution_values[solution_index].value
-            what_value = x_obj_list.solution_values[solution_index].value
-            found_values = []
+            else:
+                # Not an implied request, so: succeed
+                final_states.append(state_list[solution_index])
 
-            # We can group them all together since having "steak and fries together" is the same as
-            # having them separately
-            for actor in actor_value:
-                actor_have = [x for x in rel_objects(state_list[0], actor, "have")]
-                for value in what_value:
-                    # First see if the actor has the concept, as in "do you have a (conceptual) steak?"
-                    store_value = object_to_store(value)
-                    if store_value in actor_have:
-                        found_values.append(store_value)
+        yield final_states
+        return
 
-                    else:
-                        # Otherwise see if they have an instance
-                        referring_group_generator = at_least_one_generator(
-                            value.solution_groups(state_list[0], ignore_global_constraints=True))
-
-                        if referring_group_generator:
-                            item_not_found = False
-                            # Now we have "I have concept"
-                            # See if concept generates a solution_group that is fully contained in what I have
-                            for referring_group in referring_group_generator:
-                                # Ensure that every item in referring_group is also a value that is had
-                                for solution in referring_group:
-                                    referring_group_value = solution.get_binding(value.variable_name).value
-                                    for referring_group_value_individual in referring_group_value:
-                                        if referring_group_value_individual not in actor_have:
-                                            item_not_found = True
-                                            break
-                                        else:
-                                            found_values.append(referring_group_value_individual)
-
-                                    if item_not_found:
-                                        break
-
-                                if item_not_found is False:
-                                    # This referring expression was fully had
-                                    break
-
-                            if item_not_found:
-                                # this referring expression was not fully had
-                                report_error(["errorText",
-                                              s("No, you don't have {x_obj_list.solution_values[0].variable.name}",
-                                                state_list[0].get_binding("tree").value[0])], force=True)
-                                yield []
-                                return
-
-                        else:
-                            # Referring group didn't generate anything
-                            yield []
-
-                # If this is a wh_question() we need to fill in the variable with the values
-                if wh_variable:
-                    new_state_list[solution_index] = new_state_list[solution_index].set_x(wh_variable, tuple(found_values))
-
-            # all referring expressions for all actors were completely had
-            yield new_state_list
-            return
+    else:
+        # This is a "x has y" type statement with instances and these have already been checked
+        yield state_list
+        return
 
     yield []
 
@@ -1895,7 +1836,7 @@ def reset():
     initial_state = initial_state.add_rel("restaurant", "have", "dish")
     initial_state = initial_state.add_rel("restaurant", "have", "meat")
     initial_state = initial_state.add_rel("restaurant", "have", "veggie")
-    initial_state = initial_state.add_rel("user", "have", "bill1")
+    initial_state = initial_state.add_rel("restaurant", "have", "bill1")
     initial_state = initial_state.add_rel("restaurant", "describes", "menu")
     initial_state = initial_state.add_rel("restaurant", "describes", "bill")
     initial_state = initial_state.add_rel("restaurant", "have", "bill")
@@ -1951,7 +1892,7 @@ def reset():
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "smoked")
 
     initial_state = initial_state.add_rel("restaurant", "have", "special")
-    initial_state = initial_state.add_rel("restaurant", "hasName", "host")
+    initial_state = initial_state.add_rel("restaurant", "hasName", "restaurant")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")

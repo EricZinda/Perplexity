@@ -398,7 +398,7 @@ class ESLConcept(Concept):
                 return False
             else:
                 for index in range(len(self.criteria)):
-                    if self.modifiers[index] != other.modifiers[index]:
+                    if self.criteria[index] not in other.criteria:
                         return False
 
                 return True

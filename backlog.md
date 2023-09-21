@@ -1,8 +1,9 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
+- 
 
-- "I want a table for 2"
-  - Requires a concept table(for 2)
-
+- 
+- Do I have a son?
+- "Who has steaks?" returns an error from referring_expression. Non-optimal
 - Can I have a steak?
   - concepts are included in combinatoric with instances
 - what specials do you have?
