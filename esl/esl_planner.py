@@ -277,21 +277,19 @@ def order_food_at_table(state, who, what):
         # The user could have said "steak" or "steak for 2" or "rare steak", etc
         # If we get back a state, it means the user said something that made sense
         # and they at least meant e.g. "a steak" of some kind, that exists in the system
-        eval_state = at_least_one_generator(what.solution_groups(state))
-        if eval_state is None:
+        food_instances = [x for x in find_unused_instances_from_concept(state, what)]
+        if len(food_instances) == 0:
             return
         else:
-            food_instances = find_unused_values_from_referring_expr(what, eval_state)
-            if len(food_instances) > 0:
-                new_tasks = [('respond', "Excellent Choice! Can I get you anything else?")]
-                for food_instance in food_instances:
-                    if sort_of(state, [food_instance], "dish"):
-                        new_tasks +=  [('add_rel', who, "ordered", food_instance),
-                                       ('add_bill', what.referring_expr_name)]
-                    else:
-                        return
-                new_tasks.append(('set_response_state', "anything_else"))
-                return new_tasks
+            new_tasks = [('respond', "Excellent Choice! Can I get you anything else?")]
+            for food_instance in food_instances:
+                if sort_of(state, [food_instance], "dish"):
+                    new_tasks +=  [('add_rel', who, "ordered", food_instance),
+                                   ('add_bill', what.concept_name)]
+                else:
+                    return
+            new_tasks.append(('set_response_state', "anything_else"))
+            return new_tasks
 
 
 gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
