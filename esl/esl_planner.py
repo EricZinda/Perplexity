@@ -284,8 +284,8 @@ def order_food_at_table(state, who, what):
             new_tasks = [('respond', "Excellent Choice! Can I get you anything else?")]
             for food_instance in food_instances:
                 if sort_of(state, [food_instance], "dish"):
-                    new_tasks +=  [('add_rel', who, "ordered", food_instance),
-                                   ('add_bill', what.concept_name)]
+                    new_tasks += [('add_rel', who, "ordered", food_instance),
+                                  ('add_bill', what.concept_name)]
                 else:
                     return
                 break
@@ -384,19 +384,22 @@ def satisfy_want(state, who, what, min_size):
         # report an error if this is the best we can do
         return [('respond', "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
     else:
-        concept = what.concept_name
-        if sort_of(state, concept, "menu"):
-            return [('get_menu', who)]
+        actions = []
+        for _ in range(min_size):
+            concept = what.concept_name
+            if sort_of(state, concept, "menu"):
+                actions.append(('get_menu', who))
 
-        elif concept == "special":
-            return [('describe_item',"special")]
+            elif concept == "special":
+                actions.append(('describe_item', "special"))
 
-        elif sort_of(state, concept, "table"):
-            return [('get_menu', who)]
+            elif sort_of(state, concept, "table"):
+                actions.append(('get_menu', who))
 
-        elif sort_of(state, concept, "food"):
-            return [('order_food', who, what)]
+            elif sort_of(state, concept, "food"):
+                actions.append(('order_food', who, what))
 
+        return actions
 
 # Last option should just report an error
 def satisfy_want_fail(state, who, what, min_size):
@@ -405,29 +408,31 @@ def satisfy_want_fail(state, who, what, min_size):
 
 gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group_group, satisfy_want, satisfy_want_fail)
 
+
 ###############################################################################
 # Actions: Update state to a new value
-
 def respond(state, message):
-    return state.record_operations([RespondOperation(message)])
+    return state.apply_operations([RespondOperation(message)])
 
 
 def add_rel(state, subject, rel, object):
-    return state.record_operations([AddRelOp((subject, rel, object))])
+    return state.apply_operations([AddRelOp((subject, rel, object))])
+
 
 def delete_rel(state, subject, rel, object):
-    return state.record_operations([DeleteRelOp((subject, rel, object))])
+    return state.apply_operations([DeleteRelOp((subject, rel, object))])
 
 
 def set_response_state(state, value):
-    return state.record_operations([ResponseStateOp(value)])
+    return state.apply_operations([ResponseStateOp(value)])
 
 
 def add_bill(state, wanted):
-    return state.record_operations([AddBillOp(wanted)])
+    return state.apply_operations([AddBillOp(wanted)])
+
 
 def reset_order_and_bill(state):
-    return state.record_operations([ResetOrderAndBillOp()])
+    return state.apply_operations([ResetOrderAndBillOp()])
 
 
 gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill)

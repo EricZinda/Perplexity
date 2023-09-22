@@ -319,14 +319,14 @@
         },
         {
             "Command": "I want 2 steaks",
-            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Expected": "Excellent Choice! Can I get you anything else?\nSon: Wait, we already spent $10 so if we get that, we won't be able to pay for it with $15. \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f412ffe0-207b-4b36-b8a4-b4e541ff3817"
         },
         {
             "Command": "what did I order",
-            "Expected": "2 steak",
+            "Expected": "steak",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "18d4ddaa-a0b5-4c6e-be76-f52dc41dda77"

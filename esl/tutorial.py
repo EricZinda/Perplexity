@@ -1221,6 +1221,14 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
                                       object_from_actor)
 
 
+@Predication(vocabulary, names=["solution_group__order_v_1_past"])
+def _order_v_1_past_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_object_variable_group):
+    if is_concept(x_object_variable_group.solution_values[0]):
+        if not check_concept_solution_group_constraints(state_list, x_object_variable_group, check_concepts=False):
+            yield []
+            return
+
+
 # Scenarios:
 #   - "I will have a steak/menu/table." --> restaurant frame special case for requesting
 #   - "I will have a steak/menu/table?" --> Not good english
