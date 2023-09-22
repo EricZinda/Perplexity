@@ -440,6 +440,7 @@ def _credit_n_1(state, x_bind):
 
     yield from combinatorial_predication_1(state, x_bind, bound, unbound)
 
+
 @Predication(vocabulary, names=["_tomato_n_1"])
 def _tomato_n_1(state, x_bind):
     def bound(val):
@@ -449,6 +450,7 @@ def _tomato_n_1(state, x_bind):
         yield ReferringExpr("tomato")
 
     yield from combinatorial_predication_1(state, x_bind, bound, unbound)
+
 
 @Predication(vocabulary, names=["unknown"])
 def unknown(state, e_binding, x_binding):
@@ -1180,8 +1182,6 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
         return
     if is_referring_expr(x_actor_binding) or is_referring_expr(x_object_binding):
         return
-    if is_concept(x_object_binding):
-        return
 
     def bound(x_actor, x_object):
         # Because the concept could be as complicated as "steak without fries" or something,
@@ -1189,12 +1189,12 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
         # check if it meets all the criteria
         for o in rel_objects(state, x_actor, "ordered"):
             if is_concept(x_object):
-                if x_object.instances(state, potential_instances=[x_object]):
+                if x_object.instances(state, potential_instances=[o]):
                     return True
             elif o == x_object:
                 return True
 
-        report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order", convert_to_english(state, x_object), state.get_reprompt()])
+        report_error(["verbDoesntApply", convert_to_english(state, x_actor), "order", convert_to_english(state, x_object), state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):

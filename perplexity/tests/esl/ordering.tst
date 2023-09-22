@@ -39,7 +39,7 @@
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "No. you does not order steak  \nWaiter: Can I get you something to eat?",
+            "Expected": "No. you does not order something  \nWaiter: Can I get you something to eat?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "13ce708f-ec2a-41f8-b2dd-416711a3b810"

@@ -882,8 +882,8 @@ class WorldState(State):
     # an unknown() predication in the MRS for the verb
     def unknown(self, x):
         concept_name = None
-        if is_referring_expr(x):
-            concept_name = x.referring_expr_name
+        if is_concept(x):
+            concept_name = x.concept_name
 
         if self.sys["responseState"] == "way_to_pay":
             if x in ["cash"]:
