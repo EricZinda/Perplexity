@@ -176,9 +176,9 @@ def all_ancestors(state, thing):
         proc_idx += 1
 
 
-def instance_of_or_referring_expr_name(state, thing):
-    if is_referring_expr(thing):
-        return thing.referring_expr_name
+def instance_of_or_concept_name(state, thing):
+    if is_concept(thing):
+        return thing.concept_name
     else:
         return instance_of_what(state, thing)
 

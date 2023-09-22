@@ -1541,7 +1541,7 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if measure_into_variable is not None:
             # This is a "how much is x" question and we need to measure the value
             # into the specified variable
-            concept_item = instance_of_or_referring_expr_name(state, x_actor_value)
+            concept_item = instance_of_or_concept_name(state, x_actor_value)
             if units in ["generic_entity", "dollar"]:
                 if concept_item in state.sys["prices"]:
                     price = Measurement("dollar", state.sys["prices"][concept_item])
@@ -1574,6 +1574,7 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if not isinstance(x_object, Measurement):
             report_error(["Have not dealt with declarative cost", state.get_reprompt()])
             yield False
+
         else:
             yield True  # will need to implement checking for price correctness in the future if user says "the soup costs one steak"
 
@@ -1592,14 +1593,17 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
             yield None
 
     def get_object(x_actor):
-        if isinstance(x_actor, ReferringExpr):
-            concept_item = instance_of_or_referring_expr_name(state, x_actor)
-            if concept_item in state.sys["prices"].keys():
-                yield concept_item + " : " + str(state.sys["prices"][concept_item]) + " dollars"
-            else:
-                yield "Ah. It's not for sale."
+        if is_concept(x_actor):
+            # Make sure it is something that is actually in the world
+            # by evaluating it to make sure there are instances
+            if len(x_actor.instances(state)) == 0:
+                return
+
+        concept_item = instance_of_or_concept_name(state, x_actor)
+        if concept_item in state.sys["prices"].keys():
+            yield concept_item + " : " + str(state.sys["prices"][concept_item]) + " dollars"
         else:
-            yield None
+            yield "Ah. It's not for sale."
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, get_actor,
                                                 get_object):
@@ -1609,7 +1613,7 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         if measure_into_variable is not None:
             # This is a "how much is x" question and we need to measure the value
             # into the specified variable
-            concept_item = instance_of_or_referring_expr_name(state, x_actor_value)
+            concept_item = instance_of_or_concept_name(state, x_actor_value)
             if units in ["generic_entity", "dollar"]:
                 if concept_item in state.sys["prices"]:
                     price = Measurement("dollar", state.sys["prices"][concept_item])
