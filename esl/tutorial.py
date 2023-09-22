@@ -141,7 +141,8 @@ def can_to_able_transitive_transformer():
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal"], production=production)
 
-#Convert "can you show me the menu" to "you show_able the menu"
+
+# Convert "can you show me the menu" to "you show_able the menu"
 @Transform(vocabulary)
 def can_to_able_transitive_transformer_indir_obj():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG4": "$x3"})
@@ -150,7 +151,7 @@ def can_to_able_transitive_transformer_indir_obj():
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal"], production=production)
 
-#can i pay with cash
+# can i pay with cash
 @Transform(vocabulary)
 def can_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
@@ -178,14 +179,13 @@ def may_to_able_transitive_transformer():
     return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_may_v_modal"], production=production)
 
-#may i pay with cash
+# may i pay with cash
 @Transform(vocabulary)
 def may_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
     return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_may_v_modal"], production=production)
-
 
 
 # Convert "I want to x y" to "I x_request y"
@@ -206,6 +206,7 @@ def want_removal_intransitive_transformer():
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
                             removed=["_want_v_1"], production=production)
 
+
 # Convert "I want to pay with x" to "I pay_for_request"
 @Transform(vocabulary)
 def want_removal_paytype_transformer():
@@ -213,7 +214,6 @@ def want_removal_paytype_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
                             removed=["_want_v_1"], production=production)
-
 
 
 # Convert "I would like to x y" to "I x_request y"
@@ -506,7 +506,7 @@ def match_all_n(noun_type, state, x_binding):
     # because solutions can never mix conceptual and non-conceptual terms so it isn't
     # true that it is combinatoric since you can't pick the conceptual and include it with another and have
     # it be valid
-    yield state.set_x(x_binding.variable.name, (ReferringExpr(execution_context().current_predication(), x_binding.variable.name),))
+    # yield state.set_x(x_binding.variable.name, (ReferringExpr(execution_context().current_predication(), x_binding.variable.name),))
 
     # Then yield a combinatorial value of all types
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_concepts)
@@ -650,7 +650,7 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 return True
 
         else:
-            report_error(["notwant", "want", x_actor,state.get_reprompt()])
+            report_error(["notwant", "want", x_actor, state.get_reprompt()])
             return False
 
     def wanters_of_obj(x_object):
@@ -700,6 +700,7 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
             if len(x_what_individuals_set) > 1:
                 report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True)
                 yield []
+                return
 
             # At this point we are only dealing with one concept
             first_x_what_binding_value = copy.deepcopy(x_what_variable_group.solution_values[0].value[0])
@@ -1175,14 +1176,25 @@ def invalid_present_transitive(state, e_introduced_binding, x_actor_binding, x_o
 
 @Predication(vocabulary, names=["_order_v_1"])
 def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if not is_past_tense(state.get_binding("tree").value[0]): return
+    if not is_past_tense(state.get_binding("tree").value[0]):
+        return
+    if is_referring_expr(x_actor_binding) or is_referring_expr(x_object_binding):
+        return
+    if is_concept(x_object_binding):
+        return
 
     def bound(x_actor, x_object):
-        # See comment above _order_v_1_past_group for why we only handle conceptual
-        if not is_referring_expr(x_actor) and is_referring_expr(x_object):
-            return True
+        # Because the concept could be as complicated as "steak without fries" or something,
+        # it isn't as simple as seeing if x_object is a specialization or instance of, we need to
+        # check if it meets all the criteria
+        for o in rel_objects(state, x_actor, "ordered"):
+            if is_concept(x_object):
+                if x_object.instances(state, potential_instances=[x_object]):
+                    return True
+            elif o == x_object:
+                return True
 
-        report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order",convert_to_english(state,x_object), state.get_reprompt()])
+        report_error(["verbDoesntApply", convert_to_english(state,x_actor), "order", convert_to_english(state, x_object), state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):
@@ -1207,74 +1219,6 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
-
-
-# Only handle: "I ordered the (conceptual referring expression)"
-# We need to process the conceptual version of the referring expression
-# to properly handle "I ordered the soup" because "the soup" needs to be interpreted
-# as an "in-scope concept" and not "the one soup on the table" (or something similar)
-# And since we already have to process the conceptual referring expression, we will also
-# use conceptual for all phrases like "I ordered a soup" since they all work the same
-@Predication(vocabulary, names=["solution_group__order_v_1"])
-def _order_v_1_past_group(state_list, has_more, e_introduced_variable_group, x_actor_variable_group, x_object_variable_group):
-    if is_referring_expr(x_actor_variable_group.solution_values[0]):
-        # We don't want to deal with conceptual actors, fail this solution group
-        # and wait for the one with real actors
-        yield []
-
-    # These are concepts. Only need to check the first because:
-    # If one item in the group is a concept, they all are
-    if is_referring_expr(x_object_variable_group.solution_values[0].value[0]):
-        if not check_concept_solution_group_constraints(state_list, x_object_variable_group, check_concepts=False):
-            yield []
-            return
-
-        else:
-            # At this point we are something like "I/We/He ordered x" where x is a referring expression
-            # Solve the referring expression and see if any of the solution groups map to what the user ordered
-            for solution_index in range(len(x_actor_variable_group.solution_values)):
-                actor_value = x_actor_variable_group.solution_values[solution_index].value
-                what_value = x_object_variable_group.solution_values[solution_index].value
-
-                # We can group them all together since ordering "steak and fries together" is the same as
-                # ordering them separately
-                for actor in actor_value:
-                    actor_ordered = [x for x in rel_objects(state_list[0], actor, "ordered")]
-                    for value in what_value:
-                        referring_group_generator = at_least_one_generator(value.solution_groups(state_list[0], ignore_global_constraints=True))
-                        if referring_group_generator:
-                            item_not_found = False
-                            # Now we have "I ordered concept"
-                            # See if concept generates a solution_group that is fully contained in what I ordered
-                            for referring_group in referring_group_generator:
-                                # Ensure that every item in referring_group is also a value that was ordered
-                                for solution in referring_group:
-                                    referring_group_value = solution.get_binding(value.variable_name).value
-                                    for referring_group_value_individual in referring_group_value:
-                                        if referring_group_value_individual not in actor_ordered:
-                                            item_not_found = True
-                                            break
-
-                                    if item_not_found:
-                                        break
-
-                                if item_not_found is False:
-                                    # This referring expression was fully ordered
-                                    break
-
-                            if item_not_found:
-                                # this referring expression was not fully ordered
-                                report_error(["errorText", s("No, you didn't order {x_object_variable_group.solution_values[0].variable.name}", state_list[0].get_binding("tree").value[0])], force=True)
-                                yield []
-                                return
-
-                        else:
-                            # Referring group didn't generate anything
-                            yield []
-
-                # all referring expressions for all actors were completely ordered
-                yield state_list
-                return
 
 
 # Scenarios:

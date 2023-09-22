@@ -420,12 +420,12 @@ class ESLConcept(Concept):
             return c
 
     # return any instances that meet all the criteria in self.criteria
-    def instances(self, state):
-        return self._meets_criteria(state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria)
+    def instances(self, state, potential_instances=None):
+        return self._meets_criteria(state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria, initial_instances=potential_instances)
 
-    def concepts(self, state):
+    def concepts(self, state, potential_concepts=None):
         # get the actual identifiers of all concepts that meet all the criteria
-        raw_concepts = self._meets_criteria(state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria)
+        raw_concepts = self._meets_criteria(state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria, initial_instances=potential_concepts)
 
         # ... and return them wrapped in a Concept() with the same criteria
         return [self._replace_concept_name(x) for x in raw_concepts]
@@ -435,8 +435,8 @@ class ESLConcept(Concept):
         new_concept.concept_name = new_concept_name
         return new_concept
 
-    def _meets_criteria(self, state, final_criteria):
-        found_cumulative = None
+    def _meets_criteria(self, state, final_criteria, initial_instances=None):
+        found_cumulative = None if initial_instances is None else initial_instances
         for current_criteria in final_criteria:
             found = []
             for result in current_criteria[0](state, current_criteria[1], current_criteria[2]):

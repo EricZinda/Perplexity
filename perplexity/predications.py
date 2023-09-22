@@ -9,6 +9,7 @@ import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.tree import find_quantifier_from_variable, TreePredication
 from perplexity.utilities import at_least_one_generator, parse_predication_name
+from perplexity.variable_binding import VariableBinding
 from perplexity.vocabulary import ValueSize
 
 
@@ -26,10 +27,20 @@ def value_type(o):
 
 
 def is_referring_expr(o):
+    if isinstance(o, VariableBinding):
+        if o.value is None:
+            return False
+        else:
+            o = o.value[0]
     return hasattr(o, "value_type") and o.value_type() == VariableValueType.referring_expression
 
 
 def is_concept(o):
+    if isinstance(o, VariableBinding):
+        if o.value is None:
+            return False
+        else:
+            o = o.value[0]
     return hasattr(o, "value_type") and o.value_type() == VariableValueType.concept
 
 
