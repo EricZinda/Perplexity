@@ -288,6 +288,7 @@ def order_food_at_table(state, who, what):
                                    ('add_bill', what.concept_name)]
                 else:
                     return
+                break
             new_tasks.append(('set_response_state', "anything_else"))
             return new_tasks
 

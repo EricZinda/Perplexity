@@ -362,7 +362,7 @@ def run_handlers(execution_context, wh_handlers, handlers, variable_constraints,
         return created_solution_group, has_more, state_list, best_error_info
 
     else:
-        return None, None, state_list, None
+        return None, None, state_list, (None, False, -1)
 
 
 def get_function(module_function):
