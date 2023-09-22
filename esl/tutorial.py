@@ -1435,7 +1435,7 @@ def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
         #   - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
         #     - So it is a special case that we interpret as a request for a menu
         if is_user_type(x_actor):
-            yield (referring_expr_from_lemma("menu"),)
+            yield (ESLConcept("menu"),)
 
     yield from lift_style_predication_2(state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
@@ -1458,7 +1458,7 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
     force = sentence_force(tree_info["Variables"])
     wh_variable = get_wh_question_variable(tree_info)
     if force in ["ques", "prop-or-ques"] and \
-        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == referring_expr_from_lemma("menu")) or \
+        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == ESLConcept("menu")) or \
          not get_wh_question_variable(tree_info)):
         # The planner will only satisfy a want wrt the players
         task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))

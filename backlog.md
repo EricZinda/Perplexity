@@ -1,8 +1,8 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make "ESL/Ordering" work
+
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
-- "what can I have" -> I'm not sure what to do about that
 - Do I have a son?
 - "Who has steaks?" returns an error from referring_expression. Non-optimal
 - Can I have a steak?

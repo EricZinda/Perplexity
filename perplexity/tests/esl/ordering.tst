@@ -88,7 +88,7 @@
         },
         {
             "Command": "What did we order?",
-            "Expected": "There are less than 2 we",
+            "Expected": "Nothing. \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "6e8ad609-7795-4d5c-96cd-cca160cf9f4e"
