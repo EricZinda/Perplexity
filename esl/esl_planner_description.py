@@ -96,8 +96,7 @@ def describe_analyzed_at_table(state, analysis):
             new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', "user", "heardSpecials", "true"))
             return new_methods
-
-        if len(analysis["Specials"]) == 1 and analysis["Specials"][0] == "special":
+        else:
             new_methods.append(('respond',
                                "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
             return new_methods
