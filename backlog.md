@@ -1,6 +1,7 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make "ESL/Ordering" work
 
+- 
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
 - Do I have a son?

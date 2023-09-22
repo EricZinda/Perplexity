@@ -376,7 +376,7 @@ class ResponseStateOp(object):
 class ESLConcept(Concept):
     def __init__(self, concept_name):
         super().__init__(concept_name)
-        self.criteria = [(rel_subjects, "instanceOf", concept_name)]
+        self.criteria = []
         self._hash = None
 
     def __repr__(self):

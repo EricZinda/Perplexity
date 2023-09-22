@@ -1527,11 +1527,9 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
                 report_error(["is_not", convert_to_english(state,x_actor), convert_to_english(state,x_object), state.get_reprompt()])
 
     def unbound(x_object):
-        if is_referring_expr(x_object):
-            for i in all_instances(state, x_object.referring_expr_name):
-                yield i
-            for i in specializations(state, x_object.referring_expr_name):
-                yield referring_expr_from_lemma(i)
+        if is_concept(x_object):
+            yield from x_object.instances(state)
+            yield from x_object.concepts(state)
 
     for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound,
                                                 unbound):

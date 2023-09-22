@@ -43,7 +43,8 @@ task_methods.append(['describe', describe_list_analyze])
 # If we're asked questions about the menu or specials at the entrance
 # tell them to be seated
 def describe_analyzed_at_entrance(state, analysis):
-    if location_of_type(state, "user", "table"): return
+    if location_of_type(state, "user", "table"):
+        return
 
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
@@ -69,7 +70,8 @@ def describe_analyzed_at_entrance(state, analysis):
 # Any question that includes an answer that is special should trigger the waiter asking if
 # if the user wants to hear the detailed description of specials
 def describe_analyzed_at_table(state, analysis):
-    if not location_of_type(state, "user", "table"): return
+    if not location_of_type(state, "user", "table"):
+        return
 
     new_methods = []
 
