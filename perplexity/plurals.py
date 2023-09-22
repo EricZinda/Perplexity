@@ -138,7 +138,12 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     break
 
                 else:
-                    # Didn't fail, decide whether to merge into the existing set or create a new one
+                    # Didn't fail
+                    # Clear any errors that occurred trying to generate solution groups that didn't work
+                    # so that the error that gets returned is whatever happens while *processing* the solution group
+                    execution_context.clear_error()
+
+                    # decide whether to merge into the existing set or create a new one
                     # Merge if the only variables that got updated had a criteria with an upper bound of inf
                     # since alternatives won't be used anyway
                     if merge:

@@ -1,6 +1,5 @@
 import copy
 import numbers
-
 import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
@@ -8,7 +7,8 @@ from perplexity.execution import report_error, call, execution_context
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
-    lift_style_predication_2, referring_expr_meets_constraint
+    lift_style_predication_2, concept_meets_constraint
+from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction
@@ -52,14 +52,15 @@ def check_concept_solution_group_constraints(state_list, x_what_variable_group, 
         x_what_individuals_set.update(value)
     concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(
         state_list[0], list(x_what_individuals_set))
-    return referring_expr_meets_constraint(state_list[0].get_binding("tree").value[0],
-                                           x_what_variable_group.variable_constraints,
-                                           concept_count,
-                                           concept_in_scope_count,
-                                           instance_count,
-                                           instance_in_scope_count,
-                                           check_concepts,
-                                           variable=x_what_variable)
+    return concept_meets_constraint(state_list[0].get_binding("tree").value[0],
+                                    x_what_variable_group.variable_constraints,
+                                    concept_count,
+                                    concept_in_scope_count,
+                                    instance_count,
+                                    instance_in_scope_count,
+                                    check_concepts,
+                                    variable=x_what_variable,
+                                    value=x_what_variable_group.solution_values[0].value[0])
 
 
 def is_past_tense(tree_info):
@@ -139,6 +140,7 @@ def can_to_able_transitive_transformer():
                               args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal"], production=production)
+
 #Convert "can you show me the menu" to "you show_able the menu"
 @Transform(vocabulary)
 def can_to_able_transitive_transformer_indir_obj():
@@ -342,7 +344,6 @@ def card(state, c_number, e_binding, x_binding):
         yield state.set_x(x_binding.variable.name, (modified,))
 
 
-
 @Predication(vocabulary, names=["card"])
 def card_system(state, c_number, e_binding, x_binding):
     yield from perplexity.system_vocabulary.card_cex(state, c_number, e_binding, x_binding)
@@ -357,15 +358,17 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
                 # Is a referring expression, we'll add ourself to it below
                 # Concepts just flow through
                 return True
+
             elif x_what_type in [perplexity.predications.VariableValueType.instance, perplexity.predications.VariableValueType.concept]:
-                if sort_of(state, object_to_store(x_what[0]), "table"):
+                if x_what_type == perplexity.predications.VariableValueType.concept:
+                    store_object = x_what[0].concept_name
+                else:
+                    store_object = x_what
+
+                if sort_of(state, store_object, "table"):
                     # We only have tables for 2
-                    if len(x_for) == 1 and isinstance(x_for[0], numbers.Number):
-                        if x_for[0] == 2:
-                            return True
-                        else:
-                            report_error(['errorText', "Host: Sorry, we don't have a table with that many seats",
-                                          state.get_reprompt()])
+                    if len(x_for) == 1 and isinstance(x_for[0], numbers.Number) or is_user_type(x_for):
+                        return True
 
         elif is_user_type(x_for):
             return True
@@ -388,7 +391,11 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
         x_what_value = solution.get_binding(x_what_binding.variable.name).value
         if is_concept(x_what_value[0]):
             x_for_value = solution.get_binding(x_for_binding.variable.name).value
-            modified = x_what_value[0].add_criteria(rel_subjects, "maxCapacity", x_for_value[0])
+            if isinstance(x_for_value[0], numbers.Number):
+                modified = x_what_value[0].add_criteria(rel_subjects, "maxCapacity", x_for_value[0])
+            elif is_user_type(x_for_value):
+                modified = x_what_value[0].add_criteria(rel_subjects, "maxCapacity", len(x_for_value))
+
             yield solution.set_x(x_what_binding.variable.name, (modified,))
 
         elif is_referring_expr(x_what_value[0]):
@@ -614,9 +621,11 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
                                       all_item1_on_item2,
                                       all_item2_containing_item1)
 
+
 @Predication(vocabulary, names=("_with_p",))
 def _with_p(state, e_introduced_binding, e_main, x_binding):
     yield state.add_to_e(e_main.variable.name, "With", x_binding.value[0])
+
 
 @Predication(vocabulary, names=["_pay_v_for","_pay_v_for_able","_pay_v_for_request"], handles=[("With", EventOption.optional)])
 def _pay_v_for(state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
@@ -639,6 +648,7 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
         elif "want" in state.rel.keys():
             if (x_actor, x_object) in state.all_rel("want"):
                 return True
+
         else:
             report_error(["notwant", "want", x_actor,state.get_reprompt()])
             return False
@@ -699,7 +709,6 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
             #   - card(state, c_number, e_binding, x_binding):
             # args = [x_what_variable_group.variable_constraints.min_size, "e999", first_x_what_binding_value.variable_name]
             # first_x_what_binding_value = first_x_what_binding_value.add_modifier(TreePredication(0, "card", args, arg_names=["CARG", "ARG0", "ARG1"]))
-
             actor_values = [x.value for x in x_actor_variable_group.solution_values]
             current_state = do_task(current_state.world_state_frame(), [('satisfy_want', actor_values, [(first_x_what_binding_value,)], min_from_variable_group(x_what_variable_group))])
             if current_state is None:
@@ -1755,6 +1764,8 @@ def generate_custom_message(tree_info, error_term):
         if system_message is not None:
             return system_message
 
+    # if error_constant == "conceptNotFound":
+
     if error_constant == "notAThing":
         arg1 = error_arguments[1]
         # english_for_delphin_variable() converts a variable name like 'x3' into the english words
@@ -1853,7 +1864,7 @@ def reset():
     initial_state = initial_state.add_rel("table2", "instanceOf", "table")
     initial_state = initial_state.add_rel("table2", "maxCapacity", 2)
     initial_state = initial_state.add_rel("table3", "instanceOf", "table")
-    initial_state = initial_state.add_rel("table3", "maxCapacity", 2)
+    initial_state = initial_state.add_rel("table3", "maxCapacity", 1)
 
     initial_state = initial_state.add_rel("menu1", "instanceOf", "menu")
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")

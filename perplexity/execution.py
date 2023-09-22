@@ -184,7 +184,6 @@ class ExecutionContext(object):
             except MessageException as error:
                 self.report_error(error.message_object())
 
-
     # Replace scopal arguments with an "h" and simply
     # return the others
     def arg_types_from_call(self, predication):
@@ -208,13 +207,21 @@ class ExecutionContext(object):
         self._in_scope_function = func
         self._in_scope_initialize_function = initialize_func
 
-
     # Test if an object is in scope, by default everything is
     def in_scope(self, state, thing):
         if self._in_scope_function is not None:
             return self._in_scope_function(self.in_scope_initialize_data, state, thing)
         else:
             return True
+
+    def get_error_info(self):
+        return self._error, self._error_was_forced, self._error_predication_index
+
+    def set_error_info(self, error_info):
+        if error_info is not None:
+            self._error = error_info[0]
+            self._error_was_forced = error_info[1]
+            self._error_predication_index = error_info[2]
 
     def clear_error(self):
         self._error = None

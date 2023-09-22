@@ -2,7 +2,7 @@ import copy
 import json
 import numbers
 import esl.esl_planner
-from perplexity.execution import report_error
+from perplexity.execution import report_error, execution_context
 from perplexity.predications import is_referring_expr, ReferringExpr, referring_expr_from_lemma, is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.state import State
@@ -446,6 +446,12 @@ class ESLConcept(Concept):
             found_cumulative = found
             if len(found_cumulative) == 0:
                 break
+
+        if len(found_cumulative) == 0:
+            # Since the concept generated might be different than what the user said,
+            # For example, "table for my son" is iterpreted as "table for 1", we need
+            # to generate an error that is specific to the *concept*
+            report_error(["conceptNotFound", self], force=True)
 
         return found_cumulative
 

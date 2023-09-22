@@ -187,7 +187,7 @@ class ReferringExpr(object):
 #   "Do you have the steak?" (ditto)
 #   "Do you still have 2 menus?" --> (ditto)
 #   "Are 2 specials available?" --> (ditto)
-def referring_expr_meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable):
+def concept_meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable, value):
     min_size = variable_constraints.min_size if variable_constraints is not None else 1
     max_size = variable_constraints.max_size if variable_constraints is not None else float(inf)
     if check_concepts:
@@ -240,8 +240,7 @@ def referring_expr_meets_constraint(tree_info, variable_constraints, concept_cou
         if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
             check_count = concept_in_scope_count
             if check_count == 0:
-                introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
-                report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+                report_error(["conceptNotFound", value], force=True)
                 return False
 
             if check_count < min_size:
@@ -256,8 +255,7 @@ def referring_expr_meets_constraint(tree_info, variable_constraints, concept_cou
         # Since that is what we are looking for
         check_count = instance_count
         if check_count == 0:
-            introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
-            report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+            report_error(["conceptNotFound", value], force=True)
             return False
 
         if check_count < min_size:
@@ -462,7 +460,6 @@ def predication_2(state, binding1, binding2,
                  all_unbound_predication_function if all_unbound_predication_function is not None else binding2_unbound_predication_function]:
         if not inspect.isgenerator(func) and not inspect.isgeneratorfunction(func):
             assert False, f"function {func.__name__} must be a generator"
-
 
     # Build a generator that only generates the discrete values for the binding that are valid for these descriptors,
     # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value

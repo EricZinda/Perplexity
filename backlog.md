@@ -1,7 +1,5 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - 
-
-- 
 - Do I have a son?
 - "Who has steaks?" returns an error from referring_expression. Non-optimal
 - Can I have a steak?

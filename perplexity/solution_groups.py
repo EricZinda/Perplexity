@@ -230,14 +230,25 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                 # First see if there is a solution_group handler that should be called
                 handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
                 wh_handlers = find_wh_group_handlers(execution_context, this_sentence_force)
+
+                # Returning errors:
+                # If no solution groups are found, errors from trying to generate them should be returned
+                # If even one solution group was found, but failed in the handlers, the error from that handler should be
+                # returned because it means the phrase made sense, but something about the world made it fail when is better than
+                # errors generated because the phrase made no sense
+                best_error_info = (None, False, -1)
                 for next_group in at_least_one_group:
-                    created_solution_group, has_more, group_list = run_handlers(wh_handlers, handlers, optimized_criteria_list, one_more, next_group, index_predication, wh_question_variable)
+                    created_solution_group, has_more, group_list, next_best_error_info = run_handlers(execution_context, wh_handlers, handlers, optimized_criteria_list, one_more, next_group, index_predication, wh_question_variable)
+                    if best_error_info[0] is None and next_best_error_info[0] is not None:
+                        best_error_info = next_best_error_info
                     if created_solution_group is None:
-                        # No solution group handlers, or none handled it or failed: just do the default behavior
+                        pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
                         if wh_question_variable is not None:
                             wh_created_solution_group = run_wh_group_handlers(wh_handlers, wh_question_variable, one_more, group_list)
                             if len(wh_created_solution_group) == 0:
                                 # wh_handler said to fail
+                                if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
+                                    best_error_info = execution_context.get_error_info()
                                 break
                             else:
                                 yield wh_created_solution_group
@@ -253,16 +264,19 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                         return
 
                     elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-                        # Handler said to skip this group
+                        pipeline_logger.debug(f"Handler said to skip this group")
                         continue
 
                     else:
-                        # Yield the group the handler generated
+                        pipeline_logger.debug(f"Handler said this group was a solution")
                         yield created_solution_group
                         if has_more:
                             yield True
 
                         return
+
+                pipeline_logger.debug(f"No more solution groups.")
+                execution_context.set_error_info(best_error_info)
 
 
 class GroupVariableValues(object):
@@ -274,13 +288,15 @@ class GroupVariableValues(object):
 # If a handler returns:
 #   None --> it means ignore the handler and continue
 #   [] or () --> it means fail this solution
-def run_handlers(wh_handlers, handlers, variable_constraints, one_more, group, index_predication, wh_question_variable):
+def run_handlers(execution_context, wh_handlers, handlers, variable_constraints, one_more, group, index_predication, wh_question_variable):
+    best_error_info = (None, False, -1)
     created_solution_group = None
     has_more = False
     state_list = list(group)
     if pipeline_logger.level == logging.DEBUG:
         nl = '\n'
         pipeline_logger.debug(f"Found solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in state_list])}")
+        pipeline_logger.debug(f"Current execution context error: {execution_context.error()}")
 
     if len(handlers) > 0:
         pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
@@ -319,12 +335,16 @@ def run_handlers(wh_handlers, handlers, variable_constraints, one_more, group, i
                     created_solution_group = next_solution_group
                     if len(created_solution_group) == 0:
                         # handler said to fail
+                        if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
+                            best_error_info = execution_context.get_error_info()
                         break
                     pipeline_logger.debug(f"{debug_name} succeeded with first solution")
                     if wh_question_variable is not None:
                         created_solution_group = run_wh_group_handlers(wh_handlers, wh_question_variable, one_more, created_solution_group)
                         if len(created_solution_group) == 0:
                             # handler said to fail
+                            if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
+                                best_error_info = execution_context.get_error_info()
                             break
                 else:
                     pipeline_logger.debug(f"{handler_function.__name__} succeeded with second solution")
@@ -335,11 +355,14 @@ def run_handlers(wh_handlers, handlers, variable_constraints, one_more, group, i
             if created_solution_group:
                 pipeline_logger.debug(f"{debug_name} succeeded so no more solution group handlers will be run")
                 break
+            else:
+                pipeline_logger.debug(f"{debug_name} failed, so trying alternative solution group handlers...")
 
-        return created_solution_group, has_more, state_list
+        pipeline_logger.debug(f"Done trying solution group handlers, best error: {best_error_info}")
+        return created_solution_group, has_more, state_list, best_error_info
 
     else:
-        return None, None, state_list
+        return None, None, state_list, None
 
 
 def get_function(module_function):
@@ -374,6 +397,9 @@ def run_wh_group_handlers(wh_handlers, wh_question_variable, one_more, group):
             for resulting_group in function_module_functionname[0](group, one_more, value_binding_list):
                 if resulting_group is not None and len(resulting_group) > 0:
                     return resulting_group
+                else:
+                    pipeline_logger.debug(f"{function_module_functionname[1]}.{function_module_functionname[2]} handler said to ignore")
+
 
     else:
         return group

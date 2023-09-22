@@ -3,25 +3,18 @@
     "ResetFunction": "reset",
     "TestItems": [
         {
-            "Command": "can i have a table?",
-            "Expected": "How many in your party?",
-            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "ca458224-ee3b-4026-abd1-162fdccae031"
+        },
+        {
+            "Command": "I want a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "number_q(x14,card(2,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "dfaa005f-cf58-45d3-a744-68d8407ab28f"
-        },
-        {
-            "Command": "2",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
-            "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
-            "Enabled": true,
-            "ID": "b185b4fb-5fc2-44bf-9eaa-cc463e7ba223"
-        },
-        {
-            "Command": "yes",
-            "Expected": "Ok, what?",
-            "Tree": "_yes_a_1(i6,unknown(e2,u5))",
-            "Enabled": true,
-            "ID": "771c9e64-51bb-4ec4-b965-c0d5af83ad2c"
         },
         {
             "Command": "what do you have?",

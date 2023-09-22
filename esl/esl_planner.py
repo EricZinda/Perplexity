@@ -273,7 +273,7 @@ def order_food_out_of_stock(state, who, what):
 
 def order_food_at_table(state, who, what):
     if all_are_players([who]) and location_of_type(state, who, "table"):
-        # Evaluate the what concept to make sure we understand all the terms that were used with it
+        # Evaluate the "what" concept to make sure we understand all the terms that were used with it
         # The user could have said "steak" or "steak for 2" or "rare steak", etc
         # If we get back a state, it means the user said something that made sense
         # and they at least meant e.g. "a steak" of some kind, that exists in the system
@@ -385,7 +385,7 @@ def satisfy_want(state, who, what, min_size):
         # report an error if this is the best we can do
         return [('respond', "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
     else:
-        concept = what.referring_expr_name
+        concept = what.concept_name
         if sort_of(state, concept, "menu"):
             return [('get_menu', who)]
 
