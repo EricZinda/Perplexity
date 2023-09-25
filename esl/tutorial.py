@@ -1182,16 +1182,12 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
         return
     if is_referring_expr(x_actor_binding) or is_referring_expr(x_object_binding):
         return
+    if is_concept(x_object_binding):
+        return
 
     def bound(x_actor, x_object):
-        # Because the concept could be as complicated as "steak without fries" or something,
-        # it isn't as simple as seeing if x_object is a specialization or instance of, we need to
-        # check if it meets all the criteria
         for o in rel_objects(state, x_actor, "ordered"):
-            if is_concept(x_object):
-                if x_object.instances(state, potential_instances=[o]):
-                    return True
-            elif o == x_object:
+            if o == x_object:
                 return True
 
         report_error(["verbDoesntApply", convert_to_english(state, x_actor), "order", convert_to_english(state, x_object), state.get_reprompt()])
@@ -1220,13 +1216,26 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
+#
+# @Predication(vocabulary, names=["solution_group__order_v_1_past"])
+# def _order_v_1_past_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_object_variable_group):
+#     if is_concept(x_object_variable_group.solution_values[0]):
+#         if not check_concept_solution_group_constraints(state_list, x_object_variable_group, check_concepts=False):
+#             yield []
+#             return
+#
+#         # Because the concept could be as complicated as "steak without fries" or something,
+#         # it isn't as simple as seeing if x_object is a specialization or instance of, we need to
+#         # check if it meets all the criteria
+#         for o in rel_objects(state, x_actor, "ordered"):
+#             if is_concept(x_object):
+#                 if x_object.instances(state, potential_instances=[o]):
+#                     return True
+#             elif o == x_object:
+#                     return True
+#     else:
+#         yield state_list
 
-@Predication(vocabulary, names=["solution_group__order_v_1_past"])
-def _order_v_1_past_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_object_variable_group):
-    if is_concept(x_object_variable_group.solution_values[0]):
-        if not check_concept_solution_group_constraints(state_list, x_object_variable_group, check_concepts=False):
-            yield []
-            return
 
 
 # Scenarios:

@@ -1,6 +1,26 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make "ESL/Ordering" work
-
+- If you order 1 steak and then say "I ordered 2 steaks" you get "yes"
+  - Because we aren't checking constraints
+  - logic needs to be in the group to do this properly
+  - Test
+    - Make sure "I ordered the 3 specials" works? etc.
+  - Design
+    - Actually: This should never be conceptual. We should just enumerate all instances...
+      - Problem: "The soup" comes across as a concept. So, "I ordered the soup" won't have instances
+      - Options
+        - What if there was a helper function like the one we have for "want" but you can feed it the only instances to process against
+          - and then, we feed it everything the person ordered, and it checks the constraints like:
+            - Here are the concepts and the instances and the constraints. Is this true?
+            - very, very much like what happens in solution groups...hmmm...
+        - If "the soup" generated instances of the soup, it would "just work"
+          - It seems like this might need to be the design because "The mom left" or "Is this the menu?" are all this case
+          - Analysis:
+            - Just like "a soup" selects the generic concept of "soup" and also instances of it
+            - Just so, it seems like "the soup" should select the "in scope concept" of "soup" and also instances of it
+            - "did I order the soup" is equivalent to "I ordered a thing that is the soup"
+              - which could be selected by the logic for "the" as a global constraint?
+            - It seems like concepts might be good for phrases that are creating things, asking for things, tc
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
 - Do I have a son?
