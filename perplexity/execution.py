@@ -83,7 +83,8 @@ class ExecutionContext(object):
         if self._in_scope_initialize_function is not None:
             self.in_scope_initialize_data = self._in_scope_initialize_function(state)
 
-        yield from self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"])
+        for solution in self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"]):
+            yield solution
 
     def gather_tree_metadata(self):
         self._variable_metadata = perplexity.tree.gather_predication_metadata(self.vocabulary, self.tree_info)
@@ -154,13 +155,13 @@ class ExecutionContext(object):
                                                             self._phrase_type if normalize is False else "norm"):
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
-            module = sys.modules[module_function[0]]
+            module = sys.modules[module_function.module]
 
             # Functions are modeled as properties of modules in Python
             # and getattr() allows you to retrieve a property.
             # So: this is how we get the "function pointer" to the
             # predication function we wrote in Python
-            function = getattr(module, module_function[1])
+            function = getattr(module, module_function.function)
 
             # [list] + [list] will return a new, combined list
             # in Python. This is how we add the state object
@@ -168,8 +169,8 @@ class ExecutionContext(object):
             function_args = [state] + bindings
 
             # See if the system wants us to tack any arguments to the front
-            if module_function[2] is not None:
-                function_args = module_function[2] + function_args
+            if module_function.extra_arg is not None:
+                function_args = module_function.extra_arg + function_args
 
             # If a MessageException happens during execution,
             # convert it to an error
@@ -179,7 +180,9 @@ class ExecutionContext(object):
                 # So: this is actually calling our function (which
                 # returns an iterator and thus we can iterate over it)
                 for next_state in function(*function_args):
-                    yield next_state
+                    tree_lineage_binding = next_state.get_binding("tree_lineage")
+                    tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+                    yield next_state.set_x("tree_lineage", (f"{tree_lineage}.{module_function.id}",))
 
             except MessageException as error:
                 self.report_error(error.message_object())
