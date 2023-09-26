@@ -1,6 +1,8 @@
 import enum
 import inspect
 import logging
+from typing import NamedTuple
+
 import perplexity.execution
 from perplexity.transformer import build_transformed_tree
 from perplexity.utilities import parse_predication_name
@@ -190,6 +192,13 @@ class PredicationMetadata(object):
         return self._match_all
 
 
+class VocabularyEntry(NamedTuple):
+    module: str
+    function: str
+    extra_arg: list
+    id: int
+
+
 # The structure of self.all is:
 #   {"erase_v_1__exx__comm": [(module, function), ...],
 #    "erase_v_1__exx__ques": [(module, function), ...],
@@ -206,6 +215,9 @@ class Vocabulary(object):
         # Words that should not prevent trees from being built due to being unknown
         # because a transformer removes them
         self.transformer_removed = set()
+        # Give each module_function a unique number to identify it
+        # which is len(type_list)
+        self.next_implementation_id = 0
 
     def metadata(self, delphin_name, arg_types):
         metadata_list = []
@@ -268,9 +280,10 @@ class Vocabulary(object):
                     type_list = self.all[name_key]
 
                 if first:
-                    type_list.insert(0, (module, function))
+                    type_list.insert(0, VocabularyEntry(module=module, function=function, id=self.next_implementation_id, extra_arg=None))
                 else:
-                    type_list.append((module, function))
+                    type_list.append(VocabularyEntry(module=module, function=function, id=self.next_implementation_id, extra_arg=None))
+                self.next_implementation_id += 1
 
     def alternate_trees(self, state, tree_info, yield_original):
         for transformer_root in self.transformers:
@@ -285,12 +298,12 @@ class Vocabulary(object):
         name_key = self.name_key(name, arg_types, predication_type)
         if name_key in self.all:
             for module_function in self.all[name_key]:
-                yield module_function + (None, )
+                yield module_function
 
         lemma, generic_key = self.generic_key(name, arg_types, predication_type)
         if generic_key in self.all:
             for module_function in self.all[generic_key]:
-                yield module_function + ([lemma], )
+                yield VocabularyEntry(module=module_function.module, function=module_function.function, extra_arg=[lemma], id=module_function.id)
 
     def unknown_word(self, state, predicate_name, argument_types, phrase_type):
         predications = list(self.predications(predicate_name, argument_types, phrase_type))
@@ -298,8 +311,8 @@ class Vocabulary(object):
                         self.metadata(predicate_name, argument_types)]
         if len(predications) == 0 or \
                 (all(meta.is_match_all() for meta in all_metadata) and not self._in_match_all(state, predicate_name,
-                                                                                             argument_types,
-                                                                                             all_metadata)):
+                                                                                              argument_types,
+                                                                                              all_metadata)):
             return True
 
         else:

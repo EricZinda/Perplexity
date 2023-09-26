@@ -1,6 +1,6 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make "ESL/Ordering" work
-- 
+
 - If you order 1 steak and then say "I ordered 2 steaks" you get "yes"
   - Because we aren't checking constraints
   - logic needs to be in the group to do this properly
@@ -31,6 +31,17 @@
           - Could this also be a better way to handle alternative predications???
             - Would make things much slower...
             - But it seems more conceptually clear...
+          - How to create the trees???
+            - What distinguishes the solutions from the different trees?
+              - Option 1: The trees are created up front
+              - Option 2: They somehow come back in a group
+                - Maybe the state has a lineage that shows the path it took
+                  - Every module_function has a predetermined id that gets used
+                - As soon as we see a new lineage, that means we're on new predication, so we start a new set of solutions
+                - Seems like errors need to be retained as alternatives are tried so they all start from the same base error
+                - solution_groups needs to generate sets of solution groups, where each set is a unique tree
+                - This will affect "resolve_Fragments" too
+                - 
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
 - Do I have a son?

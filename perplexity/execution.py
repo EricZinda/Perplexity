@@ -100,7 +100,7 @@ class ExecutionContext(object):
                 yield state
 
             else:
-                # This is a list of predications, so they should
+                # This is a list of predications, so they should be
                 # treated as a conjunction.
                 # Call each one and pass the state it returns
                 # to the next one, recursively

@@ -177,6 +177,7 @@ class UserInterface(object):
                                 this_sentence_force = sentence_force(tree_info["Variables"])
                                 wh_phrase_variable = get_wh_question_variable(tree_info)
                                 unprocessed_groups = [] if self.show_all_answers else None
+
                                 def yield_from_first():
                                     if unprocessed_groups is not None:
                                         if len(unprocessed_groups) > 0:
