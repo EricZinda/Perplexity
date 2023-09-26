@@ -46,7 +46,7 @@
         },
         {
             "Command": "no",
-            "Expected": "Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with soup0 soup1.\nThe food is good, but nothing extraordinary.",
+            "Expected": "Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with soup0 soup0.\nThe food is good, but nothing extraordinary.",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "93a49803-1e03-4f25-9aee-2efcd87e1fa0"

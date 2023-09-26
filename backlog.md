@@ -1,11 +1,12 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make "ESL/Ordering" work
+- 
 - If you order 1 steak and then say "I ordered 2 steaks" you get "yes"
   - Because we aren't checking constraints
   - logic needs to be in the group to do this properly
   - Test
     - Make sure "I ordered the 3 specials" works? etc.
-  - Design
+  - Analysis
     - Actually: This should never be conceptual. We should just enumerate all instances...
       - Problem: "The soup" comes across as a concept. So, "I ordered the soup" won't have instances
       - Options
@@ -20,7 +21,16 @@
             - Just so, it seems like "the soup" should select the "in scope concept" of "soup" and also instances of it
             - "did I order the soup" is equivalent to "I ordered a thing that is the soup"
               - which could be selected by the logic for "the" as a global constraint?
+              - This could be paid attention to by the noun() handler
             - It seems like concepts might be good for phrases that are creating things, asking for things, tc
+      Design:
+        - set the variable binding so that it doesn't require globally unique values AND gives the instances we are looking for
+        - Problem is: All criteria are gathered up-front
+          - Really, this is a different interpretation, much like the transformers are
+          - It needs to do a whole plurals stream evaluation cycle of its own
+          - Could this also be a better way to handle alternative predications???
+            - Would make things much slower...
+            - But it seems more conceptually clear...
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
 - Do I have a son?

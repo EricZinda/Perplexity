@@ -145,11 +145,6 @@ class ExecutionContext(object):
             else:
                 bindings.append(state.get_binding(predication.args[arg_index]))
 
-        # [list] + [list] will return a new, combined list
-        # in Python. This is how we add the state object
-        # onto the front of the argument list
-        function_args = [state] + bindings
-
         # Look up the actual Python module and
         # function name given a string like "folder_n_of".
         # "vocabulary.Predication" returns a two-item list,
@@ -166,6 +161,11 @@ class ExecutionContext(object):
             # So: this is how we get the "function pointer" to the
             # predication function we wrote in Python
             function = getattr(module, module_function[1])
+
+            # [list] + [list] will return a new, combined list
+            # in Python. This is how we add the state object
+            # onto the front of the argument list
+            function_args = [state] + bindings
 
             # See if the system wants us to tack any arguments to the front
             if module_function[2] is not None:

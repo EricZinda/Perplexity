@@ -142,8 +142,6 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
                 assert False, f"function {function_to_decorate.__name__} must be a generator"
 
             # First create any virtual args. This could fail and report an error
-            if function_to_decorate.__name__ == "fpp_solution_group":
-                print(1)
             if virtual_args is not None and len(virtual_args) > 0:
                 new_args = create_virtual_arguments(args, virtual_args)
                 if new_args is None:

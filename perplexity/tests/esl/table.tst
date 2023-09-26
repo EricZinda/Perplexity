@@ -179,7 +179,7 @@
         },
         {
             "Command": "I'd like a table for 1",
-            "Expected": "Host: There isn't such a table for 1 thing here",
+            "Expected": "Johnny: Hey! That's not enough seats!",
             "Tree": "_a_q(x11,number_q(x17,card(1,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"
