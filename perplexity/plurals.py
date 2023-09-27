@@ -96,7 +96,7 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 # to ensure there is "only 2" solutions generated. This is tracked in the criteria object itself
 # since it is reused across the sets
 #
-# yields: solution_group, set_id
+# yields: stats, solution_group, set_id
 # set_id is a lineage like 1:3:5 ... so that the caller can detect when a solution is just more rows in an existing set_id by seeing
 # if it came from a previous group
 def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint):

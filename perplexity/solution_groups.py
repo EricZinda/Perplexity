@@ -1,15 +1,78 @@
 import copy
-import inspect
 import logging
 import sys
 from math import inf
-
-from perplexity.execution import execution_context
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
 from perplexity.response import RespondOperation
-from perplexity.tree import gather_quantifier_order, gather_predication_metadata, find_predication_from_introduced
+from perplexity.tree import gather_quantifier_order, find_predication_from_introduced
 from perplexity.utilities import at_least_one_generator
+
+
+class SingleSolutionTreeSetGenerator(object):
+    def __init__(self, lineage, solution_tree_set_generator):
+        self.lineage = lineage
+        self.solution_tree_set_generator = solution_tree_set_generator
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        new_lineage, solution = self.solution_tree_set_generator._next_solution(self.lineage)
+        if solution is not None:
+            self.lineage = new_lineage
+            return solution
+
+        else:
+            raise StopIteration
+
+
+class SolutionTreeSetGenerator(object):
+    def __init__(self, solution_generator):
+        self.solution_generator = solution_generator
+        self.current_lineage = None
+        self.next_solution = None
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current_lineage is None:
+            # Very start of generation
+            return SingleSolutionTreeSetGenerator(None, self)
+
+        elif self.next_solution is not None:
+            # This solution was pulled for the current generator
+            # but it was a new lineage, so it ended the last one but
+            # was retained for the next one
+            next_value = self.next_lineage
+            return SingleSolutionTreeSetGenerator(next_value, self)
+
+        else:
+            raise StopIteration
+
+    def _next_solution(self, current_lineage):
+        if self.next_solution is not None:
+            # This solution was pulled for the current generator
+            # but it was a new lineage, so it ended the last one but
+            # was retained for the next one
+            state = self.next_solution
+            self.next_solution = None
+        else:
+            state = next(self.solution_generator)
+
+        solution_lineage = state.get_binding("tree_lineage").value[0]
+
+        # If the current_lineage is None
+        # The caller will use this as their new lineage
+        if current_lineage is None or solution_lineage == current_lineage:
+            return solution_lineage, state
+
+        else:
+            # This is the beginning of a new set of solutions
+            self.current_lineage = solution_lineage
+            self.next_solution = state
+            return None, None
 
 
 # Yields solutions in a single solution group
@@ -154,8 +217,6 @@ class SolutionGroupGenerator(object):
                     self.unyielded_solution_groups.pop(existing_solution_group_id)
                     self.unyielded_solution_groups[next_id] = None
 
-
-
             if existing_solution_group_id == current_id:
                 # Only return True if there is new data for current_id.
                 # This happens if the requested group id (current_id)
@@ -206,8 +267,13 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
         # We also set this if the user asks a wh_question so we ensure we get all of the values
         variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
-        groups_stream = all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
+
+        lineage_generator = next(SolutionTreeSetGenerator(solutions))
+        lineage_stream = at_least_one_generator(lineage_generator)
+
+        groups_stream = all_plural_groups_stream(execution_context, lineage_stream, optimized_criteria_list, variable_metadata,
                                                  initial_stats_group, has_global_constraint)
+
         group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
         if all_unprocessed_groups is not None:
             unprocessed_groups = []
