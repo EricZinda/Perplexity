@@ -781,41 +781,60 @@ def _give_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_
                         ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
 
 
-@Predication(vocabulary, names=["_show_v_1","_show_v_1_able"])
-def _show_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
-    def criteria_bound(x_actor, x_object):
-        return True
+@Predication(vocabulary, names=["_show_v_1", "_show_v_1_able"])
+def _show_v_1(state, e_introduced_binding, x_actor_binding, x_target_binding, x_to_actor_binding):
+    if not is_present_tense(state.get_binding("tree").value[0]):
+        return
+    if is_concept(x_actor_binding) or is_concept(x_to_actor_binding):
+        return
+    if not is_computer_type(x_actor_binding.value):
+        report_error(["dontKnowHow"])
+        return
+
+    def bound(x_actor, x_object):
+        # Do a cursory check to make sure it is some kind of "menu"
+        # More detailed check is in the group predication
+        if is_user_type(x_actor):
+            if is_concept(x_object) and x_object.concept_name in ["menu"]:
+                return True
+
+            else:
+                report_error(["errorText", "Sorry, I can't show you that"])
+        else:
+            report_error(["dontKnowHow"])
+            return
 
     def wanters_of_obj(x_object):
-        return #not currently going to support asking who is seating someone
+        # not currently going to support asking who is seating someone
+        return
 
     def wanted_of_actor(x_actor):
         return
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+    yield from in_style_predication_2(state, x_to_actor_binding, x_target_binding, bound,
                                       wanters_of_obj, wanted_of_actor)
 
+
 @Predication(vocabulary, names=["solution_group__show_v_1", "solution_group__show_v_1_able"])
-def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_object_variable_group, x_target_variable_group):
-    current_state = copy.deepcopy(state_list[0])
-    actor_values = [x.value for x in x_actor_variable_group.solution_values]
-    x_object_values = [x.value for x in x_object_variable_group.solution_values]
-    for obj in x_object_values:
-        if not obj == (referring_expr_from_lemma("menu"),):
-            yield [current_state.record_operations([RespondOperation("Sorry, I can't show you that")])]
-            return
+def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_target_variable_group, x_to_actor_variable_group):
+    # Only need to check constraints on x_target_variable_group since it is the only variable that is a concept
+    # The player is asking to be shown *instances* so check_concepts = False
+    if not check_concept_solution_group_constraints(state_list, x_target_variable_group, check_concepts=False):
+        yield []
+        return
 
-
-    current_state = do_task(current_state.world_state_frame(),
-                            [('satisfy_want', [('user',)], [(referring_expr_from_lemma("menu"),)], 1)])
+    to_actor_list = variable_group_values_to_list(x_to_actor_variable_group)
+    show_list = variable_group_values_to_list(x_target_variable_group)
+    current_state = do_task(state_list[0].world_state_frame(),
+                            [('satisfy_want', to_actor_list, show_list, min_from_variable_group(x_target_variable_group))])
     if current_state is None:
         yield []
+
     else:
         yield [current_state]
 
 
-
-@Predication(vocabulary, names=["_seat_v_cause","_seat_v_cause_able"])
+@Predication(vocabulary, names=["_seat_v_cause", "_seat_v_cause_able"])
 def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         return is_user_type(x_object)
@@ -828,6 +847,7 @@ def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
                                       wanters_of_obj, wanted_of_actor)
+
 @Predication(vocabulary, names=["solution_group__seat_v_cause","solution_group__seat_v_cause_able"])
 def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
@@ -1389,6 +1409,9 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
             # wh-questions aren't implied requests.  I.e. "which tables do you have?"
             x_obj = x_obj_value[0]
             wh_variable = is_wh_question(tree_info)
+            # Only doing a cursory check to make sure they are talking about things that could
+            # be requests in general. More specific things like "a cheap bill" will be figured out
+            # in the planner and failed if we can't give it
             if not wh_variable and x_obj.concept_name in ["bill", "table", "menu"]:
                 # "Can I have a table/menu/bill?" is really about the instances
                 # thus check_concepts=False
@@ -1399,6 +1422,8 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
 
                 # Questions about "Do you have a (concept of a) table/menu/bill?" are really implied requests in a restaurant
                 # that mean "Can I have a table/menu/bill?"
+                # Note that this is where the concept really gets checked in case they said something like
+                # Do you have a *dirty* menu or something...
                 task = ('satisfy_want', [("user",)], [(x_obj,)], 1)
                 final_state = do_task(state_list[0].world_state_frame(), [task])
                 if final_state:
@@ -1728,6 +1753,8 @@ def generate_custom_message(tree_info, error_term):
 
     # if error_constant == "conceptNotFound":
 
+    if error_constant == "dontKnowHow":
+        return "I don't know how to do that."
     if error_constant == "notAThing":
         arg1 = error_arguments[1]
         # english_for_delphin_variable() converts a variable name like 'x3' into the english words

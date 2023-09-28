@@ -96,14 +96,19 @@ def all_are_players(who_multiple):
 
 ###############################################################################
 # Methods: Approaches to doing something that return a new list of something
-def get_menu_at_entrance(state, who):
+def get_menu_at_entrance(state, who, min_size):
     if all_are_players(who) and not location_of_type(state, who[0], "table"):
         return [('respond', "Sorry, you must be seated to get a menu" + state.get_reprompt())]
 
 
-def get_menu_seated(state, who):
+def get_menu_seated(state, who, min_size):
     if all_are_players(who) and location_of_type(state, who[0], "table"):
-        tasks = []
+        if len(who) < min_size:
+            tasks = [('respond',
+                      "That seems like an excessive number of menus ...\n")]
+        else:
+            tasks = []
+
         for who_singular in who:
             if has_type(state, who_singular, "menu"):
                 tasks += [('respond',
@@ -353,7 +358,7 @@ def satisfy_want_group_group(state, group_who, group_what, min_size):
             if one_thing.concept_name == "table":
                 return [("get_table", unique_group_variable_values(group_who), one_thing, min_size)]
             elif one_thing.concept_name == "menu":
-                return [("get_menu", unique_group_variable_values(group_who))]
+                return [("get_menu", unique_group_variable_values(group_who), min_size)]
             elif one_thing.concept_name == "bill":
                 return [("get_bill",)]
 

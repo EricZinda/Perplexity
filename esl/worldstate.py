@@ -61,6 +61,17 @@ def is_user_type(val):
         return True
 
 
+def is_computer_type(val):
+    if not isinstance(val, tuple):
+        return val == "restaurant"
+
+    else:
+        for i in val:
+            if i != "restaurant":
+                return False
+        return True
+
+
 def all_user_type(val):
     assert isinstance(val,list)
     for i in val:

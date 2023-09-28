@@ -126,7 +126,6 @@ def generate_message(tree_info, error_term):
 
         return response
 
-
     elif error_constant == "beMoreSpecific":
         return f"Could you be more specific?"
 

@@ -1,6 +1,7 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
-- 
-- I ordered 2 steaks gives a bad error message
+- Make esl/menu pass
+
+- Show us 2 menus / we have two menus: fail
 - When trying alternative trees, it seems like errors need to be retained as alternatives are tried so they all start from the same base error
                 
 - Do we still need frames with the new concept handling?

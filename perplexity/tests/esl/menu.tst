@@ -87,6 +87,27 @@
             "ID": "3abc1ec5-890e-4d20-83fd-58479d75bf6a"
         },
         {
+            "Command": "show me 2 menus",
+            "Expected": "That seems like an excessive number of menus ...\n\nOh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(2,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "cde58b5d-7df0-4173-a792-d2379fdf4716"
+        },
+        {
+            "Command": "show us 2 menus",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(2,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "94dafbfe-00ea-4830-ab9b-e3069733741c"
+        },
+        {
+            "Command": "show us 3 menus",
+            "Expected": "That seems like an excessive number of menus ...\n\nOh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"
+        },
+        {
             "Command": "can you seat me?",
             "Expected": "Um... You're at a table.",
             "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_able(e2,x3,x11)))",
