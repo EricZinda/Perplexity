@@ -87,6 +87,20 @@
             "ID": "e0b92b58-14c2-40f2-a985-d36a356ed8dd"
         },
         {
+            "Command": "I ordered the steak",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "10f63f95-11f4-48d0-b722-94c8bc3e5d53"
+        },
+        {
+            "Command": "I ordered 2 steaks",
+            "Expected": "No. you does not order steak  \nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "e966e46f-9893-46de-a53c-efc026cafe28"
+        },
+        {
             "Command": "What did we order?",
             "Expected": "Nothing. \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",

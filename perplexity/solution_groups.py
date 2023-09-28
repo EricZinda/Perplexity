@@ -45,8 +45,7 @@ class SolutionTreeSetGenerator(object):
             # This solution was pulled for the current generator
             # but it was a new lineage, so it ended the last one but
             # was retained for the next one
-            next_value = self.next_lineage
-            return SingleSolutionTreeSetGenerator(next_value, self)
+            return SingleSolutionTreeSetGenerator(self.current_lineage, self)
 
         else:
             raise StopIteration

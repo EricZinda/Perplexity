@@ -518,6 +518,27 @@ def match_all_n(noun_type, state, x_binding):
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
+def match_all_the_concept_n(noun_type, state, x_binding):
+    def bound_variable(value):
+        if sort_of(state, value, noun_type):
+            return True
+        else:
+            report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            return False
+
+    def unbound_variable_instances():
+        for item in all_instances(state, noun_type):
+            yield item
+
+    if rel_check(state, noun_type, "conceptInScope", "true") and\
+            x_binding.variable.quantifier.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+        for instance_state in combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_instances):
+            new_criteria = copy.deepcopy(x_binding.variable.quantifier)
+            new_criteria.global_criteria = None
+            yield instance_state.set_variable_data(x_binding.variable.name, quantifier=new_criteria)
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_i(noun_type, state, x_binding, i_binding):
     yield from match_all_n(noun_type, state, x_binding)
 
