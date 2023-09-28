@@ -69,10 +69,10 @@ def all_user_type(val):
     return True
 
 
-def specializations(state, base_type):
+def all_specializations(state, base_type):
     for i in state.all_rel("specializes"):
         if i[1] == base_type:
-            yield from specializations(state, i[0])
+            yield from all_specializations(state, i[0])
             yield i[0]
 
 

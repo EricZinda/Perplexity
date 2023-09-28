@@ -1,5 +1,5 @@
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
-    has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec
+    has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations
 from perplexity.predications import is_referring_expr, ReferringExpr
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
@@ -21,8 +21,6 @@ def describe_list_analyze(state, what_group):
             if item not in analysis["UniqueItems"]:
                 analysis["UniqueItems"].add(item)
                 store_object = object_to_store(item)
-                # If the response is the actual 'special' type, then describe the specials
-                # since we are talking about the whole class of them
                 if is_instance(state, store_object):
                     analysis["Instances"].append(store_object)
                 if sort_of(state, store_object, "special"):
@@ -84,22 +82,28 @@ def describe_analyzed_at_table(state, analysis):
         return [('describe_item', list(analysis["UniqueItems"]))]
 
     if len(analysis["MenuItems"]) > 0 and not has_menu:
-        # If not all the items are menu items, and we haven't described them, we should first list the short version, then
-        # ask if the user wants to hear the long description
+        # Describe the menu if the user hasn't heard it and they ask a question
+        # that results in any number of menu items being generated
         new_methods.append(("get_menu", ["user"]))
         return new_methods
 
-    if len(analysis["Specials"]) > 0:
+    analysis_specials_count = len(analysis["Specials"])
+    if analysis_specials_count > 0:
         if not heard_specials:
-            # If we are being ask to describe only specials, use the special, detailed description
+            # If we are being ask to describe any specials and the user hasn't heard of them yet,
+            # give the special, detailed description
             new_methods.append(('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
             new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', "user", "heardSpecials", "true"))
             return new_methods
-        else:
-            new_methods.append(('respond',
-                               "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
-            return new_methods
+
+        elif analysis_specials_count == len(analysis["UniqueItems"]):
+            if analysis_specials_count == len([x for x in all_specializations(state, "special")]):
+                # We are responding with *only* specials, and in fact *all* of them, and have already heard
+                # the long version, give a terser response
+                new_methods.append(('respond',
+                                   "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+                return new_methods
 
     rel = list(state.all_rel("describes"))
     for i in analysis.keys():

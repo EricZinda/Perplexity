@@ -480,7 +480,7 @@ def person(state, x_person_binding):
 
 
 def handles_noun(state, noun_lemma):
-    handles = ["thing"] + list(specializations(state, "thing"))
+    handles = ["thing"] + list(all_specializations(state, "thing"))
     return noun_lemma in handles
 
 
@@ -501,7 +501,7 @@ def match_all_n(noun_type, state, x_binding):
 
     def unbound_variable_concepts():
         yield store_to_object(state, noun_type)
-        for item in specializations(state, noun_type):
+        for item in all_specializations(state, noun_type):
             yield store_to_object(state, item)
 
     # Yield the referring expression first, and not as a combinatoric variable
@@ -1203,7 +1203,7 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
         return
     if is_referring_expr(x_actor_binding) or is_referring_expr(x_object_binding):
         return
-    if is_concept(x_object_binding):
+    if is_concept(x_actor_binding) or is_concept(x_object_binding):
         return
 
     def bound(x_actor, x_object):
@@ -1236,27 +1236,6 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
 
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
-
-#
-# @Predication(vocabulary, names=["solution_group__order_v_1_past"])
-# def _order_v_1_past_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_object_variable_group):
-#     if is_concept(x_object_variable_group.solution_values[0]):
-#         if not check_concept_solution_group_constraints(state_list, x_object_variable_group, check_concepts=False):
-#             yield []
-#             return
-#
-#         # Because the concept could be as complicated as "steak without fries" or something,
-#         # it isn't as simple as seeing if x_object is a specialization or instance of, we need to
-#         # check if it meets all the criteria
-#         for o in rel_objects(state, x_actor, "ordered"):
-#             if is_concept(x_object):
-#                 if x_object.instances(state, potential_instances=[o]):
-#                     return True
-#             elif o == x_object:
-#                     return True
-#     else:
-#         yield state_list
-
 
 
 # Scenarios:
@@ -1320,30 +1299,31 @@ def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_varia
 
 
 # Just purely answers questions about having things in the present tense
-# See group handler for scenarios
+# like have_v_1, BUT: handles some special cases like "do you have a table?"
+# which is really an implied request. See group handler for scenarios.
 @Predication(vocabulary, names=["_have_v_1"])
 def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
         return
+    if is_concept(x_actor_binding):
+        return
 
     def bound(x_actor, x_object):
         # If everything is instances, just answer if x has y
-        if perplexity.predications.value_type(x_actor) == perplexity.predications.VariableValueType.instance and \
-                perplexity.predications.value_type(x_object) == perplexity.predications.VariableValueType.instance:
+        if not is_concept(x_object):
             return rel_check(state, x_actor, "have", x_object)
 
-        elif not is_concept(x_actor) and is_concept(x_object):
-            if x_actor == "restaurant" and is_concept(x_object):
+        else:
+            if x_actor == "restaurant":
                 # "Do you (the restaurant) have (the concept of) x?"
                 # Let the group handler perform the implied request action
                 # or just answer the question, as long as we do have it
                 return rel_check(state, x_actor, "have", x_object.concept_name)
 
-        report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state,x_object), state.get_reprompt()])
+        report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state, x_object), state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):
-        found = False
         for i in rel_subjects(state, "have", object_to_store(x_object)):
             found = True
             yield store_to_object(state, i)
@@ -1380,17 +1360,22 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
 def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list):
     # Ignore this group if it isn't present tense
     tree_info = state_list[0].get_binding("tree").value[0]
-    if not is_present_tense(tree_info): return
+    if not is_present_tense(tree_info):
+        return
 
     # The solution predication guarantees that this is either actor and object instances or
-    # actor instance and object concept. We only have to check once since they will all be the same
+    # actor instance and object concept. We only have to check one solution since they will all be the same
     first_x_obj = x_obj_list.solution_values[0].value[0]
     object_concepts = is_concept(first_x_obj)
 
-    if object_concepts:
+    if not object_concepts:
+        # This is a "x has y" type statement with instances and these have already been checked
+        yield state_list
+        return
+
+    else:
         # Since this is a concept, the solution handler already checked that the actor is
         # "restaurant" and that the restaurant "has" the solution group concepts.
-
         final_states = []
         for solution_index in range(len(state_list)):
             # Deal with the user saying "do you have x and y *together*"
@@ -1400,13 +1385,11 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                 yield []
                 return
 
-            x_obj = x_obj_value[0]
+            # Now we are guaranteed to only have one item
             # wh-questions aren't implied requests.  I.e. "which tables do you have?"
+            x_obj = x_obj_value[0]
             wh_variable = is_wh_question(tree_info)
             if not wh_variable and x_obj.concept_name in ["bill", "table", "menu"]:
-                # Questions like "Do you have *the* steak" must be conceptual
-                # Anything else can be instance based
-
                 # "Can I have a table/menu/bill?" is really about the instances
                 # thus check_concepts=False
                 # Fail this group if we don't meet the constraints
@@ -1420,23 +1403,18 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
                 final_state = do_task(state_list[0].world_state_frame(), [task])
                 if final_state:
                     final_states.append(final_state)
+
                 else:
                     yield []
                     return
 
             else:
-                # Not an implied request, so: succeed
+                # Not an implied request and the solution predication already confirmed
+                # that the restaurant has this concept, so: succeed
                 final_states.append(state_list[solution_index])
 
         yield final_states
         return
-
-    else:
-        # This is a "x has y" type statement with instances and these have already been checked
-        yield state_list
-        return
-
-    yield []
 
 
 # Used only when there is a form of have that means "able to"
