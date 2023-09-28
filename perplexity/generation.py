@@ -27,7 +27,7 @@ def change_to_plural_mode(singular_word, plural_mode):
         return singular_word
 
 
-def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None):
+def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None, reverse_pronouns=False):
     def record_predications_until_failure_index(predication, index_by_ref, nlg_data, local_tree_info):
         nonlocal tree_info
         # Once we have hit the index where the failure happened, stop
@@ -44,6 +44,7 @@ def english_for_delphin_variable(failure_index, variable, tree_info, plural=None
                     # the variable is introduced in this subtree so it should not have "not" added
                     def neg_nlg_func(predication, index_by_ref):
                         return record_predications_until_failure_index(predication, index_by_ref, nlg_data, local_tree_info)
+
                     return rewrite_tree_predications(predication.args[1], neg_nlg_func, index_by_ref)
 
                 else:
@@ -53,11 +54,13 @@ def english_for_delphin_variable(failure_index, variable, tree_info, plural=None
 
                     subtree_info = copy.deepcopy(local_tree_info)
                     subtree_info["Tree"] = predication.args[1]
+
                     def neg_nlg_func(predication, index_by_ref):
                         return record_predications_until_failure_index(predication, index_by_ref, neg_nlg_data, subtree_info)
 
                     value = rewrite_tree_predications(predication.args[1], neg_nlg_func, index_by_ref)
                     return value
+
             else:
                 # See if this predication can contribute anything to the
                 # description of the variable we are describing. If so,
@@ -65,7 +68,7 @@ def english_for_delphin_variable(failure_index, variable, tree_info, plural=None
                 refine_nlg_with_predication(local_tree_info, variable, predication, nlg_data)
                 return None
 
-    nlg_data = {}
+    nlg_data = {"ReversePronouns": reverse_pronouns}
 
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
     # the function record_predications_until_failure_index(), until hits the
@@ -118,7 +121,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                 # Some abstract predications *should* contribute to the
                 # English description of a variable
                 if parsed_predication["Lemma"] == "pron":
-                    nlg_data["Topic"] = pronoun_from_variable(tree_info, variable)
+                    nlg_data["Topic"] = pronoun_from_variable(tree_info, variable, nlg_data["ReversePronouns"])
 
                 elif parsed_predication["Lemma"] == "quoted":
                     nlg_data["Topic"] = predication.args[0].replace("\\>root111", "/").replace("\\>", "/")
@@ -198,8 +201,16 @@ pronouns = {1: {"sg": "I",
                 "pl": "they"}
             }
 
+reversed_pronouns = {1: {"sg": "you",
+                         "pl": "you"},
+                     2: {"sg": "I",
+                         "pl": "we"},
+                     3: {"sg": "he/she",
+                         "pl": "they"}
+                     }
 
-def pronoun_from_variable(tree_info, variable):
+
+def pronoun_from_variable(tree_info, variable, reverse_pronouns):
     mrs_variable = tree_info["Variables"][variable]
     if "PERS" in mrs_variable:
         person = int(mrs_variable["PERS"])
@@ -212,7 +223,7 @@ def pronoun_from_variable(tree_info, variable):
         # "sg" is singular in MRS
         number = "sg"
 
-    return pronouns[person][number]
+    return reversed_pronouns[person][number] if reverse_pronouns else pronouns[person][number]
 
 
 # Takes the information gathered in the nlg_data dictionary

@@ -1211,7 +1211,7 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
             if o == x_object:
                 return True
 
-        report_error(["verbDoesntApply", convert_to_english(state, x_actor), "order", convert_to_english(state, x_object), state.get_reprompt()])
+        report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):
@@ -1738,7 +1738,7 @@ def generate_custom_message(tree_info, error_term):
     if error_constant == "X_VTRANS_Nothing":
         return "Nothing." + error_arguments[3]
     if error_constant == "not_adj":
-        return "It's not " + error_arguments[1] + "." +error_arguments[2]
+        return "It's not " + error_arguments[1] + "." + error_arguments[2]
     if error_constant == "is_not":
         return f"{error_arguments[1]} is not {error_arguments[2]}{error_arguments[3]}"
     if error_constant == "notOn":
@@ -1746,6 +1746,12 @@ def generate_custom_message(tree_info, error_term):
         arg2 = error_arguments[2]
         arg3 = error_arguments[3]
         return f"No. {arg1} is not on {arg2}{arg3}"
+    if error_constant == "verbDoesntApplyArg":
+        arg1 = error_arguments[1]
+        arg2 = error_arguments[2]
+        arg3 = error_arguments[3]
+        arg4 = error_arguments[4]
+        return s("No, {arg1} {'did':<arg1} not {*arg2} {arg3} {*arg4}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApply":
         return f"No. {error_arguments[1]} does not {error_arguments[2]} {error_arguments[3]} {error_arguments[4]}"
     else:

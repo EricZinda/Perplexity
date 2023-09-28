@@ -62,7 +62,7 @@ def compare_generated_output(original, generated, exact=False):
 # specify.  If None, just leaves as-is
 #
 # returns the new MRS or None if an MRS wasn't able to be built that generates the fragment
-def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, determiner=None):
+def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, determiner=None, reverse_pronouns=False):
     def rewrite_tree_without_fragment_body(predication, index_by_ref):
         nonlocal pruned_body
         nonlocal mrs
@@ -181,7 +181,15 @@ def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, 
         new_variables_values = {"h0": mrs.variables["h0"]}
         for var_item in mrs.variables.items():
             if var_item[0] in new_variables:
-                new_variables_values[var_item[0]] = var_item[1]
+                if reverse_pronouns and "PERS" in var_item[1]:
+                    swapped_variables = copy.deepcopy(var_item[1])
+                    if swapped_variables["PERS"] == "1":
+                        swapped_variables["PERS"] = "2"
+                    elif swapped_variables["PERS"] == "2":
+                        swapped_variables["PERS"] = "1"
+                    new_variables_values[var_item[0]] = swapped_variables
+                else:
+                    new_variables_values[var_item[0]] = var_item[1]
 
         # Always set the sentence force of the index variable to be proposition
         # Get rid of any other properties in it
@@ -239,9 +247,9 @@ def fragmentize_phrase(phrase):
     return phrase.strip(".?!")
 
 
-def english_for_variable_using_mrs(mrs_parser, mrs, failure_index, variable, tree, plural=None, determiner=None, exact=False):
+def english_for_variable_using_mrs(mrs_parser, mrs, failure_index, variable, tree, plural=None, determiner=None, exact=False, reverse_pronouns=False):
     # Get the MRS fragment for the variable
-    new_mrs = mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural, determiner)
+    new_mrs = mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural, determiner, reverse_pronouns=reverse_pronouns)
     if new_mrs is None:
         return None, None, None
 

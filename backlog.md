@@ -1,7 +1,6 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
-- Make esl/doyouhave work
-- What dishes do you have? -> returns only specials
 - 
+- I ordered 2 steaks gives a bad error message
 - When trying alternative trees, it seems like errors need to be retained as alternatives are tried so they all start from the same base error
                 
 - Do we still need frames with the new concept handling?

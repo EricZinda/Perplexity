@@ -98,7 +98,8 @@ def describe_analyzed_at_table(state, analysis):
             return new_methods
 
         elif analysis_specials_count == len(analysis["UniqueItems"]):
-            if analysis_specials_count == len([x for x in all_specializations(state, "special")]):
+            # Subtract 1 to account for the generic concept "special"
+            if analysis_specials_count - 1 == len([x for x in all_specializations(state, "special")]):
                 # We are responding with *only* specials, and in fact *all* of them, and have already heard
                 # the long version, give a terser response
                 new_methods.append(('respond',

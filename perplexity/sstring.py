@@ -46,11 +46,11 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 # g("{arg2:sg} {arg2:pl}
 #
 # returns a SStringFormat object
-def s(origin, tree_info=None):
-    return sstringify(origin, tree_info)
+def s(origin, tree_info=None, reverse_pronouns=False):
+    return sstringify(origin, tree_info, reverse_pronouns=reverse_pronouns)
 
 
-def sstringify(origin, tree_info=None):
+def sstringify(origin, tree_info=None, reverse_pronouns=False):
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
     sstringified = re.sub(r"(?:{{)+?", "\x15", origin)[::-1]
@@ -72,7 +72,7 @@ def sstringify(origin, tree_info=None):
     for match in INDICATOR_PATTERN.findall(sstringified):
         indicator = match[1:-1]
         format_object = parse_s_string_element(indicator)
-        value = format_object.format(tree_info)
+        value = format_object.format(tree_info, reverse_pronouns=reverse_pronouns)
         if value is None:
             value = "<unknown>"
         sstringified = sstringified.replace(match, str(value))
@@ -175,7 +175,7 @@ class SStringFormat(object):
         else:
             return variable_name, None
 
-    def format(self, tree_info):
+    def format(self, tree_info, reverse_pronouns=False):
         if tree_info is not None:
             mrs = simplemrs.loads(tree_info["MRS"])[0]
             tree = tree_info["Tree"]
@@ -251,7 +251,7 @@ class SStringFormat(object):
                 meaning_at_index_value = self.resolve_variable(self.meaning_at_index_variable)
                 sstring_logger.debug(f"sstring: meaning_at_index specified: '{meaning_at_index_value}'")
 
-            formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
+            formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner, reverse_pronouns=reverse_pronouns)
             #
             # if meaning_at_index_value == meaning_at_index_default:
             #     # We only know how to use ACE if we are talking about a variable's meaning
@@ -269,7 +269,7 @@ class SStringFormat(object):
             else:
                 # If ACE can't be used, fall back to a simplistic approach
                 sstring_logger.debug(f"sstring: MRS failed, try fallback")
-                formatted_string = english_for_delphin_variable(meaning_at_index_value, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner)
+                formatted_string = english_for_delphin_variable(meaning_at_index_value, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner, reverse_pronouns=reverse_pronouns)
                 sstring_logger.debug(f"sstring: Fallback generated: {variable_name}[{self}]={formatted_string}")
 
             return formatted_string
