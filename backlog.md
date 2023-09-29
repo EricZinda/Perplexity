@@ -1,7 +1,5 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make esl/menu pass
-
-- We have 3 menus -> [-1, None]
 - We have 0 menus -> No. you does not have something 
 - When trying alternative trees, it seems like errors need to be retained as alternatives are tried so they all start from the same base error
                 

@@ -95,14 +95,14 @@
         },
         {
             "Command": "I ordered 2 steaks",
-            "Expected": "No, you did not order 2 steak  \nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "There are less than 2 2 steak",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "e966e46f-9893-46de-a53c-efc026cafe28"
         },
         {
             "Command": "What did we order?",
-            "Expected": "Nothing. \nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Less than 2 people did that.",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "6e8ad609-7795-4d5c-96cd-cca160cf9f4e"
@@ -298,7 +298,7 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "salad\nsoup",
+            "Expected": "soup\nsalad",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"
@@ -347,7 +347,7 @@
         },
         {
             "Command": "I ordered 2 steaks",
-            "Expected": "No, you did not order 2 steak  \nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "There are less than 2 2 steak",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "326fcaba-7595-4143-9309-9142c06b5607"

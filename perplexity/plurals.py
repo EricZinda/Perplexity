@@ -139,10 +139,6 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
                 else:
                     # Didn't fail
-                    # Clear any errors that occurred trying to generate solution groups that didn't work
-                    # so that the error that gets returned is whatever happens while *processing* the solution group
-                    execution_context.clear_error()
-
                     # decide whether to merge into the existing set or create a new one
                     # Merge if the only variables that got updated had a criteria with an upper bound of inf
                     # since alternatives won't be used anyway
@@ -159,6 +155,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     new_set[1] = existing_set[1] + [next_solution]
 
                     if state == CriteriaResult.meets:
+                        # Clear any errors that occurred trying to generate solution groups that didn't work
+                        # so that the error that gets returned is whatever happens while *processing* the solution group
+                        execution_context.clear_error()
+
                         yield new_set[1], new_set[2], new_set[0]
 
                     elif state == CriteriaResult.meets_pending_global:
@@ -181,6 +181,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
         for criteria in var_criteria:
             if not criteria.meets_global_criteria(execution_context):
                 return
+
+        # Clear any errors that occurred trying to generate solution groups that didn't work
+        # so that the error that gets returned is whatever happens while *processing* the solution group
+        execution_context.clear_error()
 
         yield from pending_global_criteria
 

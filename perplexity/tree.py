@@ -589,6 +589,10 @@ def find_quantifier_from_variable(term, variable_name):
     return walk_tree_predications_until(term, match_variable)
 
 
+def find_index_predication(tree_info):
+    return find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+
+
 def gather_quantifier_order(tree_info):
     def gather_metadata(predication):
         if predication.arg_types[0] == "x":

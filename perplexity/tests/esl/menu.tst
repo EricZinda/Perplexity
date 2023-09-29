@@ -116,8 +116,8 @@
         },
         {
             "Command": "we have 3 menus",
-            "Expected": "fail",
-            "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
+            "Expected": "There are less than 3 3 menu",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(3,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "28216fc8-69b6-40cb-a699-27c8460b77f9"
         },
