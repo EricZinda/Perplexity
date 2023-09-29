@@ -130,6 +130,9 @@ def generate_message(tree_info, error_term):
     elif error_constant == "beMoreSpecific":
         return f"Could you be more specific?"
 
+    elif error_constant == "conceptNotFound":
+        return s("I'm not sure which {bare *arg1.concept_name} you mean.", tree_info)
+
     elif error_constant == "doesntExist":
         return s("There isn't {a arg1:sg} in the system", tree_info)
 

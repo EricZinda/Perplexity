@@ -355,7 +355,7 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
         if len(x_what) == 1:
             x_what_type = perplexity.predications.value_type(x_what[0])
             if x_what_type == perplexity.predications.VariableValueType.referring_expression:
-                # Is a referring expression, we'll add ourself to it below
+                # Is a referring expression, we'll add ourselves to it below
                 # Concepts just flow through
                 return True
 
@@ -734,7 +734,8 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
             # args = [x_what_variable_group.variable_constraints.min_size, "e999", first_x_what_binding_value.variable_name]
             # first_x_what_binding_value = first_x_what_binding_value.add_modifier(TreePredication(0, "card", args, arg_names=["CARG", "ARG0", "ARG1"]))
             actor_values = [x.value for x in x_actor_variable_group.solution_values]
-            current_state = do_task(current_state.world_state_frame(), [('satisfy_want', actor_values, [(first_x_what_binding_value,)], min_from_variable_group(x_what_variable_group))])
+            current_state = do_task(current_state.world_state_frame(),
+                                    [('satisfy_want', actor_values, [(first_x_what_binding_value,)], min_from_variable_group(x_what_variable_group))])
             if current_state is None:
                 yield []
             else:
@@ -949,6 +950,7 @@ def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 def _please_a_1(state, e_introduced_binding, e_binding):
     yield state
 
+
 @Predication(vocabulary, names=["_too_a_also"])
 def _too_a_also(state, e_introduced_binding, x_binding):
     yield state
@@ -974,18 +976,22 @@ def _thanks_a_1(state, i_binding, h_binding):
 #   - "Will I sit down?"
 @Predication(vocabulary, names=["_sit_v_down", "sit_v_1"])
 def _sit_v_down_future(state, e_introduced_binding, x_actor_binding):
+    if is_concept(x_actor_binding):
+        return
     tree_info = state.get_binding("tree").value[0]
-    if not is_future_tense(tree_info): return
+    if not is_future_tense(tree_info):
+        return
     if is_question(tree_info):
         # None of the future tense questions are valid english in this scenario
-        report_error(["unexpected",state.get_reprompt()])
+        report_error(["unexpected", state.get_reprompt()])
         return
 
     def bound(x_actor):
         if is_user_type(x_actor):
             return True
+
         else:
-            report_error(["unexpected",state.get_reprompt()])
+            report_error(["unexpected", state.get_reprompt()])
             return
 
     def unbound():
@@ -997,11 +1003,8 @@ def _sit_v_down_future(state, e_introduced_binding, x_actor_binding):
 
 @Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])
 def _sit_v_down_future_group(state_list, has_more, e_list, x_actor_variable_group):
-    tree_info = state_list[0].get_binding("tree").value[0]
-    if not is_future_tense(tree_info): return
-
     # The planner will only satisfy a want wrt the players
-    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[referring_expr_from_lemma("table")]], 1)
+    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -1031,18 +1034,21 @@ def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
 def _sit_v_down_able(state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_present_tense(tree_info):
-        report_error(["unexpected",state.get_reprompt()])
+        report_error(["unexpected", state.get_reprompt()])
         return
 
     if not is_question(tree_info):
-        report_error(["unexpected",state.get_reprompt()])
+        report_error(["unexpected", state.get_reprompt()])
+        return
+
+    if is_concept(x_actor_binding):
         return
 
     def bound(x_actor):
         if is_user_type(x_actor):
             return True
         else:
-            report_error(["unexpected",state.get_reprompt()])
+            report_error(["unexpected", state.get_reprompt()])
             return
 
     def unbound():
@@ -1050,15 +1056,18 @@ def _sit_v_down_able(state, e_binding, x_actor_binding):
 
     yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
 
+
 @Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
 def _sit_v_down_request(state, e_binding, x_actor_binding):
-    tree_info = state.get_binding("tree").value[0]
+    if is_concept(x_actor_binding):
+        return
 
     def bound(x_actor):
         if is_user_type(x_actor):
             return True
+
         else:
-            report_error(["unexpected",state.get_reprompt()])
+            report_error(["unexpected", state.get_reprompt()])
             return
 
     def unbound():
@@ -1069,14 +1078,14 @@ def _sit_v_down_request(state, e_binding, x_actor_binding):
 
 @Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
 def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
-    tree_info = state_list[0].get_binding("tree").value[0]
-
     # If it is a wh_question, just answer it
+    tree_info = state_list[0].get_binding("tree").value[0]
     if is_wh_question(tree_info):
         yield state_list
+
     else:
         # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[referring_expr_from_lemma("table")]], 1)
+        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]

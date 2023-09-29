@@ -1,7 +1,11 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
-- Make esl/menu pass
-- can you seat me? -> Sorry, I'm not sure what to do about that
-
+- Make esl/table pass
+- I'd like a table for my son and me -> Johnny: Hey! That's not enough seats!
+  - Solution group succeeds with an error so we never find the right one
+  - It is not really an error, it is "the plan" for a misunderstanding
+  - With that I get: I'd like a table for 1 -> We don't have a table like that
+    - which is not true
+    - 
 - We have 0 menus -> No. you does not have something 
 - When trying alternative trees, it seems like errors need to be retained as alternatives are tried so they all start from the same base error
                 

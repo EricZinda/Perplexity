@@ -460,7 +460,7 @@ class ESLConcept(Concept):
 
         if len(found_cumulative) == 0:
             # Since the concept generated might be different than what the user said,
-            # For example, "table for my son" is iterpreted as "table for 1", we need
+            # For example, "table for my son" is interpreted as "table for 1", we need
             # to generate an error that is specific to the *concept*
             report_error(["conceptNotFound", self], force=True)
 
