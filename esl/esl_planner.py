@@ -2,77 +2,19 @@ import numbers
 
 from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
-from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, rel_check, has_type, all_instances, \
-    rel_subjects, is_instance, instance_of_what, AddBillOp, DeleteRelOp, noun_structure, rel_subjects_objects, \
-    find_unused_item, ResetOrderAndBillOp, find_unused_values_from_referring_expr, object_to_store, all_ancestors, \
+from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, has_type, \
+    rel_subjects, is_instance, AddBillOp, DeleteRelOp, noun_structure,  \
+    find_unused_item, ResetOrderAndBillOp,  object_to_store, \
     find_unused_instances_from_concept
 from perplexity.execution import report_error
-from perplexity.predications import ReferringExpr, is_referring_expr, is_concept
+from perplexity.predications import  is_referring_expr, is_concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
-from perplexity.solution_groups import GroupVariableValues
 from perplexity.utilities import at_least_one_generator
 
 domain_name = __name__
 the_domain = gtpyhop.Domain(domain_name)
 
-
-###############################################################################
-# Methods: Approaches to doing something that return a new list of something
-
-# def do_nothing(state,p,y):
-#     if is_a(p,'person') and is_a(y,'location'):
-#         x = state.loc[p]
-#         if x == y:
-#             return []
-#
-# def travel_by_foot(state,p,y):
-#     if is_a(p,'person') and is_a(y,'location'):
-#         x = state.loc[p]
-#         if x != y and distance(x,y) <= 2:
-#             return [('walk',p,x,y)]
-#
-# def travel_by_taxi(state,p,y):
-#     if is_a(p,'person') and is_a(y,'location'):
-#         x = state.loc[p]
-#         if x != y and state.cash[p] >= taxi_rate(distance(x,y)):
-#             return [('call_taxi',p,x), ('ride_taxi',p,y), ('pay_driver',p,y)]
-
-###############################################################################
-# Actions: Update state to a new value
-
-# def walk(state, p, x, y):
-#     if is_a(p, 'person') and is_a(x, 'location') and is_a(y, 'location') and x != y:
-#         if state.loc[p] == x:
-#             state.loc[p] = y
-#             return state
-#
-#
-# def call_taxi(state, p, x):
-#     if is_a(p, 'person') and is_a(x, 'location'):
-#         state.loc['taxi1'] = x
-#         state.loc[p] = 'taxi1'
-#         return state
-#
-#
-# def ride_taxi(state, p, y):
-#     # if p is a person, p is in a taxi, and y is a location:
-#     if is_a(p, 'person') and is_a(state.loc[p], 'taxi') and is_a(y, 'location'):
-#         taxi = state.loc[p]
-#         x = state.loc[taxi]
-#         if is_a(x, 'location') and x != y:
-#             state.loc[taxi] = y
-#             state.owe[p] = taxi_rate(distance(x, y))
-#             return state
-#
-#
-# def pay_driver(state, p, y):
-#     if is_a(p, 'person'):
-#         if state.cash[p] >= state.owe[p]:
-#             state.cash[p] = state.cash[p] - state.owe[p]
-#             state.owe[p] = 0
-#             state.loc[p] = y
-#             return state
 
 ###############################################################################
 # Helpers
@@ -173,7 +115,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
             not location_of_type(state, who_multiple[0], "table"):
         if min_size != 1:
-            return [('respond', "Johnny: Hey, let's sit together alright?"+ state.get_reprompt())]
+            return [('respond', "Johnny: Hey, let's sit together alright?" + state.get_reprompt())]
 
         # Evaluate the noun to make sure we understand all the terms that were used with it
         # If we get back a state, it means the user said something that made sense
@@ -466,6 +408,9 @@ class ExitNowException(Exception):
     pass
 
 
+# If the intuition is to succeed with a failure message like "I couldn't do that!"
+# But there might be alternatives that can work, use this. It stops the planner immediately
+# but records a high priority error so that, if nothing else works, that error will get shown
 def stop_plan_with_error(error_text):
     report_error(["understoodFailureMessage", error_text], force=True)
     raise ExitNowException()

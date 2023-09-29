@@ -1,15 +1,7 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make esl/table pass
-- I'd like a table for my son and me -> Johnny: Hey! That's not enough seats!
-  - Solution group succeeds with an error so we never find the right one
-  - It is not really an error, it is "the plan" for a misunderstanding
-  - There is a distinction between a phrase that is understood, but the plan has an error result
-    and a plan that has a success result
-    - Either one is better than a pure error
-    - But the error result should allow for trying alternatives
-    - The error should be simply a "understoodFailureMessage", and it should be higher that any error
-- With that I get: I'd like a table for 1 -> We don't have a table like that
-  - which is not true
+
+- Fix the planner to use stop_plan_with_error instead of messages when the plan doesn't work
 
 - We have 0 menus -> No. you does not have something 
 - When trying alternative trees, it seems like errors need to be retained as alternatives are tried so they all start from the same base error
