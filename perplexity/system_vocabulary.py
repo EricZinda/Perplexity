@@ -31,7 +31,15 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
 
     variable_name = x_variable_binding.variable.name
     rstr_values = []
+    rstr_values_tree_lineage = ""
     for rstr_solution in call(state, h_rstr):
+        # We track RSTR values *per tree lineage* since these are effectively different trees
+        # and so we need to clear it if the lineage changes
+        tree_lineage = rstr_solution.get_binding("tree_lineage").value[0]
+        if tree_lineage != rstr_values_tree_lineage:
+            rstr_values = []
+            rstr_values_tree_lineage = tree_lineage
+
         if criteria_predication is not None:
             alternative_states = criteria_predication(rstr_solution, rstr_solution.get_binding(x_variable_binding.variable.name))
         else:
@@ -39,10 +47,9 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
 
         for alternative_state in alternative_states:
             rstr_values.extend(alternative_state.get_binding(variable_name).value)
+            set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
             for body_solution in call(alternative_state, h_body):
                 yield body_solution
-
-    set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
 
     if not reverse and len(rstr_values) == 0:
         # If the rstr was actually run (i.e. not reversed) and produced no values:

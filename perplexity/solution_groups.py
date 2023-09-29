@@ -259,6 +259,8 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
             if solutions is None:
                 return
 
+            pipeline_logger.debug(f"Finding solution groups for lineage {solutions.first_item.get_binding('tree_lineage').value[0]}")
+
             # Go through each variable that has a quantifier in order and gather and optimize the criteria list
             # if it wasn't given to us
             if criteria_list is not None:
