@@ -108,6 +108,20 @@
             "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"
         },
         {
+            "Command": "we have 2 menus",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(2,e14,x8)],_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "4dd1ccc3-2b8d-4c5e-8048-cfef07a8d1d4"
+        },
+        {
+            "Command": "we have 3 menus",
+            "Expected": "fail",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "28216fc8-69b6-40cb-a699-27c8460b77f9"
+        },
+        {
             "Command": "can you seat me?",
             "Expected": "Um... You're at a table.",
             "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_able(e2,x3,x11)))",

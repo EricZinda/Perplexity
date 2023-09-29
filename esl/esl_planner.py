@@ -96,39 +96,55 @@ def all_are_players(who_multiple):
 
 ###############################################################################
 # Methods: Approaches to doing something that return a new list of something
-def get_menu_at_entrance(state, who, min_size):
-    if all_are_players(who) and not location_of_type(state, who[0], "table"):
+def get_menu_at_entrance(state, who_list, min_size):
+    if all_are_players(who_list) and not location_of_type(state, who_list[0], "table"):
         return [('respond', "Sorry, you must be seated to get a menu" + state.get_reprompt())]
 
 
-def get_menu_seated(state, who, min_size):
-    if all_are_players(who) and location_of_type(state, who[0], "table"):
-        if len(who) < min_size:
+def get_menu_seated_who_list(state, who_list, min_size):
+    if not isinstance(who_list, list):
+        return
+
+    if all_are_players(who_list) and location_of_type(state, who_list[0], "table"):
+        if len(who_list) < min_size:
             tasks = [('respond',
                       "That seems like an excessive number of menus ...\n")]
         else:
             tasks = []
 
-        for who_singular in who:
-            if has_type(state, who_singular, "menu"):
-                tasks += [('respond',
-                            "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + state.get_reprompt())]
-            else:
-                # Find an unused menu
-                unused_menu = find_unused_item(state, "menu")
-                if unused_menu:
-                    tasks += [('add_rel', who_singular, "have", unused_menu),
-                              ('respond',
-                               "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
-                              ('set_response_state', "anticipate_dish")]
-                else:
-                    tasks += [('respond',
-                             "I'm sorry, we're all out of menus." + state.get_reprompt())]
-        if len(tasks) > 0:
-            return tasks
+        for who_singular in who_list:
+            tasks.append(('get_menu', who_singular, 1))
+
+    if len(tasks) > 0:
+        return tasks
 
 
-gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance, get_menu_seated)
+def get_menu_seated_who(state, who_singular, min_size):
+    if isinstance(who_singular, list):
+        return
+
+    tasks = []
+    if has_type(state, who_singular, "menu"):
+        tasks += [('respond',
+                   "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + state.get_reprompt())]
+
+    else:
+        # Find an unused menu
+        unused_menu = find_unused_item(state, "menu")
+        if unused_menu:
+            tasks += [('add_rel', who_singular, "have", unused_menu),
+                      ('respond',
+                       "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
+                      ('set_response_state', "anticipate_dish")]
+        else:
+            tasks += [('respond',
+                       "I'm sorry, we're all out of menus." + state.get_reprompt())]
+
+    if len(tasks) > 0:
+        return tasks
+
+
+gtpyhop.declare_task_methods('get_menu', get_menu_at_entrance, get_menu_seated_who_list, get_menu_seated_who)
 
 
 def count_entities(value_group):
