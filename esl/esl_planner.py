@@ -480,7 +480,6 @@ if __name__ == '__main__':
 
     # state1 = state0.copy()
 
-
     expected = [('call_taxi', 'alice', 'home_a'), ('ride_taxi', 'alice', 'park'), ('pay_driver', 'alice', 'park')]
 
     print("-- If verbose=0, the planner will return the solution but print nothing.")

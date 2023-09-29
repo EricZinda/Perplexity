@@ -836,11 +836,15 @@ def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_vari
 
 @Predication(vocabulary, names=["_seat_v_cause", "_seat_v_cause_able"])
 def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if is_concept(x_actor_binding) or is_concept(x_object_binding):
+        return
+
     def criteria_bound(x_actor, x_object):
-        return is_user_type(x_object)
+        return is_computer_type(x_actor) and is_user_type(x_object)
 
     def wanters_of_obj(x_object):
-        return #not currently going to support asking who is seating someone
+        # not currently going to support asking who is seating someone
+        return
 
     def wanted_of_actor(x_actor):
         return
@@ -848,16 +852,16 @@ def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding
     yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
                                       wanters_of_obj, wanted_of_actor)
 
-@Predication(vocabulary, names=["solution_group__seat_v_cause","solution_group__seat_v_cause_able"])
+
+@Predication(vocabulary, names=["solution_group__seat_v_cause", "solution_group__seat_v_cause_able"])
 def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
-    current_state = copy.deepcopy(state_list[0])
-    actor_values = [x.value for x in x_actor_variable_group.solution_values]
-    current_state = do_task(current_state.world_state_frame(),
-                            [('satisfy_want', [('user',)], [(referring_expr_from_lemma("table"),)], 1)])
-    if current_state is None:
+    new_state = do_task(state_list[0].world_state_frame(),
+                        [('satisfy_want', variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
+    if new_state is None:
         yield []
     else:
-        yield [current_state]
+        yield [new_state]
+
 
 @Predication(vocabulary, names=["loc_nonsp"])
 def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_loc_binding):
