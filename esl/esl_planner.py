@@ -226,7 +226,7 @@ def get_table_at_entrance(state, who_multiple, table, min_size):
         elif for_count is not None:
             # They specified how big
             if for_count < 2:
-                return [('respond', "Johnny: Hey! That's not enough seats!"+ state.get_reprompt())]
+                stop_plan_with_error("Johnny: Hey! That's not enough seats!" + state.get_reprompt())
             elif for_count > 2:
                 return [('respond', "Host: Sorry, we don't have a table with that many seats"+ state.get_reprompt())]
 
@@ -422,9 +422,10 @@ def satisfy_want(state, who, what, min_size):
 
         return actions
 
+
 # Last option should just report an error
 def satisfy_want_fail(state, who, what, min_size):
-    return [('respond', "Sorry, I'm not sure what to do about that"+ state.get_reprompt())]
+    stop_plan_with_error("Sorry, I'm not sure what to do about that" + state.get_reprompt())
 
 
 gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group_group, satisfy_want, satisfy_want_fail)
@@ -460,14 +461,26 @@ gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bi
 
 add_declarations(gtpyhop)
 
+
+class ExitNowException(Exception):
+    pass
+
+
+def stop_plan_with_error(error_text):
+    report_error(["understoodFailureMessage", error_text], force=True)
+    raise ExitNowException()
+
+
 # If it is "a table for 2" get both at the same table
 # If it is I would like a table, ask how many
 # If it is "we" would like a table, count the people and fail if it is > 2
-
 def do_task(state, task):
-    result, result_state = gtpyhop.find_plan(state, task)
-    # print(result)
-    return result_state
+    try:
+        result, result_state = gtpyhop.find_plan(state, task)
+        # print(result)
+        return result_state
+    except ExitNowException:
+        return None
 
 
 gtpyhop.verbose = 0

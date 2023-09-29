@@ -195,6 +195,9 @@ def generate_message(tree_info, error_term):
     elif error_constant == "tooManyItemsTogether":
         return "I don't understand using terms in a way that means 'together' in that sentence"
 
+    elif error_constant == "understoodFailureMessage":
+        return error_arguments[1]
+
     elif error_constant == "unexpected":
         return "I'm not sure what that means."
 
@@ -273,6 +276,9 @@ error_priority_dict = {
     "doesntExist": 920,
     "defaultPriority": 1000,
 
+    # Indicates we understood the phrase, but trying to accomplish it generated a failure. It should
+    # be a very high priority message
+    "understoodFailureMessage": 1200,
     # This is just used when sorting to indicate no error, i.e. success.
     # Nothing should be higher
     "success": 10000000
