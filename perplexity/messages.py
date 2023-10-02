@@ -246,7 +246,7 @@ def error_priority(error_string):
 
     else:
         if error_string[1] is None:
-            return error_priority_dict["defaultPriority"]
+            return error_priority_dict["lowestPriority"]
 
         error_constant = error_string[1][0]
         priority = error_priority_dict.get(error_constant, None)
@@ -263,6 +263,7 @@ def error_priority(error_string):
 # The absolute value of number doesn't mean anything, they are just for sorting
 # The defaultPriority key is the default value for errors that aren't explicitly listed
 error_priority_dict = {
+    "lowestPriority": 0,
     # Unknown words error should only be shown if
     # there are no other errors, AND the number
     # of unknown words is subtracted from it so

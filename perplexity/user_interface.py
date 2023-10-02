@@ -153,6 +153,7 @@ class UserInterface(object):
 
                         # Add afterwards since the mrs can't be deepcopied
                         tree_info["MRS"] = self.mrs_parser.mrs_to_string(mrs)
+
                         tree_index += 1
                         if self.run_tree_index is not None:
                             if self.run_tree_index > tree_index:
@@ -170,8 +171,25 @@ class UserInterface(object):
                                 continue
 
                         # Try the state from each frame that is available
-                        for frame_state in self.state.frames():
-                            pipeline_logger.debug( f"Evaluating against frame '{frame_state.frame_name}'")
+                        first_frame = True
+                        # Used to loop through different frames, for now that is turned off
+                        # until we decide if is necessary again since it is expensive
+                        # was: for frame_state in self.state.frames():
+                        for frame_state in [self.state]:
+                            pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
+                            if first_frame:
+                                first_frame = False
+                            else:
+                                # Create a new tree record for each alternative frame_state
+                                tree_index += 1
+                                if self.run_tree_index is not None:
+                                    if self.run_tree_index > tree_index:
+                                        continue
+                                    elif self.run_tree_index < tree_index:
+                                        break
+                                tree_record = self.new_tree_record(tree=tree_info["Tree"])
+                                mrs_record["Trees"].append(tree_record)
+
                             with self.execution_context:
                                 solutions = self.execution_context.solve_mrs_tree(frame_state, tree_info)
                                 this_sentence_force = sentence_force(tree_info["Variables"])

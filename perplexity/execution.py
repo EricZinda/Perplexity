@@ -86,6 +86,8 @@ class ExecutionContext(object):
         for solution in self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"]):
             yield solution
 
+        pipeline_logger.debug(f"Error after tree evaluation: {self.get_error_info()}")
+
     def gather_tree_metadata(self):
         self._variable_metadata = perplexity.tree.gather_predication_metadata(self.vocabulary, self.tree_info)
 
