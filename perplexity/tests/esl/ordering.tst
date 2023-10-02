@@ -53,7 +53,7 @@
         },
         {
             "Command": "Who can have a steak?",
-            "Expected": "you(there are more)",
+            "Expected": "you",
             "Tree": "which_q(x3,person(x3),_a_q(x11,_steak_n_1(x11),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "121251c1-efe2-47b5-a25f-a08648a34b5d"

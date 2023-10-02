@@ -459,6 +459,14 @@ def unknown(state, e_binding, x_binding):
         yield state.record_operations(operations)
 
 
+@Predication(vocabulary, names=["solution_group_unknown"])
+def unknown_group(state_list, has_more, e_variable_group, x_variable_group):
+    # Ignore any other solutions that cause has_more=True so that
+    # it doesn't say "(there are more)"
+    yield state_list
+    return
+
+
 @Predication(vocabulary, names=["unknown"])
 def unknown_eu(state, e_binding, u_binding):
     yield state
@@ -1512,7 +1520,7 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
     force = sentence_force(tree_info["Variables"])
     wh_variable = get_wh_question_variable(tree_info)
     if force in ["ques", "prop-or-ques"] and \
-        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == ESLConcept("menu")) or \
+        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == ESLConcept("menu")) or
          not get_wh_question_variable(tree_info)):
         # The planner will only satisfy a want wrt the players
         task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))
@@ -1522,9 +1530,7 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
     else:
         # Not an implicit request
         yield state_list
-
-        if has_more:
-            yield True
+        return
 
 
 @Predication(vocabulary, names=["poss"])
