@@ -291,6 +291,7 @@ def complete_order(state):
     else:
         return [("respond", "Waiter: Hmm. I didn't understand what you said." + state.get_reprompt())]
 
+
 gtpyhop.declare_task_methods('complete_order', complete_order)
 
 

@@ -914,24 +914,9 @@ class WorldState(State):
                 return [RespondOperation("Sorry, we don't allow ordering specific things like that"+ self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
-            if is_referring_expr(x):
-                group_generator = at_least_one_generator(x.solution_groups(self.world_state_frame()))
-                if group_generator is not None:
-                    possible_count = self.get_binding(x.variable_name)
-                else:
-                    report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
-                    return
-            else:
-                possible_count = x
-
-            if isinstance(possible_count, numbers.Number):
-                table_concept = referring_expr_from_lemma("table")
-                # e_binding, x_what_binding, x_for_binding
-                args = ["e999", table_concept.variable_name, "x1000"]
-                table_concept = table_concept.add_bound_modifier(TreePredication(0, "_for_p", args, arg_names=["ARG0", "ARG1", "ARG2"]),
-                                                                 [None, None, (possible_count, )],
-                                                                 {"x1000":[]})
-
+            if isinstance(x, numbers.Number):
+                table_concept = ESLConcept("table")
+                table_concept = table_concept.add_criteria(rel_subjects, "maxCapacity", x)
                 actors = [("user",)]
                 whats = [(table_concept,)]
                 return self.find_plan([('satisfy_want', actors, whats, 1)])

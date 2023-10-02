@@ -84,7 +84,7 @@ def describe_analyzed_at_table(state, analysis):
     if len(analysis["MenuItems"]) > 0 and not has_menu:
         # Describe the menu if the user hasn't heard it and they ask a question
         # that results in any number of menu items being generated
-        new_methods.append(("get_menu", ["user"]))
+        new_methods.append(("get_menu", ["user"], 1))
         return new_methods
 
     analysis_specials_count = len(analysis["Specials"])

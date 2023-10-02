@@ -621,10 +621,10 @@ def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
 def _roast_v_1(state, e_introduced_binding, i_binding, x_target_binding):
     yield from roasted.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
 
+
 @Predication(vocabulary, names=smoked.predicate_name_list)
 def _smoke_v_1(state, e_introduced_binding, i_binding, x_target_binding):
     yield from smoked.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
-
 
 
 @Predication(vocabulary, names=("_on_p_loc",))
@@ -777,7 +777,6 @@ def _check_v_1_group(state_list, has_more, e_introduced_binding, x_actor_binding
         yield []
     else:
         yield[final_state]
-
 
 
 @Predication(vocabulary, names=["_give_v_1"])
@@ -1365,6 +1364,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
         return False
 
     def actor_from_object(x_object):
+        found = False
         for i in rel_subjects(state, "have", object_to_store(x_object)):
             found = True
             yield store_to_object(state, i)

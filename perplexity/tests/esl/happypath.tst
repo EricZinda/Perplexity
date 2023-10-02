@@ -102,7 +102,7 @@
         },
         {
             "Command": "cash",
-            "Expected": "Ah. Perfect! Have a great rest of your day.(there are more)",
+            "Expected": "Ah. Perfect! Have a great rest of your day.",
             "Tree": "udef_q(x4,_cash_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "1b243ee9-08a0-4942-bc6f-d09ddd2e1856"
