@@ -23,7 +23,6 @@ override_predications(vocabulary, "user", ["card__cex__"])
 locative_preposition_end_location = {"LocativePreposition": {"Value": {"EndLocation": VariableBinding}}}
 
 
-
 def in_scope_initialize(state):
     # Some tests don't use the file system object so everything is in scope
     if not hasattr(state, "user"):

@@ -451,7 +451,7 @@ def Example21_reset():
 
 
 def Example21():
-    user_interface = UserInterface(Example21_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree)
+    user_interface = UserInterface(Example21_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree, scope_function=in_scope, scope_init_function=in_scope_initialize)
 
     while True:
         user_interface.interact_once()
@@ -1020,7 +1020,7 @@ if __name__ == '__main__':
     # Example18()
     # Example19()
     # Example20()
-    # Example21()
+    Example21()
     # Example22()
     # Example23()
     # Example24()
@@ -1028,7 +1028,7 @@ if __name__ == '__main__':
     # Example26()
     # Example27()
     # Example27a()
-    Example28()
+    # Example28()
     # Example29()
     # Example30()
     # Example31()

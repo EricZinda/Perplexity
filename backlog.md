@@ -1,7 +1,9 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make file system tests pass too
-- Example28: which files in this folder are not large
 - 
+- Example26_reset: "blue" and "bigfile.txt" are in this folder
+  - Should say "there are more" too
+
 - We have 0 menus -> No. you does not have something 
 - When trying alternative trees, it seems like errors need to be retained as alternatives are tried so they all start from the same base error
                 
