@@ -162,7 +162,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                         yield new_set[1], new_set[2], new_set[0]
 
                     elif state == CriteriaResult.meets_pending_global:
-                        pending_global_criteria.append([new_set[1], new_set[2]])
+                        pending_global_criteria.append([new_set[1], new_set[2], new_set[0]])
 
                     elif state == CriteriaResult.contender:
                         # Not yet a solution, don't track it as one
@@ -177,7 +177,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             break
 
     # If early_fail_quit is True, the error should already be set
-    if not early_fail_quit and has_global_constraint:
+    if not early_fail_quit and has_global_constraint and len(pending_global_criteria) > 0:
         for criteria in var_criteria:
             if not criteria.meets_global_criteria(execution_context):
                 return
@@ -551,7 +551,7 @@ class VariableCriteria(object):
             # ("only 2 files are in the folder") it also limits *all* the solutions to that number.
             # So we need to track unique values across all answers in this case
             # BUT: Only track instances because non-instances are handled by the developer manually
-            self._unique_rstrs.update([item for item in value_list if perplexity.predications.value_type(item) != perplexity.predications.VariableValueType.instance])
+            self._unique_rstrs.update([item for item in value_list if perplexity.predications.value_type(item) == perplexity.predications.VariableValueType.instance])
 
         if self.global_criteria == GlobalCriteria.exactly:
             # We can fail immediately if we have too many
@@ -626,7 +626,7 @@ class VariableCriteria(object):
                 return False
 
         if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-            # Then check to make sure there wer as many in the solution as the user specified
+            # Then check to make sure there were as many in the solution as the user specified
             if len(self._unique_rstrs) < self.min_size:
                 execution_context.report_error_for_index(self.predication_index, ["lessThan", self._after_phrase_error_location, self.min_size], force=True)
                 return False

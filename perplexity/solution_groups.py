@@ -65,6 +65,7 @@ class SolutionTreeSetGenerator(object):
         # If the current_lineage is None
         # The caller will use this as their new lineage
         if current_lineage is None or solution_lineage == current_lineage:
+            self.current_lineage = solution_lineage
             return solution_lineage, state
 
         else:

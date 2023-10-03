@@ -1062,7 +1062,7 @@ if __name__ == '__main__':
     # Demo: Do with pipeline on
 
     # Example28()
-    Example25()
+    # Example26()
     # /soln all
     # which file is in this folder? -> what is singular, thus: there are more
     # which files are in this folder?
