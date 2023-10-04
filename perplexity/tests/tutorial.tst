@@ -494,7 +494,7 @@
         },
         {
             "Command": "\"blue\" and \"59.txt\" are in this folder",
-            "Expected": "''blue', '59.txt'' are not in this folder",
+            "Expected": "''blue', '59.txt'' (both) are not in this folder",
             "Tree": "proper_q(x15,[quoted(59.txt,i20), fw_seq(x15,i20)],_this_q_dem(x22,_folder_n_of(x22,i27),udef_q(x3,proper_q(x8,[quoted(blue,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),_in_p_loc(e2,x3,x22))))",
             "Enabled": true,
             "ID": "0a18a408-843e-4852-9e9b-547f8cfeb375"
@@ -508,7 +508,7 @@
         },
         {
             "Command": "\"bigfile.txt\" and \"59.txt\" are large",
-            "Expected": "There are less than 2 large ''bigfile.txt', '59.txt''",
+            "Expected": "a ''bigfile.txt', '59.txt'' (both) are not large",
             "Tree": "proper_q(x15,[quoted(59.txt,i20), fw_seq(x15,i20)],udef_q(x3,proper_q(x8,[quoted(bigfile.txt,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),_large_a_1(e2,x3)))",
             "Enabled": true,
             "ID": "8e760db8-a939-4f26-a6a5-c82896108357"

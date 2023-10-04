@@ -112,7 +112,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                     string_list = []
                     string_list.append(english_for_delphin_variable(1000, predication.args[1], tree_info))
                     string_list.append(english_for_delphin_variable(1000, predication.args[2], tree_info))
-                    nlg_data["Topic"] = f"'{', '.join(string_list)}'"
+                    nlg_data["Topic"] = f"'{', '.join(string_list)}' (both)"
 
                 else:
                     nlg_data["Topic"] = parsed_predication["Lemma"].replace("+", " ")
