@@ -215,7 +215,7 @@ def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
         if False:
             yield None
 
-    # Use lift_style_predication_2 simply to break out the combinatorial alternatives
+    # Use in_style_predication_2 simply to break out the combinatorial alternatives
     for solution in in_style_predication_2(state, x_binding_first, x_binding_second,
                              both_bound_prediction_function, binding1_unbound_predication_function,
                              binding2_unbound_predication_function):

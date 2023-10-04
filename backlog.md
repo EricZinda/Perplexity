@@ -1,9 +1,24 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Make file system tests pass too
-- 
+      
+- what is in this "blue" -> There isn't a 'blue' in the system
+  - Because the first lineage fails with the correct error
+  - But then the second lineage fails with a bad error and overwrites it
+  - We should have the MRS evaluation stop if the lineage changes and act like a separate tree so we can return the first error
+
+- Example26_reset: "bigfile.txt" and "59.txt" are large -> a ''bigfile.txt', '59.txt'' are not large
+  - The error should say "are not *both* large"
+  
+- "blue" and "59.txt" are in this folder -> There is more than '59.txt'
+  - Now returns "''blue', '59.txt'' are not in this folder"
+  - should say "together"
+  
 - Example26_reset: "blue" and "bigfile.txt" are in this folder
   - Should say "there are more" too
-
+  - 
+"bigfile.txt" and "bigfile2.txt" are large -> Yes, that is true.
+  - Should say "there are more" too
+  
 - We have 0 menus -> No. you does not have something 
 - When trying alternative trees, it seems like errors need to be retained as alternatives are tried so they all start from the same base error
                 

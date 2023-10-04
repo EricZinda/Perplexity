@@ -407,11 +407,13 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def location_unbound_values(actor_value):
         # This is a "what is actor in?" type query since no location specified (x_location_binding was unbound)
         # Order matters, so all_locations needs to return the best answer first
+        found_location = False
         if hasattr(actor_value, "all_locations"):
             for location in actor_value.all_locations(x_actor_binding.variable):
+                found_location = True
                 yield location
-
-        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+        if not found_location:
+            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
     def actor_unbound_values(location_value):
         # This is a "what is in x?" type query since no actor specified (x_actor_binding was unbound)
@@ -419,13 +421,12 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
         if hasattr(location_value, "contained_items"):
             for actor in location_value.contained_items(x_location_binding.variable):
                 yield actor
+            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
         else:
             report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
     for new_state in in_style_predication_2(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values):
         yield new_state
-
-    report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 
 @Predication(vocabulary, names=["loc_nonsp"])
@@ -780,8 +781,14 @@ def yield_from_fw_seq(state, x_phrase_binding, non_set_value):
         if is_this_last_fw_seq(state) and hasattr(non_set_value, "all_interpretations"):
             # Get all the interpretations of the quoted text
             # and bind them iteratively
+            # Since these are *alternative* interpretations, they need to be in different lineages
+            # just like if there were separate predication implementations yielding them
+            interpretation_id = 0
             for interpretation in non_set_value.all_interpretations(state):
-                yield state.set_x(x_phrase_binding.variable.name, (interpretation, ), False)
+                interpretation_id += 1
+                tree_lineage_binding = state.get_binding("tree_lineage")
+                tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+                yield state.set_x(x_phrase_binding.variable.name, (interpretation, ), False).set_x("tree_lineage", (f"{tree_lineage}.{interpretation_id}",))
 
         else:
             yield state.set_x(x_phrase_binding.variable.name, (non_set_value,), False)
