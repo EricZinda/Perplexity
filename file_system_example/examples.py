@@ -3,7 +3,7 @@ from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
 from file_system_example.vocabulary import vocabulary, in_scope_initialize, in_scope
 from perplexity.execution import ExecutionContext, call, execution_context
-from perplexity.generation import english_for_delphin_variable
+from perplexity.generation import english_for_delphin_variable_impl, english_for_delphin_variable
 from perplexity.messages import respond_to_mrs_tree
 from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.tree import TreePredication

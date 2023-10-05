@@ -223,6 +223,11 @@ def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
         solution_second = solution.get_binding(x_binding_second.variable.name)
         and_value = solution_first.value + solution_second.value
 
+        if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
+            required_values = x_binding_first.variable.determiner.required_values + solution_second.value
+        else:
+            required_values = and_value
+
         if len(set([perplexity.predications.value_type(x) for x in and_value])) > 1:
             # If anything is a concept, everything must be
             continue
@@ -232,7 +237,7 @@ def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
                              combinatoric=True,
                              determiner=VariableCriteria(execution_context().current_predication(),
                                                          x_binding_introduced.variable.name,
-                                                         required_values=and_value)
+                                                         required_values=required_values)
                           )
 
 

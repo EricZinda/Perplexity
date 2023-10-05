@@ -1,7 +1,7 @@
 import logging
 
 import perplexity.messages
-from perplexity.generation import english_for_delphin_variable
+from perplexity.generation import english_for_delphin_variable_impl
 from perplexity.set_utilities import append_if_unique, in_equals
 from perplexity.sstring import sstringify, s
 from perplexity.tree import find_predication, predication_from_index, \

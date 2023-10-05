@@ -3,7 +3,8 @@ import logging
 import re
 import inspect
 from delphin.codecs import simplemrs
-from perplexity.generation import english_for_delphin_variable, PluralMode, is_plural_word, change_to_plural_mode
+from perplexity.generation import english_for_delphin_variable_impl, PluralMode, is_plural_word, change_to_plural_mode, \
+    english_for_delphin_variable
 from perplexity.generation_mrs import english_for_variable_using_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced, find_predication_conjunction_from_introduced
 from perplexity.utilities import ShowLogging

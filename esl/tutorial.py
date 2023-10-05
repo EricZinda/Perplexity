@@ -4,7 +4,7 @@ import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
 from perplexity.execution import report_error, call, execution_context
-from perplexity.generation import english_for_delphin_variable
+from perplexity.generation import english_for_delphin_variable_impl, english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
