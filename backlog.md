@@ -1,14 +1,13 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
+- Rewrite issues:
+  - have.tst: Do you have the table? -> ESLConcept(table: [] ) is not this
 - Make file system tests pass too
-
-
-  
+ 
 - what is in this "blue" -> There isn't a 'blue' in the system
   - Because the first lineage fails with the correct error
   - But then the second lineage fails with a bad error and overwrites it
   - We should have the MRS evaluation stop if the lineage changes and act like a separate tree so we can return the first error
 
-  
   
 - Example26_reset: "blue" and "bigfile.txt" are in this folder
   - Should say "there are more" too

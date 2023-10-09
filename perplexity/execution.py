@@ -3,6 +3,7 @@ import copy
 import logging
 import sys
 import perplexity.tree
+from perplexity.set_utilities import product_stream
 from perplexity.utilities import sentence_force, at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
@@ -24,6 +25,7 @@ class ExecutionContext(object):
         self._error = None
         self._error_predication_index = -1
         self._error_was_forced = False
+        self._interpretation = None
         self._predication_index = -1
         self._predication = None
         self._phrase_type = None
@@ -71,11 +73,29 @@ class ExecutionContext(object):
 
         pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
 
+    def mrs_tree_interpretations(self, tree_info):
+        # Gather together all the interpretations for the predications
+        def gather(predication):
+            identifier = (predication.name, tuple(predication.arg_types), phrase_type)
+            if identifier not in predications:
+                alternatives = [(identifier, x) for x in self.vocabulary.predications(predication.name, predication.arg_types, phrase_type)]
+                predications[identifier] = alternatives
+
+        phrase_type = sentence_force(tree_info["Variables"])
+        predications = {}
+        perplexity.tree.walk_tree_predications_until(tree_info["Tree"], gather)
+
+        # Now iterate through all combinations of them by selecting each alternative in
+        # every combination
+        for option in product_stream(*list(iter(x) for x in predications.values())):
+            yield dict(option)
+
     # Needs to be called in a: with ExecutionContext() block
     # so that the execution context is set up properly
     # and maintained while all the solution groups are generated
-    def solve_mrs_tree(self, state, tree_info):
+    def solve_mrs_tree(self, state, tree_info, interpretation):
         self.clear_error()
+        self._interpretation = interpretation
         self._predication_index = 0
         self._phrase_type = sentence_force(tree_info["Variables"])
         self.tree_info = tree_info
@@ -152,42 +172,49 @@ class ExecutionContext(object):
         # function name given a string like "folder_n_of".
         # "vocabulary.Predication" returns a two-item list,
         # where item[0] is the module and item[1] is the function
-        for module_function in self.vocabulary.predications(predication.name,
-                                                            predication.arg_types,
-                                                            self._phrase_type if normalize is False else "norm"):
-            # sys.modules[] is a built-in Python list that allows you
-            # to access actual Python Modules given a string name
-            module = sys.modules[module_function.module]
 
-            # Functions are modeled as properties of modules in Python
-            # and getattr() allows you to retrieve a property.
-            # So: this is how we get the "function pointer" to the
-            # predication function we wrote in Python
-            function = getattr(module, module_function.function)
+        # TODO: Make this part work with the new scheme
+        assert normalize is False
 
-            # [list] + [list] will return a new, combined list
-            # in Python. This is how we add the state object
-            # onto the front of the argument list
-            function_args = [state] + bindings
+        module_function = self._interpretation[(predication.name, tuple(predication.arg_types), self._phrase_type)]
 
-            # See if the system wants us to tack any arguments to the front
-            if module_function.extra_arg is not None:
-                function_args = module_function.extra_arg + function_args
+        # for module_function in self.vocabulary.predications(predication.name,
+        #                                                     predication.arg_types,
+        #                                                     self._phrase_type):
 
-            # If a MessageException happens during execution,
-            # convert it to an error
-            try:
-                # You call a function "pointer" and pass it arguments
-                # that are a list by using "function(*function_args)"
-                # So: this is actually calling our function (which
-                # returns an iterator and thus we can iterate over it)
-                for next_state in function(*function_args):
-                    tree_lineage_binding = next_state.get_binding("tree_lineage")
-                    tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-                    yield next_state.set_x("tree_lineage", (f"{tree_lineage}.{module_function.id}",))
+        # sys.modules[] is a built-in Python list that allows you
+        # to access actual Python Modules given a string name
+        module = sys.modules[module_function.module]
 
-            except MessageException as error:
-                self.report_error(error.message_object())
+        # Functions are modeled as properties of modules in Python
+        # and getattr() allows you to retrieve a property.
+        # So: this is how we get the "function pointer" to the
+        # predication function we wrote in Python
+        function = getattr(module, module_function.function)
+
+        # [list] + [list] will return a new, combined list
+        # in Python. This is how we add the state object
+        # onto the front of the argument list
+        function_args = [state] + bindings
+
+        # See if the system wants us to tack any arguments to the front
+        if module_function.extra_arg is not None:
+            function_args = module_function.extra_arg + function_args
+
+        # If a MessageException happens during execution,
+        # convert it to an error
+        try:
+            # You call a function "pointer" and pass it arguments
+            # that are a list by using "function(*function_args)"
+            # So: this is actually calling our function (which
+            # returns an iterator and thus we can iterate over it)
+            for next_state in function(*function_args):
+                tree_lineage_binding = next_state.get_binding("tree_lineage")
+                tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+                yield next_state.set_x("tree_lineage", (f"{tree_lineage}.{module_function.id}",))
+
+        except MessageException as error:
+            self.report_error(error.message_object())
 
     # Replace scopal arguments with an "h" and simply
     # return the others

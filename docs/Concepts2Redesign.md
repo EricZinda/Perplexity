@@ -8,5 +8,7 @@ The basic flow is this:
 
 Design Alternatives:
     - Start by just assuming that each alternative is a different interpretation
+        - For a given MRS, gather all of the alternatives up front before execution
+        - Then execute each combination of them
     - Mark predications as mutually exclusive
         - Make "the soup" be a tree transform?
