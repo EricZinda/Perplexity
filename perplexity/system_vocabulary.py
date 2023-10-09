@@ -91,7 +91,7 @@ def in_scope(state, x_binding):
 
     def unbound_variable():
         for item in state.all_individuals():
-            if bound_variable(item):
+            if execution_context().in_scope(state, item):
                 yield item
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)

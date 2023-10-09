@@ -140,7 +140,7 @@ def file_n_of(state, x_binding, i_binding):
 
     def unbound_variable():
         for item in state.all_individuals():
-            if bound_variable(item):
+            if isinstance(item, File):
                 yield item
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
@@ -189,7 +189,7 @@ def folder_n_of(state, x_binding, i_binding):
 
     def unbound_variable():
         for item in state.all_individuals():
-            if bound_variable(item):
+            if isinstance(item, Folder):
                 yield item
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
@@ -222,7 +222,7 @@ def place_n(state, x_binding):
 
     def unbound_variable():
         for item in state.all_individuals():
-            if bound_variable(item):
+            if hasattr(item, "contained_items"):
                 yield item
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
