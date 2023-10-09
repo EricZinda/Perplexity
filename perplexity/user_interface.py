@@ -193,7 +193,9 @@ class UserInterface(object):
                             with self.execution_context:
                                 first_interpretation = True
                                 for interpretation in self.execution_context.mrs_tree_interpretations(tree_info):
-                                    pipeline_logger.debug(f"Evaluating alternative '{interpretation}'")
+                                    if pipeline_logger.level == logging.DEBUG:
+                                        func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
+                                        pipeline_logger.debug(f"Evaluating alternative '{func_list}'")
 
                                     if first_interpretation:
                                         first_interpretation = False

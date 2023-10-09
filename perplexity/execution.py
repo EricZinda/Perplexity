@@ -77,17 +77,16 @@ class ExecutionContext(object):
         # Gather together all the interpretations for the predications
         def gather(predication):
             identifier = (predication.name, tuple(predication.arg_types), phrase_type)
-            if identifier not in predications:
-                alternatives = [(identifier, x) for x in self.vocabulary.predications(predication.name, predication.arg_types, phrase_type)]
-                predications[identifier] = alternatives
+            alternatives = [(predication.index, x) for x in self.vocabulary.predications(predication.name, predication.arg_types, phrase_type)]
+            predications.append(alternatives)
 
         phrase_type = sentence_force(tree_info["Variables"])
-        predications = {}
+        predications = []
         perplexity.tree.walk_tree_predications_until(tree_info["Tree"], gather)
 
         # Now iterate through all combinations of them by selecting each alternative in
         # every combination
-        for option in product_stream(*list(iter(x) for x in predications.values())):
+        for option in product_stream(*list(iter(x) for x in predications)):
             yield dict(option)
 
     # Needs to be called in a: with ExecutionContext() block
@@ -176,7 +175,7 @@ class ExecutionContext(object):
         # TODO: Make this part work with the new scheme
         assert normalize is False
 
-        module_function = self._interpretation[(predication.name, tuple(predication.arg_types), self._phrase_type)]
+        module_function = self._interpretation[predication.index]
 
         # for module_function in self.vocabulary.predications(predication.name,
         #                                                     predication.arg_types,
