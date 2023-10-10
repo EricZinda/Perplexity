@@ -221,7 +221,10 @@ def generate_message(tree_info, error_term):
         return " and ".join(answers)
 
     elif error_constant == "valueIsNotInScope":
-        return s("I'm not sure which {bare arg1} you mean}", tree_info)
+        return s("I'm not sure which {*arg1} you mean", tree_info)
+
+    elif error_constant == "variableIsNotInScope":
+        return s("I'm not sure which {arg1} you mean", tree_info)
 
     elif error_constant == "valueIsNotX":
         return s("{*arg1} is not {arg2}", tree_info)

@@ -86,7 +86,7 @@ def in_scope(state, x_binding):
             return True
 
         else:
-            report_error(["valueIsNotValue", value, "this"])
+            report_error(["variableIsNotInScope", x_binding.variable.name])
             return False
 
     def unbound_variable():

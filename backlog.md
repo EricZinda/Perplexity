@@ -1,8 +1,6 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Rewrite issues:
-  - Example25_reset: the 2 files in a folder are 20 mb -> File(name=/temp/59.txt, size=1000) is not this
-    - Expected: There are more than the 2 file in a folder
-    
+
 - Make file system tests pass too
  
 - what is in this "blue" -> There isn't a 'blue' in the system

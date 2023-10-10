@@ -988,8 +988,8 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     ShowLogging("Pipeline")
     # ShowLogging("SString")
-    ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("Determiners")
+    # ShowLogging("SolutionGroups")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet

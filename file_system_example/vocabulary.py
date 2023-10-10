@@ -44,9 +44,9 @@ def in_scope(initial_data, state, value):
 
     if value in initial_data["ContainedItems"] or value == initial_data["CurrentDirectory"]:
         return True
-    else:
-        report_error(["valueIsNotValue", value, "this"])
-        return False
+    # else:
+    #     report_error(["valueIsNotInScope", value])
+    #     return False
 
 
 @Predication(vocabulary, names=["solution_group__in_p_loc"])
@@ -103,19 +103,15 @@ def value_is_measure(value):
     return value is not None and len(value) == 1 and isinstance(value[0], Measurement)
 
 
-# 10 mb should not generate a set of 10 1mbs
-# special case this.  Turns a megabyte into a *measure* which is a set of megabytes
 @Predication(vocabulary, names=["card"])
-def card_megabytes(state, c_count, e_introduced_binding, x_target_binding):
+def card_selector(state, c_count, e_introduced_binding, x_target_binding):
     if variable_is_megabyte(x_target_binding):
+        # 10 mb should not generate a set of 10 1mbs
+        # special case this.  Turns a megabyte into a *measure* which is a set of megabytes
         yield state.set_x(x_target_binding.variable.name,
                           (Measurement(x_target_binding.value[0], int(c_count)), ),
                           combinatoric=False)
-
-
-@Predication(vocabulary, names=["card"], handles=[("DeterminerDegreeLimiter", EventOption.optional)])
-def card_normal(state, c_count, e_introduced_binding, x_target_binding):
-    if not variable_is_megabyte(x_target_binding):
+    else:
         if e_introduced_binding.value is not None and "DeterminerDegreeLimiter" in e_introduced_binding.value:
             card_is_exactly = e_introduced_binding.value["DeterminerDegreeLimiter"]["Value"]["Only"]
         else:
