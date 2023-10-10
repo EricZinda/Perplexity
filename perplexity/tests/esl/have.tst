@@ -39,7 +39,7 @@
         },
         {
             "Command": "Do you have the table?",
-            "Expected": "ESLConcept(table: [] ) is not this",
+            "Expected": "I'm not sure which the table you mean",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "5228b43a-2306-4599-9955-09dbb3a7b2c1"

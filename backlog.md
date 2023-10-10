@@ -1,5 +1,10 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Rewrite issues:
+  - file system tests run to "what is in this 'blue'"
+    - Then eventually fail trying to run a "normalize" predication
+  - ESL tests run clean
+  
+- Get rid of lineage since it isn't used anymore
 - Make file system tests pass too
  
 - what is in this "blue" -> There isn't a 'blue' in the system

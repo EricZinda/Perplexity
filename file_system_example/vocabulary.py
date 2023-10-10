@@ -174,7 +174,7 @@ def noun_n_selector_2(noun_type, state, x_binding, i_binding):
     elif noun_type == "file":
         yield from file_n_of(state, x_binding, i_binding)
     else:
-        yield from noun_n_2(state, x_binding, i_binding)
+        yield from noun_n_2(noun_type, state, x_binding, i_binding)
 
 
 # Simple example of using match_all that doesn't do anything except
