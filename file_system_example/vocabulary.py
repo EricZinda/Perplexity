@@ -143,7 +143,7 @@ def folder_n_of(state, x_binding, i_binding):
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
-    
+
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
         if isinstance(value, File):

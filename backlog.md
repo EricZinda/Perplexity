@@ -5,8 +5,14 @@
 - what is in this "blue" -> There isn't a 'blue' in the system
   - Because the first lineage fails with the correct error
   - But then the second lineage fails with a bad error and overwrites it
-  - We should have the MRS evaluation stop if the lineage changes and act like a separate tree so we can return the first error
-
+  - We need to have quoted() properly return solutions in different solution sets
+    - It should have one implementation that is just 'value'
+    - And another that resolves to files
+    - But because there might be more than one file or folder it is interpreted as, it needs to create a solution set for each somehow
+      and we don't know how many we have up front so we can't build a different predication for each
+      - we need a way to dynamically add alternative trees at runtime
+      - But they need to combine with all alternatives as well
+      - If they get queued up into the sets, product_stream will automatically add them and iterate them
   
 - Example26_reset: "blue" and "bigfile.txt" are in this folder
   - Should say "there are more" too
