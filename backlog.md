@@ -1,6 +1,5 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Rewrite issues:
-
 - Make file system tests pass too
  
 - what is in this "blue" -> There isn't a 'blue' in the system

@@ -125,7 +125,25 @@ def card_selector(state, c_count, e_introduced_binding, x_target_binding):
                                                                   global_criteria=GlobalCriteria.exactly if card_is_exactly else None))
 
 
-@Predication(vocabulary, names=["_file_n_of"])
+
+# true for both sets and individuals as long as everything
+# in the set is a file
+def folder_n_of(state, x_binding, i_binding):
+    def bound_variable(value):
+        if isinstance(value, Folder):
+            return True
+        else:
+            report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            if isinstance(item, Folder):
+                yield item
+
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+    
 def file_n_of(state, x_binding, i_binding):
     def bound_variable(value):
         if isinstance(value, File):
@@ -143,13 +161,25 @@ def file_n_of(state, x_binding, i_binding):
 
 
 nouns_handled_directly = ["file", "folder", "place"]
+
+
 def handles_noun(state, noun_lemma):
-    return noun_lemma not in nouns_handled_directly
+    return True
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
+def noun_n_selector_2(noun_type, state, x_binding, i_binding):
+    if noun_type == "folder":
+        yield from folder_n_of(state, x_binding, i_binding)
+    elif noun_type == "file":
+        yield from file_n_of(state, x_binding, i_binding)
+    else:
+        yield from noun_n_2(state, x_binding, i_binding)
 
 
 # Simple example of using match_all that doesn't do anything except
 # make sure we don't say "I don't know the word 'book'"
-@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
+# @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def noun_n_2(noun_type, state, x_binding, i_binding):
     if noun_type == "book":
         yield state.set_x(x_binding.variable.name, ("book1",))
@@ -170,25 +200,6 @@ def noun_n_1(noun_type, state, x_binding):
 def please_v_1(state, e_binding, i_binding_1, i_binding_2):
     # Just ignore
     yield state
-
-
-# true for both sets and individuals as long as everything
-# in the set is a file
-@Predication(vocabulary, names=["_folder_n_of"])
-def folder_n_of(state, x_binding, i_binding):
-    def bound_variable(value):
-        if isinstance(value, Folder):
-            return True
-        else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
-            return False
-
-    def unbound_variable():
-        for item in state.all_individuals():
-            if isinstance(item, Folder):
-                yield item
-
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_megabyte_n_1"])
