@@ -4,13 +4,14 @@
     - Then eventually fail trying to run a "normalize" predication
   - ESL tests run clean
   
--  (fixed) we have 3 menus -> No. you does not have something
-  - Expected: There are less than 3 3 menu
-
 - Example36: which 2 files in a folder are large? -> There are less than 2 2 large file in a folder
   - Expected: (File(name=/Desktop/file2.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(there are more)
-  - 
+  - Problem is that we get a lineage failure after generating the first 2 solutions, so it makes it look like the solution set is done
+    and thus we cut short the solution set
+
+- Seems like we can get rid of lineage_failure_callback()?
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
+- 
 - what is in this "blue" -> There isn't a 'blue' in the system
   - Because the first lineage fails with the correct error
   - But then the second lineage fails with a bad error and overwrites it

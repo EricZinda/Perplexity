@@ -297,8 +297,8 @@ class ExecutionContext(object):
                 new_lineage = f"{tree_lineage}.{module_function.id}"
                 yield next_state.set_x("tree_lineage", (new_lineage,))
 
-            if not had_solution:
-                self.lineage_failure_callback(self.get_error_info())
+            # if not had_solution:
+            #     self.lineage_failure_callback(self.get_error_info())
 
         except MessageException as error:
             self.report_error(error.message_object())

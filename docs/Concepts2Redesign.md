@@ -6,7 +6,9 @@ This whole thing came about because we weren't getting "(there are more)" messag
             - The solution set should return all combinations of items from every disjunction as possible solutions
         - we could potentially treat like concept vs. referring expression, etc. Where the solution group generator does post-processing to make sure they are mutually exclusive
     - Design:
-        If we allow each predication to just yield all alternatives but, if they are disjunctions, they have a different lineage ID, then it should naturally walk through all the alternatives
+        - If we allow each predication to just yield all alternatives but, if they are disjunctions, they have a different lineage ID, then it should naturally walk through all the alternatives
+        - There is not, however, a way to declare that a particular branch of a disjunction has a failure and return an error for it.  
+            You get to return an error for an entire disjunctive predication if it fails, and that is it
 The basic flow is this:
     - Generate all the solutions for a given set of predication interpretations
         - "Predication interpretation" means one interpretation of a predication given the input.
@@ -14,6 +16,7 @@ The basic flow is this:
         - Another alternative is "the soup", where it is really be interpreted as a special kind of noun, not using "the" as a determiner
     - Do phase 2 on them
     - Do the next set
+
 
 Design Alternatives:
     - Start by just assuming that each alternative is a different interpretation
