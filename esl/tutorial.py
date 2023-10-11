@@ -328,22 +328,6 @@ def abstr_deg(state, x_binding):
     yield state.set_x(x_binding.variable.name, (referring_expr_from_lemma("abstract_degree"),))
 
 
-# @Predication(vocabulary, names=["card"])
-# def card(state, c_number, e_binding, x_binding):
-#     if isinstance(c_number,str):
-#         if c_number.isnumeric():
-#             c_number = int(c_number)
-#         else:
-#             report_error(["Notnumeric",state.get_reprompt()])
-#             return
-#     x_binding_value = state.get_binding(x_binding.variable.name).value
-#     if len(x_binding_value) == 1 and is_referring_expr(x_binding_value[0]) and isinstance(c_number, numbers.Number):
-#         e_what_value = e_binding.value
-#         modified = x_binding_value[0].add_bound_modifier(execution_context().current_predication(), [c_number, e_what_value, x_binding.value])
-#
-#         yield state.set_x(x_binding.variable.name, (modified,))
-
-
 @Predication(vocabulary, names=["card"])
 def card_system(state, c_number, e_binding, x_binding):
     yield from perplexity.system_vocabulary.card_cex(state, c_number, e_binding, x_binding)
