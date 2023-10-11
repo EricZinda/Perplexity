@@ -3,17 +3,12 @@
   - file system tests run to "what is in this 'blue'"
     - Then eventually fail trying to run a "normalize" predication
   - ESL tests run clean
-  
-- Example36: which 2 files in a folder are large? -> There are less than 2 2 large file in a folder
-  - Expected: (File(name=/Desktop/file2.txt, size=10000000),)(File(name=/documents/file4.txt, size=10000000),)(there are more)
-  - Problem is that we get a lineage failure after generating the first 2 solutions, so it makes it look like the solution set is done
-    and thus we cut short the solution set
 
 - Seems like we can get rid of lineage_failure_callback()?
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
 - 
 - what is in this "blue" -> There isn't a 'blue' in the system
-  - Because the first lineage fails with the correct error
+  - Because the first disjunctive lineage that finds the file called 'blue' and fails with the correct error
   - But then the second lineage fails with a bad error and overwrites it
   - We need to have quoted() properly return solutions in different solution sets
     - It should have one implementation that is just 'value'
@@ -22,7 +17,6 @@
       and we don't know how many we have up front so we can't build a different predication for each
       - we need a way to dynamically add alternative trees at runtime
       - But they need to combine with all alternatives as well
-      - If they get queued up into the sets, product_stream will automatically add them and iterate them
   
 - Example26_reset: "blue" and "bigfile.txt" are in this folder
   - Should say "there are more" too

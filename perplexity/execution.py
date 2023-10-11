@@ -289,13 +289,15 @@ class ExecutionContext(object):
             # that are a list by using "function(*function_args)"
             # So: this is actually calling our function (which
             # returns an iterator and thus we can iterate over it)
-            had_solution = False
+            # had_solution = False
             for next_state in function(*function_args):
-                had_solution = True
-                tree_lineage_binding = next_state.get_binding("tree_lineage")
-                tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-                new_lineage = f"{tree_lineage}.{module_function.id}"
-                yield next_state.set_x("tree_lineage", (new_lineage,))
+                # had_solution = True
+                yield next_state
+                # had_solution = True
+                # tree_lineage_binding = next_state.get_binding("tree_lineage")
+                # tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+                # new_lineage = f"{tree_lineage}.{module_function.id}"
+                # yield next_state.set_x("tree_lineage", (new_lineage,))
 
             # if not had_solution:
             #     self.lineage_failure_callback(self.get_error_info())
