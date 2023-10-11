@@ -1,4 +1,4 @@
-This whole thing came about because we weren't getting "(this is more)" messages because solutions to the same tree were not necessarily consecutive
+This whole thing came about because we weren't getting "(there are more)" messages because solutions to the same tree were not necessarily consecutive
     - What is the difference between building alternative trees up front and forking as you go?
     - The goal is to end up with a self-consistent set of solutions that are true for the MRS local constraints
     - We'll need all the dynamic alternatives to be tried against each other but never used together, only one of them should ever be used, though.
