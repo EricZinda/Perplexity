@@ -1,6 +1,7 @@
 import contextvars
 import copy
 import logging
+import queue
 import sys
 import perplexity.tree
 from perplexity.set_utilities import product_stream
@@ -19,6 +20,85 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
+# Represents a single lineage
+class MrsTreeLineage(object):
+    def __init__(self, lineage_generator):
+        self.lineage_generator = lineage_generator
+        self.error_info = (None, False, -1)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            return self.lineage_generator._next_solution()
+
+        except StopIteration:
+            self.error_info = self.lineage_generator.retrieve_lineage_failure()
+            raise
+
+
+class MrsTreeLineageGenerator(object):
+    def __init__(self, context, state, tree_info, interpretation):
+        self.solution_generator = context.solve_mrs_tree(state, tree_info, interpretation, self.lineage_failed)
+        self.lineage_failure_fifo = queue.Queue()
+        self.next_lineage_solution = None
+        self.first = True
+        self.last_lineage = None
+
+    def __iter__(self):
+        return self
+
+    def lineage_failed(self, error_info):
+        pipeline_logger.debug(f"Lineage failed with error: {error_info}")
+        self.lineage_failure_fifo.put(error_info)
+
+    def retrieve_lineage_failure(self):
+        if self.lineage_failure_fifo.empty():
+            return None
+        else:
+            return self.lineage_failure_fifo.get()
+
+    def __next__(self):
+        if self.first or self.next_lineage_solution is not None or not self.lineage_failure_fifo.empty():
+            self.first = False
+            return MrsTreeLineage(self)
+        else:
+            raise StopIteration
+
+    def _next_solution(self):
+        # TODO: use try: so that we catch lineage failures at the end?
+        if not self.lineage_failure_fifo.empty():
+            # There are queued up errors to return
+            raise StopIteration
+
+        if self.next_lineage_solution is not None:
+            # There is a queued up solution to return
+            value = self.next_lineage_solution
+            self.next_lineage_solution = None
+            return value
+
+        solution = next(self.solution_generator)
+        tree_lineage_binding = solution.get_binding("tree_lineage")
+        tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+        # pipeline_logger.debug(f"Next MRS solution: {solution}")
+
+        if not self.lineage_failure_fifo.empty():
+            # There was at least one lineage failure during execution of next()
+            self.next_lineage_solution = solution
+            self.last_lineage = tree_lineage
+            raise StopIteration
+
+        elif self.last_lineage is None or self.last_lineage == tree_lineage:
+            self.last_lineage = tree_lineage
+            return solution
+
+        else:
+            self.next_lineage_solution = solution
+            self.last_lineage = tree_lineage
+            raise StopIteration
+
+
 class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
@@ -26,6 +106,7 @@ class ExecutionContext(object):
         self._error_predication_index = -1
         self._error_was_forced = False
         self._interpretation = None
+        self.lineage_failure_callback = None
         self._predication_index = -1
         self._predication = None
         self._phrase_type = None
@@ -92,13 +173,14 @@ class ExecutionContext(object):
     # Needs to be called in a: with ExecutionContext() block
     # so that the execution context is set up properly
     # and maintained while all the solution groups are generated
-    def solve_mrs_tree(self, state, tree_info, interpretation):
+    def solve_mrs_tree(self, state, tree_info, interpretation, lineage_failure_callback):
         self.clear_error()
         self._interpretation = interpretation
         self._predication_index = 0
         self._phrase_type = sentence_force(tree_info["Variables"])
         self.tree_info = tree_info
         self.gather_tree_metadata()
+        self.lineage_failure_callback = lineage_failure_callback
         if self._in_scope_initialize_function is not None:
             self.in_scope_initialize_data = self._in_scope_initialize_function(state)
 
@@ -207,8 +289,16 @@ class ExecutionContext(object):
             # that are a list by using "function(*function_args)"
             # So: this is actually calling our function (which
             # returns an iterator and thus we can iterate over it)
+            had_solution = False
             for next_state in function(*function_args):
-                yield next_state
+                had_solution = True
+                tree_lineage_binding = next_state.get_binding("tree_lineage")
+                tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+                new_lineage = f"{tree_lineage}.{module_function.id}"
+                yield next_state.set_x("tree_lineage", (new_lineage,))
+
+            if not had_solution:
+                self.lineage_failure_callback(self.get_error_info())
 
         except MessageException as error:
             self.report_error(error.message_object())
