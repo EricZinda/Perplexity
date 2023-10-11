@@ -35,7 +35,8 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
     for rstr_solution in call(state, h_rstr):
         # We track RSTR values *per tree lineage* since these are effectively different trees
         # and so we need to clear it if the lineage changes
-        tree_lineage = rstr_solution.get_binding("tree_lineage").value[0]
+        tree_lineage_value = rstr_solution.get_binding("tree_lineage").value
+        tree_lineage = rstr_solution.get_binding("tree_lineage").value[0] if tree_lineage_value is not None else ""
         if tree_lineage != rstr_values_tree_lineage:
             rstr_values = []
             rstr_values_tree_lineage = tree_lineage

@@ -208,9 +208,7 @@ class ExecutionContext(object):
             # So: this is actually calling our function (which
             # returns an iterator and thus we can iterate over it)
             for next_state in function(*function_args):
-                tree_lineage_binding = next_state.get_binding("tree_lineage")
-                tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-                yield next_state.set_x("tree_lineage", (f"{tree_lineage}.{module_function.id}",))
+                yield next_state
 
         except MessageException as error:
             self.report_error(error.message_object())

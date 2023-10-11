@@ -60,7 +60,8 @@ class SolutionTreeSetGenerator(object):
         else:
             state = next(self.solution_generator)
 
-        solution_lineage = state.get_binding("tree_lineage").value[0]
+        solution_lineage_value = state.get_binding("tree_lineage").value
+        solution_lineage = solution_lineage_value[0] if solution_lineage_value is not None else ""
 
         # If the current_lineage is None
         # The caller will use this as their new lineage
@@ -267,8 +268,6 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
             solutions = at_least_one_generator(lineage_solutions)
             if solutions is None:
                 return
-
-            pipeline_logger.debug(f"Finding solution groups for lineage {solutions.first_item.get_binding('tree_lineage').value[0]}")
 
             # Go through each variable that has a quantifier in order and gather and optimize the criteria list
             # if it wasn't given to us
