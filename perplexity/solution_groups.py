@@ -352,7 +352,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                     pipeline_logger.debug(f"Setting solution group error back to {best_error_info}.")
                     execution_context.set_error_info(best_error_info)
     else:
-        execution_context.set_error_info(original_error_info)
+        execution_context.set_error_info(solutions_orig.error_info)
 
 
 class GroupVariableValues(object):

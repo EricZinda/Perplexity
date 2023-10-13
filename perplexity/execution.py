@@ -55,7 +55,7 @@ class MrsTreeLineageGenerator(object):
 
     def retrieve_lineage_failure(self):
         if self.lineage_failure_fifo.empty():
-            return None
+            return (None, False, -1)
         else:
             return self.lineage_failure_fifo.get()
 
@@ -107,8 +107,11 @@ class ExecutionContext(object):
         self._error_was_forced = False
         self._interpretation = None
         self.lineage_failure_callback = None
+        self.solution_lineages = None
+        self.last_solution_lineage = None
         self._predication_index = -1
         self._predication = None
+        self._predication_runtime_settings = None
         self._phrase_type = None
         self._variable_execution_data = {}
         self.tree_info = None
@@ -177,15 +180,29 @@ class ExecutionContext(object):
         self.clear_error()
         self._interpretation = interpretation
         self._predication_index = 0
+        self._predication_runtime_settings = None
         self._phrase_type = sentence_force(tree_info["Variables"])
         self.tree_info = tree_info
         self.gather_tree_metadata()
         self.lineage_failure_callback = lineage_failure_callback
+        self.solution_lineages = set()
+        self.last_solution_lineage = None
+
         if self._in_scope_initialize_function is not None:
             self.in_scope_initialize_data = self._in_scope_initialize_function(state)
 
         for solution in self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"]):
+            # Remember any disjunction lineages that had a solution
+            tree_lineage_binding = state.get_binding("tree_lineage")
+            if tree_lineage_binding.value is not None:
+                self.solution_lineages.add(tree_lineage_binding.value[0])
+
             yield solution
+
+        if self.last_solution_lineage is None:
+            self.lineage_failure_callback(self.get_error_info())
+        else:
+            self.handle_lineage_change("")
 
         pipeline_logger.debug(f"Error after tree evaluation: {self.get_error_info()}")
 
@@ -218,8 +235,10 @@ class ExecutionContext(object):
             # predication is
             last_predication_index = self._predication_index
             last_predication = self._predication
+            last_predication_runtime_settings = self._predication_runtime_settings
             self._predication_index = term.index
             self._predication = term
+            self._predication_runtime_settings = {}
 
             # The first thing in the list was not a list
             # so we assume it is just a term like
@@ -230,6 +249,7 @@ class ExecutionContext(object):
             # Restore it since we are recursing
             self._predication_index = last_predication_index
             self._predication = last_predication
+            self._predication_runtime_settings = last_predication_runtime_settings
 
     # Do not use directly.
     # Use Call() instead so that the predication index is set properly
@@ -289,9 +309,13 @@ class ExecutionContext(object):
             # that are a list by using "function(*function_args)"
             # So: this is actually calling our function (which
             # returns an iterator and thus we can iterate over it)
-            # had_solution = False
+            had_solution = False
             for next_state in function(*function_args):
-                # had_solution = True
+                had_solution = True
+                tree_lineage_binding = next_state.get_binding("tree_lineage")
+                if tree_lineage_binding.value is not None:
+                    self.handle_lineage_change(tree_lineage_binding.value[0])
+
                 yield next_state
                 # had_solution = True
                 # tree_lineage_binding = next_state.get_binding("tree_lineage")
@@ -299,11 +323,40 @@ class ExecutionContext(object):
                 # new_lineage = f"{tree_lineage}.{module_function.id}"
                 # yield next_state.set_x("tree_lineage", (new_lineage,))
 
-            # if not had_solution:
-            #     self.lineage_failure_callback(self.get_error_info())
+            if not had_solution:
+                if self._predication_runtime_settings.get("Disjunction", False):
+                    self.lineage_failure_callback(self.get_error_info())
 
         except MessageException as error:
             self.report_error(error.message_object())
+
+    def handle_lineage_change(self, new_lineage):
+        if self.last_solution_lineage is not None and new_lineage != self.last_solution_lineage:
+            if not new_lineage.startswith(self.last_solution_lineage):
+                # Fire an error for every disjunction set that didn't generate a solution
+                last_segments = self.last_solution_lineage.split(".")[1:]
+                new_segments = new_lineage.split(".")[1:]
+                for index in range(len(last_segments)):
+                    if index > (len(new_segments) - 1) or last_segments[index] != new_segments[index]:
+                        # This disjunction changed, fire a failure if there were no solutions
+                        test_lineage = ".".join(last_segments[:index + 1])
+                        was_successful = False
+                        for successful_lineage in self.solution_lineages:
+                            if successful_lineage.startswith(test_lineage):
+                                was_successful = True
+                                break
+
+                        if not was_successful:
+                            self.lineage_failure_callback(self.get_error_info())
+
+        # And remember this as the last lineage
+        self.last_solution_lineage = new_lineage
+
+    def set_disjunction(self):
+        self.set_predication_runtime_settings("Disjunction", True)
+
+    def set_predication_runtime_settings(self, key, value):
+        self._predication_runtime_settings[key] = value
 
     # Replace scopal arguments with an "h" and simply
     # return the others

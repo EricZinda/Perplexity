@@ -786,6 +786,9 @@ def yield_from_fw_seq(state, x_phrase_binding, non_set_value):
     if x_phrase_binding.value is None:
         # x is not bound
         if is_this_last_fw_seq(state) and hasattr(non_set_value, "all_interpretations"):
+            # Records that predication index X is a disjunction
+            execution_context().set_disjunction()
+
             # Get all the interpretations of the quoted text
             # and bind them iteratively
             # Since these are *alternative* interpretations, they need to be in different lineages

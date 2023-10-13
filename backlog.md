@@ -1,13 +1,14 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Rewrite issues:
-  - file system tests run to "what is in this 'blue'"
-    - Then eventually fail trying to run a "normalize" predication
-  - ESL tests run clean
+  - Example27: which files are not in this folder? -> crash
+    - because resolve_fragment isn't updated to use the new logic
+    - we need to "push a tree on the stack"
+    
 
-- Seems like we can get rid of lineage_failure_callback()?
+
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
-- 
-- what is in this "blue" -> There isn't a 'blue' in the system
+
+- Example23_reset: what is in this "blue" -> There isn't a 'blue' in the system
   - Because the first disjunctive lineage that finds the file called 'blue' and fails with the correct error
   - But then the second lineage fails with a bad error and overwrites it
   - We need to have quoted() properly return solutions in different solution sets

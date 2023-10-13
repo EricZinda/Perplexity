@@ -243,7 +243,7 @@ class UserInterface(object):
                                         solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_unprocessed_groups=unprocessed_groups))
 
                                         # Collect any error that might have occurred from the first solution group
-                                        tree_record["Error"] = self.execution_context.error()
+                                        tree_record["Error"] = self.execution_context.error() # (solutions.error_info[2], solutions.error_info[0])
                                         tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(self.message_function, tree_info, solution_group_generator, tree_record["Error"]))
                                         if solution_group_generator is not None:
                                             # There were solutions, so this is our answer.
