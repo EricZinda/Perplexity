@@ -3,8 +3,15 @@
   - Example27: which files are not in this folder? -> crash
     - because resolve_fragment isn't updated to use the new logic
     - we need to "push a tree on the stack"
-    
-
+    - We need a way to find the solution groups for a particular tree that can be called reentrantly
+    - 
+- Clean up resolve_fragment
+  - It does phase 1 and phase 2 both
+  - Could there be a single class that is used by both user_interface and not()
+  - And then ExecutionContext has one of these classes? and the only thing execution_context stores is error info?
+  - It needs to encapsulate all the logic for interpretations, disjunctions, solution groups, properly returning errors, etc
+  - Implementation
+    - Phase 1: break out the code in user_interface that builds tree_records so they can be used elsewhere
 
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
 

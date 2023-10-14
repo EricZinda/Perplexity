@@ -99,6 +99,70 @@ class MrsTreeLineageGenerator(object):
             raise StopIteration
 
 
+class TreeSolver(object):
+    def __init__(self):
+        pass
+
+    # Errors are encoded in a fake tree
+    @staticmethod
+    def new_error_tree_record(error=None, response_generator=None, tree_index=None):
+        return TreeSolver.new_tree_record(error=error, response_generator=response_generator, tree_index=tree_index, error_tree=True)
+
+    @staticmethod
+    def new_tree_record(tree=None, error=None, response_generator=None, response_message=None, tree_index=None, error_tree=False):
+        value = {"Tree": tree,
+                 "SolutionGroups": None,
+                 "Solutions": [],
+                 "Error": error,
+                 "TreeIndex": tree_index,
+                 "ResponseGenerator": [] if response_generator is None else response_generator,
+                 "ResponseMessage": "" if response_message is None else response_message}
+
+        if error_tree:
+            value["ErrorTree"] = True
+
+        return value
+
+    # Given a particular scope-resolved tree in tree_info,
+    # yields a tree_record for every interpretation and combination of disjunctions that was attempted (including if they were skipped)
+    def tree_solutions(self, response_function, message_function, state, tree_info, context, current_tree_index, target_tree_index):
+        wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
+        this_sentence_force = sentence_force(tree_info["Variables"])
+        for interpretation in context.mrs_tree_interpretations(tree_info):
+            if target_tree_index is not None:
+                if current_tree_index < target_tree_index:
+                    skipped_tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], error="skipped", tree_index=current_tree_index)
+                    current_tree_index += 1
+                    yield skipped_tree_record
+                    continue
+
+                elif current_tree_index > target_tree_index:
+                    return
+
+            if pipeline_logger.level == logging.DEBUG:
+                func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
+                pipeline_logger.debug(f"Evaluating alternative '{func_list}'")
+
+            lineage_generator = MrsTreeLineageGenerator(context, state, tree_info, interpretation)
+            for solutions in lineage_generator:
+                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=current_tree_index)
+
+                # solution_groups() should return an iterator that iterates *groups*
+                with context:
+                    tree_record["SolutionGroupGenerator"] = at_least_one_generator(
+                        perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
+
+                    # Collect any error that might have occurred from the first solution group
+                    tree_record["Error"] = context.error()
+                    tree_record["ResponseGenerator"] = at_least_one_generator(
+                        response_function(message_function, tree_info, tree_record["SolutionGroupGenerator"],
+                                          tree_record["Error"]))
+                    tree_record["TreeIndex"] = current_tree_index
+                    yield tree_record
+
+            current_tree_index += 1
+
+
 class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
