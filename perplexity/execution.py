@@ -105,8 +105,8 @@ class TreeSolver(object):
 
     # Errors are encoded in a fake tree
     @staticmethod
-    def new_error_tree_record(error=None, response_generator=None, tree_index=None):
-        return TreeSolver.new_tree_record(error=error, response_generator=response_generator, tree_index=tree_index, error_tree=True)
+    def new_error_tree_record(tree=None, error=None, response_generator=None, tree_index=None):
+        return TreeSolver.new_tree_record(tree=tree, error=error, response_generator=response_generator, tree_index=tree_index, error_tree=True)
 
     @staticmethod
     def new_tree_record(tree=None, error=None, response_generator=None, response_message=None, tree_index=None, error_tree=False):
@@ -115,6 +115,7 @@ class TreeSolver(object):
                  "Solutions": [],
                  "Error": error,
                  "TreeIndex": tree_index,
+                 "SolutionGroupGenerator": None,
                  "ResponseGenerator": [] if response_generator is None else response_generator,
                  "ResponseMessage": "" if response_message is None else response_message}
 
@@ -125,13 +126,13 @@ class TreeSolver(object):
 
     # Given a particular scope-resolved tree in tree_info,
     # yields a tree_record for every interpretation and combination of disjunctions that was attempted (including if they were skipped)
-    def tree_solutions(self, response_function, message_function, state, tree_info, context, current_tree_index, target_tree_index):
+    def tree_solutions(self, state, tree_info, context, response_function=None, message_function=None, current_tree_index=0, target_tree_index=None):
         wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
         this_sentence_force = sentence_force(tree_info["Variables"])
         for interpretation in context.mrs_tree_interpretations(tree_info):
             if target_tree_index is not None:
                 if current_tree_index < target_tree_index:
-                    skipped_tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], error="skipped", tree_index=current_tree_index)
+                    skipped_tree_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"], error="skipped", tree_index=current_tree_index)
                     current_tree_index += 1
                     yield skipped_tree_record
                     continue
@@ -154,9 +155,13 @@ class TreeSolver(object):
 
                     # Collect any error that might have occurred from the first solution group
                     tree_record["Error"] = context.error()
-                    tree_record["ResponseGenerator"] = at_least_one_generator(
-                        response_function(message_function, tree_info, tree_record["SolutionGroupGenerator"],
-                                          tree_record["Error"]))
+                    if message_function is not None and response_function is not None:
+                        tree_record["ResponseGenerator"] = at_least_one_generator(
+                            response_function(message_function, tree_info, tree_record["SolutionGroupGenerator"],
+                                              tree_record["Error"]))
+                    else:
+                        tree_record["ResponseGenerator"] = None
+
                     tree_record["TreeIndex"] = current_tree_index
                     yield tree_record
 
@@ -191,6 +196,27 @@ class ExecutionContext(object):
         if self.old_context_token is not None:
             reset_execution_context(self.old_context_token)
             self.old_context_token = None
+
+    def resolve_fragment_new(self, state, tree_node):
+        pipeline_logger.debug(f"Solving fragment: {tree_node}")
+        solver = TreeSolver()
+        new_tree_info = copy.deepcopy(self.tree_info)
+        new_tree_info["Tree"] = tree_node
+        new_state = state.set_x("tree", (new_tree_info, ))
+        for tree_record in solver.tree_solutions(new_state,
+                                                 new_tree_info,
+                                                 self):
+            solution_group_generator = tree_record["SolutionGroupGenerator"]
+            if solution_group_generator is not None:
+                # There were solutions, so this is our answer.
+                solutions = [x for x in solution_group_generator]
+                if pipeline_logger.level == logging.DEBUG:
+                    nl = '\n'
+                    pipeline_logger.debug(
+                        f"Found fragment solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in solutions])}")
+                yield solutions
+
+        pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
 
     def resolve_fragment(self, state, tree_node, extra_variables=None, criteria_list=None):
         this_sentence_force = sentence_force(self.tree_info["Variables"])

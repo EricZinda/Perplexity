@@ -335,7 +335,7 @@ def neg(state, e_introduced_binding, h_scopal):
                 # Use resolve_fragment to run numeric criteria on the "not" clause. So that a phrase like
                 # "which files not in this folder are not large?" would work
                 had_negative_success = False
-                for temp in execution_context().resolve_fragment(combination_state, h_scopal):
+                for temp in execution_context().resolve_fragment_new(combination_state, h_scopal):
                     # This is true, don't yield it since neg() makes it False
                     generate_not_error(unscoped_referenced_variables)
                     had_negative_success = True

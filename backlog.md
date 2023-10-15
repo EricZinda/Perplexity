@@ -1,8 +1,11 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 - Rewrite issues:
-  - Example27: which files are not in this folder? -> crash
-    - because resolve_fragment isn't updated to use the new logic
+  - Example29: Files are not large -> crash
+    - Things like self._interpretation get overwritten with a fragment
+    - 
+  
     - we need to "push a tree on the stack"
+      - Including 
     - We need a way to find the solution groups for a particular tree that can be called reentrantly
     - 
 - Clean up resolve_fragment
@@ -12,7 +15,8 @@
   - It needs to encapsulate all the logic for interpretations, disjunctions, solution groups, properly returning errors, etc
   - Implementation
     - Phase 1: break out the code in user_interface that builds tree_records so they can be used elsewhere
-
+    - Phase 2: Update resolve_fragment to use the new shared code
+    - 
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
 
 - Example23_reset: what is in this "blue" -> There isn't a 'blue' in the system

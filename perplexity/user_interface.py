@@ -157,7 +157,7 @@ class UserInterface(object):
                             pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
 
                             solver = TreeSolver()
-                            for tree_record in solver.tree_solutions(self.response_function, self.message_function, frame_state, tree_info, self.execution_context, tree_index, self.run_tree_index):
+                            for tree_record in solver.tree_solutions(frame_state, tree_info, self.execution_context, self.response_function, self.message_function, tree_index, self.run_tree_index):
                                 mrs_record["Trees"].append(tree_record)
 
                                 solution_group_generator = tree_record["SolutionGroupGenerator"]
