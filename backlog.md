@@ -14,7 +14,10 @@
   - And then ExecutionContext has one of these classes? and the only thing execution_context stores is error info?
   - It needs to encapsulate all the logic for interpretations, disjunctions, solution groups, properly returning errors, etc
   - Implementation
-    - Phase 1: break out the code in user_interface that builds tree_records so they can be used elsewhere
+    - (done) Phase 1: break out the code in user_interface that builds tree_records so they can be used elsewhere
+    - Phase 2: context needs to be passed to every predication. It simply does not work with generators properly
+      - If something yields there is no way to set up contextvars to properly be set again later
+      - Test baseline before changes: all ESL tests pass, all filesystem tests pass except: "not", and tutorial stops when normalize asserts
     - Phase 2: Update resolve_fragment to use the new shared code
     - 
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
