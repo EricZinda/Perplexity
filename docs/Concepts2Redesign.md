@@ -1,3 +1,37 @@
+
+A phrase generates at least one MRS. 
+
+That MRS can generate at least one scope-resolved MRS tree.
+
+## Phase 1
+Phase 1 generates a set of local (i.e. true for only the MRS local constraints) solutions that contain variable assignments from only one "interpretation" of each predication. This is called a `solution set` and is the output of Phase 1. Here's how these are found:
+
+That scope-resolved MRS tree can generate, statically (i.e. before resolution), at least one `interpretation` which is a selection of alternative interpretations of the predications within it. The predication interpretations are defined by actual Python method implementations of the predication.  Each implementation represents an *alternative* interpretation. This means that the variable assignments it generates should not be combined with the results of other interpretations.  They are *alternatives*. All combinations of `interpretations` for the predications which have them must be tried exhaustively to fully search for all possible meanings.
+
+Each `interpretation` may further generate one or more `disjunction trees` because the `interpretation` has predications within it that are `disjunction predications`. They generate further *alternatives*, but, crucially, they cannot be known beforehand as they depend on the values of the arguments passed in. A `disjunction predication`, therefore, generates further interpretations, but they are only known at runtime. Just like statically known `interpretations`, all combinations of disjunction alternatives must be tried to fully search the tree for meaning. But, because the alternatives can only be known at runtime, they can't just be put together and tried in all combinations by the engine. They have to be discovered by evaluating the tree and allowing the depth first algorithm to explore them.[Issue: Why can't we take the same approach, then, for static ones??]
+
+## Phase 1: Resolving Scopal Arguments
+Predications like `neg()` can operate logically on a whole fragment of a tree (i.e. a branch), and require that both phase 1 and 2 be resolved in order to determine their logical outcome. Take this example:
+
+> "which files are not in two folders": which_q(x3,_file_n_of(x3,i8),neg(e9,udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],_in_p_loc(e2,x3,x12))))
+
+In this case, `neg()` needs to know the results of the phase 2 evaluation of its scopal argument to determine if there are "2 folders" that each file is not in.
+
+## Phase 2
+Phase 2 groups a single solution set into solution groups that are now true for global constraints as well.
+
+## Error handling
+Each interpretation of a tree (including disjunctive interpretations), either fails in Phase 1 by not generating any solutions, or generates at least one solution. If it fails, it should return the "best" error it found in its tree_record. If it succeeds, it returns the solutions that got generated.
+
+If it generates solutions, it can still fail in Phase 2 by not generating any solution groups or succeed by generating at least one. If it fails phase 2, it should return the global constraint error that failed, not any errors from phase 1.
+
+If a scopal argument fails during phase 1, the error it generates should be the one returned from phase 1.
+
+
+# Design
+A tree_record object holds a bunch of generators that generate results for the tree *when requested*. These generators record errors in the *current* execution context. Because there
+The basic execution model is to call execution_context().
+
 This whole thing came about because we weren't getting "(there are more)" messages because solutions to the same tree were not necessarily consecutive
     - What is the difference between building alternative trees up front and forking as you go?
     - The goal is to end up with a self-consistent set of solutions that are true for the MRS local constraints
