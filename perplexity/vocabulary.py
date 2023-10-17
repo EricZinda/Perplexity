@@ -2,10 +2,9 @@ import enum
 import inspect
 import logging
 from typing import NamedTuple
-
 import perplexity.execution
 from perplexity.transformer import build_transformed_tree
-from perplexity.utilities import parse_predication_name
+from perplexity.utilities import parse_predication_name, system_added_state_arg, system_added_arg_count
 from perplexity.variable_binding import VariableBinding
 
 
@@ -28,11 +27,13 @@ class ValueSize(enum.Enum):
 def override_predications(vocabulary, library, name_list):
     vocabulary.override_predications(library, name_list)
 
+
 def Transform(vocabulary):
     def PredicationDecorator(function_to_decorate):
         vocabulary.add_transform(function_to_decorate())
 
     return PredicationDecorator
+
 
 def Predication(vocabulary, library=None, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None):
     # Work around Python's odd handling of default arguments that are objects
@@ -71,9 +72,9 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
     def arg_types_from_function(function):
         arg_spec = inspect.getfullargspec(function)
 
-        # Skip the first arg since it should always be "state"
+        # Skip the first two args since they should always be "context, state"
         arg_list = []
-        for arg_index in range(1, len(arg_spec.args)):
+        for arg_index in range(2, len(arg_spec.args)):
             arg_name = arg_spec.args[arg_index]
 
             # Allow single character arguments like "x" and "e"
@@ -155,7 +156,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
             # Make sure the event has a structure that will be properly
             # handled by the predication
-            if is_solution_group or ensure_handles_event(args[0], handles, args[1]):
+            if is_solution_group or ensure_handles_event(args[system_added_state_arg], handles, args[system_added_arg_count]):
                 yield from function_to_decorate(*args, **kwargs)
 
         predication_names = names if names is not None else [function_to_decorate.__name__]

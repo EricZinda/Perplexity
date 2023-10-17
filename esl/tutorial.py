@@ -257,7 +257,7 @@ def want_removal_transitive_transformer():
 
 
 @Predication(vocabulary, names=["pron"])
-def pron(state, x_who_binding):
+def pron(context, state, x_who_binding):
     person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
     plurality = "unknown"
     if "NUM" in state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name].keys():
@@ -286,23 +286,23 @@ def pron(state, x_who_binding):
 
 
 @Predication(vocabulary, names=["generic_entity"])
-def generic_entity(state, x_binding):
+def generic_entity(context, state, x_binding):
     def bound(val):
-        return val == ReferringExpr(execution_context().current_predication(), x_binding.variable.name)
+        return val == ReferringExpr(context.current_predication(), x_binding.variable.name)
 
     def unbound():
-        yield ReferringExpr(execution_context().current_predication(), x_binding.variable.name)
+        yield ReferringExpr(context.current_predication(), x_binding.variable.name)
 
     yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["_okay_a_1"])
-def _okay_a_1(state, i_binding, h_binding):
+def _okay_a_1(context, state, i_binding, h_binding):
     yield from call(state, h_binding)
 
 
 @Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.optional)])
-def much_many_a(state, e_binding, x_binding):
+def much_many_a(context, state, e_binding, x_binding):
     if "Measure" in e_binding.value.keys():
         measure_into_variable = e_binding.value["Measure"]["Value"]
         # if we are measuring x_binding should have a ReferringExpr() that is the type of measurement
@@ -317,24 +317,24 @@ def much_many_a(state, e_binding, x_binding):
 
 
 @Predication(vocabulary, names=["measure"])
-def measure(state, e_binding, e_binding2, x_binding):
+def measure(context, state, e_binding, e_binding2, x_binding):
     yield state.add_to_e(e_binding2.variable.name, "Measure",
                          {"Value": x_binding.variable.name,
-                          "Originator": execution_context().current_predication_index()})
+                          "Originator": context.current_predication_index()})
 
 
 @Predication(vocabulary, names=["abstr_deg"])
-def abstr_deg(state, x_binding):
+def abstr_deg(context, state, x_binding):
     yield state.set_x(x_binding.variable.name, (referring_expr_from_lemma("abstract_degree"),))
 
 
 @Predication(vocabulary, names=["card"])
-def card_system(state, c_number, e_binding, x_binding):
-    yield from perplexity.system_vocabulary.card_cex(state, c_number, e_binding, x_binding)
+def card_system(context, state, c_number, e_binding, x_binding):
+    yield from perplexity.system_vocabulary.card_cex(context, state, c_number, e_binding, x_binding)
 
 
 @Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
-def _for_p(state, e_binding, x_what_binding, x_for_binding):
+def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
         if len(x_what) == 1:
             x_what_type = perplexity.predications.value_type(x_what[0])
@@ -385,7 +385,7 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
         elif is_referring_expr(x_what_value[0]):
             e_what_value = solution.get_binding(e_binding.variable.name).value
             x_for_value = solution.get_binding(x_for_binding.variable.name).value
-            modified = x_what_value[0].add_bound_modifier(execution_context().current_predication(), [e_what_value, x_what_value, x_for_value])
+            modified = x_what_value[0].add_bound_modifier(context.current_predication(), [e_what_value, x_what_value, x_for_value])
             yield solution.set_x(x_what_binding.variable.name, (modified,))
 
         else:
@@ -393,7 +393,7 @@ def _for_p(state, e_binding, x_what_binding, x_for_binding):
 
 
 @Predication(vocabulary, names=["_cash_n_1"])
-def _cash_n_1(state, x_bind):
+def _cash_n_1(context, state, x_bind):
     def bound(val):
         return val == "cash"
 
@@ -404,7 +404,7 @@ def _cash_n_1(state, x_bind):
 
 
 @Predication(vocabulary, names=["_card_n_1"])
-def _card_n_1(state, x_bind):
+def _card_n_1(context, state, x_bind):
     def bound(val):
         return val == "card"
 
@@ -415,7 +415,7 @@ def _card_n_1(state, x_bind):
 
 
 @Predication(vocabulary, names=["_credit_n_1"])
-def _credit_n_1(state, x_bind):
+def _credit_n_1(context, state, x_bind):
     def bound(val):
         return val == "credit"
 
@@ -426,7 +426,7 @@ def _credit_n_1(state, x_bind):
 
 
 @Predication(vocabulary, names=["_tomato_n_1"])
-def _tomato_n_1(state, x_bind):
+def _tomato_n_1(context, state, x_bind):
     def bound(val):
         report_error(["errorText","no declarative tomato",state.get_reprompt()])
 
@@ -437,14 +437,14 @@ def _tomato_n_1(state, x_bind):
 
 
 @Predication(vocabulary, names=["unknown"])
-def unknown(state, e_binding, x_binding):
+def unknown(context, state, e_binding, x_binding):
     operations = state.handle_world_event(["unknown", x_binding.value[0]])
     if operations is not None:
         yield state.record_operations(operations)
 
 
 @Predication(vocabulary, names=["solution_group_unknown"])
-def unknown_group(state_list, has_more, e_variable_group, x_variable_group):
+def unknown_group(context, state_list, has_more, e_variable_group, x_variable_group):
     # Ignore any other solutions that cause has_more=True so that
     # it doesn't say "(there are more)"
     yield state_list
@@ -452,23 +452,23 @@ def unknown_group(state_list, has_more, e_variable_group, x_variable_group):
 
 
 @Predication(vocabulary, names=["unknown"])
-def unknown_eu(state, e_binding, u_binding):
+def unknown_eu(context, state, e_binding, u_binding):
     yield state
 
 
 @Predication(vocabulary, names=["_yes_a_1", "_yup_a_1", "_sure_a_1", "_yeah_a_1"])
-def _yes_a_1(state, i_binding, h_binding):
+def _yes_a_1(context, state, i_binding, h_binding):
     yield state.record_operations(state.handle_world_event(["yes"]))
 
 
 @Predication(vocabulary, names=["_no_a_1", "_nope_a_1"])
-def _no_a_1(state, i_binding, h_binding):
+def _no_a_1(context, state, i_binding, h_binding):
     yield state.record_operations(state.handle_world_event(["no"]))
 
 
 @Predication(vocabulary, names=["person"])
-def person(state, x_person_binding):
-    yield from match_all_n("person", state, x_person_binding)
+def person(context, state, x_person_binding):
+    yield from match_all_n("person", context, state, x_person_binding)
 
 
 def handles_noun(state, noun_lemma):
@@ -479,7 +479,7 @@ def handles_noun(state, noun_lemma):
 # Simple example of using match_all that doesn't do anything except
 # make sure we don't say "I don't know the word book"
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
-def match_all_n(noun_type, state, x_binding):
+def match_all_n(noun_type, context, state, x_binding):
     def bound_variable(value):
         if sort_of(state, value, noun_type):
             return True
@@ -500,7 +500,7 @@ def match_all_n(noun_type, state, x_binding):
     # because solutions can never mix conceptual and non-conceptual terms so it isn't
     # true that it is combinatoric since you can't pick the conceptual and include it with another and have
     # it be valid
-    # yield state.set_x(x_binding.variable.name, (ReferringExpr(execution_context().current_predication(), x_binding.variable.name),))
+    # yield state.set_x(x_binding.variable.name, (ReferringExpr(context.current_predication(), x_binding.variable.name),))
 
     # Then yield a combinatorial value of all types
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_concepts)
@@ -510,7 +510,7 @@ def match_all_n(noun_type, state, x_binding):
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
-def match_all_the_concept_n(noun_type, state, x_binding):
+def match_all_the_concept_n(noun_type, context, state, x_binding):
     def bound_variable(value):
         if sort_of(state, value, noun_type):
             return True
@@ -531,16 +531,16 @@ def match_all_the_concept_n(noun_type, state, x_binding):
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
-def match_all_n_i(noun_type, state, x_binding, i_binding):
-    yield from match_all_n(noun_type, state, x_binding)
+def match_all_n_i(noun_type, context, state, x_binding, i_binding):
+    yield from match_all_n(noun_type, context, state, x_binding)
 
 
 @Predication(vocabulary, names=["_some_q"])
-def the_q(state, x_variable_binding, h_rstr, h_body):
+def the_q(context, state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                    quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
                                                                 max_size=float('inf'),
@@ -550,7 +550,7 @@ def the_q(state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, names=["_vegetarian_a_1"])
-def _vegetarian_a_1(state, e_introduced_binding, x_target_binding):
+def _vegetarian_a_1(context, state, e_introduced_binding, x_target_binding):
     def criteria_bound(value):
         veg = all_instances_and_spec(state, "veggie")
         if value in serial_store_to_object(state,veg):
@@ -573,7 +573,7 @@ class PastParticiple:
         self.predicate_name_list = predicate_name_list
         self.lemma = lemma
 
-    def predicate_function(self, state, e_introduced_binding, i_binding, x_target_binding):
+    def predicate_function(self, context, state, e_introduced_binding, i_binding, x_target_binding):
         def bound(value):
             if (object_to_store(value), self.lemma) in state.all_rel("isAdj"):
                 return True
@@ -597,22 +597,22 @@ smoked = PastParticiple(["_smoke_v_1"], "smoked")
 
 
 @Predication(vocabulary, names=grilled.predicate_name_list)
-def _grill_v_1(state, e_introduced_binding, i_binding, x_target_binding):
-    yield from grilled.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
+def _grill_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
+    yield from grilled.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
 @Predication(vocabulary, names=roasted.predicate_name_list)
-def _roast_v_1(state, e_introduced_binding, i_binding, x_target_binding):
-    yield from roasted.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
+def _roast_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
+    yield from roasted.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
 @Predication(vocabulary, names=smoked.predicate_name_list)
-def _smoke_v_1(state, e_introduced_binding, i_binding, x_target_binding):
-    yield from smoked.predicate_function(state, e_introduced_binding, i_binding, x_target_binding)
+def _smoke_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
+    yield from smoked.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
 @Predication(vocabulary, names=("_on_p_loc",))
-def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
     def check_item_on_item(item1, item2):
         if (item1, item2) in state.all_rel("on"):
             return True
@@ -638,12 +638,12 @@ def on_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
 
 @Predication(vocabulary, names=("_with_p",))
-def _with_p(state, e_introduced_binding, e_main, x_binding):
+def _with_p(context, state, e_introduced_binding, e_main, x_binding):
     yield state.add_to_e(e_main.variable.name, "With", x_binding.value[0])
 
 
 @Predication(vocabulary, names=["_pay_v_for","_pay_v_for_able","_pay_v_for_request"], handles=[("With", EventOption.optional)])
-def _pay_v_for(state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
+def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
         yield do_task(state, [("respond", "It's not time to pay yet.")])
         return
@@ -655,7 +655,7 @@ def _pay_v_for(state, e_introduced_binding, x_actor_binding, i_binding1,i_bindin
 
 
 @Predication(vocabulary, names=["_want_v_1"])
-def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if is_user_type(x_actor):
             return True
@@ -685,7 +685,7 @@ def _want_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
 
 @Predication(vocabulary, names=["solution_group__want_v_1"])
-def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
 
     # This may be getting called with concepts or instances, before we call the planner
@@ -740,7 +740,7 @@ def want_group(state_list, has_more, e_introduced_binding_list, x_actor_variable
 
 
 @Predication(vocabulary, names=["_check_v_1"])
-def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
+def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_binding):
     if i_object_binding.value is not None:
         return
 
@@ -754,7 +754,7 @@ def _check_v_1(state, e_introduced_binding, x_actor_binding, i_object_binding):
 
 
 @Predication(vocabulary, names=["solution_group__check_v_1"])
-def _check_v_1_group(state_list, has_more, e_introduced_binding, x_actor_binding, i_object_binding):
+def _check_v_1_group(context, state_list, has_more, e_introduced_binding, x_actor_binding, i_object_binding):
     current_state = copy.deepcopy(state_list[0])
     final_state = do_task(current_state.world_state_frame(), [('get_bill',)])
     if final_state is None:
@@ -764,7 +764,7 @@ def _check_v_1_group(state_list, has_more, e_introduced_binding, x_actor_binding
 
 
 @Predication(vocabulary, names=["_give_v_1"])
-def _give_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
+def _give_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
     if state.get_binding(x_actor_binding.variable.name).value[0] == "restaurant":
         if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
             if not state.get_binding(x_object_binding.variable.name).value[0] is None:
@@ -774,7 +774,7 @@ def _give_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding, x_
 
 
 @Predication(vocabulary, names=["_show_v_1", "_show_v_1_able"])
-def _show_v_1(state, e_introduced_binding, x_actor_binding, x_target_binding, x_to_actor_binding):
+def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_binding, x_to_actor_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
         return
     if is_concept(x_actor_binding) or is_concept(x_to_actor_binding):
@@ -808,7 +808,7 @@ def _show_v_1(state, e_introduced_binding, x_actor_binding, x_target_binding, x_
 
 
 @Predication(vocabulary, names=["solution_group__show_v_1", "solution_group__show_v_1_able"])
-def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_target_variable_group, x_to_actor_variable_group):
+def _show_v_cause_group(context, state_list, has_more, e_introduced_binding, x_actor_variable_group, x_target_variable_group, x_to_actor_variable_group):
     # Only need to check constraints on x_target_variable_group since it is the only variable that is a concept
     # The player is asking to be shown *instances* so check_concepts = False
     if not check_concept_solution_group_constraints(state_list, x_target_variable_group, check_concepts=False):
@@ -827,7 +827,7 @@ def _show_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_vari
 
 
 @Predication(vocabulary, names=["_seat_v_cause", "_seat_v_cause_able"])
-def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
         return
 
@@ -846,7 +846,7 @@ def _seat_v_cause(state, e_introduced_binding, x_actor_binding, x_object_binding
 
 
 @Predication(vocabulary, names=["solution_group__seat_v_cause", "solution_group__seat_v_cause_able"])
-def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
+def _seat_v_cause_group(context, state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     new_state = do_task(state_list[0].world_state_frame(),
                         [('satisfy_want', variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
     if new_state is None:
@@ -856,7 +856,7 @@ def _seat_v_cause_group(state_list, has_more, e_introduced_binding, x_actor_vari
 
 
 @Predication(vocabulary, names=["loc_nonsp"])
-def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_loc_binding):
+def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_loc_binding):
     def item1_in_item2(item1, item2):
         if item2 == "today":
             return True
@@ -880,12 +880,12 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_loc_binding):
 
 
 @Predication(vocabulary, names=["loc_nonsp"])
-def loc_nonsp_eex(state, e_introduced_binding, e_binding, x_loc_binding):
+def loc_nonsp_eex(context, state, e_introduced_binding, e_binding, x_loc_binding):
     yield state
 
 
 @Predication(vocabulary, names=["_today_a_1"])
-def _today_a_1(state, e_introduced_binding, x_binding):
+def _today_a_1(context, state, e_introduced_binding, x_binding):
     def bound_variable(value):
         if value in ["today"]:
             return True
@@ -900,7 +900,7 @@ def _today_a_1(state, e_introduced_binding, x_binding):
 
 
 @Predication(vocabulary, names=["time_n"])
-def time_n(state, x_binding):
+def time_n(context, state, x_binding):
     def bound_variable(value):
         if value in ["today", "yesterday", "tomorrow"]:
             return True
@@ -917,9 +917,9 @@ def time_n(state, x_binding):
 
 
 @Predication(vocabulary, names=["def_implicit_q", "def_explicit_q"])
-def def_implicit_q(state, x_variable_binding, h_rstr, h_body):
+def def_implicit_q(context, state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                    quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
                                                                 max_size=float('inf')))
@@ -928,7 +928,7 @@ def def_implicit_q(state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, names=["_like_v_1"])
-def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _like_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_user_type(state.get_binding(x_actor_binding.variable.name).value[0]):
         if not state.get_binding(x_object_binding.variable.name).value[0] is None:
             yield state.record_operations(
@@ -938,27 +938,27 @@ def _like_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
 
 @Predication(vocabulary, names=["_please_a_1"])
-def _please_a_1(state, e_introduced_binding, e_binding):
+def _please_a_1(context, state, e_introduced_binding, e_binding):
     yield state
 
 
 @Predication(vocabulary, names=["_too_a_also"])
-def _too_a_also(state, e_introduced_binding, x_binding):
+def _too_a_also(context, state, e_introduced_binding, x_binding):
     yield state
 
 
 @Predication(vocabulary, names=["_please_v_1"])
-def _please_v_1(state, e_introduced_binding, i_binding1, i_binding2):
+def _please_v_1(context, state, e_introduced_binding, i_binding1, i_binding2):
     yield state
 
 
 @Predication(vocabulary, names=["polite"])
-def polite(state, c_arg, i_binding, e_binding):
+def polite(context, state, c_arg, i_binding, e_binding):
     yield state
 
 
 @Predication(vocabulary, names=["_thanks_a_1", "_then_a_1"])
-def _thanks_a_1(state, i_binding, h_binding):
+def _thanks_a_1(context, state, i_binding, h_binding):
     yield from call(state, h_binding)
 
 
@@ -966,7 +966,7 @@ def _thanks_a_1(state, i_binding, h_binding):
 #   - "I will sit down"
 #   - "Will I sit down?"
 @Predication(vocabulary, names=["_sit_v_down", "sit_v_1"])
-def _sit_v_down_future(state, e_introduced_binding, x_actor_binding):
+def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
     if is_concept(x_actor_binding):
         return
     tree_info = state.get_binding("tree").value[0]
@@ -993,7 +993,7 @@ def _sit_v_down_future(state, e_introduced_binding, x_actor_binding):
 
 
 @Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])
-def _sit_v_down_future_group(state_list, has_more, e_list, x_actor_variable_group):
+def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_variable_group):
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
     final_state = do_task(state_list[0].world_state_frame(), [task])
@@ -1007,7 +1007,7 @@ def _sit_v_down_future_group(state_list, has_more, e_list, x_actor_variable_grou
 #   "I sit down"
 #   "Who sits down?"
 @Predication(vocabulary, names=["_sit_v_down", "_sit_v_1"])
-def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
+def invalid_present_intransitive(context, state, e_introduced_binding, x_actor_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
     report_error(["unexpected",state.get_reprompt()])
     if False: yield None
@@ -1022,7 +1022,7 @@ def invalid_present_intransitive(state, e_introduced_binding, x_actor_binding):
 #   - "Who is sitting down?"
 #   - "I can sit down."
 @Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able"])
-def _sit_v_down_able(state, e_binding, x_actor_binding):
+def _sit_v_down_able(context, state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_present_tense(tree_info):
         report_error(["unexpected", state.get_reprompt()])
@@ -1049,7 +1049,7 @@ def _sit_v_down_able(state, e_binding, x_actor_binding):
 
 
 @Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
-def _sit_v_down_request(state, e_binding, x_actor_binding):
+def _sit_v_down_request(context, state, e_binding, x_actor_binding):
     if is_concept(x_actor_binding):
         return
 
@@ -1068,7 +1068,7 @@ def _sit_v_down_request(state, e_binding, x_actor_binding):
 
 
 @Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
-def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
+def _sit_v_down_able_group(context, state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
     # If it is a wh_question, just answer it
     tree_info = state_list[0].get_binding("tree").value[0]
     if is_wh_question(tree_info):
@@ -1087,7 +1087,7 @@ def _sit_v_down_able_group(state_list, has_more, e_introduced_binding_list, x_ac
 #   "I can see a menu. -> poor english
 #   Anthing else --> don't understand
 @Predication(vocabulary, names=["_see_v_1_able"])
-def _see_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_question(tree_info):
         report_error(["unexpected",state.get_reprompt()])
@@ -1124,7 +1124,7 @@ def _see_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding
 
 
 @Predication(vocabulary, names=["solution_group__see_v_1_able"])
-def _see_v_1_able_group(state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
+def _see_v_1_able_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
@@ -1143,7 +1143,7 @@ def _see_v_1_able_group(state_list, has_more, e_list, x_actor_variable_group, x_
 #   Poor English:
 #       "I will see a table/steak, etc"
 @Predication(vocabulary, names=["_see_v_1"])
-def _see_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_future_tense(tree_info): return
     if is_question(tree_info):
@@ -1182,7 +1182,7 @@ def _see_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_bindi
 
 
 @Predication(vocabulary, names=["solution_group__see_v_1"])
-def _see_v_1_future_group(state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
+def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_future_tense(tree_info): return
 
@@ -1203,7 +1203,7 @@ def _see_v_1_future_group(state_list, has_more, e_list, x_actor_variable_group, 
 #   - "Can I take a menu/table/steak?"
 # All are poor english
 @Predication(vocabulary, names=["_take_v_1_able"])
-def _take_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     report_error(["unexpected", state.get_reprompt()])
     if False: yield None
 
@@ -1215,14 +1215,14 @@ def _take_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
 #   "I see a menu?"
 #   "I see a menu"
 @Predication(vocabulary, names=["_get_v_1", "_take_v_1", "_see_v_1"])
-def invalid_present_transitive(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def invalid_present_transitive(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
     report_error(["unexpected", state.get_reprompt()])
     if False: yield None
 
 
 @Predication(vocabulary, names=["_order_v_1"])
-def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_past_tense(state.get_binding("tree").value[0]):
         return
     if is_referring_expr(x_actor_binding) or is_referring_expr(x_object_binding):
@@ -1271,7 +1271,7 @@ def _order_v_1_past(state, e_introduced_binding, x_actor_binding, x_object_bindi
 #   - "What will I have?" --> Not good english
 #   - "Who will have x?" --> Not good english
 @Predication(vocabulary, names=["_have_v_1", "_take_v_1"])
-def _have_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_future_tense(tree_info): return
     if is_question(tree_info):
@@ -1305,7 +1305,7 @@ def _have_v_1_future(state, e_introduced_binding, x_actor_binding, x_object_bind
 
 
 @Predication(vocabulary, names=["solution_group__have_v_1", "solution_group__take_v_1"])
-def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
+def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_future_tense(tree_info): return
 
@@ -1326,7 +1326,7 @@ def _have_v_1_future_group(state_list, has_more, e_variable_group, x_actor_varia
 # like have_v_1, BUT: handles some special cases like "do you have a table?"
 # which is really an implied request. See group handler for scenarios.
 @Predication(vocabulary, names=["_have_v_1"])
-def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
         return
     if is_concept(x_actor_binding):
@@ -1382,7 +1382,7 @@ def _have_v_1_present(state, e_introduced_binding, x_actor_binding, x_object_bin
 # - "Do you have menus?" --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
 # - "Do you have steaks?" --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
 @Predication(vocabulary, names=["solution_group__have_v_1"])
-def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list):
+def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x_obj_list):
     # Ignore this group if it isn't present tense
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_present_tense(tree_info):
@@ -1452,7 +1452,7 @@ def _have_v_1_present_group(state_list, has_more, e_list, x_act_list, x_obj_list
 # Scenarios:
 #   "What can I have?" --> implied menu request
 @Predication(vocabulary, names=["_have_v_1_able", "_get_v_1_able"])
-def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actors, x_objects):
         # Players are able to have any food, a table or a menu
         if is_user_type(x_actors):
@@ -1497,7 +1497,7 @@ def _have_v_1_able(state, e_introduced_binding, x_actor_binding, x_object_bindin
 # - "What can I have?" --> implicit menu request
 # - "Can I have a steak and a salad?" --> implicit order request
 @Predication(vocabulary, names=["solution_group__have_v_1_able", "solution_group__get_v_1_able"])
-def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
+def _have_v_1_able_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # At this point they were *able* to have the item, now we see if this was an implicit request for it
     # If this is a question, but not a wh question, involving the players, then it is also a request for something
     tree_info = state_list[0].get_binding("tree").value[0]
@@ -1518,7 +1518,7 @@ def _have_v_1_able_group(state_list, has_more, e_variable_group, x_actor_variabl
 
 
 @Predication(vocabulary, names=["poss"])
-def poss(state, e_introduced_binding, x_object_binding, x_actor_binding):
+def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
     def bound(x_actor, x_object):
         if (x_actor, x_object) in state.all_rel("have"):
             return True
@@ -1556,7 +1556,7 @@ def measurement_information(x):
 
 
 @Predication(vocabulary, names=["_be_v_id"])
-def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         measure_into_variable, units = measurement_information(x_object)
         if measure_into_variable is not None:
@@ -1606,12 +1606,12 @@ def _be_v_id(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
 
 @Predication(vocabulary, names=["solution_group__be_v_id"])
-def _be_v_id_group(state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
+def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
     yield state_list
 
 
 @Predication(vocabulary, names=["_cost_v_1"])
-def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
+def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if not isinstance(x_object, Measurement):
             report_error(["Have not dealt with declarative cost", state.get_reprompt()])
@@ -1678,7 +1678,7 @@ def _cost_v_1(state, e_introduced_binding, x_actor_binding, x_object_binding):
 
 
 @Predication(vocabulary, names=["solution_group__cost_v_1"])
-def _cost_v_1_group(state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
+def _cost_v_1_group(context, state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
     if is_referring_expr(x_act_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(state_list, x_act_variable_group, check_concepts=True):
             yield []
@@ -1687,7 +1687,7 @@ def _cost_v_1_group(state_list, has_more, e_introduced_binding_list, x_act_varia
 
 
 @Predication(vocabulary, names=["_be_v_there"])
-def _be_v_there(state, e_introduced_binding, x_object_binding):
+def _be_v_there(context, state, e_introduced_binding, x_object_binding):
     def bound_variable(value):
         yield value in state.get_entities()
 
@@ -1723,7 +1723,7 @@ def computer_in_state(state):
 
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
-def wh_question(state_list, has_more, binding_list):
+def wh_question(context, state_list, has_more, binding_list):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', [x.value for x in binding_list])])
     if current_state is not None:
         yield (current_state,)

@@ -386,7 +386,7 @@ class ExecutionContext(object):
         # [list] + [list] will return a new, combined list
         # in Python. This is how we add the state object
         # onto the front of the argument list
-        function_args = [state] + bindings
+        function_args = [self, state] + bindings
 
         # See if the system wants us to tack any arguments to the front
         if module_function.extra_arg is not None:

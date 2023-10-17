@@ -1,6 +1,6 @@
 from perplexity.execution import call, report_error
 from perplexity.tree import find_predications_using_variable_ARG1
-from perplexity.utilities import at_least_one_generator
+from perplexity.utilities import at_least_one_generator, system_added_arg_count, system_added_state_arg
 
 
 # Return a virtual argument for a predication from a scopal argument
@@ -11,9 +11,9 @@ def scopal_argument(scopal_index, event_for_arg_index, event_value_pattern):
     def scopal_argument_generator(args):
         def possibly_empty_generator():
             # Get the arguments we'll need from the runtime arguments
-            x_what_binding = args[event_for_arg_index + 1]
-            h_scopal_arg = args[scopal_index + 1]
-            state = args[0]
+            x_what_binding = args[event_for_arg_index + system_added_arg_count]
+            h_scopal_arg = args[scopal_index + system_added_arg_count]
+            state = args[system_added_state_arg]
 
             # Determine which events in the scopal argument we need
             scopal_events = scopal_events_modifying_individual(x_what_binding.variable.name, h_scopal_arg)

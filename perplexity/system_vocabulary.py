@@ -59,7 +59,7 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
 
 
 @Predication(vocabulary, library="system")
-def thing(state, x_binding):
+def thing(context, state, x_binding):
     def bound_variable(_):
         return True
 
@@ -71,9 +71,9 @@ def thing(state, x_binding):
 
 
 @Predication(vocabulary, library="system", names=["_a_q"])
-def a_q(state, x_variable_binding, h_rstr, h_body):
+def a_q(context, state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                    quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
                                                                 max_size=1))
@@ -101,25 +101,25 @@ def in_scope(state, x_binding):
 # We want the interpretations of the to be mutually exclusive to avoid duplication
 # since if there is only one "the" in the world, it can be duplicated if it is also in scope
 @Predication(vocabulary, library="system", names=["_the_q"])
-def the_selector_q(state, x_variable_binding, h_rstr, h_body):
+def the_selector_q(context, state, x_variable_binding, h_rstr, h_body):
     solution_found = False
-    for solution in the_all_q(state, x_variable_binding, h_rstr, h_body):
+    for solution in the_all_q(context, state, x_variable_binding, h_rstr, h_body):
         solution_found = True
         yield solution
 
     if not solution_found:
-        yield from the_in_scope_q(state, x_variable_binding, h_rstr, h_body)
+        yield from the_in_scope_q(context, state, x_variable_binding, h_rstr, h_body)
 
 
 # The interpretation of "the x" which means "all of the x" is the same as "all x"
 # The key part here is GlobalCriteria.all_rstr_meet_criteria which ensures that every value of the RSTR is true
 # for the body
 @Predication(vocabulary, library="system", names=["_all_q"])
-def the_all_q(state, x_variable_binding, h_rstr, h_body):
+def the_all_q(context, state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                    quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
                                                                 max_size=float('inf'),
@@ -130,11 +130,11 @@ def the_all_q(state, x_variable_binding, h_rstr, h_body):
 
 # Interpretation of "the" which means "the one in scope"
 @Predication(vocabulary, library="system", names=["_this_q_dem"])
-def the_in_scope_q(state, x_variable_binding, h_rstr, h_body):
+def the_in_scope_q(context, state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                    quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
                                                                 max_size=float('inf'),
@@ -144,11 +144,11 @@ def the_in_scope_q(state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, library="system", names=["_every_q", "_each_q", "_each+and+every_q"])
-def every_each_q(state, x_variable_binding, h_rstr, h_body):
+def every_each_q(context, state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                    quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
                                                                 max_size=float('inf'),
@@ -158,8 +158,8 @@ def every_each_q(state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, library="system", names=["which_q", "_which_q"])
-def which_q(state, x_variable_binding, h_rstr, h_body):
-    current_predication = execution_context().current_predication()
+def which_q(context, state, x_variable_binding, h_rstr, h_body):
+    current_predication = context.current_predication()
 
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(current_predication,
@@ -171,9 +171,9 @@ def which_q(state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q", "number_q"])
-def generic_q(state, x_variable_binding, h_rstr, h_body):
+def generic_q(context, state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(execution_context().current_predication(),
+                                    quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
                                                                 max_size=float('inf')))
@@ -182,9 +182,9 @@ def generic_q(state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, library="system", names=["_a+few_a_1"])
-def a_few_a_1(state, e_introduced_binding, x_target_binding):
+def a_few_a_1(context, state, e_introduced_binding, x_target_binding):
     yield state.set_variable_data(x_target_binding.variable.name,
-                                  determiner=VariableCriteria(execution_context().current_predication(),
+                                  determiner=VariableCriteria(context.current_predication(),
                                                               x_target_binding.variable.name,
                                                               min_size=3,
                                                               max_size=5))
@@ -202,7 +202,7 @@ def a_few_a_1(state, e_introduced_binding, x_target_binding):
 # Group:
 #   my son and I want a steak
 @Predication(vocabulary, library="system", names=["_and_c"])
-def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
+def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_second):
     def both_bound_prediction_function(x_what, x_for):
         return True
 
@@ -236,22 +236,22 @@ def and_c(state, x_binding_introduced, x_binding_first, x_binding_second):
         yield solution.set_x(x_binding_introduced.variable.name,
                              and_value,
                              combinatoric=True,
-                             determiner=VariableCriteria(execution_context().current_predication(),
+                             determiner=VariableCriteria(context.current_predication(),
                                                          x_binding_introduced.variable.name,
                                                          required_values=required_values)
                           )
 
 
 @Predication(vocabulary, library="system", names=["implicit_conj"])
-def implicit_conj(state, x_binding_introduced, x_binding_first, x_binding_second):
-    yield from and_c(state, x_binding_introduced, x_binding_first, x_binding_second)
+def implicit_conj(context, state, x_binding_introduced, x_binding_first, x_binding_second):
+    yield from and_c(context, state, x_binding_introduced, x_binding_first, x_binding_second)
 
 
 @Predication(vocabulary, library="system", names=["card"])
-def card_cex(state, c_count, e_introduced_binding, x_target_binding):
+def card_cex(context, state, c_count, e_introduced_binding, x_target_binding):
     if c_count.isnumeric():
         yield state.set_variable_data(x_target_binding.variable.name,
-                                      determiner=VariableCriteria(execution_context().current_predication(),
+                                      determiner=VariableCriteria(context.current_predication(),
                                                                   x_target_binding.variable.name,
                                                                   min_size=int(c_count),
                                                                   max_size=int(c_count)))
@@ -259,7 +259,7 @@ def card_cex(state, c_count, e_introduced_binding, x_target_binding):
 
 # This version of card() is used to mean "the number x, on its own" and not "x of something"
 @Predication(vocabulary, library="system", names=["card"])
-def card_cxi(state, c_count, x_binding, i_binding):
+def card_cxi(context, state, c_count, x_binding, i_binding):
     def bound_variable(value):
         if value == c_value:
             return True
@@ -291,7 +291,7 @@ def generate_not_error(unscoped_referenced_variables):
 
 
 @Predication(vocabulary, library="system", names=["neg"])
-def neg(state, e_introduced_binding, h_scopal):
+def neg(context, state, e_introduced_binding, h_scopal):
     # Gather all the bound x variables and their values that are referenced in h_scopal
     referenced_x_variables = gather_referenced_x_variables_from_tree(h_scopal)
     combinatorial_referenced_x_values = {}
@@ -301,7 +301,7 @@ def neg(state, e_introduced_binding, h_scopal):
             combinatorial_referenced_x_values[variable_name] = binding.value
 
     # Record all the variables this neg() has scope over so we can add it as an event later
-    scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], execution_context().current_predication_index())
+    scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], context.current_predication_index())
 
     # Referenced variables that are not scoped in h_scopal
     unscoped_referenced_variables = []
@@ -309,7 +309,7 @@ def neg(state, e_introduced_binding, h_scopal):
         if referenced_x_variable in unscoped_variables:
             unscoped_referenced_variables.append(referenced_x_variable)
 
-    negated_predication_info = NegatedPredication(execution_context().current_predication(), scoped_variables)
+    negated_predication_info = NegatedPredication(context.current_predication(), scoped_variables)
 
     # If a state makes h_scopal True, this predication fails since it is neg(). That part is straightforward.
     # However, we need to return the neg() success states too. neg() succeeds when h_scopal fails, but the problem is that
@@ -335,13 +335,13 @@ def neg(state, e_introduced_binding, h_scopal):
                 # Use resolve_fragment to run numeric criteria on the "not" clause. So that a phrase like
                 # "which files not in this folder are not large?" would work
                 had_negative_success = False
-                for temp in execution_context().resolve_fragment_new(combination_state, h_scopal):
+                for temp in context.resolve_fragment_new(combination_state, h_scopal):
                     # This is true, don't yield it since neg() makes it False
                     generate_not_error(unscoped_referenced_variables)
                     had_negative_success = True
                     break
 
-                if execution_context().has_not_understood_error():
+                if context.has_not_understood_error():
                     # this was not a logical failure, we simply didn't understand
                     return
 
@@ -349,16 +349,16 @@ def neg(state, e_introduced_binding, h_scopal):
                     # There were no solutions for this combination_state, so it is false, and thus true
                     # Record that this was a negative success for debugging purposes
                     combination_state = combination_state.add_to_e("negated_predications",
-                                                                   execution_context().current_predication_index(),
+                                                                   context.current_predication_index(),
                                                                    negated_predication_info)
-                    yield combination_state.add_to_e("negated_successes", execution_context().current_predication_index(), True)
+                    yield combination_state.add_to_e("negated_successes", context.current_predication_index(), True)
 
     else:
         def state_generator():
             # Use negated_predications_state so the solution group processor knows
             # this should be negated later when it runs
             negated_predications_state = state.add_to_e("negated_predications",
-                                                        execution_context().current_predication_index(),
+                                                        context.current_predication_index(),
                                                         negated_predication_info)
             for combination_state in all_combinations_of_states(negated_predications_state, combinatorial_referenced_x_values):
                 # No scoped variables, just run it directly
@@ -368,14 +368,14 @@ def neg(state, e_introduced_binding, h_scopal):
                     generate_not_error(unscoped_referenced_variables)
                     had_negative_success = True
 
-                if execution_context().has_not_understood_error():
+                if context.has_not_understood_error():
                     # this was not a logical failure, we simply didn't understand
                     return
 
                 if not had_negative_success:
                     # There were no solutions for this combination_state, so it is false, and thus true
                     # Record that this was a negative success for debugging purposes
-                    yield combination_state.add_to_e("negated_successes", execution_context().current_predication_index(), True)
+                    yield combination_state.add_to_e("negated_successes", context.current_predication_index(), True)
 
     yield from state_generator()
 

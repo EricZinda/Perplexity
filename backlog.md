@@ -2,8 +2,6 @@
 - Rewrite issues:
   - Example29: Files are not large -> crash
     - Things like self._interpretation get overwritten with a fragment
-    - 
-  
     - we need to "push a tree on the stack"
       - Including 
     - We need a way to find the solution groups for a particular tree that can be called reentrantly
@@ -15,8 +13,12 @@
   - It needs to encapsulate all the logic for interpretations, disjunctions, solution groups, properly returning errors, etc
   - Implementation
     - (done) Phase 1: break out the code in user_interface that builds tree_records so they can be used elsewhere
-    - Phase 2: context needs to be passed to every predication. It simply does not work with generators properly
+    - (done) Phase 2: context needs to be passed to every predication. It simply does not work with generators properly
       - If something yields there is no way to set up contextvars to properly be set again later
+      - FAIL: 1 file is in a folder together: succeeds now, but shouldn't
+        - should be: There is more than a folder together
+        - Stuff in vocabulary depends on argument order
+    - Phase 3: remove execution_context() and fix up the more complicated cases
       - Test baseline before changes: all ESL tests pass, all filesystem tests pass except: "not", and tutorial stops when normalize asserts
     - Phase 2: Update resolve_fragment to use the new shared code
     - 
