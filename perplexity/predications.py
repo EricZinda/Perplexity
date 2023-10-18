@@ -3,7 +3,6 @@ import enum
 import inspect
 import itertools
 from math import inf
-from perplexity.execution import get_variable_metadata, execution_context
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.tree import find_quantifier_from_variable, TreePredication
@@ -310,8 +309,8 @@ class VariableDescriptor(object):
         return self.individual == VariableStyle.semantic and \
                (self.group == VariableStyle.ignored or self.group == VariableStyle.unsupported)
 
-    def combinatoric_size(self, binding):
-        binding_metadata = get_variable_metadata(binding.variable.name)
+    def combinatoric_size(self, context, binding):
+        binding_metadata = context.get_variable_metadata(binding.variable.name)
         individual_consumed = binding_metadata["ValueSize"] == ValueSize.exactly_one or binding_metadata["ValueSize"] == ValueSize.all
         combinatorial_exactly_one = self.individual == VariableStyle.semantic or \
                                     (self.individual == VariableStyle.ignored and individual_consumed)
@@ -366,7 +365,7 @@ def predication_1(context, state, binding, bound_function, unbound_function, bin
         binding_generator = discrete_variable_generator(context,
                                                         binding.value,
                                                         binding.variable.combinatoric,
-                                                        binding_descriptor.combinatoric_size(binding))
+                                                        binding_descriptor.combinatoric_size(context, binding))
 
         for value in binding_generator:
             if bound_function(value):
@@ -476,7 +475,7 @@ def predication_2(context, state, binding1, binding2,
 
     # Build a generator that only generates the discrete values for the binding that are valid for these descriptors,
     # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
-    binding1_generator = discrete_variable_generator(context, binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
+    binding1_generator = discrete_variable_generator(context, binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(context, binding1))
 
     # The binding2 generator needs to be a function because it can be iterated over multiple times
     # and needs a way to reset
@@ -484,7 +483,7 @@ def predication_2(context, state, binding1, binding2,
     def binding2_generator_creator_combinatoric():
         return discrete_variable_generator(context,
                                            binding2.value, binding2.variable.combinatoric,
-                                           binding2_descriptor.combinatoric_size(binding2))
+                                           binding2_descriptor.combinatoric_size(context, binding2))
 
     binding2_generator_reset = binding2_generator_creator_combinatoric
 
@@ -510,7 +509,7 @@ def predication_2(context, state, binding1, binding2,
         unbound_predication_function = binding1_unbound_predication_function if binding1.value is None else binding2_unbound_predication_function
         unbound_binding = binding1 if binding1.value is None else binding2
         unbound_binding_descriptor = binding1_descriptor if binding1.value is None else binding2_descriptor
-        unbound_binding_variable_size = unbound_binding_descriptor.combinatoric_size(binding1) if binding1.value is None else unbound_binding_descriptor.combinatoric_size(binding2)
+        unbound_binding_variable_size = unbound_binding_descriptor.combinatoric_size(context, binding1) if binding1.value is None else unbound_binding_descriptor.combinatoric_size(context, binding2)
 
         # This is a "what is in X" type question, that's why it is unbound
         # This could be something like in([mary, john], X) (where mary and john are *together* in someplace)

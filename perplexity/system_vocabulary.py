@@ -2,7 +2,6 @@ import copy
 import logging
 import numbers
 import perplexity.predications
-from perplexity.execution import set_variable_execution_data
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, \
     in_style_predication_2
@@ -48,7 +47,7 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig,
 
         for alternative_state in alternative_states:
             rstr_values.extend(alternative_state.get_binding(variable_name).value)
-            set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
+            context.set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
             for body_solution in context.call(alternative_state, h_body):
                 yield body_solution
 

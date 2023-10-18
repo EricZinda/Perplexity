@@ -2,11 +2,9 @@ import copy
 import json
 import numbers
 import esl.esl_planner
-from perplexity.execution import execution_context
 from perplexity.predications import is_referring_expr, ReferringExpr, referring_expr_from_lemma, is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.state import State
-from perplexity.tree import TreePredication
 from perplexity.utilities import at_least_one_generator
 
 

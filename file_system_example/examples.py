@@ -2,8 +2,8 @@ from file_system_example.messages import error_priority, generate_message
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
 from file_system_example.vocabulary import vocabulary, in_scope_initialize, in_scope
-from perplexity.execution import ExecutionContext, execution_context
-from perplexity.generation import english_for_delphin_variable_impl, english_for_delphin_variable
+from perplexity.execution import ExecutionContext
+from perplexity.generation import english_for_delphin_variable
 from perplexity.messages import respond_to_mrs_tree
 from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.tree import TreePredication
@@ -988,16 +988,14 @@ if __name__ == '__main__':
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
-    with ExecutionContext(vocabulary):
-        execution_context()._phrase_type = "prop"
-        # Example1()
-        # Example2()
-        # Example3()
-        # Example4()
-        # Example5()
-        # Example5_1()
-        # Example5_2()
-        # Example6()
+    # Example1()
+    # Example2()
+    # Example3()
+    # Example4()
+    # Example5()
+    # Example5_1()
+    # Example5_2()
+    # Example6()
     # Example6a()
     # Example6b()
     #     Example7()

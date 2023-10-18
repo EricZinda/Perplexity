@@ -1,4 +1,3 @@
-import contextvars
 import copy
 import logging
 import queue
@@ -149,21 +148,20 @@ class TreeSolver(object):
                 tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=current_tree_index)
 
                 # solution_groups() should return an iterator that iterates *groups*
-                with context:
-                    tree_record["SolutionGroupGenerator"] = at_least_one_generator(
-                        perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
+                tree_record["SolutionGroupGenerator"] = at_least_one_generator(
+                    perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force, wh_phrase_variable, tree_info))
 
-                    # Collect any error that might have occurred from the first solution group
-                    tree_record["Error"] = context.error()
-                    if message_function is not None and response_function is not None:
-                        tree_record["ResponseGenerator"] = at_least_one_generator(
-                            response_function(message_function, tree_info, tree_record["SolutionGroupGenerator"],
-                                              tree_record["Error"]))
-                    else:
-                        tree_record["ResponseGenerator"] = None
+                # Collect any error that might have occurred from the first solution group
+                tree_record["Error"] = context.error()
+                if message_function is not None and response_function is not None:
+                    tree_record["ResponseGenerator"] = at_least_one_generator(
+                        response_function(message_function, tree_info, tree_record["SolutionGroupGenerator"],
+                                          tree_record["Error"]))
+                else:
+                    tree_record["ResponseGenerator"] = None
 
-                    tree_record["TreeIndex"] = current_tree_index
-                    yield tree_record
+                tree_record["TreeIndex"] = current_tree_index
+                yield tree_record
 
             current_tree_index += 1
 
@@ -188,14 +186,6 @@ class ExecutionContext(object):
         self._in_scope_initialize_function = None
         self._in_scope_initialize_data = None
         self._in_scope_function = None
-
-    def __enter__(self):
-        self.old_context_token = set_execution_context(self)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.old_context_token is not None:
-            reset_execution_context(self.old_context_token)
-            self.old_context_token = None
 
     def resolve_fragment_new(self, state, tree_node):
         pipeline_logger.debug(f"Solving fragment: {tree_node}")
@@ -531,41 +521,6 @@ class ExecutionContext(object):
     def get_variable_metadata(self, variable_name):
         # TODO: This is a hack to enable metadata for eval(). Need to fix it
         return self._variable_metadata.get(variable_name, {"ValueSize": ValueSize.all})
-
-
-# ContextVars is a thread-safe way to set the execution context
-# used by the predications
-_execution_context = contextvars.ContextVar('Execution Context')
-
-
-# Returns a token that can be used by
-# reset_execution_context to reset to what it was
-# before
-def set_execution_context(new_context):
-    global _execution_context
-    return _execution_context.set(new_context)
-
-
-# Get the token from set_execution_context
-def reset_execution_context(old_context_token):
-    global _execution_context
-    return _execution_context.reset(old_context_token)
-
-
-def execution_context():
-    return _execution_context.get()
-
-
-def set_variable_execution_data(variable_name, key, value):
-    execution_context().set_variable_execution_data(variable_name, key, value)
-
-
-def get_variable_execution_data(variable_name):
-    return execution_context().get_variable_execution_data(variable_name)
-
-
-def get_variable_metadata(variable_name):
-    return execution_context().get_variable_metadata(variable_name)
 
 
 logger = logging.getLogger('Execution')

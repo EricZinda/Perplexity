@@ -27,7 +27,7 @@
       - (fixed) Remove in_scope() references
       - (fixed) report_error()
       - (done) Remove execution_context()
-    - quit setting execution context at all
+    - (fixed) quit setting execution context at all
     - Phase 2: Update resolve_fragment to use the new shared code
     - 
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
