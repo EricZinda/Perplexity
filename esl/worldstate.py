@@ -2,7 +2,7 @@ import copy
 import json
 import numbers
 import esl.esl_planner
-from perplexity.execution import report_error, execution_context
+from perplexity.execution import execution_context
 from perplexity.predications import is_referring_expr, ReferringExpr, referring_expr_from_lemma, is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.state import State
@@ -216,15 +216,15 @@ def location_of_type(state, who, where_type):
     return False
 
 
-def count_of_instances_and_concepts(state, concepts_original):
+def count_of_instances_and_concepts(context, state, concepts_original):
     concepts = copy.copy(concepts_original)
     for concept in concepts_original:
-        concepts += concept.concepts(state)
+        concepts += concept.concepts(context, state)
     concept_count = len(concepts)
 
     instances = []
     for concept in concepts:
-        instances += list(concept.instances(state))
+        instances += list(concept.instances(context, state))
     instance_count = len(instances)
 
     scope_data = in_scope_initialize(state)
@@ -256,8 +256,8 @@ def serial_store_to_object(state, s_list):
     return [store_to_object(state, s) for s in s_list]
 
 
-def find_unused_instances_from_concept(state, concept):
-    for instance in concept.instances(state):
+def find_unused_instances_from_concept(context, state, concept):
+    for instance in concept.instances(context, state):
         taken = at_least_one_generator(rel_subjects(state, "have", instance))
         if taken is None:
             yield instance
@@ -431,12 +431,12 @@ class ESLConcept(Concept):
             return c
 
     # return any instances that meet all the criteria in self.criteria
-    def instances(self, state, potential_instances=None):
-        return self._meets_criteria(state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria, initial_instances=potential_instances)
+    def instances(self, context, state, potential_instances=None):
+        return self._meets_criteria(context, state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria, initial_instances=potential_instances)
 
-    def concepts(self, state, potential_concepts=None):
+    def concepts(self, context, state, potential_concepts=None):
         # get the actual identifiers of all concepts that meet all the criteria
-        raw_concepts = self._meets_criteria(state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria, initial_instances=potential_concepts)
+        raw_concepts = self._meets_criteria(context, state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria, initial_instances=potential_concepts)
 
         # ... and return them wrapped in a Concept() with the same criteria
         return [self._replace_concept_name(x) for x in raw_concepts]
@@ -446,7 +446,7 @@ class ESLConcept(Concept):
         new_concept.concept_name = new_concept_name
         return new_concept
 
-    def _meets_criteria(self, state, final_criteria, initial_instances=None):
+    def _meets_criteria(self, context, state, final_criteria, initial_instances=None):
         found_cumulative = None if initial_instances is None else initial_instances
         for current_criteria in final_criteria:
             found = []
@@ -462,7 +462,7 @@ class ESLConcept(Concept):
             # Since the concept generated might be different than what the user said,
             # For example, "table for my son" is interpreted as "table for 1", we need
             # to generate an error that is specific to the *concept*
-            report_error(["conceptNotFound", self], force=True)
+            context.report_error(["conceptNotFound", self], force=True)
 
         return found_cumulative
 
@@ -836,7 +836,7 @@ class WorldState(State):
             toReturn += [AddRelOp(("user", "ordered", i)), AddBillOp(i)]
         return toReturn
 
-    def user_wants_group(self, users, wanted):
+    def user_wants_group(self, context, users, wanted):
         allTables = True  # if multiple actors (son and user) want table, we don't need two tables
         allMenus = True
         allTableRequests = True
@@ -852,14 +852,14 @@ class WorldState(State):
                 if not json.loads(i.value[0])["structure"] == "noun_for":
                     allTableRequests = False
         if allTables:
-            return self.handle_world_event(["user_wants", "table1"])
+            return self.handle_world_event(context, ["user_wants", "table1"])
         if allMenus:
-            return self.handle_world_event(["user_wants", "menu1"])
+            return self.handle_world_event(context, ["user_wants", "menu1"])
         elif allTableRequests:
-            return self.handle_world_event(["user_wants", wanted[0].value[0]])
+            return self.handle_world_event(context, ["user_wants", wanted[0].value[0]])
         else:
             unpack = lambda x: x.value[0]
-            return self.handle_world_event(["user_wants_multiple", [unpack(j) for j in wanted]])
+            return self.handle_world_event(context, ["user_wants_multiple", [unpack(j) for j in wanted]])
 
     def user_wants_to_see(self, wanted):
         if wanted == "menu1":
@@ -869,19 +869,19 @@ class WorldState(State):
         else:
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
-    def user_wants_to_see_group(self, actor_list, wanted_list):
+    def user_wants_to_see_group(self, context, actor_list, wanted_list):
         all_menu = True
         for i in wanted_list:
             if not sort_of(self, i.value[0], "menu"):
                 all_menu = False
                 break
         if all_menu:
-            return self.handle_world_event(["user_wants", "menu1"])
+            return self.handle_world_event(context, ["user_wants", "menu1"])
         else:
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
-    def no(self):
-        return self.find_plan([('complete_order',)])
+    def no(self, context):
+        return self.find_plan([('complete_order', context)])
 
     def yes(self):
         if self.sys["responseState"] in ["anything_else", "something_to_eat"]:
@@ -891,7 +891,7 @@ class WorldState(State):
 
     # This should always be the answer to a question since it is a partial sentence that generated
     # an unknown() predication in the MRS for the verb
-    def unknown(self, x):
+    def unknown(self, context, x):
         concept_name = None
         if is_concept(x):
             concept_name = x.concept_name
@@ -907,7 +907,7 @@ class WorldState(State):
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
             if concept_name is not None:
                 if concept_name in self.get_entities():
-                    return self.handle_world_event(["user_wants", x])
+                    return self.handle_world_event(context, ["user_wants", x])
                 else:
                     return [RespondOperation("Sorry, we don't have that" + self.get_reprompt())]
             else:
@@ -919,9 +919,9 @@ class WorldState(State):
                 table_concept = table_concept.add_criteria(rel_subjects, "maxCapacity", x)
                 actors = [("user",)]
                 whats = [(table_concept,)]
-                return self.find_plan([('satisfy_want', actors, whats, 1)])
+                return self.find_plan([('satisfy_want', context, actors, whats, 1)])
 
-        report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
+        context.report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 
     def find_plan(self, tasks):
         current_state = esl.esl_planner.do_task(self.world_state_frame(), tasks)
@@ -930,21 +930,21 @@ class WorldState(State):
         else:
             return [RespondOperation("I'm not sure what to do about that." + self.get_reprompt())]
 
-    def handle_world_event(self, args):
+    def handle_world_event(self, context, args):
         if args[0] == "user_wants":
-            return self.find_plan([('satisfy_want', [("user",)], [(args[1],)], 1)])
+            return self.find_plan([('satisfy_want', context, [("user",)], [(args[1],)], 1)])
         elif args[0] == "user_wants_to_see":
             return self.user_wants_to_see(args[1])
         elif args[0] == "user_wants_multiple":
             return self.user_wants_multiple(args[1])
         elif args[0] == "no":
-            return self.no()
+            return self.no(context)
         elif args[0] == "yes":
             return self.yes()
         elif args[0] == "unknown":
             # User said something that wasn't a full sentence that generated an
             # unknown() predication
-            return self.unknown(args[1])
+            return self.unknown(context, args[1])
         elif args[0] == "user_wants_to_sit":
             return self.user_wants("table1")
         elif args[0] == "user_wants_to_sit_group":
@@ -952,8 +952,8 @@ class WorldState(State):
         elif args[0] == "user_wants_group":
             who_list = [binding.value for binding in args[1].solution_values]
             what_list = [binding.value for binding in args[2].solution_values]
-            return self.find_plan([('satisfy_want', who_list, what_list)])
+            return self.find_plan([('satisfy_want', context, who_list, what_list)])
 
-            return self.user_wants_group(args[1], args[2])
+            return self.user_wants_group(context, args[1], args[2])
         elif args[0] == "user_wants_to_see_group":
-            return self.user_wants_to_see_group(args[1], args[2])
+            return self.user_wants_to_see_group(context, args[1], args[2])

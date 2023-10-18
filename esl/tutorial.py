@@ -1,10 +1,7 @@
-import copy
-import numbers
 import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
-from perplexity.execution import report_error, call, execution_context
-from perplexity.generation import english_for_delphin_variable_impl, english_for_delphin_variable
+from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
@@ -12,7 +9,7 @@ from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction
-from perplexity.tree import find_predication_from_introduced, get_wh_question_variable, TreePredication
+from perplexity.tree import find_predication_from_introduced, get_wh_question_variable
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
 from perplexity.vocabulary import Predication, EventOption, Transform, override_predications, ValueSize
@@ -37,7 +34,7 @@ def variable_group_values_to_list(variable_group):
     return [binding.value for binding in variable_group.solution_values]
 
 
-def check_concept_solution_group_constraints(state_list, x_what_variable_group, check_concepts):
+def check_concept_solution_group_constraints(context, state_list, x_what_variable_group, check_concepts):
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
     assert is_concept(x_what_variable_group.solution_values[0].value[0])
@@ -51,8 +48,9 @@ def check_concept_solution_group_constraints(state_list, x_what_variable_group, 
     for value in x_what_values:
         x_what_individuals_set.update(value)
     concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(
-        state_list[0], list(x_what_individuals_set))
-    return concept_meets_constraint(state_list[0].get_binding("tree").value[0],
+        context, state_list[0], list(x_what_individuals_set))
+    return concept_meets_constraint(context,
+                                    state_list[0].get_binding("tree").value[0],
                                     x_what_variable_group.variable_constraints,
                                     concept_count,
                                     concept_in_scope_count,
@@ -269,7 +267,7 @@ def pron(context, state, x_who_binding):
         if person == 1 and is_user_type(value):
             return True
         else:
-            report_error(["dontKnowActor", x_who_binding.variable.name, state.get_reprompt()])
+            context.report_error(["dontKnowActor", x_who_binding.variable.name, state.get_reprompt()])
 
     def unbound_variable():
         if person == 2:
@@ -298,7 +296,7 @@ def generic_entity(context, state, x_binding):
 
 @Predication(vocabulary, names=["_okay_a_1"])
 def _okay_a_1(context, state, i_binding, h_binding):
-    yield from call(state, h_binding)
+    yield from context.call(state, h_binding)
 
 
 @Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.optional)])
@@ -362,13 +360,13 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
             yield None
 
     def x_for_unbound(x_what):
-        report_error(['errorText', "Host: Sorry, I'm not here to explain things to you ...",state.get_reprompt()])
+        context.report_error(['errorText', "Host: Sorry, I'm not here to explain things to you ...",state.get_reprompt()])
         if False:
             yield None
 
     # Make this lift_style so that "for my son and I" gets properly interpreted as "together"
     # at least as an alternative
-    for solution in lift_style_predication_2(state, x_what_binding, x_for_binding,
+    for solution in lift_style_predication_2(context, state, x_what_binding, x_for_binding,
                                              both_bound_function,
                                              x_what_unbound,
                                              x_for_unbound):
@@ -428,7 +426,7 @@ def _credit_n_1(context, state, x_bind):
 @Predication(vocabulary, names=["_tomato_n_1"])
 def _tomato_n_1(context, state, x_bind):
     def bound(val):
-        report_error(["errorText","no declarative tomato",state.get_reprompt()])
+        context.report_error(["errorText","no declarative tomato",state.get_reprompt()])
 
     def unbound():
         yield ReferringExpr("tomato")
@@ -438,7 +436,7 @@ def _tomato_n_1(context, state, x_bind):
 
 @Predication(vocabulary, names=["unknown"])
 def unknown(context, state, e_binding, x_binding):
-    operations = state.handle_world_event(["unknown", x_binding.value[0]])
+    operations = state.handle_world_event(context, ["unknown", x_binding.value[0]])
     if operations is not None:
         yield state.record_operations(operations)
 
@@ -458,12 +456,12 @@ def unknown_eu(context, state, e_binding, u_binding):
 
 @Predication(vocabulary, names=["_yes_a_1", "_yup_a_1", "_sure_a_1", "_yeah_a_1"])
 def _yes_a_1(context, state, i_binding, h_binding):
-    yield state.record_operations(state.handle_world_event(["yes"]))
+    yield state.record_operations(state.handle_world_event(context, ["yes"]))
 
 
 @Predication(vocabulary, names=["_no_a_1", "_nope_a_1"])
 def _no_a_1(context, state, i_binding, h_binding):
-    yield state.record_operations(state.handle_world_event(["no"]))
+    yield state.record_operations(state.handle_world_event(context, ["no"]))
 
 
 @Predication(vocabulary, names=["person"])
@@ -484,7 +482,7 @@ def match_all_n(noun_type, context, state, x_binding):
         if sort_of(state, value, noun_type):
             return True
         else:
-            report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
             return False
 
     def unbound_variable_instances():
@@ -515,7 +513,7 @@ def match_all_the_concept_n(noun_type, context, state, x_binding):
         if sort_of(state, value, noun_type):
             return True
         else:
-            report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
             return False
 
     def unbound_variable_instances():
@@ -546,7 +544,7 @@ def the_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 max_size=float('inf'),
                                                                 global_criteria=GlobalCriteria.all_rstr_meet_criteria))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary, names=["_vegetarian_a_1"])
@@ -556,7 +554,7 @@ def _vegetarian_a_1(context, state, e_introduced_binding, x_target_binding):
         if value in serial_store_to_object(state,veg):
             return True
         else:
-            report_error(["not_adj","vegetarian",state.get_reprompt()])
+            context.report_error(["not_adj","vegetarian",state.get_reprompt()])
             return False
 
     def unbound_values():
@@ -578,7 +576,7 @@ class PastParticiple:
             if (object_to_store(value), self.lemma) in state.all_rel("isAdj"):
                 return True
             else:
-                report_error(["not_adj", self.lemma,state.get_reprompt()])
+                context.report_error(["not_adj", self.lemma,state.get_reprompt()])
                 return False
 
         def unbound():
@@ -617,7 +615,7 @@ def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
         if (item1, item2) in state.all_rel("on"):
             return True
         else:
-            report_error(["notOn", item1, item2, state.get_reprompt()])
+            context.report_error(["notOn", item1, item2, state.get_reprompt()])
 
     def all_item1_on_item2(item2):
         for i in state.all_rel("on"):
@@ -629,7 +627,8 @@ def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
             if i[0] == item1:
                 yield i[1]
 
-    yield from in_style_predication_2(state,
+    yield from in_style_predication_2(context,
+                                      state,
                                       x_actor_binding,
                                       x_location_binding,
                                       check_item_on_item,
@@ -645,13 +644,13 @@ def _with_p(context, state, e_introduced_binding, e_main, x_binding):
 @Predication(vocabulary, names=["_pay_v_for","_pay_v_for_able","_pay_v_for_request"], handles=[("With", EventOption.optional)])
 def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
-        yield do_task(state, [("respond", "It's not time to pay yet.")])
+        yield do_task(state, [("respond", context, "It's not time to pay yet.")])
         return
     if not e_introduced_binding.value["With"] in ["cash","card"]:
-        yield do_task(state,[("respond","You can't pay with that.")])
+        yield do_task(state,[("respond", context, "You can't pay with that.")])
         return
 
-    yield state.record_operations(state.handle_world_event(["unknown", e_introduced_binding.value["With"]]))
+    yield state.record_operations(state.handle_world_event(context, ["unknown", e_introduced_binding.value["With"]]))
 
 
 @Predication(vocabulary, names=["_want_v_1"])
@@ -665,7 +664,7 @@ def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
                 return True
 
         else:
-            report_error(["notwant", "want", x_actor, state.get_reprompt()])
+            context.report_error(["notwant", "want", x_actor, state.get_reprompt()])
             return False
 
     def wanters_of_obj(x_object):
@@ -680,7 +679,7 @@ def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
                 if i[0] == x_actor:
                     yield i[1]
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound,
                                       wanters_of_obj, wanted_of_actor)
 
 
@@ -705,7 +704,7 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
         # Because in "I want x", 'x' is always a concept, but the constraint is on the instances
         # (as in "I want a steak" meaning "I want 1 instance of the concept of steak", we tell
         # check_concept_solution_group_constraints to check instances via check_concepts=False
-        if check_concept_solution_group_constraints(state_list, x_what_variable_group, check_concepts=False):
+        if check_concept_solution_group_constraints(context, state_list, x_what_variable_group, check_concepts=False):
             # If there is more than one concept here, they said something like "we want steaks and fries" but doing the magic
             # To figure that out how much of each is too much
             x_what_values = [x.value for x in x_what_variable_group.solution_values]
@@ -713,7 +712,7 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
             for value in x_what_values:
                 x_what_individuals_set.update(value)
             if len(x_what_individuals_set) > 1:
-                report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True)
+                context.report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True)
                 yield []
                 return
 
@@ -727,7 +726,7 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
             # first_x_what_binding_value = first_x_what_binding_value.add_modifier(TreePredication(0, "card", args, arg_names=["CARG", "ARG0", "ARG1"]))
             actor_values = [x.value for x in x_actor_variable_group.solution_values]
             current_state = do_task(current_state.world_state_frame(),
-                                    [('satisfy_want', actor_values, [(first_x_what_binding_value,)], min_from_variable_group(x_what_variable_group))])
+                                    [('satisfy_want', context, actor_values, [(first_x_what_binding_value,)], min_from_variable_group(x_what_variable_group))])
             if current_state is None:
                 yield []
             else:
@@ -756,7 +755,7 @@ def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_b
 @Predication(vocabulary, names=["solution_group__check_v_1"])
 def _check_v_1_group(context, state_list, has_more, e_introduced_binding, x_actor_binding, i_object_binding):
     current_state = copy.deepcopy(state_list[0])
-    final_state = do_task(current_state.world_state_frame(), [('get_bill',)])
+    final_state = do_task(current_state.world_state_frame(), [('get_bill', context)])
     if final_state is None:
         yield []
     else:
@@ -769,7 +768,7 @@ def _give_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
         if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
             if not state.get_binding(x_object_binding.variable.name).value[0] is None:
                 yield state.record_operations(
-                    state.handle_world_event(
+                    state.handle_world_event(context,
                         ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
 
 
@@ -780,7 +779,7 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
     if is_concept(x_actor_binding) or is_concept(x_to_actor_binding):
         return
     if not is_computer_type(x_actor_binding.value):
-        report_error(["dontKnowHow"])
+        context.report_error(["dontKnowHow"])
         return
 
     def bound(x_actor, x_object):
@@ -791,9 +790,9 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
                 return True
 
             else:
-                report_error(["errorText", "Sorry, I can't show you that"])
+                context.report_error(["errorText", "Sorry, I can't show you that"])
         else:
-            report_error(["dontKnowHow"])
+            context.report_error(["dontKnowHow"])
             return
 
     def wanters_of_obj(x_object):
@@ -803,7 +802,7 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
     def wanted_of_actor(x_actor):
         return
 
-    yield from in_style_predication_2(state, x_to_actor_binding, x_target_binding, bound,
+    yield from in_style_predication_2(context, state, x_to_actor_binding, x_target_binding, bound,
                                       wanters_of_obj, wanted_of_actor)
 
 
@@ -811,14 +810,14 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
 def _show_v_cause_group(context, state_list, has_more, e_introduced_binding, x_actor_variable_group, x_target_variable_group, x_to_actor_variable_group):
     # Only need to check constraints on x_target_variable_group since it is the only variable that is a concept
     # The player is asking to be shown *instances* so check_concepts = False
-    if not check_concept_solution_group_constraints(state_list, x_target_variable_group, check_concepts=False):
+    if not check_concept_solution_group_constraints(context, state_list, x_target_variable_group, check_concepts=False):
         yield []
         return
 
     to_actor_list = variable_group_values_to_list(x_to_actor_variable_group)
     show_list = variable_group_values_to_list(x_target_variable_group)
     current_state = do_task(state_list[0].world_state_frame(),
-                            [('satisfy_want', to_actor_list, show_list, min_from_variable_group(x_target_variable_group))])
+                            [('satisfy_want', context, to_actor_list, show_list, min_from_variable_group(x_target_variable_group))])
     if current_state is None:
         yield []
 
@@ -841,14 +840,14 @@ def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_objec
     def wanted_of_actor(x_actor):
         return
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound,
                                       wanters_of_obj, wanted_of_actor)
 
 
 @Predication(vocabulary, names=["solution_group__seat_v_cause", "solution_group__seat_v_cause_able"])
 def _seat_v_cause_group(context, state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     new_state = do_task(state_list[0].world_state_frame(),
-                        [('satisfy_want', variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
+                        [('satisfy_want', context, variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
     if new_state is None:
         yield []
     else:
@@ -875,7 +874,7 @@ def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_loc_bindi
             if i[1] == item1:
                 yield i[0]
 
-    yield from in_style_predication_2(state, x_actor_binding, x_loc_binding, item1_in_item2, items_in_item1,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_loc_binding, item1_in_item2, items_in_item1,
                                       item1_in_items)
 
 
@@ -890,7 +889,7 @@ def _today_a_1(context, state, e_introduced_binding, x_binding):
         if value in ["today"]:
             return True
         else:
-            report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
             return False
 
     def unbound_variable():
@@ -905,7 +904,7 @@ def time_n(context, state, x_binding):
         if value in ["today", "yesterday", "tomorrow"]:
             return True
         else:
-            report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
             return False
 
     def unbound_variable():
@@ -924,7 +923,7 @@ def def_implicit_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 min_size=1,
                                                                 max_size=float('inf')))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary, names=["_like_v_1"])
@@ -932,7 +931,7 @@ def _like_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
     if is_user_type(state.get_binding(x_actor_binding.variable.name).value[0]):
         if not state.get_binding(x_object_binding.variable.name).value[0] is None:
             yield state.record_operations(
-                state.handle_world_event(["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
+                state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
     else:
         yield state
 
@@ -959,7 +958,7 @@ def polite(context, state, c_arg, i_binding, e_binding):
 
 @Predication(vocabulary, names=["_thanks_a_1", "_then_a_1"])
 def _thanks_a_1(context, state, i_binding, h_binding):
-    yield from call(state, h_binding)
+    yield from context.call(state, h_binding)
 
 
 # Scenarios:
@@ -974,7 +973,7 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
         return
     if is_question(tree_info):
         # None of the future tense questions are valid english in this scenario
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         return
 
     def bound(x_actor):
@@ -982,7 +981,7 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
             return True
 
         else:
-            report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected", state.get_reprompt()])
             return
 
     def unbound():
@@ -995,7 +994,7 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
 @Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])
 def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_variable_group):
     # The planner will only satisfy a want wrt the players
-    task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
+    task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
@@ -1009,7 +1008,7 @@ def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_vari
 @Predication(vocabulary, names=["_sit_v_down", "_sit_v_1"])
 def invalid_present_intransitive(context, state, e_introduced_binding, x_actor_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
-    report_error(["unexpected",state.get_reprompt()])
+    context.report_error(["unexpected",state.get_reprompt()])
     if False: yield None
 
 
@@ -1025,11 +1024,11 @@ def invalid_present_intransitive(context, state, e_introduced_binding, x_actor_b
 def _sit_v_down_able(context, state, e_binding, x_actor_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_present_tense(tree_info):
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         return
 
     if not is_question(tree_info):
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         return
 
     if is_concept(x_actor_binding):
@@ -1039,7 +1038,7 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
         if is_user_type(x_actor):
             return True
         else:
-            report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected", state.get_reprompt()])
             return
 
     def unbound():
@@ -1058,7 +1057,7 @@ def _sit_v_down_request(context, state, e_binding, x_actor_binding):
             return True
 
         else:
-            report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected", state.get_reprompt()])
             return
 
     def unbound():
@@ -1076,7 +1075,7 @@ def _sit_v_down_able_group(context, state_list, has_more, e_introduced_binding_l
 
     else:
         # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
+        task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -1090,7 +1089,7 @@ def _sit_v_down_able_group(context, state_list, has_more, e_introduced_binding_l
 def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_question(tree_info):
-        report_error(["unexpected",state.get_reprompt()])
+        context.report_error(["unexpected",state.get_reprompt()])
         return
 
     def both_bound_prediction_function(x_actor, x_object):
@@ -1098,26 +1097,26 @@ def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_objec
             if valid_player_request(state, [x_object], valid_types=["menu"]):
                 return True
             else:
-                report_error(["unexpected",state.get_reprompt()])
+                context.report_error(["unexpected",state.get_reprompt()])
                 return False
 
         else:
             # Anything about "you/they will have" is not good english
-            report_error(["unexpected",state.get_reprompt()])
+            context.report_error(["unexpected",state.get_reprompt()])
             return False
 
     def actor_unbound(x_object):
         # Anything about "what will x have
-        report_error(["unexpected",state.get_reprompt()])
+        context.report_error(["unexpected",state.get_reprompt()])
         if False:
             yield None
 
     def object_unbound(x_actor):
-        report_error(["unexpected",state.get_reprompt()])
+        context.report_error(["unexpected",state.get_reprompt()])
         if False:
             yield None
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
                                       both_bound_prediction_function,
                                       actor_unbound,
                                       object_unbound)
@@ -1128,6 +1127,7 @@ def _see_v_1_able_group(context, state_list, has_more, e_list, x_actor_variable_
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
+            context,
             variable_group_values_to_list(x_actor_variable_group),
             variable_group_values_to_list(x_object_variable_group),
             min_from_variable_group(x_object_variable_group))
@@ -1148,7 +1148,7 @@ def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_obj
     if not is_future_tense(tree_info): return
     if is_question(tree_info):
         # None of the future tense questions are valid english in this scenario
-        report_error(["unexpected",state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         return
 
     def both_bound_prediction_function(x_actor, x_object):
@@ -1156,26 +1156,26 @@ def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_obj
             if valid_player_request(state, [x_object], valid_types=["menu"]):
                 return True
             else:
-                report_error(["unexpected",state.get_reprompt()])
+                context.report_error(["unexpected",state.get_reprompt()])
                 return False
 
         else:
             # Anything about "you/they will have" is not good english
-            report_error(["unexpected",state.get_reprompt()])
+            context.report_error(["unexpected",state.get_reprompt()])
             return False
 
     def actor_unbound(x_object):
         # Anything about "what will x have
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         if False:
             yield None
 
     def object_unbound(x_actor):
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         if False:
             yield None
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
                                       both_bound_prediction_function,
                                       actor_unbound,
                                       object_unbound)
@@ -1189,6 +1189,7 @@ def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variabl
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
+            context,
             variable_group_values_to_list(x_actor_variable_group),
             variable_group_values_to_list(x_object_variable_group),
             min_from_variable_group(x_object_variable_group))
@@ -1204,7 +1205,7 @@ def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variabl
 # All are poor english
 @Predication(vocabulary, names=["_take_v_1_able"])
 def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected", state.get_reprompt()])
     if False: yield None
 
 
@@ -1217,7 +1218,7 @@ def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
 @Predication(vocabulary, names=["_get_v_1", "_take_v_1", "_see_v_1"])
 def invalid_present_transitive(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]): return
-    report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected", state.get_reprompt()])
     if False: yield None
 
 
@@ -1235,7 +1236,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             if o == x_object:
                 return True
 
-        report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, state.get_reprompt()])
+        context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):
@@ -1246,7 +1247,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             yield store_to_object(i)
 
         if not found:
-            report_error(["Nothing_VTRANS_X", "order", x_object, state.get_reprompt()])
+            context.report_error(["Nothing_VTRANS_X", "order", x_object, state.get_reprompt()])
 
     def object_from_actor(x_actor):
         # "what did I order?"
@@ -1256,9 +1257,9 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             yield store_to_object(state, i)
 
         if not found:
-            report_error(["X_VTRANS_Nothing", "order", convert_to_english(state, x_actor), state.get_reprompt()])
+            context.report_error(["X_VTRANS_Nothing", "order", convert_to_english(state, x_actor), state.get_reprompt()])
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
 
@@ -1276,7 +1277,7 @@ def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_ob
     if not is_future_tense(tree_info): return
     if is_question(tree_info):
         # None of the future tense questions are valid english in this scenario
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         return
 
     def both_bound_prediction_function(x_actors, x_objects):
@@ -1284,21 +1285,21 @@ def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_ob
             return valid_player_request(state, x_objects)
         else:
             # Anything about "you/they will have" is not good english
-            report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected", state.get_reprompt()])
             return False
 
     def actor_unbound(x_object):
         # Anything about "what will x have
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         if False:
             yield None
 
     def object_unbound(x_actor):
-        report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         if False:
             yield None
 
-    yield from lift_style_predication_2(state, x_actor_binding, x_object_binding,
+    yield from lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
                                         actor_unbound,
                                         object_unbound)
@@ -1312,6 +1313,7 @@ def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_ac
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
+            context,
             variable_group_values_to_list(x_actor_variable_group),
             variable_group_values_to_list(x_object_variable_group),
             min_from_variable_group(x_object_variable_group))
@@ -1344,7 +1346,7 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
                 # or just answer the question, as long as we do have it
                 return rel_check(state, x_actor, "have", x_object.concept_name)
 
-        report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state, x_object), state.get_reprompt()])
+        context.report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state, x_object), state.get_reprompt()])
         return False
 
     def actor_from_object(x_object):
@@ -1354,7 +1356,7 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
             yield store_to_object(state, i)
 
         if not found:
-            report_error(["Nothing_VTRANS_X", "have", x_object, state.get_reprompt()])
+            context.report_error(["Nothing_VTRANS_X", "have", x_object, state.get_reprompt()])
 
     def object_from_actor(x_actor):
         found = False
@@ -1363,9 +1365,9 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
             yield store_to_object(state, i)
 
         if not found:
-            report_error(["X_VTRANS_Nothing", "have", convert_to_english(state, x_actor), state.get_reprompt()])
+            context.report_error(["X_VTRANS_Nothing", "have", convert_to_english(state, x_actor), state.get_reprompt()])
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
 
@@ -1406,7 +1408,7 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
             # Deal with the user saying "do you have x and y *together*"
             x_obj_value = x_obj_list.solution_values[solution_index].value
             if len(x_obj_value) > 1:
-                report_error(["errorText", "One thing at a time, please!", state_list[solution_index].get_reprompt()], force=True)
+                context.report_error(["errorText", "One thing at a time, please!", state_list[solution_index].get_reprompt()], force=True)
                 yield []
                 return
 
@@ -1421,7 +1423,7 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
                 # "Can I have a table/menu/bill?" is really about the instances
                 # thus check_concepts=False
                 # Fail this group if we don't meet the constraints
-                if not check_concept_solution_group_constraints(state_list, x_obj_list, check_concepts=False):
+                if not check_concept_solution_group_constraints(context, state_list, x_obj_list, check_concepts=False):
                     yield []
                     return
 
@@ -1429,7 +1431,7 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
                 # that mean "Can I have a table/menu/bill?"
                 # Note that this is where the concept really gets checked in case they said something like
                 # Do you have a *dirty* menu or something...
-                task = ('satisfy_want', [("user",)], [(x_obj,)], 1)
+                task = ('satisfy_want', context, [("user",)], [(x_obj,)], 1)
                 final_state = do_task(state_list[0].world_state_frame(), [task])
                 if final_state:
                     final_states.append(final_state)
@@ -1483,7 +1485,7 @@ def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
         if is_user_type(x_actor):
             yield (ESLConcept("menu"),)
 
-    yield from lift_style_predication_2(state, x_actor_binding, x_object_binding,
+    yield from lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
                                         actor_unbound,
                                         object_unbound)
@@ -1507,7 +1509,7 @@ def _have_v_1_able_group(context, state_list, has_more, e_variable_group, x_acto
         ((wh_variable and x_object_variable_group.solution_values[0].value[0] == ESLConcept("menu")) or
          not get_wh_question_variable(tree_info)):
         # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))
+        task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
@@ -1523,7 +1525,7 @@ def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding
         if (x_actor, x_object) in state.all_rel("have"):
             return True
         else:
-            report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
+            context.report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
             return False
 
     def actor_from_object(x_object):
@@ -1536,7 +1538,7 @@ def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding
             if i[0] == x_actor:
                 yield i[1]
 
-    yield from in_style_predication_2(state, x_actor_binding, x_object_binding, bound, actor_from_object,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
 
@@ -1568,14 +1570,14 @@ def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_bin
             if first_in_second or second_in_first:
                 return True
             else:
-                report_error(["is_not", convert_to_english(state,x_actor), convert_to_english(state,x_object), state.get_reprompt()])
+                context.report_error(["is_not", convert_to_english(state,x_actor), convert_to_english(state,x_object), state.get_reprompt()])
 
     def unbound(x_object):
         if is_concept(x_object):
-            yield from x_object.instances(state)
-            yield from x_object.concepts(state)
+            yield from x_object.instances(context, state)
+            yield from x_object.concepts(context, state)
 
-    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, unbound,
+    for success_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound, unbound,
                                                 unbound):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
         x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
@@ -1614,7 +1616,7 @@ def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_o
 def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if not isinstance(x_object, Measurement):
-            report_error(["Have not dealt with declarative cost", state.get_reprompt()])
+            context.report_error(["Have not dealt with declarative cost", state.get_reprompt()])
             yield False
 
         else:
@@ -1625,7 +1627,7 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
             if x_object["structure"] == "price_type":
                 if type(x_object["relevant_var_value"]) is int:
                     if not (instance_of_what(state, x_act), x_object["relevant_var_value"]) in state.sys["prices"]:
-                        report_error("WrongPrice")
+                        context.report_error("WrongPrice")
                         return False
             return True
             '''
@@ -1638,7 +1640,7 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
         if is_concept(x_actor):
             # Make sure it is something that is actually in the world
             # by evaluating it to make sure there are instances
-            if len(x_actor.instances(state)) == 0:
+            if len(x_actor.instances(context, state)) == 0:
                 return
 
         concept_item = instance_of_or_concept_name(state, x_actor)
@@ -1647,7 +1649,7 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
         else:
             yield "Ah. It's not for sale."
 
-    for success_state in in_style_predication_2(state, x_actor_binding, x_object_binding, criteria_bound, get_actor,
+    for success_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound, get_actor,
                                                 get_object):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
         x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
@@ -1680,7 +1682,7 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
 @Predication(vocabulary, names=["solution_group__cost_v_1"])
 def _cost_v_1_group(context, state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
     if is_referring_expr(x_act_variable_group.solution_values[0].value[0]):
-        if not check_concept_solution_group_constraints(state_list, x_act_variable_group, check_concepts=True):
+        if not check_concept_solution_group_constraints(context, state_list, x_act_variable_group, check_concepts=True):
             yield []
             return
     yield state_list
@@ -1724,7 +1726,7 @@ def computer_in_state(state):
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
 def wh_question(context, state_list, has_more, binding_list):
-    current_state = do_task(state_list[0].world_state_frame(), [('describe', [x.value for x in binding_list])])
+    current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list])])
     if current_state is not None:
         yield (current_state,)
     else:

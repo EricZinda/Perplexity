@@ -2,13 +2,12 @@ from file_system_example.objects import File, Folder, Megabyte, Actor, QuotedTex
 from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 # from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
 from perplexity.plurals import GlobalCriteria, VariableCriteria
-from perplexity.execution import report_error, execution_context
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, in_style_predication_2, \
     individual_style_predication_1, discrete_variable_generator
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
-from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
+from perplexity.system_vocabulary import system_vocabulary
 from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predication
 from perplexity.utilities import sentence_force
 from perplexity.variable_binding import VariableBinding
@@ -44,16 +43,13 @@ def in_scope(initial_data, state, value):
 
     if value in initial_data["ContainedItems"] or value == initial_data["CurrentDirectory"]:
         return True
-    # else:
-    #     report_error(["valueIsNotInScope", value])
-    #     return False
 
 
 @Predication(vocabulary, names=["solution_group__in_p_loc"])
 def in_p_loc_fail(context, state_list, has_more, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None and test_binding.value[0] == "failAll":
-        report_error(["beMoreSpecific"], force=True)
+        context.report_error(["beMoreSpecific"], force=True)
         yield []
 
 
@@ -127,12 +123,12 @@ def card_selector(context, state, c_count, e_introduced_binding, x_target_bindin
 
 # true for both sets and individuals as long as everything
 # in the set is a file
-def folder_n_of(state, x_binding, i_binding):
+def folder_n_of(context, state, x_binding, i_binding):
     def bound_variable(value):
         if isinstance(value, Folder):
             return True
         else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -143,12 +139,12 @@ def folder_n_of(state, x_binding, i_binding):
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
 
 
-def file_n_of(state, x_binding, i_binding):
+def file_n_of(context, state, x_binding, i_binding):
     def bound_variable(value):
         if isinstance(value, File):
             return True
         else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -169,9 +165,9 @@ def handles_noun(state, noun_lemma):
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def noun_n_selector_2(noun_type, context, state, x_binding, i_binding):
     if noun_type == "folder":
-        yield from folder_n_of(state, x_binding, i_binding)
+        yield from folder_n_of(context, state, x_binding, i_binding)
     elif noun_type == "file":
-        yield from file_n_of(state, x_binding, i_binding)
+        yield from file_n_of(context, state, x_binding, i_binding)
     else:
         yield from noun_n_2(noun_type, context, state, x_binding, i_binding)
 
@@ -207,7 +203,7 @@ def megabyte_n_1(context, state, x_binding, u_binding):
         if isinstance(value, Megabyte):
             return True
         else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -223,7 +219,7 @@ def place_n(context, state, x_binding):
         if hasattr(value, "contained_items"):
             return True
         else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -250,7 +246,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* large we should be
     degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
-    if used_predicatively(state):
+    if used_predicatively(context, state):
         # "large" is being used "predicatively" as in "the dogs are large". This needs to force
         # the individuals to be separate (i.e. not part of a group)
         def criteria_predicatively(value):
@@ -258,7 +254,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
                 return True
 
             else:
-                report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+                context.report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
                 return False
 
         def unbound_values_predicatively():
@@ -267,7 +263,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
                 if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
                     yield value
 
-        yield from individual_style_predication_1(state,
+        yield from individual_style_predication_1(context, state,
                                                   x_target_binding,
                                                   criteria_predicatively,
                                                   unbound_values_predicatively,
@@ -281,7 +277,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
                 return True
 
             else:
-                report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+                context.report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
                 return False
 
         def unbound_variable():
@@ -300,7 +296,7 @@ def small_a_1(context, state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* small we should be
     degree_multiplier = 1 / degree_multiplier_from_event(state, e_introduced_binding)
 
-    if used_predicatively(state):
+    if used_predicatively(context, state):
         # "small" is being used "predicatively" as in "the dogs are small". This needs to force
         # the individuals to be separate (i.e. not part of a group)
         def criteria_predicatively(value):
@@ -308,7 +304,7 @@ def small_a_1(context, state, e_introduced_binding, x_target_binding):
                 return True
 
             else:
-                report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
+                context.report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
                 return False
 
         def unbound_values_predicatively():
@@ -317,7 +313,7 @@ def small_a_1(context, state, e_introduced_binding, x_target_binding):
                 if hasattr(value, 'size') and value.size <= degree_multiplier * 1000000:
                     yield value
 
-        yield from individual_style_predication_1(state,
+        yield from individual_style_predication_1(context, state,
                                                   x_target_binding,
                                                   criteria_predicatively,
                                                   unbound_values_predicatively,
@@ -331,7 +327,7 @@ def small_a_1(context, state, e_introduced_binding, x_target_binding):
                 return True
 
             else:
-                report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
+                context.report_error(["adjectiveDoesntApply", "small", x_target_binding.variable.name])
                 return False
 
         def unbound_variable():
@@ -390,9 +386,9 @@ def in_p_loc_norm(context, state, e_introduced_binding, x_actor_binding, x_locat
 #         if result == "true":
 #             yield state
 #         elif result is None:
-#             report_error(["dontKnowRightNow"])
+#             context.report_error(["dontKnowRightNow"])
 #         else:
-#             report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+#             context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
 @Predication(vocabulary, names=["_in_p_loc"])
 def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
@@ -406,7 +402,7 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
                     break
 
         if not found_location:
-            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+            context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
         return found_location
 
@@ -419,7 +415,7 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
                 found_location = True
                 yield location
         if not found_location:
-            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+            context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
     def actor_unbound_values(location_value):
         # This is a "what is in x?" type query since no actor specified (x_actor_binding was unbound)
@@ -427,11 +423,11 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
         if hasattr(location_value, "contained_items"):
             for actor in location_value.contained_items(x_location_binding.variable):
                 yield actor
-            report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+            context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
         else:
-            report_error(["thingIsNotContainer", x_location_binding.variable.name])
+            context.report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    for new_state in in_style_predication_2(state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values):
+    for new_state in in_style_predication_2(context, state, x_actor_binding, x_location_binding, item_in_item, actor_unbound_values, location_unbound_values):
         yield new_state
 
 
@@ -448,7 +444,7 @@ def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_location_
                 if location == item2:
                     return True
 
-        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+        context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
         return False
 
     def location_unbound_values(actor_value):
@@ -458,7 +454,7 @@ def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_location_
             for location in actor_value.all_locations(x_actor_binding.variable):
                 yield location
 
-        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+        context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
     def actor_unbound_values(location_value):
         # This is a "what is at x?" type query since no actor specified (x_actor_binding was unbound)
@@ -467,9 +463,9 @@ def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_location_
             for actor in location_value.contained_items(x_location_binding.variable):
                 yield actor
 
-        report_error(["thingIsNotContainer", x_location_binding.variable.name])
+        context.report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    for new_state in in_style_predication_2(state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values):
+    for new_state in in_style_predication_2(context, state, x_actor_binding, x_location_binding, item_at_item, actor_unbound_values, location_unbound_values):
         yield new_state
 
 
@@ -485,7 +481,7 @@ def loc_nonsp_size(context, state, e_introduced_binding, x_actor_binding, x_size
         if value_is_measure(size_set):
             if x_size_binding.variable.combinatoric:
                 # we only deal with x megabytes as a set because dist(10 mb) is 1 mb and nobody means 10 individual megabyte when they say "2 files are 10mb"
-                report_error(["formNotUnderstood", "missing", "collective"])
+                context.report_error(["formNotUnderstood", "missing", "collective"])
                 return False
 
             # Try to add up all combinations of x_actor_binding
@@ -493,7 +489,7 @@ def loc_nonsp_size(context, state, e_introduced_binding, x_actor_binding, x_size
             total = 0
             for actor in actor_set:
                 if not hasattr(actor, "size_measurement"):
-                    report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
+                    context.report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
                     return False
                 else:
                     total += actor.size_measurement().count
@@ -502,7 +498,7 @@ def loc_nonsp_size(context, state, e_introduced_binding, x_actor_binding, x_size
                 return True
 
             else:
-                report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
+                context.report_error(["xIsNotY", x_actor_binding.variable.name, x_size_binding.variable.name])
                 return False
 
         else:
@@ -522,11 +518,11 @@ def loc_nonsp_size(context, state, e_introduced_binding, x_actor_binding, x_size
     # if it is for x_actor or x_size, so we have to try both
     if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
         set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
-        yield from lift_style_predication_2(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, set_size, ValueSize.all)
-        yield from lift_style_predication_2(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, set_size)
+        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, set_size, ValueSize.all)
+        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, set_size)
 
     else:
-        yield from lift_style_predication_2(state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, ValueSize.all)
+        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, ValueSize.all)
 
 
 @Predication(vocabulary, names=["_only_x_deg"])
@@ -550,7 +546,7 @@ def default_cardinal_set_limiter_norm(context, state, e_introduced_binding, e_ta
 # Otherwise, it won't get passed sets > 1 if its variables are bound
 @Predication(vocabulary, names=["_together_p"], arguments=[("e",), ("x", ValueSize.more_than_one)])
 def together_p(context, state, e_introduced_binding, x_target_binding):
-    for x_target_value in discrete_variable_generator(x_target_binding.value, x_target_binding.variable.combinatoric, ValueSize.more_than_one):
+    for x_target_value in discrete_variable_generator(context, x_target_binding.value, x_target_binding.variable.combinatoric, ValueSize.more_than_one):
         yield state.set_x(x_target_binding.variable.name, x_target_value, False)
 
 
@@ -578,12 +574,12 @@ def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
                 return True
 
             else:
-                report_error(["cantDo", "delete", x_what_binding.variable.name])
+                context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
         def unbound_what():
-            report_error(["cantDo", "delete", x_what_binding.variable.name])
+            context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-        for new_state in individual_style_predication_1(state,
+        for new_state in individual_style_predication_1(context, state,
                                                         x_what_binding,
                                                         criteria,
                                                         unbound_what,
@@ -591,13 +587,13 @@ def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
             yield new_state.apply_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
 
 @Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
 def go_v_1_comm(context, state, e_introduced_binding, x_actor_binding):
     if x_actor_binding.value is None or len(x_actor_binding.value) > 1 or x_actor_binding.value[0].name != "Computer":
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
         return
 
     x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
@@ -609,17 +605,17 @@ def go_v_1_comm(context, state, e_introduced_binding, x_actor_binding):
 
         else:
             if hasattr(x_location_binding.value, "exists") and location_item.exists():
-                report_error(["cantDo", "change directory to", x_location_binding.variable.name])
+                context.report_error(["cantDo", "change directory to", x_location_binding.variable.name])
 
             else:
-                report_error(["notFound", x_location_binding.variable.name])
+                context.report_error(["notFound", x_location_binding.variable.name])
 
     def unbound_location(location_item):
         # Location is unbound, ask them to be more specific
-        report_error(["beMoreSpecific"])
+        context.report_error(["beMoreSpecific"])
 
     # go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
-    for new_state in individual_style_predication_1(state,
+    for new_state in individual_style_predication_1(context, state,
                                                     x_location_binding,
                                                     bound_location,
                                                     unbound_location,
@@ -648,20 +644,20 @@ def copy_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_
                 return True
 
             else:
-                report_error(["cantDo", "copy", x_what_binding.variable.name])
+                context.report_error(["cantDo", "copy", x_what_binding.variable.name])
 
         else:
-            report_error(["dontKnowActor", x_actor_binding.variable.name])
+            context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
     def binding1_unbound_predication_function(location_item):
         # Actor is unbound, unclear when this would happen but report an error
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
     def binding2_unbound_predication_function(actor_item):
         # Location is unbound, ask them to be more specific
-        report_error(["beMoreSpecific"])
+        context.report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication_2(state, x_actor_binding, x_what_binding,
+    for new_state in in_style_predication_2(context, state, x_actor_binding, x_what_binding,
                                             both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
         yield new_state.apply_operations([CopyOperation(None, new_state.get_binding(x_what_binding.variable.name), None)])
 
@@ -678,7 +674,7 @@ def copy_v_1_stative_comm(context, state, e_introduced_binding, x_actor_binding,
         return
 
     if not isinstance(x_copy_from_location_binding.value[0], Folder):
-        report_error(["cantDo", "copy from", x_what_binding.variable.name])
+        context.report_error(["cantDo", "copy from", x_what_binding.variable.name])
         return
 
     def both_bound_function(actor_item, location_item):
@@ -688,20 +684,20 @@ def copy_v_1_stative_comm(context, state, e_introduced_binding, x_actor_binding,
                 return True
 
             else:
-                report_error(["cantDo", "copy", x_what_binding.variable.name])
+                context.report_error(["cantDo", "copy", x_what_binding.variable.name])
 
         else:
-            report_error(["dontKnowActor", x_actor_binding.variable.name])
+            context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
     def binding1_unbound_predication_function(location_item):
         # Actor is unbound, unclear when this would happen but report an error
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
     def binding2_unbound_predication_function(actor_item):
         # Location is unbound, ask them to be more specific
-        report_error(["beMoreSpecific"])
+        context.report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication_2(state, x_actor_binding, x_what_binding,
+    for new_state in in_style_predication_2(context, state, x_actor_binding, x_what_binding,
                                             both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
         yield new_state.apply_operations([CopyOperation(x_copy_from_location_binding, new_state.get_binding(x_what_binding.variable.name), None)])
 
@@ -714,7 +710,7 @@ def copy_v_1_locative_comm(context, state, e_introduced_binding, x_actor_binding
         return
 
     if not isinstance(where_binding_list[0].value[0], Folder) or not where_binding_list[0].value[0].exists():
-        report_error(["cantDo", "copy to", x_what_binding.variable.name])
+        context.report_error(["cantDo", "copy to", x_what_binding.variable.name])
         return
 
     def both_bound_function(actor_item, what_item):
@@ -724,20 +720,20 @@ def copy_v_1_locative_comm(context, state, e_introduced_binding, x_actor_binding
                 return True
 
             else:
-                report_error(["cantDo", "copy", x_what_binding.variable.name])
+                context.report_error(["cantDo", "copy", x_what_binding.variable.name])
 
         else:
-            report_error(["dontKnowActor", x_actor_binding.variable.name])
+            context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
     def binding1_unbound_predication_function(location_item):
         # Actor is unbound, unclear when this would happen but report an error
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
     def binding2_unbound_predication_function(actor_item):
         # Location is unbound, ask them to be more specific
-        report_error(["beMoreSpecific"])
+        context.report_error(["beMoreSpecific"])
 
-    for new_state in in_style_predication_2(state, x_actor_binding, x_what_binding,
+    for new_state in in_style_predication_2(context, state, x_actor_binding, x_what_binding,
                                             both_bound_function, binding1_unbound_predication_function,
                                             binding2_unbound_predication_function):
         yield new_state.apply_operations([CopyOperation(None, new_state.get_binding(x_what_binding.variable.name), where_binding_list[0])])
@@ -766,13 +762,13 @@ def quoted(context, state, c_raw_text_value, i_text_binding):
             return True
 
         else:
-            report_error(["xIsNotYValue", i_text_binding, c_raw_text_value])
+            context.report_error(["xIsNotYValue", i_text_binding, c_raw_text_value])
             return False
 
     def unbound_values():
         yield QuotedText(c_raw_text_value)
 
-    yield from individual_style_predication_1(state,
+    yield from individual_style_predication_1(context, state,
                                               i_text_binding,
                                               bound_value,
                                               unbound_values,
@@ -784,7 +780,7 @@ def quoted(context, state, c_raw_text_value, i_text_binding):
 def yield_from_fw_seq(context, state, x_phrase_binding, non_set_value):
     if x_phrase_binding.value is None:
         # x is not bound
-        if is_this_last_fw_seq(state) and hasattr(non_set_value, "all_interpretations"):
+        if is_this_last_fw_seq(context, state) and hasattr(non_set_value, "all_interpretations"):
             # Records that predication index X is a disjunction
             context.set_disjunction()
 

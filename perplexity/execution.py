@@ -556,16 +556,6 @@ def execution_context():
     return _execution_context.get()
 
 
-# Helpers used by predications just to make the code easier to read
-# so they don't all have to say execution_context().call(*args, **kwargs)
-def call(*args, **kwargs):
-    yield from execution_context().call(*args, **kwargs)
-
-
-def report_error(error, force=False):
-    execution_context().report_error(error, force)
-
-
 def set_variable_execution_data(variable_name, key, value):
     execution_context().set_variable_execution_data(variable_name, key, value)
 

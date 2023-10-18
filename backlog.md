@@ -18,8 +18,16 @@
       - FAIL: 1 file is in a folder together: succeeds now, but shouldn't
         - should be: There is more than a folder together
         - Stuff in vocabulary depends on argument order
-    - Phase 3: remove execution_context() and fix up the more complicated cases
+    - Phase 3: remove execution_context() references and fix up the more complicated cases
       - Test baseline before changes: all ESL tests pass, all filesystem tests pass except: "not", and tutorial stops when normalize asserts
+      - (fixed) Remove call()
+        - (fixed) VirtualArguments/ScopalArgument
+          - examples.Example40_reset: copy "file5.txt" in "documents"
+        - (fixed) quantifier_raw()
+      - (fixed) Remove in_scope() references
+      - (fixed) report_error()
+      - (done) Remove execution_context()
+    - quit setting execution context at all
     - Phase 2: Update resolve_fragment to use the new shared code
     - 
 - Seems like we can get rid of the lineage code that runs as part of the solution group??

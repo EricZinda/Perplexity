@@ -2,7 +2,7 @@ from file_system_example.messages import error_priority, generate_message
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
 from file_system_example.vocabulary import vocabulary, in_scope_initialize, in_scope
-from perplexity.execution import ExecutionContext, call, execution_context
+from perplexity.execution import ExecutionContext, execution_context
 from perplexity.generation import english_for_delphin_variable_impl, english_for_delphin_variable
 from perplexity.messages import respond_to_mrs_tree
 from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
@@ -15,11 +15,6 @@ def solve_and_respond(state, mrs):
     context = ExecutionContext(vocabulary)
     solutions = list(context.solve_mrs_tree(state, mrs))
     return respond_to_mrs_tree(mrs, solutions, context.error())
-
-
-def call_predication(*args, **kwargs):
-    # default to proposition for early documentation
-    yield from execution_context()._call_predication(*args, **kwargs)
 
 
 ##########################

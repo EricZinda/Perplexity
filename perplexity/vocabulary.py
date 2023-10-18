@@ -4,7 +4,8 @@ import logging
 from typing import NamedTuple
 import perplexity.execution
 from perplexity.transformer import build_transformed_tree
-from perplexity.utilities import parse_predication_name, system_added_state_arg, system_added_arg_count
+from perplexity.utilities import parse_predication_name, system_added_state_arg, system_added_arg_count, \
+    system_added_context_arg
 from perplexity.variable_binding import VariableBinding
 
 
@@ -46,7 +47,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
-    def ensure_handles_event(state, handles, event_binding):
+    def ensure_handles_event(context, state, handles, event_binding):
         if isinstance(event_binding, VariableBinding) and event_binding.variable.name[0] == "e":
             # Look at everything in event and make sure it is handled
             if event_binding.value is not None:
@@ -58,13 +59,13 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
                             break
 
                     if not foundItem:
-                        perplexity.execution.report_error(["formNotUnderstood", "notHandled", item], force=True)
+                        context.report_error(["formNotUnderstood", "notHandled", item], force=True)
                         return False
 
             # Look at everything it handles and make sure the required things are there
             for item in handles:
                 if item[1] == EventOption.required and (event_binding.value is None or item[0] not in event_binding.value):
-                    perplexity.execution.report_error(["formNotUnderstood", "missing", item], force=True)
+                    context.report_error(["formNotUnderstood", "missing", item], force=True)
                     return False
 
         return True
@@ -156,7 +157,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
             # Make sure the event has a structure that will be properly
             # handled by the predication
-            if is_solution_group or ensure_handles_event(args[system_added_state_arg], handles, args[system_added_arg_count]):
+            if is_solution_group or ensure_handles_event(args[system_added_context_arg], args[system_added_state_arg], handles, args[system_added_arg_count]):
                 yield from function_to_decorate(*args, **kwargs)
 
         predication_names = names if names is not None else [function_to_decorate.__name__]

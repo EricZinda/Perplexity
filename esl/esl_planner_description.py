@@ -7,7 +7,7 @@ from perplexity.sstring import s
 task_methods = []
 
 
-def describe_list_analyze(state, what_group):
+def describe_list_analyze(state, context, what_group):
     # See how many of the items we are describing are "specials" or "menu items"
     analysis = {"Specials": [],
                 "MenuItems": [],
@@ -32,7 +32,7 @@ def describe_list_analyze(state, what_group):
                 else:
                     analysis["Others"].append(store_object)
 
-    return [('describe_analyzed', analysis)]
+    return [('describe_analyzed', context, analysis)]
 
 
 task_methods.append(['describe', describe_list_analyze])
@@ -40,25 +40,25 @@ task_methods.append(['describe', describe_list_analyze])
 
 # If we're asked questions about the menu or specials at the entrance
 # tell them to be seated
-def describe_analyzed_at_entrance(state, analysis):
+def describe_analyzed_at_entrance(state, context, analysis):
     if location_of_type(state, "user", "table"):
         return
 
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
-        new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat." + state.get_reprompt()))
+        new_methods.append(('respond', context, "If you'd like to hear about our menu items, you'll need to have a seat." + state.get_reprompt()))
 
     elif len(analysis["Bills"]) > 0:
-        new_methods.append(('respond', "Let's talk about the bill once you've finished eating." + state.get_reprompt()))
+        new_methods.append(('respond', context, "Let's talk about the bill once you've finished eating." + state.get_reprompt()))
 
     else:
         for item in analysis["Others"]:
             if isinstance(item, Measurement) and item.measurement_type == "dollar":
-                new_methods.append(('respond', "Let's talk about prices once you've been seated." + state.get_reprompt()))
+                new_methods.append(('respond', context, "Let's talk about prices once you've been seated." + state.get_reprompt()))
 
             else:
-                new_methods.insert(0, ('describe_item', item))
-                new_methods.append(('respond', state.get_reprompt()))
+                new_methods.insert(0, ('describe_item', context, item))
+                new_methods.append(('respond', context, state.get_reprompt()))
 
     return new_methods
 
@@ -67,7 +67,7 @@ def describe_analyzed_at_entrance(state, analysis):
 # ask something like "do you have vegetarian dishes?" before they ask what the specials are
 # Any question that includes an answer that is special should trigger the waiter asking if
 # if the user wants to hear the detailed description of specials
-def describe_analyzed_at_table(state, analysis):
+def describe_analyzed_at_table(state, context, analysis):
     if not location_of_type(state, "user", "table"):
         return
 
@@ -79,12 +79,12 @@ def describe_analyzed_at_table(state, analysis):
 
     # no special behavior if there are instances
     if len(analysis["Instances"]) > 0:
-        return [('describe_item', list(analysis["UniqueItems"]))]
+        return [('describe_item', context, list(analysis["UniqueItems"]))]
 
     if len(analysis["MenuItems"]) > 0 and not has_menu:
         # Describe the menu if the user hasn't heard it and they ask a question
         # that results in any number of menu items being generated
-        new_methods.append(("get_menu", ["user"], 1))
+        new_methods.append(("get_menu", context, ["user"], 1))
         return new_methods
 
     analysis_specials_count = len(analysis["Specials"])
@@ -92,9 +92,9 @@ def describe_analyzed_at_table(state, analysis):
         if not heard_specials:
             # If we are being ask to describe any specials and the user hasn't heard of them yet,
             # give the special, detailed description
-            new_methods.append(('respond', "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
-            new_methods.append(('delete_rel', "user", "heardSpecials", "false"))
-            new_methods.append(('add_rel', "user", "heardSpecials", "true"))
+            new_methods.append(('respond', context, "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+            new_methods.append(('delete_rel', context, "user", "heardSpecials", "false"))
+            new_methods.append(('add_rel', context, "user", "heardSpecials", "true"))
             return new_methods
 
         elif analysis_specials_count == len(analysis["UniqueItems"]):
@@ -103,7 +103,8 @@ def describe_analyzed_at_table(state, analysis):
                 # We are responding with *only* specials, and in fact *all* of them, and have already heard
                 # the long version, give a terser response
                 new_methods.append(('respond',
-                                   "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+                                    context,
+                                    "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
                 return new_methods
 
     rel = list(state.all_rel("describes"))
@@ -112,14 +113,14 @@ def describe_analyzed_at_table(state, analysis):
             for j in analysis[i]:
                 if j in all_instances_and_spec(state, "thing"):
                     if ("restaurant", j) in rel:
-                        new_methods.append(('describe_item', j))
+                        new_methods.append(('describe_item', context, j))
                 else:
                     j = object_to_store(j)
                     if j in all_instances_and_spec(state, "thing"):
                         if ("restaurant", j) in rel:
-                            new_methods.append(('describe_item', j))
+                            new_methods.append(('describe_item', context, j))
                     else:
-                        new_methods.append(('describe_item', j))
+                        new_methods.append(('describe_item', context, j))
 
     return new_methods
 
@@ -128,7 +129,7 @@ task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describ
 
 
 # Handles a list by returning a count
-def describe_item_list(state, whats):
+def describe_item_list(state, context, whats):
     if isinstance(whats, list):
         english_count = {}
         for what in whats:
@@ -141,16 +142,16 @@ def describe_item_list(state, whats):
         new_tasks = []
         for item in english_count.items():
             if item[1] == 1:
-                new_tasks.append(('respond', item[0]))
+                new_tasks.append(('respond', context, item[0]))
             else:
-                new_tasks.append(('respond', f"{item[1]} {item[0]}"))
+                new_tasks.append(('respond', context, f"{item[1]} {item[0]}"))
 
         return new_tasks
 
 
-def describe_item(state, what):
+def describe_item(state, context, what):
     if not isinstance(what, list):
-        return [('respond', convert_to_english(state, what))]
+        return [('respond', context, convert_to_english(state, what))]
 
 
 task_methods.append(['describe_item', describe_item_list, describe_item])

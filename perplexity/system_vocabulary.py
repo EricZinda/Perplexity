@@ -1,15 +1,15 @@
 import copy
 import logging
 import numbers
-
 import perplexity.predications
-from perplexity.execution import execution_context, call, set_variable_execution_data, report_error
+from perplexity.execution import set_variable_execution_data
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
-from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, lift_style_predication_2, \
-    in_style_predication_2, is_referring_expr
+from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, \
+    in_style_predication_2
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
     gather_referenced_x_variables_from_tree
 from perplexity.vocabulary import Predication, Vocabulary
+
 
 vocabulary = Vocabulary()
 
@@ -24,7 +24,7 @@ def rstr_reorderable(rstr):
 
 
 # Yield all undetermined, unquantified answers
-def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
+def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
     reverse = rstr_reorderable(h_rstr_orig)
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
@@ -32,7 +32,7 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
     variable_name = x_variable_binding.variable.name
     rstr_values = []
     rstr_values_tree_lineage = ""
-    for rstr_solution in call(state, h_rstr):
+    for rstr_solution in context.call(state, h_rstr):
         # We track RSTR values *per tree lineage* since these are effectively different trees
         # and so we need to clear it if the lineage changes
         tree_lineage_value = rstr_solution.get_binding("tree_lineage").value
@@ -49,13 +49,13 @@ def quantifier_raw(state, x_variable_binding, h_rstr_orig, h_body_orig, criteria
         for alternative_state in alternative_states:
             rstr_values.extend(alternative_state.get_binding(variable_name).value)
             set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
-            for body_solution in call(alternative_state, h_body):
+            for body_solution in context.call(alternative_state, h_body):
                 yield body_solution
 
     if not reverse and len(rstr_values) == 0:
         # If the rstr was actually run (i.e. not reversed) and produced no values:
         # Ignore whatever error the RSTR produced, this is a better one
-        report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+        context.report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
 @Predication(vocabulary, library="system")
@@ -78,21 +78,21 @@ def a_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 min_size=1,
                                                                 max_size=1))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
-def in_scope(state, x_binding):
+def in_scope(context, state, x_binding):
     def bound_variable(value):
-        if execution_context().in_scope(state, value):
+        if context.in_scope(state, value):
             return True
 
         else:
-            report_error(["variableIsNotInScope", x_binding.variable.name])
+            context.report_error(["variableIsNotInScope", x_binding.variable.name])
             return False
 
     def unbound_variable():
         for item in state.all_individuals():
-            if execution_context().in_scope(state, item):
+            if context.in_scope(state, item):
                 yield item
 
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
@@ -125,7 +125,7 @@ def the_all_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 max_size=float('inf'),
                                                                 global_criteria=GlobalCriteria.all_rstr_meet_criteria))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 # Interpretation of "the" which means "the one in scope"
@@ -140,7 +140,10 @@ def the_in_scope_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 max_size=float('inf'),
                                                                 global_criteria=GlobalCriteria.all_rstr_meet_criteria))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope)
+    def in_scope_capture_context(state, binding):
+        yield from in_scope(context, state, binding)
+
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope_capture_context)
 
 
 @Predication(vocabulary, library="system", names=["_every_q", "_each_q", "_each+and+every_q"])
@@ -154,7 +157,7 @@ def every_each_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 max_size=float('inf'),
                                                                 global_criteria=GlobalCriteria.every_rstr_meet_criteria))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary, library="system", names=["which_q", "_which_q"])
@@ -167,7 +170,7 @@ def which_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 min_size=1,
                                                                 max_size=float('inf')))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q", "number_q"])
@@ -178,7 +181,7 @@ def generic_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 min_size=1,
                                                                 max_size=float('inf')))
 
-    yield from quantifier_raw(state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary, library="system", names=["_a+few_a_1"])
@@ -217,7 +220,7 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
             yield None
 
     # Use in_style_predication_2 simply to break out the combinatorial alternatives
-    for solution in in_style_predication_2(state, x_binding_first, x_binding_second,
+    for solution in in_style_predication_2(context, state, x_binding_first, x_binding_second,
                              both_bound_prediction_function, binding1_unbound_predication_function,
                              binding2_unbound_predication_function):
         solution_first = solution.get_binding(x_binding_first.variable.name)
@@ -264,7 +267,7 @@ def card_cxi(context, state, c_count, x_binding, i_binding):
         if value == c_value:
             return True
         else:
-            report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -278,16 +281,16 @@ def card_cxi(context, state, c_count, x_binding, i_binding):
                                                unbound_variable)
 
 
-def generate_not_error(unscoped_referenced_variables):
+def generate_not_error(context, unscoped_referenced_variables):
     if len(unscoped_referenced_variables) == 0:
-        quantifier_variable = execution_context().current_predication().args[1].args[0]
-        report_error(["notAllError", quantifier_variable, ["AfterFullPhrase", quantifier_variable]], force=True)
+        quantifier_variable = context.current_predication().args[1].args[0]
+        context.report_error(["notAllError", quantifier_variable, ["AfterFullPhrase", quantifier_variable]], force=True)
 
     elif len(unscoped_referenced_variables) == 1:
-        report_error(["notError", ["AfterFullPhrase", unscoped_referenced_variables[0]]], force=True)
+        context.report_error(["notError", ["AfterFullPhrase", unscoped_referenced_variables[0]]], force=True)
 
     else:
-        report_error(["notClause"], force=True)
+        context.report_error(["notClause"], force=True)
 
 
 @Predication(vocabulary, library="system", names=["neg"])
@@ -337,7 +340,7 @@ def neg(context, state, e_introduced_binding, h_scopal):
                 had_negative_success = False
                 for temp in context.resolve_fragment_new(combination_state, h_scopal):
                     # This is true, don't yield it since neg() makes it False
-                    generate_not_error(unscoped_referenced_variables)
+                    generate_not_error(context, unscoped_referenced_variables)
                     had_negative_success = True
                     break
 
@@ -363,9 +366,9 @@ def neg(context, state, e_introduced_binding, h_scopal):
             for combination_state in all_combinations_of_states(negated_predications_state, combinatorial_referenced_x_values):
                 # No scoped variables, just run it directly
                 had_negative_success = False
-                for _ in call(combination_state, h_scopal):
+                for _ in context.call(combination_state, h_scopal):
                     # This is true, don't yield it since neg() makes it False
-                    generate_not_error(unscoped_referenced_variables)
+                    generate_not_error(context, unscoped_referenced_variables)
                     had_negative_success = True
 
                 if context.has_not_understood_error():

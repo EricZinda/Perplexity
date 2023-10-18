@@ -2,9 +2,8 @@ import copy
 import enum
 import inspect
 import itertools
-import json
 from math import inf
-from perplexity.execution import get_variable_metadata, report_error, execution_context
+from perplexity.execution import get_variable_metadata, execution_context
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
 from perplexity.tree import find_quantifier_from_variable, TreePredication
@@ -158,12 +157,13 @@ class ReferringExpr(object):
         # Leave the noun itself unbound
         bound_state = bound_state.set_x(self.variable_name, None)
 
-        for group in execution_context().resolve_fragment(bound_state, [self.noun_predication] + self.modifiers, extra_variables=self.extra_variables, criteria_list=declared_constraints):
-            if is_referring_expr(group[0].get_binding(self.variable_name).value[0]):
-                # The caller already has the referring expression, don't return it again
-                continue
-            else:
-                yield group
+        assert False # resolve_fragment no longer works
+        # for group in execution_context().resolve_fragment(bound_state, [self.noun_predication] + self.modifiers, extra_variables=self.extra_variables, criteria_list=declared_constraints):
+        #     if is_referring_expr(group[0].get_binding(self.variable_name).value[0]):
+        #         # The caller already has the referring expression, don't return it again
+        #         continue
+        #     else:
+        #         yield group
 
     def value_of_modifier_argument(self, state, predicate_name, arg_index):
         for modifier in self.modifiers:
@@ -198,7 +198,7 @@ class ReferringExpr(object):
 #   "Do you have the steak?" (ditto)
 #   "Do you still have 2 menus?" --> (ditto)
 #   "Are 2 specials available?" --> (ditto)
-def concept_meets_constraint(tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable, value):
+def concept_meets_constraint(context, tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable, value):
     min_size = variable_constraints.min_size if variable_constraints is not None else 1
     max_size = variable_constraints.max_size if variable_constraints is not None else float(inf)
     if check_concepts:
@@ -230,15 +230,15 @@ def concept_meets_constraint(tree_info, variable_constraints, concept_count, con
 
         if check_count == 0:
             introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
-            report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+            context.report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
             return False
 
         if check_count < min_size:
-            report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            context.report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
             return False
 
         elif check_count > max_size:
-            report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+            context.report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
             return False
 
         return True
@@ -251,26 +251,26 @@ def concept_meets_constraint(tree_info, variable_constraints, concept_count, con
         if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
             check_count = concept_in_scope_count
             if check_count == 0:
-                report_error(["conceptNotFound", value], force=True)
+                context.report_error(["conceptNotFound", value], force=True)
                 return False
 
             if check_count < min_size:
-                report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+                context.report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
                 return False
 
             elif check_count > max_size:
-                report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+                context.report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
                 return False
 
         # Then, whether "the" was used, check to make sure there are enough instances to meet the criteria
         # Since that is what we are looking for
         check_count = instance_count
         if check_count == 0:
-            report_error(["conceptNotFound", value], force=True)
+            context.report_error(["conceptNotFound", value], force=True)
             return False
 
         if check_count < min_size:
-            report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            context.report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
             return False
 
         # As long as the instances are >= min_size, we are good because the caller is responsible
@@ -329,12 +329,12 @@ class VariableDescriptor(object):
 # Yields each possible variable set from binding based on what type of value it is
 # "discrete" means it will generate all possible specific sets, one by one (i.e. not yield a combinatoric value)
 # variable_size is the only sizes that should be generated or allowed
-def discrete_variable_generator(value, combinatoric, variable_size):
+def discrete_variable_generator(context, value, combinatoric, variable_size):
     if combinatoric is False:
         # Fail immediately if we don't support it
         if (len(value) == 1 and variable_size == ValueSize.more_than_one) or \
                 (len(value) > 1 and variable_size == ValueSize.exactly_one):
-            report_error(["tooManyItemsTogether"])
+            context.report_error(["tooManyItemsTogether"])
 
         else:
             yield value
@@ -350,7 +350,7 @@ def discrete_variable_generator(value, combinatoric, variable_size):
 
 
 # Main helper for a predication that takes 1 argument
-def predication_1(state, binding, bound_function, unbound_function, binding_descriptor=None):
+def predication_1(context, state, binding, bound_function, unbound_function, binding_descriptor=None):
     if not inspect.isgenerator(unbound_function) and not inspect.isgeneratorfunction(unbound_function):
         assert False, f"function {unbound_function.__name__} must be a generator"
 
@@ -363,7 +363,9 @@ def predication_1(state, binding, bound_function, unbound_function, binding_desc
         # Build a generator that only generates the discrete values for the binding that are valid for the descriptor,
         # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
         # if binding.variable.combinatoric:
-        binding_generator = discrete_variable_generator(binding.value, binding.variable.combinatoric,
+        binding_generator = discrete_variable_generator(context,
+                                                        binding.value,
+                                                        binding.variable.combinatoric,
                                                         binding_descriptor.combinatoric_size(binding))
 
         for value in binding_generator:
@@ -462,7 +464,7 @@ def all_combinations_of_states(original_state, combinatorial_x_values):
 #     - If this predication *can't handle* a size of set, an error will be generated automatically
 # TODO: BUG: if the user doesn't *also* declare it, upstream predications may not generate it.
 #       Should be able to assert this at runtime?
-def predication_2(state, binding1, binding2,
+def predication_2(context, state, binding1, binding2,
                   both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                   binding1_descriptor=None,
                   binding2_descriptor=None):
@@ -474,13 +476,14 @@ def predication_2(state, binding1, binding2,
 
     # Build a generator that only generates the discrete values for the binding that are valid for these descriptors,
     # failing for a value (but continuing to iterate) if the binding can't handle the size of a particular value
-    binding1_generator = discrete_variable_generator(binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
+    binding1_generator = discrete_variable_generator(context, binding1.value, binding1.variable.combinatoric, binding1_descriptor.combinatoric_size(binding1))
 
     # The binding2 generator needs to be a function because it can be iterated over multiple times
     # and needs a way to reset
     # if binding2.variable.combinatoric:
     def binding2_generator_creator_combinatoric():
-        return discrete_variable_generator(binding2.value, binding2.variable.combinatoric,
+        return discrete_variable_generator(context,
+                                           binding2.value, binding2.variable.combinatoric,
                                            binding2_descriptor.combinatoric_size(binding2))
 
     binding2_generator_reset = binding2_generator_creator_combinatoric
@@ -494,7 +497,7 @@ def predication_2(state, binding1, binding2,
     # so we only need to decide how to check if the relation is true
     if binding1.value is None and binding2.value is None:
         if all_unbound_predication_function is None:
-            report_error(["beMoreSpecific"], force=True)
+            context.report_error(["beMoreSpecific"], force=True)
 
         else:
             yield from all_unbound_predication_function()
@@ -573,7 +576,7 @@ def predication_2(state, binding1, binding2,
                     # unbound_binding_descriptor.group == VariableStyle.ignore
                     # Each of the items in intersection_last is true for all bound values, return all combinations
                     flattened_solutions = tuple(x[0] for x in intersection_last.keys())
-                    for alternative in discrete_variable_generator(flattened_solutions, True, unbound_binding_variable_size):
+                    for alternative in discrete_variable_generator(context, flattened_solutions, True, unbound_binding_variable_size):
                         yield state.set_x(bound_binding.variable.name,
                                           bound_set,
                                           combinatoric=False).set_x(unbound_binding.variable.name,
@@ -613,7 +616,7 @@ def predication_2(state, binding1, binding2,
 
 # Used for words like "large" and "small" that always force an answer to be individuals when used predicatively
 # Ensures that solutions are discrete (not combinatoric) and only passes through individuals, even if it is given a combinatoric
-def individual_style_predication_1(state, binding, bound_predication_function, unbound_predication_function, greater_than_one_error):
+def individual_style_predication_1(context, state, binding, bound_predication_function, unbound_predication_function, greater_than_one_error):
     def bound_function(value_set):
         return bound_predication_function(value_set[0])
 
@@ -621,7 +624,7 @@ def individual_style_predication_1(state, binding, bound_predication_function, u
         for item in unbound_predication_function():
             yield (item, )
 
-    yield from predication_1(state, binding,
+    yield from predication_1(context, state, binding,
                              bound_function, unbound_function,
                              VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.unsupported))
 
@@ -629,7 +632,7 @@ def individual_style_predication_1(state, binding, bound_predication_function, u
 # "'lift' style" means that:
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
-def lift_style_predication_2(state, binding1, binding2,
+def lift_style_predication_2(context, state, binding1, binding2,
                              both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                              binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
     def default(_):
@@ -641,7 +644,7 @@ def lift_style_predication_2(state, binding1, binding2,
     if binding2_unbound_predication_function is None:
         binding2_unbound_predication_function = default
 
-    yield from predication_2(state, binding1, binding2,
+    yield from predication_2(context, state, binding1, binding2,
                              both_bound_prediction_function,
                              binding1_unbound_predication_function,
                              binding2_unbound_predication_function,
@@ -654,7 +657,7 @@ def lift_style_predication_2(state, binding1, binding2,
 # - {a, b} predicate {x, y} can be checked (or do something) as {a} predicate {x}, {a} predicate {y}, etc.
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
 # - that any combinatoric terms will be turned into single set terms (coll or dist)
-def in_style_predication_2(state, binding1, binding2,
+def in_style_predication_2(context, state, binding1, binding2,
                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                            binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
     def both_bound_set(item1, item2):
@@ -668,7 +671,7 @@ def in_style_predication_2(state, binding1, binding2,
         for item in binding2_unbound_predication_function(item1[0]):
             yield tuple([item])
 
-    yield from predication_2(state, binding1, binding2,
+    yield from predication_2(context, state, binding1, binding2,
                              both_bound_set,
                              binding1_unbound_predication_set_function,
                              binding2_unbound_predication_set_function,

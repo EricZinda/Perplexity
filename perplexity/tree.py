@@ -482,17 +482,17 @@ def walk_tree_args_until(term, predication_func, arg_func):
 
 # True if an `fw_seq` predication is used by something *besides* an `fw_seq` predication
 # because that means it is the final one
-def is_this_last_fw_seq(state):
+def is_this_last_fw_seq(context, state):
     this_tree = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
+    this_predication = predication_from_index(this_tree, context.current_predication_index())
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
 # TODO: Change this to the better approach for checking for attributively used adjectives
 # As per this thread: https://delphinqa.ling.washington.edu/t/converting-mrs-output-to-a-logical-form/413/29
-def used_predicatively(state):
+def used_predicatively(context, state):
     tree_info = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(tree_info, perplexity.execution.execution_context().current_predication_index())
+    this_predication = predication_from_index(tree_info, context.current_predication_index())
     return not predication_in_conjunction(tree_info, this_predication.index)
 
 
