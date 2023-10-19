@@ -519,7 +519,10 @@ def command_run_test(ui, arg):
         print(f"Please supply a test name.")
 
     else:
-        test_iterator = TestIterator(ui.test_manager.full_test_path(arg + ".tst"))
+        # Remember that we ran a single test not a folder
+        ui.test_manager.record_session_data("LastTestFolder", "")
+
+        test_iterator = TestIterator(ui.test_manager, ui.test_manager.full_test_path(arg + ".tst"))
 
         # Set the state to the state function the test requires
         # and reset it
@@ -560,10 +563,37 @@ def command_run_parse(ui, arg):
 
 
 def command_run_folder(ui, arg):
-    test_iterator = TestFolderIterator(ui.test_manager.full_test_path(arg))
+    test_folder = ui.test_manager.full_test_path(arg)
+    ui.test_manager.record_session_data("LastTestFolder", test_folder)
+    test_iterator = TestFolderIterator(ui.test_manager, test_folder)
     ui.test_manager.run_tests(test_iterator, ui)
 
     return True
+
+
+def command_resume_test(ui, arg):
+    test_folder = ui.test_manager.get_session_data("LastTestFolder")
+    if test_folder is None:
+        print(f"Nothing to resume.")
+        return True
+
+    else:
+        if test_folder == "":
+            test_name = ui.test_manager.get_session_data("LastTest")
+            if test_name is None:
+                print("No test to resume.")
+                return True
+
+            else:
+                print(f"**** Resuming test: {test_name}")
+                test_iterator = TestIterator(ui.test_manager, test_name)
+
+        else:
+            print(f"**** Resuming test folder: {test_folder}")
+            test_iterator = TestFolderIterator(ui.test_manager, test_folder, resume=True)
+
+        ui.test_manager.run_tests(test_iterator, ui)
+        return True
 
 
 def command_reset(ui, arg):
@@ -705,5 +735,8 @@ command_data = {
                 "Example": "/runtest subdirectory/foo"},
     "runfolder": {"Function": command_run_folder, "Category": "Testing", "WebSafe": False,
                   "Description": "Runs all tests in a directory",
-                  "Example": "/runfolder foldername"}
-}
+                  "Example": "/runfolder foldername"},
+    "resume": {"Function": command_resume_test, "Category": "Testing", "WebSafe": False,
+                  "Description": "Resume running the last test (or sequence of tests in a folder) at the last reset before it was stopped",
+                  "Example": "/resume"}
+    }
