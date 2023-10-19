@@ -5,7 +5,7 @@
     - we need to "push a tree on the stack"
       - Including 
     - We need a way to find the solution groups for a particular tree that can be called reentrantly
-    - 
+    
 - Clean up resolve_fragment
   - It does phase 1 and phase 2 both
   - Could there be a single class that is used by both user_interface and not()
@@ -18,7 +18,7 @@
       - FAIL: 1 file is in a folder together: succeeds now, but shouldn't
         - should be: There is more than a folder together
         - Stuff in vocabulary depends on argument order
-    - Phase 3: remove execution_context() references and fix up the more complicated cases
+    - (done) Phase 3: remove execution_context() references and fix up the more complicated cases
       - Test baseline before changes: all ESL tests pass, all filesystem tests pass except: "not", and tutorial stops when normalize asserts
       - (fixed) Remove call()
         - (fixed) VirtualArguments/ScopalArgument
@@ -28,7 +28,8 @@
       - (fixed) report_error()
       - (done) Remove execution_context()
     - (fixed) quit setting execution context at all
-    - Phase 2: Update resolve_fragment to use the new shared code
+    - (done) Phase 4: Refactor the code to follow the redesign for top level trees
+    - Phase 5: Update resolve_fragment to use the new shared code and make "not" test work
     - 
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
 

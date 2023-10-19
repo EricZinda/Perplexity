@@ -29,8 +29,11 @@ If a scopal argument fails during phase 1, the error it generates should be the 
 
 
 # Design
-A tree_record object holds a bunch of generators that generate results for the tree *when requested*. These generators record errors in the *current* execution context. Because there
-The basic execution model is to call execution_context().
+A tree_record object holds a bunch of generators that generate results for the tree *when requested*. These generators record errors in the execution context they were given. There can be subtrees that get executed (e.g. by neg()) in the course of evaluating a tree that should *share* the error context with the outer tree.  
+
+There is no reason to share a context across trees.  The context itself is a TreeSolver, and each TreeSolver has an ExecutionContext with it. When a subtree gets resolved (as in neg()), a new TreeSolver is created to do it, but uses the same ExecutionContext so errors are recorded for the whole tree.
+
+
 
 This whole thing came about because we weren't getting "(there are more)" messages because solutions to the same tree were not necessarily consecutive
     - What is the difference between building alternative trees up front and forking as you go?

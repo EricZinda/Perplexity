@@ -3,7 +3,7 @@ import logging
 from math import inf
 import perplexity.predications
 from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
-from perplexity.tree import find_quantifier_from_variable
+import perplexity.tree
 from perplexity.utilities import plural_from_tree_info, parse_predication_name, is_plural
 from perplexity.vocabulary import ValueSize
 
@@ -13,7 +13,7 @@ def determiner_from_binding(state, binding):
         return binding.variable.determiner
 
     else:
-        quantifier = find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
+        quantifier = perplexity.tree.find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
 
         pl_value = plural_from_tree_info(state.get_binding("tree").value[0], binding.variable.name)
         if pl_value == "pl":

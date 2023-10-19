@@ -5,7 +5,7 @@ import itertools
 from math import inf
 import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream
-from perplexity.tree import find_quantifier_from_variable, TreePredication
+import perplexity.tree
 from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.variable_binding import VariableBinding
 from perplexity.vocabulary import ValueSize
@@ -45,7 +45,7 @@ def is_concept(o):
 def referring_expr_from_lemma(lemma):
     # TODO: Make this more robust
     variable_name = "x999"
-    predication = TreePredication(0, f"_{lemma}_n_1", ["x999"], arg_names=["ARG0"])
+    predication = perplexity.tree.TreePredication(0, f"_{lemma}_n_1", ["x999"], arg_names=["ARG0"])
     return ReferringExpr(predication, variable_name)
 
 
@@ -228,7 +228,7 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
             check_count = concept_count
 
         if check_count == 0:
-            introducing_predication = find_quantifier_from_variable(tree_info["Tree"], variable)
+            introducing_predication = perplexity.tree.find_quantifier_from_variable(tree_info["Tree"], variable)
             context.report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
             return False
 

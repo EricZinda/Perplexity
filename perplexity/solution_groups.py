@@ -1,11 +1,11 @@
 import copy
 import logging
 import sys
+import perplexity.tree
 from math import inf
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
 from perplexity.response import RespondOperation
-from perplexity.tree import gather_quantifier_order, find_predication_from_introduced
 from perplexity.utilities import at_least_one_generator
 
 
@@ -484,7 +484,7 @@ def run_wh_group_handlers(execution_context, wh_handlers, wh_question_variable, 
 # with just an array of functions in each
 def find_solution_group_handlers(execution_context, this_sentence_force, tree_info):
     handlers = []
-    index_predication = find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+    index_predication = perplexity.tree.find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
     for module_function in execution_context.vocabulary.predications("solution_group_" + index_predication.name, index_predication.argument_types(), this_sentence_force):
         handlers.append([True, get_function(module_function), module_function])
 
@@ -498,7 +498,7 @@ def find_solution_group_handlers(execution_context, this_sentence_force, tree_in
 def declared_determiner_infos(execution_context, state, variables=None):
     tree_info = state.get_binding("tree").value[0]
     if variables is None:
-        variables = gather_quantifier_order(tree_info)
+        variables = perplexity.tree.gather_quantifier_order(tree_info)
     for variable_name in variables:
         if variable_name[0] == "x":
             binding = state.get_binding(variable_name)

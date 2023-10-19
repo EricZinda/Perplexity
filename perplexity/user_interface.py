@@ -1,20 +1,13 @@
 import logging
-import os
-import platform
-import sys
-import perplexity.solution_groups
 import perplexity.messages
-from delphin import ace
 from delphin.codecs import simplemrs
-from perplexity.execution import ExecutionContext, MessageException, MrsTreeLineageGenerator, TreeSolver
+from perplexity.execution import MessageException, TreeSolver
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, \
-    find_predication, MrsParser, tree_contains_predication, find_predications_in_list_in_list, get_wh_question_variable
-from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
-    parse_predication_name
+from perplexity.tree import find_predications, find_predications_with_arg_types, \
+    MrsParser, tree_contains_predication
+from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
 
 def no_error_priority(error):
@@ -29,11 +22,14 @@ class UserInterface(object):
         self.max_holes = 14
         self.reset = reset
         self.state = reset()
-        self.execution_context = ExecutionContext(vocabulary)
-        self.execution_context.set_in_scope_function(scope_function, scope_init_function)
+
+        self.vocabulary = vocabulary
+        self.scope_function = scope_function
+        self.scope_init_function = scope_init_function
         self.response_function = response_function
         self.message_function = message_function
         self.error_priority_function = error_priority_function
+
         self.interaction_record = None
         self.records = None
         self.test_manager = TestManager()
@@ -133,7 +129,7 @@ class UserInterface(object):
 
                     # Now loop through any tree modifications that have been built for this application
                     alternate_tree_generated = False
-                    for tree_info in self.execution_context.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0):
+                    for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0):
                         # At this point we have locked down which predications should be used and that won't change
                         # However: there might be multiple interpretations of these predications as well as disjunctions
                         # that cause various solution sets to be created. Each will be in its own tree_record
@@ -156,8 +152,13 @@ class UserInterface(object):
                         for frame_state in [self.state]:
                             pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
 
-                            solver = TreeSolver()
-                            for tree_record in solver.tree_solutions(frame_state, tree_info, self.execution_context, self.response_function, self.message_function, tree_index, self.run_tree_index):
+                            tree_solver = TreeSolver.create_top_level_solver(self.vocabulary, self.scope_function, self.scope_init_function)
+                            for tree_record in tree_solver.tree_solutions(frame_state,
+                                                                          tree_info,
+                                                                          self.response_function,
+                                                                          self.message_function,
+                                                                          tree_index,
+                                                                          self.run_tree_index):
                                 mrs_record["Trees"].append(tree_record)
 
                                 solution_group_generator = tree_record["SolutionGroupGenerator"]
@@ -392,15 +393,15 @@ class UserInterface(object):
                 else:
                     argument_types.append(argument_item[1][0])
 
-            if self.execution_context.vocabulary.unknown_word(state, predication.predicate, argument_types, phrase_type):
+            if self.vocabulary.unknown_word(state, predication.predicate, argument_types, phrase_type):
                 # BUT: if a transformer might remove it, return it as "contingent" so we can see if it did
-                if predication.predicate in self.execution_context.vocabulary.transformer_removed:
+                if predication.predicate in self.vocabulary.transformer_removed:
                     contingent_words.append((predication.predicate,
                                           argument_types,
                                           phrase_type,
                                           # Record if at least one form is understood for
                                           # better error messages
-                                          self.execution_context.vocabulary.version_exists(predication.predicate)))
+                                          self.vocabulary.version_exists(predication.predicate)))
 
                 else:
                     # If there aren't any implementations for this predication, or they are all match_all and don't implement it...
@@ -410,8 +411,7 @@ class UserInterface(object):
                                           phrase_type,
                                           # Record if at least one form is understood for
                                           # better error messages
-                                          self.execution_context.vocabulary.version_exists(predication.predicate)))
-
+                                          self.vocabulary.version_exists(predication.predicate)))
 
         if len(unknown_words) > 0:
             pipeline_logger.debug(f"Unknown predications: {unknown_words}")
