@@ -34,24 +34,20 @@ class TreeSolver(object):
         context.set_in_scope_function(scope_function, scope_init_function)
         return cls(context)
 
-    def create_child_solver(self):
-        # Subtrees are resolved using the same context so error state is shared
-        return TreeSolver(self._context)
-
     # This is the class that gets passed to predications as "context"
     # Lowest level class that walks a tree, in-order
     # Consumed by the MRSLineage classes which break the solutions
     # into different solution sets
     class InterpretationSolver(object):
-        def __init__(self, context):
-            self._context = context
+        def __init__(self, execution_context):
+            self._context = execution_context
             self.vocabulary = self._context.vocabulary
 
             self._interpretation = None
             self._predication_index = -1
             self._predication = None
             self._phrase_type = None
-            self._tree_info = None
+            self.tree_info = None
             self._variable_metadata = None
             self._predication_runtime_settings = None
             self._lineage_failure_callback = None
@@ -59,13 +55,17 @@ class TreeSolver(object):
             self._last_solution_lineage = None
             self._variable_execution_data = {}
 
+        def create_child_solver(self):
+            # Subtrees are resolved using the same context so error state is shared
+            return TreeSolver(self._context)
+
         # Returns solutions for a specific tree interpretation
         def solve_tree_interpretation(self, state, tree_info, interpretation, lineage_failure_callback):
             self._interpretation = interpretation
             self._predication_index = 0
             self._predication = None
             self._phrase_type = sentence_force(tree_info["Variables"])
-            self._tree_info = tree_info
+            self.tree_info = tree_info
             self._variable_metadata = perplexity.tree.gather_predication_metadata(self._context.vocabulary, tree_info)
             self._predication_runtime_settings = {}
             self._lineage_failure_callback = lineage_failure_callback
@@ -355,9 +355,13 @@ class TreeSolver(object):
         for interpretation in self._mrs_tree_interpretations(tree_info):
             if target_tree_index is not None:
                 if current_tree_index < target_tree_index:
-                    skipped_tree_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"], error="skipped",
+                    skipped_tree_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"], error=[0, ['skipped']],
                                                                            tree_index=current_tree_index)
                     current_tree_index += 1
+                    if pipeline_logger.level == logging.DEBUG:
+                        func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
+                        pipeline_logger.debug(f"skipping tree_record for '{tree_info['Tree']}'")
+
                     yield skipped_tree_record
                     continue
 

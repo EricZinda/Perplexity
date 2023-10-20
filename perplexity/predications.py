@@ -413,7 +413,7 @@ def combinatorial_predication_1(state, binding, bound_function, unbound_function
 
 # Yield a state where each variable in combinatorial_x_values has been assigned
 # one of the values that wasn't used, but in every combination *across* the variables
-def all_combinations_of_states(original_state, combinatorial_x_values):
+def all_combinations_of_states(context, original_state, combinatorial_x_values):
     if len(combinatorial_x_values) == 0:
         yield original_state
     else:
@@ -424,7 +424,7 @@ def all_combinations_of_states(original_state, combinatorial_x_values):
         # of the values that might be needed
         data_list = []
         for variable_index in range(len(combinatorial_x_variables_names)):
-            binding_metadata = get_variable_metadata(combinatorial_x_variables_names[variable_index])
+            binding_metadata = context.get_variable_metadata(combinatorial_x_variables_names[variable_index])
             variable_size = binding_metadata["ValueSize"]
             if variable_size == ValueSize.exactly_one:
                 min_size = 1

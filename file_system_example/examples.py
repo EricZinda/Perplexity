@@ -1019,7 +1019,7 @@ if __name__ == '__main__':
     # Example24()
     # Example25()
     # Example26()
-    # Example27()
+    Example27()
     # Example27a()
     # Example28()
     # Example29()
@@ -1035,7 +1035,7 @@ if __name__ == '__main__':
     # Example37()
     # Example38()
     # Example39()
-    Example40()
+    # Example40()
     # Example41()
     #
     # state_test()

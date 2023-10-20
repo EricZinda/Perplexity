@@ -30,7 +30,13 @@
     - (fixed) quit setting execution context at all
     - (done) Phase 4: Refactor the code to follow the redesign for top level trees
     - Phase 5: Update resolve_fragment to use the new shared code and make "not" test work
-    - 
+      - (fixed) /runparse 0,1 files are not large: doesn't work: appears that maybe we don't get a tree_record for the failure
+      - (fixed) /runparse 1,0: a file is not large -> crashes
+        - Because the MRS index is neg() and neg() is not included
+      - (fixed) Example27_reset: /runparse 0,0 Test: which folder are files not in? -> There isn't a folder
+        - expected: (Folder(name=/temp, size=0),)(there are more)
+        - which constraint is getting stripped
+    - Phase 6: Make normalize work again
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
 
 - Example23_reset: what is in this "blue" -> There isn't a 'blue' in the system

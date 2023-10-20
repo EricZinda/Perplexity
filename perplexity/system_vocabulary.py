@@ -333,15 +333,22 @@ def neg(context, state, e_introduced_binding, h_scopal):
         def state_generator():
             # Use state instead of negated_predications_state so the solution group processor doesn't think
             # this is negative: we want it evaluated positively
-            for combination_state in all_combinations_of_states(state, combinatorial_referenced_x_values):
+            new_tree_info = copy.deepcopy(context.tree_info)
+            new_tree_info["Tree"] = h_scopal
+            for combination_state in all_combinations_of_states(context, state, combinatorial_referenced_x_values):
+                tree_solver = context.create_child_solver()
+                subtree_state = combination_state.set_x("tree", (new_tree_info,))
+
                 # Use resolve_fragment to run numeric criteria on the "not" clause. So that a phrase like
                 # "which files not in this folder are not large?" would work
                 had_negative_success = False
-                for temp in context.resolve_fragment_new(combination_state, h_scopal):
-                    # This is true, don't yield it since neg() makes it False
-                    generate_not_error(context, unscoped_referenced_variables)
-                    had_negative_success = True
-                    break
+                for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info):
+                    if tree_record["SolutionGroupGenerator"] is not None:
+                        # There were solutions, so this is true,
+                        # don't yield it since neg() makes it False
+                        generate_not_error(context, unscoped_referenced_variables)
+                        had_negative_success = True
+                        break
 
                 if context.has_not_understood_error():
                     # this was not a logical failure, we simply didn't understand
@@ -362,7 +369,8 @@ def neg(context, state, e_introduced_binding, h_scopal):
             negated_predications_state = state.add_to_e("negated_predications",
                                                         context.current_predication_index(),
                                                         negated_predication_info)
-            for combination_state in all_combinations_of_states(negated_predications_state, combinatorial_referenced_x_values):
+            had_success = False
+            for combination_state in all_combinations_of_states(context, negated_predications_state, combinatorial_referenced_x_values):
                 # No scoped variables, just run it directly
                 had_negative_success = False
                 for _ in context.call(combination_state, h_scopal):
@@ -377,7 +385,11 @@ def neg(context, state, e_introduced_binding, h_scopal):
                 if not had_negative_success:
                     # There were no solutions for this combination_state, so it is false, and thus true
                     # Record that this was a negative success for debugging purposes
+                    had_success = True
                     yield combination_state.add_to_e("negated_successes", context.current_predication_index(), True)
+
+            if not had_success:
+                generate_not_error(context, unscoped_referenced_variables)
 
     yield from state_generator()
 
