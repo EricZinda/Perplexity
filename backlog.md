@@ -18,7 +18,7 @@
   - treats types as referring expressions
   - Need to convert to Concepts
   - look for all object_to_store() references and make sure they shouldn't be referring_expression
-  - 
+  
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
   - Need to rethink what it means for a solution group to have a referring expression in it
