@@ -264,7 +264,9 @@ class TreeSolver(object):
             # And remember this as the last lineage
             self._last_solution_lineage = new_lineage
 
-    # Represents a single lineage
+    # Represents a single lineage which is a particular choice of predication interpretations
+    # and a selection of disjunction alternatives within any disjunction.
+    # Note that this class records the failure that was encountered for the particular lineage
     class MrsTreeLineage(object):
         def __init__(self, lineage_generator):
             self.lineage_generator = lineage_generator
@@ -280,6 +282,25 @@ class TreeSolver(object):
             except StopIteration:
                 self.error_info = self.lineage_generator.retrieve_lineage_failure()
                 raise
+
+    # Generator that returns every MrsTreeLineage alternative for a particular interpretation of a scope-resolved MRS.
+    # This will only be one tree unless some of the predication implementations are disjunctions, in which case it will
+    # return a different MrsTreeLineage for every combination of solution sets from each disjunction
+    #
+    # Because it is given an interpretation, the python functions that represent alternative interpretations are chosen up front
+    # All that is left to disambiguate are different solution sets for interpretations that are disjunctions. These are identified
+    # by a special variable added to the tree called "tree_lineage". If that exists, it means that one of the predications is a disjunction
+    # and it adds a unique ID to the value of that variable in the form ":id:id:id", where each "id" represents a unique value for a particular
+    # solution set from the disjunction at that point in the tree.
+    #
+    # Assumptions:
+    #   - Disjunction predications must always indicate that they are a disjunction by calling context.set_disjunction() so that we
+    #       can determine that a failure was a disjunction failure and generate an independent record for it
+    #   - If a predication is a disjunction it must *always* put an ID in that position or else the lineage might mistakenly have a
+    #       different predication giving a different ID for that position (because the original one is missing).
+    #   - The same disjunction values must always be together. A disjunction predication can't intermingle the different solution sets.
+    #       this allows us to assume that a conjunction has moved on when we encounter a new ID in its position and not have to wait for the
+    #       whole set of solutions to be returned and sort them
 
     class MrsTreeLineageGenerator(object):
         def __init__(self, interpretation_solver, state, tree_info, interpretation):
@@ -325,7 +346,6 @@ class TreeSolver(object):
             solution = next(self.solution_generator)
             tree_lineage_binding = solution.get_binding("tree_lineage")
             tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-            # pipeline_logger.debug(f"Next MRS solution: {solution}")
 
             if not self.lineage_failure_fifo.empty():
                 # There was at least one lineage failure during execution of next()
@@ -342,6 +362,8 @@ class TreeSolver(object):
                 self.last_lineage = tree_lineage
                 raise StopIteration
 
+    # Yields an interpretation_solver and a generator for solutions for a particular lineage
+    # Only does phase1 evaluation on the tree
     def phase1(self, state, tree_info, normalize=False, current_tree_index=None, target_tree_index=None):
         if current_tree_index is None:
             current_tree_index = [0]
@@ -375,7 +397,7 @@ class TreeSolver(object):
     # Main call to resolve a tree
     # Given a particular scope-resolved tree in tree_info,
     # yields a tree_record for every interpretation and combination of disjunctions
-    # that was attempted (including if they were skipped)
+    # that was attempted (including records if they were skipped for debugging purposes)
     def tree_solutions(self, state, tree_info, response_function=None, message_function=None,
                        current_tree_index=0, target_tree_index=None):
         wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
@@ -430,7 +452,6 @@ class TreeSolver(object):
     def new_error_tree_record(tree=None, error=None, response_generator=None, tree_index=None):
         return TreeSolver.new_tree_record(tree=tree, error=error, response_generator=response_generator,
                                           tree_index=tree_index, error_tree=True)
-
 
     @staticmethod
     def new_tree_record(tree=None, error=None, response_generator=None, response_message=None, tree_index=None,
