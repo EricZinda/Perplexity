@@ -3,11 +3,11 @@
   
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
 - Rename lineage something like disjunction
-
+- Do we still need frames with the new concept handling?
+- Get rid of referring expressions?
   
 - We have 0 menus -> No. you does not have something 
                 
-- Do we still need frames with the new concept handling?
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
 - Do I have a son?

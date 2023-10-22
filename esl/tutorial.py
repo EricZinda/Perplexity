@@ -1950,13 +1950,13 @@ def hello_world():
 
 
 if __name__ == '__main__':
-    ShowLogging("Execution")
+    # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")
