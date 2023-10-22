@@ -349,7 +349,7 @@ class TreeSolver(object):
         for interpretation in self._mrs_tree_interpretations(tree_info, normalize):
             if pipeline_logger.level == logging.DEBUG:
                 func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
-                pipeline_logger.debug(f"Evaluating alternative '{func_list}'")
+                pipeline_logger.debug(f"Evaluating alternative {current_tree_index[0]} '{func_list}'")
 
             if target_tree_index is not None:
                 if current_tree_index[0] < target_tree_index:
