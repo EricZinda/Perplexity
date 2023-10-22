@@ -29,16 +29,27 @@
       - (done) Remove execution_context()
     - (fixed) quit setting execution context at all
     - (done) Phase 4: Refactor the code to follow the redesign for top level trees
-    - Phase 5: Update resolve_fragment to use the new shared code and make "not" test work
+    - (done) Phase 5: Update resolve_fragment to use the new shared code and make "not" test work
       - (fixed) /runparse 0,1 files are not large: doesn't work: appears that maybe we don't get a tree_record for the failure
       - (fixed) /runparse 1,0: a file is not large -> crashes
         - Because the MRS index is neg() and neg() is not included
       - (fixed) Example27_reset: /runparse 0,0 Test: which folder are files not in? -> There isn't a folder
         - expected: (Folder(name=/temp, size=0),)(there are more)
         - which constraint is getting stripped
-    - Phase 6: Make normalize work again
+    - (done) Phase 6: Make normalize work again: Example40: copy "file5.txt" in "/documents"
+      - The problem is that we don't know if normalize or another form will be called before the tree is executed
+        - AND: There might be multiple alternatives
+        - Option 1: If predications in the tree call for normalized predications, use that form
+        - Option 2: always include a normalized form if it exists, BUT: Only use it if called for
+        - Option 3: dynamically look it up if needed and assert if there is more than 1 found
+        - Option 4: scopal arguments should be using a TreeSolver and calling it with normalize!
+        - Option 5: They only want phase 1, implement a way to call it with normalize
+          - Bug: Phase1 is not in the right class 
+          - Really, it is that we should create a child solver, and then call from that instead of calling directly from context
+          - 
 - Seems like we can get rid of the lineage code that runs as part of the solution group??
-
+- Rename lineage something like disjunction
+- 
 - Example23_reset: what is in this "blue" -> There isn't a 'blue' in the system
   - Because the first disjunctive lineage that finds the file called 'blue' and fails with the correct error
   - But then the second lineage fails with a bad error and overwrites it

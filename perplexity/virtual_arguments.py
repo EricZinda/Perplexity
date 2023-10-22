@@ -1,3 +1,5 @@
+import copy
+
 from perplexity.tree import find_predications_using_variable_ARG1
 from perplexity.utilities import at_least_one_generator, system_added_arg_count, system_added_state_arg, \
     system_added_context_arg
@@ -20,16 +22,25 @@ def scopal_argument(scopal_index, event_for_arg_index, event_value_pattern):
             # Determine which events in the scopal argument we need
             scopal_events = scopal_events_modifying_individual(x_what_binding.variable.name, h_scopal_arg)
             if len(scopal_events) > 0:
-                # Normalize the tree, which could return multiple solutions like any call()
-                for solution in context.call(state, h_scopal_arg, normalize=True):
-                    # Get the value for each event and see if it holds
-                    # the pattern being searched for
-                    for scopal_event in scopal_events:
-                        found_binding = solution.get_binding(scopal_event)
-                        if found_binding.value is not None:
-                            found_value = event_value_from_pattern(found_binding.value, event_value_pattern)
-                            if found_value is not None:
-                                yield found_value
+                new_tree_info = copy.deepcopy(context.tree_info)
+                new_tree_info["Tree"] = h_scopal_arg
+                subtree_state = state.set_x("tree", (new_tree_info,))
+                tree_solver = context.create_child_solver()
+
+                # Normalize the tree, which could return multiple solutions, or disjunct solution sets
+                # just like any call()
+                # We can flatten them out here because they retain their lineage in a variable and will get split
+                # out again as separate solutions if they are a disjunction
+                for new_context, solutions in tree_solver.phase1(subtree_state, new_tree_info, normalize=True):
+                    for solution in solutions:
+                        # Get the value for each event and see if it holds
+                        # the pattern being searched for
+                        for scopal_event in scopal_events:
+                            found_binding = solution.get_binding(scopal_event)
+                            if found_binding.value is not None:
+                                found_value = event_value_from_pattern(found_binding.value, event_value_pattern)
+                                if found_value is not None:
+                                    yield found_value
 
         # Make sure there is at least one value found
         # Otherwise this predication won't be able to execute

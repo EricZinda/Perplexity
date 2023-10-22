@@ -31,9 +31,14 @@ If a scopal argument fails during phase 1, the error it generates should be the 
 # Design
 A tree_record object holds a bunch of generators that generate results for the tree *when requested*. These generators record errors in the execution context they were given. There can be subtrees that get executed (e.g. by neg()) in the course of evaluating a tree that should *share* the error context with the outer tree.  
 
-There is no reason to share a context across trees.  The context itself is a TreeSolver, and each TreeSolver has an ExecutionContext with it. When a subtree gets resolved (as in neg()), a new TreeSolver is created to do it, but uses the same ExecutionContext so errors are recorded for the whole tree.
+There is no reason to share a context across different trees.  The context itself is a TreeSolver, and each TreeSolver has an ExecutionContext with it. When a subtree gets resolved (as in neg()), a new TreeSolver is created to do it, but uses the same ExecutionContext so errors are recorded for the whole tree.
 
+[TODO: Describe how neg() works.]
 
+The same thing happens with scopal arguments such as "copy "file5.txt" in "documents"":
+    pronoun_q(x3,pron(x3),udef_q(x18,_document_n_1(x18),proper_q(x8,[quoted(file5.txt,i14), fw_seq(x8,i14)],_copy_v_1(e2,x3,x8,_in_p_loc(e17,x8,x18)))))
+    the predications under the scopal generator could generate multiple *alternative solution sets*, i.e. disjunctions, in which case they need to be treated as other disjunctions
+    
 
 This whole thing came about because we weren't getting "(there are more)" messages because solutions to the same tree were not necessarily consecutive
     - What is the difference between building alternative trees up front and forking as you go?
