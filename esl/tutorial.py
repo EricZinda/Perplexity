@@ -1247,7 +1247,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             yield store_to_object(i)
 
         if not found:
-            context.report_error(["Nothing_VTRANS_X", "order", x_object, state.get_reprompt()])
+            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "ordered", x_object_binding.variable.name, state.get_reprompt()])
 
     def object_from_actor(x_actor):
         # "what did I order?"
@@ -1257,7 +1257,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             yield store_to_object(state, i)
 
         if not found:
-            context.report_error(["X_VTRANS_Nothing", "order", convert_to_english(state, x_actor), state.get_reprompt()])
+            context.report_error(["x_verb_nothing", x_actor_binding.variable.name, "ordered", state.get_reprompt()])
 
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
@@ -1356,7 +1356,7 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
             yield store_to_object(state, i)
 
         if not found:
-            context.report_error(["Nothing_VTRANS_X", "have", x_object, state.get_reprompt()])
+            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "has", x_object_binding.variable.name, state.get_reprompt()])
 
     def object_from_actor(x_actor):
         found = False
@@ -1365,7 +1365,7 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
             yield store_to_object(state, i)
 
         if not found:
-            context.report_error(["X_VTRANS_Nothing", "have", convert_to_english(state, x_actor), state.get_reprompt()])
+            context.report_error(["x_verb_nothing", x_actor_binding.variable.name, "has"])
 
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
@@ -1449,33 +1449,40 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
         return
 
 
+# TODO: Should this really be lift_style? Doesn't seem like it
 # Used only when there is a form of have that means "able to"
 # The regular predication only checks if x is able to have y
 # Scenarios:
 #   "What can I have?" --> implied menu request
 @Predication(vocabulary, names=["_have_v_1_able", "_get_v_1_able"])
 def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    def both_bound_prediction_function(x_actors, x_objects):
+    def both_bound_prediction_function(x_actor, x_object):
         # Players are able to have any food, a table or a menu
-        if is_user_type(x_actors):
-            return valid_player_request(state, x_objects)
+        if is_user_type(x_actor):
+            return valid_player_request(state, [x_object])
 
         # Food is able to have ingredients, restaurant can have food, etc.
         # Whatever we have modelled
         else:
-            store_actors = [object_to_store(x) for x in x_actors]
-            store_objects = [object_to_store(x) for x in x_objects]
+            store_actor = object_to_store(x_actor)
+            store_object = object_to_store(x_object)
 
-            for store_actor in store_actors:
-                for store_object in store_objects:
-                    if not rel_check(state, store_actor, "have", store_object):
-                        return False
-
-            return True
+            return rel_check(state, store_actor, "have", store_object)
 
     def actor_unbound(x_object):
-        if False:
-            yield None
+        # What/Who can have x? Comes in unbound because it is reorderable
+        # so we need to return everything that can have x
+        found = False
+        if valid_player_request(state, [x_object]):
+            found = True
+            yield from user_types()
+
+        for item in rel_subjects(state, "have", x_object):
+            found = True
+            yield item
+
+        if not found:
+            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "have", x_object_binding.variable.name])
 
     def object_unbound(x_actor):
         # This is a "What can I have?" type question
@@ -1483,9 +1490,9 @@ def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
         #   - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
         #     - So it is a special case that we interpret as a request for a menu
         if is_user_type(x_actor):
-            yield (ESLConcept("menu"),)
+            yield ESLConcept("menu")
 
-    yield from lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
                                         actor_unbound,
                                         object_unbound)
@@ -1742,13 +1749,17 @@ def generate_custom_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
+    arg_length = len(error_arguments) if error_arguments is not None else 0
+    arg1 = error_arguments[1] if arg_length > 1 else None
+    arg2 = error_arguments[2] if arg_length > 2 else None
+    arg3 = error_arguments[3] if arg_length > 3 else None
+    arg4 = error_arguments[4] if arg_length > 4 else None
 
     # See if the system can handle converting the error
     # to a message first except for those we are overriding
 
     # Override these
     if error_constant == "doesntExist":
-        arg1 = error_arguments[1]
         return s("Host: There isn't such {a arg1:sg} here", tree_info)
 
     else:
@@ -1756,36 +1767,27 @@ def generate_custom_message(tree_info, error_term):
         if system_message is not None:
             return system_message
 
-    # if error_constant == "conceptNotFound":
-
     if error_constant == "dontKnowHow":
         return "I don't know how to do that."
     if error_constant == "notAThing":
-        arg1 = error_arguments[1]
         # english_for_delphin_variable() converts a variable name like 'x3' into the english words
         # that it represented in the MRS
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
-        arg3 = error_arguments[3]
+        arg2 = english_for_delphin_variable(error_predicate_index, arg2, tree_info)
         return f"{arg1} is not {arg2}{arg3}"
-    if error_constant == "X_VTRANS_Nothing":
-        return "Nothing." + error_arguments[3]
+    if error_constant == "nothing_verb_x":
+        return s("No {arg1} {*arg2} {a arg3}", tree_info, reverse_pronouns=True)
+    if error_constant == "x_verb_nothing":
+        return s("{arg1} {*arg2} nothing", tree_info, reverse_pronouns=True)
     if error_constant == "not_adj":
-        return "It's not " + error_arguments[1] + "." + error_arguments[2]
+        return "It's not " + arg1 + "." + arg2
     if error_constant == "is_not":
-        return f"{error_arguments[1]} is not {error_arguments[2]}{error_arguments[3]}"
+        return f"{arg1} is not {arg2}{arg3}"
     if error_constant == "notOn":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
-        arg3 = error_arguments[3]
         return f"No. {arg1} is not on {arg2}{arg3}"
     if error_constant == "verbDoesntApplyArg":
-        arg1 = error_arguments[1]
-        arg2 = error_arguments[2]
-        arg3 = error_arguments[3]
-        arg4 = error_arguments[4]
         return s("No, {arg1} {'did':<arg1} not {*arg2} {arg3} {*arg4}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApply":
-        return f"No. {error_arguments[1]} does not {error_arguments[2]} {error_arguments[3]} {error_arguments[4]}"
+        return f"No. {arg1} does not {arg2} {arg3} {arg4}"
     else:
         # No custom message, just return the raw error for debugging
         return str(error_term)
@@ -1951,7 +1953,7 @@ def hello_world():
 
 if __name__ == '__main__':
     # ShowLogging("Execution")
-    # ShowLogging("Generation")
+    ShowLogging("Generation")
     # ShowLogging("UserInterface")
     ShowLogging("Pipeline")
     # ShowLogging("SString")

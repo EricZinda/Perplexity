@@ -136,7 +136,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                 elif parsed_predication["Lemma"] == "quoted":
                     nlg_data["Topic"] = predication.args[0].replace("\\>root111", "/").replace("\\>", "/")
 
-                elif parsed_predication["Lemma"] in ["place", "thing"]:
+                elif parsed_predication["Lemma"] in ["person", "place", "thing"]:
                     nlg_data["Topic"] = parsed_predication["Lemma"]
 
                 elif parsed_predication["Lemma"] == "fw_seq":

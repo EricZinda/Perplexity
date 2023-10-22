@@ -19,15 +19,11 @@ def system_vocabulary():
 
 
 def rstr_reorderable(rstr):
-    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing"]
+    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing", "person"]
 
 
 # Yield all undetermined, unquantified answers
-def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
-    reverse = rstr_reorderable(h_rstr_orig)
-    h_rstr = h_body_orig if reverse else h_rstr_orig
-    h_body = h_rstr_orig if reverse else h_body_orig
-
+def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_predication=None, reversed=False):
     variable_name = x_variable_binding.variable.name
     rstr_values = []
     rstr_values_tree_lineage = ""
@@ -51,7 +47,7 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig,
             for body_solution in context.call(alternative_state, h_body):
                 yield body_solution
 
-    if not reverse and len(rstr_values) == 0:
+    if not reversed and len(rstr_values) == 0:
         # If the rstr was actually run (i.e. not reversed) and produced no values:
         # Ignore whatever error the RSTR produced, this is a better one
         context.report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
@@ -160,7 +156,11 @@ def every_each_q(context, state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, library="system", names=["which_q", "_which_q"])
-def which_q(context, state, x_variable_binding, h_rstr, h_body):
+def which_q(context, state, x_variable_binding, h_rstr_orig, h_body_orig):
+    reverse = rstr_reorderable(h_rstr_orig)
+    h_rstr = h_body_orig if reverse else h_rstr_orig
+    h_body = h_rstr_orig if reverse else h_body_orig
+
     current_predication = context.current_predication()
 
     state = state.set_variable_data(x_variable_binding.variable.name,
@@ -169,7 +169,7 @@ def which_q(context, state, x_variable_binding, h_rstr, h_body):
                                                                 min_size=1,
                                                                 max_size=float('inf')))
 
-    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, reversed=reverse)
 
 
 @Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q", "number_q"])

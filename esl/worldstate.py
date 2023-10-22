@@ -48,13 +48,17 @@ def in_scope(initial_data, state, value):
         return value in initial_data["InScopeInstances"]
 
 
+def user_types():
+    yield from ["user", "son1"]
+
+
 def is_user_type(val):
     if not isinstance(val, tuple):
-        return val in ["user", "son1"]
+        return val in user_types()
 
     else:
         for i in val:
-            if i not in ["user", "son1"]:
+            if i not in user_types():
                 return False
         return True
 

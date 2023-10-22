@@ -58,7 +58,7 @@ def sstringify(origin, tree_info=None, reverse_pronouns=False):
     sstringified = re.sub(r"(?:}})+?", "\x16", sstringified)[::-1]
 
     if "{}" in sstringified:
-        raise SyntaxError("fstring: empty expression not allowed")
+        raise SyntaxError("sstring: empty expression not allowed")
 
     offset = 0
     for char in sstringified:
@@ -68,7 +68,7 @@ def sstringify(origin, tree_info=None, reverse_pronouns=False):
             offset -= 1
 
     if offset != 0:
-        raise SyntaxError("f-string: unbalanced curly braces'")
+        raise SyntaxError("s-string: unbalanced curly braces'")
 
     for match in INDICATOR_PATTERN.findall(sstringified):
         indicator = match[1:-1]

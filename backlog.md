@@ -1,17 +1,15 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
     
-  
-- Seems like we can get rid of the lineage code that runs as part of the solution group??
+
+Code cleanup:  
 - Rename lineage something like disjunction
 - Do we still need frames with the new concept handling?
 - Get rid of referring expressions?
-  
+    
+Lower Pri:                
 - We have 0 menus -> No. you does not have something 
-                
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
-- Do I have a son?
-- "Who has steaks?" returns an error from referring_expression. Non-optimal
 - Can I have a steak?
   - concepts are included in combinatoric with instances
 - what specials do you have?
