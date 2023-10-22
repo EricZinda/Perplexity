@@ -520,7 +520,10 @@ def match_all_the_concept_n(noun_type, context, state, x_binding):
         for item in all_instances(state, noun_type):
             yield item
 
-    if rel_check(state, noun_type, "conceptInScope", "true") and\
+    # Make "the soup" return all the instances for a concept without any "the-type" restrictions IF the concept is in scope
+    # This is to make pure fact checking predications like "have" and "ordered" be able to deal with instances and not have to
+    # resort to concepts
+    if rel_check(state, noun_type, "conceptInScope", "true") and \
             x_binding.variable.quantifier.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
         for instance_state in combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_instances):
             new_criteria = copy.deepcopy(x_binding.variable.quantifier)

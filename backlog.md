@@ -5,7 +5,10 @@ Code cleanup:
 - Rename lineage something like disjunction
 - Do we still need frames with the new concept handling?
 - Get rid of referring expressions?
-    
+- We have code in solution_groups() that makes sure concepts and instances don't get mixed
+  - Shouldn't that really be modelled as noun() having a conjunction, one outcome returns instances and the other concepts?
+  - We still have to not count concepts, but this simplifies things...
+  
 Lower Pri:                
 - We have 0 menus -> No. you does not have something 
 - "What did we order?" -> Nothing
@@ -16,7 +19,12 @@ Lower Pri:
   - treats types as referring expressions
   - Need to convert to Concepts
   - look for all object_to_store() references and make sure they shouldn't be referring_expression
-  
+
+- Bug: "I have the soup" should work when I have *a* soup
+  - "I have the soup" --> There is more than the soup
+
+
+- Get rid of referring expressions?
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
   - Need to rethink what it means for a solution group to have a referring expression in it
@@ -26,36 +34,32 @@ Lower Pri:
       - The solver generates solution groups with referring expressions
       - Those get resolved into types and instances which get processed
       - etc.
-      
-- If you say "which dishes do you have?" no concepts are returned since they are filtered out by referring expression
-  - But if we return all concepts, it will include "dishes" too
-    - The referring expression should always return concepts *that aren't the same as the original*
 
-- have_v and order_v are both just about verifying facts in the world, so they should be implemented the same
-  - Alternative Implementation
-    - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
-      - Anything that needs special handling should go to another routine
-        - If it is implied request for something else, it should
+- _have_v_1_present and _order_v_1_past are both just about verifying facts in the world, so they should be implemented the same
+  - Need to implement "can order"
+    - Alternative Implementation
+      - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
+        - Anything that needs special handling should go to another routine
+          - If it is implied request for something else, it should
         
-  - Implementation
-      Only handle: "I ordered the (conceptual referring expression)"
-      We need to process the conceptual version of the referring expression
-      to properly handle "I ordered the soup" because "the soup" needs to be interpreted
-      as an "in-scope concept" and not "the one soup on the table" (or something similar)
-      And since we already have to process the conceptual referring expression, we will also
-      use conceptual for all phrases like "I ordered a soup" since they all work the same
+    - Implementation
+        Only handle: "I ordered the (conceptual referring expression)"
+        We need to process the conceptual version of the referring expression
+        to properly handle "I ordered the soup" because "the soup" needs to be interpreted
+        as an "in-scope concept" and not "the one soup on the table" (or something similar)
+        And since we already have to process the conceptual referring expression, we will also
+        use conceptual for all phrases like "I ordered a soup" since they all work the same
 
-    - check_conceptual will ensure that there is "the soup"
-    - evaluating the referring expression will find all the things that the referring expression refers to
-      - then you can see if those things were "ordered" or "had"
-    - If the user asks, "Do you have a steak" or "Do you have the steak" we have options:
-      - We could resolve the referring expression and make sure the computer has an instance of a steak
-      OR
-      - We could see if they have the concept of one
-      
-- Bug: "I have the soup" should work when I have *a* soup
-  - "I have the soup" --> There is more than the soup
-      
+      - check_conceptual will ensure that there is "the soup"
+      - evaluating the referring expression will find all the things that the referring expression refers to
+        - then you can see if those things were "ordered" or "had"
+      - If the user asks, "Do you have a steak" or "Do you have the steak" we have options:
+        - We could resolve the referring expression and make sure the computer has an instance of a steak
+        OR
+        - We could see if they have the concept of one
+
+- What are your specials? Fails
+- 
 - Doesn't seem like we should have to model the computer as "having the concept of menu?"
 - "who has which dish" doesn't work
 

@@ -57,6 +57,13 @@
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ecb032dd-3be2-4c8e-9b1c-1117b72f0554"
+        },
+        {
+            "Command": "I have the soup",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "348f9121-461a-4097-b2e3-f4411106f565"
         }
     ]
 }

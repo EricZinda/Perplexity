@@ -1,5 +1,7 @@
 have_v and order_v are both just about verifying facts in the world, so they should be implemented the same. Many predications will be like these.
 
+TODO: Need to write up how "I have the soup" manages to work properly
+
 Background:
 - Referring Expressions The Nature of Referring and ... https://assets.cambridge.org/97811071/43470/excerpt/9781107143470_excerpt.pdf
 - Best:
