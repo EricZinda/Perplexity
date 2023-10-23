@@ -39,7 +39,7 @@
         },
         {
             "Command": "Do you have the table?",
-            "Expected": "I'm not sure which the table you mean",
+            "Expected": "Yes.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "5228b43a-2306-4599-9955-09dbb3a7b2c1"
@@ -94,6 +94,13 @@
             "ID": "5f3e6faf-3774-43b0-a186-eeb07b6a9be5"
         },
         {
+            "Command": "do you have a bill?",
+            "Expected": "But... you haven't got any food yet!",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_bill_n_of(x8,i13),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "c89788d2-274d-4547-8eba-67cfd08c89ea"
+        },
+        {
             "Command": "do you have steaks?",
             "Expected": "Yes.",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
@@ -113,6 +120,69 @@
             "Tree": "which_q(x3,thing(x3),udef_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "ba7fbf08-8c07-4316-ae1f-2fa1a21c91c1"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "8c4661e6-0e04-4ea9-9928-dd8b38a8bac1"
+        },
+        {
+            "Command": "do you have a table?",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "b1192b76-dc74-437d-aeac-811d21e7b0b6"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "807fb862-60f4-47a6-8b1b-a4dcfb74a8ae"
+        },
+        {
+            "Command": "do you have the table",
+            "Expected": "I'm not sure which table you mean.",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "d08e91ef-3bcd-42b0-a0dc-8c7d1a357a51"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "7a9a9c26-3451-4bd0-a554-415693955e1f"
+        },
+        {
+            "Command": "a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "1f24c6c3-e897-48af-a08e-45353824ead3"
+        },
+        {
+            "Command": "do you have this table",
+            "Expected": "Yes.",
+            "Tree": "pronoun_q(x3,pron(x3),_this_q_dem(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "5e36dbc8-a912-4c92-9878-9ed8de615bfd"
+        },
+        {
+            "Command": "do you have a menu?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "77f79c20-8150-4761-815b-eea143af6942"
+        },
+        {
+            "Command": "do you have menus?",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "cc1fb4b4-ee23-4700-b941-9762d19170ec"
         }
     ]
 }

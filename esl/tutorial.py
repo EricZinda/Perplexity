@@ -1235,12 +1235,11 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
         return
 
     def bound(x_actor, x_object):
-        for o in rel_objects(state, x_actor, "ordered"):
-            if o == x_object:
-                return True
-
-        context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, state.get_reprompt()])
-        return False
+        if rel_check(state, x_actor, "ordered", x_object):
+            return True
+        else:
+            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, state.get_reprompt()])
+            return False
 
     def actor_from_object(x_object):
         # "Who ordered X?"
@@ -1327,9 +1326,14 @@ def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_ac
         yield []
 
 
+# Works identically to "ordered" since, for non-implied requests like "do you have a menu"
+# We are just checking if facts are true
 # Just purely answers questions about having things in the present tense
 # like have_v_1, BUT: handles some special cases like "do you have a table?"
-# which is really an implied request. See group handler for scenarios.
+# which is really an implied request.
+# Implied requests are always of the form "you" (meaning restaurant) and, because concepts come through first,
+# we will hit these first and interpret them as implied requests
+# See group handler for scenarios.
 @Predication(vocabulary, names=["_have_v_1"])
 def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
@@ -1338,9 +1342,13 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
         return
 
     def bound(x_actor, x_object):
-        # If everything is instances, just answer if x has y
+        # If it is an instance, just answer if x has y
         if not is_concept(x_object):
-            return rel_check(state, x_actor, "have", x_object)
+            if rel_check(state, x_actor, "have", x_object):
+                return True
+            else:
+                context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name, state.get_reprompt()])
+                return False
 
         else:
             if x_actor == "restaurant":
@@ -1374,8 +1382,9 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
                                       object_from_actor)
 
 
-# Scenarios:
+# Scenarios (all covered by tests):
 # - "Do you have a table?" --> implied table request
+# - "Do you have this table?" --> fact checking question
 # - "what do you have?" --> implied menu request
 # - "Do you have a/the menu?" --> implied menu request
 # - "Do you have a/the bill?" --> implied bill request
@@ -1383,7 +1392,7 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
 #   "do I/we have x?" --> ask about the state of the world
 # - "Do you have the table?" --> Should fail due to "the table" since there is neither 1 table, nor one conceptual table in scope
 # - "Do you have a/the steak?" --> just asking about the steak, no implied request
-# - "Do you have a bill?" --> just asking about the bill, no implied request
+# - "Do you have a bill?" --> implied request, kind of
 # - "Do you have menus?" --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
 # - "Do you have steaks?" --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
 @Predication(vocabulary, names=["solution_group__have_v_1"])
@@ -1586,6 +1595,9 @@ def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_bin
         if is_concept(x_object):
             yield from x_object.instances(context, state)
             yield from x_object.concepts(context, state)
+
+        else:
+            yield x_object
 
     for success_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound, unbound,
                                                 unbound):
@@ -1797,14 +1809,14 @@ def generate_custom_message(tree_info, error_term):
 
 
 def reset():
-    # return State([])
-    # initial_state = WorldState({}, ["pizza", "restaurant", "salad", "soup", "steak", "ham", "meat","special"])
     initial_state = WorldState({},
                                {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12,
                                            "chicken": 7, "pork": 8},
                                 "responseState": "initial"
                                 })
 
+    # Some basic rules:
+    # The restaurant has to "have" all the things in it so that questions like "Do you have this table?" work
     initial_state = initial_state.add_rel("bill_type", "specializes", "thing")
     initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
     initial_state = initial_state.add_rel("check", "specializes", "bill_type")
@@ -1866,16 +1878,22 @@ def reset():
 
     initial_state = initial_state.add_rel("table1", "instanceOf", "table")
     initial_state = initial_state.add_rel("table1", "maxCapacity", 2)
+    initial_state = initial_state.add_rel("restaurant", "have", "table1")
     initial_state = initial_state.add_rel("table2", "instanceOf", "table")
     initial_state = initial_state.add_rel("table2", "maxCapacity", 2)
+    initial_state = initial_state.add_rel("restaurant", "have", "table2")
     initial_state = initial_state.add_rel("table3", "instanceOf", "table")
     initial_state = initial_state.add_rel("table3", "maxCapacity", 1)
+    initial_state = initial_state.add_rel("restaurant", "have", "table3")
 
     initial_state = initial_state.add_rel("menu1", "instanceOf", "menu")
+    initial_state = initial_state.add_rel("restaurant", "have", "menu1")
     initial_state = initial_state.add_rel("menu2", "instanceOf", "menu")
+    initial_state = initial_state.add_rel("restaurant", "have", "menu2")
     initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
+    initial_state = initial_state.add_rel("restaurant", "have", "menu3")
 
-    menu_types = [ "salmon", "steak", "chicken"]
+    menu_types = ["salmon", "steak", "chicken"]
     special_types = ["soup", "salad", "pork"]
     dish_types = menu_types + special_types
     for dish_type in dish_types:
@@ -1956,7 +1974,7 @@ def hello_world():
 
 if __name__ == '__main__':
     # ShowLogging("Execution")
-    ShowLogging("Generation")
+    # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     ShowLogging("Pipeline")
     # ShowLogging("SString")

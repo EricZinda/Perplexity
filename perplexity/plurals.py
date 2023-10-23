@@ -126,6 +126,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
                 new_set_stats_group = existing_set[0].copy()
                 merge, state = check_criteria_all(execution_context, var_criteria,  new_set_stats_group, next_solution)
+                if groups_logger.level == logging.DEBUG:
+                    nl = "\n     "
+                    groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
 
                 if state == CriteriaResult.fail_one:
                     # Fail (doesn't meet criteria): don't add, don't yield
@@ -180,6 +183,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
     if not early_fail_quit and has_global_constraint and len(pending_global_criteria) > 0:
         for criteria in var_criteria:
             if not criteria.meets_global_criteria(execution_context):
+                if groups_logger.level == logging.DEBUG:
+                    nl = "\n     "
+                    groups_logger.debug(f"Didn't meet global criteria: {criteria}")
                 return
 
         # Clear any errors that occurred trying to generate solution groups that didn't work

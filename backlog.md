@@ -8,6 +8,10 @@ Code cleanup:
 - We have code in solution_groups() that makes sure concepts and instances don't get mixed
   - Shouldn't that really be modelled as noun() having a conjunction, one outcome returns instances and the other concepts?
   - We still have to not count concepts, but this simplifies things...
+- Alternative Implementation for have_v_1_present and _order_v_1_past
+  - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
+    - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
+      - I.e. things like implied requests
   
 Lower Pri:                
 - We have 0 menus -> No. you does not have something 
@@ -20,11 +24,36 @@ Lower Pri:
   - Need to convert to Concepts
   - look for all object_to_store() references and make sure they shouldn't be referring_expression
 
-- Bug: "I have the soup" should work when I have *a* soup
-  - "I have the soup" --> There is more than the soup
+        
+- Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
+  - Happens if the_selector_q is commented out and "_the_q" is moved to the_all_q and the_in_scope_q 
+    - AND the_all_q is first in the file before the_in_scope_q
+  - Expected: I'm not sure which the 2 file in a folder you mean
+  - /runparse 0,1
+  - the_in_scope_q gets th
+    - a_q(x12,_folder_n_of(x12,i17),_the_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],_large_a_1(e2,x3)))
+      - if the folder is "/"
+      - the_q() gets passed a state that has a combinatoric x12 and so the RSTR yields the same file from multiple folders
+      - the_q() is expecting that resolving its RSTR is only going to give back answers for the state that has been built up so far
+        - because that is what allows the "the" RSTR to work and to track the unique sets of RSTR values that happen
+        - The problem is the combination of combinatorics and scope
+        - Options:
+          - Stop doing combinatorics
+          - Have a lineage to track when RSTR changes
+          - Have "the" force the tree to not do combinatorics
+          - Have a helper that "inverts" the execution and gives an indicator when the scope changes by looking at the values for any combinatorics
+            - It is only going to be used by scopal predications if they somehow track scope, which doesn't seem like many besides "the"
+            - resolving Scopal args:
+              - Can generate multiple solution sets based on scope and at least "the" needs to know when they switch
+              - For some reason neg() needs to resolve through phase 2, seems like this shouldn't be the case
+              - scopal args for copy() only seem to need phase 1
+          - Figure out another way to do THE
+            - Can it be done by phase 2 just collecting data?
+            - We want the set of RSTRs for the variables that have been set that outscope the quantifier
+            - Could this be the same as resolving a scopal arg? where we get some kind of generator of generators 
+              - so we know when the outscope values have changed
 
-
-- Get rid of referring expressions?
+        - 
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
   - Need to rethink what it means for a solution group to have a referring expression in it
@@ -34,29 +63,6 @@ Lower Pri:
       - The solver generates solution groups with referring expressions
       - Those get resolved into types and instances which get processed
       - etc.
-
-- _have_v_1_present and _order_v_1_past are both just about verifying facts in the world, so they should be implemented the same
-  - Need to implement "can order"
-    - Alternative Implementation
-      - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
-        - Anything that needs special handling should go to another routine
-          - If it is implied request for something else, it should
-        
-    - Implementation
-        Only handle: "I ordered the (conceptual referring expression)"
-        We need to process the conceptual version of the referring expression
-        to properly handle "I ordered the soup" because "the soup" needs to be interpreted
-        as an "in-scope concept" and not "the one soup on the table" (or something similar)
-        And since we already have to process the conceptual referring expression, we will also
-        use conceptual for all phrases like "I ordered a soup" since they all work the same
-
-      - check_conceptual will ensure that there is "the soup"
-      - evaluating the referring expression will find all the things that the referring expression refers to
-        - then you can see if those things were "ordered" or "had"
-      - If the user asks, "Do you have a steak" or "Do you have the steak" we have options:
-        - We could resolve the referring expression and make sure the computer has an instance of a steak
-        OR
-        - We could see if they have the concept of one
 
 - What are your specials? Fails
 - 

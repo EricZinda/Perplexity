@@ -260,8 +260,12 @@ def serial_store_to_object(state, s_list):
 
 def find_unused_instances_from_concept(context, state, concept):
     for instance in concept.instances(context, state):
-        taken = at_least_one_generator(rel_subjects(state, "have", instance))
-        if taken is None:
+        someone_has = False
+        for item in rel_subjects(state, "have", instance):
+            if item != "restaurant":
+                someone_has = True
+                break
+        if not someone_has:
             yield instance
 
 
@@ -298,8 +302,13 @@ def find_unused_values_from_referring_expr(referring_expr, solution_group_genera
 
 def find_unused_item(state, object_type):
     for potential in all_instances(state, object_type):
-        taken = at_least_one_generator(rel_subjects(state, "have", potential))
-        if taken is None:
+        someone_has = False
+        for item in rel_subjects(state, "have", potential):
+            # The restaurant conceptually "has" everything
+            if item != "restaurant":
+                someone_has = True
+                break
+        if not someone_has:
             return potential
 
 

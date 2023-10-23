@@ -208,7 +208,7 @@
         },
         {
             "Command": "the files are large",
-            "Expected": "That isn't true for all the files",
+            "Expected": "Yes, that is true.",
             "Tree": "_the_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "d0738761-c3cc-45ab-a754-29b4cc871fc8"
@@ -446,7 +446,7 @@
         },
         {
             "Command": "which 2 files in the folder are large?",
-            "Expected": "There is more than 1 folder",
+            "Expected": "(File(name=/documents/file0.txt, size=10000000),)(File(name=/documents/file1.txt, size=10000000),)(there are more)",
             "Tree": "_which_q(x3,_the_q(x12,_folder_n_of(x12,i17),[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)]),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "34457434-0312-48e3-a93b-f2badc6fb7d4"

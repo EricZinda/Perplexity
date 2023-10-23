@@ -364,6 +364,7 @@ class UserInterface(object):
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
                 print(f"\nText Tree: {tree_info['Tree']}")
+                print(f"\nInterpretation: {tree_info['Interpretation']}")
                 if tree_info['SolutionGroups'] is not None:
                     for solution_group in tree_info['SolutionGroups']:
                         print(f"\nSolution group:")

@@ -55,6 +55,9 @@ class TreeSolver(object):
             self._last_solution_lineage = None
             self._variable_execution_data = {}
 
+        def interpretation(self):
+            return self._interpretation
+
         def create_child_solver(self):
             # Subtrees are resolved using the same context so error state is shared
             return TreeSolver(self._context)
@@ -188,7 +191,7 @@ class TreeSolver(object):
         #   The rest of the items are the arguments
         def _call_predication(self, state, predication):
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
+                logger.debug(f"call {self._predication_index}: {predication}, state: {str(state)}, phrase_type: [{self._phrase_type}]")
 
             bindings = []
             for arg_index in range(0, len(predication.args)):
@@ -232,6 +235,10 @@ class TreeSolver(object):
                 # returns an iterator, and thus we can iterate over it)
                 had_solution = False
                 for next_state in function(*function_args):
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug(
+                            f"yielding {predication}, state: {str(next_state)}, phrase_type: [{self._phrase_type}]")
+
                     had_solution = True
                     yield next_state
 
@@ -415,6 +422,8 @@ class TreeSolver(object):
                 perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force,
                                                            wh_phrase_variable, tree_info))
 
+            tree_record["Interpretation"] = ", ".join([f"{x.module}.{x.function}" for x in context.interpretation().values()])
+
             # Collect any error that might have occurred from the first solution group
             tree_record["Error"] = self._context.error()
             if message_function is not None and response_function is not None:
@@ -455,8 +464,9 @@ class TreeSolver(object):
 
     @staticmethod
     def new_tree_record(tree=None, error=None, response_generator=None, response_message=None, tree_index=None,
-                        error_tree=False):
+                        error_tree=False, interpretation=None):
         value = {"Tree": tree,
+                 "Interpretation": interpretation,
                  "SolutionGroups": None,
                  "Solutions": [],
                  "Error": error,
