@@ -155,7 +155,7 @@ def generate_message(tree_info, error_term):
 
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
-    elif error_constant == "lessThan":
+    elif error_constant == "phase2LessThan":
         # if arg2 is a variable that represents that actor for the index verb,
         # THe error returned would be "there are less than 2 we" or similar
         # When really the answer should be "there are less than 2 people/things that (did whatever the sentence said)
@@ -170,17 +170,17 @@ def generate_message(tree_info, error_term):
 
         return s("There are less than {*arg2} {bare arg1:sg@error_predicate_index}", tree_info)
 
-    elif error_constant == "moreThan":
+    elif error_constant == "phase2MoreThan":
         return s("There {'is':<arg1} more than {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan1":
         return s("There is more than one {bare arg1}", tree_info)
 
-    elif error_constant == "moreThanN":
+    elif error_constant == "phase2MoreThanN":
         # TODO: Make arg1 match arg2's plural
         return s("There {'is':<*arg2} more than {*arg2} {bare arg1:@error_predicate_index}", tree_info)  # s(None, arg1, count=int(arg2))}")
 
-    elif error_constant == "notTrueForAll":
+    elif error_constant == "phase2NotTrueForAll":
         return s("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "notAllError":
@@ -260,6 +260,7 @@ def error_priority(error_string):
             if error_constant == "unknownWords":
                 priority -= len(error_string[1][1])
 
+            priority += error_string[2] * error_priority_dict["success"]
             return priority
         else:
             return None
@@ -288,10 +289,16 @@ error_priority_dict = {
     "doesntExist": 920,
     "defaultPriority": 1000,
 
+    # All phase 2 messages should be above all phase 1 messages:
+    "phase2MoreThanN": 1100,
+    "phase2MoreThan": 1105,
+    "phase2LessThan": 1110,
+    "phase2NotTrueForAll": 1115,
+
     # Indicates we understood the phrase, but trying to accomplish it generated a failure. It should
     # be a very high priority message
     "understoodFailureMessage": 1200,
     # This is just used when sorting to indicate no error, i.e. success.
-    # Nothing should be higher
+    # Nothing should be higher because higher is used for phase 2 errors
     "success": 10000000
 }

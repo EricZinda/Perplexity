@@ -1,7 +1,7 @@
 import logging
 import perplexity.messages
 from delphin.codecs import simplemrs
-from perplexity.execution import MessageException, TreeSolver
+from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
@@ -112,7 +112,7 @@ class UserInterface(object):
             self.interaction_record["Mrss"].append(mrs_record)
 
             if len(mrs_record["UnknownWords"]) > 0:
-                unknown_words_error = [0, ["unknownWords", mrs_record["UnknownWords"]]]
+                unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", mrs_record["UnknownWords"]])
                 tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
                                                                response_generator=self.response_function(self.message_function, None, [], unknown_words_error),
                                                                tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)
@@ -210,7 +210,7 @@ class UserInterface(object):
                                     self.evaluate_best_response(solution_group_generator)
 
                     if len(contingent) > 0 and not alternate_tree_generated:
-                        unknown_words_error = [0, ["unknownWords", contingent]]
+                        unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
                         tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
                                                                        response_generator=self.response_function(self.message_function, None, [], unknown_words_error),
                                                                        tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)

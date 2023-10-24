@@ -233,11 +233,11 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
             return False
 
         if check_count < min_size:
-            context.report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True)
             return False
 
         elif check_count > max_size:
-            context.report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+            context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True)
             return False
 
         return True
@@ -254,11 +254,11 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
                 return False
 
             if check_count < min_size:
-                context.report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+                context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True)
                 return False
 
             elif check_count > max_size:
-                context.report_error(["moreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+                context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True)
                 return False
 
         # Then, whether "the" was used, check to make sure there are enough instances to meet the criteria
@@ -269,7 +269,7 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
             return False
 
         if check_count < min_size:
-            context.report_error(["lessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True)
             return False
 
         # As long as the instances are >= min_size, we are good because the caller is responsible

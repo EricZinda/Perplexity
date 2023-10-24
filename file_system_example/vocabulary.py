@@ -213,6 +213,18 @@ def megabyte_n_1(context, state, x_binding, u_binding):
 
 
 @Predication(vocabulary)
+def thing(context, state, x_binding):
+    def bound_variable(_):
+        return True
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            yield item
+
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+
+@Predication(vocabulary)
 def place_n(context, state, x_binding):
     def bound_variable(value):
         # Any object is a "place" as long as it can contain things

@@ -426,7 +426,7 @@ def _credit_n_1(context, state, x_bind):
 @Predication(vocabulary, names=["_tomato_n_1"])
 def _tomato_n_1(context, state, x_bind):
     def bound(val):
-        context.report_error(["errorText","no declarative tomato",state.get_reprompt()])
+        context.report_error(["errorText", "no declarative tomato", state.get_reprompt()])
 
     def unbound():
         yield ReferringExpr("tomato")
@@ -464,13 +464,39 @@ def _no_a_1(context, state, i_binding, h_binding):
     yield state.record_operations(state.handle_world_event(context, ["no"]))
 
 
+@Predication(vocabulary, names=["thing"])
+def thing_concepts(context, state, x_binding):
+    def bound_variable(value):
+        if is_type(state, object_to_store(value)):
+            return True
+
+    def unbound_variable():
+        for item in state.all_specializations():
+            yield store_to_object(item)
+
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+
+@Predication(vocabulary, names=["thing"])
+def thing_instances(context, state, x_binding):
+    def bound_variable(value):
+        if is_instance(state, object_to_store(value)):
+            return True
+
+    def unbound_variable():
+        for item in state.all_instances():
+            yield item
+
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+
+
 @Predication(vocabulary, names=["person"])
-def person(context, state, x_person_binding):
+def person_concepts(context, state, x_person_binding):
     yield from match_all_n_concepts("person", context, state, x_person_binding)
 
 
 @Predication(vocabulary, names=["person"])
-def person(context, state, x_person_binding):
+def person_instances(context, state, x_person_binding):
     yield from match_all_n_instances("person", context, state, x_person_binding)
 
 
@@ -730,7 +756,7 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
             for value in x_what_values:
                 x_what_individuals_set.update(value)
             if len(x_what_individuals_set) > 1:
-                context.report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True)
+                context.report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True, phase=2)
                 yield []
                 return
 
@@ -1974,12 +2000,17 @@ def error_priority(error_string):
     else:
         # Must be a message from our code
         error_constant = error_string[1][0]
-        return error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
+        priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
+        priority += error_string[2] * error_priority_dict["success"]
+        return priority
 
 
 error_priority_dict = {
     "verbDoesntApply": 960,
-    "defaultPriority": 1000
+    "defaultPriority": 1000,
+    # This is just used when sorting to indicate no error, i.e. success.
+    # Nothing should be higher because higher is used for phase 2 errors
+    "success": 10000000
 }
 
 

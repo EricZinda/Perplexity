@@ -90,7 +90,7 @@ class TreeSolver(object):
                 yield solution
 
             # Fire an error for the last disjunction tree (which might be the whole tree if there were no disjunctions)
-            # if no solutions were generated
+            # but only if no solutions were generated
             if self._last_solution_lineage is None and None not in self._solution_lineages:
                 self._lineage_failure_callback(self._context.get_error_info())
 
@@ -105,11 +105,11 @@ class TreeSolver(object):
         def has_not_understood_error(self):
             return self._context.has_not_understood_error()
 
-        def report_error_for_index(self, predication_index, error, force=False):
-            return self._context.report_error_for_index(predication_index, error, force)
+        def report_error_for_index(self, predication_index, error, force=False, phase=0):
+            return self._context.report_error_for_index(predication_index, error, force, phase=phase)
 
-        def report_error(self, error, force=False):
-            self._context.report_error_for_index(self._predication_index, error, force)
+        def report_error(self, error, force=False, phase=0):
+            self._context.report_error_for_index(self._predication_index, error, force, phase=phase)
 
         def error(self):
             return self._context.error()
@@ -281,7 +281,7 @@ class TreeSolver(object):
     class MrsTreeLineage(object):
         def __init__(self, lineage_generator):
             self.lineage_generator = lineage_generator
-            self.error_info = (None, False, -1)
+            self.error_info = ExecutionContext.blank_error_info()
 
         def __iter__(self):
             return self
@@ -386,7 +386,7 @@ class TreeSolver(object):
 
             if target_tree_index is not None:
                 if current_tree_index[0] < target_tree_index:
-                    skipped_tree_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"], error=[0, ['skipped']],
+                    skipped_tree_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"], error=ExecutionContext.blank_error(predication_index=0, error=['skipped']),
                                                                            tree_index=current_tree_index[0])
                     current_tree_index[0] += 1
                     if pipeline_logger.level == logging.DEBUG:
@@ -489,13 +489,23 @@ class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
 
-        self._error = None
-        self._error_predication_index = -1
-        self._error_was_forced = False
+        blank = self.blank_error_info()
+        self._error = blank[0]
+        self._error_was_forced = blank[1]
+        self._error_predication_index = blank[2]
+        self._error_phase = blank[3]
 
         self._in_scope_initialize_function = None
         self._in_scope_initialize_data = None
         self._in_scope_function = None
+
+    @staticmethod
+    def blank_error_info(error=None, was_forced=False, predication_index=-1, phase=0):
+        return error, was_forced, predication_index, phase
+
+    @staticmethod
+    def blank_error(error=None, predication_index=-1, phase=0):
+        return predication_index, error, phase
 
     def reset_scope(self, state):
         if self._in_scope_initialize_function is not None:
@@ -513,18 +523,20 @@ class ExecutionContext(object):
             return True
 
     def get_error_info(self):
-        return self._error, self._error_was_forced, self._error_predication_index
+        return self._error, self._error_was_forced, self._error_predication_index, self._error_phase
 
     def set_error_info(self, error_info):
         if error_info is not None:
             self._error = error_info[0]
             self._error_was_forced = error_info[1]
             self._error_predication_index = error_info[2]
+            self._error_phase = error_info[3]
 
     def clear_error(self):
         self._error = None
         self._error_was_forced = False
         self._error_predication_index = -1
+        self._error_phase = 0
 
     def has_not_understood_error(self):
         # System errors that indicate the phrase can't be understood can't be replaced
@@ -533,16 +545,17 @@ class ExecutionContext(object):
         not_understood_failures = ["formNotUnderstood"]
         return self._error is not None and self._error[0] in not_understood_failures
 
-    def report_error_for_index(self, predication_index, error, force=False):
+    def report_error_for_index(self, predication_index, error, force=False, phase=0):
         if not self.has_not_understood_error() and \
                 (force or (not self._error_was_forced and self._error_predication_index < predication_index)):
             self._error = error
             self._error_predication_index = predication_index
+            self._error_phase = phase
             if force:
                 self._error_was_forced = True
 
     def error(self):
-        return [self._error_predication_index, self._error]
+        return [self._error_predication_index, self._error, self._error_phase]
 
 
 logger = logging.getLogger('Execution')

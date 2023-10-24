@@ -3,10 +3,26 @@
 - We have code in solution_groups() that makes sure concepts and instances don't get mixed
   - Shouldn't that really be modelled as noun() having a conjunction, one outcome returns instances and the other concepts?
   - We still have to not count concepts, but this simplifies things...
-  - Phase 1: make noun() be a conjunction
+  - (fixed) Phase 1: make noun() be a conjunction
     - the s() string is not paying attention to {a *value}
   - Phase 2: Remove the code in solution_groups that makes sure they don't get mingled
-  
+    - Bugs
+      - (fixed) "what can I have" -> Host: There isn't such an I thing here
+      - (fixed) What did we order? (when only I ordered something) -> you ordered nothing
+        - because the error from asking if you ordered concepts gets recorded
+        - We aren't prioritizing solution group errors over solution set errors across trees
+        - The problem is that because of generators you can't just clear the error, since the mrs will get resolved as needed
+        - Note that this is ordering *across* tree_records
+        - Have phase 2 errors be only used in phase 2 and get a higher priority
+      - I want a steak and a soup -> there is more than a soup
+        - should be: "One thing at a time, please!"
+        - Problem is that we are returning an error in a group handler that is not getting marked as phase 2
+        - Any error reported in a group handler or the phase 2 infrastructure should be prioritized
+        - this could be a special context that adds information to the error that gets used elsewhere
+          - it could be an extra arg at the end of the error info that sets its priority higher
+  - Phase 3: Make all plural() or group_handler error reporting default to phase=2
+    - Get rid of the special prioritization of phase 2 errors in error_dict()
+    - 
 Code cleanup:
 - Rename lineage something like disjunction
 - Do we still need frames with the new concept handling?

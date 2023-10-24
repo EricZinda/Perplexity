@@ -54,18 +54,6 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
         context.report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
-@Predication(vocabulary, library="system")
-def thing(context, state, x_binding):
-    def bound_variable(_):
-        return True
-
-    def unbound_variable():
-        for item in state.all_individuals():
-            yield item
-
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
-
-
 @Predication(vocabulary, library="system", names=["_a_q"])
 def a_q(context, state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,

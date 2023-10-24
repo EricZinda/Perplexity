@@ -327,7 +327,7 @@
         },
         {
             "Command": "the 2 files in a folder are 20 mb",
-            "Expected": "I'm not sure which the 2 file in a folder you mean",
+            "Expected": "There are more than the 2 file in a folder",
             "Tree": "_a_q(x12,_folder_n_of(x12,i17),udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],_the_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],loc_nonsp(e2,x3,x18))))",
             "Enabled": true,
             "ID": "6d9105ef-59a6-42d0-9e11-08d96a530b54"

@@ -2,6 +2,7 @@ import copy
 import logging
 import sys
 import perplexity.tree
+import perplexity.execution
 from math import inf
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
@@ -192,7 +193,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         # If even one solution group was found, but failed in the handlers, the error from that handler should be
         # returned because it means the phrase made sense, but something about the world made it fail when is better than
         # errors generated because the phrase made no sense
-        best_error_info = (None, False, -1)
+        best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
 
         # Go through each variable that has a quantifier in order and gather and optimize the criteria list
         # if it wasn't given to us
@@ -290,7 +291,7 @@ class GroupVariableValues(object):
 #   None --> it means ignore the handler and continue
 #   [] or () --> it means fail this solution
 def run_handlers(execution_context, wh_handlers, handlers, variable_constraints, one_more, group, index_predication, wh_question_variable):
-    best_error_info = (None, False, -1)
+    best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
     created_solution_group = None
     has_more = False
     state_list = list(group)
@@ -363,7 +364,7 @@ def run_handlers(execution_context, wh_handlers, handlers, variable_constraints,
         return created_solution_group, has_more, state_list, best_error_info
 
     else:
-        return None, None, state_list, (None, False, -1)
+        return None, None, state_list, perplexity.execution.ExecutionContext.blank_error_info()
 
 
 def get_function(module_function):
