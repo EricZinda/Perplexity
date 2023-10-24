@@ -280,6 +280,9 @@ error_priority_dict = {
     "unknownWords": 900,
     # Slightly better than not knowing the word at all
     "formNotUnderstood": 901,
+    # Happens when a quantifier is reordered and the body comes up with something that doesn't match the RSTR
+    # Very low pri error
+    "notAThing": 905,
     "notClause": 910,
     # Lots of misinterpretations can generate this, so make it lower than default
     "doesntExist": 920,

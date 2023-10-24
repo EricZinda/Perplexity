@@ -35,8 +35,8 @@ class TreeSolver(object):
         return cls(context)
 
     # This is the class that gets passed to predications as "context"
-    # Lowest level class that walks a tree, in-order
-    # Consumed by the MRSLineage classes which break the solutions
+    # It is the lowest level class that walks a tree, in-order
+    # and is consumed by the MRSLineage classes which break the solutions
     # into different solution sets
     class InterpretationSolver(object):
         def __init__(self, execution_context):
@@ -62,7 +62,7 @@ class TreeSolver(object):
             # Subtrees are resolved using the same context so error state is shared
             return TreeSolver(self._context)
 
-        # Returns solutions for a specific tree interpretation
+        # Returns solutions for a specific tree interpretation that is passed in
         def solve_tree_interpretation(self, state, tree_info, interpretation, lineage_failure_callback):
             self._interpretation = interpretation
             self._predication_index = 0
@@ -82,12 +82,16 @@ class TreeSolver(object):
             for solution in self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"]):
                 # Remember any disjunction lineages that had a solution
                 tree_lineage_binding = state.get_binding("tree_lineage")
-                if tree_lineage_binding.value is not None:
+                if tree_lineage_binding.value is None:
+                    self._solution_lineages.add(None)
+                else:
                     self._solution_lineages.add(tree_lineage_binding.value[0])
 
                 yield solution
 
-            if self._last_solution_lineage is None:
+            # Fire an error for the last disjunction tree (which might be the whole tree if there were no disjunctions)
+            # if no solutions were generated
+            if self._last_solution_lineage is None and None not in self._solution_lineages:
                 self._lineage_failure_callback(self._context.get_error_info())
 
             else:
@@ -190,9 +194,6 @@ class TreeSolver(object):
         #   The first item is the predication name
         #   The rest of the items are the arguments
         def _call_predication(self, state, predication):
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(f"call {self._predication_index}: {predication}, state: {str(state)}, phrase_type: [{self._phrase_type}]")
-
             bindings = []
             for arg_index in range(0, len(predication.args)):
                 if predication.arg_types[arg_index] in ["c", "h"]:
@@ -225,6 +226,9 @@ class TreeSolver(object):
             # See if the system wants us to tack any arguments to the front
             if module_function[2] is not None:
                 function_args = module_function[2] + function_args
+
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"call {self._predication_index}: {module_function.module}.{module_function.function}, state: {str(state)}, phrase_type: [{self._phrase_type}]")
 
             # If a MessageException happens during execution,
             # convert it to an error

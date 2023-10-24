@@ -466,7 +466,12 @@ def _no_a_1(context, state, i_binding, h_binding):
 
 @Predication(vocabulary, names=["person"])
 def person(context, state, x_person_binding):
-    yield from match_all_n("person", context, state, x_person_binding)
+    yield from match_all_n_concepts("person", context, state, x_person_binding)
+
+
+@Predication(vocabulary, names=["person"])
+def person(context, state, x_person_binding):
+    yield from match_all_n_instances("person", context, state, x_person_binding)
 
 
 def handles_noun(state, noun_lemma):
@@ -477,7 +482,27 @@ def handles_noun(state, noun_lemma):
 # Simple example of using match_all that doesn't do anything except
 # make sure we don't say "I don't know the word book"
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
-def match_all_n(noun_type, context, state, x_binding):
+def match_all_n_concepts(noun_type, context, state, x_binding):
+    def bound_variable(value):
+        if sort_of(state, value, noun_type):
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
+
+    def unbound_variable_concepts():
+        yield store_to_object(state, noun_type)
+        for item in all_specializations(state, noun_type):
+            yield store_to_object(state, item)
+
+    # Then yield a combinatorial value of all types
+    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_concepts)
+
+
+# Simple example of using match_all that doesn't do anything except
+# make sure we don't say "I don't know the word book"
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
+def match_all_n_instances(noun_type, context, state, x_binding):
     def bound_variable(value):
         if sort_of(state, value, noun_type):
             return True
@@ -489,21 +514,6 @@ def match_all_n(noun_type, context, state, x_binding):
         for item in all_instances(state, noun_type):
             yield item
 
-    def unbound_variable_concepts():
-        yield store_to_object(state, noun_type)
-        for item in all_specializations(state, noun_type):
-            yield store_to_object(state, item)
-
-    # Yield the referring expression first, and not as a combinatoric variable
-    # because solutions can never mix conceptual and non-conceptual terms so it isn't
-    # true that it is combinatoric since you can't pick the conceptual and include it with another and have
-    # it be valid
-    # yield state.set_x(x_binding.variable.name, (ReferringExpr(context.current_predication(), x_binding.variable.name),))
-
-    # Then yield a combinatorial value of all types
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_concepts)
-
-    # Then instances
     yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_instances)
 
 
@@ -532,8 +542,13 @@ def match_all_the_concept_n(noun_type, context, state, x_binding):
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
-def match_all_n_i(noun_type, context, state, x_binding, i_binding):
-    yield from match_all_n(noun_type, context, state, x_binding)
+def match_all_n_i_concepts(noun_type, context, state, x_binding, i_binding):
+    yield from match_all_n_concepts(noun_type, context, state, x_binding)
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
+def match_all_n_i_instances(noun_type, context, state, x_binding, i_binding):
+    yield from match_all_n_instances(noun_type, context, state, x_binding)
 
 
 @Predication(vocabulary, names=["_some_q"])
@@ -1775,7 +1790,13 @@ def generate_custom_message(tree_info, error_term):
 
     # Override these
     if error_constant == "doesntExist":
-        return s("Host: There isn't such {a arg1:sg} here", tree_info)
+        result = s("{bare arg1:sg}", tree_info)
+        if result == "thing":
+            return s("Host: Nothing.")
+        elif result == "person":
+            return s("Host: Nobody.")
+        else:
+            return s("Host: There isn't such {a *result} here", tree_info)
 
     else:
         system_message = perplexity.messages.generate_message(tree_info, error_term)
@@ -1975,6 +1996,7 @@ def hello_world():
 if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
+    # ShowLogging("SString")
     # ShowLogging("UserInterface")
     ShowLogging("Pipeline")
     # ShowLogging("SString")

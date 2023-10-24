@@ -103,7 +103,7 @@ def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, 
                 pruned_body = None
 
             else:
-                if determiner in ["a", "an"] or predication.mrs_predication.predicate in ["_which_q", "which_q"]:
+                if determiner != "" and (determiner in ["a", "an"] or predication.mrs_predication.predicate in ["_which_q", "which_q"]):
                     will_be_plural = ("NUM" in mrs.variables[variable] and mrs.variables[variable]["NUM"] == "pl" and plural != PluralMode.singular) or \
                         plural == PluralMode.plural
 

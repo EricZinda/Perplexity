@@ -1,13 +1,16 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
     
-
-Code cleanup:  
-- Rename lineage something like disjunction
-- Do we still need frames with the new concept handling?
-- Get rid of referring expressions?
 - We have code in solution_groups() that makes sure concepts and instances don't get mixed
   - Shouldn't that really be modelled as noun() having a conjunction, one outcome returns instances and the other concepts?
   - We still have to not count concepts, but this simplifies things...
+  - Phase 1: make noun() be a conjunction
+    - the s() string is not paying attention to {a *value}
+  - Phase 2: Remove the code in solution_groups that makes sure they don't get mingled
+  
+Code cleanup:
+- Rename lineage something like disjunction
+- Do we still need frames with the new concept handling?
+- Get rid of referring expressions?
 - Alternative Implementation for have_v_1_present and _order_v_1_past
   - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
     - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)

@@ -29,6 +29,10 @@ def change_to_plural_mode(singular_word, plural_mode):
         return singular_word
 
 
+def add_indefinite_article(word):
+    return p.an(word)
+
+
 def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None, reverse_pronouns=False):
     final_text = english_for_delphin_variable_impl(failure_index, variable, tree_info, plural, determiner, reverse_pronouns)
     return final_text

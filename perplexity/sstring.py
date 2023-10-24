@@ -4,7 +4,7 @@ import re
 import inspect
 from delphin.codecs import simplemrs
 from perplexity.generation import english_for_delphin_variable_impl, PluralMode, is_plural_word, change_to_plural_mode, \
-    english_for_delphin_variable
+    english_for_delphin_variable, add_indefinite_article
 from perplexity.generation_mrs import english_for_variable_using_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced, find_predication_conjunction_from_introduced
 from perplexity.utilities import ShowLogging
@@ -104,6 +104,7 @@ def convert_complex_variable(variable_name):
     else:
         return variable_name, None
 
+
 class SStringFormat(object):
     def __init__(self, raw_variable=None,
                  delphin_variable=None,
@@ -175,7 +176,6 @@ class SStringFormat(object):
                 raise SyntaxError(f"{indicator_expression} is not defined. Did you forget a ':'?")
             else:
                 raise SyntaxError(f"{indicator_expression} is not defined")
-
 
     def format(self, tree_info, reverse_pronouns=False):
         if tree_info is not None:
@@ -282,7 +282,17 @@ class SStringFormat(object):
             else:
                 singular_variable_value = self.string_literal
 
-            return change_to_plural_mode(singular_variable_value, resolved_plural)
+            plural_mode_value = change_to_plural_mode(singular_variable_value, resolved_plural)
+
+            if self.determiner is None:
+                return plural_mode_value
+            elif self.determiner.lower() in ["a", "an"]:
+                return add_indefinite_article(plural_mode_value)
+            elif self.determiner.lower() == "the":
+                return f"{self.determiner} {plural_mode_value}"
+            else:
+                return plural_mode_value
+
 
 
 def parse_s_string_element(raw_string):

@@ -47,9 +47,10 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
             for body_solution in context.call(alternative_state, h_body):
                 yield body_solution
 
+    # If something was reversed, it means the RSTR was going to return a bunch of values, so it would have returned a value
+    # Thus it should return whatever error the body provided
+    # If it was not reversed, and the rstr didn't return any values, we should give a special error
     if not reversed and len(rstr_values) == 0:
-        # If the rstr was actually run (i.e. not reversed) and produced no values:
-        # Ignore whatever error the RSTR produced, this is a better one
         context.report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
 
 
