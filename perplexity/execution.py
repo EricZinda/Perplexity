@@ -62,6 +62,38 @@ class TreeSolver(object):
             # Subtrees are resolved using the same context so error state is shared
             return TreeSolver(self._context)
 
+        # Overwrite the error reporting to default to phase=2
+        def create_phase2_context(self):
+            class InterpretationSolverPhase2:
+                def __init__(self, proxied_object):
+                    self.__proxied = proxied_object
+
+                def __getattr__(self, attr):
+                    def wrapped_method(*args, **kwargs):
+                        result = getattr(self.__proxied, attr)(*args, **kwargs)
+                        return result
+
+                    if attr == "report_error_for_index":
+                        return self.report_error_for_index
+                    elif attr == "report_error":
+                        return self.report_error
+                    else:
+                        return wrapped_method
+
+                def report_error_for_index(self, predication_index, error, force=False, phase=None):
+                    if phase is None:
+                        return self.__proxied.report_error_for_index(predication_index, error, force, phase=2)
+                    else:
+                        return self.__proxied.report_error_for_index(predication_index, error, force, phase=phase)
+
+                def report_error(self, error, force=False, phase=None):
+                    if phase is None:
+                        return self.__proxied.report_error(error, force, phase=2)
+                    else:
+                        return self.__proxied.report_error(error, force, phase=phase)
+
+            return InterpretationSolverPhase2(self)
+
         # Returns solutions for a specific tree interpretation that is passed in
         def solve_tree_interpretation(self, state, tree_info, interpretation, lineage_failure_callback):
             self._interpretation = interpretation

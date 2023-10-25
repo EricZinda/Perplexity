@@ -562,24 +562,24 @@ class VariableCriteria(object):
             # We can fail immediately if we have too many
             if len(self._unique_rstrs) > self.max_size:
                 # This is definitely the reason why something failed (since we are failing it here), so force=True
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._after_phrase_error_location, self.max_size], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._after_phrase_error_location, self.max_size], force=True, phase=2)
                 return CriteriaResult.fail_all
 
         if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
             # We can fail immediately if we have too many
             if len(self._unique_rstrs) > self.max_size:
                 # This is definitely the reason why something failed (since we are failing it here), so force=True
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._predication_error_location, self.max_size], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThanN", self._predication_error_location, self.max_size], force=True, phase=2)
                 return CriteriaResult.fail_all
 
         # Check numeric criteria
         if values_count > self.max_size:
             # It'll never get smaller so it fails forever
-            execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True)
+            execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True, phase=2)
             return CriteriaResult.fail_one
 
         elif values_count < self.min_size:
-            execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True)
+            execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True, phase=2)
             return CriteriaResult.contender
 
         else:
@@ -619,25 +619,25 @@ class VariableCriteria(object):
             all_rstr_values = execution_context.get_variable_execution_data(self.variable_name)["AllRstrValues"]
 
             if len(all_rstr_values) < self.min_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._predication_error_location, self.min_size, ], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._predication_error_location, self.min_size, ], force=True, phase=2)
                 return False
 
             elif len(all_rstr_values) > self.max_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._predication_error_location, self.max_size], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._predication_error_location, self.max_size], force=True, phase=2)
                 return False
 
             elif len(all_rstr_values) != len(self._unique_rstrs):
-                execution_context.report_error_for_index(self.predication_index, ["phase2NotTrueForAll", self._predication_error_location], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["phase2NotTrueForAll", self._predication_error_location], force=True, phase=2)
                 return False
 
         if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
             # Then check to make sure there were as many in the solution as the user specified
             if len(self._unique_rstrs) < self.min_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True, phase=2)
                 return False
 
             elif len(self._unique_rstrs) > self.max_size:
-                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True)
+                execution_context.report_error_for_index(self.predication_index, ["phase2MoreThan", self._after_phrase_error_location, self.max_size], force=True, phase=2)
                 return False
 
         return True

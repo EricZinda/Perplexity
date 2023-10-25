@@ -1,28 +1,5 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
-    
-- We have code in solution_groups() that makes sure concepts and instances don't get mixed
-  - Shouldn't that really be modelled as noun() having a conjunction, one outcome returns instances and the other concepts?
-  - We still have to not count concepts, but this simplifies things...
-  - (fixed) Phase 1: make noun() be a conjunction
-    - the s() string is not paying attention to {a *value}
-  - Phase 2: Remove the code in solution_groups that makes sure they don't get mingled
-    - Bugs
-      - (fixed) "what can I have" -> Host: There isn't such an I thing here
-      - (fixed) What did we order? (when only I ordered something) -> you ordered nothing
-        - because the error from asking if you ordered concepts gets recorded
-        - We aren't prioritizing solution group errors over solution set errors across trees
-        - The problem is that because of generators you can't just clear the error, since the mrs will get resolved as needed
-        - Note that this is ordering *across* tree_records
-        - Have phase 2 errors be only used in phase 2 and get a higher priority
-      - I want a steak and a soup -> there is more than a soup
-        - should be: "One thing at a time, please!"
-        - Problem is that we are returning an error in a group handler that is not getting marked as phase 2
-        - Any error reported in a group handler or the phase 2 infrastructure should be prioritized
-        - this could be a special context that adds information to the error that gets used elsewhere
-          - it could be an extra arg at the end of the error info that sets its priority higher
-  - Phase 3: Make all plural() or group_handler error reporting default to phase=2
-    - Get rid of the special prioritization of phase 2 errors in error_dict()
-    - 
+
 Code cleanup:
 - Rename lineage something like disjunction
 - Do we still need frames with the new concept handling?
@@ -31,17 +8,6 @@ Code cleanup:
   - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
     - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
       - I.e. things like implied requests
-  
-Lower Pri:                
-- We have 0 menus -> No. you does not have something 
-- "What did we order?" -> Nothing
-  - Because "we" didn't order anything...Just I did
-- Can I have a steak?
-  - concepts are included in combinatoric with instances
-- what specials do you have?
-  - treats types as referring expressions
-  - Need to convert to Concepts
-  - look for all object_to_store() references and make sure they shouldn't be referring_expression
 
         
 - Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
@@ -72,7 +38,19 @@ Lower Pri:
             - Could this be the same as resolving a scopal arg? where we get some kind of generator of generators 
               - so we know when the outscope values have changed
 
-        - 
+
+
+Lower Pri:                
+- We have 0 menus -> No. you does not have something 
+- "What did we order?" -> Nothing
+  - Because "we" didn't order anything...Just I did
+- Can I have a steak?
+  - concepts are included in combinatoric with instances
+- what specials do you have?
+  - treats types as referring expressions
+  - Need to convert to Concepts
+  - look for all object_to_store() references and make sure they shouldn't be referring_expression
+- 
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
   - Need to rethink what it means for a solution group to have a referring expression in it
@@ -91,7 +69,7 @@ Lower Pri:
 - I don't have *the* soup works because:
   - there is more than one soup so negation fails, and thus this works
 - "a table for two" crashes at startup
-- I don't have soup / have soup both work when you have ordered soup
+- I don't have soup / I have soup both work when you have ordered soup
   - because:
     - for "I don't have soup" the first MRS is the proper interpretation meaning "not(I have soup)"
       - but it fails since you *do* have soup, so we keep going

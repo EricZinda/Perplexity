@@ -238,7 +238,7 @@ def generate_message(tree_info, error_term):
     elif error_constant == "xIsNotYValue":
         return s("{arg1} is not {*arg2}", tree_info)
 
-    elif error_constant == "zeroCount":
+    elif error_constant == "phase2ZeroCount":
         return s("I'm not sure which {bare arg1:@error_predicate_index} you mean.", tree_info)
 
     else:
@@ -288,13 +288,6 @@ error_priority_dict = {
     # Lots of misinterpretations can generate this, so make it lower than default
     "doesntExist": 920,
     "defaultPriority": 1000,
-
-    # All phase 2 messages should be above all phase 1 messages:
-    "phase2MoreThanN": 1100,
-    "phase2MoreThan": 1105,
-    "phase2LessThan": 1110,
-    "phase2NotTrueForAll": 1115,
-
     # Indicates we understood the phrase, but trying to accomplish it generated a failure. It should
     # be a very high priority message
     "understoodFailureMessage": 1200,

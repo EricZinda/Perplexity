@@ -235,19 +235,19 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                 # First see if there is a solution_group handler that should be called
                 handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
                 wh_handlers = find_wh_group_handlers(execution_context, this_sentence_force)
-
+                phase2_context = execution_context.create_phase2_context()
                 for next_group in at_least_one_group:
-                    created_solution_group, has_more, group_list, next_best_error_info = run_handlers(execution_context, wh_handlers, handlers, optimized_criteria_list, one_more, next_group, index_predication, wh_question_variable)
+                    created_solution_group, has_more, group_list, next_best_error_info = run_handlers(phase2_context, wh_handlers, handlers, optimized_criteria_list, one_more, next_group, index_predication, wh_question_variable)
                     if best_error_info[0] is None and next_best_error_info[0] is not None:
                         best_error_info = next_best_error_info
                     if created_solution_group is None:
                         pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
                         if wh_question_variable is not None:
-                            wh_created_solution_group = run_wh_group_handlers(execution_context, wh_handlers, wh_question_variable, one_more, group_list)
+                            wh_created_solution_group = run_wh_group_handlers(phase2_context, wh_handlers, wh_question_variable, one_more, group_list)
                             if len(wh_created_solution_group) == 0:
                                 # wh_handler said to fail
-                                if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
-                                    best_error_info = execution_context.get_error_info()
+                                if best_error_info[0] is None and phase2_context.get_error_info()[0] is not None:
+                                    best_error_info = phase2_context.get_error_info()
                                 break
                             else:
                                 yield wh_created_solution_group
@@ -276,7 +276,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
                 pipeline_logger.debug(f"No more solution groups.")
                 pipeline_logger.debug(f"Setting solution group error back to {best_error_info}.")
-                execution_context.set_error_info(best_error_info)
+                phase2_context.set_error_info(best_error_info)
     else:
         execution_context.set_error_info(solutions_orig.error_info)
 

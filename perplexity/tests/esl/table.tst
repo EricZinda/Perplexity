@@ -81,7 +81,7 @@
         },
         {
             "Command": "Do you have the table?",
-            "Expected": "There is more than 1 table",
+            "Expected": "I'm not sure which table you mean.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "cd3fae35-7dac-447a-bb2a-94230d411ed1"
@@ -151,7 +151,7 @@
         },
         {
             "Command": "I want the table",
-            "Expected": "There is more than 1 table",
+            "Expected": "I'm not sure which table you mean.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "74092d64-1466-4b30-bf1d-486e17005e9e"

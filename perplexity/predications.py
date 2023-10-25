@@ -229,15 +229,15 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
 
         if check_count == 0:
             introducing_predication = perplexity.tree.find_quantifier_from_variable(tree_info["Tree"], variable)
-            context.report_error(["zeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True)
+            context.report_error(["phase2ZeroCount", ["AtPredication", introducing_predication.args[2], variable]], force=True, phase=2)
             return False
 
         if check_count < min_size:
-            context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True, phase=2)
             return False
 
         elif check_count > max_size:
-            context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+            context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True, phase=2)
             return False
 
         return True
@@ -250,26 +250,26 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
         if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
             check_count = concept_in_scope_count
             if check_count == 0:
-                context.report_error(["conceptNotFound", value], force=True)
+                context.report_error(["conceptNotFound", value], force=True, phase=2)
                 return False
 
             if check_count < min_size:
-                context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True)
+                context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True, phase=2)
                 return False
 
             elif check_count > max_size:
-                context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True)
+                context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True, phase=2)
                 return False
 
         # Then, whether "the" was used, check to make sure there are enough instances to meet the criteria
         # Since that is what we are looking for
         check_count = instance_count
         if check_count == 0:
-            context.report_error(["conceptNotFound", value], force=True)
+            context.report_error(["conceptNotFound", value], force=True, phase=2)
             return False
 
         if check_count < min_size:
-            context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True)
+            context.report_error(["phase2LessThan", ["AfterFullPhrase", variable], min_size], force=True, phase=2)
             return False
 
         # As long as the instances are >= min_size, we are good because the caller is responsible

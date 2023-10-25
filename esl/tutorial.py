@@ -756,7 +756,7 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
             for value in x_what_values:
                 x_what_individuals_set.update(value)
             if len(x_what_individuals_set) > 1:
-                context.report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True, phase=2)
+                context.report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True)
                 yield []
                 return
 
