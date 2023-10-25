@@ -136,7 +136,7 @@ def folder_n_of(context, state, x_binding, i_binding):
             if isinstance(item, Folder):
                 yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 def file_n_of(context, state, x_binding, i_binding):
@@ -152,7 +152,7 @@ def file_n_of(context, state, x_binding, i_binding):
             if isinstance(item, File):
                 yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 nouns_handled_directly = ["file", "folder", "place"]
@@ -209,7 +209,7 @@ def megabyte_n_1(context, state, x_binding, u_binding):
     def unbound_variable():
         yield Megabyte()
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary)
@@ -221,7 +221,7 @@ def thing(context, state, x_binding):
         for item in state.all_individuals():
             yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary)
@@ -239,7 +239,7 @@ def place_n(context, state, x_binding):
             if hasattr(item, "contained_items"):
                 yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["_very_x_deg"])
@@ -297,7 +297,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
                 if bound_variable(item):
                     yield item
 
-        yield from combinatorial_predication_1(state, x_target_binding, bound_variable, unbound_variable)
+        yield from combinatorial_predication_1(context, state, x_target_binding, bound_variable, unbound_variable)
 
 
 # Arbitrarily decide that "small" means a size <= 1,000,000
@@ -347,7 +347,7 @@ def small_a_1(context, state, e_introduced_binding, x_target_binding):
                 if bound_variable(item):
                     yield item
 
-        yield from combinatorial_predication_1(state, x_target_binding, bound_variable, unbound_variable)
+        yield from combinatorial_predication_1(context, state, x_target_binding, bound_variable, unbound_variable)
 
 
 # This is a helper function that any predication that can
@@ -763,7 +763,7 @@ def pron(context, state, x_who_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_who_binding, bound_variable, unbound_variable)
 
 
 # c_raw_text_value will always be set to a raw string

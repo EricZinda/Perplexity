@@ -256,7 +256,10 @@ def predication_1(context, state, binding, bound_function, unbound_function, bin
 # combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
 # not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
 # for example
-def combinatorial_predication_1(state, binding, bound_function, unbound_function):
+def combinatorial_predication_1(context, state, binding, bound_function, unbound_function):
+    # yield from predication_1(context, state, binding,
+    #                          bound_function, unbound_function,
+    #                          VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.ignored))
     if binding.value is None:
         # Unbound
         at_least_one = at_least_one_generator(unbound_function())

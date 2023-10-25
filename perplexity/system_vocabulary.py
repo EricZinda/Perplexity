@@ -79,7 +79,7 @@ def in_scope(context, state, x_binding):
             if context.in_scope(state, item):
                 yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 # We want the interpretations of the to be mutually exclusive to avoid duplication
@@ -263,7 +263,7 @@ def card_cxi(context, state, c_count, x_binding, i_binding):
 
     if isinstance(c_count, numbers.Number) or (isinstance(c_count, str) and c_count.isnumeric()):
         c_value = int(c_count)
-        yield from combinatorial_predication_1(state,
+        yield from combinatorial_predication_1(context, state,
                                                x_binding,
                                                bound_variable,
                                                unbound_variable)

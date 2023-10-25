@@ -1,7 +1,11 @@
-- Add performance testing to test runs
+- Turn off combinatorics
+  - Even if we get rid of it, we still want the helpers to generate all combinations but only if necessary
+  - combinatorial_predication_1
+  - and_c()
+  - step 1: add context to combinatorial_predication_1
+  - step 2: Make it never return combinatorics
 - Decide how much of a win combinatorics is giving us
-  - Original: Elapsed time: 215.94112
-- 
+    - Original: Elapsed time: 215.94112
 - Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
   - Happens if the_selector_q is commented out and "_the_q" is moved to the_all_q and the_in_scope_q 
     - AND the_all_q is first in the file before the_in_scope_q
