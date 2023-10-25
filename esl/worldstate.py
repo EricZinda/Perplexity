@@ -2,20 +2,10 @@ import copy
 import json
 import numbers
 import esl.esl_planner
-from perplexity.predications import is_referring_expr, ReferringExpr, referring_expr_from_lemma, is_concept, Concept
+from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.state import State
 from perplexity.utilities import at_least_one_generator
-
-
-def noun_structure(value, part):
-    if isinstance(value, ReferringExpr):
-        # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
-        return value.modifiers().get(part, None)
-
-    else:
-        if part == "noun":
-            return value
 
 
 def in_scope_initialize(state):
@@ -267,37 +257,6 @@ def find_unused_instances_from_concept(context, state, concept):
                 break
         if not someone_has:
             yield instance
-
-
-# Finds a solution group that has instances of whatever referring_expr.variable_name holds
-# that are not in use by anyone, or currently ordered.
-# Note that it will return as many items as the solution group has, since the user may have
-# said "I want 2 steaks" so they should get 2 of them, etc
-def find_unused_values_from_referring_expr(referring_expr, solution_group_generator):
-    for solution_group in solution_group_generator:
-        found_items = []
-        for solution in solution_group:
-            concept_variable_value = solution.get_binding(referring_expr.variable_name).value
-            all_items_available = True
-            for concept_variable_item in concept_variable_value:
-                taken = at_least_one_generator(rel_subjects(solution, "have", concept_variable_item))
-                if taken is not None:
-                    # Someone already has this
-                    all_items_available = False
-                    break
-
-                ordered = at_least_one_generator(rel_subjects(solution, "ordered", concept_variable_item))
-                if ordered is None:
-                    found_items.append(concept_variable_item)
-                else:
-                    # Someone already has this
-                    all_items_available = False
-                    break
-
-        if all_items_available:
-            return found_items
-
-    return []
 
 
 def find_unused_item(state, object_type):

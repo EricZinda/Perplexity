@@ -1,6 +1,5 @@
-from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
+from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations
-from perplexity.predications import is_referring_expr, ReferringExpr
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 
@@ -164,20 +163,16 @@ def convert_to_english(state, what):
     elif isinstance(what, Measurement):
         return s("{*what.count} {*what.measurement_type:<*what.count}")
 
-    if isinstance(what, ReferringExpr):
-        return object_to_store(what)
+    # if it is an instance, with a name, return that
+    if is_instance(state, what):
+        names = list(rel_objects(state, what, "hasName"))
+        if len(names) > 0:
+            return names[0]
 
-    else:
-        # if it is an instance, with a name, return that
-        if is_instance(state, what):
-            names = list(rel_objects(state, what, "hasName"))
-            if len(names) > 0:
-                return names[0]
-
-        # Instances of commodities like steaks (i.e. steak1, steak2) that don't have
-        # a name should always just return their type name
-        type = instance_of_what(state, what)
-        return type if type is not None else "something"
+    # Instances of commodities like steaks (i.e. steak1, steak2) that don't have
+    # a name should always just return their type name
+    type = instance_of_what(state, what)
+    return type if type is not None else "something"
 
 
 def add_declarations(gtpyhop):

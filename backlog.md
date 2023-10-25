@@ -1,15 +1,16 @@
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 
 Code cleanup:
+- redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
 - Rename lineage something like disjunction
-- Do we still need frames with the new concept handling?
-- Get rid of referring expressions?
 - Alternative Implementation for have_v_1_present and _order_v_1_past
   - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
     - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
       - I.e. things like implied requests
+- Do we still need frames with the new concept handling?
 
-        
+
+- Better articulate how to to deal with all the variations of scopal arguments: not(), copy(), quantifier()
 - Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
   - Happens if the_selector_q is commented out and "_the_q" is moved to the_all_q and the_in_scope_q 
     - AND the_all_q is first in the file before the_in_scope_q
@@ -42,9 +43,6 @@ Code cleanup:
 
 Lower Pri:                
 - We have 0 menus -> No. you does not have something 
-- "What did we order?" -> Nothing
-  - Because "we" didn't order anything...Just I did
-- 
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
   - Need to rethink what it means for a solution group to have a referring expression in it
@@ -57,7 +55,6 @@ Lower Pri:
 
 - Doesn't seem like we should have to model the computer as "having the concept of menu?"
 - "who has which dish" doesn't work
-
 - I don't have *the* soup works because:
   - there is more than one soup so negation fails, and thus this works
 - I don't have soup / I have soup both work when you have ordered soup

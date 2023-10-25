@@ -3,10 +3,10 @@ import numbers
 from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, has_type, \
-    rel_subjects, is_instance, AddBillOp, DeleteRelOp, noun_structure,  \
+    rel_subjects, is_instance, AddBillOp, DeleteRelOp, \
     find_unused_item, ResetOrderAndBillOp,  object_to_store, \
     find_unused_instances_from_concept
-from perplexity.predications import  is_referring_expr, is_concept
+from perplexity.predications import is_concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.utilities import at_least_one_generator
@@ -41,13 +41,7 @@ def count_entities(value_group):
 
     count = 0
     for item in value_group:
-        if is_referring_expr(item):
-            card = noun_structure(item, "card")
-            if card is not None:
-                count += card
-            else:
-                count += 1
-        elif isinstance(item, Measurement):
+        if isinstance(item, Measurement):
             if isinstance(item.count, numbers.Number):
                 count += item.count
         else:

@@ -16,20 +16,9 @@ from perplexity.vocabulary import Predication, EventOption, Transform, override_
 from esl.worldstate import *
 
 vocabulary = system_vocabulary()
-override_predications(vocabulary, "user", ["card__cex__"])
 
 
 # ******** Helpers ************
-def convert_noun_structure(binding_value):
-    new_list = []
-    for item in binding_value:
-        if hasattr(item, "is_concept"):
-            new_list.append(item.modifiers())
-        else:
-            new_list.append(item)
-    return tuple(new_list)
-
-
 def variable_group_values_to_list(variable_group):
     return [binding.value for binding in variable_group.solution_values]
 
@@ -286,10 +275,14 @@ def pron(context, state, x_who_binding):
 @Predication(vocabulary, names=["generic_entity"])
 def generic_entity(context, state, x_binding):
     def bound(val):
-        return val == ReferringExpr(context.current_predication(), x_binding.variable.name)
+        if val == ESLConcept("generic_entity"):
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
 
     def unbound():
-        yield ReferringExpr(context.current_predication(), x_binding.variable.name)
+        yield ESLConcept("generic_entity")
 
     yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
@@ -299,19 +292,17 @@ def _okay_a_1(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)
 
 
-@Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.optional)])
+@Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.required)])
 def much_many_a(context, state, e_binding, x_binding):
-    if "Measure" in e_binding.value.keys():
-        measure_into_variable = e_binding.value["Measure"]["Value"]
-        # if we are measuring x_binding should have a ReferringExpr() that is the type of measurement
-        x_binding_value = x_binding.value
-        if len(x_binding_value) == 1 and is_referring_expr(x_binding_value[0]):
-            # Set the actual value of the measurement to a string so that
-            # a predication that receives it knows we are looking to fill in an unbound value
-            measurement = Measurement(x_binding_value[0], measure_into_variable)
+    # Which variable should we put the measurement in?
+    measure_into_variable = e_binding.value["Measure"]["Value"]
 
-            # Replace x5 with measurement
-            yield state.set_x(x_binding.variable.name, (measurement,))
+    # if we are measuring, x_binding should have a ESLConcept() that is the type of measurement
+    x_binding_value = x_binding.value
+    if len(x_binding_value) == 1 and is_concept(x_binding_value[0]):
+        # Replace x5 with a measurement object
+        measurement = Measurement(x_binding_value[0], measure_into_variable)
+        yield state.set_x(x_binding.variable.name, (measurement,))
 
 
 @Predication(vocabulary, names=["measure"])
@@ -323,12 +314,17 @@ def measure(context, state, e_binding, e_binding2, x_binding):
 
 @Predication(vocabulary, names=["abstr_deg"])
 def abstr_deg(context, state, x_binding):
-    yield state.set_x(x_binding.variable.name, (referring_expr_from_lemma("abstract_degree"),))
+    def bound(val):
+        if val == ESLConcept("degree"):
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
 
+    def unbound():
+        yield state.set_x(x_binding.variable.name, (ESLConcept("degree"),))
 
-@Predication(vocabulary, names=["card"])
-def card_system(context, state, c_number, e_binding, x_binding):
-    yield from perplexity.system_vocabulary.card_cex(context, state, c_number, e_binding, x_binding)
+    yield from combinatorial_predication_1(state, x_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
@@ -336,12 +332,7 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
         if len(x_what) == 1:
             x_what_type = perplexity.predications.value_type(x_what[0])
-            if x_what_type == perplexity.predications.VariableValueType.referring_expression:
-                # Is a referring expression, we'll add ourselves to it below
-                # Concepts just flow through
-                return True
-
-            elif x_what_type in [perplexity.predications.VariableValueType.instance, perplexity.predications.VariableValueType.concept]:
+            if x_what_type in [perplexity.predications.VariableValueType.instance, perplexity.predications.VariableValueType.concept]:
                 if x_what_type == perplexity.predications.VariableValueType.concept:
                     store_object = x_what[0].concept_name
                 else:
@@ -380,12 +371,6 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
 
             yield solution.set_x(x_what_binding.variable.name, (modified,))
 
-        elif is_referring_expr(x_what_value[0]):
-            e_what_value = solution.get_binding(e_binding.variable.name).value
-            x_for_value = solution.get_binding(x_for_binding.variable.name).value
-            modified = x_what_value[0].add_bound_modifier(context.current_predication(), [e_what_value, x_what_value, x_for_value])
-            yield solution.set_x(x_what_binding.variable.name, (modified,))
-
         else:
             yield solution
 
@@ -419,17 +404,6 @@ def _credit_n_1(context, state, x_bind):
 
     def unbound():
         yield "credit"
-
-    yield from combinatorial_predication_1(state, x_bind, bound, unbound)
-
-
-@Predication(vocabulary, names=["_tomato_n_1"])
-def _tomato_n_1(context, state, x_bind):
-    def bound(val):
-        context.report_error(["errorText", "no declarative tomato", state.get_reprompt()])
-
-    def unbound():
-        yield ReferringExpr("tomato")
 
     yield from combinatorial_predication_1(state, x_bind, bound, unbound)
 
@@ -690,7 +664,7 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
     if not state.sys["responseState"] == "way_to_pay":
         yield do_task(state, [("respond", context, "It's not time to pay yet.")])
         return
-    if not e_introduced_binding.value["With"] in ["cash","card"]:
+    if not e_introduced_binding.value["With"] in ["cash", "card"]:
         yield do_task(state,[("respond", context, "You can't pay with that.")])
         return
 
@@ -733,7 +707,7 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
 
     # This may be getting called with concepts or instances, before we call the planner
     # we need to decide if we have the requisite amount of them
-    if is_referring_expr(x_actor_variable_group.solution_values[0]):
+    if is_concept(x_actor_variable_group.solution_values[0]):
         # We don't want to deal with conceptual actors, fail this solution group
         # and wait for the one with real actors
         yield []
@@ -1270,8 +1244,6 @@ def invalid_present_transitive(context, state, e_introduced_binding, x_actor_bin
 def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_past_tense(state.get_binding("tree").value[0]):
         return
-    if is_referring_expr(x_actor_binding) or is_referring_expr(x_object_binding):
-        return
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
         return
 
@@ -1611,8 +1583,8 @@ def measurement_information(x):
         # then we are being asked to measure x_actor
         measure_into_variable = x.count
         units = x.measurement_type
-        if is_referring_expr(units):
-            return measure_into_variable, units.referring_expr_name
+        if is_concept(units):
+            return measure_into_variable, units.concept_name
 
     return None, None
 
@@ -1620,6 +1592,7 @@ def measurement_information(x):
 @Predication(vocabulary, names=["_be_v_id"])
 def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
+        # Just check if this is an object and a measurement, if so, handle it below
         measure_into_variable, units = measurement_information(x_object)
         if measure_into_variable is not None:
             return True
@@ -1646,7 +1619,7 @@ def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_bin
         x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
         measure_into_variable, units = measurement_information(x_object_value)
         if measure_into_variable is not None:
-            # This is a "how much is x" question and we need to measure the value
+            # This is a "how much is x" question: we need to measure the value
             # into the specified variable
             concept_item = instance_of_or_concept_name(state, x_actor_value)
             if units in ["generic_entity", "dollar"]:
@@ -1670,6 +1643,8 @@ def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_bin
             yield success_state
 
 
+# This is here to remove "there are more" if we are asking about specials...
+# TODO: Is this really the best way to model that?
 @Predication(vocabulary, names=["solution_group__be_v_id"])
 def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
     yield state_list
@@ -1684,16 +1659,6 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
 
         else:
             yield True  # will need to implement checking for price correctness in the future if user says "the soup costs one steak"
-
-            '''
-            x_object = json.loads(x_object)
-            if x_object["structure"] == "price_type":
-                if type(x_object["relevant_var_value"]) is int:
-                    if not (instance_of_what(state, x_act), x_object["relevant_var_value"]) in state.sys["prices"]:
-                        context.report_error("WrongPrice")
-                        return False
-            return True
-            '''
 
     def get_actor(x_object):
         if False:
@@ -1744,7 +1709,7 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
 
 @Predication(vocabulary, names=["solution_group__cost_v_1"])
 def _cost_v_1_group(context, state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
-    if is_referring_expr(x_act_variable_group.solution_values[0].value[0]):
+    if is_concept(x_act_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_act_variable_group, check_concepts=True):
             yield []
             return

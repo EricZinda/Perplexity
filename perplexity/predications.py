@@ -13,8 +13,7 @@ from perplexity.vocabulary import ValueSize
 
 class VariableValueType(enum.Enum):
     instance = 1,
-    concept = 2,
-    referring_expression = 3
+    concept = 2
 
 
 def value_type(o):
@@ -24,15 +23,6 @@ def value_type(o):
         return VariableValueType.instance
 
 
-def is_referring_expr(o):
-    if isinstance(o, VariableBinding):
-        if o.value is None:
-            return False
-        else:
-            o = o.value[0]
-    return hasattr(o, "value_type") and o.value_type() == VariableValueType.referring_expression
-
-
 def is_concept(o):
     if isinstance(o, VariableBinding):
         if o.value is None:
@@ -40,13 +30,6 @@ def is_concept(o):
         else:
             o = o.value[0]
     return hasattr(o, "value_type") and o.value_type() == VariableValueType.concept
-
-
-def referring_expr_from_lemma(lemma):
-    # TODO: Make this more robust
-    variable_name = "x999"
-    predication = perplexity.tree.TreePredication(0, f"_{lemma}_n_1", ["x999"], arg_names=["ARG0"])
-    return ReferringExpr(predication, variable_name)
 
 
 class Concept(object):
@@ -68,114 +51,7 @@ class Concept(object):
         return None
 
 
-class ReferringExpr(object):
-    def __init__(self, noun_predication, variable_name):
-        self.noun_predication = noun_predication
-        self.variable_name = variable_name
-        self.modifiers = []
-        self.bound_variables = {}
-        self.extra_variables = {}
-        self._hash = None
-
-        parsed_predication = parse_predication_name(noun_predication.name)
-        self.referring_expr_name = parsed_predication["Lemma"]
-
-    def __repr__(self):
-        return f"referring_expr({self.referring_expr_name}: {self.modifiers})"
-
-    # The only required property is that objects which compare equal have the same hash value
-    # But: objects with the same hash aren't required to be equal
-    # It must remain the same for the lifetime of the object
-    def __hash__(self):
-        if self._hash is None:
-            # TODO: Make this more efficient
-            self._hash = hash(self.referring_expr_name)
-
-        return self._hash
-
-    def __eq__(self, other):
-        if isinstance(other, ReferringExpr) and self.__hash__() == other.__hash__():
-            if len(self.modifiers) != len(other.modifiers):
-                return False
-            else:
-                for index in range(len(self.modifiers)):
-                    if self.modifiers[index] != other.modifiers[index]:
-                        return False
-                    else:
-                        # Modifier matches, make sure any bound variables it has match too
-                        for arg in self.modifiers[index].args_with_types(["e", "x"]):
-                            self_bound_value = self.bound_variables.get(arg, None)
-                            other_bound_value = other.bound_variables.get(arg, None)
-                            if self_bound_value != other_bound_value:
-                                return False
-
-                return True
-
-    def add_modifier(self, predication):
-        modified = copy.deepcopy(self)
-        modified.modifiers.append(predication)
-        modified._hash = None
-        return modified
-
-    # Leave the variable that represents this concept unbound
-    # but bind all the reset of the variables
-    def add_bound_modifier(self, predication, bound_args, new_variables=None):
-        modified = copy.deepcopy(self)
-        modified.modifiers.append(predication)
-        for arg_index in range(len(predication.args)):
-            if predication.arg_types[arg_index] != "c":
-                arg_variable = predication.args[arg_index]
-                if arg_variable != modified.variable_name:
-                    if arg_variable in modified.bound_variables:
-                        assert bound_args[arg_index] == modified.bound_variables[arg_variable]
-                    else:
-                        modified.bound_variables[arg_variable] = bound_args[arg_index]
-        if new_variables:
-            self.extra_variables.update(new_variables)
-
-        return modified
-
-    def solution_groups(self, state, ignore_global_constraints=True):
-        import perplexity.solution_groups
-        declared_constraints = list(perplexity.solution_groups.declared_determiner_infos(execution_context, state, variables=[self.variable_name]))
-        if len(declared_constraints) == 0:
-            default_criteria = perplexity.plurals.VariableCriteria(self.noun_predication,
-                                                                   self.variable_name,
-                                                                   min_size=1,
-                                                                   max_size=1)
-            declared_constraints.append(default_criteria)
-        elif ignore_global_constraints:
-            for constraint in declared_constraints:
-                constraint.global_criteria = None
-
-        # First set the variables to any bound values we received
-        bound_state = state
-        for variable_value in self.bound_variables.items():
-            bound_state = bound_state.set_x(variable_value[0], variable_value[1])
-
-        # Leave the noun itself unbound
-        bound_state = bound_state.set_x(self.variable_name, None)
-
-        assert False # resolve_fragment no longer works
-        # for group in execution_context().resolve_fragment(bound_state, [self.noun_predication] + self.modifiers, extra_variables=self.extra_variables, criteria_list=declared_constraints):
-        #     if is_referring_expr(group[0].get_binding(self.variable_name).value[0]):
-        #         # The caller already has the referring expression, don't return it again
-        #         continue
-        #     else:
-        #         yield group
-
-    def value_of_modifier_argument(self, state, predicate_name, arg_index):
-        for modifier in self.modifiers:
-            if modifier.name == predicate_name:
-                arg_variable = modifier.args[arg_index]
-                return state.get_binding(arg_variable).value
-        return None
-
-    def value_type(self):
-        return VariableValueType.referring_expression
-
-
-# This function is used to check the constraints for a variable that is set to a *referring expression*.
+# This function is used to check the constraints for a variable that is set to a *concet*.
 # The caller needs to decide if the meaning of the phrase is referring to instances or concepts and set check_concepts=True or False
 #   since the meaning can't always be inferred.
 #
