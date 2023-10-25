@@ -2,6 +2,7 @@ import copy
 import json
 import os
 import sys
+import time
 import traceback
 import uuid
 from perplexity.utilities import module_name
@@ -135,6 +136,7 @@ class TestManager(object):
 
     def run_tests(self, test_iterator, ui):
         print("\n**** Begin Testing...\n")
+        testItemStartTime = time.perf_counter()
         for test_item in test_iterator:
             print(f"\nTest: {test_item['Command']}")
             try:
@@ -148,7 +150,10 @@ class TestManager(object):
             if not self.check_result(test_iterator, test_item, ui.interaction_record):
                 print(f"**** Cancel test run: {test_iterator.test_path_and_file}")
                 break
-        print("\n**** Testing Complete.\n")
+
+        elapsed = round(time.perf_counter() - testItemStartTime, 5)
+
+        print(f"\n**** Testing Complete. Elapsed time: {elapsed}\n")
 
     def check_result(self, test_iterator, test_item, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]

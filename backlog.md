@@ -1,4 +1,7 @@
-
+- Add performance testing to test runs
+- Decide how much of a win combinatorics is giving us
+  - Original: Elapsed time: 215.94112
+- 
 - Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
   - Happens if the_selector_q is commented out and "_the_q" is moved to the_all_q and the_in_scope_q 
     - AND the_all_q is first in the file before the_in_scope_q
@@ -14,7 +17,8 @@
         - Options:
           - Stop doing combinatorics
           - Have a lineage to track when RSTR changes
-          - Have "the" force the tree to not do combinatorics
+          - Have "the" or "not" force the tree to not do combinatorics
+            - Allow predications to mark themselves as requiring linear execution
           - Have a helper that "inverts" the execution and gives an indicator when the scope changes by looking at the values for any combinatorics
             - It is only going to be used by scopal predications if they somehow track scope, which doesn't seem like many besides "the"
             - resolving Scopal args:
@@ -26,6 +30,7 @@
             - We want the set of RSTRs for the variables that have been set that outscope the quantifier
             - Could this be the same as resolving a scopal arg? where we get some kind of generator of generators 
               - so we know when the outscope values have changed
+          - Deal with it like neg() does: run through every combination of scopal variables
 
 
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
