@@ -27,6 +27,8 @@ def scopal_argument(scopal_index, event_for_arg_index, event_value_pattern):
                 subtree_state = state.set_x("tree", (new_tree_info,))
                 tree_solver = context.create_child_solver()
 
+                # This needs to use phase1() and not a simple call() because it needs to use interpretations that are
+                # normalized which is not the default
                 # Normalize the tree, which could return multiple solutions, or disjunct solution sets
                 # just like any call()
                 # We can flatten them out here because they retain their lineage in a variable and will get split

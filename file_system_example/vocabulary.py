@@ -716,7 +716,7 @@ def copy_v_1_stative_comm(context, state, e_introduced_binding, x_actor_binding,
 
 @Predication(vocabulary, names=["_copy_v_1"], virtual_args=[(scopal_argument(scopal_index=3, event_for_arg_index=2, event_value_pattern=locative_preposition_end_location), EventOption.required)])
 def copy_v_1_locative_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding, h_where, where_binding_generator):
-    # TODO: Handle set based from locations
+    # TODO: Handle set based "from" locations
     where_binding_list = list(where_binding_generator)
     if len(where_binding_list) != 1:
         return

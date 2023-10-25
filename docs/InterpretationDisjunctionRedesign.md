@@ -54,12 +54,14 @@ The same thing happens with scopal arguments such as "copy "file5.txt" in "docum
     
 
 # Scopal arguments
+- Difference between the way: quantifier(), neg(), copy() evaluate their scopal args
+  - quantifier() can just use call because it is operating against the interpretation that it was given
+  - copy(..., scopal) needs the "normalized" form of its scopal arg, which is a *different* interpretation, so it needs to call phase1() to ask for that interpretation
+  - neg() is an operation on the truth of its entire scopal arg, which means that it needs to evaluate phase 1 and phase 2 
+    of its scopal arg in order to know if that arg was "true", it isn't enough to know if a particular solution is true
+
 Scopal arguments have already had an interpretation of their predicates selected because the whole tree's interpretations have been selected. So that won't generate new tree_records.
 
 However, they may have conjunctions in them which do generate alternatives.
 
-Ideas:
-- Have a way to attach tree_records to state to indicate that something scopal had multiple resolutions and then unwrap that at the right place.
-
-Issue: How is neg(scopal) different than udef(x, scopal, scopal)?
 

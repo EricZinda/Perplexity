@@ -1,16 +1,4 @@
-- Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 
-Code cleanup:
-- redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
-- Rename lineage something like disjunction
-- Alternative Implementation for have_v_1_present and _order_v_1_past
-  - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
-    - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
-      - I.e. things like implied requests
-- Do we still need frames with the new concept handling?
-
-
-- Better articulate how to to deal with all the variations of scopal arguments: not(), copy(), quantifier()
 - Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
   - Happens if the_selector_q is commented out and "_the_q" is moved to the_all_q and the_in_scope_q 
     - AND the_all_q is first in the file before the_in_scope_q
@@ -40,6 +28,17 @@ Code cleanup:
               - so we know when the outscope values have changed
 
 
+- Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
+
+Code cleanup:
+- redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
+- Rename lineage something like disjunction
+- Alternative Implementation for have_v_1_present and _order_v_1_past
+  - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
+    - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
+      - I.e. things like implied requests
+- Do we still need frames with the new concept handling?
+- 
 
 Lower Pri:                
 - We have 0 menus -> No. you does not have something 

@@ -259,7 +259,7 @@ def card_cxi(context, state, c_count, x_binding, i_binding):
             return False
 
     def unbound_variable():
-            yield c_value
+        yield c_value
 
     if isinstance(c_count, numbers.Number) or (isinstance(c_count, str) and c_count.isnumeric()):
         c_value = int(c_count)
@@ -280,7 +280,8 @@ def generate_not_error(context, unscoped_referenced_variables):
     else:
         context.report_error(["notClause"], force=True)
 
-
+# neg() is an operation on the truth of its entire scopal arg, which means that it needs to evaluate phase 1 and phase 2
+# of its scopal arg in order to know if that arg was "true", it isn't enough to know if a particular solution is true
 @Predication(vocabulary, library="system", names=["neg"])
 def neg(context, state, e_introduced_binding, h_scopal):
     # Gather all the bound x variables and their values that are referenced in h_scopal
@@ -328,8 +329,8 @@ def neg(context, state, e_introduced_binding, h_scopal):
                 tree_solver = context.create_child_solver()
                 subtree_state = combination_state.set_x("tree", (new_tree_info,))
 
-                # Use resolve_fragment to run numeric criteria on the "not" clause. So that a phrase like
-                # "which files not in this folder are not large?" would work
+                # Use tree_solutions to run numeric criteria on the "not" clause. So that a phrase like
+                # "which files not in this folder are not large?" would work (and properly count the plural "files")
                 had_negative_success = False
                 for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info):
                     if tree_record["SolutionGroupGenerator"] is not None:
