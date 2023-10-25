@@ -1582,7 +1582,7 @@ def _have_v_1_able_group(context, state_list, has_more, e_variable_group, x_acto
 @Predication(vocabulary, names=["poss"])
 def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
     def bound(x_actor, x_object):
-        if (x_actor, x_object) in state.all_rel("have"):
+        if (object_to_store(x_actor), object_to_store(x_object)) in state.all_rel("have"):
             return True
         else:
             context.report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
@@ -1591,12 +1591,12 @@ def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding
     def actor_from_object(x_object):
         for i in state.all_rel("have"):
             if i[1] == x_object:
-                yield i[0]
+                yield store_to_object(i[0])
 
     def object_from_actor(x_actor):
         for i in state.all_rel("have"):
             if i[0] == x_actor:
-                yield i[1]
+                yield store_to_object(i[1])
 
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)

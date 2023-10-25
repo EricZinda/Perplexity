@@ -44,12 +44,6 @@ Lower Pri:
 - We have 0 menus -> No. you does not have something 
 - "What did we order?" -> Nothing
   - Because "we" didn't order anything...Just I did
-- Can I have a steak?
-  - concepts are included in combinatoric with instances
-- what specials do you have?
-  - treats types as referring expressions
-  - Need to convert to Concepts
-  - look for all object_to_store() references and make sure they shouldn't be referring_expression
 - 
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
@@ -61,7 +55,7 @@ Lower Pri:
       - Those get resolved into types and instances which get processed
       - etc.
 
-- What are your specials? Fails
+- 
 - 
 - Doesn't seem like we should have to model the computer as "having the concept of menu?"
 - "who has which dish" doesn't work

@@ -185,6 +185,13 @@
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"
         },
         {
+            "Command": "What are your specials?",
+            "Expected": "soup\nsalad\npork",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_special_n_1(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
