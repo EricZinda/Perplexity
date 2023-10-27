@@ -1,5 +1,6 @@
-- Make solution groups do a better job at lazy evaluation
-- 
+- (fixed) Make solution groups do a better job at lazy evaluation
+- () Once a solution is found, keeping growing that one
+  - Problem is that solution group handlers might throw it away so we need to be able to find others
 - Add performance testing to test runs
 - Decide how much of a win combinatorics is giving us
   - Original: Elapsed time: 215.94112
