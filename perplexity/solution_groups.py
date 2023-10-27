@@ -7,6 +7,7 @@ from math import inf
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
 from perplexity.response import RespondOperation
+from perplexity.set_utilities import CachedIterable
 from perplexity.utilities import at_least_one_generator
 
 
@@ -244,7 +245,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                         pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
                         if wh_question_variable is not None:
                             wh_created_solution_group = run_wh_group_handlers(phase2_context, wh_handlers, wh_question_variable, one_more, group_list)
-                            if len(wh_created_solution_group) == 0:
+                            if isinstance(wh_created_solution_group, (tuple, list)) and len(wh_created_solution_group) == 0:
                                 # wh_handler said to fail
                                 if best_error_info[0] is None and phase2_context.get_error_info()[0] is not None:
                                     best_error_info = phase2_context.get_error_info()
@@ -281,10 +282,52 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         execution_context.set_error_info(solutions_orig.error_info)
 
 
+# Support iterating over just one variable value from a state iterator but
+# without materializing all the states up front
+class GroupVariableIterable(object):
+    class GroupVariableIterator(object):
+        def __init__(self, state_iterator, static_value=None, variable_name=None):
+            self._state_iterator = state_iterator
+            self._static_value = static_value
+            self._variable_name = variable_name
+
+        def __next__(self):
+            # Call next_state even if we're not going to use it so we quit iterating when
+            # we are out of values
+            next_state = next(self._state_iterator)
+            if self._static_value is not None:
+                return self._static_value
+            else:
+                return next_state.get_binding(self._variable_name)
+
+    def __init__(self, state_iterable, static_value=None, variable_name=None):
+        self._state_iterable = state_iterable
+        self._static_value = static_value
+        self._variable_name = variable_name
+
+    def __iter__(self):
+        return GroupVariableIterable.GroupVariableIterator(self._state_iterable.__iter__(), self._static_value, self._variable_name)
+
+    def __getitem__(self, key):
+        # Even if we aren't using it, make sure this index exists by accessing it
+        state = self._state_iterable[key]
+        if self._static_value is not None:
+            return self._static_value
+        else:
+            return state.get_binding(self._variable_name)
+
+
 class GroupVariableValues(object):
-    def __init__(self, variable_constraints):
+    def __init__(self, variable_constraints, state_iterable, arg_type, arg_value):
         self.variable_constraints = variable_constraints
-        self.solution_values = []
+
+        if arg_type in ["c", "h"]:
+            # returns arg_value for every state
+            self.solution_values = GroupVariableIterable(state_iterable=state_iterable, static_value=arg_value)
+
+        else:
+            # return get_binding(arg_value) for every state
+            self.solution_values = GroupVariableIterable(state_iterable=state_iterable, variable_name=arg_value)
 
 
 # If a handler returns:
@@ -294,11 +337,12 @@ def run_handlers(execution_context, wh_handlers, handlers, variable_constraints,
     best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
     created_solution_group = None
     has_more = False
-    state_list = list(group)
-    if pipeline_logger.level == logging.DEBUG:
-        nl = '\n'
-        pipeline_logger.debug(f"Found solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in state_list])}")
-        pipeline_logger.debug(f"Current execution context error: {execution_context.error()}")
+    state_list = CachedIterable(group)
+    # state_list = list(group)
+    # if pipeline_logger.level == logging.DEBUG:
+    #     nl = '\n'
+    #     pipeline_logger.debug(f"Found solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in state_list])}")
+    #     pipeline_logger.debug(f"Current execution context error: {execution_context.error()}")
 
     if len(handlers) > 0:
         pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
@@ -310,20 +354,14 @@ def run_handlers(execution_context, wh_handlers, handlers, variable_constraints,
                 # Build up an arg structure to call the predication with that
                 # has the same arguments as the normal predication but has a list for each argument that represents the solution group
                 handler_args = []
-                for arg in index_predication.args:
+                for arg_index in range(len(index_predication.args)):
+                    arg = index_predication.args[arg_index]
                     found_constraint = None
                     for constraint in variable_constraints:
                         if constraint.variable_name == arg:
                             found_constraint = constraint
                             break
-                    handler_args.append(GroupVariableValues(found_constraint))
-
-                for state in state_list:
-                    for arg_index in range(len(index_predication.args)):
-                        if index_predication.argument_types()[arg_index] == "c" or index_predication.argument_types()[arg_index] == "h":
-                            handler_args[arg_index].solution_values.append(index_predication.args[arg_index])
-                        else:
-                            handler_args[arg_index].solution_values.append(state.get_binding(index_predication.args[arg_index]))
+                    handler_args.append(GroupVariableValues(found_constraint, state_list, index_predication.argument_types()[arg_index], arg))
 
                 handler_args = [execution_context, state_list, one_more] + handler_args
 
@@ -335,7 +373,7 @@ def run_handlers(execution_context, wh_handlers, handlers, variable_constraints,
             for next_solution_group in handler_function(*handler_args):
                 if created_solution_group is None:
                     created_solution_group = next_solution_group
-                    if len(created_solution_group) == 0:
+                    if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
                         # handler said to fail
                         if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
                             best_error_info = execution_context.get_error_info()
@@ -343,7 +381,7 @@ def run_handlers(execution_context, wh_handlers, handlers, variable_constraints,
                     pipeline_logger.debug(f"{debug_name} succeeded with first solution")
                     if wh_question_variable is not None:
                         created_solution_group = run_wh_group_handlers(execution_context, wh_handlers, wh_question_variable, one_more, created_solution_group)
-                        if len(created_solution_group) == 0:
+                        if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
                             # handler said to fail
                             if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
                                 best_error_info = execution_context.get_error_info()
