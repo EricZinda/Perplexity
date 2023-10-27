@@ -1,6 +1,54 @@
 import itertools
 
 
+# Creating a CachedIterable(iterable) allows the caller to treat the CachedIterable()
+# like a materialized list by accessing with an index or iterating over it.
+# BUT: it does not actually materialize the list more than it has to. So, multiple
+# iterators can be started on it, and they will share the same underlying (perhaps partially)
+# materialized list.
+# Not threadsafe.
+class CachedIterable(object):
+    class CachedIterator(object):
+        def __init__(self, cached_iterable):
+            self._cached_iterable = cached_iterable
+            self.next_index = 0
+
+        def __next__(self):
+            value = self._cached_iterable.get_from_index(self.next_index)
+            self.next_index += 1
+            return value
+
+    def __init__(self, iterable):
+        # This is the main iterator that will materialize
+        # the underlying data, *as needed*
+        self.iterator = iter(iterable)
+        self.done = False
+        self.cached_values = []
+
+    def __iter__(self):
+        return CachedIterable.CachedIterator(self)
+
+    def __getitem__(self, key):
+        try:
+            return self.get_from_index(key)
+
+        except StopIteration:
+            raise IndexError
+
+    def get_from_index(self, index):
+        try:
+            while index >= len(self.cached_values):
+                if self.done:
+                    raise StopIteration
+                self.cached_values.append(next(self.iterator))
+
+        except StopIteration:
+            self.done = True
+            raise
+
+        return self.cached_values[index]
+
+
 class Measurement(object):
     def __init__(self, measurement_type, count):
         self.measurement_type = measurement_type

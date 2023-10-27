@@ -1,3 +1,5 @@
+- Make solution groups do a better job at lazy evaluation
+- 
 - Add performance testing to test runs
 - Decide how much of a win combinatorics is giving us
   - Original: Elapsed time: 215.94112

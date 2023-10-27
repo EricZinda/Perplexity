@@ -1429,11 +1429,13 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
         # Since this is a concept, the solution handler already checked that the actor is
         # "restaurant" and that the restaurant "has" the solution group concepts.
         final_states = []
-        for solution_index in range(len(state_list)):
+        solution_index = -1
+        for state in state_list:
+            solution_index += 1
             # Deal with the user saying "do you have x and y *together*"
             x_obj_value = x_obj_list.solution_values[solution_index].value
             if len(x_obj_value) > 1:
-                context.report_error(["errorText", "One thing at a time, please!", state_list[solution_index].get_reprompt()], force=True)
+                context.report_error(["errorText", "One thing at a time, please!", state.get_reprompt()], force=True)
                 yield []
                 return
 
@@ -1468,7 +1470,7 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
             else:
                 # Not an implied request and the solution predication already confirmed
                 # that the restaurant has this concept, so: succeed
-                final_states.append(state_list[solution_index])
+                final_states.append(state)
 
         yield final_states
         return
