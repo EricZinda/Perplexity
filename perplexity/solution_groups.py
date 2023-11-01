@@ -109,7 +109,7 @@ class SolutionGroupGenerator(object):
 
             # The ID reflects the lineage, so we can get the
             # parent ID by grabbing the text before the last ":"
-            if stats_group.only_instances():
+            if stats_group.only_instances() and stats_group.merge:
                 colon_index = next_id.rfind(":")
                 if colon_index == -1:
                     parent_id = ""

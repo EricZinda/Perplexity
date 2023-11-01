@@ -196,10 +196,11 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
 
 class StatsGroup(object):
-    def __init__(self, variable_has_inf_max=False, group_state=None):
+    def __init__(self, variable_has_inf_max=False, group_state=None, merge=False):
         self.variable_stats = []
         self.variable_has_inf_max = variable_has_inf_max
         self.group_state = group_state
+        self.merge = merge
 
     def __repr__(self):
         return ",".join([f"({str(x)})" for x in self.variable_stats])
@@ -234,7 +235,7 @@ class StatsGroup(object):
         return has_global_constraint, self.variable_has_inf_max
 
     def copy(self):
-        new_group = StatsGroup(self.variable_has_inf_max, self.group_state)
+        new_group = StatsGroup(self.variable_has_inf_max, self.group_state, self.merge)
         previous_new_stat = None
         for stat in self.variable_stats:
             new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.variable_value_type)
@@ -490,6 +491,7 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         current_set_state = criteria_transitions[current_set_state][state]
         if current_set_state == CriteriaResult.fail_one or current_set_state == CriteriaResult.fail_all:
             new_set_stats_group.group_state = current_set_state
+            new_set_stats_group.merge = merge
             return None, current_set_state
 
         # If the value in new_solution for the current variable added a new value to the set of values
@@ -500,6 +502,7 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
             merge = False
 
     new_set_stats_group.group_state = current_set_state
+    new_set_stats_group.merge = merge
     return merge, current_set_state
 
 
