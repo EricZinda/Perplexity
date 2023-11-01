@@ -51,22 +51,23 @@ class Concept(object):
         return None
 
 
-# This function is used to check the constraints for a variable that is set to a *concet*.
+# This function is used to check the constraints for a variable that is set to a *concept*.
 # The caller needs to decide if the meaning of the phrase is referring to instances or concepts and set check_concepts=True or False
 #   since the meaning can't always be inferred.
 #
 # For example:
 #
-# Examples where the speaker uses a concept but the constraint is really about the instances:
+# Examples where the speaker uses a concept but the constraint is really about the instances (check_concepts=False):
 #   "We want a menu" --> "We want 1 instance of a menu concept"
 #   "We want a table" --> "We want 1 instance of a table concept"
 #   "We want tables/menus" --> "We want instances of the tables"
 #   "We want the menu(s)" --> "We want an undefined number of instances of 'the one and only table concept in scope'"
 #   "We want the specials" --> "We want an undefined number of instances of 'the (undefined number of) the special concepts in scope'"
 #
-# Examples where the speaker almost certainly means the concept:
+# Examples where the speaker almost certainly means the concept (check_concepts=True):
 #   "Are the 2 specials good?" --> It is possible this means "the two instances of a special" but very unlikely
-#
+#   "What are your specials?" --> what are the "specials" concepts that you have?
+
 # Examples where the speaker uses a concept and could mean *either* the concept or the instances:
 #   "What chairs do you have?" --> *could* mean: "Which instances of chairs do you have?" or "which "classes" of chairs do you have?"
 #   "Which/How many specials do you have?" --> *could* mean: "which instances of specials do you have left?" or "Which classes of special are available here?"
