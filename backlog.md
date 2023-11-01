@@ -1,9 +1,38 @@
+
 - Turn off combinatorics
   - Even if we get rid of it, we still want the helpers to generate all combinations but only if necessary
   - combinatorial_predication_1
   - and_c()
   - step 1: add context to combinatorial_predication_1
   - step 2: Make it never return combinatorics
+- (fixed) Make solution groups do a better job at lazy evaluation
+- Make "be_v_id" work properly with concepts
+  - (fixed) "what are your specials?"
+  - which 2 dishes are specials? -> fails
+    - /runparse 0,0
+    - _be_v_id_group() is getting duplicate values
+      - It is getting duplication solutions
+      - Because "dish" has overlapping things that specialize "dish"
+      - And we're never getting the solution group with just 2 things in it
+      - (fixed) Because we iterate through the concept solutions and, because they are added to existing solution groups, the SolutionGroupGenerator replaces them
+  - What are your specials? -> soup (among others)
+    - Interpreted as "which things are your specials?"
+      - _be_v_id(x, y) is going to be true for anything where x is y
+      - In this case x is unbound, so solutions where x are concepts are true, as well as instances will be true
+      - AND: any combination of items > 2 will work
+    - why does it allow a single special (soup) when the phrase is "special(s)"
+    - Model for checking requirement on concepts for _be_v_id_group() is kind of random.
+    - Fix: Should count the actual number of concepts in the solution group if check_concepts=True
+      - Returns "2 soups and a salad" because: "specials" does start returning concepts and lists "soup" and "salad"
+        - But next in the list of interpretations is instances(x3) and concepts(x8) and these produce a solution before getting concepts(x3) and concepts(x8)
+        - First BUG: yielding values from an unbound variable doesn't have a way to set properties on state() so we can't do lineages right
+        - Second BUG: probably the be_v_id() should have a disjunction for yielding itself for something that it can "be" and yielding things that specialize it
+          - Should this also be the case for the root thing_concepts()
+        - third BUG: Probably need to interpret "what are x" as meaning "what are *all* X" via pragmatics?
+        - 
+- Once a solution is found, keeping growing that one
+  - Problem is that solution group handlers might throw it away so we need to be able to find others
+- Add performance testing to test runs
 - Decide how much of a win combinatorics is giving us
     - Original: Elapsed time: 215.94112
 - Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
@@ -50,6 +79,7 @@ Code cleanup:
 - 
 
 Lower Pri:                
+- who are your specials -> I'm not sure which soup you mean.
 - We have 0 menus -> No. you does not have something 
 - referring expressions are different than types. A referring expression can generate types
   - Need to rename these to "referring expressions"
