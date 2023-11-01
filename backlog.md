@@ -1,3 +1,7 @@
+- don't merge concept solution groups
+  - Bugs:
+    - what do you have? -> kitchen
+      - expected If you'd like to hear about our menu items, you'll need to have a seat
 - (fixed) Make solution groups do a better job at lazy evaluation
 - Make "be_v_id" work properly with concepts
   - (fixed) "what are your specials?"
