@@ -375,7 +375,10 @@ class ESLConcept(Concept):
 
     def __eq__(self, other):
         if isinstance(other, ESLConcept) and self.__hash__() == other.__hash__():
-            if len(self.criteria) != len(other.criteria):
+            if self.concept_name != other.concept_name:
+                return False
+
+            elif len(self.criteria) != len(other.criteria):
                 return False
             else:
                 for index in range(len(self.criteria)):
@@ -408,6 +411,12 @@ class ESLConcept(Concept):
         # get the actual identifiers of all concepts that meet all the criteria
         raw_concepts = self._meets_criteria(context, state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria, initial_instances=potential_concepts)
 
+        if len(raw_concepts) == 0:
+            # Since the concept generated might be different than what the user said,
+            # For example, "table for my son" is interpreted as "table for 1", we need
+            # to generate an error that is specific to the *concept*
+            context.report_error(["conceptNotFound", self], force=True)
+
         # ... and return them wrapped in a Concept() with the same criteria
         return [self._replace_concept_name(x) for x in raw_concepts]
 
@@ -427,12 +436,6 @@ class ESLConcept(Concept):
             found_cumulative = found
             if len(found_cumulative) == 0:
                 break
-
-        if len(found_cumulative) == 0:
-            # Since the concept generated might be different than what the user said,
-            # For example, "table for my son" is interpreted as "table for 1", we need
-            # to generate an error that is specific to the *concept*
-            context.report_error(["conceptNotFound", self], force=True)
 
         return found_cumulative
 
