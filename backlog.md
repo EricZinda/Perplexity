@@ -1,7 +1,13 @@
-- don't merge concept solution groups
+- don't merge concept solution groups so we see all the alternatives
   - Bugs:
     - what do you have? -> kitchen
       - expected If you'd like to hear about our menu items, you'll need to have a seat
+      - It used to be that "what do you have?" gave a maximal group and so it triggered the "asking for a menu" response
+      - Now it gives a minimal group and "kitchen" happens to be the first thing that gets returned
+      - Both the minimal and maximal are technically "correct", but the maximal is more correct since a minimal answer is misleading
+        - The "pragmatics" would be that "wh-questions" should always be implied "what are all the" questions
+        - This *is* what happens with instances, just not with concepts
+        - So, wh-questions that have an upper constraint of inf, *should* actually merge
 - (fixed) Make solution groups do a better job at lazy evaluation
 - Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
 - Example33_reset: a few files are in a folder together

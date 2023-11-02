@@ -498,7 +498,7 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         # being tracked by a variable without an upper bound of inf, then we need to create a new group
         # because we need to generate alternatives from it
         # OR if this variable is not an instance, don't merge either so we get all the alternatives
-        if new_individuals and (criteria.max_size != float('inf') or variable_stats.variable_value_type != perplexity.predications.VariableValueType.instance):
+        if new_individuals and criteria.max_size != float('inf'):
             merge = False
 
     new_set_stats_group.group_state = current_set_state
