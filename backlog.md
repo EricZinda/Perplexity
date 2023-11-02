@@ -11,8 +11,15 @@
     - Bug: I want a steak and a soup: There isn't such a steak, soup (all together) here
       - expected: One thing at a time, please!
       - /runparse 0,1
-  - step3: Assert if combinatorics is ever set in binding and fix all the cases
-  - 
+  - (fixed) step3: Assert if combinatorics is ever set in binding and fix all the cases
+  - (done) step 4: Do timings to see how much of a win combinatorics were getting 
+    - Without combinatorics:
+      - file system: Elapsed time: 213.00468
+      - ESL: Elapsed time: 226.88926
+    - With:
+      - filesystem: Elapsed time: 211.73027
+      - esl: Elapsed time: 267.1884
+      
 - Bugs:
     - Example34_reset: the files are in four folders
     - (fixed) Example26_reset: the 4 large files are 20 mb -> a large 4 file are not large
