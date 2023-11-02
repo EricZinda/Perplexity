@@ -269,7 +269,7 @@ def pron(context, state, x_who_binding):
             else:
                 yield "user"
 
-    yield from combinatorial_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_who_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["generic_entity"])
@@ -284,7 +284,7 @@ def generic_entity(context, state, x_binding):
     def unbound():
         yield ESLConcept("generic_entity")
 
-    yield from combinatorial_predication_1(state, x_binding, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["_okay_a_1"])
@@ -324,7 +324,7 @@ def abstr_deg(context, state, x_binding):
     def unbound():
         yield state.set_x(x_binding.variable.name, (ESLConcept("degree"),))
 
-    yield from combinatorial_predication_1(state, x_binding, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
@@ -383,7 +383,7 @@ def _cash_n_1(context, state, x_bind):
     def unbound():
         yield "cash"
 
-    yield from combinatorial_predication_1(state, x_bind, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
 @Predication(vocabulary, names=["_card_n_1"])
@@ -394,7 +394,7 @@ def _card_n_1(context, state, x_bind):
     def unbound():
         yield "card"
 
-    yield from combinatorial_predication_1(state, x_bind, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
 @Predication(vocabulary, names=["_credit_n_1"])
@@ -405,7 +405,7 @@ def _credit_n_1(context, state, x_bind):
     def unbound():
         yield "credit"
 
-    yield from combinatorial_predication_1(state, x_bind, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
 @Predication(vocabulary, names=["unknown"])
@@ -448,7 +448,7 @@ def thing_concepts(context, state, x_binding):
         for item in state.all_specializations():
             yield store_to_object(item)
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["thing"])
@@ -461,7 +461,7 @@ def thing_instances(context, state, x_binding):
         for item in state.all_instances():
             yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["person"])
@@ -496,7 +496,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             yield store_to_object(state, item)
 
     # Then yield a combinatorial value of all types
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_concepts)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts)
 
 
 # Simple example of using match_all that doesn't do anything except
@@ -514,7 +514,7 @@ def match_all_n_instances(noun_type, context, state, x_binding):
         for item in all_instances(state, noun_type):
             yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_instances)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances)
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
@@ -535,7 +535,7 @@ def match_all_the_concept_n(noun_type, context, state, x_binding):
     # resort to concepts
     if rel_check(state, noun_type, "conceptInScope", "true") and \
             x_binding.variable.quantifier.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
-        for instance_state in combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable_instances):
+        for instance_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances):
             new_criteria = copy.deepcopy(x_binding.variable.quantifier)
             new_criteria.global_criteria = None
             yield instance_state.set_variable_data(x_binding.variable.name, quantifier=new_criteria)
@@ -579,7 +579,7 @@ def _vegetarian_a_1(context, state, e_introduced_binding, x_target_binding):
         for i in all_instances_and_spec(state, "veggie"):
             yield store_to_object(state,i)
 
-    yield from combinatorial_predication_1(state, x_target_binding,
+    yield from combinatorial_predication_1(context, state, x_target_binding,
                                            criteria_bound,
                                            unbound_values)
 
@@ -602,7 +602,7 @@ class PastParticiple:
                 if object_to_store(i[1]) == self.lemma:
                     yield i[0]
 
-        yield from combinatorial_predication_1(state, x_target_binding,
+        yield from combinatorial_predication_1(context, state, x_target_binding,
                                                bound,
                                                unbound)
 
@@ -767,7 +767,7 @@ def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_b
     def unbound():
         yield None
 
-    yield from combinatorial_predication_1(state, x_actor_binding, criteria_bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_actor_binding, criteria_bound, unbound)
 
 
 @Predication(vocabulary, names=["solution_group__check_v_1"])
@@ -913,7 +913,7 @@ def _today_a_1(context, state, e_introduced_binding, x_binding):
     def unbound_variable():
         yield "today"
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["time_n"])
@@ -930,7 +930,7 @@ def time_n(context, state, x_binding):
         yield "yesterday"
         yield "tomorrow"
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 @Predication(vocabulary, names=["def_implicit_q", "def_explicit_q"])
@@ -1006,7 +1006,7 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
         if False:
             yield None
 
-    yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])
@@ -1062,7 +1062,7 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
     def unbound():
         yield "user"
 
-    yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
@@ -1081,7 +1081,7 @@ def _sit_v_down_request(context, state, e_binding, x_actor_binding):
     def unbound():
         yield "user"
 
-    yield from combinatorial_predication_1(state, x_actor_binding, bound, unbound)
+    yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
@@ -1727,7 +1727,7 @@ def _be_v_there(context, state, e_introduced_binding, x_object_binding):
         for i in state.get_entities():
             yield i
 
-    yield from combinatorial_predication_1(state, x_object_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_object_binding, bound_variable, unbound_variable)
 
 
 # This needs to be rewritten given the conceptual changes we've made

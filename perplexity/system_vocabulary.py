@@ -5,6 +5,7 @@ import perplexity.predications
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, \
     in_style_predication_2
+from perplexity.set_utilities import all_nonempty_subsets_stream
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
     gather_referenced_x_variables_from_tree
 from perplexity.vocabulary import Predication, Vocabulary
@@ -25,7 +26,7 @@ def rstr_reorderable(rstr):
 # Yield all undetermined, unquantified answers
 def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_predication=None, reversed=False):
     variable_name = x_variable_binding.variable.name
-    rstr_values = []
+    rstr_values = set()
     rstr_values_tree_lineage = ""
     for rstr_solution in context.call(state, h_rstr):
         # We track RSTR values *per tree lineage* since these are effectively different trees
@@ -33,7 +34,7 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
         tree_lineage_value = rstr_solution.get_binding("tree_lineage").value
         tree_lineage = rstr_solution.get_binding("tree_lineage").value[0] if tree_lineage_value is not None else ""
         if tree_lineage != rstr_values_tree_lineage:
-            rstr_values = []
+            rstr_values = set()
             rstr_values_tree_lineage = tree_lineage
 
         if criteria_predication is not None:
@@ -42,8 +43,8 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
             alternative_states = [rstr_solution]
 
         for alternative_state in alternative_states:
-            rstr_values.extend(alternative_state.get_binding(variable_name).value)
-            context.set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
+            rstr_values.update(alternative_state.get_binding(variable_name).value)
+            context.set_variable_execution_data(variable_name, "AllRstrValues", list(rstr_values))
             for body_solution in context.call(alternative_state, h_body):
                 yield body_solution
 
@@ -79,7 +80,7 @@ def in_scope(context, state, x_binding):
             if context.in_scope(state, item):
                 yield item
 
-    yield from combinatorial_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 # We want the interpretations of the to be mutually exclusive to avoid duplication
@@ -93,6 +94,23 @@ def in_scope(context, state, x_binding):
 #
 #     if not solution_found:
 #         yield from the_in_scope_q(context, state, x_variable_binding, h_rstr, h_body)
+
+
+# The interpretation of "the x" which means "all of the x" is the same as "all x"
+# The key part here is GlobalCriteria.all_rstr_meet_criteria which ensures that every value of the RSTR is true
+# for the body
+@Predication(vocabulary, library="system", names=["_the_q", "_all_q"])
+def the_all_q(context, state, x_variable_binding, h_rstr, h_body):
+    # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
+    # whatever the determiner constraint gets set to will replace these
+    state = state.set_variable_data(x_variable_binding.variable.name,
+                                    quantifier=VariableCriteria(context.current_predication(),
+                                                                x_variable_binding.variable.name,
+                                                                min_size=1,
+                                                                max_size=float('inf'),
+                                                                global_criteria=GlobalCriteria.all_rstr_meet_criteria))
+
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 # Interpretation of "the" which means "the one in scope"
@@ -111,23 +129,6 @@ def the_in_scope_q(context, state, x_variable_binding, h_rstr, h_body):
         yield from in_scope(context, state, binding)
 
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_predication=in_scope_capture_context)
-
-
-# The interpretation of "the x" which means "all of the x" is the same as "all x"
-# The key part here is GlobalCriteria.all_rstr_meet_criteria which ensures that every value of the RSTR is true
-# for the body
-@Predication(vocabulary, library="system", names=["_the_q", "_all_q"])
-def the_all_q(context, state, x_variable_binding, h_rstr, h_body):
-    # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
-    # whatever the determiner constraint gets set to will replace these
-    state = state.set_variable_data(x_variable_binding.variable.name,
-                                    quantifier=VariableCriteria(context.current_predication(),
-                                                                x_variable_binding.variable.name,
-                                                                min_size=1,
-                                                                max_size=float('inf'),
-                                                                global_criteria=GlobalCriteria.all_rstr_meet_criteria))
-
-    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 @Predication(vocabulary, library="system", names=["_every_q", "_each_q", "_each+and+every_q"])
@@ -207,30 +208,27 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
         if False:
             yield None
 
-    # Use in_style_predication_2 simply to break out the combinatorial alternatives
-    for solution in in_style_predication_2(context, state, x_binding_first, x_binding_second,
-                             both_bound_prediction_function, binding1_unbound_predication_function,
-                             binding2_unbound_predication_function):
-        solution_first = solution.get_binding(x_binding_first.variable.name)
-        solution_second = solution.get_binding(x_binding_second.variable.name)
-        and_value = solution_first.value + solution_second.value
+    solution_first = state.get_binding(x_binding_first.variable.name)
+    solution_second = state.get_binding(x_binding_second.variable.name)
+    assert not solution_first.variable.combinatoric and not solution_second.variable.combinatoric
 
-        if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
-            required_values = x_binding_first.variable.determiner.required_values + solution_second.value
-        else:
-            required_values = and_value
+    and_value = solution_first.value + solution_second.value
 
-        if len(set([perplexity.predications.value_type(x) for x in and_value])) > 1:
-            # If anything is a concept, everything must be
-            continue
+    if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
+        required_values = x_binding_first.variable.determiner.required_values + solution_second.value
+    else:
+        required_values = and_value
 
-        yield solution.set_x(x_binding_introduced.variable.name,
-                             and_value,
-                             combinatoric=True,
-                             determiner=VariableCriteria(context.current_predication(),
-                                                         x_binding_introduced.variable.name,
-                                                         required_values=required_values)
-                          )
+    # Everything must be of the same type
+    if len(set([perplexity.predications.value_type(x) for x in and_value])) > 1:
+        return
+
+    for value in perplexity.predications.used_combinations(context, x_binding_introduced, and_value):
+        yield state.set_x(x_binding_introduced.variable.name,
+                          value,
+                          determiner=VariableCriteria(context.current_predication(),
+                                                      x_binding_introduced.variable.name,
+                                                      required_values=required_values))
 
 
 @Predication(vocabulary, library="system", names=["implicit_conj"])
@@ -263,7 +261,7 @@ def card_cxi(context, state, c_count, x_binding, i_binding):
 
     if isinstance(c_count, numbers.Number) or (isinstance(c_count, str) and c_count.isnumeric()):
         c_value = int(c_count)
-        yield from combinatorial_predication_1(state,
+        yield from combinatorial_predication_1(context, state,
                                                x_binding,
                                                bound_variable,
                                                unbound_variable)

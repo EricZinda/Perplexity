@@ -3,6 +3,36 @@
     - what do you have? -> kitchen
       - expected If you'd like to hear about our menu items, you'll need to have a seat
 - (fixed) Make solution groups do a better job at lazy evaluation
+- Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
+- Example33_reset: a few files are in a folder together
+  - crazy slow now
+  - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))
+  - Why
+    - It needs to fail out of tree 0 which has "folder together" before it can get to "in together" that works
+    - combinatorial_predication_1() returns all combinations "depth first" which generates a ton of options to work through before failure
+    - Even worse: "a folder together" will always fail because "a" forces it to be "one" but "together" forces it to be 2
+  - Ideas:
+    - Should we be able to know that this will fail immediately because of the metadata on the predication and the constraint?
+    - If we tried the alternatives in parallel we'd have an answer in the other tree pretty quickly
+- Example33_reset: which files are in a folder?
+  - Really slow because each file that is found gets added in every combination
+  - Once we have a solution we should either:
+    - stop (since it is a solution)
+    - OR
+    - Only try adding solutions from the set to it to see if there are more
+  - It quickly finds a solution group, but maybe it is iterating another already?
+    - It is because it is exhaustively searching for the whole list of files?
+      - Which we do have to do because:
+        - we need to see if any operations have RespondOperations in them
+        - problem is that each iteration gets slower
+    - Options
+      - update respond_to_mrs_tree() to yield answers for answerWithList
+      - Mark a particular set as "solve now"
+        - How do you go back and do the others later?
+          - You could push the set and resolve it and then, if you want to go back for others, 
+            - you could regenerate it
+            - you could say that that set is out of the rotation
+            - We'd have to collect all the solutions
 - Make "be_v_id" work properly with concepts
   - (fixed) "what are your specials?"
   - which 2 dishes are specials? -> fails
@@ -30,38 +60,11 @@
 - Once a solution is found, keeping growing that one
   - Problem is that solution group handlers might throw it away so we need to be able to find others
 - Add performance testing to test runs
-- Decide how much of a win combinatorics is giving us
-  - Original: Elapsed time: 215.94112
 - 
-- Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder
-  - Happens if the_selector_q is commented out and "_the_q" is moved to the_all_q and the_in_scope_q 
-    - AND the_all_q is first in the file before the_in_scope_q
-  - Expected: I'm not sure which the 2 file in a folder you mean
-  - /runparse 0,1
-  - the_in_scope_q gets th
-    - a_q(x12,_folder_n_of(x12,i17),_the_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],_large_a_1(e2,x3)))
-      - if the folder is "/"
-      - the_q() gets passed a state that has a combinatoric x12 and so the RSTR yields the same file from multiple folders
-      - the_q() is expecting that resolving its RSTR is only going to give back answers for the state that has been built up so far
-        - because that is what allows the "the" RSTR to work and to track the unique sets of RSTR values that happen
-        - The problem is the combination of combinatorics and scope
-        - Options:
-          - Stop doing combinatorics
-          - Have a lineage to track when RSTR changes
-          - Have "the" or "not" force the tree to not do combinatorics
-            - Allow predications to mark themselves as requiring linear execution
-          - Have a helper that "inverts" the execution and gives an indicator when the scope changes by looking at the values for any combinatorics
-            - It is only going to be used by scopal predications if they somehow track scope, which doesn't seem like many besides "the"
-            - resolving Scopal args:
-              - Can generate multiple solution sets based on scope and at least "the" needs to know when they switch
-              - For some reason neg() needs to resolve through phase 2, seems like this shouldn't be the case
-              - scopal args for copy() only seem to need phase 1
-          - Figure out another way to do THE
-            - Can it be done by phase 2 just collecting data?
-            - We want the set of RSTRs for the variables that have been set that outscope the quantifier
-            - Could this be the same as resolving a scopal arg? where we get some kind of generator of generators 
-              - so we know when the outscope values have changed
-          - Deal with it like neg() does: run through every combination of scopal variables
+- Decide how much of a win combinatorics is giving us
+    - Original: Elapsed time: 215.94112
+
+
 
 
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md

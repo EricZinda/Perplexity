@@ -4,7 +4,7 @@ import inspect
 import itertools
 from math import inf
 import perplexity.plurals
-from perplexity.set_utilities import all_nonempty_subsets, product_stream
+from perplexity.set_utilities import all_nonempty_subsets, product_stream, all_nonempty_subsets_stream
 import perplexity.tree
 from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.variable_binding import VariableBinding
@@ -249,6 +249,18 @@ def predication_1(context, state, binding, bound_function, unbound_function, bin
                 yield state.set_x(binding.variable.name, value, False)
 
 
+# Yield all combinations of the set of items in generator, but only generate the combinations
+# that will actually be used by the other predications in the phrase
+def used_combinations(context, binding, generator):
+    descriptor = VariableDescriptor(VariableStyle.semantic, VariableStyle.ignored)
+    variable_size = descriptor.combinatoric_size(context, binding)
+    min_set_size = 2 if variable_size == ValueSize.more_than_one else 1
+    max_set_size = 1 if variable_size == ValueSize.exactly_one else float('inf')
+
+    for value in all_nonempty_subsets_stream(generator, min_size=min_set_size, max_size=max_set_size):
+        yield value
+
+
 # "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
 # for any chosen subset of the set. So, it gives a combinatorial answer.
 #
@@ -257,35 +269,25 @@ def predication_1(context, state, binding, bound_function, unbound_function, bin
 # combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
 # not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
 # for example
-def combinatorial_predication_1(state, binding, bound_function, unbound_function):
+def combinatorial_predication_1(context, state, binding, bound_function, unbound_function):
+    descriptor = VariableDescriptor(VariableStyle.semantic, VariableStyle.ignored)
+    variable_size = descriptor.combinatoric_size(context, binding)
+    min_set_size = 2 if variable_size == ValueSize.more_than_one else 1
+    max_set_size = 1 if variable_size == ValueSize.exactly_one else float('inf')
+
     if binding.value is None:
-        # Unbound
-        at_least_one = at_least_one_generator(unbound_function())
-        if at_least_one is not None:
-            yield state.set_x(binding.variable.name, tuple(at_least_one), True)
+        for value in all_nonempty_subsets_stream(unbound_function(), min_size=min_set_size, max_size=max_set_size):
+            yield state.set_x(binding.variable.name, tuple(value))
 
     else:
-        if binding.variable.combinatoric is False:
-            # This is a single set that needs to be kept intact
-            # and succeed or fail as a unit
-            all_must_succeed = True
-            combinatoric = False
-
-        else:
-            all_must_succeed = False
-            combinatoric = True
-
-        values = []
+        # This is a single set that needs to be kept intact
+        # and succeed or fail as a unit
         for value in binding.value:
-            if bound_function(value):
-                values.append(value)
-
-            elif all_must_succeed:
+            if not bound_function(value):
                 # One didn't work, so fail
                 return
 
-        if len(values) > 0:
-            yield state.set_x(binding.variable.name, tuple(values), combinatoric)
+        yield state
 
 
 # Yield a state where each variable in combinatorial_x_values has been assigned
