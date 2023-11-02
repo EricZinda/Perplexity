@@ -6,7 +6,7 @@
   - (fixed) step 2: Make combinatorial_predication_1 never return combinatorics
     - For bound, it just needs to pass through
     - for unbound it needs to to generate all combinations if something pays attention
-  - Remove combinatorics from and_c()
+  - (fixed) Remove combinatorics from and_c()
     - (fixed) Need to build a helper that can be used for and_c and all cases
     - Bug: I want a steak and a soup: There isn't such a steak, soup (all together) here
       - expected: One thing at a time, please!

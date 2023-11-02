@@ -2,6 +2,7 @@ class VariableData(object):
     # These are the defaults if a variable has never been set
     def __init__(self, name, combinatoric=False, determiner=None, quantifier=None):
         self.name = name
+        assert combinatoric is False
         self.combinatoric = combinatoric
         self.determiner = determiner
         self.quantifier = quantifier
