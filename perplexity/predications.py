@@ -249,6 +249,18 @@ def predication_1(context, state, binding, bound_function, unbound_function, bin
                 yield state.set_x(binding.variable.name, value, False)
 
 
+# Yield all combinations of the set of items in generator, but only generate the combinations
+# that will actually be used by the other predications in the phrase
+def used_combinations(context, binding, generator):
+    descriptor = VariableDescriptor(VariableStyle.semantic, VariableStyle.ignored)
+    variable_size = descriptor.combinatoric_size(context, binding)
+    min_set_size = 2 if variable_size == ValueSize.more_than_one else 1
+    max_set_size = 1 if variable_size == ValueSize.exactly_one else float('inf')
+
+    for value in all_nonempty_subsets_stream(generator, min_size=min_set_size, max_size=max_set_size):
+        yield value
+
+
 # "Combinatorial Style Predication" means: a predication that, when applied to a set, can be true
 # for any chosen subset of the set. So, it gives a combinatorial answer.
 #

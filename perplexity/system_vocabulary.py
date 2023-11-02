@@ -5,6 +5,7 @@ import perplexity.predications
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, \
     in_style_predication_2
+from perplexity.set_utilities import all_nonempty_subsets_stream
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
     gather_referenced_x_variables_from_tree
 from perplexity.vocabulary import Predication, Vocabulary
@@ -207,30 +208,27 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
         if False:
             yield None
 
-    # Use in_style_predication_2 simply to break out the combinatorial alternatives
-    for solution in in_style_predication_2(context, state, x_binding_first, x_binding_second,
-                             both_bound_prediction_function, binding1_unbound_predication_function,
-                             binding2_unbound_predication_function):
-        solution_first = solution.get_binding(x_binding_first.variable.name)
-        solution_second = solution.get_binding(x_binding_second.variable.name)
-        and_value = solution_first.value + solution_second.value
+    solution_first = state.get_binding(x_binding_first.variable.name)
+    solution_second = state.get_binding(x_binding_second.variable.name)
+    assert not solution_first.variable.combinatoric and not solution_second.variable.combinatoric
 
-        if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
-            required_values = x_binding_first.variable.determiner.required_values + solution_second.value
-        else:
-            required_values = and_value
+    and_value = solution_first.value + solution_second.value
 
-        if len(set([perplexity.predications.value_type(x) for x in and_value])) > 1:
-            # If anything is a concept, everything must be
-            continue
+    if x_binding_first.variable.determiner is not None and x_binding_first.variable.determiner.required_values is not None:
+        required_values = x_binding_first.variable.determiner.required_values + solution_second.value
+    else:
+        required_values = and_value
 
-        yield solution.set_x(x_binding_introduced.variable.name,
-                             and_value,
-                             combinatoric=True,
-                             determiner=VariableCriteria(context.current_predication(),
-                                                         x_binding_introduced.variable.name,
-                                                         required_values=required_values)
-                          )
+    # Everything must be of the same type
+    if len(set([perplexity.predications.value_type(x) for x in and_value])) > 1:
+        return
+
+    for value in perplexity.predications.used_combinations(context, x_binding_introduced, and_value):
+        yield state.set_x(x_binding_introduced.variable.name,
+                          value,
+                          determiner=VariableCriteria(context.current_predication(),
+                                                      x_binding_introduced.variable.name,
+                                                      required_values=required_values))
 
 
 @Predication(vocabulary, library="system", names=["implicit_conj"])

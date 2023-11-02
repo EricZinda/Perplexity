@@ -1,12 +1,16 @@
 - Turn off combinatorics
   - Even if we get rid of it, we still want the helpers to generate all combinations but only if necessary
   - combinatorial_predication_1
-  - and_c()
   - (fixed) Make solution groups do a better job at lazy evaluation
   - (fixed) step 1: add context to combinatorial_predication_1
   - (fixed) step 2: Make combinatorial_predication_1 never return combinatorics
     - For bound, it just needs to pass through
     - for unbound it needs to to generate all combinations if something pays attention
+  - Remove combinatorics from and_c()
+    - (fixed) Need to build a helper that can be used for and_c and all cases
+    - Bug: I want a steak and a soup: There isn't such a steak, soup (all together) here
+      - expected: One thing at a time, please!
+      - /runparse 0,1
   - step3: Assert if combinatorics is ever set in binding and fix all the cases
   - 
 - Bugs:
