@@ -62,13 +62,17 @@ def error_priority(error_string):
     if system_priority is not None:
         return system_priority
     else:
-        # Must be a message from our code
         error_constant = error_string[1][0]
-        return error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
+        priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
+        priority += error_string[2] * error_priority_dict["success"]
+        return priority
 
 
 error_priority_dict = {
-    "defaultPriority": 1000
+    "defaultPriority": 1000,
+    # This is just used when sorting to indicate no error, i.e. success.
+    # Nothing should be higher because higher is used for phase 2 errors
+    "success": 10000000
 }
 
 pipeline_logger = logging.getLogger('Pipeline')

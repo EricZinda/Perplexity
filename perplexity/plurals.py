@@ -617,6 +617,9 @@ class VariableCriteria(object):
     def meets_global_criteria(self, execution_context):
         if self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
             all_rstr_values = execution_context.get_variable_execution_data(self.variable_name)["AllRstrValues"]
+            if groups_logger.level == logging.DEBUG:
+                nl = "\n     "
+                groups_logger.debug(f"all rstr values: {nl.join([str(x) for x in all_rstr_values])}")
 
             if len(all_rstr_values) < self.min_size:
                 execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._predication_error_location, self.min_size, ], force=True, phase=2)
@@ -632,6 +635,10 @@ class VariableCriteria(object):
 
         if self.global_criteria == GlobalCriteria.exactly or self.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
             # Then check to make sure there were as many in the solution as the user specified
+            if groups_logger.level == logging.DEBUG:
+                nl = "\n     "
+                groups_logger.debug(f"unique rstr values: {nl.join([str(x) for x in self._unique_rstrs])}")
+
             if len(self._unique_rstrs) < self.min_size:
                 execution_context.report_error_for_index(self.predication_index, ["phase2LessThan", self._after_phrase_error_location, self.min_size], force=True, phase=2)
                 return False

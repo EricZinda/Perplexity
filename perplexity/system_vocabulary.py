@@ -25,7 +25,7 @@ def rstr_reorderable(rstr):
 # Yield all undetermined, unquantified answers
 def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_predication=None, reversed=False):
     variable_name = x_variable_binding.variable.name
-    rstr_values = []
+    rstr_values = set()
     rstr_values_tree_lineage = ""
     for rstr_solution in context.call(state, h_rstr):
         # We track RSTR values *per tree lineage* since these are effectively different trees
@@ -33,7 +33,7 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
         tree_lineage_value = rstr_solution.get_binding("tree_lineage").value
         tree_lineage = rstr_solution.get_binding("tree_lineage").value[0] if tree_lineage_value is not None else ""
         if tree_lineage != rstr_values_tree_lineage:
-            rstr_values = []
+            rstr_values = set()
             rstr_values_tree_lineage = tree_lineage
 
         if criteria_predication is not None:
@@ -42,8 +42,8 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
             alternative_states = [rstr_solution]
 
         for alternative_state in alternative_states:
-            rstr_values.extend(alternative_state.get_binding(variable_name).value)
-            context.set_variable_execution_data(variable_name, "AllRstrValues", rstr_values)
+            rstr_values.update(alternative_state.get_binding(variable_name).value)
+            context.set_variable_execution_data(variable_name, "AllRstrValues", list(rstr_values))
             for body_solution in context.call(alternative_state, h_body):
                 yield body_solution
 

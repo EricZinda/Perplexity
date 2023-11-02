@@ -1,11 +1,64 @@
-
 - Turn off combinatorics
   - Even if we get rid of it, we still want the helpers to generate all combinations but only if necessary
   - combinatorial_predication_1
   - and_c()
-  - step 1: add context to combinatorial_predication_1
-  - step 2: Make it never return combinatorics
-- (fixed) Make solution groups do a better job at lazy evaluation
+  - (fixed) Make solution groups do a better job at lazy evaluation
+  - (fixed) step 1: add context to combinatorial_predication_1
+  - (fixed) step 2: Make combinatorial_predication_1 never return combinatorics
+    - For bound, it just needs to pass through
+    - for unbound it needs to to generate all combinations if something pays attention
+  - step3: Assert if combinatorics is ever set in binding and fix all the cases
+  - 
+- Bugs:
+    - Example34_reset: the files are in four folders
+    - (fixed) Example26_reset: the 4 large files are 20 mb -> a large 4 file are not large
+      - expected: Yes, that is true.
+      - fixed to return an error that there are more than 4 large files
+      - Solutions that used to work were wrong since they mixed collective and distributive
+       x12=(Measure:20 mb,), x3=(File(name=/Desktop/bigfile.txt, size=20000000),)
+       x12=(Measure:20 mb,), x3=(File(name=/Desktop/bigfile2.txt, size=20000000),)
+       x12=(Measure:20 mb,), x3=(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))
+    - (fixed) Example25_reset: the 2 files in a folder are 20 mb -> There are more than the 2 file in a folder
+      - Expected: I'm not sure which the 2 file in a folder you mean
+      - /runparse 3, 5
+      - _a_q(x12,_folder_n_of(x12,i17),_the_q(x3,[_file_n_of(x3,i10), _in_p_loc(e11,x3,x12), card(2,e9,x3)],udef_q(x18,[_megabyte_n_1(x18,u25), card(20,e24,x18)],loc_nonsp(e2,x3,x18))))
+      - Bug #1: the rstr values for sets > 1 () get added individually into the list
+      - Bug #2:+
+    - What are your specials? -> soup
+      - Expected: soup
+        salad
+        pork
+    - Example33_reset: a few files are in a folder together
+      - crazy slow now
+      - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))
+      - Why
+        - It needs to fail out of tree 0 which has "folder together" before it can get to "in together" that works
+        - combinatorial_predication_1() returns all combinations "depth first" which generates a ton of options to work through before failure
+        - Even worse: "a folder together" will always fail because "a" forces it to be "one" but "together" forces it to be 2
+      - Ideas:
+        - Should we be able to know that this will fail immediately because of the metadata on the predication and the constraint?
+        - If we tried the alternatives in parallel we'd have an answer in the other tree pretty quickly
+    - Example33_reset: which files are in a folder?
+      - Really slow because each file that is found gets added in every combination
+      - Once we have a solution we should either:
+        - stop (since it is a solution)
+        - OR
+        - Only try adding solutions from the set to it to see if there are more
+      - It quickly finds a solution group, but maybe it is iterating another already?
+        - It is because it is exhaustively searching for the whole list of files?
+          - Which we do have to do because:
+            - we need to see if any operations have RespondOperations in them
+            - problem is that each iteration gets slower
+        - Options
+          - update respond_to_mrs_tree() to yield answers for answerWithList
+          - Mark a particular set as "solve now"
+            - How do you go back and do the others later?
+              - You could push the set and resolve it and then, if you want to go back for others, 
+                - you could regenerate it
+                - you could say that that set is out of the rotation
+                - We'd have to collect all the solutions
+
+                
 - Make "be_v_id" work properly with concepts
   - (fixed) "what are your specials?"
   - which 2 dishes are specials? -> fails
@@ -33,6 +86,7 @@
 - Once a solution is found, keeping growing that one
   - Problem is that solution group handlers might throw it away so we need to be able to find others
 - Add performance testing to test runs
+- 
 - Decide how much of a win combinatorics is giving us
     - Original: Elapsed time: 215.94112
 - Example25_reset: the 2 files in a folder are 20 mb -> the 2 file in a folder are not in a folder

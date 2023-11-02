@@ -98,7 +98,7 @@ class SolutionGroupGenerator(object):
 
     # Returns true if there is another solution found for group.id == current_id
     # If current_id == "" then returns true if there is a new group created
-    def next_solution_in_group(self, current_id):
+    def next_solution_in_group(self, current_id, trace_string=None):
         while True:
             try:
                 next_group, next_id, stats_group = next(self.all_plural_groups_stream)
@@ -161,6 +161,11 @@ class SolutionGroupGenerator(object):
                 #   - next_id was the current_id solution group and it existed (thus current_id == existing_solution_group_id)
                 #   - next_id's immediate parent was already a solution group and that group was current_id
                 #       in this case, we give the solution group that we're tracking a new id of next_id
+                if trace_string and current_id == "":
+                    if groups_logger.level == logging.DEBUG:
+                        nl = "\n     "
+                        groups_logger.debug(
+                            f"{trace_string}: {''.join([nl + str(x) for x in next_group])}")
                 return True
 
     def has_multiple_groups(self):
@@ -169,7 +174,7 @@ class SolutionGroupGenerator(object):
         elif self.complete:
             return False
         else:
-            return self.next_solution_in_group("")
+            return self.next_solution_in_group("", "Has more solution group:")
 
 
 # Group the unquantified solutions into "solution groups" that meet the criteria on each variable.

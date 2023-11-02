@@ -661,7 +661,8 @@ def Example32():
 
 
 def Example33_reset():
-    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(100)]
+    file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(20)]
+    # file_list = [(True, f"/documents/file{str(index)}.txt", {"size": 10000000}) for index in range(100)]
     return FileSystemState(FileSystemMock(file_list,
                                            "/documents"))
 
@@ -981,7 +982,7 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
@@ -1026,10 +1027,10 @@ if __name__ == '__main__':
     # Example30()
     # Example31()
     # Example32()
-    Example33()
+    # Example33()
     # Example33a()
     # Example33_performance_test()
-    # Example34()
+    Example34()
     # Example35()
     # Example36()
     # Example37()

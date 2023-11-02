@@ -1996,7 +1996,7 @@ if __name__ == '__main__':
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
