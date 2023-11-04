@@ -72,6 +72,10 @@ def all_user_type(val):
     return True
 
 
+def immediate_specializations(state, base_type):
+    yield from rel_subjects(state, "specializes", base_type)
+
+
 def all_specializations(state, base_type):
     for i in state.all_rel("specializes"):
         if i[1] == base_type:

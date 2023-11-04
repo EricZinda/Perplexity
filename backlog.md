@@ -53,7 +53,9 @@
         - Second BUG: probably the be_v_id() should have a disjunction for yielding itself for something that it can "be" and yielding things that specialize it
           - Should this also be the case for the root thing_concepts()
         - third BUG: Probably need to interpret "what are x" as meaning "what are *all* X" via pragmatics?
-        - 
+
+- Concept Disjunctions
+  - Need a way to create disjunctions from unbound items
 - Once a solution is found, keeping growing that one
   - Problem is that solution group handlers might throw it away so we need to be able to find others
 - Add performance testing to test runs

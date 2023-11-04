@@ -4,7 +4,7 @@ import inspect
 import itertools
 from math import inf
 import perplexity.plurals
-from perplexity.set_utilities import all_nonempty_subsets, product_stream, all_nonempty_subsets_stream
+from perplexity.set_utilities import all_nonempty_subsets, product_stream, all_nonempty_subsets_stream, DisjunctionIterable
 import perplexity.tree
 from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.variable_binding import VariableBinding
@@ -275,9 +275,16 @@ def combinatorial_predication_1(context, state, binding, bound_function, unbound
     min_set_size = 2 if variable_size == ValueSize.more_than_one else 1
     max_set_size = 1 if variable_size == ValueSize.exactly_one else float('inf')
 
+    tree_lineage_value = state.get_binding("tree_lineage").value
+    tree_lineage = state.get_binding("tree_lineage").value[0] if tree_lineage_value is not None else ""
+
     if binding.value is None:
-        for value in all_nonempty_subsets_stream(unbound_function(), min_size=min_set_size, max_size=max_set_size):
-            yield state.set_x(binding.variable.name, tuple(value))
+        for disjunction in DisjunctionIterable(unbound_function(), min_size=min_set_size, max_size=max_set_size):
+            for lineage, value in disjunction:
+                if lineage == "":
+                    yield state.set_x(binding.variable.name, tuple(value))
+                else:
+                    yield state.set_x(binding.variable.name, tuple(value)).set_x("tree_lineage", (f"{tree_lineage}.{lineage}",))
 
     else:
         # This is a single set that needs to be kept intact

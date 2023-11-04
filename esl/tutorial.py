@@ -5,7 +5,7 @@ from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
-from perplexity.set_utilities import Measurement
+from perplexity.set_utilities import Measurement, DisjunctionValue
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction
@@ -444,9 +444,19 @@ def thing_concepts(context, state, x_binding):
         if is_type(state, object_to_store(value)):
             return True
 
+    # Yield each layer of specializations as a disjunction
     def unbound_variable():
-        for item in state.all_specializations():
-            yield store_to_object(item)
+        next_level = ["thing"]
+        lineage = 0
+        while len(next_level) > 0:
+            next_next_level = []
+            for next_level_type in next_level:
+                for item in immediate_specializations(state, next_level_type):
+                    next_next_level.append(item)
+                    yield DisjunctionValue(lineage, store_to_object(item))
+
+            next_level = next_next_level
+            lineage += 1
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
@@ -1999,7 +2009,7 @@ if __name__ == '__main__':
     ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")

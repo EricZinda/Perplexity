@@ -86,6 +86,78 @@ def all_nonempty_subsets(items, min_size=1, max_size=None):
     return subsets
 
 
+class DisjunctionValue(object):
+    def __init__(self, lineage, value):
+        self.lineage = lineage
+        self.value = value
+
+
+# Iteratable that returns generators which represent disjunctions
+# passed a value_generator that can either just return values or
+# can return a list, where the first item in the list is the lineage
+class DisjunctionIterable(object):
+    def __init__(self, value_generator, min_size=1, max_size=float('inf')):
+        self.generator = value_generator
+        self.min_size = min_size
+        self.max_size = max_size
+        self.cached_item = None
+
+    def __next__(self):
+        def disjunction_generator():
+            lineage = None
+            sets = [()]
+            while True:
+                try:
+                    i = self._next_item()
+
+                except StopIteration:
+                    self.generator = None
+                    return
+
+                if isinstance(i, DisjunctionValue):
+                    next_lineage = i.lineage
+                    i = i.value
+
+                else:
+                    next_lineage = ""
+
+                if lineage is None:
+                    lineage = next_lineage
+
+                elif lineage != next_lineage:
+                    self.push_cached_item(i)
+                    return
+
+                new_sets = []
+                for k in sets:
+                    new_set = k+(i,)
+                    if self.min_size <= len(new_set) <= self.max_size:
+                        yield lineage, new_set
+                    new_sets.append(new_set)
+                sets += new_sets
+
+        if self.generator is None:
+            raise StopIteration
+
+        else:
+            return disjunction_generator()
+
+    def __iter__(self):
+        return self
+
+    def push_cached_item(self, value):
+        assert self.cached_item is None
+        self.cached_item = value
+
+    def _next_item(self):
+        if self.cached_item:
+            value = self.cached_item
+            self.cached_item = None
+            return value
+        else:
+            return next(self.generator)
+
+
 # iteratively returns lists that are all nonempty subsets of s
 # From https://stackoverflow.com/questions/1482308/how-to-get-all-subsets-of-a-set-powerset
 #  Doesn't require len(s) and can stream its answers without materializing the whole list up front.
