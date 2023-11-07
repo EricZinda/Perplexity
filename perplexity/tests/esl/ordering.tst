@@ -53,7 +53,7 @@
         },
         {
             "Command": "Who can have a steak?",
-            "Expected": "you",
+            "Expected": "you\n(among others)",
             "Tree": "which_q(x3,person(x3),_a_q(x11,_steak_n_1(x11),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "121251c1-efe2-47b5-a25f-a08648a34b5d"
@@ -109,7 +109,7 @@
         },
         {
             "Command": "I will have a steak?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "73af9f66-e9d0-487a-9816-a582f7c3332f"
@@ -130,7 +130,7 @@
         },
         {
             "Command": "You will have a steak?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "37a62861-89f7-4aa7-ab60-7fbff5ad071d"
@@ -144,14 +144,14 @@
         },
         {
             "Command": "What will I have?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "a004ac87-0ab4-4ec1-bf9a-1d1940231aa8"
         },
         {
             "Command": "Who will have a steak?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "which_q(x3,person(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "74aa2bec-f3d0-457a-98f0-afbbd59e9f88"
@@ -179,7 +179,7 @@
         },
         {
             "Command": "What specials do you have?",
-            "Expected": "So again, we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you something to eat?",
+            "Expected": "soup\nsalad\npork",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"
@@ -190,6 +190,20 @@
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_special_n_1(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
             "Enabled": true,
             "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
+        },
+        {
+            "Command": "Which dishes are specials?",
+            "Expected": "pork\nsoup\nsalad",
+            "Tree": "_which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "082d7d3e-6087-44b3-907b-3b1c6f46348c"
+        },
+        {
+            "Command": "Which two dishes are specials?",
+            "Expected": "soup\nsalad\n(among others)",
+            "Tree": "_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "e8e03861-59c8-4f05-b5db-c88d3646a572"
         },
         {
             "Command": "/new esl.tutorial.reset",
@@ -358,6 +372,13 @@
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "326fcaba-7595-4143-9309-9142c06b5607"
+        },
+        {
+            "Command": "soup and salad are vegetarian dishes",
+            "Expected": "Yes, that is true.",
+            "Tree": "udef_q(x13,_salad_n_1(x13),udef_q(x18,[_dish_n_of(x18,i24), _vegetarian_a_1(e23,x18)],udef_q(x3,udef_q(x8,_soup_n_1(x8),_and_c(x3,x8,x13)),_be_v_id(e2,x3,x18))))",
+            "Enabled": true,
+            "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"
         }
     ]
 }

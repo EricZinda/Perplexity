@@ -168,6 +168,7 @@ class UserInterface(object):
                                     self.evaluate_best_response(solution_group_generator)
 
                                     # Go through all the responses in this solution group
+                                    had_operations = False
                                     for response, solution_group in tree_record["ResponseGenerator"]:
                                         # Because this worked, we need to apply any Operations that were added to
                                         # any solution to the current world state.
@@ -179,6 +180,7 @@ class UserInterface(object):
                                             tree_record["ResponseMessage"] += f"\n{str(response)}"
 
                                         if len(operation_responses) > 0:
+                                            had_operations = True
                                             response = "\n".join(operation_responses)
 
                                         elif response is None:
@@ -196,10 +198,12 @@ class UserInterface(object):
                                         tree_record["ResponseMessage"] += response
                                         print(response)
 
-                                    more_message = self.generate_more_message(tree_info, solution_group_generator)
-                                    if more_message is not None:
-                                        tree_record["ResponseMessage"] += more_message
-                                        print(more_message)
+                                    # Only show "(there are more) if the developer didn't provide a custom message
+                                    if not had_operations:
+                                        more_message = self.generate_more_message(tree_info, solution_group_generator)
+                                        if more_message is not None:
+                                            tree_record["ResponseMessage"] += more_message
+                                            print(more_message)
 
                                     if not self.run_all_parses:
                                         return

@@ -279,6 +279,8 @@ error_priority_dict = {
     # lower constants should be defined below this:
     # "unknownWordsMin": 800,
     "unknownWords": 900,
+    # Used by a predication when, for example, it only processes a certain tense and this current
+    # phrase is not it
     # Slightly better than not knowing the word at all
     "formNotUnderstood": 901,
     # Happens when a quantifier is reordered and the body comes up with something that doesn't match the RSTR

@@ -6,7 +6,7 @@ from perplexity.sstring import s
 task_methods = []
 
 
-def describe_list_analyze(state, context, what_group):
+def describe_list_analyze(state, context, what_group, has_more):
     # See how many of the items we are describing are "specials" or "menu items"
     analysis = {"Specials": [],
                 "MenuItems": [],
@@ -31,7 +31,7 @@ def describe_list_analyze(state, context, what_group):
                 else:
                     analysis["Others"].append(store_object)
 
-    return [('describe_analyzed', context, analysis)]
+    return [('describe_analyzed', context, analysis, has_more)]
 
 
 task_methods.append(['describe', describe_list_analyze])
@@ -39,7 +39,7 @@ task_methods.append(['describe', describe_list_analyze])
 
 # If we're asked questions about the menu or specials at the entrance
 # tell them to be seated
-def describe_analyzed_at_entrance(state, context, analysis):
+def describe_analyzed_at_entrance(state, context, analysis, has_more):
     if location_of_type(state, "user", "table"):
         return
 
@@ -66,7 +66,7 @@ def describe_analyzed_at_entrance(state, context, analysis):
 # ask something like "do you have vegetarian dishes?" before they ask what the specials are
 # Any question that includes an answer that is special should trigger the waiter asking if
 # if the user wants to hear the detailed description of specials
-def describe_analyzed_at_table(state, context, analysis):
+def describe_analyzed_at_table(state, context, analysis, has_more):
     if not location_of_type(state, "user", "table"):
         return
 
@@ -78,7 +78,7 @@ def describe_analyzed_at_table(state, context, analysis):
 
     # no special behavior if there are instances
     if len(analysis["Instances"]) > 0:
-        return [('describe_item', context, list(analysis["UniqueItems"]))]
+        return [('describe_item', context, list(analysis["UniqueItems"]))] + ([] if not has_more else [('respond', context, "(among others)")])
 
     if len(analysis["MenuItems"]) > 0 and not has_menu:
         # Describe the menu if the user hasn't heard it and they ask a question
@@ -106,7 +106,7 @@ def describe_analyzed_at_table(state, context, analysis):
                                     "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
                 return new_methods
 
-    rel = list(state.all_rel("describes"))
+    rel = list(state.all_rel("have"))
     for i in analysis.keys():
         if not i == "UniqueItems":
             for j in analysis[i]:
@@ -121,7 +121,8 @@ def describe_analyzed_at_table(state, context, analysis):
                     else:
                         new_methods.append(('describe_item', context, j))
 
-    return new_methods
+    if len(new_methods) > 0:
+        return new_methods + ([] if not has_more else [('respond', context, "(among others)")])
 
 
 task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describe_analyzed_at_table])

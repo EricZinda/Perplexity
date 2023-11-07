@@ -446,17 +446,7 @@ def thing_concepts(context, state, x_binding):
 
     # Yield each layer of specializations as a disjunction
     def unbound_variable():
-        next_level = ["thing"]
-        lineage = 0
-        while len(next_level) > 0:
-            next_next_level = []
-            for next_level_type in next_level:
-                for item in immediate_specializations(state, next_level_type):
-                    next_next_level.append(item)
-                    yield DisjunctionValue(lineage, store_to_object(item))
-
-            next_level = next_next_level
-            lineage += 1
+        yield from concept_disjunctions(state, "thing")
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
@@ -494,19 +484,19 @@ def handles_noun(state, noun_lemma):
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_concepts(noun_type, context, state, x_binding):
     def bound_variable(value):
-        if sort_of(state, value, noun_type):
+        if sort_of(state, object_to_store(value), noun_type):
             return True
+
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
             return False
 
     def unbound_variable_concepts():
-        yield store_to_object(state, noun_type)
-        for item in all_specializations(state, noun_type):
-            yield store_to_object(state, item)
+        yield from concept_disjunctions(state, noun_type)
 
     # Then yield a combinatorial value of all types
-    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts)
+    for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
+        yield new_state
 
 
 # Simple example of using match_all that doesn't do anything except
@@ -517,7 +507,7 @@ def match_all_n_instances(noun_type, context, state, x_binding):
         if sort_of(state, value, noun_type):
             return True
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
             return False
 
     def unbound_variable_instances():
@@ -549,11 +539,14 @@ def match_all_the_concept_n(noun_type, context, state, x_binding):
             new_criteria = copy.deepcopy(x_binding.variable.quantifier)
             new_criteria.global_criteria = None
             yield instance_state.set_variable_data(x_binding.variable.name, quantifier=new_criteria)
+    else:
+        context.report_error(["formNotUnderstood", "match_all_the_concept_n"])
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_i_concepts(noun_type, context, state, x_binding, i_binding):
-    yield from match_all_n_concepts(noun_type, context, state, x_binding)
+    for new_state in match_all_n_concepts(noun_type, context, state, x_binding):
+        yield new_state
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
@@ -575,23 +568,51 @@ def the_q(context, state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["_vegetarian_a_1"])
-def _vegetarian_a_1(context, state, e_introduced_binding, x_target_binding):
-    def criteria_bound(value):
-        veg = all_instances_and_spec(state, "veggie")
-        if value in serial_store_to_object(state,veg):
+def adjective_default_concepts(adjective_type, context, state, x_binding):
+    def bound_variable(value):
+        if sort_of(state, object_to_store(value), adjective_type):
             return True
+
         else:
-            context.report_error(["not_adj","vegetarian",state.get_reprompt()])
+            context.report_error(["not_adj", adjective_type, state.get_reprompt(), x_binding.variable.name])
             return False
 
-    def unbound_values():
-        for i in all_instances_and_spec(state, "veggie"):
-            yield store_to_object(state,i)
+    def unbound_variable_concepts():
+        # Shouldn't return "veggie" when variab le is unbound because that happens when
+        # "what is vegetarian" is said and we don't want to return "vegetarian" for that case
+        # so: ignore_root=True
+        yield from concept_disjunctions(state, adjective_type, ignore_root=True)
 
-    yield from combinatorial_predication_1(context, state, x_target_binding,
-                                           criteria_bound,
-                                           unbound_values)
+    # Then yield a combinatorial value of all types
+    for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable,
+                                                 unbound_variable_concepts):
+        yield new_state
+
+
+def adjective_default_instances(adjective_type, context, state, x_binding):
+    def bound_variable(value):
+        if sort_of(state, value, adjective_type):
+            return True
+        else:
+            context.report_error(["not_adj", adjective_type, state.get_reprompt(),  x_binding.variable.name])
+            return False
+
+    def unbound_variable_instances():
+        for item in all_instances(state, adjective_type):
+            yield item
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances)
+
+
+@Predication(vocabulary, names=["_vegetarian_a_1"])
+def _vegetarian_a_1_concepts(context, state, e_introduced_binding, x_target_binding):
+    for new_state in adjective_default_concepts("veggie", context, state, x_target_binding):
+        yield new_state
+
+
+@Predication(vocabulary, names=["_vegetarian_a_1"])
+def _vegetarian_a_1_instances(context, state, e_introduced_binding, x_target_binding):
+    yield from adjective_default_instances("veggie", context, state, x_target_binding)
 
 
 class PastParticiple:
@@ -1299,10 +1320,13 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
 @Predication(vocabulary, names=["_have_v_1", "_take_v_1"])
 def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
-    if not is_future_tense(tree_info): return
+    if not is_future_tense(tree_info):
+        context.report_error(["formNotUnderstood", "_have_v_1_future"])
+        return
+
     if is_question(tree_info):
         # None of the future tense questions are valid english in this scenario
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["formNotUnderstood", "_have_v_1_future"])
         return
 
     def both_bound_prediction_function(x_actors, x_objects):
@@ -1360,8 +1384,10 @@ def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_ac
 @Predication(vocabulary, names=["_have_v_1"])
 def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
+        context.report_error(["formNotUnderstood", "_have_v_1_present"])
         return
     if is_concept(x_actor_binding):
+        context.report_error(["formNotUnderstood", "_have_v_1_present"])
         return
 
     def bound(x_actor, x_object):
@@ -1449,10 +1475,11 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
                 yield []
                 return
 
-            # Now we are guaranteed to only have one item
+            # Now we are guaranteed to only have one item in x_obj_value
             # wh-questions aren't implied requests.  I.e. "which tables do you have?"
             x_obj = x_obj_value[0]
             wh_variable = is_wh_question(tree_info)
+
             # Only doing a cursory check to make sure they are talking about things that could
             # be requests in general. More specific things like "a cheap bill" will be figured out
             # in the planner and failed if we can't give it
@@ -1480,6 +1507,11 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
             else:
                 # Not an implied request and the solution predication already confirmed
                 # that the restaurant has this concept, so: succeed
+                # Fail this group if we don't meet the constraints
+                if not check_concept_solution_group_constraints(context, state_list, x_obj_list, check_concepts=True):
+                    yield []
+                    return
+
                 final_states.append(state)
 
         yield final_states
@@ -1602,33 +1634,46 @@ def measurement_information(x):
 
 
 @Predication(vocabulary, names=["_be_v_id"])
-def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    def criteria_bound(x_actor, x_object):
+def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    def criteria_bound(x_subject, x_object):
         # Just check if this is an object and a measurement, if so, handle it below
         measure_into_variable, units = measurement_information(x_object)
         if measure_into_variable is not None:
             return True
 
         else:
-            first_in_second = x_actor in all_instances_and_spec(state, x_object)
-            second_in_first = x_object in all_instances_and_spec(state, x_actor)
-            if first_in_second or second_in_first:
+            if x_subject in all_instances_and_spec(state, x_object):
                 return True
+
+            elif x_object in all_instances_and_spec(state, x_subject):
+                return True
+
             else:
-                context.report_error(["is_not", convert_to_english(state,x_actor), convert_to_english(state,x_object), state.get_reprompt()])
+                context.report_error(["is_not", convert_to_english(state, x_subject), convert_to_english(state, x_object), state.get_reprompt()])
 
     def unbound(x_object):
-        if is_concept(x_object):
-            yield from x_object.instances(context, state)
-            yield from x_object.concepts(context, state)
+        # if x_subject is unbound it means the questions is of the form: "what is X", "where is X", "who is x"
+        # responding with the object itself is the most basic logic, which allows answering "what is soup" with "soup" (not wrong)
+        # and also "what are the specials?" or any phrases that want a list of what things are of a particular type because it forces the object
+        # (e.g. "specials") to yield the various values and then be_v_id just passes them through
+        #
+        # If, instead, we yielded things that are specializations of x_object, a phrase like "what are the vegetarian dishes?" won't work because
+        # "dishes" is plural but gets locked into a single value because, say, a dish like "soup" doesn't have any concepts that specialize it
+        # so it will fail to yield anything. Since neither soup nor salad have specializations, that locks in "dishes" to a single value, which fails
+        # since it is plural
 
-        else:
-            yield x_object
+        yield x_object
 
-    for success_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound, unbound,
+        # if is_concept(x_object):
+        #     yield from concept_disjunctions(state, x_object.concept_name)
+        #
+        # else:
+        #     yield x_object
+
+    for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound,
                                                 unbound):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
-        x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
+        x_actor_value = success_state.get_binding(x_subject_binding.variable.name).value[0]
         measure_into_variable, units = measurement_information(x_object_value)
         if measure_into_variable is not None:
             # This is a "how much is x" question: we need to measure the value
@@ -1656,10 +1701,31 @@ def _be_v_id(context, state, e_introduced_binding, x_actor_binding, x_object_bin
 
 
 # This is here to remove "there are more" if we are asking about specials...
-# TODO: Is this really the best way to model that?
+# And to check constraints for concepts
+# Scenarios:
+# Which dishes are specials? -> Could be either "which of these dishes is a special" or "which conceptual dishes are specials?"
+#   _which_q(x3,_dish_n_of(x3,i8),udef_q(x9,_special_n_1(x9),_be_v_id(e2,x3,x9)))
+#
+# What are your specials? What are your steaks? What are your tables? -> Almost certainly means "which are the concepts of X?
+#   which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))
+#
+# Which 2 dishes are specials?
 @Predication(vocabulary, names=["solution_group__be_v_id"])
-def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
+def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+    # If the arguments are concepts constraints need to be checked
+    if is_concept(x_subject_variable_group.solution_values[0].value[0]):
+        if not check_concept_solution_group_constraints(context, state_list, x_subject_variable_group, check_concepts=True):
+            yield []
+            return
+
+    if is_concept(x_object_variable_group.solution_values[0].value[0]):
+        if not check_concept_solution_group_constraints(context, state_list, x_object_variable_group, check_concepts=True):
+            yield []
+            return
+
     yield state_list
+    if has_more:
+        yield True
 
 
 @Predication(vocabulary, names=["_cost_v_1"])
@@ -1766,7 +1832,7 @@ def computer_in_state(state):
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
 def wh_question(context, state_list, has_more, binding_list):
-    current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list])])
+    current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list], has_more)])
     if current_state is not None:
         yield (current_state,)
     else:
@@ -1818,7 +1884,7 @@ def generate_custom_message(tree_info, error_term):
     if error_constant == "x_verb_nothing":
         return s("{arg1} {*arg2} nothing", tree_info, reverse_pronouns=True)
     if error_constant == "not_adj":
-        return "It's not " + arg1 + "." + arg2
+        return s("{arg3:@error_predicate_index} {'is':<arg3} not {*arg1}." + arg2, tree_info)
     if error_constant == "is_not":
         return f"{arg1} is not {arg2}{arg3}"
     if error_constant == "notOn":
@@ -1942,6 +2008,7 @@ def reset():
 
             # The kitchen is where all the food is
             initial_state = initial_state.add_rel("kitchen1", "contain", food_instance)
+            initial_state = initial_state.add_rel("restaurant", "have", food_instance)
             if dish_type == "chicken":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "roasted")
             if dish_type == "salmon":

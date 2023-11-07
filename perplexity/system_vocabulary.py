@@ -28,6 +28,7 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
     variable_name = x_variable_binding.variable.name
     rstr_values = set()
     rstr_values_tree_lineage = ""
+    rstr_ran = False if reversed else True
     for rstr_solution in context.call(state, h_rstr):
         # We track RSTR values *per tree lineage* since these are effectively different trees
         # and so we need to clear it if the lineage changes
@@ -43,16 +44,25 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_
             alternative_states = [rstr_solution]
 
         for alternative_state in alternative_states:
-            rstr_values.update(alternative_state.get_binding(variable_name).value)
-            context.set_variable_execution_data(variable_name, "AllRstrValues", list(rstr_values))
+            if not reversed:
+                rstr_ran = True
+                rstr_values.update(alternative_state.get_binding(variable_name).value)
+                context.set_variable_execution_data(variable_name, "AllRstrValues", list(rstr_values))
+            else:
+                rstr_ran = True
+
             for body_solution in context.call(alternative_state, h_body):
+                if reversed:
+                    rstr_values.update(body_solution.get_binding(variable_name).value)
+                    context.set_variable_execution_data(variable_name, "AllRstrValues", list(rstr_values))
                 yield body_solution
 
-    # If something was reversed, it means the RSTR was going to return a bunch of values, so it would have returned a value
-    # Thus it should return whatever error the body provided
-    # If it was not reversed, and the rstr didn't return any values, we should give a special error
-    if not reversed and len(rstr_values) == 0:
-        context.report_error(["doesntExist", ["AtPredication", h_body, x_variable_binding.variable.name]], force=True)
+    # If the RSTR actually ran (reversed or not) and returned no values, give a special error
+    # saying that whatever the RSTR was doesn't exist.  Make sure we tell the error to use the value
+    # of the variable *after* the real RSTR so it uses that word in the description and says
+    # "There isn't a <RSTR> in the system"
+    if rstr_ran and len(rstr_values) == 0:
+        context.report_error(["doesntExist", ["AtPredication", h_rstr if reversed else h_body, x_variable_binding.variable.name]], force=True)
 
 
 @Predication(vocabulary, library="system", names=["_a_q"])
@@ -244,6 +254,8 @@ def card_cex(context, state, c_count, e_introduced_binding, x_target_binding):
                                                                   x_target_binding.variable.name,
                                                                   min_size=int(c_count),
                                                                   max_size=int(c_count)))
+    else:
+        context.report_error(["formNotUnderstood", "card_cex"])
 
 
 # This version of card() is used to mean "the number x, on its own" and not "x of something"
@@ -277,6 +289,7 @@ def generate_not_error(context, unscoped_referenced_variables):
 
     else:
         context.report_error(["notClause"], force=True)
+
 
 # neg() is an operation on the truth of its entire scopal arg, which means that it needs to evaluate phase 1 and phase 2
 # of its scopal arg in order to know if that arg was "true", it isn't enough to know if a particular solution is true

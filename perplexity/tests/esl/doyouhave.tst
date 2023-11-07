@@ -32,7 +32,7 @@
         },
         {
             "Command": "what dishes do you have?",
-            "Expected": "pork\nsoup\nsalad\nsteak\nchicken\nsalmon",
+            "Expected": "special\nmeat\nveggie",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "dfd7cb6b-b4e6-46e9-bcb7-53b16e96755e"

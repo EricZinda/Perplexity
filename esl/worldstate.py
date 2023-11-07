@@ -4,6 +4,7 @@ import numbers
 import esl.esl_planner
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
+from perplexity.set_utilities import DisjunctionValue
 from perplexity.state import State
 from perplexity.utilities import at_least_one_generator
 
@@ -70,6 +71,28 @@ def all_user_type(val):
         if not is_user_type(i):
             return False
     return True
+
+
+# Yield the different concept abstraction levels, each as a different
+# disjunction set, where levels are like this:
+# 1.    special
+#       |
+# 2.    soup            salad
+#       |       |       |       |
+# 3.    lentil  tomato  green   beet
+def concept_disjunctions(state, root_concept, ignore_root=False):
+    next_level = [root_concept]
+    lineage = 0
+    while len(next_level) > 0:
+        next_next_level = []
+        for next_level_type in next_level:
+            if not ignore_root or (ignore_root and lineage > 0):
+                yield DisjunctionValue(lineage, store_to_object(state, next_level_type))
+            for item in immediate_specializations(state, next_level_type):
+                next_next_level.append(item)
+
+        next_level = next_next_level
+        lineage += 1
 
 
 def immediate_specializations(state, base_type):
@@ -213,9 +236,7 @@ def location_of_type(state, who, where_type):
 
 
 def count_of_instances_and_concepts(context, state, concepts_original):
-    concepts = copy.copy(concepts_original)
-    for concept in concepts_original:
-        concepts += concept.concepts(context, state)
+    concepts = concepts_original
     concept_count = len(concepts)
 
     instances = []

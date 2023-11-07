@@ -1,14 +1,7 @@
-- don't merge concept solution groups so we see all the alternatives
-  - Bugs:
-    - what do you have? -> kitchen
-      - expected If you'd like to hear about our menu items, you'll need to have a seat
-      - It used to be that "what do you have?" gave a maximal group and so it triggered the "asking for a menu" response
-      - Now it gives a minimal group and "kitchen" happens to be the first thing that gets returned
-      - Both the minimal and maximal are technically "correct", but the maximal is more correct since a minimal answer is misleading
-        - The "pragmatics" would be that "wh-questions" should always be implied "what are all the" questions
-        - This *is* what happens with instances, just not with concepts
-        - So, wh-questions that have an upper constraint of inf, *should* actually merge
-- (fixed) Make solution groups do a better job at lazy evaluation
+
+
+- Go put this everywhere it makes sense: context.report_error(["formNotUnderstood", "card_cex"])
+
 - Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
 - Example33_reset: a few files are in a folder together
   - crazy slow now
@@ -39,40 +32,24 @@
             - you could regenerate it
             - you could say that that set is out of the rotation
             - We'd have to collect all the solutions
+
+- change be_v_id() to work like vegetarian_a
+  - what are the vegetarian dishes -> doesn't work because:
+    - DisjunctionValue gets put into worldstate because in_style_predication_2() doesn't pay attention to it
+
+- 
 - Make "be_v_id" work properly with concepts
-  - (fixed) "what are your specials?"
-  - which 2 dishes are specials? -> fails
+  - In order to make "a table for 2" work, `table_n` has to yield the concept "table"
+  - Theory: be_v_id() should work with the same with concepts as any world used predicatively() as a verb like "large" or "vegetarian" as in "what is large/vegetarian?"
+  - (fixed) which 2 dishes are specials? -> fails
     - /runparse 0,0
     - _be_v_id_group() is getting duplicate values
       - It is getting duplication solutions
       - Because "dish" has overlapping things that specialize "dish"
       - And we're never getting the solution group with just 2 things in it
       - (fixed) Because we iterate through the concept solutions and, because they are added to existing solution groups, the SolutionGroupGenerator replaces them
-  - What are your specials? -> soup (among others)
-    - Interpreted as "which things are your specials?"
-      - _be_v_id(x, y) is going to be true for anything where x is y
-      - In this case x is unbound, so solutions where x are concepts are true, as well as instances will be true
-      - AND: any combination of items > 2 will work
-    - why does it allow a single special (soup) when the phrase is "special(s)"
-    - Model for checking requirement on concepts for _be_v_id_group() is kind of random.
+  - (fixed) What are your specials? -> special
     - Fix: Should count the actual number of concepts in the solution group if check_concepts=True
-      - Returns "2 soups and a salad" because: "specials" does start returning concepts and lists "soup" and "salad"
-        - But next in the list of interpretations is instances(x3) and concepts(x8) and these produce a solution before getting concepts(x3) and concepts(x8)
-        - First BUG: yielding values from an unbound variable doesn't have a way to set properties on state() so we can't do lineages right
-        - Second BUG: probably the be_v_id() should have a disjunction for yielding itself for something that it can "be" and yielding things that specialize it
-          - Should this also be the case for the root thing_concepts()
-        - third BUG: Probably need to interpret "what are x" as meaning "what are *all* X" via pragmatics?
-
-- Concept Disjunctions
-  - Need a way to create disjunctions from unbound items
-- Once a solution is found, keeping growing that one
-  - Problem is that solution group handlers might throw it away so we need to be able to find others
-- Add performance testing to test runs
-- 
-- Decide how much of a win combinatorics is giving us
-    - Original: Elapsed time: 215.94112
-
-
 
 
 - Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md

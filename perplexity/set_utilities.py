@@ -100,39 +100,40 @@ class DisjunctionIterable(object):
         self.generator = value_generator
         self.min_size = min_size
         self.max_size = max_size
+        self.lineage = None
         self.cached_item = None
 
     def __next__(self):
         def disjunction_generator():
-            lineage = None
             sets = [()]
             while True:
                 try:
-                    i = self._next_item()
+                    next_item = self._next_item()
 
                 except StopIteration:
                     self.generator = None
                     return
 
-                if isinstance(i, DisjunctionValue):
-                    next_lineage = i.lineage
-                    i = i.value
+                if isinstance(next_item, DisjunctionValue):
+                    next_lineage = next_item.lineage
+                    next_value = next_item.value
 
                 else:
                     next_lineage = ""
+                    next_value = next_item
 
-                if lineage is None:
-                    lineage = next_lineage
+                if self.lineage is None:
+                    self.lineage = next_lineage
 
-                elif lineage != next_lineage:
-                    self.push_cached_item(i)
+                elif self.lineage != next_lineage:
+                    self.push_cached_item(next_item, next_lineage)
                     return
 
                 new_sets = []
                 for k in sets:
-                    new_set = k+(i,)
+                    new_set = k+(next_value,)
                     if self.min_size <= len(new_set) <= self.max_size:
-                        yield lineage, new_set
+                        yield self.lineage, new_set
                     new_sets.append(new_set)
                 sets += new_sets
 
@@ -145,9 +146,10 @@ class DisjunctionIterable(object):
     def __iter__(self):
         return self
 
-    def push_cached_item(self, value):
+    def push_cached_item(self, value, lineage):
         assert self.cached_item is None
         self.cached_item = value
+        self.lineage = lineage
 
     def _next_item(self):
         if self.cached_item:

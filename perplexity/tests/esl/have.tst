@@ -109,7 +109,7 @@
         },
         {
             "Command": "who has steaks?",
-            "Expected": "No person has a steak",
+            "Expected": "Host: Nobody.",
             "Tree": "which_q(x3,person(x3),udef_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "dabd14d7-0d27-4eaa-bc91-48236d7ee0b6"

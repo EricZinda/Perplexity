@@ -30,7 +30,11 @@ def generate_message(tree_info, error_term):
     arg3 = error_arguments[3] if arg_length > 3 else None
 
     if error_constant == "adjectiveDoesntApply":
-        return s("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
+        # use the error_predicate_index as where to evaluate the english of arg2 because
+        # otherwise the default will be after the conjunction where arg2 is defined, and often this
+        # error comes from and adjective *in* the conjunction, so it will generate something like
+        # "a large file is not large" instead of the proper phrase: "a file is not large"
+        return s("{A arg2:@error_predicate_index} {'is':<arg2} not {*arg1}", tree_info)
 
     elif error_constant == "cantDo":
         return s("I can't {*arg1:<'I'} {arg2}", tree_info)

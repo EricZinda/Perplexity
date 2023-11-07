@@ -38,13 +38,13 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 #   @variable: variable holds the index that should be used
 #
 # Examples:
-# g("{the arg2:sg}
-# g("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
-# g("{arg2:sg} {arg2:pl}
-
-# g("{the x6:sg} x6=water
-# g("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
-# g("{arg2:sg} {arg2:pl}
+# s("{the arg2:sg}
+# s("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
+# s("{arg2:sg} {arg2:pl}
+# s("{the x6:sg} x6=water
+# s("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
+# s("{arg2:sg} {arg2:pl}
+# s("{arg2:@1} {arg2:@index_to_use}
 #
 # returns a SStringFormat object
 def s(origin, tree_info=None, reverse_pronouns=False):
@@ -254,16 +254,6 @@ class SStringFormat(object):
                 sstring_logger.debug(f"sstring: meaning_at_index specified: '{meaning_at_index_value}'")
 
             formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner, reverse_pronouns=reverse_pronouns)
-            #
-            # if meaning_at_index_value == meaning_at_index_default:
-            #     # We only know how to use ACE if we are talking about a variable's meaning
-            #     # from the point where it is introduced
-            #     sstring_logger.debug(f"sstring: default meaning_at_index: trying MRS generation")
-            #     formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
-            #
-            # else:
-            #     sstring_logger.debug(f"sstring: non-default meaning_at_index: only use fallback")
-            #     formatted_string = None
 
             if formatted_string is not None:
                 sstring_logger.debug(f"sstring MRS generated: {variable_name}[{self}]={formatted_string}")
@@ -292,7 +282,6 @@ class SStringFormat(object):
                 return f"{self.determiner} {plural_mode_value}"
             else:
                 return plural_mode_value
-
 
 
 def parse_s_string_element(raw_string):
