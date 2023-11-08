@@ -1,4 +1,6 @@
 import copy
+
+from perplexity.set_utilities import DisjunctionIterable, DisjunctionValue
 from perplexity.variable_binding import VariableBinding, VariableData
 
 
@@ -71,6 +73,7 @@ class State(object):
 
         # Find a common mistakes early
         assert not isinstance(item, VariableBinding), "set_x value must be a tuple(), not a VariableBinding"
+        assert not isinstance(item, DisjunctionValue), "TODO: helper functions like combinatorial_predication_1 should strip DisjunctionValue"
         if not (item is None or isinstance(item, tuple)):
             assert item is None or isinstance(item, tuple), "set_x value must be a tuple()"
         if variable_name in new_state.variables:

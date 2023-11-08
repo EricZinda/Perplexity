@@ -1,7 +1,9 @@
+- in_style_predication_2() et al should strip DisjunctionValue and set the lineage properly
 
+- Make "be_v_id" work properly with concepts
+- Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
 
 - Go put this everywhere it makes sense: context.report_error(["formNotUnderstood", "card_cex"])
-
 - Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
 - Example33_reset: a few files are in a folder together
   - crazy slow now
@@ -33,27 +35,6 @@
             - you could say that that set is out of the rotation
             - We'd have to collect all the solutions
 
-- change be_v_id() to work like vegetarian_a
-  - what are the vegetarian dishes -> doesn't work because:
-    - DisjunctionValue gets put into worldstate because in_style_predication_2() doesn't pay attention to it
-
-- 
-- Make "be_v_id" work properly with concepts
-  - In order to make "a table for 2" work, `table_n` has to yield the concept "table"
-  - Theory: be_v_id() should work with the same with concepts as any world used predicatively() as a verb like "large" or "vegetarian" as in "what is large/vegetarian?"
-  - (fixed) which 2 dishes are specials? -> fails
-    - /runparse 0,0
-    - _be_v_id_group() is getting duplicate values
-      - It is getting duplication solutions
-      - Because "dish" has overlapping things that specialize "dish"
-      - And we're never getting the solution group with just 2 things in it
-      - (fixed) Because we iterate through the concept solutions and, because they are added to existing solution groups, the SolutionGroupGenerator replaces them
-  - (fixed) What are your specials? -> special
-    - Fix: Should count the actual number of concepts in the solution group if check_concepts=True
-
-
-- Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
-
 Code cleanup:
 - redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
 - Rename lineage something like disjunction
@@ -64,18 +45,8 @@ Code cleanup:
 - Do we still need frames with the new concept handling?
 - 
 
-Lower Pri:                
-- who are your specials -> I'm not sure which soup you mean.
+Lower Pri:
 - We have 0 menus -> No. you does not have something 
-- referring expressions are different than types. A referring expression can generate types
-  - Need to rename these to "referring expressions"
-  - Need to rethink what it means for a solution group to have a referring expression in it
-    - Does this mean that the solution group handler is looking for the referring expression to return *types*? and we have to check if those *types* meet the criteria?
-    - This is a pretty different way of thinking about "concepts" as they were referred to before and may cause lots of code to get rethought
-    - BUT: This seems like a clearer way to think about what is going on:
-      - The solver generates solution groups with referring expressions
-      - Those get resolved into types and instances which get processed
-      - etc.
 
 - Doesn't seem like we should have to model the computer as "having the concept of menu?"
 - "who has which dish" doesn't work

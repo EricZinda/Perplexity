@@ -1,4 +1,4 @@
-## 
+## Concept Levels
 Conceptually, any noun predication like `special_n(x)`, when called with unbound `x` should yield:
 - the concept `special`
 - any other concepts that specialize `special` such as `soup`, `salad`
@@ -13,13 +13,15 @@ So, if we have the following hierarchy:
 1.    special
       |
 2.    soup            salad
-      |       |       |       |
-3.    lentil  tomato  green   beet
+      |       |       |            |
+3.    lentil  tomato  green salad     beet salad
 
 
 Each level of the hierarchy is a disjunction that should be returned in a different solution set.
 
 But: what if there are instances that derive from a non-leaf level of the hierarchy (like "special") directly? then these disjunctions will have different answers
+
+This does mean the hierarchy has to be carefully constructed.
 
 Scenarios:
       "What kinds of cars do you have?"

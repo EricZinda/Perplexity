@@ -304,6 +304,9 @@ def much_many_a(context, state, e_binding, x_binding):
         measurement = Measurement(x_binding_value[0], measure_into_variable)
         yield state.set_x(x_binding.variable.name, (measurement,))
 
+    else:
+        context.report_error(["formNotUnderstood", "much_many_a"])
+
 
 @Predication(vocabulary, names=["measure"])
 def measure(context, state, e_binding, e_binding2, x_binding):
@@ -346,7 +349,11 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
         elif is_user_type(x_for):
             return True
 
+        else:
+            context.report_error(["formNotUnderstood", "_for_p"])
+
     def x_what_unbound(x_for):
+        context.report_error(["formNotUnderstood", "_for_p"])
         if False:
             yield None
 
@@ -414,6 +421,9 @@ def unknown(context, state, e_binding, x_binding):
     if operations is not None:
         yield state.record_operations(operations)
 
+    else:
+        context.report_error(["formNotUnderstood", "unknown"])
+
 
 @Predication(vocabulary, names=["solution_group_unknown"])
 def unknown_group(context, state_list, has_more, e_variable_group, x_variable_group):
@@ -443,6 +453,9 @@ def thing_concepts(context, state, x_binding):
     def bound_variable(value):
         if is_type(state, object_to_store(value)):
             return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
 
     # Yield each layer of specializations as a disjunction
     def unbound_variable():
@@ -456,6 +469,9 @@ def thing_instances(context, state, x_binding):
     def bound_variable(value):
         if is_instance(state, object_to_store(value)):
             return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
 
     def unbound_variable():
         for item in state.all_instances():
@@ -578,7 +594,7 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
             return False
 
     def unbound_variable_concepts():
-        # Shouldn't return "veggie" when variab le is unbound because that happens when
+        # Shouldn't return "veggie" when variable is unbound because that happens when
         # "what is vegetarian" is said and we don't want to return "vegetarian" for that case
         # so: ignore_root=True
         yield from concept_disjunctions(state, adjective_type, ignore_root=True)
@@ -624,6 +640,7 @@ class PastParticiple:
         def bound(value):
             if (object_to_store(value), self.lemma) in state.all_rel("isAdj"):
                 return True
+
             else:
                 context.report_error(["not_adj", self.lemma,state.get_reprompt()])
                 return False
@@ -817,15 +834,19 @@ def _give_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
         if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
             if not state.get_binding(x_object_binding.variable.name).value[0] is None:
                 yield state.record_operations(
-                    state.handle_world_event(context,
-                        ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
+                    state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
+                return
+
+    context.report_error(["formNotUnderstood", "_give_v_1"])
 
 
 @Predication(vocabulary, names=["_show_v_1", "_show_v_1_able"])
 def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_binding, x_to_actor_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
+        context.report_error(["formNotUnderstood", "_show_v_1"])
         return
     if is_concept(x_actor_binding) or is_concept(x_to_actor_binding):
+        context.report_error(["formNotUnderstood", "_show_v_1"])
         return
     if not is_computer_type(x_actor_binding.value):
         context.report_error(["dontKnowHow"])
@@ -840,15 +861,18 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
 
             else:
                 context.report_error(["errorText", "Sorry, I can't show you that"])
+
         else:
             context.report_error(["dontKnowHow"])
             return
 
     def wanters_of_obj(x_object):
         # not currently going to support asking who is seating someone
+        context.report_error(["formNotUnderstood", "_show_v_1"])
         return
 
     def wanted_of_actor(x_actor):
+        context.report_error(["formNotUnderstood", "_show_v_1"])
         return
 
     yield from in_style_predication_2(context, state, x_to_actor_binding, x_target_binding, bound,
@@ -877,6 +901,7 @@ def _show_v_cause_group(context, state_list, has_more, e_introduced_binding, x_a
 @Predication(vocabulary, names=["_seat_v_cause", "_seat_v_cause_able"])
 def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
+        context.report_error(["formNotUnderstood", "_seat_v_cause"])
         return
 
     def criteria_bound(x_actor, x_object):
@@ -884,9 +909,11 @@ def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_objec
 
     def wanters_of_obj(x_object):
         # not currently going to support asking who is seating someone
+        context.report_error(["formNotUnderstood", "_seat_v_cause"])
         return
 
     def wanted_of_actor(x_actor):
+        context.report_error(["formNotUnderstood", "_seat_v_cause"])
         return
 
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound,
@@ -899,6 +926,7 @@ def _seat_v_cause_group(context, state_list, has_more, e_introduced_binding, x_a
                         [('satisfy_want', context, variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
     if new_state is None:
         yield []
+
     else:
         yield [new_state]
 
@@ -911,6 +939,7 @@ def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_loc_bindi
 
         if (item1, item2) in state.all_rel("contains"):
             return True
+
         return False
 
     def items_in_item1(item1):
@@ -937,6 +966,7 @@ def _today_a_1(context, state, e_introduced_binding, x_binding):
     def bound_variable(value):
         if value in ["today"]:
             return True
+
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
             return False
@@ -1016,9 +1046,11 @@ def _thanks_a_1(context, state, i_binding, h_binding):
 @Predication(vocabulary, names=["_sit_v_down", "sit_v_1"])
 def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
     if is_concept(x_actor_binding):
+        context.report_error(["formNotUnderstood", "_sit_v_down_future"])
         return
     tree_info = state.get_binding("tree").value[0]
     if not is_future_tense(tree_info):
+        context.report_error(["formNotUnderstood", "_sit_v_down_future"])
         return
     if is_question(tree_info):
         # None of the future tense questions are valid english in this scenario
@@ -1034,6 +1066,7 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
             return
 
     def unbound():
+        context.report_error(["formNotUnderstood", "_sit_v_down_future"])
         if False:
             yield None
 
@@ -1047,6 +1080,7 @@ def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_vari
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
+
     else:
         yield []
 
@@ -1056,9 +1090,13 @@ def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_vari
 #   "Who sits down?"
 @Predication(vocabulary, names=["_sit_v_down", "_sit_v_1"])
 def invalid_present_intransitive(context, state, e_introduced_binding, x_actor_binding):
-    if not is_present_tense(state.get_binding("tree").value[0]): return
-    context.report_error(["unexpected",state.get_reprompt()])
-    if False: yield None
+    if not is_present_tense(state.get_binding("tree").value[0]):
+        context.report_error(["formNotUnderstood", "invalid_present_intransitive"])
+        return
+
+    context.report_error(["unexpected", state.get_reprompt()])
+    if False:
+        yield None
 
 
 # Scenarios:
@@ -1081,11 +1119,13 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
         return
 
     if is_concept(x_actor_binding):
+        context.report_error(["formNotUnderstood", "_sit_v_down_able"])
         return
 
     def bound(x_actor):
         if is_user_type(x_actor):
             return True
+
         else:
             context.report_error(["unexpected", state.get_reprompt()])
             return
@@ -1099,6 +1139,7 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
 @Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
 def _sit_v_down_request(context, state, e_binding, x_actor_binding):
     if is_concept(x_actor_binding):
+        context.report_error(["formNotUnderstood", "_sit_v_down_request"])
         return
 
     def bound(x_actor):
@@ -1138,7 +1179,7 @@ def _sit_v_down_able_group(context, state_list, has_more, e_introduced_binding_l
 def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
     if not is_question(tree_info):
-        context.report_error(["unexpected",state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         return
 
     def both_bound_prediction_function(x_actor, x_object):
@@ -1146,22 +1187,22 @@ def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_objec
             if valid_player_request(state, [x_object], valid_types=["menu"]):
                 return True
             else:
-                context.report_error(["unexpected",state.get_reprompt()])
+                context.report_error(["unexpected", state.get_reprompt()])
                 return False
 
         else:
             # Anything about "you/they will have" is not good english
-            context.report_error(["unexpected",state.get_reprompt()])
+            context.report_error(["unexpected", state.get_reprompt()])
             return False
 
     def actor_unbound(x_object):
         # Anything about "what will x have
-        context.report_error(["unexpected",state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         if False:
             yield None
 
     def object_unbound(x_actor):
-        context.report_error(["unexpected",state.get_reprompt()])
+        context.report_error(["unexpected", state.get_reprompt()])
         if False:
             yield None
 
@@ -1194,7 +1235,9 @@ def _see_v_1_able_group(context, state_list, has_more, e_list, x_actor_variable_
 @Predication(vocabulary, names=["_see_v_1"])
 def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     tree_info = state.get_binding("tree").value[0]
-    if not is_future_tense(tree_info): return
+    if not is_future_tense(tree_info):
+        context.report_error(["formNotUnderstood", "_see_v_1_future"])
+        return
     if is_question(tree_info):
         # None of the future tense questions are valid english in this scenario
         context.report_error(["unexpected", state.get_reprompt()])
@@ -1205,12 +1248,12 @@ def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_obj
             if valid_player_request(state, [x_object], valid_types=["menu"]):
                 return True
             else:
-                context.report_error(["unexpected",state.get_reprompt()])
+                context.report_error(["unexpected", state.get_reprompt()])
                 return False
 
         else:
             # Anything about "you/they will have" is not good english
-            context.report_error(["unexpected",state.get_reprompt()])
+            context.report_error(["unexpected", state.get_reprompt()])
             return False
 
     def actor_unbound(x_object):
@@ -1233,7 +1276,9 @@ def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_obj
 @Predication(vocabulary, names=["solution_group__see_v_1"])
 def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
     tree_info = state_list[0].get_binding("tree").value[0]
-    if not is_future_tense(tree_info): return
+    if not is_future_tense(tree_info):
+        context.report_error(["formNotUnderstood", "_see_v_1_future_group"])
+        return
 
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
@@ -1255,7 +1300,8 @@ def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variabl
 @Predication(vocabulary, names=["_take_v_1_able"])
 def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     context.report_error(["unexpected", state.get_reprompt()])
-    if False: yield None
+    if False:
+        yield None
 
 
 # Present tense scenarios:
@@ -1266,21 +1312,28 @@ def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
 #   "I see a menu"
 @Predication(vocabulary, names=["_get_v_1", "_take_v_1", "_see_v_1"])
 def invalid_present_transitive(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if not is_present_tense(state.get_binding("tree").value[0]): return
+    if not is_present_tense(state.get_binding("tree").value[0]):
+        context.report_error(["formNotUnderstood", "invalid_present_transitive"])
+        return
+
     context.report_error(["unexpected", state.get_reprompt()])
-    if False: yield None
+    if False:
+        yield None
 
 
 @Predication(vocabulary, names=["_order_v_1"])
 def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_past_tense(state.get_binding("tree").value[0]):
+        context.report_error(["formNotUnderstood", "_order_v_1_past"])
         return
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
+        context.report_error(["formNotUnderstood", "_order_v_1_past"])
         return
 
     def bound(x_actor, x_object):
         if rel_check(state, x_actor, "ordered", x_object):
             return True
+
         else:
             context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, state.get_reprompt()])
             return False
@@ -1332,6 +1385,7 @@ def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_ob
     def both_bound_prediction_function(x_actors, x_objects):
         if is_user_type(x_actors):
             return valid_player_request(state, x_objects)
+
         else:
             # Anything about "you/they will have" is not good english
             context.report_error(["unexpected", state.get_reprompt()])
@@ -1449,6 +1503,7 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
     # Ignore this group if it isn't present tense
     tree_info = state_list[0].get_binding("tree").value[0]
     if not is_present_tense(tree_info):
+        context.report_error(["formNotUnderstood", "_have_v_1_present_group"])
         return
 
     # The solution predication guarantees that this is either actor and object instances or
@@ -1654,21 +1709,14 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
     def unbound(x_object):
         # if x_subject is unbound it means the questions is of the form: "what is X", "where is X", "who is x"
         # responding with the object itself is the most basic logic, which allows answering "what is soup" with "soup" (not wrong)
-        # and also "what are the specials?" or any phrases that want a list of what things are of a particular type because it forces the object
+        # and also "what are the specials?" or any phrases that want a list of what things are of a particular type because it forces x_object
         # (e.g. "specials") to yield the various values and then be_v_id just passes them through
         #
         # If, instead, we yielded things that are specializations of x_object, a phrase like "what are the vegetarian dishes?" won't work because
         # "dishes" is plural but gets locked into a single value because, say, a dish like "soup" doesn't have any concepts that specialize it
         # so it will fail to yield anything. Since neither soup nor salad have specializations, that locks in "dishes" to a single value, which fails
         # since it is plural
-
         yield x_object
-
-        # if is_concept(x_object):
-        #     yield from concept_disjunctions(state, x_object.concept_name)
-        #
-        # else:
-        #     yield x_object
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound,
                                                 unbound):
@@ -1804,29 +1852,6 @@ def _be_v_there(context, state, e_introduced_binding, x_object_binding):
             yield i
 
     yield from combinatorial_predication_1(context, state, x_object_binding, bound_variable, unbound_variable)
-
-
-# This needs to be rewritten given the conceptual changes we've made
-# @Predication(vocabulary, names=["compound"])
-# def compound(state, e_introduced_binding, x_first_binding, x_second_binding):
-#     assert (x_first_binding is not None)
-#     assert (x_second_binding is not None)
-#     if x_second_binding.value[0] == concept_from_lemma("tomato"):
-#         yield state
-#     else:
-#         yield state.set_x(x_first_binding.variable.name, (state.get_binding(x_first_binding.variable.name).value[0] + ", " +
-#                                                       state.get_binding(x_second_binding.variable.name).value[0],))
-
-# This needs to be rewritten to actually do something
-# @Predication(vocabulary, names=["_green_a_2"])
-# def compound(state, e_introduced_binding, x_first_binding):
-#     yield state
-
-def computer_in_state(state):
-    for i in state.variables:
-        if i.value == ("restaurant",):
-            return True
-    return False
 
 
 # Any successful solution group that is a wh_question will call this
