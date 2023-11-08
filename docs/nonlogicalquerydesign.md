@@ -5,8 +5,6 @@ Option 1: First match_all_n() returns all concepts and then all instances.  For 
 
 Option 2: Alternatively, match_all_the_concept_n() is a different interpretation that will return all instances of the "in scope concept" of "soup" if there is one. It removes any "the-type" constraints.  This allows simple fact checking things like "Do I have the soup?" to just work without messing around with concepts.  However, it means you can't know, by the time you get to have_v() whether they are talking about the concept or an instance.
 
-But if the user asks "Do you have a table?", have_v() 
-
 
 ## How to think about whether to handle concepts or instances
 

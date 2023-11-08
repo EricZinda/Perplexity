@@ -1,10 +1,6 @@
+
 - in_style_predication_2() et al should strip DisjunctionValue and set the lineage properly
 
-- Make "be_v_id" work properly with concepts
-- Clean up conceptual versions of have_v and order_v as per nonlogicalquerydesign.md
-
-- Go put this everywhere it makes sense: context.report_error(["formNotUnderstood", "card_cex"])
-- Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
 - Example33_reset: a few files are in a folder together
   - crazy slow now
   - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))
@@ -36,6 +32,7 @@
             - We'd have to collect all the solutions
 
 Code cleanup:
+- Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
 - redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
 - Rename lineage something like disjunction
 - Alternative Implementation for have_v_1_present and _order_v_1_past
@@ -46,9 +43,7 @@ Code cleanup:
 - 
 
 Lower Pri:
-- We have 0 menus -> No. you does not have something 
-
-- Doesn't seem like we should have to model the computer as "having the concept of menu?"
+- We have 0 menus -> No. you does not have something
 - "who has which dish" doesn't work
 - I don't have *the* soup works because:
   - there is more than one soup so negation fails, and thus this works
@@ -61,8 +56,10 @@ Lower Pri:
   - Same thing will happen with "I don't have a soup"
   - Posted a question on the forum for this
 
-- "What is not soup" --> crashes
+- "What is not soup" --> There isn't a thing
+  - /runparse 0,0
   - Can't handle unbound variable in not()
+  
 - How many steaks did I order --> doesn't work
 - How much is the soup and salad doesn't mark you as knowing the price
 - Getting a menu should pass the menu concept all the way through so it can be evaluated
