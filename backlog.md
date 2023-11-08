@@ -1,6 +1,14 @@
 
 - in_style_predication_2() et al should strip DisjunctionValue and set the lineage properly
-
+- 
+- Get rid of reordering
+  - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
+  - But we need a way to optimize somehow, it really is slow
+  - Timing with reordering:
+    - filesystem: 231.11059
+  - Timing without:
+    - filesystem: 292.00379
+  - 
 - Example33_reset: a few files are in a folder together
   - crazy slow now
   - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))
