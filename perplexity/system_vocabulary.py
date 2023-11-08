@@ -19,8 +19,9 @@ def system_vocabulary():
     return copy.deepcopy(vocabulary)
 
 
-def rstr_reorderable(rstr):
-    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing", "person"]
+def rstr_reorderable(context, rstr):
+    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing", "person"] and \
+            not context.get_variable_metadata(rstr.args[0]).get("ReferencedUnderNegation", False)
 
 
 # Yield all undetermined, unquantified answers
@@ -157,7 +158,7 @@ def every_each_q(context, state, x_variable_binding, h_rstr, h_body):
 
 @Predication(vocabulary, library="system", names=["which_q", "_which_q"])
 def which_q(context, state, x_variable_binding, h_rstr_orig, h_body_orig):
-    reverse = rstr_reorderable(h_rstr_orig)
+    reverse = rstr_reorderable(context, h_rstr_orig)
     h_rstr = h_body_orig if reverse else h_rstr_orig
     h_body = h_rstr_orig if reverse else h_body_orig
 

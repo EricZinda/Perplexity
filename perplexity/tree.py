@@ -637,6 +637,17 @@ def gather_referenced_x_variables_from_tree(tree):
 # the union
 def gather_predication_metadata(vocabulary, tree_info):
     def gather_metadata(predication):
+        # Any variable referenced under negation should not allow the predication that introduces it
+        # to be reordered in its quantifier.  Because: that would allow the variable to be unbound and
+        # returning the value of an unbound variable that fails (and thus succeeds) under negation is hard
+        # but required if the user says "what is not vegetarian?" for example. So, avoid the whole thing
+        if predication.name == "neg":
+            referenced_variables = gather_referenced_x_variables_from_tree(predication.args[0])
+            for variable in referenced_variables:
+                if variable not in variable_metadata:
+                    variable_metadata[variable] = {}
+                variable_metadata[variable]["ReferencedUnderNegation"] = False
+
         metadata_list = vocabulary.metadata(predication.name, predication.arg_types)
         for metadata in metadata_list:
             for arg_index in range(len(metadata.args_metadata)):

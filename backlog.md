@@ -4,6 +4,8 @@
 - Get rid of reordering
   - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
   - But we need a way to optimize somehow, it really is slow
+    - Use the GPU for some parallelization? https://numba.pydata.org/
+    - 
   - Timing with reordering:
     - filesystem: 231.11059
   - Timing without:
