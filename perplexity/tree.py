@@ -646,7 +646,7 @@ def gather_predication_metadata(vocabulary, tree_info):
             for variable in referenced_variables:
                 if variable not in variable_metadata:
                     variable_metadata[variable] = {}
-                variable_metadata[variable]["ReferencedUnderNegation"] = False
+                variable_metadata[variable]["ReferencedUnderNegation"] = True
 
         metadata_list = vocabulary.metadata(predication.name, predication.arg_types)
         for metadata in metadata_list:
