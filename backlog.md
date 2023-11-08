@@ -66,8 +66,23 @@ Lower Pri:
 
 - "What is not soup" --> There isn't a thing
   - /runparse 0,0
-  - Can't handle unbound variable in not()
-  
+  - Problem 1: rstr reordering puts "thing()" afterward and bound values are not propagated from inside neg()
+    - Options:
+      - have can_reorder() not reorder if x is in a neg()?
+      - Stop reordering, period
+      - make neg yield the value
+  - Problem 2: the solution group has to *also* check for negative answers...
+    - Right now _be_v_id_group() fails because it expects variables to be filled in
+    - Just need to make this handle negation right:
+       if is_concept(x_object_variable_group.solution_values[0].value[0]):
+          if not check_concept_solution_group_constraints(context, state_list, x_object_variable_group, check_concepts=True):
+  - Problem 3: "what is not soup?" -> "thing"
+    - since "thing" is the top level concept hierarchy
+    - Same problem that happens if you say, "what is vegetarian?" ... you get "veggie" for the same reason
+      - Might be easier to start here
+      - Solutions:
+        - First: when a predication is used predicatively, it should probably not return the root, that way we don't get "what is vegetarian?" -> "veggie"
+        - Next: "what is vegetarian" should probably return the most detailed concepts.  Same as "what is not soup".  What is that rule?
 - How many steaks did I order --> doesn't work
 - How much is the soup and salad doesn't mark you as knowing the price
 - Getting a menu should pass the menu concept all the way through so it can be evaluated
