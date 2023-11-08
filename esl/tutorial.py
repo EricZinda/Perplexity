@@ -1703,7 +1703,7 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
                 return True
 
             else:
-                context.report_error(["is_not", convert_to_english(state, x_subject), convert_to_english(state, x_object), state.get_reprompt()])
+                context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
 
     def unbound(x_object):
         # if x_subject is unbound it means the questions is of the form: "what is X", "where is X", "who is x"
@@ -1910,7 +1910,7 @@ def generate_custom_message(tree_info, error_term):
     if error_constant == "not_adj":
         return s("{arg3:@error_predicate_index} {'is':<arg3} not {*arg1}." + arg2, tree_info)
     if error_constant == "is_not":
-        return f"{arg1} is not {arg2}{arg3}"
+        return s("{arg1} is not {arg2}{*arg3}", tree_info)
     if error_constant == "notOn":
         return f"No. {arg1} is not on {arg2}{arg3}"
     if error_constant == "verbDoesntApplyArg":
