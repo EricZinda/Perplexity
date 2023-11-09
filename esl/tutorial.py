@@ -26,6 +26,7 @@ def variable_group_values_to_list(variable_group):
 def check_concept_solution_group_constraints(context, state_list, x_what_variable_group, check_concepts):
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
+    assert x_what_variable_group.solution_values[0].value is not None, "variable_group is unbound, and thus not a concept, probably because it is scoped under negation"
     assert is_concept(x_what_variable_group.solution_values[0].value[0])
     x_what_variable = x_what_variable_group.solution_values[0].variable.name
 
@@ -765,7 +766,8 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
     # and we don't support that
     # These are concepts. Only need to check the first because:
     # If one item in the group is a concept, they all are
-    if is_concept(x_what_variable_group.solution_values[0].value[0]):
+    # x_what_variable_group.solution_values[0].value can be None if it is scoped under negation
+    if x_what_variable_group.solution_values[0].value is not None and is_concept(x_what_variable_group.solution_values[0].value[0]):
         # We first check to make sure the constraints are valid for this concept.
         # Because in "I want x", 'x' is always a concept, but the constraint is on the instances
         # (as in "I want a steak" meaning "I want 1 instance of the concept of steak", we tell
@@ -1760,12 +1762,12 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
 @Predication(vocabulary, names=["solution_group__be_v_id"])
 def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # If the arguments are concepts constraints need to be checked
-    if is_concept(x_subject_variable_group.solution_values[0].value[0]):
+    if x_subject_variable_group.solution_values[0].value is not None and is_concept(x_subject_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_subject_variable_group, check_concepts=True):
             yield []
             return
 
-    if is_concept(x_object_variable_group.solution_values[0].value[0]):
+    if x_object_variable_group.solution_values[0].value is not None and is_concept(x_object_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_object_variable_group, check_concepts=True):
             yield []
             return

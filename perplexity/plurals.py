@@ -462,22 +462,12 @@ def check_criteria_all(execution_context, var_criteria, new_set_stats_group, new
         variable_stats = new_set_stats_group.variable_stats[index]
 
         state = None
-        negated_predications_binding = new_solution.get_binding("negated_predications")
-        if negated_predications_binding.value is not None:
-            # There are negated predications in this tree,
-            # see if this variable is scoped by one of them
-            negated_index = None
-            for negated_predication_item in negated_predications_binding.value.items():
-                if variable_stats.variable_name in negated_predication_item[1].scoped_variables:
-                    negated_index = negated_predication_item[0]
-                    break
-
-            if negated_index is not None:
-                # This variable is under a neg() predication at negated_index,
-                # This means its plurals were already evaluated by neg(), and because it is here, they must be true
-                state = CriteriaResult.meets
-                # TODO: should new_individuals be getting updated?
-                new_individuals = None
+        if perplexity.tree.is_variable_scoped_by_negation(new_solution, variable_stats.variable_name):
+            # This variable is under a neg() predication at negated_index,
+            # This means its plurals were already evaluated by neg(), and because it is here, they must be true
+            state = CriteriaResult.meets
+            # TODO: should new_individuals be getting updated?
+            new_individuals = None
 
         if state is None:
             criteria = var_criteria[index]

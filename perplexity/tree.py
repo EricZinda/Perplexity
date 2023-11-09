@@ -234,6 +234,20 @@ class TreePredication(object):
             _tree_predication_context.reset(old_context)
 
 
+def is_variable_scoped_by_negation(solution, variable_name):
+    negated_predications_binding = solution.get_binding("negated_predications")
+    negated_index = None
+    if negated_predications_binding.value is not None:
+        # There are negated predications in this tree,
+        # see if this variable is scoped by one of them
+        for negated_predication_item in negated_predications_binding.value.items():
+            if variable_name in negated_predication_item[1].scoped_variables:
+                negated_index = negated_predication_item[0]
+                break
+
+    return negated_index is not None
+
+
 def tree_from_assignments(hole_label, assignments, predication_dict, mrs, current_index=None):
     if current_index is None:
         current_index = [0]
@@ -642,7 +656,7 @@ def gather_predication_metadata(vocabulary, tree_info):
         # returning the value of an unbound variable that fails (and thus succeeds) under negation is hard
         # but required if the user says "what is not vegetarian?" for example. So, avoid the whole thing
         if predication.name == "neg":
-            referenced_variables = gather_referenced_x_variables_from_tree(predication.args[0])
+            referenced_variables = gather_referenced_x_variables_from_tree(predication.args[1])
             for variable in referenced_variables:
                 if variable not in variable_metadata:
                     variable_metadata[variable] = {}
