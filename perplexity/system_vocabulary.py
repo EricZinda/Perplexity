@@ -312,35 +312,35 @@ def neg(context, state, e_introduced_binding, h_scopal):
 
     # If a state makes h_scopal True, this predication fails since it is neg().
     # Conversely, we need to return the neg() success states too. neg() succeeds when h_scopal fails
-    def state_generator():
-        # Use tree_solutions to run numeric criteria on the "not" clause. So that a phrase like
-        # "which files not in this folder are not large?" would work (and properly count the plural "files")
-        new_tree_info = copy.deepcopy(context.tree_info)
-        new_tree_info["Tree"] = h_scopal
-        tree_solver = context.create_child_solver()
-        subtree_state = state.set_x("tree", (new_tree_info,))
-        had_negative_success = False
-        for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info):
-            if tree_record["SolutionGroupGenerator"] is not None:
-                # There were solutions, so this is true,
-                # don't yield it since neg() makes it False
-                generate_not_error(context, unscoped_referenced_variables)
-                had_negative_success = True
-                break
-
-        if context.has_not_understood_error():
+    # Use tree_solutions to run numeric criteria on the "not" clause. So that a phrase like
+    # "which files not in this folder are not large?" would work (and properly count the plural "files")
+    new_tree_info = copy.deepcopy(context.tree_info)
+    new_tree_info["Tree"] = h_scopal
+    tree_solver = context.create_child_solver()
+    subtree_state = state.set_x("tree", (new_tree_info,))
+    had_negative_success = False
+    had_negative_failure = False
+    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info):
+        if tree_record["SolutionGroupGenerator"] is not None:
+            # There were solutions, so this is true,
+            # don't yield it since neg() makes it False
+            generate_not_error(context, unscoped_referenced_variables)
+            had_negative_success = True
+            break
+        elif tree_record["Error"][1][0] == "formNotUnderstood":
             # this was not a logical failure, we simply didn't understand
-            return
+            continue
+        else:
+            had_negative_failure = True
 
-        if not had_negative_success:
-            # There were no solutions for this combination_state, so it is false, and thus true
-            # Record that this was a negative success for debugging purposes
-            negative_success_state = state.add_to_e("negated_predications",
-                                                    context.current_predication_index(),
-                                                    negated_predication_info)
-            yield negative_success_state.add_to_e("negated_successes", context.current_predication_index(), True)
-
-    yield from state_generator()
+    if not had_negative_success and had_negative_failure:
+        # There were no solutions for this combination_state, and there were legitimate failures
+        # (not just phrases we didn't understand) so it is false, and thus true
+        # Record that this was a negative success for debugging purposes
+        negative_success_state = state.add_to_e("negated_predications",
+                                                context.current_predication_index(),
+                                                negated_predication_info)
+        yield negative_success_state.add_to_e("negated_successes", context.current_predication_index(), True)
 
 
 pipeline_logger = logging.getLogger('Pipeline')
