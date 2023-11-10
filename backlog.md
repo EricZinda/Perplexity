@@ -1,5 +1,3 @@
-- in_style_predication_2() et al should strip DisjunctionValue and set the lineage properly
-
 - "What is not soup" --> There isn't a thing
   - /runparse 0,0
   - Problem 3: "what is not soup?" -> "thing"

@@ -4,7 +4,8 @@ import inspect
 import itertools
 from math import inf
 import perplexity.plurals
-from perplexity.set_utilities import all_nonempty_subsets, product_stream, all_nonempty_subsets_stream, DisjunctionIterable
+from perplexity.set_utilities import all_nonempty_subsets, product_stream, all_nonempty_subsets_stream, \
+    DisjunctionIterable, DisjunctionValue
 import perplexity.tree
 from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.variable_binding import VariableBinding
@@ -334,21 +335,6 @@ def all_combinations_of_states(context, original_state, combinatorial_x_values):
             yield new_state
 
 
-# Main helper for a predication that takes 2 arguments
-#
-# There is a lot that gets done here automatically:
-# 1. What combinations are used:
-#   - Sets that are created by other predications are always passed through
-#   - Sets get generated from combinatorial variables if this or other predications declare that they need them
-#
-# 2. How truth of a predication gets checked
-#     - Predications that only semantically handle single values use "cartesian product checking" to check sets
-#     - No matter how it is checked the variable sets are preserved
-#
-# 3. What kinds of sets a predication *can handle*:
-#     - If this predication *can't handle* a size of set, an error will be generated automatically
-# TODO: BUG: if the user doesn't *also* declare it, upstream predications may not generate it.
-#       Should be able to assert this at runtime?
 def predication_2(context, state, binding1, binding2,
                   both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                   binding1_descriptor=None,
@@ -396,6 +382,8 @@ def predication_2(context, state, binding1, binding2,
         unbound_binding = binding1 if binding1.value is None else binding2
         unbound_binding_descriptor = binding1_descriptor if binding1.value is None else binding2_descriptor
         unbound_binding_variable_size = unbound_binding_descriptor.combinatoric_size(context, binding1) if binding1.value is None else unbound_binding_descriptor.combinatoric_size(context, binding2)
+        min_set_size = 2 if unbound_binding_variable_size == ValueSize.more_than_one else 1
+        max_set_size = 1 if unbound_binding_variable_size == ValueSize.exactly_one else float('inf')
 
         # This is a "what is in X" type question, that's why it is unbound
         # This could be something like in([mary, john], X) (where mary and john are *together* in someplace)
@@ -417,24 +405,28 @@ def predication_2(context, state, binding1, binding2,
                 # Every unbound_set that is true for *everyone* gets put into a set
                 # As long as a bound_value matches one of the unbound_sets that is true for everyone we keep going.
                 # As soon as one bound value does not match any, we abort and none are true
-                for unbound_set in unbound_predication_function(bound_value):
-                    assert unbound_binding_descriptor.group == VariableStyle.semantic or \
-                           (unbound_binding_descriptor.group == VariableStyle.ignored and len(unbound_set) == 1), \
-                           "Values yielded from the unbound function must be a set of 1 item only since unbound_binding_descriptor.group == VariableStyle.ignored"
+                for disjunction in DisjunctionIterable(unbound_predication_function(bound_value), min_size=min_set_size, max_size=max_set_size):
+                    for lineage, unbound_set in disjunction:
+                        unbound_set = unbound_set[0]
+                        assert unbound_binding_descriptor.group == VariableStyle.semantic or \
+                               (unbound_binding_descriptor.group == VariableStyle.ignored and len(unbound_set) == 1), \
+                               "Values yielded from the unbound function must be a set of 1 item only since unbound_binding_descriptor.group == VariableStyle.ignored"
 
-                    if first_bound_value:
-                        # All of the unbound items from the first bound item succeed
-                        # since there is nothing to intersect with yet
-                        intersection_new[unbound_set] = None
+                        if first_bound_value or unbound_set in intersection_last[lineage]:
+                            # All the unbound items from the first bound item succeed
+                            # since there is nothing to intersect with yet
+                            # OR
+                            # At least one unbound value for this bound value worked.
+                            # intersection_new records each unbound_set that this bound_value
+                            # yielded which match something another bound_value yielded
+                            if lineage not in intersection_new:
+                                intersection_new[lineage] = dict()
 
-                    elif unbound_set in intersection_last:
-                        # At least one unbound value for this bound value worked.
-                        # intersection_new records each unbound_set that this bound_value
-                        # yielded which match something another bound_value yielded
-                        intersection_new[unbound_set] = None
+                            intersection_new[lineage][unbound_set] = None
 
                 first_bound_value = False
                 if len(intersection_new) == 0:
+                    # There were no overlapping values for this bound value, end
                     intersection_last = intersection_new
                     break
                 else:
@@ -442,31 +434,41 @@ def predication_2(context, state, binding1, binding2,
                     intersection_new = {}
 
             if len(intersection_last) > 0:
-                # Now we have a set of sets that have the predication relation for all elements of bound_set
+                tree_lineage_value = state.get_binding("tree_lineage").value
+                tree_lineage = state.get_binding("tree_lineage").value[0] if tree_lineage_value is not None else ""
+
+                # Now, for each lineage that worked, we have a set of sets that have the predication relation for all elements of bound_set
                 #
                 # If the unbound variable is group=semantic: Mary might be in [home, park] and each unbound value returned it true for all items in the list,
                 #                                                return items from the set one by one
                 # If the unbound variable is group=ignore: We should only get single values and we intersect them all to create a group,
                 #                                           Do the intersection of answers from every item in the set to see end up with a single set
                 #                                           where mary and john are *together*. All combinations of the final group are answers
-                if unbound_binding_descriptor.group == VariableStyle.semantic:
-                    # Each of the items in intersection_last is a set for which all bound values is true, return them one by one
-                    for group_semantic_item in intersection_last.keys():
-                        yield state.set_x(bound_binding.variable.name,
-                                          bound_set,
-                                          combinatoric=False).set_x(unbound_binding.variable.name,
-                                                                    group_semantic_item,
-                                                                    combinatoric=False)
-                else:
-                    # unbound_binding_descriptor.group == VariableStyle.ignore
-                    # Each of the items in intersection_last is true for all bound values, return all combinations
-                    flattened_solutions = tuple(x[0] for x in intersection_last.keys())
-                    for alternative in discrete_variable_generator(context, flattened_solutions, True, unbound_binding_variable_size):
-                        yield state.set_x(bound_binding.variable.name,
-                                          bound_set,
-                                          combinatoric=False).set_x(unbound_binding.variable.name,
-                                                                    alternative,
-                                                                    combinatoric=False)
+
+                for lineage_item in intersection_last.items():
+                    if lineage_item[0] == "":
+                        lineage_state = state
+                    else:
+                        lineage_state = state.set_x("tree_lineage", (f"{tree_lineage}.{lineage}",))
+
+                    if unbound_binding_descriptor.group == VariableStyle.semantic:
+                        # Each of the items in intersection_last is a set for which all bound values is true, return them one by one
+                        for group_semantic_item in lineage_item[1].keys():
+                            yield lineage_state.set_x(bound_binding.variable.name,
+                                                      bound_set,
+                                                      combinatoric=False).set_x(unbound_binding.variable.name,
+                                                                                group_semantic_item,
+                                                                                combinatoric=False).set_x()
+                    else:
+                        # unbound_binding_descriptor.group == VariableStyle.ignore
+                        # Each of the items in intersection_last is true for all bound values, return all combinations
+                        flattened_solutions = tuple(x[0] for x in lineage_item[1].keys())
+                        for alternative in discrete_variable_generator(context, flattened_solutions, True, unbound_binding_variable_size):
+                            yield lineage_state.set_x(bound_binding.variable.name,
+                                                      bound_set,
+                                                      combinatoric=False).set_x(unbound_binding.variable.name,
+                                                                                alternative,
+                                                                                combinatoric=False)
 
     else:
         # To make it easy for a developer we will do the "cartesian product check" if descriptor.group == VariableStyle.ignored
@@ -550,11 +552,17 @@ def in_style_predication_2(context, state, binding1, binding2,
 
     def binding1_unbound_predication_set_function(item2):
         for item in binding1_unbound_predication_function(item2[0]):
-            yield tuple([item])
+            if isinstance(item, DisjunctionValue):
+                yield DisjunctionValue(item.lineage, tuple([item.value]))
+            else:
+                yield tuple([item])
 
     def binding2_unbound_predication_set_function(item1):
         for item in binding2_unbound_predication_function(item1[0]):
-            yield tuple([item])
+            if isinstance(item, DisjunctionValue):
+                yield DisjunctionValue(item.lineage, tuple([item.value]))
+            else:
+                yield tuple([item])
 
     yield from predication_2(context, state, binding1, binding2,
                              both_bound_set,

@@ -91,9 +91,14 @@ class DisjunctionValue(object):
         self.lineage = lineage
         self.value = value
 
+    def __repr__(self):
+        return f"{self.lineage}->{self.value}"
 
-# Iteratable that returns generators which represent disjunctions
-# passed a value_generator that can either just return values or
+
+# Iterable that returns generators which represent disjunctions.
+#   The returned generators return sets (represented as tuples) representing all combinations
+#       of values determined by the sizes passed in
+# Passed a value_generator that can either just return values or
 # can return a list, where the first item in the list is the lineage
 class DisjunctionIterable(object):
     def __init__(self, value_generator, min_size=1, max_size=float('inf')):
@@ -134,7 +139,11 @@ class DisjunctionIterable(object):
                     new_set = k+(next_value,)
                     if self.min_size <= len(new_set) <= self.max_size:
                         yield self.lineage, new_set
-                    new_sets.append(new_set)
+                    if len(new_set) < self.max_size:
+                        # Only add the set to the list of sets if its length is such
+                        # that it can still be added to.  Otherwise, it just generates
+                        # alternatives that will never be used
+                        new_sets.append(new_set)
                 sets += new_sets
 
         if self.generator is None:
@@ -174,7 +183,11 @@ def all_nonempty_subsets_stream(s, min_size=1, max_size=float('inf')):
             new_set = k+(i,)
             if min_size <= len(new_set) <= max_size:
                 yield new_set
-            new_sets.append(new_set)
+            if len(new_set) < max_size:
+                # Only add the set to the list of sets if its length is such
+                # that it can still be added to.  Otherwise, it just generates
+                # alternatives that will never be used
+                new_sets.append(new_set)
         sets += new_sets
 
 

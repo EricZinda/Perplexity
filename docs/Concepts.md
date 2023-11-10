@@ -26,3 +26,6 @@ This does mean the hierarchy has to be carefully constructed.
 Scenarios:
       "What kinds of cars do you have?"
       "what are the/your specials?"
+
+## be_v_id(subject, object)
+for concepts: every x that specializes concept y should be able to be subject or object and should yield when either is unbounc

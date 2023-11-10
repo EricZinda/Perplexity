@@ -1717,7 +1717,8 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
         # "dishes" is plural but gets locked into a single value because, say, a dish like "soup" doesn't have any concepts that specialize it
         # so it will fail to yield anything. Since neither soup nor salad have specializations, that locks in "dishes" to a single value, which fails
         # since it is plural
-        yield x_object
+        yield from concept_disjunctions(state, object_to_store(x_object))
+        # yield x_object
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound,
                                                 unbound):
@@ -2099,7 +2100,7 @@ if __name__ == '__main__':
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")

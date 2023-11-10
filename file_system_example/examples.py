@@ -982,7 +982,7 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
