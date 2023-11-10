@@ -66,7 +66,7 @@ def is_computer_type(val):
 
 
 def all_user_type(val):
-    assert isinstance(val,list)
+    assert isinstance(val, list)
     for i in val:
         if not is_user_type(i):
             return False
@@ -93,6 +93,25 @@ def concept_disjunctions(state, root_concept, ignore_root=False):
 
         next_level = next_next_level
         lineage += 1
+
+
+def concept_disjunctions_reverse(state, root_concept, ignore_root=False):
+    levels = []
+    next_level = [root_concept]
+    while len(next_level) > 0:
+        levels.insert(0, next_level)
+        next_next_level = []
+        for next_level_type in next_level:
+            for item in immediate_specializations(state, next_level_type):
+                next_next_level.append(item)
+
+        next_level = next_next_level
+
+    lineage = len(levels)
+    for level in levels[:len(levels) if not ignore_root else len(levels) - 1]:
+        lineage -= 1
+        for level_type in level:
+            yield DisjunctionValue(lineage, store_to_object(state, level_type))
 
 
 def immediate_specializations(state, base_type):

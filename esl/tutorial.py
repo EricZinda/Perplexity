@@ -8,7 +8,7 @@ from perplexity.predications import combinatorial_predication_1, in_style_predic
 from perplexity.set_utilities import Measurement, DisjunctionValue
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
-from perplexity.transformer import TransformerMatch, TransformerProduction
+from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
 from perplexity.tree import find_predication_from_introduced, get_wh_question_variable
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
@@ -99,6 +99,15 @@ def min_from_variable_group(variable_group):
 
 
 # ******** Transforms ************
+# # Convert "What is ..." (i.e. singular) to "what are ..." (i.e. plural)
+# @Transform(vocabulary)
+# def what_is_to_what_are_transformer():
+#     production = TransformerProduction(name="_want_v_1", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+#     property_match = PropertyTransformerMatch({"x1": {"NUM": "sg"}})
+#     thing_match = TransformerMatch(name_pattern="thing", args_pattern=["x"], args_capture=[None, "x1", None])
+#     return TransformerMatch(name_pattern="which_q", args_pattern=["x", thing_match, "*"], property_transformer=property_match, production=production)
+
+
 # Convert "would like <noun>" to "want <noun>"
 @Transform(vocabulary)
 def would_like_to_want_transformer():
@@ -135,7 +144,7 @@ def can_to_able_transitive_transformer():
 def can_to_able_transitive_transformer_indir_obj():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG4": "$x3"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "x"],
-                              args_capture=[None, "x1", "x2","x3"])
+                              args_capture=[None, "x1", "x2", "x3"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal"], production=production)
 
@@ -460,7 +469,7 @@ def thing_concepts(context, state, x_binding):
 
     # Yield each layer of specializations as a disjunction
     def unbound_variable():
-        yield from concept_disjunctions(state, "thing")
+        yield from concept_disjunctions_reverse(state, "thing")
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
@@ -509,7 +518,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             return False
 
     def unbound_variable_concepts():
-        yield from concept_disjunctions(state, noun_type)
+        yield from concept_disjunctions_reverse(state, noun_type)
 
     # Then yield a combinatorial value of all types
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
@@ -598,7 +607,7 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
         # Shouldn't return "veggie" when variable is unbound because that happens when
         # "what is vegetarian" is said and we don't want to return "vegetarian" for that case
         # so: ignore_root=True
-        yield from concept_disjunctions(state, adjective_type, ignore_root=True)
+        yield from concept_disjunctions_reverse(state, adjective_type, ignore_root=True)
 
     # Then yield a combinatorial value of all types
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable,
@@ -1717,7 +1726,7 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
         # "dishes" is plural but gets locked into a single value because, say, a dish like "soup" doesn't have any concepts that specialize it
         # so it will fail to yield anything. Since neither soup nor salad have specializations, that locks in "dishes" to a single value, which fails
         # since it is plural
-        yield from concept_disjunctions(state, object_to_store(x_object))
+        yield from concept_disjunctions_reverse(state, object_to_store(x_object))
         # yield x_object
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound,
@@ -2100,7 +2109,7 @@ if __name__ == '__main__':
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
