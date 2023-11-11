@@ -84,6 +84,25 @@ class PropertyTransformerMatch(object):
         return True
 
 
+class PropertyTransformerProduction(object):
+    # requires a dictionary where:
+    #   each key is a capture name of a variable
+    #   each value is a dictionary of properties and values to match
+    def __init__(self, variables_pattern):
+        self.variables_pattern = variables_pattern
+
+    def create(self, vocabulary, state, variables, captures, current_index):
+        for variable_item in self.variables_pattern.items():
+            variable_value = replace_str_captures(variable_item[0], captures)
+            for property_item in variable_item[1].items():
+                if property_item[1] is None:
+                    # remove the property
+                    variables[variable_value].pop(property_item[0])
+                else:
+                    # update the property
+                    variables[variable_value][property_item[0]] = property_item[1]
+
+
 class AllMatchTransformer(object):
     def __init__(self):
         pass
@@ -102,7 +121,7 @@ class AllMatchTransformer(object):
 
 
 class TransformerMatch(object):
-    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, property_transformer=None, removed=None, production=None):
+    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, property_transformer=None, removed=None, production=None, properties_production=None):
         self.name_pattern = name_pattern
         self.name_capture = name_capture if name_pattern is not None else [None] * len(name_pattern)
         self.args_pattern = args_pattern
@@ -110,6 +129,7 @@ class TransformerMatch(object):
         self.label_capture = label_capture
         self.property_transformer = property_transformer
         self.production = production
+        self.properties_production = properties_production
         self.removed = removed
         self.did_transform = False
 
@@ -180,7 +200,7 @@ class TransformerMatch(object):
         self.tree_info = tree_info
 
     def is_root(self):
-        return self.production is not None
+        return self.production is not None or self.properties_production is not None
 
     def removed_predications(self):
         if self.removed is None:
@@ -188,16 +208,17 @@ class TransformerMatch(object):
         else:
             return self.removed
 
+
 # rewrites the tree in place
 def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
     # When called with a root transformer will either return None or a new predication
     # Otherwise returns True for a match, or False
-    def transformer_search(scopal_arg, transformer, capture, metadata, current_index):
+    def transformer_search(scopal_arg, variables, transformer, capture, metadata, current_index):
         if isinstance(scopal_arg, list):
             if transformer.is_root():
                 new_conjunction = []
                 for predication in scopal_arg:
-                    new_predication = transformer_search(predication, transformer, {}, metadata, current_index)
+                    new_predication = transformer_search(predication, variables, transformer, {}, metadata, current_index)
                     if new_predication is None:
                         new_predication = predication
                     new_predication.index = current_index[0]
@@ -220,7 +241,7 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                     # and fill in the capture
                     children_matched = True
                     for scopal_arg_index in predication.scopal_arg_indices():
-                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture, metadata, current_index):
+                        if not transformer_search(predication.args[scopal_arg_index], variables, transformer.arg_transformer(scopal_arg_index), capture, metadata, current_index):
                             # The child failed so this match fails
                             children_matched = False
                             break
@@ -232,13 +253,22 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                             properties_matched = transformer.property_transformer.match(transformer.tree_info, capture, metadata)
 
                         if properties_matched:
-                            # The node might not be able to be created if there is no implementation
-                            new_node = transformer.production.create(vocabulary, state, tree_info, capture, current_index)
-                            if new_node is not None:
-                                # we just return the new node
-                                # and record that at least one transform occurred
+                            if transformer.properties_production:
+                                # The properties production will simply update the tree directly
+                                transformer.properties_production.create(vocabulary, state, variables, capture, current_index)
                                 transformer.record_transform()
-                                return new_node
+
+                            # The node might not be able to be created if there is no implementation
+                            if transformer.production:
+                                new_node = transformer.production.create(vocabulary, state, tree_info, capture, current_index)
+                                if new_node is not None:
+                                    # we just return the new node
+                                    # and record that at least one transform occurred
+                                    transformer.record_transform()
+                                    return new_node
+                            elif transformer.properties_production:
+                                # Just properties got updated
+                                return True
 
                 # This predication will stick around, update its index
                 predication.index = current_index[0]
@@ -248,7 +278,7 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                 # try the root on the children
                 for scopal_arg_index in predication.scopal_arg_indices():
                     # transformer_search using the root transformer will return False or a new predication
-                    new_predication = transformer_search(predication.args[scopal_arg_index], transformer, {}, metadata, current_index)
+                    new_predication = transformer_search(predication.args[scopal_arg_index], variables, transformer, {}, metadata, current_index)
                     if new_predication:
                         predication.args[scopal_arg_index] = new_predication
 
@@ -261,7 +291,7 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                 if predication_matched:
                     transform_logger.debug(f"Child Match: {predication_matched}. Pattern:{transformer.this_repr()}, Predicate:{predication}")
                     for scopal_arg_index in predication.scopal_arg_indices():
-                        if not transformer_search(predication.args[scopal_arg_index], transformer.arg_transformer(scopal_arg_index), capture, metadata, current_index):
+                        if not transformer_search(predication.args[scopal_arg_index], variables, transformer.arg_transformer(scopal_arg_index), capture, metadata, current_index):
                             # The child failed so this match fails
                             # Since this is not the root, we just end now
                             return False
@@ -273,12 +303,11 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                     # If this isn't the root and we didn't match, we fail
                     return False
 
-
     new_tree_info = copy.deepcopy(tree_info)
     current_index = [0]
     transformer_root.reset_transform(tree_info)
     metadata = {}
-    transformer_search(new_tree_info["Tree"], transformer_root, {}, metadata, current_index)
+    transformer_search(new_tree_info["Tree"], new_tree_info["Variables"], transformer_root, {}, metadata, current_index)
     if transformer_root.did_transform:
         pipeline_logger.debug(f"Transformed Tree: {new_tree_info['Tree']}")
         return new_tree_info

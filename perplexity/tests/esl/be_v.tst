@@ -32,7 +32,7 @@
         },
         {
             "Command": "what is vegetarian",
-            "Expected": "soup\n(among others)",
+            "Expected": "soup\nsalad",
             "Tree": "which_q(x3,thing(x3),_vegetarian_a_1(e2,x3))",
             "Enabled": true,
             "ID": "394d953d-4985-44b5-9145-7d9effa2cda2"
@@ -43,6 +43,20 @@
             "Tree": "which_q(x3,thing(x3),_the_q(x8,[_dish_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "117e2681-5df1-4694-8c3e-d32c36b73f8e"
+        },
+        {
+            "Command": "what is not soup",
+            "Expected": "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Tree": "which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))",
+            "Enabled": true,
+            "ID": "1fca3d70-25aa-47ee-9bee-c8966287c24f"
+        },
+        {
+            "Command": "what is not soup",
+            "Expected": "pork\nsalad\nsteak\nchicken\nsalmon",
+            "Tree": "which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))",
+            "Enabled": true,
+            "ID": "f0ba7d25-284f-4264-91c7-87eceb97897b"
         }
     ]
 }

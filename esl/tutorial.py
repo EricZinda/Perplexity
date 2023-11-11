@@ -8,7 +8,8 @@ from perplexity.predications import combinatorial_predication_1, in_style_predic
 from perplexity.set_utilities import Measurement, DisjunctionValue
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
-from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch
+from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
+    PropertyTransformerProduction
 from perplexity.tree import find_predication_from_introduced, get_wh_question_variable
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
@@ -99,13 +100,16 @@ def min_from_variable_group(variable_group):
 
 
 # ******** Transforms ************
-# # Convert "What is ..." (i.e. singular) to "what are ..." (i.e. plural)
-# @Transform(vocabulary)
-# def what_is_to_what_are_transformer():
-#     production = TransformerProduction(name="_want_v_1", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
-#     property_match = PropertyTransformerMatch({"x1": {"NUM": "sg"}})
-#     thing_match = TransformerMatch(name_pattern="thing", args_pattern=["x"], args_capture=[None, "x1", None])
-#     return TransformerMatch(name_pattern="which_q", args_pattern=["x", thing_match, "*"], property_transformer=property_match, production=production)
+# Convert "What is ..." (i.e. singular) to "what are ..." (i.e. plural)
+# because a user saying "what is vegetarian?" expects 1..inf answers, but the MRS is singular so they only get one
+# really this is a question of pragmatics and should be interpreted as "underspecified" (i.e. we don't know if it is singular or plural)
+# so we remove it
+@Transform(vocabulary)
+def what_is_singular_to_underspecified_transformer():
+    production = PropertyTransformerProduction({"$x1": {"NUM": None}})
+    property_match = PropertyTransformerMatch({"$x1": {"NUM": "sg"}})
+    thing_match = TransformerMatch(name_pattern="thing", args_pattern=["x"], args_capture=["x1"])
+    return TransformerMatch(name_pattern="which_q", args_pattern=["x", thing_match, "*"], property_transformer=property_match, properties_production=production)
 
 
 # Convert "would like <noun>" to "want <noun>"
@@ -2113,6 +2117,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
+    # ShowLogging("Transformer")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")
