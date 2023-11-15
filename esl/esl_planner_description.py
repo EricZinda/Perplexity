@@ -162,7 +162,10 @@ def convert_to_english(state, what):
         return what
 
     elif isinstance(what, Measurement):
-        return s("{*what.count} {*what.measurement_type:<*what.count}")
+        if what.measurement_type == "":
+            return s("{*what.count}")
+        else:
+            return s("{*what.count} {*what.measurement_type:<*what.count}")
 
     # if it is an instance, with a name, return that
     if is_instance(state, what):

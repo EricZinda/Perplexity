@@ -179,7 +179,10 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
         if "Modifiers" not in nlg_data:
             nlg_data["Modifiers"] = []
 
-        nlg_data["Modifiers"].append(parsed_predication["Lemma"].replace("+", " "))
+        if parsed_predication["Lemma"] == "much-many":
+            nlg_data["Modifiers"].append("any")
+        else:
+            nlg_data["Modifiers"].append(parsed_predication["Lemma"].replace("+", " "))
 
     elif parsed_predication["Pos"] == "p" and predication.args[1] == variable:
         if "PostModifiers" not in nlg_data:

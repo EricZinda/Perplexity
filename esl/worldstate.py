@@ -299,6 +299,10 @@ def find_unused_instances_from_concept(context, state, concept):
             if item != "restaurant":
                 someone_has = True
                 break
+        for item in rel_subjects(state, "ordered", instance):
+            if item != "restaurant":
+                someone_has = True
+                break
         if not someone_has:
             yield instance
 

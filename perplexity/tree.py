@@ -797,6 +797,15 @@ def predication_from_index(tree_info, index):
     return index_predication
 
 
+# Rewrite all the indexes in the tree to ensure there aren't any duplicates
+# and they are consecutive
+def reindex_tree(tree):
+    def no_rewrite(term, index_by_ref):
+        return None
+    index_by_ref = [0]
+    return rewrite_tree_predications(tree, no_rewrite, index_by_ref)
+
+
 # Walk every predication in the tree and allow predication_rewrite_func() to rewrite it
 # Then recurse over the rewritten predication
 def rewrite_tree_predications(term, predication_rewrite_func, index_by_ref):

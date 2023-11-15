@@ -1,3 +1,6 @@
+- How many dollars is the steak?
+  - Doesn't work
+  
 - Get rid of reordering
   - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
   - But we need a way to optimize somehow, it really is slow
@@ -7,7 +10,7 @@
     - filesystem: 231.11059
   - Timing without:
     - filesystem: 292.00379
-  - 
+
 - Example33_reset: a few files are in a folder together
   - crazy slow now
   - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))
@@ -39,6 +42,7 @@
             - We'd have to collect all the solutions
 
 Code cleanup:
+- Get rid of extra arg in relationships
 - Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
 - redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
 - Rename lineage something like disjunction
@@ -63,11 +67,8 @@ Lower Pri:
   - Same thing will happen with "I don't have a soup"
   - Posted a question on the forum for this
 
-- How many steaks did I order --> doesn't work
 - How much is the soup and salad doesn't mark you as knowing the price
 - Getting a menu should pass the menu concept all the way through so it can be evaluated
-- Get rid of extra arg in relationships 
-- Make "check conceptual constraints" properly use eval too
 
 - Make eval() and concepts work more systematically
   - Option 4: Build the concept from the tree directly

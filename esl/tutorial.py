@@ -2,15 +2,16 @@ import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
 from perplexity.generation import english_for_delphin_variable
-from perplexity.plurals import VariableCriteria, GlobalCriteria
+from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
 from perplexity.set_utilities import Measurement, DisjunctionValue
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
-    PropertyTransformerProduction
-from perplexity.tree import find_predication_from_introduced, get_wh_question_variable
+    PropertyTransformerProduction, ConjunctionMatchTransformer
+from perplexity.tree import find_predication_from_introduced, get_wh_question_variable, \
+    gather_scoped_variables_from_tree_at_index
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
 from perplexity.vocabulary import Predication, EventOption, Transform, override_predications, ValueSize
@@ -100,6 +101,50 @@ def min_from_variable_group(variable_group):
 
 
 # ******** Transforms ************
+
+# Helper function that supports several transformers doing the same thing but with different
+# noun shapes
+#
+# How many steaks did I order?
+# Text Tree: which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),udef_q(x5,[_steak_n_1(x5), measure(e14,e15,x9), much-many_a(e15,x5)],_order_v_1(e2,x3,x5))))
+#   converts to:
+# count(e14, x9, x5, udef_q(x5,_steak_n_1(x5),_order_v_1(e2,x3,x5)))
+#   meaning: put into x9 the count of x5 where(...)
+#
+# Note that the shape of "how many soups did I order?" and "how much soup did I order?" is the same except for the plurality of "soup"
+# In fact, the plurality of "how many soups did I order?" should always be underspecified since it might be "1", but if it is "1" and the variable is set as plural, it will fail
+# So: always remove the plurality too
+def how_many_transformer(noun_match, noun_production):
+    udef_production = TransformerProduction(name="udef_q", args={"ARG0": "$noun_variable", "ARG1": noun_production, "ARG2": "$udef_body"})
+    count_production = TransformerProduction(name="count", args={"ARG0": "$measure_event", "ARG1": "$count", "ARG2": "$noun_variable", "ARG3": udef_production})
+    underspecify_plurality_production = PropertyTransformerProduction({"$noun_variable": {"NUM": None}})
+
+    # measure(e14,e15,x9)
+    measure_match = TransformerMatch(name_pattern="measure", args_pattern=["e", "e", "x"], args_capture=["measure_event", None, "count"])
+
+    # much-many_a(e15,x5)
+    much_many_match = TransformerMatch(name_pattern="much-many_a", args_pattern=["e", "x"])
+
+    # conjunction
+    conjunction_match = ConjunctionMatchTransformer(transformer_list=[noun_match, measure_match, much_many_match])
+
+    return TransformerMatch(name_pattern="udef_q", args_pattern=["x", conjunction_match, "*"], args_capture=[None, None, "udef_body"], properties_production=underspecify_plurality_production, production=count_production)
+
+
+@Transform(vocabulary)
+def how_many_noun_x_u_transformer():
+    noun_production = TransformerProduction(name="$noun_name", args={"ARG0": "$noun_variable", "ARG1": "$noun_u"})
+    noun_match = TransformerMatch(name_pattern="*", args_pattern=["x", "u"], name_capture="noun_name", args_capture=["noun_variable", "noun_u"])
+    return how_many_transformer(noun_match, noun_production)
+
+
+@Transform(vocabulary)
+def how_many_noun_x_transformer():
+    noun_production = TransformerProduction(name="$noun_name", args={"ARG0": "$noun_variable"})
+    noun_match = TransformerMatch(name_pattern="*", args_pattern=["x"], name_capture="noun_name", args_capture=["noun_variable"])
+    return how_many_transformer(noun_match, noun_production)
+
+
 # Convert "What is ..." (i.e. singular) to "what are ..." (i.e. plural)
 # because a user saying "what is vegetarian?" expects 1..inf answers, but the MRS is singular so they only get one
 # really this is a question of pragmatics and should be interpreted as "underspecified" (i.e. we don't know if it is singular or plural)
@@ -255,6 +300,38 @@ def want_removal_transitive_transformer():
 
 
 # ***************************
+
+@Predication(vocabulary, names=["count"])
+def count(context, state, e_binding, x_total_count_binding, x_item_to_count_binding, h_scopal_binding):
+    scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], context.current_predication_index())
+    negated_predication_info = NegatedPredication(context.current_predication(), scoped_variables)
+
+    # Solve the scopal binding, which could be quite complicated
+    new_tree_info = copy.deepcopy(context.tree_info)
+    new_tree_info["Tree"] = h_scopal_binding
+    tree_solver = context.create_child_solver()
+    subtree_state = state.set_x("tree", (new_tree_info,))
+    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info):
+        if tree_record["SolutionGroupGenerator"] is not None:
+            # There were solutions, so this is true
+            unique_values = set()
+            for solution_group in tree_record["SolutionGroupGenerator"]:
+                for solution_state in solution_group:
+                    value = solution_state.get_binding(x_item_to_count_binding.variable.name).value
+                    if is_concept(value[0]):
+                        context.report_error(["formNotUnderstood", "count"])
+                        unique_values = set()
+                        break
+                    else:
+                        unique_values.update(value)
+
+                if len(unique_values) > 0:
+                    # Mark as a "negated_predication" so we don't try to check global constraints on it
+                    measurement = Measurement("", len(unique_values))
+                    yield state.set_x(x_total_count_binding.variable.name, (measurement,)).add_to_e("negated_predications",
+                                                                                                    context.current_predication_index(),
+                                                                                                    negated_predication_info)
+                    return
 
 
 @Predication(vocabulary, names=["pron"])
@@ -1930,7 +2007,7 @@ def generate_custom_message(tree_info, error_term):
     if error_constant == "notOn":
         return f"No. {arg1} is not on {arg2}{arg3}"
     if error_constant == "verbDoesntApplyArg":
-        return s("No, {arg1} {'did':<arg1} not {*arg2} {arg3} {*arg4}", tree_info, reverse_pronouns=True)
+        return s("{arg1} {'did':<arg1} not {*arg2} {arg3} {*arg4}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApply":
         return f"No. {arg1} does not {arg2} {arg3} {arg4}"
     else:
@@ -2041,7 +2118,7 @@ def reset():
             initial_state = initial_state.add_rel(dish_type, "specializes", "special")
 
         # Create the food instances
-        for i in range(2):
+        for i in range(3):
             # Create an instance of this food
             food_instance = dish_type + str(i)
             initial_state = initial_state.add_rel(food_instance, "instanceOf", dish_type)

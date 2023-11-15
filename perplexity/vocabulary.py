@@ -311,10 +311,12 @@ class Vocabulary(object):
         predications = list(self.predications(predicate_name, argument_types, phrase_type))
         all_metadata = [meta for meta in
                         self.metadata(predicate_name, argument_types)]
-        if len(predications) == 0 or \
-                (all(meta.is_match_all() for meta in all_metadata) and not self._in_match_all(state, predicate_name,
-                                                                                              argument_types,
-                                                                                              all_metadata)):
+
+        # It is unknown if we didn't find the word OR
+        #
+        all_are_match_all = all(meta.is_match_all() for meta in all_metadata)
+        unmatched_match_all = all_are_match_all and not self._in_match_all(state, predicate_name, argument_types, all_metadata)
+        if len(predications) == 0 or unmatched_match_all:
             return True
 
         else:

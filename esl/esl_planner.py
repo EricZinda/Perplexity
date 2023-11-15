@@ -265,7 +265,7 @@ def complete_order(state, context):
                     ("set_response_state", context, "something_to_eat"),
                     ("reset_order_and_bill", context)]
 
-        items = [i for (x, i) in state.all_rel("ordered")]
+        items = [i for i in state.all_rel("ordered")]
 
         if len(items) < 2:
             return [("respond",
@@ -273,16 +273,11 @@ def complete_order(state, context):
                      "You realize that you'll need at least two dishes for the two of you.\n Waiter: Can I get you something else to eat?"),
                     ("set_response_state", context, "something_to_eat")]
 
-        for i in state.all_rel("have"):
-            if i[0] == "user":
-                if i[1] in items:
-                    items.remove(i[1])
-
-        item_str = " ".join(items)
+        item_str = " ".join([i for (x, i) in items])
 
         add_have_ops = []
         for i in items:
-            add_have_ops += [("add_rel", context, "user", "have", i)]
+            add_have_ops += [("add_rel", context, i[0], "have", i[1])]
 
         return [("respond", context, "Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with " + item_str + ".\nThe food is good, but nothing extraordinary."),
                 ("set_response_state", context, "done_ordering")] + add_have_ops
