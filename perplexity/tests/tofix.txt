@@ -1,0 +1,4 @@
+        I want a table and a steak
+Done    What roasted foods do you have?
+        Can i have my bill?
+        Can i have the check

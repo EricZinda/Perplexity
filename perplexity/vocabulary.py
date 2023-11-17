@@ -1,9 +1,11 @@
 import enum
 import inspect
 import logging
+from typing import NamedTuple
 import perplexity.execution
 from perplexity.transformer import build_transformed_tree
-from perplexity.utilities import parse_predication_name
+from perplexity.utilities import parse_predication_name, system_added_state_arg, system_added_arg_count, \
+    system_added_context_arg
 from perplexity.variable_binding import VariableBinding
 
 
@@ -26,11 +28,13 @@ class ValueSize(enum.Enum):
 def override_predications(vocabulary, library, name_list):
     vocabulary.override_predications(library, name_list)
 
+
 def Transform(vocabulary):
     def PredicationDecorator(function_to_decorate):
         vocabulary.add_transform(function_to_decorate())
 
     return PredicationDecorator
+
 
 def Predication(vocabulary, library=None, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None):
     # Work around Python's odd handling of default arguments that are objects
@@ -43,7 +47,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
-    def ensure_handles_event(state, handles, event_binding):
+    def ensure_handles_event(context, state, handles, event_binding):
         if isinstance(event_binding, VariableBinding) and event_binding.variable.name[0] == "e":
             # Look at everything in event and make sure it is handled
             if event_binding.value is not None:
@@ -55,13 +59,13 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
                             break
 
                     if not foundItem:
-                        perplexity.execution.report_error(["formNotUnderstood", "notHandled", item], force=True)
+                        context.report_error(["formNotUnderstood", "notHandled", item], force=True)
                         return False
 
             # Look at everything it handles and make sure the required things are there
             for item in handles:
                 if item[1] == EventOption.required and (event_binding.value is None or item[0] not in event_binding.value):
-                    perplexity.execution.report_error(["formNotUnderstood", "missing", item], force=True)
+                    context.report_error(["formNotUnderstood", "missing", item], force=True)
                     return False
 
         return True
@@ -69,9 +73,9 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
     def arg_types_from_function(function):
         arg_spec = inspect.getfullargspec(function)
 
-        # Skip the first arg since it should always be "state"
+        # Skip the first two args since they should always be "context, state"
         arg_list = []
-        for arg_index in range(1, len(arg_spec.args)):
+        for arg_index in range(2, len(arg_spec.args)):
             arg_name = arg_spec.args[arg_index]
 
             # Allow single character arguments like "x" and "e"
@@ -142,8 +146,6 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
                 assert False, f"function {function_to_decorate.__name__} must be a generator"
 
             # First create any virtual args. This could fail and report an error
-            if function_to_decorate.__name__ == "fpp_solution_group":
-                print(1)
             if virtual_args is not None and len(virtual_args) > 0:
                 new_args = create_virtual_arguments(args, virtual_args)
                 if new_args is None:
@@ -155,7 +157,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
             # Make sure the event has a structure that will be properly
             # handled by the predication
-            if is_solution_group or ensure_handles_event(args[0], handles, args[1]):
+            if is_solution_group or ensure_handles_event(args[system_added_context_arg], args[system_added_state_arg], handles, args[system_added_arg_count]):
                 yield from function_to_decorate(*args, **kwargs)
 
         predication_names = names if names is not None else [function_to_decorate.__name__]
@@ -192,6 +194,13 @@ class PredicationMetadata(object):
         return self._match_all
 
 
+class VocabularyEntry(NamedTuple):
+    module: str
+    function: str
+    extra_arg: list
+    id: int
+
+
 # The structure of self.all is:
 #   {"erase_v_1__exx__comm": [(module, function), ...],
 #    "erase_v_1__exx__ques": [(module, function), ...],
@@ -208,6 +217,9 @@ class Vocabulary(object):
         # Words that should not prevent trees from being built due to being unknown
         # because a transformer removes them
         self.transformer_removed = set()
+        # Give each module_function a unique number to identify it
+        # which is len(type_list)
+        self.next_implementation_id = 0
 
     def metadata(self, delphin_name, arg_types):
         metadata_list = []
@@ -270,9 +282,10 @@ class Vocabulary(object):
                     type_list = self.all[name_key]
 
                 if first:
-                    type_list.insert(0, (module, function))
+                    type_list.insert(0, VocabularyEntry(module=module, function=function, id=self.next_implementation_id, extra_arg=None))
                 else:
-                    type_list.append((module, function))
+                    type_list.append(VocabularyEntry(module=module, function=function, id=self.next_implementation_id, extra_arg=None))
+                self.next_implementation_id += 1
 
     def alternate_trees(self, state, tree_info, yield_original):
         for transformer_root in self.transformers:
@@ -287,21 +300,23 @@ class Vocabulary(object):
         name_key = self.name_key(name, arg_types, predication_type)
         if name_key in self.all:
             for module_function in self.all[name_key]:
-                yield module_function + (None, )
+                yield module_function
 
         lemma, generic_key = self.generic_key(name, arg_types, predication_type)
         if generic_key in self.all:
             for module_function in self.all[generic_key]:
-                yield module_function + ([lemma], )
+                yield VocabularyEntry(module=module_function.module, function=module_function.function, extra_arg=[lemma], id=module_function.id)
 
     def unknown_word(self, state, predicate_name, argument_types, phrase_type):
         predications = list(self.predications(predicate_name, argument_types, phrase_type))
         all_metadata = [meta for meta in
                         self.metadata(predicate_name, argument_types)]
-        if len(predications) == 0 or \
-                (all(meta.is_match_all() for meta in all_metadata) and not self._in_match_all(state, predicate_name,
-                                                                                             argument_types,
-                                                                                             all_metadata)):
+
+        # It is unknown if we didn't find the word OR
+        #
+        all_are_match_all = all(meta.is_match_all() for meta in all_metadata)
+        unmatched_match_all = all_are_match_all and not self._in_match_all(state, predicate_name, argument_types, all_metadata)
+        if len(predications) == 0 or unmatched_match_all:
             return True
 
         else:

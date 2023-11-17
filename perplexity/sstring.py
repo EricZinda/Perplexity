@@ -3,7 +3,8 @@ import logging
 import re
 import inspect
 from delphin.codecs import simplemrs
-from perplexity.generation import english_for_delphin_variable, PluralMode, is_plural_word, change_to_plural_mode
+from perplexity.generation import english_for_delphin_variable_impl, PluralMode, is_plural_word, change_to_plural_mode, \
+    english_for_delphin_variable, add_indefinite_article
 from perplexity.generation_mrs import english_for_variable_using_mrs
 from perplexity.tree import MrsParser, find_predication_from_introduced, find_predication_conjunction_from_introduced
 from perplexity.utilities import ShowLogging
@@ -37,23 +38,27 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 #   @variable: variable holds the index that should be used
 #
 # Examples:
-# g("{the arg2:sg}
-# g("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
-# g("{arg2:sg} {arg2:pl}
+# s("{the arg2:sg}
+# s("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
+# s("{arg2:sg} {arg2:pl}
+# s("{the x6:sg} x6=water
+# s("{arg2} {'is': <arg2} not {arg1}", tree_info["Tree"])
+# s("{arg2:sg} {arg2:pl}
+# s("{arg2:@1} {arg2:@index_to_use}
 #
 # returns a SStringFormat object
-def s(origin, tree_info=None):
-    return sstringify(origin, tree_info)
+def s(origin, tree_info=None, reverse_pronouns=False):
+    return sstringify(origin, tree_info, reverse_pronouns=reverse_pronouns)
 
 
-def sstringify(origin, tree_info=None):
+def sstringify(origin, tree_info=None, reverse_pronouns=False):
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
     sstringified = re.sub(r"(?:{{)+?", "\x15", origin)[::-1]
     sstringified = re.sub(r"(?:}})+?", "\x16", sstringified)[::-1]
 
     if "{}" in sstringified:
-        raise SyntaxError("fstring: empty expression not allowed")
+        raise SyntaxError("sstring: empty expression not allowed")
 
     offset = 0
     for char in sstringified:
@@ -63,17 +68,41 @@ def sstringify(origin, tree_info=None):
             offset -= 1
 
     if offset != 0:
-        raise SyntaxError("f-string: unbalanced curly braces'")
+        raise SyntaxError("s-string: unbalanced curly braces'")
 
     for match in INDICATOR_PATTERN.findall(sstringified):
         indicator = match[1:-1]
         format_object = parse_s_string_element(indicator)
-        value = format_object.format(tree_info)
+        value = format_object.format(tree_info, reverse_pronouns=reverse_pronouns)
         if value is None:
             value = "<unknown>"
         sstringified = sstringified.replace(match, str(value))
 
     return sstringified.replace("\x15", "{").replace("\x16", "}")
+
+
+def convert_complex_variable(variable_name):
+    if isinstance(variable_name, list):
+        sstring_logger.debug(f"sstring: variable is complex: '{variable_name}'")
+        if variable_name[0] == "AtPredication":
+            # Use the English for this variable as if the
+            # error happened at the specified predication
+            # instead of where it really happened
+            if isinstance(variable_name[1], list):
+                specified_meaning_at_index_value = variable_name[1][-1].index
+            else:
+                specified_meaning_at_index_value = variable_name[1].index
+            sstring_logger.debug(f"sstring: error predication index is: {specified_meaning_at_index_value}")
+            variable_name = variable_name[2]
+
+        elif variable_name[0] == "AfterFullPhrase":
+            specified_meaning_at_index_value = 100000000
+            variable_name = variable_name[1]
+
+        return variable_name, specified_meaning_at_index_value
+
+    else:
+        return variable_name, None
 
 
 class SStringFormat(object):
@@ -148,30 +177,7 @@ class SStringFormat(object):
             else:
                 raise SyntaxError(f"{indicator_expression} is not defined")
 
-    def _convert_complex_variable(self, variable_name):
-        if isinstance(variable_name, list):
-            sstring_logger.debug(f"sstring: variable is complex: '{variable_name}'")
-            if variable_name[0] == "AtPredication":
-                # Use the English for this variable as if the
-                # error happened at the specified predication
-                # instead of where it really happened
-                if isinstance(variable_name[1], list):
-                    specified_meaning_at_index_value = variable_name[1][-1].index
-                else:
-                    specified_meaning_at_index_value = variable_name[1].index
-                sstring_logger.debug(f"sstring: error predication index is: {specified_meaning_at_index_value}")
-                variable_name = variable_name[2]
-
-            elif variable_name[0] == "AfterFullPhrase":
-                specified_meaning_at_index_value = 100000000
-                variable_name = variable_name[1]
-
-            return variable_name, specified_meaning_at_index_value
-
-        else:
-            return variable_name, None
-
-    def format(self, tree_info):
+    def format(self, tree_info, reverse_pronouns=False):
         if tree_info is not None:
             mrs = simplemrs.loads(tree_info["MRS"])[0]
             tree = tree_info["Tree"]
@@ -186,7 +192,7 @@ class SStringFormat(object):
         if self.has_plural_template():
             if self.plural_template_is_delphin_variable():
                 template_variable_name = self.resolve_variable(self.plural_template_delphin)
-                template_variable_name, _ = self._convert_complex_variable(template_variable_name)
+                template_variable_name, _ = convert_complex_variable(template_variable_name)
 
                 template_variable_properties = mrs.variables.get(template_variable_name, {})
                 plural_string = template_variable_properties.get("NUM", None)
@@ -221,7 +227,7 @@ class SStringFormat(object):
 
             # If the variable value is not just a variable value, decode it
             specified_meaning_at_index_value = None
-            variable_name, specified_meaning_at_index_value = self._convert_complex_variable(variable_name)
+            variable_name, specified_meaning_at_index_value = convert_complex_variable(variable_name)
 
             # Now that we have the variable, resolve the meaning_at_index_variable
             conjunction_for_variable = find_predication_conjunction_from_introduced(tree, variable_name)
@@ -247,17 +253,7 @@ class SStringFormat(object):
                 meaning_at_index_value = self.resolve_variable(self.meaning_at_index_variable)
                 sstring_logger.debug(f"sstring: meaning_at_index specified: '{meaning_at_index_value}'")
 
-            formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
-            #
-            # if meaning_at_index_value == meaning_at_index_default:
-            #     # We only know how to use ACE if we are talking about a variable's meaning
-            #     # from the point where it is introduced
-            #     sstring_logger.debug(f"sstring: default meaning_at_index: trying MRS generation")
-            #     formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner)
-            #
-            # else:
-            #     sstring_logger.debug(f"sstring: non-default meaning_at_index: only use fallback")
-            #     formatted_string = None
+            formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner, reverse_pronouns=reverse_pronouns)
 
             if formatted_string is not None:
                 sstring_logger.debug(f"sstring MRS generated: {variable_name}[{self}]={formatted_string}")
@@ -265,7 +261,7 @@ class SStringFormat(object):
             else:
                 # If ACE can't be used, fall back to a simplistic approach
                 sstring_logger.debug(f"sstring: MRS failed, try fallback")
-                formatted_string = english_for_delphin_variable(meaning_at_index_value, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner)
+                formatted_string = english_for_delphin_variable(meaning_at_index_value, variable_name, tree_info, plural=resolved_plural, determiner=self.determiner, reverse_pronouns=reverse_pronouns)
                 sstring_logger.debug(f"sstring: Fallback generated: {variable_name}[{self}]={formatted_string}")
 
             return formatted_string
@@ -276,7 +272,16 @@ class SStringFormat(object):
             else:
                 singular_variable_value = self.string_literal
 
-            return change_to_plural_mode(singular_variable_value, resolved_plural)
+            plural_mode_value = change_to_plural_mode(singular_variable_value, resolved_plural)
+
+            if self.determiner is None:
+                return plural_mode_value
+            elif self.determiner.lower() in ["a", "an"]:
+                return add_indefinite_article(plural_mode_value)
+            elif self.determiner.lower() == "the":
+                return f"{self.determiner} {plural_mode_value}"
+            else:
+                return plural_mode_value
 
 
 def parse_s_string_element(raw_string):

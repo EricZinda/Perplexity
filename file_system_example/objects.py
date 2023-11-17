@@ -351,9 +351,16 @@ class FileSystemMock(FileSystem):
 class QuotedText(object):
     def __init__(self, name):
         self.name = name.replace("\\>root111", "/").replace("\\>", "/")
+        self._hash = hash(self.name)
 
     def __repr__(self):
         return f"{self.name}"
+
+    def __hash__(self):
+        return self._hash
+
+    def __eq__(self, other):
+        return isinstance(other, QuotedText) and self.name == other.name
 
     def all_interpretations(self, state):
         # Yield the text converted to a file or folder if possible

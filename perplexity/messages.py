@@ -1,6 +1,7 @@
 from perplexity.response import RespondOperation
-from perplexity.sstring import s
-from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication
+from perplexity.sstring import s, convert_complex_variable
+from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication, \
+    find_index_predication
 from perplexity.utilities import parse_predication_name, sentence_force
 
 
@@ -126,9 +127,11 @@ def generate_message(tree_info, error_term):
 
         return response
 
-
     elif error_constant == "beMoreSpecific":
         return f"Could you be more specific?"
+
+    elif error_constant == "conceptNotFound":
+        return s("I'm not sure which {bare *arg1.concept_name} you mean.", tree_info)
 
     elif error_constant == "doesntExist":
         return s("There isn't {a arg1:sg} in the system", tree_info)
@@ -152,20 +155,32 @@ def generate_message(tree_info, error_term):
 
         return f"I don't understand the way you are using: {parsed_predicate['Lemma']}"
 
-    elif error_constant == "lessThan":
+    elif error_constant == "phase2LessThan":
+        # if arg2 is a variable that represents that actor for the index verb,
+        # THe error returned would be "there are less than 2 we" or similar
+        # When really the answer should be "there are less than 2 people/things that (did whatever the sentence said)
+        index_predication = find_index_predication(tree_info)
+        if parse_predication_name(index_predication.name)["Pos"] == "v":
+            variable_name, _ = convert_complex_variable(arg1)
+            if index_predication.args[1] == variable_name:
+                if find_predication_from_introduced(tree_info["Tree"], variable_name).name == "pron":
+                    return s("Less than {*arg2} people did that.", tree_info)
+                else:
+                    return s("Less than {*arg2} {arg1} did that.", tree_info)
+
         return s("There are less than {*arg2} {bare arg1:sg@error_predicate_index}", tree_info)
 
-    elif error_constant == "moreThan":
+    elif error_constant == "phase2MoreThan":
         return s("There {'is':<arg1} more than {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "moreThan1":
         return s("There is more than one {bare arg1}", tree_info)
 
-    elif error_constant == "moreThanN":
+    elif error_constant == "phase2MoreThanN":
         # TODO: Make arg1 match arg2's plural
         return s("There {'is':<*arg2} more than {*arg2} {bare arg1:@error_predicate_index}", tree_info)  # s(None, arg1, count=int(arg2))}")
 
-    elif error_constant == "notTrueForAll":
+    elif error_constant == "phase2NotTrueForAll":
         return s("That isn't true for all {arg1:@error_predicate_index}", tree_info)
 
     elif error_constant == "notAllError":
@@ -179,6 +194,9 @@ def generate_message(tree_info, error_term):
 
     elif error_constant == "tooManyItemsTogether":
         return "I don't understand using terms in a way that means 'together' in that sentence"
+
+    elif error_constant == "understoodFailureMessage":
+        return error_arguments[1]
 
     elif error_constant == "unexpected":
         return "I'm not sure what that means."
@@ -202,6 +220,12 @@ def generate_message(tree_info, error_term):
 
         return " and ".join(answers)
 
+    elif error_constant == "valueIsNotInScope":
+        return s("I'm not sure which {*arg1} you mean", tree_info)
+
+    elif error_constant == "variableIsNotInScope":
+        return s("I'm not sure which {arg1} you mean", tree_info)
+
     elif error_constant == "valueIsNotX":
         return s("{*arg1} is not {arg2}", tree_info)
 
@@ -214,7 +238,7 @@ def generate_message(tree_info, error_term):
     elif error_constant == "xIsNotYValue":
         return s("{arg1} is not {*arg2}", tree_info)
 
-    elif error_constant == "zeroCount":
+    elif error_constant == "phase2ZeroCount":
         return s("I'm not sure which {bare arg1:@error_predicate_index} you mean.", tree_info)
 
     else:
@@ -228,7 +252,7 @@ def error_priority(error_string):
 
     else:
         if error_string[1] is None:
-            return error_priority_dict["defaultPriority"]
+            return error_priority_dict["lowestPriority"]
 
         error_constant = error_string[1][0]
         priority = error_priority_dict.get(error_constant, None)
@@ -236,6 +260,7 @@ def error_priority(error_string):
             if error_constant == "unknownWords":
                 priority -= len(error_string[1][1])
 
+            priority += error_string[2] * error_priority_dict["success"]
             return priority
         else:
             return None
@@ -245,20 +270,30 @@ def error_priority(error_string):
 # The absolute value of number doesn't mean anything, they are just for sorting
 # The defaultPriority key is the default value for errors that aren't explicitly listed
 error_priority_dict = {
+    "lowestPriority": 0,
+    # records that have been skipped
+    "skipped": 10,
     # Unknown words error should only be shown if
     # there are no other errors, AND the number
     # of unknown words is subtracted from it so
     # lower constants should be defined below this:
     # "unknownWordsMin": 800,
     "unknownWords": 900,
+    # Used by a predication when, for example, it only processes a certain tense and this current
+    # phrase is not it
     # Slightly better than not knowing the word at all
     "formNotUnderstood": 901,
+    # Happens when a quantifier is reordered and the body comes up with something that doesn't match the RSTR
+    # Very low pri error
+    "notAThing": 905,
     "notClause": 910,
     # Lots of misinterpretations can generate this, so make it lower than default
     "doesntExist": 920,
     "defaultPriority": 1000,
-
+    # Indicates we understood the phrase, but trying to accomplish it generated a failure. It should
+    # be a very high priority message
+    "understoodFailureMessage": 1200,
     # This is just used when sorting to indicate no error, i.e. success.
-    # Nothing should be higher
+    # Nothing should be higher because higher is used for phase 2 errors
     "success": 10000000
 }

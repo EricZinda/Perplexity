@@ -1,30 +1,21 @@
 import copy
 import json
+import numbers
 import esl.esl_planner
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
-from perplexity.set_utilities import Measurement
+from perplexity.set_utilities import DisjunctionValue
 from perplexity.state import State
 from perplexity.utilities import at_least_one_generator
 
 
-def noun_structure(value, part):
-    if isinstance(value, Concept):
-        # [({'for_count': 2, 'noun': 'table1', 'structure': 'noun_for'},)]
-        return value.modifiers().get(part, None)
-
-    else:
-        if part == "noun":
-            return value
-
-
 def in_scope_initialize(state):
-    # Only concepts that are explicity marked as "in scope"
+    # Only concepts that are explicitly marked as "in scope"
     # are in scope
     in_scope_concepts = set()
     for i in state.all_rel("conceptInScope"):
         if i[1] == "true":
-            in_scope_concepts.add(Concept(i[0]))
+            in_scope_concepts.add(ESLConcept(i[0]))
 
     # Any instances that the user or son "have" are in scope
     in_scope_instances = set()
@@ -48,21 +39,89 @@ def in_scope(initial_data, state, value):
         return value in initial_data["InScopeInstances"]
 
 
+def user_types():
+    yield from ["user", "son1"]
+
+
 def is_user_type(val):
-    if not isinstance(val,tuple):
-        return val in ["user","son1"]
+    if not isinstance(val, tuple):
+        return val in user_types()
 
     else:
         for i in val:
-            if i not in ["user","son1"]:
+            if i not in user_types():
                 return False
         return True
 
 
-def specializations(state, base_type):
+def is_computer_type(val):
+    if not isinstance(val, tuple):
+        return val == "restaurant"
+
+    else:
+        for i in val:
+            if i != "restaurant":
+                return False
+        return True
+
+
+def all_user_type(val):
+    assert isinstance(val, list)
+    for i in val:
+        if not is_user_type(i):
+            return False
+    return True
+
+
+# Yield the different concept abstraction levels, each as a different
+# disjunction set, where levels are like this:
+# 1.    special
+#       |
+# 2.    soup            salad
+#       |       |       |       |
+# 3.    lentil  tomato  green   beet
+def concept_disjunctions(state, root_concept, ignore_root=False):
+    next_level = [root_concept]
+    lineage = 0
+    while len(next_level) > 0:
+        next_next_level = []
+        for next_level_type in next_level:
+            if not ignore_root or (ignore_root and lineage > 0):
+                yield DisjunctionValue(lineage, store_to_object(state, next_level_type))
+            for item in immediate_specializations(state, next_level_type):
+                next_next_level.append(item)
+
+        next_level = next_next_level
+        lineage += 1
+
+
+def concept_disjunctions_reverse(state, root_concept, ignore_root=False):
+    levels = []
+    next_level = [root_concept]
+    while len(next_level) > 0:
+        levels.insert(0, next_level)
+        next_next_level = []
+        for next_level_type in next_level:
+            for item in immediate_specializations(state, next_level_type):
+                next_next_level.append(item)
+
+        next_level = next_next_level
+
+    lineage = len(levels)
+    for level in levels[:len(levels) if not ignore_root else len(levels) - 1]:
+        lineage -= 1
+        for level_type in level:
+            yield DisjunctionValue(lineage, store_to_object(state, level_type))
+
+
+def immediate_specializations(state, base_type):
+    yield from rel_subjects(state, "specializes", base_type)
+
+
+def all_specializations(state, base_type):
     for i in state.all_rel("specializes"):
         if i[1] == base_type:
-            yield from specializations(state, i[0])
+            yield from all_specializations(state, i[0])
             yield i[0]
 
 
@@ -172,6 +231,7 @@ def instance_of_or_concept_name(state, thing):
     else:
         return instance_of_what(state, thing)
 
+
 def instance_of_what(state, thing):
     for i in state.all_rel("instanceOf"):
         if i[0] == thing:
@@ -194,15 +254,13 @@ def location_of_type(state, who, where_type):
     return False
 
 
-def count_of_instances_and_concepts(state, concepts_original):
-    concepts = copy.copy(concepts_original)
-    for concept in concepts:
-        concepts += [Concept(x) for x in specializations(state, concept.concept_name)]
+def count_of_instances_and_concepts(context, state, concepts_original):
+    concepts = concepts_original
     concept_count = len(concepts)
 
     instances = []
     for concept in concepts:
-        instances += list(all_instances(state, concept.concept_name))
+        instances += list(concept.instances(context, state))
     instance_count = len(instances)
 
     scope_data = in_scope_initialize(state)
@@ -225,15 +283,39 @@ def object_to_store(o):
 
 def store_to_object(state, s):
     if not is_instance(state, s):
-        return Concept(s)
+        return ESLConcept(s)
     else:
         return s
 
 
+def serial_store_to_object(state, s_list):
+    return [store_to_object(state, s) for s in s_list]
+
+
+def find_unused_instances_from_concept(context, state, concept):
+    for instance in concept.instances(context, state):
+        someone_has = False
+        for item in rel_subjects(state, "have", instance):
+            if item != "restaurant":
+                someone_has = True
+                break
+        for item in rel_subjects(state, "ordered", instance):
+            if item != "restaurant":
+                someone_has = True
+                break
+        if not someone_has:
+            yield instance
+
+
 def find_unused_item(state, object_type):
     for potential in all_instances(state, object_type):
-        taken = at_least_one_generator(rel_subjects(state, "have", potential))
-        if taken is None:
+        someone_has = False
+        for item in rel_subjects(state, "have", potential):
+            # The restaurant conceptually "has" everything
+            if item != "restaurant":
+                someone_has = True
+                break
+        if not someone_has:
             return potential
 
 
@@ -279,6 +361,7 @@ class AddRelOp(object):
     def apply_to(self, state):
         state.mutate_add_rel(self.toAdd[0], self.toAdd[1], self.toAdd[2])
 
+
 class DeleteRelOp(object):
     def __init__(self, rel):
         self.toDelete = rel
@@ -319,6 +402,92 @@ class ResponseStateOp(object):
         state.mutate_set_response_state(self.toAdd)
 
 
+class ESLConcept(Concept):
+    def __init__(self, concept_name):
+        super().__init__(concept_name)
+        self.criteria = []
+        self._hash = None
+
+    def __repr__(self):
+        return f"ESLConcept({self.concept_name}: {[x for x in self.criteria]} )"
+
+    # The only required property is that objects which compare equal have the same hash value
+    # But: objects with the same hash aren't required to be equal
+    # It must remain the same for the lifetime of the object
+    def __hash__(self):
+        if self._hash is None:
+            # TODO: Make this more efficient
+            self._hash = hash(self.concept_name)
+
+        return self._hash
+
+    def __eq__(self, other):
+        if isinstance(other, ESLConcept) and self.__hash__() == other.__hash__():
+            if self.concept_name != other.concept_name:
+                return False
+
+            elif len(self.criteria) != len(other.criteria):
+                return False
+            else:
+                for index in range(len(self.criteria)):
+                    if self.criteria[index] not in other.criteria:
+                        return False
+
+                return True
+
+    def add_criteria(self, function, arg1, arg2):
+        self_copy = copy.deepcopy(self)
+        self_copy.criteria.append((function, arg1, arg2))
+        return self_copy
+
+    # Pass None to any argument that should be ignored
+    def find_criteria(self, function, arg1, arg2):
+        for c in self.criteria:
+            if function is not None and function != c[0]:
+                continue
+            if arg1 is not None and arg1 != c[1]:
+                continue
+            if arg2 is not None and arg2 != c[2]:
+                continue
+            return c
+
+    # return any instances that meet all the criteria in self.criteria
+    def instances(self, context, state, potential_instances=None):
+        return self._meets_criteria(context, state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria, initial_instances=potential_instances)
+
+    def concepts(self, context, state, potential_concepts=None):
+        # get the actual identifiers of all concepts that meet all the criteria
+        raw_concepts = self._meets_criteria(context, state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria, initial_instances=potential_concepts)
+
+        if len(raw_concepts) == 0:
+            # Since the concept generated might be different than what the user said,
+            # For example, "table for my son" is interpreted as "table for 1", we need
+            # to generate an error that is specific to the *concept*
+            context.report_error(["conceptNotFound", self], force=True)
+
+        # ... and return them wrapped in a Concept() with the same criteria
+        return [self._replace_concept_name(x) for x in raw_concepts]
+
+    def _replace_concept_name(self, new_concept_name):
+        new_concept = copy.deepcopy(self)
+        new_concept.concept_name = new_concept_name
+        return new_concept
+
+    def _meets_criteria(self, context, state, final_criteria, initial_instances=None):
+        found_cumulative = None if initial_instances is None else initial_instances
+        for current_criteria in final_criteria:
+            found = []
+            for result in current_criteria[0](state, current_criteria[1], current_criteria[2]):
+                if found_cumulative is None or result in found_cumulative:
+                    found.append(result)
+
+            found_cumulative = found
+            if len(found_cumulative) == 0:
+                break
+
+        return found_cumulative
+
+
 class WorldState(State):
     def __init__(self, relations, system, name=None, world_state_frame=None):
         super().__init__([])
@@ -328,8 +497,8 @@ class WorldState(State):
         self.frame_name = name
         self._world_state_frame = world_state_frame
 
-    #*********** Used for HTN
-    def copy(self,new_name=None):
+    # *********** Used for HTN
+    def copy(self, new_name=None):
         return copy.deepcopy(self)
 
     def display(self, heading=None):
@@ -341,6 +510,7 @@ class WorldState(State):
 
     def state_vars(self):
         pass
+
     # *********** Used for HTN
 
     # ******* Base Operations ********
@@ -392,9 +562,50 @@ class WorldState(State):
 
     def rel_exists(self, rel):
         return rel in self._rel.keys()
+
     # ******* Base Operations ********
 
     # ******* Overrides of State ********
+    def __repr__(self):
+        if self._world_state_frame is None:
+            return super().__repr__()
+        else:
+            return self._world_state_frame.__repr__()
+
+    def get_binding(self, variable_name):
+        # return super().get_binding(variable_name)
+        if self._world_state_frame is None:
+            return super().get_binding(variable_name)
+        else:
+            return self._world_state_frame.get_binding(variable_name)
+
+    def set_variable_data(self, variable_name, determiner=None, quantifier=None):
+        # return super().set_variable_data(variable_name, determiner, quantifier)
+        if self._world_state_frame is None:
+            return super().set_variable_data(variable_name, determiner, quantifier)
+        else:
+            newState = copy.deepcopy(self)
+            newState._world_state_frame = self._world_state_frame.set_variable_data(variable_name, determiner, quantifier)
+            return newState
+
+    def set_x(self, variable_name, item, combinatoric=False, determiner=None, quantifier=None):
+        # return super().set_x(variable_name, item, combinatoric, determiner, quantifier)
+        if self._world_state_frame is None:
+            return super().set_x(variable_name, item, combinatoric, determiner, quantifier)
+        else:
+            newState = copy.deepcopy(self)
+            newState._world_state_frame = self._world_state_frame.set_x(variable_name, item, combinatoric, determiner, quantifier)
+            return newState
+
+    def add_to_e(self, event_name, key, value):
+        # return super().add_to_e(event_name, key, value)
+        if self._world_state_frame is None:
+            return super().add_to_e(event_name, key, value)
+        else:
+            newState = copy.deepcopy(self)
+            newState._world_state_frame =self._world_state_frame.add_to_e(event_name, key, value)
+            return newState
+
     def frames(self):
         # Start with just the in scope frame
         in_scope = in_scope_initialize(self)
@@ -466,7 +677,6 @@ class WorldState(State):
 
     # ******* Overrides of State ********
 
-
     def bill_total(self):
         for i in self.all_rel("valueOf"):
             if i[1] == "bill1":
@@ -518,10 +728,12 @@ class WorldState(State):
             return " \nWaiter: How many in your party?"
         if self.sys["responseState"] == "anything_else":
             return " \nWaiter: Can I get you something else before I put your order in?"
+        if self.sys["responseState"] == "way_to_pay":
+            return " \nWaiter: So did you want to pay with cash or card?"
         return ""
 
     def user_ordered_veg(self):
-        veggies = list(all_instances(self, "veggie"))
+        veggies = list(all_instances_and_spec(self, "veggie"))
         if self.rel_exists("ordered"):
             for i in self.all_rel("ordered"):
                 if i[0] == "user":
@@ -645,15 +857,15 @@ class WorldState(State):
             toReturn += [AddRelOp(("user", "ordered", i)), AddBillOp(i)]
         return toReturn
 
-    def user_wants_group(self, users, wanted):
+    def user_wants_group(self, context, users, wanted):
         allTables = True  # if multiple actors (son and user) want table, we don't need two tables
         allMenus = True
         allTableRequests = True
 
         for i in wanted:
-            if not sort_of(self,i.value[0],"table"):
+            if not sort_of(self, i.value[0], "table"):
                 allTables = False
-            if not sort_of(self,i.value[0],"menu"):
+            if not sort_of(self, i.value[0], "menu"):
                 allMenus = False
             if not i.value[0][0] == "{":
                 allTableRequests = False
@@ -661,14 +873,14 @@ class WorldState(State):
                 if not json.loads(i.value[0])["structure"] == "noun_for":
                     allTableRequests = False
         if allTables:
-            return self.handle_world_event(["user_wants", "table1"])
+            return self.handle_world_event(context, ["user_wants", "table1"])
         if allMenus:
-            return self.handle_world_event(["user_wants", "menu1"])
+            return self.handle_world_event(context, ["user_wants", "menu1"])
         elif allTableRequests:
-            return self.handle_world_event(["user_wants", wanted[0].value[0]])
+            return self.handle_world_event(context, ["user_wants", wanted[0].value[0]])
         else:
             unpack = lambda x: x.value[0]
-            return self.handle_world_event(["user_wants_multiple", [unpack(j) for j in wanted]])
+            return self.handle_world_event(context, ["user_wants_multiple", [unpack(j) for j in wanted]])
 
     def user_wants_to_see(self, wanted):
         if wanted == "menu1":
@@ -678,76 +890,59 @@ class WorldState(State):
         else:
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
-    def user_wants_to_see_group(self, actor_list, wanted_list):
+    def user_wants_to_see_group(self, context, actor_list, wanted_list):
         all_menu = True
         for i in wanted_list:
             if not sort_of(self, i.value[0], "menu"):
                 all_menu = False
                 break
         if all_menu:
-            return self.handle_world_event(["user_wants", "menu1"])
+            return self.handle_world_event(context, ["user_wants", "menu1"])
         else:
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
-    def no(self):
-        if self.sys["responseState"] == "anything_else":
-            if not self.user_ordered_veg():
-                return [RespondOperation(
-                    "Son: Dad! I’m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren’t on the menu… You tell the waiter to restart your order.\nWaiter: Ok, can I get you something else to eat?"),
-                    ResponseStateOp("something_to_eat"), ResetOrderAndBillOp()]
-
-            items = [i for (x, i) in self.all_rel("ordered")]
-            for i in self.all_rel("have"):
-                if i[0] == "user":
-                    if i[1] in items:
-                        items.remove(i[1])
-
-            item_str = " ".join(items)
-
-            for i in items:
-                self.add_rel("user", "have", i)
-
-            return [RespondOperation(
-                "Ok, I'll be right back with your meal.\nA few minutes go by and the robot returns with " + item_str + ".\nThe food is good, but nothing extraordinary."),
-                ResponseStateOp("done_ordering")]
-        elif self.sys["responseState"] == "something_to_eat":
-            return [RespondOperation(
-                "Well if you aren't going to order anything, you'll have to leave the restaurant, so I'll ask you again: can I get you something to eat?")]
-        else:
-            return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+    def no(self, context):
+        return self.find_plan([('complete_order', context)])
 
     def yes(self):
         if self.sys["responseState"] in ["anything_else", "something_to_eat"]:
             return [RespondOperation("Ok, what?"), ResponseStateOp("anticipate_dish")]
         else:
-            return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+            return [RespondOperation("Host: Hmm. I didn't understand what you said." + self.get_reprompt())]
 
     # This should always be the answer to a question since it is a partial sentence that generated
     # an unknown() predication in the MRS for the verb
-    def unknown(self, x):
+    def unknown(self, context, x):
+        concept_name = None
+        if is_concept(x):
+            concept_name = x.concept_name
+
         if self.sys["responseState"] == "way_to_pay":
-            if x in ["cash", "card", "card, credit"]:
+            if x in ["cash"]:
                 return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
+            elif x in ["card", "card, credit"]:
+                return [RespondOperation("You reach into your pocket and realize you don’t have a credit card." + self.get_reprompt())]
             else:
-                return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+                return [RespondOperation("Waiter: Hmm. I didn't understand what you said." + self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
-            if x in self.get_entities():
-                return self.handle_world_event(["user_wants", x])
+            if concept_name is not None:
+                if concept_name in self.get_entities():
+                    return self.handle_world_event(context, ["user_wants", x])
+                else:
+                    return [RespondOperation("Sorry, we don't have that" + self.get_reprompt())]
             else:
-                return [RespondOperation("Sorry, we don't have that")]
+                return [RespondOperation("Sorry, we don't allow ordering specific things like that"+ self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
-            if is_concept(x) and x.concept_name == "generic_entity" and noun_structure(x, "card") is not None:
+            if isinstance(x, numbers.Number):
+                table_concept = ESLConcept("table")
+                table_concept = table_concept.add_criteria(rel_subjects, "maxCapacity", x)
                 actors = [("user",)]
-                whats = [(Concept("table", dict({"for": (Concept('generic_entity', {'card': 2}),)})),)]
-                return self.find_plan([('satisfy_want', actors, whats)])
+                whats = [(table_concept,)]
+                return self.find_plan([('satisfy_want', context, actors, whats, 1)])
 
-            else:
-                return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
-
-        else:
-            return [RespondOperation("Hmm. I didn't understand what you said." + self.get_reprompt())]
+        context.report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 
     def find_plan(self, tasks):
         current_state = esl.esl_planner.do_task(self.world_state_frame(), tasks)
@@ -756,21 +951,21 @@ class WorldState(State):
         else:
             return [RespondOperation("I'm not sure what to do about that." + self.get_reprompt())]
 
-    def handle_world_event(self, args):
+    def handle_world_event(self, context, args):
         if args[0] == "user_wants":
-            return self.find_plan([('satisfy_want', [("user",)], [(args[1],)])])
+            return self.find_plan([('satisfy_want', context, [("user",)], [(args[1],)], 1)])
         elif args[0] == "user_wants_to_see":
             return self.user_wants_to_see(args[1])
         elif args[0] == "user_wants_multiple":
             return self.user_wants_multiple(args[1])
         elif args[0] == "no":
-            return self.no()
+            return self.no(context)
         elif args[0] == "yes":
             return self.yes()
         elif args[0] == "unknown":
             # User said something that wasn't a full sentence that generated an
             # unknown() predication
-            return self.unknown(args[1])
+            return self.unknown(context, args[1])
         elif args[0] == "user_wants_to_sit":
             return self.user_wants("table1")
         elif args[0] == "user_wants_to_sit_group":
@@ -778,8 +973,8 @@ class WorldState(State):
         elif args[0] == "user_wants_group":
             who_list = [binding.value for binding in args[1].solution_values]
             what_list = [binding.value for binding in args[2].solution_values]
-            return self.find_plan([('satisfy_want', who_list, what_list)])
+            return self.find_plan([('satisfy_want', context, who_list, what_list)])
 
-            return self.user_wants_group(args[1],args[2])
+            return self.user_wants_group(context, args[1], args[2])
         elif args[0] == "user_wants_to_see_group":
-            return self.user_wants_to_see_group(args[1],args[2])
+            return self.user_wants_to_see_group(context, args[1], args[2])

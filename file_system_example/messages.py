@@ -1,7 +1,7 @@
 import logging
 
 import perplexity.messages
-from perplexity.generation import english_for_delphin_variable
+from perplexity.generation import english_for_delphin_variable_impl
 from perplexity.set_utilities import append_if_unique, in_equals
 from perplexity.sstring import sstringify, s
 from perplexity.tree import find_predication, predication_from_index, \
@@ -24,13 +24,17 @@ def generate_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
-    arg_length = len(error_arguments)
+    arg_length = len(error_arguments) if error_arguments is not None else 0
     arg1 = error_arguments[1] if arg_length > 1 else None
     arg2 = error_arguments[2] if arg_length > 2 else None
     arg3 = error_arguments[3] if arg_length > 3 else None
 
     if error_constant == "adjectiveDoesntApply":
-        return s("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
+        # use the error_predicate_index as where to evaluate the english of arg2 because
+        # otherwise the default will be after the conjunction where arg2 is defined, and often this
+        # error comes from and adjective *in* the conjunction, so it will generate something like
+        # "a large file is not large" instead of the proper phrase: "a file is not large"
+        return s("{A arg2:@error_predicate_index} {'is':<arg2} not {*arg1}", tree_info)
 
     elif error_constant == "cantDo":
         return s("I can't {*arg1:<'I'} {arg2}", tree_info)
@@ -62,13 +66,17 @@ def error_priority(error_string):
     if system_priority is not None:
         return system_priority
     else:
-        # Must be a message from our code
         error_constant = error_string[1][0]
-        return error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
+        priority = error_priority_dict.get(error_constant, error_priority_dict["defaultPriority"])
+        priority += error_string[2] * error_priority_dict["success"]
+        return priority
 
 
 error_priority_dict = {
-    "defaultPriority": 1000
+    "defaultPriority": 1000,
+    # This is just used when sorting to indicate no error, i.e. success.
+    # Nothing should be higher because higher is used for phase 2 errors
+    "success": 10000000
 }
 
 pipeline_logger = logging.getLogger('Pipeline')

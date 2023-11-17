@@ -1,26 +1,28 @@
-from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, rel_subjects, location_of_type, \
-    has_item_of_type, is_type, is_instance, rel_objects
-from perplexity.predications import is_concept
+from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, location_of_type, \
+    has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 
 task_methods = []
 
-def describe_list_analyze(state, what_group):
+
+def describe_list_analyze(state, context, what_group, has_more):
     # See how many of the items we are describing are "specials" or "menu items"
     analysis = {"Specials": [],
                 "MenuItems": [],
                 "Bills": [],
+                "Instances": [],
                 "Others": [],
                 "UniqueItems": set()}
+
     for item_value in what_group:
         for item in item_value:
             if item not in analysis["UniqueItems"]:
                 analysis["UniqueItems"].add(item)
                 store_object = object_to_store(item)
-                # If the response is the actual 'special' type, then describe the specials
-                # since we are talking about the whole class of them
-                if store_object != "special" and sort_of(state, store_object, "special"):
+                if is_instance(state, store_object):
+                    analysis["Instances"].append(store_object)
+                if sort_of(state, store_object, "special"):
                     analysis["Specials"].append(store_object)
                 elif sort_of(state, store_object, ["food", "menu"]):
                     analysis["MenuItems"].append(store_object)
@@ -29,7 +31,7 @@ def describe_list_analyze(state, what_group):
                 else:
                     analysis["Others"].append(store_object)
 
-    return [('describe_analyzed', analysis)]
+    return [('describe_analyzed', context, analysis, has_more)]
 
 
 task_methods.append(['describe', describe_list_analyze])
@@ -37,21 +39,25 @@ task_methods.append(['describe', describe_list_analyze])
 
 # If we're asked questions about the menu or specials at the entrance
 # tell them to be seated
-def describe_analyzed_at_entrance(state, analysis):
-    if location_of_type(state, "user", "table"): return
+def describe_analyzed_at_entrance(state, context, analysis, has_more):
+    if location_of_type(state, "user", "table"):
+        return
 
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
-        new_methods.append(('respond', "If you'd like to hear about our menu items, you'll need to have a seat."))
+        new_methods.append(('respond', context, "If you'd like to hear about our menu items, you'll need to have a seat." + state.get_reprompt()))
 
-    if len(analysis["Bills"]) > 0:
-        new_methods.append(('respond', "Let's talk about the bill once you've finished eating."))
+    elif len(analysis["Bills"]) > 0:
+        new_methods.append(('respond', context, "Let's talk about the bill once you've finished eating." + state.get_reprompt()))
 
-    for item in analysis["Others"]:
-        if isinstance(item, Measurement) and item.measurement_type == "dollar":
-            new_methods.append(('respond', "Let's talk about prices once you've been seated."))
-        else:
-            new_methods.insert(0, ('describe_item', item))
+    else:
+        for item in analysis["Others"]:
+            if isinstance(item, Measurement) and item.measurement_type == "dollar":
+                new_methods.append(('respond', context, "Let's talk about prices once you've been seated." + state.get_reprompt()))
+
+            else:
+                new_methods.insert(0, ('describe_item', context, item))
+                new_methods.append(('respond', context, state.get_reprompt()))
 
     return new_methods
 
@@ -60,8 +66,9 @@ def describe_analyzed_at_entrance(state, analysis):
 # ask something like "do you have vegetarian dishes?" before they ask what the specials are
 # Any question that includes an answer that is special should trigger the waiter asking if
 # if the user wants to hear the detailed description of specials
-def describe_analyzed_at_table(state, analysis):
-    if not location_of_type(state, "user", "table"): return
+def describe_analyzed_at_table(state, context, analysis, has_more):
+    if not location_of_type(state, "user", "table"):
+        return
 
     new_methods = []
 
@@ -69,46 +76,85 @@ def describe_analyzed_at_table(state, analysis):
     heard_specials = not rel_check(state, "user", "heardSpecials", "false")
     has_menu = any(menu_holder in ["son1", "user"] for menu_holder in has_item_of_type(state, "menu"))
 
-    if len(analysis["Specials"]) == len(analysis["UniqueItems"]) and not heard_specials:
-        # If we are being ask to describe only specials, use the special, detailed description
-        new_methods.append(('describe_item', "special"))
+    # no special behavior if there are instances
+    if len(analysis["Instances"]) > 0:
+        return [('describe_item', context, list(analysis["UniqueItems"]))] + ([] if not has_more else [('respond', context, "(among others)")])
 
-    else:
-        for item in analysis["Specials"]:
-            new_methods.append(('describe_item', item))
+    if len(analysis["MenuItems"]) > 0 and not has_menu:
+        # Describe the menu if the user hasn't heard it and they ask a question
+        # that results in any number of menu items being generated
+        new_methods.append(("get_menu", context, ["user"], 1))
+        return new_methods
 
-        if len(analysis["Specials"]) > 0 and not heard_specials:
-            # If not all the items are specials, and we haven't described them, we should first list the short version, then
-            # ask if the user wants to hear the long description
-            new_methods.append(('respond', "Would you like me to describe the specials?"))
+    analysis_specials_count = len(analysis["Specials"])
+    if analysis_specials_count > 0:
+        if not heard_specials:
+            # If we are being ask to describe any specials and the user hasn't heard of them yet,
+            # give the special, detailed description
+            new_methods.append(('respond', context, "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+            new_methods.append(('delete_rel', context, "user", "heardSpecials", "false"))
+            new_methods.append(('add_rel', context, "user", "heardSpecials", "true"))
+            return new_methods
 
-        for item in analysis["MenuItems"]:
-            new_methods.append(('describe_item', item))
+        elif analysis_specials_count == len(analysis["UniqueItems"]):
+            # Subtract 1 to account for the generic concept "special"
+            if analysis_specials_count - 1 == len([x for x in all_specializations(state, "special")]):
+                # We are responding with *only* specials, and in fact *all* of them, and have already heard
+                # the long version, give a terser response
+                new_methods.append(('respond',
+                                    context,
+                                    "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+                return new_methods
 
-        if len(analysis["MenuItems"]) > 0 and not has_menu:
-            # If not all the items are menu items, and we haven't described them, we should first list the short version, then
-            # ask if the user wants to hear the long description
-            new_methods.append(('respond', "Would you like a menu?"))
+    rel = list(state.all_rel("have"))
+    for i in analysis.keys():
+        if not i == "UniqueItems":
+            for j in analysis[i]:
+                if j in all_instances_and_spec(state, "thing"):
+                    if ("restaurant", j) in rel:
+                        new_methods.append(('describe_item', context, j))
+                else:
+                    j = object_to_store(j)
+                    if j in all_instances_and_spec(state, "thing"):
+                        if ("restaurant", j) in rel:
+                            new_methods.append(('describe_item', context, j))
+                    else:
+                        new_methods.append(('describe_item', context, j))
 
-        for item in analysis["Others"] + analysis["Bills"]:
-            new_methods.append(('describe_item', item))
-
-    return new_methods
+    if len(new_methods) > 0:
+        return new_methods + ([] if not has_more else [('respond', context, "(among others)")])
 
 
 task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describe_analyzed_at_table])
 
 
-def describe_item(state, what):
-    if what == "special":
-        return[('respond', "The specials are <description>"),
-               ('delete_rel', "user", "heardSpecials", "false"),
-               ('add_rel', "user", "heardSpecials", "true")]
-    else:
-        return [('respond', convert_to_english(state, what))]
+# Handles a list by returning a count
+def describe_item_list(state, context, whats):
+    if isinstance(whats, list):
+        english_count = {}
+        for what in whats:
+            english = convert_to_english(state, what)
+            if english not in english_count:
+                english_count[english] = 1
+            else:
+                english_count[english] += 1
+
+        new_tasks = []
+        for item in english_count.items():
+            if item[1] == 1:
+                new_tasks.append(('respond', context, item[0]))
+            else:
+                new_tasks.append(('respond', context, f"{item[1]} {item[0]}"))
+
+        return new_tasks
 
 
-task_methods.append(['describe_item', describe_item])
+def describe_item(state, context, what):
+    if not isinstance(what, list):
+        return [('respond', context, convert_to_english(state, what))]
+
+
+task_methods.append(['describe_item', describe_item_list, describe_item])
 
 
 def convert_to_english(state, what):
@@ -116,19 +162,21 @@ def convert_to_english(state, what):
         return what
 
     elif isinstance(what, Measurement):
-        return s("{*what.count} {*what.measurement_type:<*what.count}")
+        if what.measurement_type == "":
+            return s("{*what.count}")
+        else:
+            return s("{*what.count} {*what.measurement_type:<*what.count}")
 
-    else:
-        # if it is an instance, with a name, return that
-        if is_instance(state, what):
-            names = list(rel_objects(state, what, "hasName"))
-            if len(names) > 0:
-                return names[0]
+    # if it is an instance, with a name, return that
+    if is_instance(state, what):
+        names = list(rel_objects(state, what, "hasName"))
+        if len(names) > 0:
+            return names[0]
 
-        # Instances of commodities like steaks (i.e. steak1, steak2) that don't have
-        # a name should always just return their type name
-        type = instance_of_what(state, what)
-        return type if type is not None else "something"
+    # Instances of commodities like steaks (i.e. steak1, steak2) that don't have
+    # a name should always just return their type name
+    type = instance_of_what(state, what)
+    return type if type is not None else "something"
 
 
 def add_declarations(gtpyhop):

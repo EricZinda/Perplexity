@@ -1,9 +1,12 @@
-import contextvars
 import copy
 import logging
+import queue
 import sys
 import perplexity.tree
+import perplexity.solution_groups
+from perplexity.set_utilities import product_stream
 from perplexity.utilities import sentence_force, at_least_one_generator
+from perplexity.vocabulary import ValueSize
 
 
 # Allows code to throw an exception that should get converted
@@ -17,152 +20,247 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
-class ExecutionContext(object):
-    def __init__(self, vocabulary):
-        self.vocabulary = vocabulary
-        self._error = None
-        self._error_predication_index = -1
-        self._error_was_forced = False
-        self._predication_index = -1
-        self._predication = None
-        self._phrase_type = None
-        self._variable_execution_data = {}
-        self.tree_info = None
-        self._variable_metadata = None
-        self._in_scope_initialize_function = None
-        self._in_scope_initialize_data = None
-        self._in_scope_function = None
+# Generates all the solution groups that can produced by
+# various interpretations of a tree.
+# Each different interpretation results in a new tree_record
+# even if it fails
+class TreeSolver(object):
+    def __init__(self, context):
+        self._context = context
 
-    def __enter__(self):
-        self.old_context_token = set_execution_context(self)
+    @classmethod
+    def create_top_level_solver(cls, vocabulary, scope_function, scope_init_function):
+        context = ExecutionContext(vocabulary)
+        context.set_in_scope_function(scope_function, scope_init_function)
+        return cls(context)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.old_context_token is not None:
-            reset_execution_context(self.old_context_token)
-            self.old_context_token = None
+    # This is the class that gets passed to predications as "context"
+    # It is the lowest level class that walks a tree, in-order
+    # and is consumed by the MRSLineage classes which break the solutions
+    # into different solution sets
+    class InterpretationSolver(object):
+        def __init__(self, execution_context):
+            self._context = execution_context
+            self.vocabulary = self._context.vocabulary
 
-    def resolve_fragment(self, state, tree_node):
-        this_sentence_force = sentence_force(self.tree_info["Variables"])
-        new_tree_info = copy.deepcopy(self.tree_info)
-        new_tree_info["Tree"] = tree_node
-        new_state = state.set_x("tree", (new_tree_info, ))
-        wh_phrase_variable = None
-        if this_sentence_force == "ques":
-            predication = perplexity.tree.find_predication(self.tree_info["Tree"], "_which_q")
-            if predication is not None:
-                wh_phrase_variable = predication.args[0]
+            self._interpretation = None
+            self._predication_index = -1
+            self._predication = None
+            self._phrase_type = None
+            self.tree_info = None
+            self._variable_metadata = None
+            self._predication_runtime_settings = None
+            self._lineage_failure_callback = None
+            self._solution_lineages = None
+            self._last_solution_lineage = None
+            self._variable_execution_data = {}
 
-        solutions = self.call(new_state, tree_node)
-        solutions_list = list(solutions)
-        pipeline_logger.debug(f"Resolving fragment: {tree_node}")
-        # TODO: suspect the interleaving of resolve_fragment() with normal MRS solving is causing a subtle bug since
-        #         resolving it all up front doesn't have the bug. Fix that bug and then allow this to stream
-        groups = [group for group in perplexity.solution_groups.solution_groups(self, solutions_list, this_sentence_force, wh_phrase_variable, new_tree_info, all_groups=True)]
-        for group in groups:
-            solutions = [x for x in group]
-            yield from solutions
+        def interpretation(self):
+            return self._interpretation
 
-        pipeline_logger.debug(f"Done Resolving fragment: {tree_node}")
+        def create_child_solver(self):
+            # Subtrees are resolved using the same context so error state is shared
+            return TreeSolver(self._context)
 
-    # Needs to be called in a: with ExecutionContext() block
-    # so that the execution context is set up properly
-    # and maintained while all the solution groups are generated
-    def solve_mrs_tree(self, state, tree_info):
-        self.clear_error()
-        self._predication_index = 0
-        self._phrase_type = sentence_force(tree_info["Variables"])
-        self.tree_info = tree_info
-        self.gather_tree_metadata()
-        if self._in_scope_initialize_function is not None:
-            self.in_scope_initialize_data = self._in_scope_initialize_function(state)
+        # Overwrite the error reporting to default to phase=2
+        def create_phase2_context(self):
+            class InterpretationSolverPhase2:
+                def __init__(self, proxied_object):
+                    self.__proxied = proxied_object
 
-        yield from self.call(state.set_x("tree", (tree_info, ), False), tree_info["Tree"])
+                def __getattr__(self, attr):
+                    def wrapped_method(*args, **kwargs):
+                        result = getattr(self.__proxied, attr)(*args, **kwargs)
+                        return result
 
-    def gather_tree_metadata(self):
-        self._variable_metadata = perplexity.tree.gather_predication_metadata(self.vocabulary, self.tree_info)
+                    if attr == "report_error_for_index":
+                        return self.report_error_for_index
+                    elif attr == "report_error":
+                        return self.report_error
+                    else:
+                        return wrapped_method
 
-    def call(self, state, term, normalize=False):
-        # See if the term is actually a list
-        # If so, we have a conjunction
-        if isinstance(term, list):
-            # If "term" is an empty list, we have solved all
-            # predications in the conjunction, return the final answer.
-            # "len()" is a built-in Python function that returns the
-            # length of a list
-            if len(term) == 0:
-                yield state
+                def report_error_for_index(self, predication_index, error, force=False, phase=None):
+                    if phase is None:
+                        return self.__proxied.report_error_for_index(predication_index, error, force, phase=2)
+                    else:
+                        return self.__proxied.report_error_for_index(predication_index, error, force, phase=phase)
 
-            else:
-                # This is a list of predications, so they should
-                # treated as a conjunction.
-                # Call each one and pass the state it returns
-                # to the next one, recursively
-                for nextState in self.call(state, term[0], normalize):
-                    # Note the [1:] syntax which means "return a list
-                    # of everything but the first item"
-                    yield from self.call(nextState, term[1:], normalize)
+                def report_error(self, error, force=False, phase=None):
+                    if phase is None:
+                        return self.__proxied.report_error(error, force, phase=2)
+                    else:
+                        return self.__proxied.report_error(error, force, phase=phase)
 
-        else:
-            # Keep track of how deep in the tree this
-            # predication is
-            last_predication_index = self._predication_index
-            last_predication = self._predication
-            self._predication_index = term.index
-            self._predication = term
+            return InterpretationSolverPhase2(self)
 
-            # The first thing in the list was not a list
-            # so we assume it is just a term like
-            # ["_large_a_1", "e1", "x1"]
-            # evaluate it using CallPredication
-            yield from self._call_predication(state, term, normalize)
+        # Returns solutions for a specific tree interpretation that is passed in
+        def solve_tree_interpretation(self, state, tree_info, interpretation, lineage_failure_callback):
+            self._interpretation = interpretation
+            self._predication_index = 0
+            self._predication = None
+            self._phrase_type = sentence_force(tree_info["Variables"])
+            self.tree_info = tree_info
+            self._variable_metadata = perplexity.tree.gather_predication_metadata(self._context.vocabulary, tree_info)
+            self._predication_runtime_settings = {}
+            self._lineage_failure_callback = lineage_failure_callback
+            self._solution_lineages = set()
+            self._last_solution_lineage = None
+            self._variable_execution_data = {}
 
-            # Restore it since we are recursing
-            self._predication_index = last_predication_index
-            self._predication = last_predication
+            self._context.reset_scope(state)
+            self._context.clear_error()
 
-    # Do not use directly.
-    # Use Call() instead so that the predication index is set properly
-    # The format we're using is:
-    # ["folder_n_of", "x1"]
-    #   The first item is the predication name
-    #   The rest of the items are the arguments
-    def _call_predication(self, state, predication, normalize=False):
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"call {self._predication_index}: {predication}({str(state)}) [{self._phrase_type}]")
+            for solution in self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"]):
+                # Remember any disjunction lineages that had a solution
+                tree_lineage_binding = state.get_binding("tree_lineage")
+                if tree_lineage_binding.value is None:
+                    self._solution_lineages.add(None)
+                else:
+                    self._solution_lineages.add(tree_lineage_binding.value[0])
 
-        bindings = []
-        for arg_index in range(0, len(predication.args)):
-            if predication.arg_types[arg_index] in ["c", "h"]:
-                bindings.append(predication.args[arg_index])
+                yield solution
+
+            # Fire an error for the last disjunction tree (which might be the whole tree if there were no disjunctions)
+            # but only if no solutions were generated
+            if self._last_solution_lineage is None and None not in self._solution_lineages:
+                self._lineage_failure_callback(self._context.get_error_info())
 
             else:
-                bindings.append(state.get_binding(predication.args[arg_index]))
+                self._handle_lineage_change("")
 
-        # [list] + [list] will return a new, combined list
-        # in Python. This is how we add the state object
-        # onto the front of the argument list
-        function_args = [state] + bindings
+            pipeline_logger.debug(f"Error after tree evaluation: {self._context.get_error_info()}")
 
-        # Look up the actual Python module and
-        # function name given a string like "folder_n_of".
-        # "vocabulary.Predication" returns a two-item list,
-        # where item[0] is the module and item[1] is the function
-        for module_function in self.vocabulary.predications(predication.name,
-                                                            predication.arg_types,
-                                                            self._phrase_type if normalize is False else "norm"):
+        def in_scope(self, state, thing):
+            return self._context.in_scope(state, thing)
+
+        def has_not_understood_error(self):
+            return self._context.has_not_understood_error()
+
+        def report_error_for_index(self, predication_index, error, force=False, phase=0):
+            return self._context.report_error_for_index(predication_index, error, force, phase=phase)
+
+        def report_error(self, error, force=False, phase=0):
+            self._context.report_error_for_index(self._predication_index, error, force, phase=phase)
+
+        def error(self):
+            return self._context.error()
+
+        def get_error_info(self):
+            return self._context.get_error_info()
+
+        def set_error_info(self, error_info):
+            return self._context.set_error_info(error_info)
+
+        def clear_error(self):
+            return self._context.clear_error()
+
+        def set_disjunction(self):
+            self.set_predication_runtime_settings("Disjunction", True)
+
+        def set_predication_runtime_settings(self, key, value):
+            self._predication_runtime_settings[key] = value
+
+        def current_predication_index(self):
+            return self._predication_index
+
+        def current_predication(self):
+            return self._predication
+
+        def set_variable_execution_data(self, variable_name, key, value):
+            if variable_name not in self._variable_execution_data:
+                self._variable_execution_data[variable_name] = {}
+
+            self._variable_execution_data[variable_name][key] = value
+
+        def get_variable_execution_data(self, variable_name):
+            return self._variable_execution_data.get(variable_name, {})
+
+        def get_variable_metadata(self, variable_name):
+            # TODO: This is a hack to enable metadata for eval(). Need to fix it
+            return self._variable_metadata.get(variable_name, {"ValueSize": ValueSize.all})
+
+        def call(self, state, term):
+            # See if the term is actually a list
+            # If so, we have a conjunction
+            if isinstance(term, list):
+                # If "term" is an empty list, we have solved all
+                # predications in the conjunction, return the final answer.
+                # "len()" is a built-in Python function that returns the
+                # length of a list
+                if len(term) == 0:
+                    yield state
+
+                else:
+                    # This is a list of predications, so they should
+                    # treated as a conjunction.
+                    # Call each one and pass the state it returns
+                    # to the next one, recursively
+                    for nextState in self.call(state, term[0]):
+                        # Note the [1:] syntax which means "return a list
+                        # of everything but the first item"
+                        yield from self.call(nextState, term[1:])
+
+            else:
+                # Keep track of how deep in the tree this
+                # predication is
+                last_predication_index = self._predication_index
+                last_predication = self._predication
+                self._predication_index = term.index
+                self._predication = term
+
+                # The first thing in the list was not a list
+                # so we assume it is just a term like
+                # ["_large_a_1", "e1", "x1"]
+                # evaluate it using CallPredication
+                yield from self._call_predication(state, term)
+
+                # Restore it since we are recursing
+                self._predication_index = last_predication_index
+                self._predication = last_predication
+
+        # Do not use directly.
+        # Use Call() instead so that the predication index is set properly
+        # The format we're using is:
+        # ["folder_n_of", "x1"]
+        #   The first item is the predication name
+        #   The rest of the items are the arguments
+        def _call_predication(self, state, predication):
+            bindings = []
+            for arg_index in range(0, len(predication.args)):
+                if predication.arg_types[arg_index] in ["c", "h"]:
+                    bindings.append(predication.args[arg_index])
+
+                else:
+                    bindings.append(state.get_binding(predication.args[arg_index]))
+
+            # [list] + [list] will return a new, combined list
+            # in Python. This is how we add the state object
+            # onto the front of the argument list
+            function_args = [self, state] + bindings
+
+            # Look up the actual Python module and
+            # function name given a string like "folder_n_of".
+            # "vocabulary.Predication" returns a two-item list,
+            # where item[0] is the module and item[1] is the function
+            module_function = self._interpretation[predication.index]
+
             # sys.modules[] is a built-in Python list that allows you
             # to access actual Python Modules given a string name
-            module = sys.modules[module_function[0]]
+            module = sys.modules[module_function.module]
 
             # Functions are modeled as properties of modules in Python
             # and getattr() allows you to retrieve a property.
             # So: this is how we get the "function pointer" to the
             # predication function we wrote in Python
-            function = getattr(module, module_function[1])
+            function = getattr(module, module_function.function)
 
             # See if the system wants us to tack any arguments to the front
             if module_function[2] is not None:
                 function_args = module_function[2] + function_args
+
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"call {self._predication_index}: {module_function.module}.{module_function.function}, state: {str(state)}, phrase_type: [{self._phrase_type}]")
 
             # If a MessageException happens during execution,
             # convert it to an error
@@ -170,49 +268,312 @@ class ExecutionContext(object):
                 # You call a function "pointer" and pass it arguments
                 # that are a list by using "function(*function_args)"
                 # So: this is actually calling our function (which
-                # returns an iterator and thus we can iterate over it)
+                # returns an iterator, and thus we can iterate over it)
+                had_solution = False
                 for next_state in function(*function_args):
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug(
+                            f"yielding {predication}, state: {str(next_state)}, phrase_type: [{self._phrase_type}]")
+
+                    had_solution = True
                     yield next_state
 
             except MessageException as error:
                 self.report_error(error.message_object())
 
+            if not had_solution:
+                if self._predication_runtime_settings.get("Disjunction", False):
+                    self._lineage_failure_callback(self._context.get_error_info())
 
-    # Replace scopal arguments with an "h" and simply
-    # return the others
-    def arg_types_from_call(self, predication):
-        arg_types = []
-        for arg_index in range(0, len(predication.args)):
-            if predication.arg_names is not None:
-                arg_name = predication.arg_names[arg_index]
+        def _handle_lineage_change(self, new_lineage):
+            if self._last_solution_lineage is not None and new_lineage != self._last_solution_lineage:
+                if not new_lineage.startswith(self._last_solution_lineage):
+                    # Fire an error for every disjunction set that didn't generate a solution
+                    last_segments = self._last_solution_lineage.split(".")[1:]
+                    new_segments = new_lineage.split(".")[1:]
+                    for index in range(len(last_segments)):
+                        if index > (len(new_segments) - 1) or last_segments[index] != new_segments[index]:
+                            # This disjunction changed, fire a failure if there were no solutions
+                            test_lineage = ".".join(last_segments[:index + 1])
+                            was_successful = False
+                            for successful_lineage in self._solution_lineages:
+                                if successful_lineage.startswith(test_lineage):
+                                    was_successful = True
+                                    break
 
-            arg = predication.args[arg_index]
-            if arg_name is not None and arg_name == "CARG":
-                arg_types.append("c")
+                            if not was_successful:
+                                self._lineage_failure_callback(self._context.get_error_info())
+
+            # And remember this as the last lineage
+            self._last_solution_lineage = new_lineage
+
+    # Represents a single lineage which is a particular choice of predication interpretations
+    # and a selection of disjunction alternatives within any disjunction.
+    # Note that this class records the failure that was encountered for the particular lineage
+    class MrsTreeLineage(object):
+        def __init__(self, lineage_generator):
+            self.lineage_generator = lineage_generator
+            self.error_info = ExecutionContext.blank_error_info()
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            try:
+                return self.lineage_generator._next_solution()
+
+            except StopIteration:
+                self.error_info = self.lineage_generator.retrieve_lineage_failure()
+                raise
+
+    # Generator that returns every MrsTreeLineage alternative for a particular interpretation of a scope-resolved MRS.
+    # This will only be one tree unless some of the predication implementations are disjunctions, in which case it will
+    # return a different MrsTreeLineage for every combination of solution sets from each disjunction
+    #
+    # Because it is given an interpretation, the python functions that represent alternative interpretations are chosen up front
+    # All that is left to disambiguate are different solution sets for interpretations that are disjunctions. These are identified
+    # by a special variable added to the tree called "tree_lineage". If that exists, it means that one of the predications is a disjunction
+    # and it adds a unique ID to the value of that variable in the form ":id:id:id", where each "id" represents a unique value for a particular
+    # solution set from the disjunction at that point in the tree.
+    #
+    # Assumptions:
+    #   - Disjunction predications must always indicate that they are a disjunction by calling context.set_disjunction() so that we
+    #       can determine that a failure was a disjunction failure and generate an independent record for it
+    #   - If a predication is a disjunction it must *always* put an ID in that position or else the lineage might mistakenly have a
+    #       different predication giving a different ID for that position (because the original one is missing).
+    #   - The same disjunction values must always be together. A disjunction predication can't intermingle the different solution sets.
+    #       this allows us to assume that a conjunction has moved on when we encounter a new ID in its position and not have to wait for the
+    #       whole set of solutions to be returned and sort them
+
+    class MrsTreeLineageGenerator(object):
+        def __init__(self, interpretation_solver, state, tree_info, interpretation):
+            self.solution_generator = interpretation_solver.solve_tree_interpretation(state, tree_info, interpretation,
+                                                                                      self.lineage_failed)
+            self.lineage_failure_fifo = queue.Queue()
+            self.next_lineage_solution = None
+            self.first = True
+            self.last_lineage = None
+
+        def __iter__(self):
+            return self
+
+        def lineage_failed(self, error_info):
+            pipeline_logger.debug(f"Lineage failed with error: {error_info}")
+            self.lineage_failure_fifo.put(error_info)
+
+        def retrieve_lineage_failure(self):
+            if self.lineage_failure_fifo.empty():
+                return None, False, -1
             else:
-                if isinstance(arg, str):
-                    arg_types.append(arg[0])
-                else:
-                    arg_types.append("h")
+                return self.lineage_failure_fifo.get()
 
-        return arg_types
+        def __next__(self):
+            if self.first or self.next_lineage_solution is not None or not self.lineage_failure_fifo.empty():
+                self.first = False
+                return TreeSolver.MrsTreeLineage(self)
+            else:
+                raise StopIteration
 
-    def set_in_scope_function(self, func, initialize_func = None):
+        def _next_solution(self):
+            # TODO: use try: so that we catch lineage failures at the end?
+            if not self.lineage_failure_fifo.empty():
+                # There are queued up errors to return
+                raise StopIteration
+
+            if self.next_lineage_solution is not None:
+                # There is a queued up solution to return
+                value = self.next_lineage_solution
+                self.next_lineage_solution = None
+                return value
+
+            solution = next(self.solution_generator)
+            tree_lineage_binding = solution.get_binding("tree_lineage")
+            tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+
+            if not self.lineage_failure_fifo.empty():
+                # There was at least one lineage failure during execution of next()
+                self.next_lineage_solution = solution
+                self.last_lineage = tree_lineage
+                raise StopIteration
+
+            elif self.last_lineage is None or self.last_lineage == tree_lineage:
+                self.last_lineage = tree_lineage
+                return solution
+
+            else:
+                self.next_lineage_solution = solution
+                self.last_lineage = tree_lineage
+                raise StopIteration
+
+    # Yields an interpretation_solver and a generator for solutions for a particular lineage
+    # Only does phase1 evaluation on the tree
+    def phase1(self, state, tree_info, normalize=False, current_tree_index=None, target_tree_index=None, interpretation=None):
+        if current_tree_index is None:
+            current_tree_index = [0]
+
+        if interpretation is not None:
+            interpretation_list = [interpretation]
+        else:
+            interpretation_list = self._mrs_tree_interpretations(tree_info, normalize)
+
+        for interpretation in interpretation_list:
+            if pipeline_logger.level == logging.DEBUG:
+                func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
+                pipeline_logger.debug(f"Evaluating alternative {current_tree_index[0]} '{func_list}'")
+
+            if target_tree_index is not None:
+                if current_tree_index[0] < target_tree_index:
+                    skipped_tree_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"], error=ExecutionContext.blank_error(predication_index=0, error=['skipped']),
+                                                                           tree_index=current_tree_index[0])
+                    current_tree_index[0] += 1
+                    if pipeline_logger.level == logging.DEBUG:
+                        pipeline_logger.debug(f"skipping tree_record for '{tree_info['Tree']}'")
+
+                    yield None, skipped_tree_record
+                    continue
+
+                elif current_tree_index[0] > target_tree_index:
+                    return
+
+            interpretation_solver = TreeSolver.InterpretationSolver(self._context)
+            lineage_generator = TreeSolver.MrsTreeLineageGenerator(interpretation_solver, state, tree_info, interpretation)
+            for solutions in lineage_generator:
+                yield interpretation_solver, solutions
+
+            current_tree_index[0] += 1
+
+    # Main call to resolve a tree
+    # Given a particular scope-resolved tree in tree_info,
+    # yields a tree_record for every interpretation and combination of disjunctions
+    # that was attempted (including records if they were skipped for debugging purposes)
+    def tree_solutions(self, state, tree_info, response_function=None, message_function=None,
+                       current_tree_index=0, target_tree_index=None, interpretation=None):
+        wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
+        this_sentence_force = sentence_force(tree_info["Variables"])
+        for context, solutions in self.phase1(state, tree_info, current_tree_index=[current_tree_index], target_tree_index=target_tree_index, interpretation=interpretation):
+            if isinstance(solutions, dict):
+                # This is a record of a skipped true
+                yield solutions
+                continue
+
+            tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=current_tree_index)
+
+            # solution_groups() should return an iterator that iterates *groups*
+            tree_record["SolutionGroupGenerator"] = at_least_one_generator(
+                perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force,
+                                                           wh_phrase_variable, tree_info))
+
+            tree_record["Interpretation"] = ", ".join([f"{x.module}.{x.function}" for x in context.interpretation().values()])
+
+            # Collect any error that might have occurred from the first solution group
+            tree_record["Error"] = self._context.error()
+            if message_function is not None and response_function is not None:
+                tree_record["ResponseGenerator"] = at_least_one_generator(
+                    response_function(message_function, tree_info, tree_record["SolutionGroupGenerator"],
+                                      tree_record["Error"]))
+            else:
+                tree_record["ResponseGenerator"] = None
+
+            tree_record["TreeIndex"] = current_tree_index
+            if pipeline_logger.level == logging.DEBUG:
+                pipeline_logger.debug(f"Returning tree_record for '{tree_info['Tree']}'")
+
+            yield tree_record
+
+    def _mrs_tree_interpretations(self, tree_info, normalize=False):
+        # Gather together all the interpretations for the predications
+        def gather(predication):
+            alternatives = [(predication.index, x) for x in self._context.vocabulary.predications(predication.name,
+                                                                                                 predication.arg_types,
+                                                                                                 phrase_type)]
+            predications.append(alternatives)
+
+        phrase_type = sentence_force(tree_info["Variables"]) if not normalize else "norm"
+        predications = []
+        perplexity.tree.walk_tree_predications_until(tree_info["Tree"], gather)
+
+        # Now iterate through all combinations of them by selecting each alternative in
+        # every combination
+        for option in product_stream(*list(iter(x) for x in predications)):
+            yield dict(option)
+
+    # Errors are encoded in a fake tree
+    @staticmethod
+    def new_error_tree_record(tree=None, error=None, response_generator=None, tree_index=None):
+        return TreeSolver.new_tree_record(tree=tree, error=error, response_generator=response_generator,
+                                          tree_index=tree_index, error_tree=True)
+
+    @staticmethod
+    def new_tree_record(tree=None, error=None, response_generator=None, response_message=None, tree_index=None,
+                        error_tree=False, interpretation=None):
+        value = {"Tree": tree,
+                 "Interpretation": interpretation,
+                 "SolutionGroups": None,
+                 "Solutions": [],
+                 "Error": error,
+                 "TreeIndex": tree_index,
+                 "SolutionGroupGenerator": None,
+                 "ResponseGenerator": [] if response_generator is None else response_generator,
+                 "ResponseMessage": "" if response_message is None else response_message}
+
+        if error_tree:
+            value["ErrorTree"] = True
+
+        return value
+
+
+class ExecutionContext(object):
+    def __init__(self, vocabulary):
+        self.vocabulary = vocabulary
+
+        blank = self.blank_error_info()
+        self._error = blank[0]
+        self._error_was_forced = blank[1]
+        self._error_predication_index = blank[2]
+        self._error_phase = blank[3]
+
+        self._in_scope_initialize_function = None
+        self._in_scope_initialize_data = None
+        self._in_scope_function = None
+
+    @staticmethod
+    def blank_error_info(error=None, was_forced=False, predication_index=-1, phase=0):
+        return error, was_forced, predication_index, phase
+
+    @staticmethod
+    def blank_error(error=None, predication_index=-1, phase=0):
+        return predication_index, error, phase
+
+    def reset_scope(self, state):
+        if self._in_scope_initialize_function is not None:
+            self._in_scope_initialize_data = self._in_scope_initialize_function(state)
+
+    def set_in_scope_function(self, func, initialize_func=None):
         self._in_scope_function = func
         self._in_scope_initialize_function = initialize_func
-
 
     # Test if an object is in scope, by default everything is
     def in_scope(self, state, thing):
         if self._in_scope_function is not None:
-            return self._in_scope_function(self.in_scope_initialize_data, state, thing)
+            return self._in_scope_function(self._in_scope_initialize_data, state, thing)
         else:
             return True
+
+    def get_error_info(self):
+        return self._error, self._error_was_forced, self._error_predication_index, self._error_phase
+
+    def set_error_info(self, error_info):
+        if error_info is not None:
+            self._error = error_info[0]
+            self._error_was_forced = error_info[1]
+            self._error_predication_index = error_info[2]
+            self._error_phase = error_info[3]
 
     def clear_error(self):
         self._error = None
         self._error_was_forced = False
         self._error_predication_index = -1
+        self._error_phase = 0
 
     def has_not_understood_error(self):
         # System errors that indicate the phrase can't be understood can't be replaced
@@ -221,82 +582,17 @@ class ExecutionContext(object):
         not_understood_failures = ["formNotUnderstood"]
         return self._error is not None and self._error[0] in not_understood_failures
 
-    def report_error_for_index(self, predication_index, error, force=False):
+    def report_error_for_index(self, predication_index, error, force=False, phase=0):
         if not self.has_not_understood_error() and \
                 (force or (not self._error_was_forced and self._error_predication_index < predication_index)):
             self._error = error
             self._error_predication_index = predication_index
+            self._error_phase = phase
             if force:
                 self._error_was_forced = True
 
-    def report_error(self, error, force=False):
-        self.report_error_for_index(self._predication_index, error, force)
-
     def error(self):
-        return [self._error_predication_index, self._error]
-
-    def current_predication_index(self):
-        return self._predication_index
-
-    def current_predication(self):
-        return self._predication
-
-    def set_variable_execution_data(self, variable_name, key, value):
-        if variable_name not in self._variable_execution_data:
-            self._variable_execution_data[variable_name] = {}
-
-        self._variable_execution_data[variable_name][key] = value
-
-    def get_variable_execution_data(self, variable_name):
-        return self._variable_execution_data.get(variable_name, {})
-
-    def get_variable_metadata(self, variable_name):
-        return self._variable_metadata.get(variable_name, {})
-
-
-# ContextVars is a thread-safe way to set the execution context
-# used by the predications
-_execution_context = contextvars.ContextVar('Execution Context')
-
-
-# Returns a token that can be used by
-# reset_execution_context to reset to what it was
-# before
-def set_execution_context(new_context):
-    global _execution_context
-    return _execution_context.set(new_context)
-
-
-# Get the token from set_execution_context
-def reset_execution_context(old_context_token):
-    global _execution_context
-    return _execution_context.reset(old_context_token)
-
-
-def execution_context():
-    return _execution_context.get()
-
-
-# Helpers used by predications just to make the code easier to read
-# so they don't all have to say execution_context().call(*args, **kwargs)
-def call(*args, **kwargs):
-    yield from execution_context().call(*args, **kwargs)
-
-
-def report_error(error, force=False):
-    execution_context().report_error(error, force)
-
-
-def set_variable_execution_data(variable_name, key, value):
-    execution_context().set_variable_execution_data(variable_name, key, value)
-
-
-def get_variable_execution_data(variable_name):
-    return execution_context().get_variable_execution_data(variable_name)
-
-
-def get_variable_metadata(variable_name):
-    return execution_context().get_variable_metadata(variable_name)
+        return [self._error_predication_index, self._error, self._error_phase]
 
 
 logger = logging.getLogger('Execution')

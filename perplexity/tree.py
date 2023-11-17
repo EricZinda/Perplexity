@@ -162,6 +162,21 @@ class TreePredication(object):
             for arg_index in range(0, len(self.arg_names)):
                 self.arg_types.append(self.type_from_argument(self.arg_names[arg_index], self.args[arg_index]))
 
+    def __eq__(self, other):
+        if isinstance(other, TreePredication):
+            if self.name == other.name:
+                if len(self.args) == len(other.args):
+                    for arg_index in range(len(self.args)):
+                        if self.arg_types[arg_index] == other.arg_types[arg_index] and self.args[arg_index] == other.args[arg_index]:
+                            continue
+                        else:
+                            return False
+
+                    if self.index == other.index:
+                        return True
+
+        return False
+
     def type_from_argument(self, name, value):
         if name == "CARG":
             return "c"
@@ -217,6 +232,20 @@ class TreePredication(object):
             return f"{self.name}:{self.index}({','.join([str(arg) for arg in self.args])})"
         finally:
             _tree_predication_context.reset(old_context)
+
+
+def is_variable_scoped_by_negation(solution, variable_name):
+    negated_predications_binding = solution.get_binding("negated_predications")
+    negated_index = None
+    if negated_predications_binding.value is not None:
+        # There are negated predications in this tree,
+        # see if this variable is scoped by one of them
+        for negated_predication_item in negated_predications_binding.value.items():
+            if variable_name in negated_predication_item[1].scoped_variables:
+                negated_index = negated_predication_item[0]
+                break
+
+    return negated_index is not None
 
 
 def tree_from_assignments(hole_label, assignments, predication_dict, mrs, current_index=None):
@@ -415,18 +444,19 @@ def walk_tree_predications_until(term, func):
                 return result
 
     else:
-        # This is a single term, call func with it
-        result = func(term)
-        if result is not None:
-            return result
+        # This is a single term, call func with it if it is a predication
+        if isinstance(term, TreePredication):
+            result = func(term)
+            if result is not None:
+                return result
 
-        # If func didn't say to quit, see if any of its terms are scopal
-        # i.e. are predications themselves
-        for arg in term.args:
-            if not isinstance(arg, str):
-                result = walk_tree_predications_until(arg, func)
-                if result is not None:
-                    return result
+            # If func didn't say to quit, see if any of its terms are scopal
+            # i.e. are predications themselves
+            for arg in term.args:
+                if not isinstance(arg, str):
+                    result = walk_tree_predications_until(arg, func)
+                    if result is not None:
+                        return result
 
     return None
 
@@ -466,17 +496,17 @@ def walk_tree_args_until(term, predication_func, arg_func):
 
 # True if an `fw_seq` predication is used by something *besides* an `fw_seq` predication
 # because that means it is the final one
-def is_this_last_fw_seq(state):
+def is_this_last_fw_seq(context, state):
     this_tree = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(this_tree, perplexity.execution.execution_context().current_predication_index())
+    this_predication = predication_from_index(this_tree, context.current_predication_index())
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
 # TODO: Change this to the better approach for checking for attributively used adjectives
 # As per this thread: https://delphinqa.ling.washington.edu/t/converting-mrs-output-to-a-logical-form/413/29
-def used_predicatively(state):
+def used_predicatively(context, state):
     tree_info = state.get_binding("tree").value[0]
-    this_predication = predication_from_index(tree_info, perplexity.execution.execution_context().current_predication_index())
+    this_predication = predication_from_index(tree_info, context.current_predication_index())
     return not predication_in_conjunction(tree_info, this_predication.index)
 
 
@@ -573,6 +603,10 @@ def find_quantifier_from_variable(term, variable_name):
     return walk_tree_predications_until(term, match_variable)
 
 
+def find_index_predication(tree_info):
+    return find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+
+
 def gather_quantifier_order(tree_info):
     def gather_metadata(predication):
         if predication.arg_types[0] == "x":
@@ -617,6 +651,17 @@ def gather_referenced_x_variables_from_tree(tree):
 # the union
 def gather_predication_metadata(vocabulary, tree_info):
     def gather_metadata(predication):
+        # Any variable referenced under negation should not allow the predication that introduces it
+        # to be reordered in its quantifier.  Because: that would allow the variable to be unbound and
+        # returning the value of an unbound variable that fails (and thus succeeds) under negation is hard
+        # but required if the user says "what is not vegetarian?" for example. So, avoid the whole thing
+        if predication.name == "neg":
+            referenced_variables = gather_referenced_x_variables_from_tree(predication.args[1])
+            for variable in referenced_variables:
+                if variable not in variable_metadata:
+                    variable_metadata[variable] = {}
+                variable_metadata[variable]["ReferencedUnderNegation"] = True
+
         metadata_list = vocabulary.metadata(predication.name, predication.arg_types)
         for metadata in metadata_list:
             for arg_index in range(len(metadata.args_metadata)):
@@ -750,6 +795,15 @@ def predication_from_index(tree_info, index):
     walk_tree_predications_until(tree_info["Tree"], stop_at_index)
 
     return index_predication
+
+
+# Rewrite all the indexes in the tree to ensure there aren't any duplicates
+# and they are consecutive
+def reindex_tree(tree):
+    def no_rewrite(term, index_by_ref):
+        return None
+    index_by_ref = [0]
+    return rewrite_tree_predications(tree, no_rewrite, index_by_ref)
 
 
 # Walk every predication in the tree and allow predication_rewrite_func() to rewrite it

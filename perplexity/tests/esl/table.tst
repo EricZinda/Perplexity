@@ -53,21 +53,21 @@
         },
         {
             "Command": "I will have a table?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "91cc802b-2e88-4fcb-a251-26c5e6f88f68"
         },
         {
             "Command": "Who will have a table?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "which_q(x3,person(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c902a6e5-53ff-409f-ba7c-08d63590b422"
         },
         {
             "Command": "Will you have a table?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c09676b8-c43a-4e18-8a90-109e288eea32"
@@ -137,7 +137,7 @@
         },
         {
             "Command": "We want tables",
-            "Expected": "I suspect you want to sit together.",
+            "Expected": "Johnny: Hey, let's sit together alright?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35492138-e4fb-4a43-8bb8-994924f6c1f9"
@@ -180,7 +180,7 @@
         {
             "Command": "I'd like a table for 1",
             "Expected": "Johnny: Hey! That's not enough seats!",
-            "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(1,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Tree": "_a_q(x11,number_q(x17,card(1,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"
         },
@@ -194,7 +194,7 @@
         {
             "Command": "I'd like a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
-            "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(2,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "66b5319c-66be-4787-b97b-4db8ea2effe5"
         },
@@ -207,8 +207,8 @@
         },
         {
             "Command": "I'd like a table for 3",
-            "Expected": "Host: Sorry, we don't have a table with that many seats",
-            "Tree": "_a_q(x11,udef_q(x17,[generic_entity(x17), card(3,e23,x17)],[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Expected": "I'm not sure which table you mean.",
+            "Tree": "_a_q(x11,number_q(x17,card(3,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "17cdb00c-6f14-458d-a810-639281544c82"
         },
@@ -271,7 +271,7 @@
         {
             "Command": "We want a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
-            "Tree": "udef_q(x14,[generic_entity(x14), card(2,e20,x14)],pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
+            "Tree": "number_q(x14,card(2,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "94651de1-8fb4-409d-b16b-74193e50626d"
         },
@@ -313,7 +313,7 @@
         {
             "Command": "2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
-            "Tree": "udef_q(x4,[generic_entity(x4), card(2,e10,x4)],unknown(e2,x4))",
+            "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
             "Enabled": true,
             "ID": "d078a2ea-e17c-44c5-9110-2600cea1e097"
         },
@@ -323,6 +323,62 @@
             "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "b5cfa314-b577-44c0-888c-e79450771d13"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "012004e1-846f-4602-89dd-770941d992a1"
+        },
+        {
+            "Command": "seat me",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_seat_v_cause(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "8037fad3-b057-44f7-98d4-6a6a801bdb87"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "37dc54db-2285-467b-8a6c-5ecf0f80c47b"
+        },
+        {
+            "Command": "can you seat me?",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "6504baec-0698-4d3e-a222-bd73c653588e"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "3dc77694-e6a5-412d-8548-2e25d1655745"
+        },
+        {
+            "Command": "may i have a table?",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "e0f65cc6-7f59-4532-9409-5a1baf503bb9"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "c10021df-8606-4bac-a3cd-2b07463c0bb5"
+        },
+        {
+            "Command": "A table for two, please!",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],[unknown(e2,x4), _please_a_1(e2,e2)]))",
+            "Enabled": true,
+            "ID": "e8bd5597-ff18-4f78-b784-9ca3cd615e93"
         }
     ]
 }

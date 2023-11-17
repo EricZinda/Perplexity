@@ -1,6 +1,8 @@
 import copy
 import enum
 import logging
+import re
+
 import inflect
 from perplexity.tree import walk_tree_predications_until, is_last_fw_seq, rewrite_tree_predications, \
     find_predication_from_introduced
@@ -27,7 +29,16 @@ def change_to_plural_mode(singular_word, plural_mode):
         return singular_word
 
 
-def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None):
+def add_indefinite_article(word):
+    return p.an(word)
+
+
+def english_for_delphin_variable(failure_index, variable, tree_info, plural=None, determiner=None, reverse_pronouns=False):
+    final_text = english_for_delphin_variable_impl(failure_index, variable, tree_info, plural, determiner, reverse_pronouns)
+    return final_text
+
+
+def english_for_delphin_variable_impl(failure_index, variable, tree_info, plural=None, determiner=None, reverse_pronouns=False):
     def record_predications_until_failure_index(predication, index_by_ref, nlg_data, local_tree_info):
         nonlocal tree_info
         # Once we have hit the index where the failure happened, stop
@@ -44,6 +55,7 @@ def english_for_delphin_variable(failure_index, variable, tree_info, plural=None
                     # the variable is introduced in this subtree so it should not have "not" added
                     def neg_nlg_func(predication, index_by_ref):
                         return record_predications_until_failure_index(predication, index_by_ref, nlg_data, local_tree_info)
+
                     return rewrite_tree_predications(predication.args[1], neg_nlg_func, index_by_ref)
 
                 else:
@@ -53,11 +65,13 @@ def english_for_delphin_variable(failure_index, variable, tree_info, plural=None
 
                     subtree_info = copy.deepcopy(local_tree_info)
                     subtree_info["Tree"] = predication.args[1]
+
                     def neg_nlg_func(predication, index_by_ref):
                         return record_predications_until_failure_index(predication, index_by_ref, neg_nlg_data, subtree_info)
 
                     value = rewrite_tree_predications(predication.args[1], neg_nlg_func, index_by_ref)
                     return value
+
             else:
                 # See if this predication can contribute anything to the
                 # description of the variable we are describing. If so,
@@ -65,7 +79,7 @@ def english_for_delphin_variable(failure_index, variable, tree_info, plural=None
                 refine_nlg_with_predication(local_tree_info, variable, predication, nlg_data)
                 return None
 
-    nlg_data = {}
+    nlg_data = {"ReversePronouns": reverse_pronouns}
 
     # WalkTreeUntil() walks the predications in mrs["Tree"] and calls
     # the function record_predications_until_failure_index(), until hits the
@@ -107,22 +121,26 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                 # of the variable, usually a noun predication
                 if parsed_predication["Pos"] == "c" and parsed_predication["Lemma"] == "and":
                     string_list = []
-                    string_list.append(english_for_delphin_variable(1000, predication.args[1], tree_info))
-                    string_list.append(english_for_delphin_variable(1000, predication.args[2], tree_info))
-                    nlg_data["Topic"] = f"'{', '.join(string_list)}'"
+                    and_indicator = " (all together)"
+                    potential_and = english_for_delphin_variable_impl(1000, predication.args[1], tree_info)
+                    string_list.append(potential_and.strip(and_indicator))
+                    potential_and = english_for_delphin_variable_impl(1000, predication.args[2], tree_info)
+                    string_list.append(potential_and.strip(and_indicator))
+                    nlg_data["Topic"] = f"{', '.join(string_list)}{and_indicator}"
 
                 else:
                     nlg_data["Topic"] = parsed_predication["Lemma"].replace("+", " ")
+
             else:
                 # Some abstract predications *should* contribute to the
                 # English description of a variable
                 if parsed_predication["Lemma"] == "pron":
-                    nlg_data["Topic"] = pronoun_from_variable(tree_info, variable)
+                    nlg_data["Topic"] = pronoun_from_variable(tree_info, variable, nlg_data["ReversePronouns"])
 
                 elif parsed_predication["Lemma"] == "quoted":
                     nlg_data["Topic"] = predication.args[0].replace("\\>root111", "/").replace("\\>", "/")
 
-                elif parsed_predication["Lemma"] in ["place", "thing"]:
+                elif parsed_predication["Lemma"] in ["person", "place", "thing"]:
                     nlg_data["Topic"] = parsed_predication["Lemma"]
 
                 elif parsed_predication["Lemma"] == "fw_seq":
@@ -130,11 +148,11 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
                     for arg_index in range(1, len(predication.arg_names)):
                         if predication.args[arg_index][0] == "i":
                             # Use 1000 to make sure we go through the whole tree
-                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info))
+                            string_list.append(english_for_delphin_variable_impl(1000, predication.args[arg_index], tree_info))
 
                         elif predication.args[arg_index][0] == "x":
                             # Use 1000 to make sure we go through the whole tree
-                            string_list.append(english_for_delphin_variable(1000, predication.args[arg_index], tree_info))
+                            string_list.append(english_for_delphin_variable_impl(1000, predication.args[arg_index], tree_info))
 
                     # If the only thing consuming the introduced variable are other fw_seq predications
                     # Then this is not the final fw_seq, so don't put quotes around it
@@ -145,9 +163,15 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
 
                 elif parsed_predication["Lemma"] == "implicit_conj":
                     string_list = []
-                    string_list.append(english_for_delphin_variable(1000, predication.args[1], tree_info))
-                    string_list.append(english_for_delphin_variable(1000, predication.args[2], tree_info))
+                    string_list.append(english_for_delphin_variable_impl(1000, predication.args[1], tree_info))
+                    string_list.append(english_for_delphin_variable_impl(1000, predication.args[2], tree_info))
                     nlg_data["Topic"] = f"'{', '.join(string_list)}'"
+
+                elif parsed_predication["Lemma"] == "card" and predication.arg_types[2] == "i":
+                    if "Modifiers" not in nlg_data:
+                        nlg_data["Modifiers"] = []
+
+                    nlg_data["Modifiers"].append(predication.args[0])
 
     # Assume that adjectives that take the variable as their first argument
     # are adding an adjective modifier to the phrase
@@ -155,14 +179,17 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
         if "Modifiers" not in nlg_data:
             nlg_data["Modifiers"] = []
 
-        nlg_data["Modifiers"].append(parsed_predication["Lemma"].replace("+", " "))
+        if parsed_predication["Lemma"] == "much-many":
+            nlg_data["Modifiers"].append("any")
+        else:
+            nlg_data["Modifiers"].append(parsed_predication["Lemma"].replace("+", " "))
 
     elif parsed_predication["Pos"] == "p" and predication.args[1] == variable:
         if "PostModifiers" not in nlg_data:
             nlg_data["PostModifiers"] = []
 
         if len(predication.args) == 3:
-            prep_english = english_for_delphin_variable(99, predication.args[2], tree_info)
+            prep_english = english_for_delphin_variable_impl(99, predication.args[2], tree_info)
             nlg_data["PostModifiers"].append(parsed_predication["Lemma"].replace("+", " ") + " " + prep_english)
         elif len(predication.args) == 2:
             nlg_data["PostModifiers"].append(parsed_predication["Lemma"].replace("+", " "))
@@ -180,7 +207,7 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
         if "PostModifiers" not in nlg_data:
             nlg_data["PostModifiers"] = []
 
-        nlg_data["PostModifiers"].append("that is " + english_for_delphin_variable(1000, predication.args[2], tree_info))
+        nlg_data["PostModifiers"].append("that is " + english_for_delphin_variable_impl(1000, predication.args[2], tree_info))
 
 
 pronouns = {1: {"sg": "I",
@@ -191,8 +218,16 @@ pronouns = {1: {"sg": "I",
                 "pl": "they"}
             }
 
+reversed_pronouns = {1: {"sg": "you",
+                         "pl": "you"},
+                     2: {"sg": "I",
+                         "pl": "we"},
+                     3: {"sg": "he/she",
+                         "pl": "they"}
+                     }
 
-def pronoun_from_variable(tree_info, variable):
+
+def pronoun_from_variable(tree_info, variable, reverse_pronouns):
     mrs_variable = tree_info["Variables"][variable]
     if "PERS" in mrs_variable:
         person = int(mrs_variable["PERS"])
@@ -205,7 +240,7 @@ def pronoun_from_variable(tree_info, variable):
         # "sg" is singular in MRS
         number = "sg"
 
-    return pronouns[person][number]
+    return reversed_pronouns[person][number] if reverse_pronouns else pronouns[person][number]
 
 
 # Takes the information gathered in the nlg_data dictionary

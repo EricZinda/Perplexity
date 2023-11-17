@@ -1,6 +1,6 @@
 - If you overload and we allow them all, you will get duplicate answers and (there are more) if they solve the same problems
 - If they solve separate problems it will return (properly) different answers
-- Is the proper design to only include system commands if there isnt a user command?  How do libraries work then?
+- Is the proper design to only include system commands if there isn't a user command?  How do libraries work then?
 - Scenarios:
   - Include the system library
   - Write your own card that replaces or enhances the other

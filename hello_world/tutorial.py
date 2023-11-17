@@ -1,7 +1,7 @@
 import copy
 
 from perplexity.execution import report_error
-from perplexity.generation import english_for_delphin_variable
+from perplexity.generation import english_for_delphin_variable_impl
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, lift_style_predication_2
 from perplexity.state import State
 from perplexity.system_vocabulary import system_vocabulary
@@ -286,7 +286,7 @@ def generate_custom_message(tree_info, error_term):
         arg1 = error_arguments[1]
         # english_for_delphin_variable() converts a variable name like 'x3' into the english words
         # that it represented in the MRS
-        arg2 = english_for_delphin_variable(error_predicate_index, error_arguments[2], tree_info)
+        arg2 = english_for_delphin_variable_impl(error_predicate_index, error_arguments[2], tree_info)
         return f"{arg1} is not {arg2}"
 
     else:

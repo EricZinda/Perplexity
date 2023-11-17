@@ -1,20 +1,14 @@
 import logging
-import os
-import platform
-import sys
-import perplexity.solution_groups
 import perplexity.messages
-from delphin import ace
 from delphin.codecs import simplemrs
-from perplexity.execution import ExecutionContext, MessageException
+from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
+from perplexity.state import apply_solutions_to_state
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
-from perplexity.tree import tree_from_assignments, find_predications, find_predications_with_arg_types, \
-    find_predication, MrsParser, tree_contains_predication, find_predications_in_list_in_list, get_wh_question_variable
-from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
-    parse_predication_name
+from perplexity.tree import find_predications, find_predications_with_arg_types, \
+    MrsParser, tree_contains_predication
+from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
 
 def no_error_priority(error):
@@ -29,11 +23,14 @@ class UserInterface(object):
         self.max_holes = 14
         self.reset = reset
         self.state = reset()
-        self.execution_context = ExecutionContext(vocabulary)
-        self.execution_context.set_in_scope_function(scope_function, scope_init_function)
+
+        self.vocabulary = vocabulary
+        self.scope_function = scope_function
+        self.scope_init_function = scope_init_function
         self.response_function = response_function
         self.message_function = message_function
         self.error_priority_function = error_priority_function
+
         self.interaction_record = None
         self.records = None
         self.test_manager = TestManager()
@@ -52,23 +49,6 @@ class UserInterface(object):
             return None
         else:
             return self.interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
-
-    # Errors are encoded in a fake tree
-    def new_error_tree_record(self, error=None, response_generator=None):
-        return self.new_tree_record(error=error, response_generator=response_generator, error_tree=True)
-
-    def new_tree_record(self, tree=None, error=None, response_generator=None, response_message=None, error_tree=False):
-        value = {"Tree": tree,
-                 "SolutionGroups": None,
-                 "Solutions": [],
-                 "Error": error,
-                 "ResponseGenerator": [] if response_generator is None else response_generator,
-                 "ResponseMessage": "" if response_message is None else response_message}
-
-        if error_tree:
-            value["ErrorTree"] = True
-
-        return value
 
     def new_mrs_record(self, mrs=None, unknown_words=None):
         return {"Mrs": mrs,
@@ -99,7 +79,7 @@ class UserInterface(object):
             self.test_manager.record_session_data("last_system_command", self.user_input)
             mrs_record = self.new_mrs_record()
             self.interaction_record["Mrss"].append(mrs_record)
-            tree_record = self.new_error_tree_record(response_generator=[command_result])
+            tree_record = TreeSolver.new_error_tree_record(response_generator=[command_result])
             mrs_record["Trees"].append(tree_record)
             self.interaction_record["ChosenMrsIndex"] = 0
             self.interaction_record["ChosenTreeIndex"] = 0
@@ -125,7 +105,6 @@ class UserInterface(object):
         mrs_index = -1
         for mrs in self.mrs_parser.mrss_from_phrase(self.user_input):
             mrs_index += 1
-            tree_index = -1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 continue
 
@@ -134,81 +113,80 @@ class UserInterface(object):
             self.interaction_record["Mrss"].append(mrs_record)
 
             if len(mrs_record["UnknownWords"]) > 0:
-                unknown_words_error = [0, ["unknownWords", mrs_record["UnknownWords"]]]
-                tree_record = self.new_error_tree_record(error=unknown_words_error, response_generator=self.response_function(self.message_function, None, [], unknown_words_error))
+                unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", mrs_record["UnknownWords"]])
+                tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
+                                                               response_generator=self.response_function(self.message_function, None, [], unknown_words_error),
+                                                               tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)
                 mrs_record["Trees"].append(tree_record)
                 self.evaluate_best_response(None)
 
             else:
+                # Loop through all the "official" DELPH-IN trees using the official predications
                 for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
-                    # Collect all the solutions for this tree against the
-                    # current world state
                     tree_info_orig = {"Index": mrs.index,
                                       "Variables": mrs.variables,
-                                      "Tree": tree_orig}
+                                      "Tree": tree_orig,
+                                      "MRS": self.mrs_parser.mrs_to_string(mrs)}
 
+                    # Now loop through any tree modifications that have been built for this application
                     alternate_tree_generated = False
-                    for tree_info in self.execution_context.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0):
+                    for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0):
+                        # At this point we have locked down which predications should be used and that won't change
+                        # However: there might be multiple interpretations of these predications as well as disjunctions
+                        # that cause various solution sets to be created. Each will be in its own tree_record
                         alternate_tree_generated = True
+                        tree_index = 0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1
 
-                        # Add afterwards since the mrs can't be deepcopied
-                        tree_info["MRS"] = self.mrs_parser.mrs_to_string(mrs)
-                        tree_index += 1
-                        if self.run_tree_index is not None:
-                            if self.run_tree_index > tree_index:
-                                continue
-                            elif self.run_tree_index < tree_index:
-                                break
-                        tree_record = self.new_tree_record(tree=tree_info["Tree"])
-                        mrs_record["Trees"].append(tree_record)
-
+                        # TODO: Figure out how to count this for tree index purposes properly
+                        # Make sure the contingent words were removed by a transformer
                         if len(contingent) > 0:
-                            # Make sure the contingent words were removed by a transformer
                             if tree_contains_predication(tree_info["Tree"], [x[0] for x in contingent]):
                                 # It is still there, fail this tree
-                                tree_record["Error"] = f"One or more of these words not transformed out of tree: {[x[0] for x in contingent]}"
+                                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=f"One or more of these words not transformed out of tree: {[x[0] for x in contingent]}")
+                                mrs_record["Trees"].append(tree_record)
                                 continue
 
                         # Try the state from each frame that is available
-                        for frame_state in self.state.frames():
-                            pipeline_logger.debug( f"Evaluating against frame '{frame_state.frame_name}'")
-                            with self.execution_context:
-                                solutions = self.execution_context.solve_mrs_tree(frame_state, tree_info)
-                                this_sentence_force = sentence_force(tree_info["Variables"])
-                                wh_phrase_variable = get_wh_question_variable(tree_info)
-                                unprocessed_groups = [] if self.show_all_answers else None
-                                def yield_from_first():
-                                    if unprocessed_groups is not None:
-                                        if len(unprocessed_groups) > 0:
-                                            yield from unprocessed_groups[0]
+                        # Used to loop through different frames, for now this is turned off
+                        # until we decide if is necessary again since it is expensive
+                        # was: for frame_state in self.state.frames():
+                        for frame_state in [self.state]:
+                            pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
 
-                                tree_record["SolutionGroups"] = yield_from_first()
-                                # solution_groups() should return an iterator that iterates *groups*
-                                solution_group_generator = at_least_one_generator(perplexity.solution_groups.solution_groups(self.execution_context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_unprocessed_groups=unprocessed_groups))
+                            tree_solver = TreeSolver.create_top_level_solver(self.vocabulary, self.scope_function, self.scope_init_function)
+                            for tree_record in tree_solver.tree_solutions(frame_state,
+                                                                          tree_info,
+                                                                          self.response_function,
+                                                                          self.message_function,
+                                                                          tree_index,
+                                                                          self.run_tree_index):
+                                mrs_record["Trees"].append(tree_record)
 
-                                # Collect any error that might have occurred from the first solution group
-                                tree_record["Error"] = self.execution_context.error()
-                                tree_record["ResponseGenerator"] = at_least_one_generator(self.response_function(self.message_function, tree_info, solution_group_generator, tree_record["Error"]))
+                                solution_group_generator = tree_record["SolutionGroupGenerator"]
                                 if solution_group_generator is not None:
                                     # There were solutions, so this is our answer.
                                     # Return it and stop looking
                                     self.evaluate_best_response(solution_group_generator)
 
                                     # Go through all the responses in this solution group
+                                    had_operations = False
                                     for response, solution_group in tree_record["ResponseGenerator"]:
                                         # Because this worked, we need to apply any Operations that were added to
                                         # any solution to the current world state.
                                         try:
-                                            operation_responses = self.apply_solutions_to_state([solution for solution in solution_group])
+                                            operation_responses, new_state = apply_solutions_to_state(self.state, [solution for solution in solution_group])
+                                            self.state = new_state
 
                                         except MessageException as error:
-                                            response = self.response_function(self.message_function, tree_info, [], [0, error.message_object()])
+                                            response = self.response_function(self.response_function, self.message_function, tree_info, [], [0, error.message_object()])
                                             tree_record["ResponseMessage"] += f"\n{str(response)}"
 
                                         if len(operation_responses) > 0:
+                                            had_operations = True
                                             response = "\n".join(operation_responses)
 
                                         elif response is None:
+                                            this_sentence_force = sentence_force(tree_info["Variables"])
                                             if this_sentence_force == "comm":
                                                 # Only give a "Done!" message if it was a command and there were no responses given
                                                 response = "Done!"
@@ -222,10 +200,12 @@ class UserInterface(object):
                                         tree_record["ResponseMessage"] += response
                                         print(response)
 
-                                    more_message = self.generate_more_message(tree_info, solution_group_generator)
-                                    if more_message is not None:
-                                        tree_record["ResponseMessage"] += more_message
-                                        print(more_message)
+                                    # Only show "(there are more) if the developer didn't provide a custom message
+                                    if not had_operations:
+                                        more_message = self.generate_more_message(tree_info, solution_group_generator)
+                                        if more_message is not None:
+                                            tree_record["ResponseMessage"] += more_message
+                                            print(more_message)
 
                                     if not self.run_all_parses:
                                         return
@@ -236,9 +216,10 @@ class UserInterface(object):
                                     self.evaluate_best_response(solution_group_generator)
 
                     if len(contingent) > 0 and not alternate_tree_generated:
-                        unknown_words_error = [0, ["unknownWords", contingent]]
-                        tree_record = self.new_error_tree_record(error=unknown_words_error,
-                                                                 response_generator=self.response_function(self.message_function, None, [], unknown_words_error))
+                        unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
+                        tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
+                                                                       response_generator=self.response_function(self.message_function, None, [], unknown_words_error),
+                                                                       tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)
                         mrs_record["Trees"].append(tree_record)
                         self.evaluate_best_response(None)
 
@@ -372,7 +353,7 @@ class UserInterface(object):
             # reasons (since we won't be evaluating anything)
             tree_generator = []
             for tree in self.mrs_parser.trees_from_mrs(mrs_record["Mrs"]):
-                tree_generator.append(self.new_tree_record(tree=tree, error=mrs_record["Trees"][0]["Error"], response_generator=mrs_record["Trees"][0]["ResponseGenerator"], response_message=mrs_record["Trees"][0]["ResponseMessage"]))
+                tree_generator.append(TreeSolver.new_tree_record(tree=tree, error=mrs_record["Trees"][0]["Error"], response_generator=mrs_record["Trees"][0]["ResponseGenerator"], response_message=mrs_record["Trees"][0]["ResponseMessage"]))
 
         else:
             tree_generator = mrs_record["Trees"]
@@ -389,6 +370,7 @@ class UserInterface(object):
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
                 print(f"\nText Tree: {tree_info['Tree']}")
+                print(f"\nInterpretation: {tree_info['Interpretation']}")
                 if tree_info['SolutionGroups'] is not None:
                     for solution_group in tree_info['SolutionGroups']:
                         print(f"\nSolution group:")
@@ -418,15 +400,15 @@ class UserInterface(object):
                 else:
                     argument_types.append(argument_item[1][0])
 
-            if self.execution_context.vocabulary.unknown_word(state, predication.predicate, argument_types, phrase_type):
+            if self.vocabulary.unknown_word(state, predication.predicate, argument_types, phrase_type):
                 # BUT: if a transformer might remove it, return it as "contingent" so we can see if it did
-                if predication.predicate in self.execution_context.vocabulary.transformer_removed:
+                if predication.predicate in self.vocabulary.transformer_removed:
                     contingent_words.append((predication.predicate,
                                           argument_types,
                                           phrase_type,
                                           # Record if at least one form is understood for
                                           # better error messages
-                                          self.execution_context.vocabulary.version_exists(predication.predicate)))
+                                          self.vocabulary.version_exists(predication.predicate)))
 
                 else:
                     # If there aren't any implementations for this predication, or they are all match_all and don't implement it...
@@ -436,31 +418,12 @@ class UserInterface(object):
                                           phrase_type,
                                           # Record if at least one form is understood for
                                           # better error messages
-                                          self.execution_context.vocabulary.version_exists(predication.predicate)))
-
+                                          self.vocabulary.version_exists(predication.predicate)))
 
         if len(unknown_words) > 0:
             pipeline_logger.debug(f"Unknown predications: {unknown_words}")
 
         return unknown_words, contingent_words
-
-    def apply_solutions_to_state(self, solutions):
-        # Collect all of the operations that were done
-        responses = []
-        all_operations = []
-        for solution in solutions:
-            for operation in solution.get_operations():
-                if isinstance(operation, RespondOperation):
-                    response_string = operation.response_string()
-                    if response_string not in responses:
-                        responses.append(response_string)
-                else:
-                    all_operations.append(operation)
-
-        # Now apply all the operations to the original state object
-        self.state = self.state.apply_operations(all_operations, False)
-        logger.debug(f"Final state: {self.state.objects}")
-        return responses
 
 
 def command_run_all_parses(ui, arg):
@@ -545,7 +508,10 @@ def command_run_test(ui, arg):
         print(f"Please supply a test name.")
 
     else:
-        test_iterator = TestIterator(ui.test_manager.full_test_path(arg + ".tst"))
+        # Remember that we ran a single test not a folder
+        ui.test_manager.record_session_data("LastTestFolder", "")
+
+        test_iterator = TestIterator(ui.test_manager, ui.test_manager.full_test_path(arg + ".tst"))
 
         # Set the state to the state function the test requires
         # and reset it
@@ -586,10 +552,37 @@ def command_run_parse(ui, arg):
 
 
 def command_run_folder(ui, arg):
-    test_iterator = TestFolderIterator(ui.test_manager.full_test_path(arg))
+    test_folder = ui.test_manager.full_test_path(arg)
+    ui.test_manager.record_session_data("LastTestFolder", test_folder)
+    test_iterator = TestFolderIterator(ui.test_manager, test_folder)
     ui.test_manager.run_tests(test_iterator, ui)
 
     return True
+
+
+def command_resume_test(ui, arg):
+    test_folder = ui.test_manager.get_session_data("LastTestFolder")
+    if test_folder is None:
+        print(f"Nothing to resume.")
+        return True
+
+    else:
+        if test_folder == "":
+            test_name = ui.test_manager.get_session_data("LastTest")
+            if test_name is None:
+                print("No test to resume.")
+                return True
+
+            else:
+                print(f"**** Resuming test: {test_name}")
+                test_iterator = TestIterator(ui.test_manager, test_name)
+
+        else:
+            print(f"**** Resuming test folder: {test_folder}")
+            test_iterator = TestFolderIterator(ui.test_manager, test_folder, resume=True)
+
+        ui.test_manager.run_tests(test_iterator, ui)
+        return True
 
 
 def command_reset(ui, arg):
@@ -731,5 +724,8 @@ command_data = {
                 "Example": "/runtest subdirectory/foo"},
     "runfolder": {"Function": command_run_folder, "Category": "Testing", "WebSafe": False,
                   "Description": "Runs all tests in a directory",
-                  "Example": "/runfolder foldername"}
-}
+                  "Example": "/runfolder foldername"},
+    "resume": {"Function": command_resume_test, "Category": "Testing", "WebSafe": False,
+                  "Description": "Resume running the last test (or sequence of tests in a folder) at the last reset before it was stopped",
+                  "Example": "/resume"}
+    }

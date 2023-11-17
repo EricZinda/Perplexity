@@ -1,9 +1,72 @@
 
-- What do I have? -> should say son
-- 
+- Example33_reset: a few files are in a folder together
+  - crazy slow now
+  - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))
+  - Why
+    - It needs to fail out of tree 0 which has "folder together" before it can get to "in together" that works
+    - combinatorial_predication_1() returns all combinations "depth first" which generates a ton of options to work through before failure
+    - Even worse: "a folder together" will always fail because "a" forces it to be "one" but "together" forces it to be 2
+  - Ideas:
+    - Should we be able to know that this will fail immediately because of the metadata on the predication and the constraint?
+    - If we tried the alternatives in parallel we'd have an answer in the other tree pretty quickly
+- Example33_reset: which files are in a folder?
+  - Really slow because each file that is found gets added in every combination
+  - Once we have a solution we should either:
+    - stop (since it is a solution)
+    - OR
+    - Only try adding solutions from the set to it to see if there are more
+  - It quickly finds a solution group, but maybe it is iterating another already?
+    - It is because it is exhaustively searching for the whole list of files?
+      - Which we do have to do because:
+        - we need to see if any operations have RespondOperations in them
+        - problem is that each iteration gets slower
+    - Options
+      - update respond_to_mrs_tree() to yield answers for answerWithList
+      - Mark a particular set as "solve now"
+        - How do you go back and do the others later?
+          - You could push the set and resolve it and then, if you want to go back for others, 
+            - you could regenerate it
+            - you could say that that set is out of the rotation
+            - We'd have to collect all the solutions
+
+Code cleanup:
+- Get rid of reordering
+  - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
+  - But we need a way to optimize somehow, it really is slow
+    - Use the GPU for some parallelization? https://numba.pydata.org/
+  - Timing with reordering:
+    - filesystem: 231.11059
+  - Timing without:
+    - filesystem: 292.00379
+- Get rid of extra arg in relationships
+- Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
+- redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
+- Rename lineage something like disjunction
+- Alternative Implementation for have_v_1_present and _order_v_1_past
+  - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
+    - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
+      - I.e. things like implied requests
+- Do we still need frames with the new concept handling?
+- lift_style_predication_2
+  - should assert if the predication doesn't allow for > 1 in the set
+
+Lower Pri:
+- We have 0 menus -> No. you does not have something
+- "who has which dish" doesn't work
+- I don't have *the* soup works because:
+  - there is more than one soup so negation fails, and thus this works
+- I don't have soup / I have soup both work when you have ordered soup
+  - because:
+    - for "I don't have soup" the first MRS is the proper interpretation meaning "not(I have soup)"
+      - but it fails since you *do* have soup, so we keep going
+    - the second interpretation of "I don't have soup" means "check each soup and see if you have it" and there are some that you don't have
+      - so it succeeds and we return this one
+  - Same thing will happen with "I don't have a soup"
+  - Posted a question on the forum for this
+- "how much *is* the soup and salad" is crazy slow and will never work
+
 - I want to sit down?
 - could I sit down?
-- 
 - "I will see menus" --> works, but shouldn't
 - implement future tense get
   - Will I get a menu?
@@ -12,31 +75,18 @@
 - "What did I order?" --> Make work for debugging
 - implement past tense get: "Did I get a steak?"
 - Can we automatically call count_of_instances_and_concepts() for conceptual stuff? So that we don't have to call it in the group?
-
-
-- "what are your specials?" --> There isn't a special in the system
-- "What do you have?"
-    - In the context of the entrance, this *could* mean "do you have a table for us?" or "Do you have a menu?"
-    - at the table it means the menu
 - Make "how much are your dishes" work
-- Get rid of old code
 - Verbs should declare what tenses they deal with, if none, they should default to present only
 - Figure out how to make "I want 2 steaks and 1 salad" work
   - it only sends "2 steaks" to want so that is all that gets checked
 - Get the bill working
 - Make "What is not on the menu?" work properly
-- Get rid of old code that has been implemented differently
 - Fix ontology.  Right now there are instances on the menu, for example
 - Handle concepts with extra information "bill for the food" failing if we don't know it
 - I'd like 2 steaks at the front door -> doesn't work
-
-- Demo for summit
-  - card() not in rstr
 - Not issues: For Example23
   - large files are not in this folder -> Yes, that is true.
     - Interpreted as not(large files in this folder)
-
-
 - Not able to update tests for /runparse 0,1 to the actual response that happened
 - Need to be able to run code on the solution group
   - not() is going to require special processing

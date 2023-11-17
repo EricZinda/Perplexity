@@ -2,9 +2,11 @@ import copy
 import json
 import os
 import sys
+import time
 import traceback
 import uuid
 from perplexity.utilities import module_name
+
 
 # Just a simple iterator that must return
 # a new test item each time it is asked
@@ -27,8 +29,16 @@ from perplexity.utilities import module_name
 #
 # They must also support the "update_test()" method
 class TestIterator(object):
-    def __init__(self, test_path_and_file):
+    def __init__(self, test_manager, test_path_and_file, resume=False):
+        print(f"**** Running test: {test_path_and_file}...\n")
+
+        self.resume = resume
+        self.test_manager = test_manager
         self.test_path_and_file = test_path_and_file
+
+        if resume:
+            self.target_index = test_manager.get_session_data("LastTestResetIndex")
+
         with open(test_path_and_file, "r") as file:
             self.test = json.loads(file.read())
 
@@ -48,11 +58,26 @@ class TestIterator(object):
 
     def __iter__(self):
         test_items = self.test["TestItems"]
+        self.test_manager.record_session_data("LastTest", self.test_path_and_file)
+        if not self.resume:
+            self.test_manager.record_session_data("LastTestResetIndex", 0)
 
         while self.index < len(test_items):
+            current_index = self.index
             self.index += 1
-            test_item = test_items[self.index - 1]
+            test_item = test_items[current_index]
+
+            if self.resume:
+                if self.target_index is not None and current_index < self.target_index:
+                    continue
+                else:
+                    self.resume = False
+
             if test_item["Enabled"]:
+                if not self.resume:
+                    if test_item["Command"].startswith("/new") or test_item["Command"].startswith("/reset"):
+                        self.test_manager.record_session_data("LastTestResetIndex", current_index)
+
                 yield test_item
 
     def update_test(self, id, new_item):
@@ -69,13 +94,24 @@ class TestIterator(object):
 # This is a test iterator that loops through all tests
 # in a folder, and returns the test items within each test
 class TestFolderIterator(object):
-    def __init__(self, test_folder):
+    def __init__(self, test_manager, test_folder, resume=False):
         self.test_folder = test_folder
+        self.test_path_and_file = None
+        self.test_manager = test_manager
+        self.resume = resume
+        if self.resume:
+            self.target_test = test_manager.get_session_data("LastTest")
 
     def __iter__(self):
         for filename in os.listdir(self.test_folder):
             if filename.lower().endswith(".tst"):
-                self.test_iterator = TestIterator(os.path.join(self.test_folder, filename))
+                self.test_path_and_file = os.path.join(self.test_folder, filename)
+                if self.resume:
+                    if self.target_test is not None and self.test_path_and_file.lower() != self.target_test.lower():
+                        continue
+
+                self.test_iterator = TestIterator(self.test_manager, self.test_path_and_file, resume=self.resume)
+                self.resume = False
                 yield from self.test_iterator
 
     def update_test(self, id, new_item):
@@ -100,6 +136,7 @@ class TestManager(object):
 
     def run_tests(self, test_iterator, ui):
         print("\n**** Begin Testing...\n")
+        testItemStartTime = time.perf_counter()
         for test_item in test_iterator:
             print(f"\nTest: {test_item['Command']}")
             try:
@@ -111,9 +148,12 @@ class TestManager(object):
                 break
 
             if not self.check_result(test_iterator, test_item, ui.interaction_record):
-                print("**** Cancel test run")
+                print(f"**** Cancel test run: {test_iterator.test_path_and_file}")
                 break
-        print("\n**** Testing Complete.\n")
+
+        elapsed = round(time.perf_counter() - testItemStartTime, 5)
+
+        print(f"\n**** Testing Complete. Elapsed time: {elapsed}\n")
 
     def check_result(self, test_iterator, test_item, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
@@ -215,5 +255,5 @@ class TestManager(object):
         with open(self.session_data_path(), "w") as file:
             file.write(json.dumps(self.session_data, indent=4))
 
-    def session_data(self, key):
+    def get_session_data(self, key):
         return self.session_data.get(key, None)
