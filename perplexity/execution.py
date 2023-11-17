@@ -407,11 +407,16 @@ class TreeSolver(object):
 
     # Yields an interpretation_solver and a generator for solutions for a particular lineage
     # Only does phase1 evaluation on the tree
-    def phase1(self, state, tree_info, normalize=False, current_tree_index=None, target_tree_index=None):
+    def phase1(self, state, tree_info, normalize=False, current_tree_index=None, target_tree_index=None, interpretation=None):
         if current_tree_index is None:
             current_tree_index = [0]
 
-        for interpretation in self._mrs_tree_interpretations(tree_info, normalize):
+        if interpretation is not None:
+            interpretation_list = [interpretation]
+        else:
+            interpretation_list = self._mrs_tree_interpretations(tree_info, normalize)
+
+        for interpretation in interpretation_list:
             if pipeline_logger.level == logging.DEBUG:
                 func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
                 pipeline_logger.debug(f"Evaluating alternative {current_tree_index[0]} '{func_list}'")
@@ -442,10 +447,10 @@ class TreeSolver(object):
     # yields a tree_record for every interpretation and combination of disjunctions
     # that was attempted (including records if they were skipped for debugging purposes)
     def tree_solutions(self, state, tree_info, response_function=None, message_function=None,
-                       current_tree_index=0, target_tree_index=None):
+                       current_tree_index=0, target_tree_index=None, interpretation=None):
         wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
         this_sentence_force = sentence_force(tree_info["Variables"])
-        for context, solutions in self.phase1(state, tree_info, current_tree_index=[current_tree_index], target_tree_index=target_tree_index):
+        for context, solutions in self.phase1(state, tree_info, current_tree_index=[current_tree_index], target_tree_index=target_tree_index, interpretation=interpretation):
             if isinstance(solutions, dict):
                 # This is a record of a skipped true
                 yield solutions

@@ -4,6 +4,7 @@ from delphin.codecs import simplemrs
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import RespondOperation
+from perplexity.state import apply_solutions_to_state
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
     MrsParser, tree_contains_predication
@@ -173,7 +174,8 @@ class UserInterface(object):
                                         # Because this worked, we need to apply any Operations that were added to
                                         # any solution to the current world state.
                                         try:
-                                            operation_responses = self.apply_solutions_to_state([solution for solution in solution_group])
+                                            operation_responses, new_state = apply_solutions_to_state(self.state, [solution for solution in solution_group])
+                                            self.state = new_state
 
                                         except MessageException as error:
                                             response = self.response_function(self.response_function, self.message_function, tree_info, [], [0, error.message_object()])
@@ -422,24 +424,6 @@ class UserInterface(object):
             pipeline_logger.debug(f"Unknown predications: {unknown_words}")
 
         return unknown_words, contingent_words
-
-    def apply_solutions_to_state(self, solutions):
-        # Collect all of the operations that were done
-        responses = []
-        all_operations = []
-        for solution in solutions:
-            for operation in solution.get_operations():
-                if isinstance(operation, RespondOperation):
-                    response_string = operation.response_string()
-                    if response_string not in responses:
-                        responses.append(response_string)
-                else:
-                    all_operations.append(operation)
-
-        # Now apply all the operations to the original state object
-        self.state = self.state.apply_operations(all_operations, False)
-        logger.debug(f"Final state: {self.state.objects}")
-        return responses
 
 
 def command_run_all_parses(ui, arg):

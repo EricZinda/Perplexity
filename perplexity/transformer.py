@@ -157,13 +157,21 @@ class ConjunctionMatchTransformer(object):
         if not isinstance(conjunction, list) or len(self.transformer_list) != len(conjunction):
             return False
 
+        unmatched_indices = [x for x in range(len(conjunction))]
         for predication_index in range(len(conjunction)):
-            if not transformer_search(conjunction[predication_index],
+            found_match = False
+            for match_index in unmatched_indices:
+                if transformer_search(conjunction[predication_index],
                                       variables,
-                                      self.transformer_list[predication_index],
+                                      self.transformer_list[match_index],
                                       capture,
                                       metadata,
                                       current_index):
+                    unmatched_indices.remove(match_index)
+                    found_match = True
+                    break
+
+            if not found_match:
                 return False
 
         if self.property_transformer is not None:

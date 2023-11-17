@@ -1,7 +1,26 @@
 import copy
 
+from perplexity.response import RespondOperation
 from perplexity.set_utilities import DisjunctionIterable, DisjunctionValue
 from perplexity.variable_binding import VariableBinding, VariableData
+
+
+def apply_solutions_to_state(state, solutions, record_operations=False):
+    # Collect all the operations that were done
+    responses = []
+    all_operations = []
+    for solution in solutions:
+        for operation in solution.get_operations():
+            if isinstance(operation, RespondOperation):
+                response_string = operation.response_string()
+                if response_string not in responses:
+                    responses.append(response_string)
+            else:
+                all_operations.append(operation)
+
+    # Now apply all the operations to the original state object
+    new_state = state.apply_operations(all_operations, record_operations)
+    return responses, new_state
 
 
 # "class" declares an object-oriented class in Python

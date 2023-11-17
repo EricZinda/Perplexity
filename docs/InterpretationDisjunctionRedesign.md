@@ -64,3 +64,5 @@ Scopal arguments have already had an interpretation of their predicates selected
 
 However, they may have conjunctions in them which do generate alternatives.
 
+NOTE: When scopal arguments are generated and thrown away (as in neg() or count()), any operations generated in that part of the tree are also thrown away
+ISSUE: Should we ever be trying all the alternative interpretations in a subtree (like neg() does)? or is it really just the current interpretation 

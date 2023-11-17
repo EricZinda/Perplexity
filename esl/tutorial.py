@@ -7,6 +7,7 @@ from perplexity.predications import combinatorial_predication_1, in_style_predic
     lift_style_predication_2, concept_meets_constraint
 from perplexity.set_utilities import Measurement, DisjunctionValue
 from perplexity.sstring import s
+from perplexity.state import apply_solutions_to_state
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
     PropertyTransformerProduction, ConjunctionMatchTransformer
@@ -128,7 +129,12 @@ def how_many_transformer(noun_match, noun_production):
     # conjunction
     conjunction_match = ConjunctionMatchTransformer(transformer_list=[noun_match, measure_match, much_many_match])
 
-    return TransformerMatch(name_pattern="udef_q", args_pattern=["x", conjunction_match, "*"], args_capture=[None, None, "udef_body"], properties_production=underspecify_plurality_production, production=count_production)
+    return TransformerMatch(name_pattern="udef_q",
+                            args_pattern=["x", conjunction_match, "*"],
+                            args_capture=[None, None, "udef_body"],
+                            properties_production=underspecify_plurality_production,
+                            production=count_production,
+                            removed=["measure", "much-many_a"])
 
 
 @Transform(vocabulary)
@@ -311,24 +317,62 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
     new_tree_info["Tree"] = h_scopal_binding
     tree_solver = context.create_child_solver()
     subtree_state = state.set_x("tree", (new_tree_info,))
-    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info):
+
+    # Don't try all alternative interpretations, just the one being used now
+    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info, interpretation=context._interpretation):
         if tree_record["SolutionGroupGenerator"] is not None:
             # There were solutions, so this is true
             unique_values = set()
+            measurement_count = 0
+            measurement_units = None
             for solution_group in tree_record["SolutionGroupGenerator"]:
                 for solution_state in solution_group:
                     value = solution_state.get_binding(x_item_to_count_binding.variable.name).value
                     if is_concept(value[0]):
                         context.report_error(["formNotUnderstood", "count"])
                         unique_values = set()
+                        measurement_count = 0
                         break
-                    else:
-                        unique_values.update(value)
 
-                if len(unique_values) > 0:
+                    else:
+                        is_measurement = isinstance(value[0], Measurement)
+                        if len(unique_values) > 0:
+                            # We are counting individuals
+                            if is_measurement:
+                                # We can't mix measures and individuals
+                                # try the next solution
+                                break
+                            else:
+                                unique_values.update(value)
+
+                        elif measurement_units is not None:
+                            if not is_measurement:
+                                # We can't mix measures and individuals
+                                # try the next solution
+                                break
+                            else:
+                                measurement_count += value[0].count
+
+                        else:
+                            # This is our first solution, it will set what
+                            # kind of group we have
+                            if isinstance(value[0], Measurement):
+                                measurement_count += value[0].count
+                                measurement_units = value[0].measurement_type
+
+                            else:
+                                unique_values.update(value)
+
+                if len(unique_values) > 0 or measurement_units is not None:
+                    # Make sure any operations that were created on solutions get passed on
+                    responses, new_state = apply_solutions_to_state(state, solution_group, record_operations=True)
+                    if len(responses) > 0:
+                        response = "\n".join(responses)
+                        new_state = new_state.apply_operations([RespondOperation(response)], record_operations=True)
+
                     # Mark as a "negated_predication" so we don't try to check global constraints on it
-                    measurement = Measurement("", len(unique_values))
-                    yield state.set_x(x_total_count_binding.variable.name, (measurement,)).add_to_e("negated_predications",
+                    measurement = Measurement(measurement_units if measurement_units is not None else "", len(unique_values) + measurement_count)
+                    yield new_state.set_x(x_total_count_binding.variable.name, (measurement,)).add_to_e("negated_predications",
                                                                                                     context.current_predication_index(),
                                                                                                     negated_predication_info)
                     return
@@ -364,6 +408,21 @@ def pron(context, state, x_who_binding):
 
 
 @Predication(vocabulary, names=["generic_entity"])
+def generic_entity_measure(context, state, x_binding):
+    def bound(val):
+        if val == Measurement(ESLConcept("generic_entity"), None):
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
+
+    def unbound():
+        yield Measurement(ESLConcept("generic_entity"), None)
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
+
+
+@Predication(vocabulary, names=["generic_entity"])
 def generic_entity(context, state, x_binding):
     def bound(val):
         if val == ESLConcept("generic_entity"):
@@ -381,29 +440,6 @@ def generic_entity(context, state, x_binding):
 @Predication(vocabulary, names=["_okay_a_1"])
 def _okay_a_1(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)
-
-
-@Predication(vocabulary, names=["much-many_a"], handles=[("Measure", EventOption.required)])
-def much_many_a(context, state, e_binding, x_binding):
-    # Which variable should we put the measurement in?
-    measure_into_variable = e_binding.value["Measure"]["Value"]
-
-    # if we are measuring, x_binding should have a ESLConcept() that is the type of measurement
-    x_binding_value = x_binding.value
-    if len(x_binding_value) == 1 and is_concept(x_binding_value[0]):
-        # Replace x5 with a measurement object
-        measurement = Measurement(x_binding_value[0], measure_into_variable)
-        yield state.set_x(x_binding.variable.name, (measurement,))
-
-    else:
-        context.report_error(["formNotUnderstood", "much_many_a"])
-
-
-@Predication(vocabulary, names=["measure"])
-def measure(context, state, e_binding, e_binding2, x_binding):
-    yield state.add_to_e(e_binding2.variable.name, "Measure",
-                         {"Value": x_binding.variable.name,
-                          "Originator": context.current_predication_index()})
 
 
 @Predication(vocabulary, names=["abstr_deg"])
@@ -504,6 +540,36 @@ def _credit_n_1(context, state, x_bind):
         yield "credit"
 
     yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
+
+
+@Predication(vocabulary, names=["_dollar_n_1"])
+def _dollar_n_1_measure(context, state, x_binding, u_unused):
+    def bound(val):
+        if val == Measurement(ESLConcept("dollar"), None):
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
+
+    def unbound():
+        yield Measurement(ESLConcept("dollar"), None)
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
+
+
+@Predication(vocabulary, names=["_dollar_n_1"])
+def _dollar_n_1(context, state, x_binding, u_unused):
+    def bound(val):
+        if val == "dollar":
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            return False
+
+    def unbound():
+        yield "dollar"
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
 
 
 @Predication(vocabulary, names=["unknown"])
@@ -1767,24 +1833,23 @@ def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding
 # Returns:
 # the variable to measure into, the units to measure
 # or None if not a measurement unbound variable
-def measurement_information(x):
-    if isinstance(x, Measurement) and isinstance(x.count, str):
-        # if x is a Measurement() with a string as a value,
+def measure_units(x):
+    if isinstance(x, Measurement) and x.count is None:
+        # if x is a Measurement() with None as a value,
         # then we are being asked to measure x_actor
-        measure_into_variable = x.count
         units = x.measurement_type
         if is_concept(units):
-            return measure_into_variable, units.concept_name
+            return units.concept_name
 
-    return None, None
+    return None
 
 
 @Predication(vocabulary, names=["_be_v_id"])
 def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         # Just check if this is an object and a measurement, if so, handle it below
-        measure_into_variable, units = measurement_information(x_object)
-        if measure_into_variable is not None:
+        units = measure_units(x_object)
+        if units is not None:
             return True
 
         else:
@@ -1808,36 +1873,37 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
         # so it will fail to yield anything. Since neither soup nor salad have specializations, that locks in "dishes" to a single value, which fails
         # since it is plural
         yield from concept_disjunctions_reverse(state, object_to_store(x_object))
-        # yield x_object
 
-    for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound,
-                                                unbound):
+    for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
-        x_actor_value = success_state.get_binding(x_subject_binding.variable.name).value[0]
-        measure_into_variable, units = measurement_information(x_object_value)
-        if measure_into_variable is not None:
+        units = measure_units(x_object_value)
+        if units is not None:
             # This is a "how much is x" question: we need to measure the value
             # into the specified variable
-            concept_item = instance_of_or_concept_name(state, x_actor_value)
-            if units in ["generic_entity", "dollar"]:
-                if concept_item in state.sys["prices"]:
-                    price = Measurement("dollar", state.sys["prices"][concept_item])
-                    # Remember that we now know the price
-                    yield success_state.set_x(measure_into_variable, (price,)). \
-                        record_operations([SetKnownPriceOp(concept_item)])
-                elif concept_item == "bill":
-                    total = list(rel_objects(state, "bill1", "valueOf"))
-                    if len(total) == 0:
-                        total.append(0)
-                    price = Measurement("dollar", total[0])
-                    yield success_state.set_x(measure_into_variable, (price,))
-
-                else:
-                    yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
-                    return False
+            yield from yield_cost_of_subject_into_object(success_state, units, x_subject_binding.variable.name, x_object_binding.variable.name)
 
         else:
             yield success_state
+
+
+def yield_cost_of_subject_into_object(state, units, subject_variable, object_variable):
+    x_subject_value = state.get_binding(subject_variable).value[0]
+    concept_item = instance_of_or_concept_name(state, x_subject_value)
+    if units in ["generic_entity", "dollar"]:
+        if concept_item in state.sys["prices"]:
+            price = Measurement("dollar", state.sys["prices"][concept_item])
+            # Remember that we now know the price
+            yield state.set_x(object_variable, (price,)).record_operations([SetKnownPriceOp(concept_item)])
+        elif concept_item == "bill":
+            total = list(rel_objects(state, "bill1", "valueOf"))
+            if len(total) == 0:
+                total.append(0)
+            price = Measurement("dollar", total[0])
+            yield state.set_x(object_variable, (price,))
+
+        else:
+            yield state.record_operations([RespondOperation("Haha, it's not for sale.")])
+            return False
 
 
 # This is here to remove "there are more" if we are asking about specials...
@@ -1883,6 +1949,7 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
             yield None
 
     def get_object(x_actor):
+        # What does x cost?
         if is_concept(x_actor):
             # Make sure it is something that is actually in the world
             # by evaluating it to make sure there are instances
@@ -1895,31 +1962,13 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
         else:
             yield "Ah. It's not for sale."
 
-    for success_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound, get_actor,
-                                                get_object):
+    for success_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound, get_actor, get_object):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
-        x_actor_value = success_state.get_binding(x_actor_binding.variable.name).value[0]
-        measure_into_variable, units = measurement_information(x_object_value)
-        if measure_into_variable is not None:
-            # This is a "how much is x" question and we need to measure the value
+        units = measure_units(x_object_value)
+        if units is not None:
+            # This is a "how much is x" question: we need to measure the value
             # into the specified variable
-            concept_item = instance_of_or_concept_name(state, x_actor_value)
-            if units in ["generic_entity", "dollar"]:
-                if concept_item in state.sys["prices"]:
-                    price = Measurement("dollar", state.sys["prices"][concept_item])
-                    # Remember that we now know the price
-                    yield success_state.set_x(measure_into_variable, (price,)). \
-                        record_operations([SetKnownPriceOp(concept_item)])
-                elif concept_item == "bill":
-                    total = list(rel_objects(state, "bill1", "valueOf"))
-                    if len(total) == 0:
-                        total.append(0)
-                    price = Measurement("dollar", total[0])
-                    yield success_state.set_x(measure_into_variable, (price,))
-
-                else:
-                    yield success_state.record_operations([RespondOperation("Haha, it's not for sale.")])
-                    return False
+            yield from yield_cost_of_subject_into_object(success_state, units, x_actor_binding.variable.name, x_object_binding.variable.name)
 
         else:
             yield success_state

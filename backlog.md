@@ -1,15 +1,4 @@
-- How many dollars is the steak?
-  - Doesn't work
-  
-- Get rid of reordering
-  - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
-  - But we need a way to optimize somehow, it really is slow
-    - Use the GPU for some parallelization? https://numba.pydata.org/
-    - 
-  - Timing with reordering:
-    - filesystem: 231.11059
-  - Timing without:
-    - filesystem: 292.00379
+- "how much are the dishes?" -> crashes
 
 - Example33_reset: a few files are in a folder together
   - crazy slow now
@@ -42,6 +31,15 @@
             - We'd have to collect all the solutions
 
 Code cleanup:
+- Get rid of reordering
+  - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
+  - But we need a way to optimize somehow, it really is slow
+    - Use the GPU for some parallelization? https://numba.pydata.org/
+    - 
+  - Timing with reordering:
+    - filesystem: 231.11059
+  - Timing without:
+    - filesystem: 292.00379
 - Get rid of extra arg in relationships
 - Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
 - redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
@@ -68,6 +66,10 @@ Lower Pri:
   - Posted a question on the forum for this
 
 - How much is the soup and salad doesn't mark you as knowing the price
+  - And is *crazy slow* now
+  - Add removed=[] to productions
+  - remove measure() and much-many_a()
+  - Make conjunction support any order
 - Getting a menu should pass the menu concept all the way through so it can be evaluated
 
 - Make eval() and concepts work more systematically

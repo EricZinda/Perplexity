@@ -26,14 +26,14 @@
         {
             "Command": "how much is the soup?",
             "Expected": "4 dollars",
-            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),udef_q(x5,[measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5)],_be_v_id(e2,x3,x5))))",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "fed26e8b-3635-4fe7-9c0e-a3bed7afe14c"
         },
         {
             "Command": "how many soups did I order",
-            "Expected": "you did not order any soup  \nWaiter: Can I get you something to eat?",
-            "Tree": "which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),udef_q(x5,[_soup_n_1(x5), measure(e14,e15,x9), much-many_a(e15,x5)],_order_v_1(e2,x3,x5))))",
+            "Expected": "you did not order soup  \nWaiter: Can I get you something to eat?",
+            "Tree": "which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),count(e14,x9,x5,udef_q(x5,_soup_n_1(x5),_order_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "cf08e533-f93d-4add-b484-0cc653537a10"
         },

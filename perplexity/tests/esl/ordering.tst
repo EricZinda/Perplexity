@@ -292,14 +292,21 @@
         {
             "Command": "How much is the soup?",
             "Expected": "4 dollars",
-            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),udef_q(x5,[measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5)],_be_v_id(e2,x3,x5))))",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "0c66d40d-000d-4f44-b15b-ec79e5bd018a"
         },
         {
+            "Command": "How many dollars is the soup?",
+            "Expected": "4 dollars",
+            "Tree": "which_q(x9,abstr_deg(x9),_the_q(x3,_soup_n_1(x3),count(e14,x9,x5,udef_q(x5,_dollar_n_1(x5,u16),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "bf8680e8-0acf-42da-93c5-defa879f7f10"
+        },
+        {
             "Command": "How much is the salad?",
             "Expected": "3 dollars",
-            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_salad_n_1(x3),udef_q(x5,[measure(e14,e15,x10), generic_entity(x5), much-many_a(e15,x5)],_be_v_id(e2,x3,x5))))",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_salad_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "5d7616ff-0fe6-482a-a57b-67ea07f9cf72"
         },
@@ -319,7 +326,7 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "soup\nsalad",
+            "Expected": "salad\nsoup",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"
