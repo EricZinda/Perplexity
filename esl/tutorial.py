@@ -745,7 +745,8 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
     def bound_variable(value):
         if sort_of(state, object_to_store(value), adjective_type):
             return True
-
+        elif rel_check(state, object_to_store(value), "isAdj", adjective_type):
+            return True
         else:
             context.report_error(["not_adj", adjective_type, state.get_reprompt(), x_binding.variable.name])
             return False
@@ -765,6 +766,8 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
 def adjective_default_instances(adjective_type, context, state, x_binding):
     def bound_variable(value):
         if sort_of(state, value, adjective_type):
+            return True
+        elif rel_check(state, object_to_store(value), "isAdj", adjective_type):
             return True
         else:
             context.report_error(["not_adj", adjective_type, state.get_reprompt(),  x_binding.variable.name])
@@ -935,6 +938,7 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
             x_what_individuals_set = set()
             for value in x_what_values:
                 x_what_individuals_set.update(value)
+
             if len(x_what_individuals_set) > 1:
                 context.report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True)
                 yield []

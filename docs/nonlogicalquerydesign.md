@@ -8,6 +8,8 @@ Option 2: Alternatively, match_all_the_concept_n() is a different interpretation
 
 ## How to think about whether to handle concepts or instances
 
+## Design
+
 ## Restaurant Scenarios
 Key insights:
     "you" can mean restaurant or waiter

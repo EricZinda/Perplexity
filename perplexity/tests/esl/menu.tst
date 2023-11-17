@@ -10,11 +10,18 @@
             "ID": "d32088e1-b1c1-406e-a849-c6b13efef46d"
         },
         {
+            "Command": "I want a vegetarian menu",
+            "Expected": "Host: There isn't such a vegetarian menu here",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_menu_n_1(x8), _vegetarian_a_1(e13,x8)],_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "98aa8219-aea7-4a10-a917-21bd96368a2d"
+        },
+        {
             "Command": "Can I see a menu?",
             "Expected": "Sorry, you must be seated to get a menu",
             "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_see_v_1_able(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "98aa8219-aea7-4a10-a917-21bd96368a2d"
+            "ID": "ed0e789c-6ba1-4e91-98fd-a9bea2f02e27"
         },
         {
             "Command": "Do you have a menu?",

@@ -47,7 +47,8 @@ Code cleanup:
     - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
       - I.e. things like implied requests
 - Do we still need frames with the new concept handling?
-- 
+- lift_style_predication_2
+  - should assert if the predication doesn't allow for > 1 in the set
 
 Lower Pri:
 - We have 0 menus -> No. you does not have something
@@ -62,15 +63,8 @@ Lower Pri:
       - so it succeeds and we return this one
   - Same thing will happen with "I don't have a soup"
   - Posted a question on the forum for this
+- "how much *is* the soup and salad" is crazy slow and will never work
 
-- How much is the soup and salad doesn't mark you as knowing the price
-  - And is *crazy slow* now
-  - Add removed=[] to productions
-  - remove measure() and much-many_a()
-  - Make conjunction support any order
-- Getting a menu should pass the menu concept all the way through so it can be evaluated
-- lift_style_predication_2
-  - should assert if the predication doesn't allow for > 1 in the set
 - I want to sit down?
 - could I sit down?
 - "I will see menus" --> works, but shouldn't
