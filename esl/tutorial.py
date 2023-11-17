@@ -357,7 +357,7 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
                             # This is our first solution, it will set what
                             # kind of group we have
                             if isinstance(value[0], Measurement):
-                                measurement_count += value[0].count
+                                measurement_count += value[0].count if value[0].count is not None else 0
                                 measurement_units = value[0].measurement_type
 
                             else:
@@ -2242,7 +2242,7 @@ if __name__ == '__main__':
     ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")

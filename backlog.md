@@ -1,4 +1,3 @@
-- "how much are the dishes?" -> crashes
 
 - Example33_reset: a few files are in a folder together
   - crazy slow now
@@ -35,7 +34,6 @@ Code cleanup:
   - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
   - But we need a way to optimize somehow, it really is slow
     - Use the GPU for some parallelization? https://numba.pydata.org/
-    - 
   - Timing with reordering:
     - filesystem: 231.11059
   - Timing without:
@@ -71,15 +69,6 @@ Lower Pri:
   - remove measure() and much-many_a()
   - Make conjunction support any order
 - Getting a menu should pass the menu concept all the way through so it can be evaluated
-
-- Make eval() and concepts work more systematically
-  - Option 4: Build the concept from the tree directly
-    - Find the quantifier for the noun variable
-    - Pull off the RSTR?
-    - It could literally be implemented by the quantifier converting the RSTR to a concept instead of evaluating it...
-    - This seems like the best way to go
-
-  
 - lift_style_predication_2
   - should assert if the predication doesn't allow for > 1 in the set
 - I want to sit down?

@@ -346,6 +346,20 @@
             "ID": "c3b2b4ed-9938-468a-8567-250e7833d15f"
         },
         {
+            "Command": "How much are the dishes?",
+            "Expected": "10 dollars\n7 dollars\n12 dollars\n8 dollars\n4 dollars\n3 dollars",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_dish_n_of(x3,i20),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "e13e91ec-7395-4c36-a509-3296ec3d427c"
+        },
+        {
+            "Command": "How much are the specials?",
+            "Expected": "4 dollars\n3 dollars\n8 dollars",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_special_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "ca595830-25f1-4b1b-a74e-3d47e4515acd"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
