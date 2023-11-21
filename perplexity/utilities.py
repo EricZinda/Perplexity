@@ -9,6 +9,8 @@ import sys
 system_added_context_arg = 0
 system_added_state_arg = 1
 system_added_arg_count = 2
+system_added_group_has_more = 2
+system_added_group_arg_count = 3
 
 # Returns a dict:
 # {

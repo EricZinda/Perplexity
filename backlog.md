@@ -1,4 +1,6 @@
-
+- New Programming Model todo:
+  - Gotta get rid of old metadata that doesn't have a function anymore, e.g. if the user has it then deletes it
+  
 - Example33_reset: a few files are in a folder together
   - crazy slow now
   - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))

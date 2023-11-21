@@ -1,0 +1,54 @@
+{
+    "_have_v_1_able": {
+        "Examples": [
+            "Can I have|get a steak?",
+            "What can I have|get?",
+            "Can the salad get/have nuts?",
+            "who can have|get a steak?"
+        ],
+        "Properties": {
+            "SF": "ques",
+            "TENSE": "pres",
+            "MOOD": "indicative",
+            "PROG": "-",
+            "PERF": "-"
+        }
+    },
+    "_have_v_1_future": {
+        "Examples": [
+            "I will take|have a steak"
+        ],
+        "Properties": {
+            "SF": "prop",
+            "TENSE": "fut",
+            "MOOD": "indicative",
+            "PROG": "-",
+            "PERF": "-"
+        }
+    },
+    "_have_v_1_present": {
+        "Examples": [
+            "Do you have a table?",
+            "Do you have this table?",
+            "What do you have?",
+            "Do you have a|the menu|bill?",
+            "What specials do you have?",
+            "Do I|we have the table?",
+            "Do you have a|the steak?",
+            "Do you have a bill?",
+            "Do you have menus?",
+            "Do you have steaks?",
+            "We have 2 menus"
+        ],
+        "Properties": {
+            "SF": [
+                "ques",
+                "prop"
+            ],
+            "TENSE": "pres",
+            "MOOD": "indicative",
+            "PROG": "-",
+            "PERF": "-"
+        }
+    }
+}

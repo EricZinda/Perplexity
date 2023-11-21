@@ -1532,18 +1532,11 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
 #   - "Will you have a table?" --> Not good english
 #   - "What will I have?" --> Not good english
 #   - "Who will have x?" --> Not good english
-@Predication(vocabulary, names=["_have_v_1", "_take_v_1"])
+@Predication(vocabulary,
+             names=["_have_v_1", "_take_v_1"],
+             examples=["I will take|have a steak"],
+             properties={'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    tree_info = state.get_binding("tree").value[0]
-    if not is_future_tense(tree_info):
-        context.report_error(["formNotUnderstood", "_have_v_1_future"])
-        return
-
-    if is_question(tree_info):
-        # None of the future tense questions are valid english in this scenario
-        context.report_error(["formNotUnderstood", "_have_v_1_future"])
-        return
-
     def both_bound_prediction_function(x_actors, x_objects):
         if is_user_type(x_actors):
             return valid_player_request(state, x_objects)
@@ -1570,11 +1563,10 @@ def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_ob
                                         object_unbound)
 
 
-@Predication(vocabulary, names=["solution_group__have_v_1", "solution_group__take_v_1"])
+@Predication(vocabulary,
+             names=["solution_group__have_v_1", "solution_group__take_v_1"],
+             properties_from=_have_v_1_future)
 def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
-    tree_info = state_list[0].get_binding("tree").value[0]
-    if not is_future_tense(tree_info): return
-
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
@@ -1596,12 +1588,22 @@ def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_ac
 # which is really an implied request.
 # Implied requests are always of the form "you" (meaning restaurant) and, because concepts come through first,
 # we will hit these first and interpret them as implied requests
-# See group handler for scenarios.
-@Predication(vocabulary, names=["_have_v_1"])
+@Predication(vocabulary,
+             names=["_have_v_1"],
+             examples=["Do you have a table?",          # --> implied table request
+                       "Do you have this table?",       # --> fact checking question
+                       "What do you have?",             # --> implied menu request
+                       "Do you have a|the menu|bill?",  # --> implied menu request
+                       "What specials do you have?",    # --> implied request for description of specials
+                       "Do I|we have the table?",       # --> ask about the state of the world
+                       "Do you have a|the steak?",      # --> just asking about the steak, no implied request
+                       "Do you have a bill?",           # --> implied request, kind of
+                       "Do you have menus?",            # --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
+                       "Do you have steaks?",           # --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
+                       "We have 2 menus"                # --> fact checking question
+                       ],
+             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if not is_present_tense(state.get_binding("tree").value[0]):
-        context.report_error(["formNotUnderstood", "_have_v_1_present"])
-        return
     if is_concept(x_actor_binding):
         context.report_error(["formNotUnderstood", "_have_v_1_present"])
         return
@@ -1647,27 +1649,12 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
                                       object_from_actor)
 
 
-# Scenarios (all covered by tests):
-# - "Do you have a table?" --> implied table request
-# - "Do you have this table?" --> fact checking question
-# - "what do you have?" --> implied menu request
-# - "Do you have a/the menu?" --> implied menu request
-# - "Do you have a/the bill?" --> implied bill request
-# - "what specials do you have?" --> implied request for description of specials
-#   "do I/we have x?" --> ask about the state of the world
-# - "Do you have the table?" --> Should fail due to "the table" since there is neither 1 table, nor one conceptual table in scope
-# - "Do you have a/the steak?" --> just asking about the steak, no implied request
-# - "Do you have a bill?" --> implied request, kind of
-# - "Do you have menus?" --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
-# - "Do you have steaks?" --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
-@Predication(vocabulary, names=["solution_group__have_v_1"])
-def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x_obj_list):
-    # Ignore this group if it isn't present tense
-    tree_info = state_list[0].get_binding("tree").value[0]
-    if not is_present_tense(tree_info):
-        context.report_error(["formNotUnderstood", "_have_v_1_present_group"])
-        return
+# @Predication(vocabulary, names=["solution_group__have_v_1"])
 
+@Predication(vocabulary,
+             names=["solution_group__have_v_1"],
+             properties_from=_have_v_1_present)
+def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x_obj_list):
     # The solution predication guarantees that this is either actor and object instances or
     # actor instance and object concept. We only have to check one solution since they will all be the same
     first_x_obj = x_obj_list.solution_values[0].value[0]
@@ -1695,6 +1682,7 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
             # Now we are guaranteed to only have one item in x_obj_value
             # wh-questions aren't implied requests.  I.e. "which tables do you have?"
             x_obj = x_obj_value[0]
+            tree_info = state_list[0].get_binding("tree").value[0]
             wh_variable = is_wh_question(tree_info)
 
             # Only doing a cursory check to make sure they are talking about things that could
@@ -1737,9 +1725,13 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
 
 # Used only when there is a form of have that means "able to"
 # The regular predication only checks if x is able to have y
-# Scenarios:
-#   "What can I have?" --> implied menu request
-@Predication(vocabulary, names=["_have_v_1_able", "_get_v_1_able"])
+@Predication(vocabulary,
+             names=["_have_v_1_able", "_get_v_1_able"],
+             examples=["Can I have|get a steak?",
+                       "What can I have|get?",
+                       "Can the salad get/have nuts?",
+                       "who can have|get a steak?"],
+             properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actor, x_object):
         # Players are able to have any food, a table or a menu
@@ -1790,7 +1782,9 @@ def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
 # - "who can have a steak?" -_> you, "there are more"
 # - "What can I have?" --> implicit menu request
 # - "Can I have a steak and a salad?" --> implicit order request
-@Predication(vocabulary, names=["solution_group__have_v_1_able", "solution_group__get_v_1_able"])
+@Predication(vocabulary,
+             names=["solution_group__have_v_1_able", "solution_group__get_v_1_able"],
+             properties_from=_have_v_1_able)
 def _have_v_1_able_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # At this point they were *able* to have the item, now we see if this was an implicit request for it
     # If this is a question, but not a wh question, involving the players, then it is also a request for something
@@ -1798,13 +1792,14 @@ def _have_v_1_able_group(context, state_list, has_more, e_variable_group, x_acto
     force = sentence_force(tree_info["Variables"])
     wh_variable = get_wh_question_variable(tree_info)
     if force in ["ques", "prop-or-ques"] and \
-        ((wh_variable and x_object_variable_group.solution_values[0].value[0] == ESLConcept("menu")) or
-         not get_wh_question_variable(tree_info)):
+            ((wh_variable and x_object_variable_group.solution_values[0].value[0] == ESLConcept("menu")) or
+             not wh_variable):
         # The planner will only satisfy a want wrt the players
         task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_object_variable_group), min_from_variable_group(x_object_variable_group))
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
+
     else:
         # Not an implicit request
         yield state_list
@@ -2246,7 +2241,7 @@ if __name__ == '__main__':
     ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")

@@ -1,11 +1,18 @@
+import copy
 import enum
+import functools
 import inspect
+import json
 import logging
+import os
+import pathlib
 from typing import NamedTuple
+import re
 import perplexity.execution
+import perplexity.tree
 from perplexity.transformer import build_transformed_tree
 from perplexity.utilities import parse_predication_name, system_added_state_arg, system_added_arg_count, \
-    system_added_context_arg
+    system_added_context_arg, sentence_force, system_added_group_arg_count
 from perplexity.variable_binding import VariableBinding
 
 
@@ -36,7 +43,246 @@ def Transform(vocabulary):
     return PredicationDecorator
 
 
-def Predication(vocabulary, library=None, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None):
+# Converts phrases that have alternative words separated by "|"
+# into a list that is either strings or lists of alternative words so the alternatives can be
+# created by generate_alternative_examples()
+#
+# "foo|bar|goo is a word|other" --> [["foo", "bar", "goo"], " is a ", ["word", "other"]]
+# "foo|bar is a word|other"
+# "foo|bar is a word"
+# "foo is a world|bar"
+#
+#
+# Algorithm:
+# If there are previous parts, this is a post
+# If there are remaining parts, this is a pre
+# If the part is a single word and a pre and post, it is a middle
+#
+# Start at the beginning
+#
+# If there is an existing group:
+#   If this is a middle:
+#       add sole word to group and continue
+#   elif this is a post:
+#       add post word to group
+#       start a new group
+#
+# If there is not an existing group:
+#   If this is a pre:
+#       start a group with the pre word
+def build_phrase_list(alternative_parts):
+    phrase_list = []
+    len_parts = len(alternative_parts)
+    current_group = None
+    for index in range(len_parts):
+        stripped_part = alternative_parts[index]
+
+        # Parse into words
+        regex = r"[a-zA-z0-9]{1,}"
+        test_str = alternative_parts[index]
+        match_list = list(re.findall(regex, test_str, re.MULTILINE))
+
+        is_post = index > 0
+        if is_post:
+            # If there are previous parts, this is a post, the first word is the post
+            post_word = match_list[0]
+
+        is_pre = index < len_parts - 1
+        if is_pre:
+            # If there are remaining parts, this is a pre, the last word is the pre
+            pre_word = match_list[-1]
+
+        # If the part is a single word and a pre and post, it is a middle
+        is_middle = len(match_list) == 1 and is_pre and is_post
+
+        # Now build the part minus the pre or post words
+        if is_middle:
+            stripped_part = ""
+        else:
+            if is_pre:
+                stripped_part = stripped_part[:stripped_part.rfind(pre_word)]
+            if is_post:
+                stripped_part = stripped_part[stripped_part.find(post_word) + len(post_word):]
+
+        if current_group:
+            if is_middle:
+                current_group.append(pre_word)
+                continue
+            elif is_post:
+                current_group.append(post_word)
+                current_group = None
+
+        # If there is not an existing group:
+        if not current_group:
+            if is_pre:
+                # start a group with the pre word
+                current_group = [pre_word]
+                phrase_list.append(stripped_part)
+                phrase_list.append(current_group)
+
+    phrase_list.append(stripped_part)
+    return phrase_list
+
+
+def generate_alternative_examples(phrase_list):
+    if isinstance(phrase_list[0], str):
+        if len(phrase_list) > 1:
+            for remaining in generate_alternative_examples(phrase_list[1:]):
+                yield f"{phrase_list[0]}{remaining}"
+        else:
+            yield f"{phrase_list[0]}"
+
+    else:
+        for alternative in phrase_list[0]:
+            if len(phrase_list) > 1:
+                for remaining in generate_alternative_examples(phrase_list[1:]):
+                    yield f"{alternative}{remaining}"
+            else:
+                yield f"{alternative}"
+
+
+# Returns the list of property sets that are required to match all the parses from the examples that have at least one
+# of the predicates in it
+#
+# Use the transforms that are available at the time this is called
+#   TODO: Should probably fail if more transformers get loaded later because they could break this analysis
+# Ignores vocabulary
+# Ensure that the unique properties returned have at least one example from *all* of the predicates
+#   Otherwise, it will never get called but the developer will think that it will
+def get_example_signatures(vocabulary, examples, predicates):
+    signatures = []
+    found_predicates = set()
+    mrs_parser = perplexity.tree.MrsParser()
+    for example in examples:
+        # If examples have "word1|word2" in them, split into two examples
+        alternatives = example.split("|")
+        if len(alternatives) == 1:
+            example_list = [example]
+        else:
+            phrase_list = build_phrase_list(alternatives)
+            example_list = list(generate_alternative_examples(phrase_list))
+
+        for example_in_list in example_list:
+            for mrs in mrs_parser.mrss_from_phrase(example_in_list):
+                for tree_orig in mrs_parser.trees_from_mrs(mrs):
+                    tree_info_orig = {"Tree": tree_orig,
+                                      "Variables": mrs.variables}
+                    for tree_info in vocabulary.alternate_trees(None, tree_info_orig, yield_original=True):
+                        # For each tree that has one of the predicates in it, collect the properties
+                        # for the *verb introduced event* variable AND sentence force
+                        found = perplexity.tree.find_predication(tree_info["Tree"], predicates)
+                        if found is not None:
+                            found_predicates.add(found.name)
+
+                            # Collect sentence force, it could be on a different variable
+                            properties = {"SF": sentence_force(tree_info["Variables"])}
+
+                            # Also collect all properties provided for the verb event
+                            assert found.arg_types[0] == "e", f"verb '{found}' doesn't have event as arg 0"
+                            properties.update(tree_info["Variables"][found.args[0]])
+
+                            # Now see if this set of properties matches one of the signatures already generated
+                            # if not, add it as a unique signature
+                            in_list = False
+                            for signature_predicates_tree in signatures:
+                                if not missing_properties(signature_predicates_tree[0], properties):
+                                    in_list = True
+                                    signature_predicates_tree[1].add(str(found.name))
+                                    signature_predicates_tree[2].append((example_in_list, str(tree_info["Tree"])))
+
+                            if not in_list:
+                                signatures.append([properties, set([str(found.name)]), [(example_in_list, str(tree_info["Tree"]))]])
+
+    return found_predicates, signatures
+
+
+def compare_examples_to_properties(function_to_decorate, names, examples, example_signatures, properties):
+    if properties is None:
+        # No properties have been declared, print out what was found and fail
+        print(f"No properties specified for: '{function_to_decorate.__name__}(names={names}).\n\n")
+        print("Analysis is:\nExamples:")
+        print("   " + "\n   ".join(examples))
+        for signature in example_signatures:
+            print(f"Properties: {signature[0]}")
+            print("   " + f"\n   ".join(signature[1]))
+            if len(signature[1]) != len(names):
+                not_in_intersection = set(signature[1]) ^ set(names)
+                print(f"   {list(not_in_intersection)}: none of the examples have this predicate and match these properties")
+        return {}, False
+
+    else:
+        # See if the provided properties match one of the example_signatures
+        # which means that all of the predications in names are in at least one example that has these properties
+        had_failure = False
+        remaining_properties = {}
+        for property_item in properties.items():
+            remaining_properties[property_item[0]] = copy.deepcopy(property_item[1]) if isinstance(property_item[1], (tuple, list)) else copy.deepcopy([property_item[1]])
+
+        for example_signature in example_signatures:
+            missing = missing_properties(properties, example_signature[0])
+            if missing:
+                had_failure = True
+                print(f"{function_to_decorate.__module__}.{function_to_decorate.__name__}")
+                print(f"Didn't match these properties: {str(missing)}")
+                print(f"From these examples:")
+                print("\n".join(["   " + str(x) for x in example_signature[2]]))
+            else:
+                for signature_item in example_signature[0].items():
+                    if signature_item[0] in remaining_properties:
+                        if signature_item[1] in remaining_properties[signature_item[0]]:
+                            remaining_properties[signature_item[0]].remove(signature_item[1])
+                            if len(remaining_properties[signature_item[0]]) == 0:
+                                remaining_properties.pop(signature_item[0])
+
+        return remaining_properties, not had_failure
+
+
+# Every property generated by the phrase must match something in the declaration
+def missing_properties(declaration, phrase):
+    not_found_in_declaration = []
+    for phrase_item in phrase.items():
+        if phrase_item[0] not in declaration:
+            not_found_in_declaration.append(phrase_item)
+
+        declaration_values = declaration[phrase_item[0]] if isinstance(declaration[phrase_item[0]], (list, tuple)) else [declaration[phrase_item[0]]]
+        if phrase_item[1] not in declaration_values:
+            not_found_in_declaration.append(phrase_item)
+
+    return dict(not_found_in_declaration)
+
+
+cached_files = {}
+
+
+def put_saved_metadata(decorated_function, metadata):
+    all_metadata = get_all_metadata(decorated_function)
+    all_metadata[decorated_function.__name__] = metadata
+    with open(meta_file_path(decorated_function), "w") as file:
+        file.write(json.dumps(all_metadata, indent=4))
+
+
+def get_saved_metadata(decorated_function):
+    cached_file = get_all_metadata(decorated_function)
+    return cached_file.get(decorated_function.__name__, {})
+
+
+def get_all_metadata(decorated_function):
+    python_meta_file = meta_file_path(decorated_function)
+    if python_meta_file not in cached_files:
+        if not os.path.exists(python_meta_file):
+            cached_files[python_meta_file] = {}
+        else:
+            with open(python_meta_file, "r") as file:
+                cached_files[python_meta_file] = json.loads(file.read())
+
+    return cached_files[python_meta_file]
+
+
+def meta_file_path(decorated_function):
+    return os.path.abspath(inspect.getfile(decorated_function)) + ".plex"
+
+
+def Predication(vocabulary, library=None, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None, examples=None, properties=None, properties_from=None):
     # Work around Python's odd handling of default arguments that are objects
     if handles is None:
         handles = []
@@ -138,13 +384,19 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
     # Gets called when the function is first created
     # function_to_decorate is the function definition
     def PredicationDecorator(function_to_decorate):
+        # First make sure the function provided is a generator
+        if not inspect.isgenerator(function_to_decorate) and not inspect.isgeneratorfunction(function_to_decorate):
+            assert False, f"function {function_to_decorate.__name__} must be a generator"
+
+        # Attach properties to the function object as one way to make
+        # properties_from= work, since inspect.getfile() doesn't work right
+        # with decorators
+        function_to_decorate._delphin_properties = properties
+
         # wrapper_function() actually wraps the predication function
         # and is the real function called at runtime
+        @functools.wraps(function_to_decorate)
         def wrapper_function(*args, **kwargs):
-            # First make sure the function provided is a generator
-            if not inspect.isgenerator(function_to_decorate) and not inspect.isgeneratorfunction(function_to_decorate):
-                assert False, f"function {function_to_decorate.__name__} must be a generator"
-
             # First create any virtual args. This could fail and report an error
             if virtual_args is not None and len(virtual_args) > 0:
                 new_args = create_virtual_arguments(args, virtual_args)
@@ -155,12 +407,49 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
                 args = args + new_args
 
+            if properties_from:
+                assert hasattr(properties_from, "_delphin_properties")
+                properties_to_use = properties_from._delphin_properties
+            else:
+                properties_to_use = properties
+
+            if properties_to_use:
+                # Check the properties that the predication can handle vs. what the phrase has
+                # Collect sentence force, it could be on a different variable
+                # Also collect all properties provided for the verb event
+                state = args[system_added_state_arg][0] if is_solution_group else args[system_added_state_arg]
+                arg0_variable_name = args[system_added_group_arg_count].solution_values[0].variable.name if is_solution_group else args[system_added_arg_count].variable.name
+                tree_info = state.get_binding("tree").value[0]
+                phrase_properties = {"SF": sentence_force(tree_info["Variables"])}
+                assert final_arg_types[0] == "e", f"verb '{function_to_decorate.__module__}.{function_to_decorate.__name__}' doesn't have event as arg 0"
+                phrase_properties.update(tree_info["Variables"][arg0_variable_name])
+                if missing_properties(properties_to_use, phrase_properties):
+                    args[system_added_context_arg].report_error(["formNotUnderstood", function_to_decorate.__name__])
+                    return
+
             # Make sure the event has a structure that will be properly
             # handled by the predication
             if is_solution_group or ensure_handles_event(args[system_added_context_arg], args[system_added_state_arg], handles, args[system_added_arg_count]):
                 yield from function_to_decorate(*args, **kwargs)
 
         predication_names = names if names is not None else [function_to_decorate.__name__]
+
+        if examples:
+            metadata = get_saved_metadata(function_to_decorate)
+            if metadata.get("Examples", []) != examples or metadata.get("Properties", {}) != properties:
+                found_predicates, example_signatures = get_example_signatures(vocabulary, examples, names)
+                if len(found_predicates) < len(names):
+                    assert False, f"No examples generated the predicate[s]: {', '.join(set(names).difference(found_predicates))}"
+
+                unexampled_properties, compare_success = compare_examples_to_properties(function_to_decorate, names, examples, example_signatures, properties)
+                if not compare_success:
+                    assert False, "Set the predication(properties=) argument using properties from below"
+                if unexampled_properties:
+                    assert False, f"No examples for these properties: {unexampled_properties}"
+
+                metadata["Examples"] = examples
+                metadata["Properties"] = properties
+                put_saved_metadata(function_to_decorate, metadata)
 
         # Make sure match_all args are filled in right
         is_match_all = any(name.startswith("match_all_") for name in predication_names)

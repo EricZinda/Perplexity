@@ -699,11 +699,16 @@ def gather_predication_metadata(vocabulary, tree_info):
 # return the predication that matches
 # "predicate_name" or "None" if none is found
 def find_predication(term, predication_name):
+    if isinstance(predication_name, list):
+        predication_names = predication_name
+    else:
+        predication_names = [predication_name]
+
     # This function gets called for every predication
     # in the tree. It is a private function since it is
     # only used here
     def match_predication_name(predication):
-        if predication.name == predication_name:
+        if predication.name in predication_names:
             return predication
         else:
             return None

@@ -46,7 +46,7 @@
         },
         {
             "Command": "I can have a steak",
-            "Expected": "Yes, that is true.",
+            "Expected": "I don't understand the way you are using: have",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "84e4fc9b-4d71-4538-8561-36449163906c"

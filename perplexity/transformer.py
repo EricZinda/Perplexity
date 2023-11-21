@@ -61,7 +61,7 @@ class TransformerProduction(object):
         new_ep = EP(predicate=name, label=label, args=dict(zip(args_names, args_handle_values)))
         new_predication = perplexity.tree.TreePredication(my_index, name, args_values, arg_names=args_names, mrs_predication=new_ep)
         phrase_type = sentence_force(tree_info["Variables"])
-        if not vocabulary.unknown_word(state, new_predication.name, new_predication.argument_types(), phrase_type):
+        if state is None or not vocabulary.unknown_word(state, new_predication.name, new_predication.argument_types(), phrase_type):
             return new_predication
         else:
             transform_logger.debug(
