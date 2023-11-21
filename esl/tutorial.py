@@ -5,7 +5,7 @@ from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
-from perplexity.set_utilities import Measurement, DisjunctionValue
+from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 from perplexity.state import apply_solutions_to_state
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
@@ -15,7 +15,7 @@ from perplexity.tree import find_predication_from_introduced, get_wh_question_va
     gather_scoped_variables_from_tree_at_index
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
-from perplexity.vocabulary import Predication, EventOption, Transform, override_predications, ValueSize
+from perplexity.vocabulary import Predication, EventOption, Transform, ValueSize
 from esl.worldstate import *
 
 vocabulary = system_vocabulary()
@@ -966,7 +966,10 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
         yield []
 
 
-@Predication(vocabulary, names=["_check_v_1"])
+@Predication(vocabulary,
+             names=["_check_v_1"],
+             examples=[{"Example": "Check, please", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}],
+             properties={'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_binding):
     if i_object_binding.value is not None:
         return
@@ -980,7 +983,9 @@ def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_b
     yield from combinatorial_predication_1(context, state, x_actor_binding, criteria_bound, unbound)
 
 
-@Predication(vocabulary, names=["solution_group__check_v_1"])
+@Predication(vocabulary,
+             names=["solution_group__check_v_1"],
+             properties_from=_check_v_1)
 def _check_v_1_group(context, state_list, has_more, e_introduced_binding, x_actor_binding, i_object_binding):
     current_state = copy.deepcopy(state_list[0])
     final_state = do_task(current_state.world_state_frame(), [('get_bill', context)])

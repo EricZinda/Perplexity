@@ -3,7 +3,9 @@ Design this more like how you think about the scenario you are trying to achieve
 The basic model is that a predication only gets called if the phrase properties match the ones listed in properties=
 Properties that aren't listed in properties= mean "requires none", i.e. if that property exists in any form it won't match
 
-Examples are given to generate what the requirements *must be* to make those phrases work
+Examples are given to generate what the requirements *must be* to make those phrases work. As long as one of the parses from a given example match the properties, it will compile.  If none do, it will fail. 
+
+If a given example generates more than one parse (often the case), the different parses might have different property requirements.  The parses the developer does not care about should be ignored and not cause a compile error. A dictionary is used in this case to indicate which properties to ignore (see below example of "Check, please")
 
 To avoid duplication of examples and properties, users can set properties_from=function_name to use the properties defined on that function name
 Often used for a group predication
@@ -12,6 +14,7 @@ Often used for a group predication
 @Predication(vocabulary,
              names=["_have_v_1"],
              examples=["Do you have a table?",          # --> implied table request
+                       {"Example": "Check, please", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
                        "Do you have this table?",       # --> fact checking question
                        "What do you have?",             # --> implied menu request
                        "Do you have a|the menu|bill?",  # --> implied menu request

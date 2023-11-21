@@ -153,7 +153,14 @@ def get_example_signatures(vocabulary, examples, predicates):
     signatures = []
     found_predicates = set()
     mrs_parser = perplexity.tree.MrsParser()
-    for example in examples:
+    for example_declaration in examples:
+        if isinstance(example_declaration, dict):
+            example = example_declaration["Example"]
+            ignore_properties = example_declaration["IgnoreProperties"]
+        else:
+            example = example_declaration
+            ignore_properties = []
+
         # If examples have "word1|word2" in them, split into two examples
         alternatives = example.split("|")
         if len(alternatives) == 1:
@@ -182,17 +189,21 @@ def get_example_signatures(vocabulary, examples, predicates):
                             assert found.arg_types[0] == "e", f"verb '{found}' doesn't have event as arg 0"
                             properties.update(tree_info["Variables"][found.args[0]])
 
-                            # Now see if this set of properties matches one of the signatures already generated
-                            # if not, add it as a unique signature
-                            in_list = False
-                            for signature_predicates_tree in signatures:
-                                if not missing_properties(signature_predicates_tree[0], properties):
-                                    in_list = True
-                                    signature_predicates_tree[1].add(str(found.name))
-                                    signature_predicates_tree[2].append((example_in_list, str(tree_info["Tree"])))
+                            # If this set of properties should be ignored for this parse, skip it
+                            if properties in ignore_properties:
+                                continue
+                            else:
+                                # Now see if this set of properties matches one of the signatures already generated
+                                # if not, add it as a unique signature
+                                in_list = False
+                                for signature_predicates_tree in signatures:
+                                    if not missing_properties(signature_predicates_tree[0], properties):
+                                        in_list = True
+                                        signature_predicates_tree[1].add(str(found.name))
+                                        signature_predicates_tree[2].append((example_in_list, str(tree_info["Tree"]), example_declaration))
 
-                            if not in_list:
-                                signatures.append([properties, set([str(found.name)]), [(example_in_list, str(tree_info["Tree"]))]])
+                                if not in_list:
+                                    signatures.append([properties, set([str(found.name)]), [(example_in_list, str(tree_info["Tree"]), example_declaration)]])
 
     return found_predicates, signatures
 
@@ -213,7 +224,7 @@ def compare_examples_to_properties(function_to_decorate, names, examples, exampl
 
     else:
         # See if the provided properties match one of the example_signatures
-        # which means that all of the predications in names are in at least one example that has these properties
+        # which means that all the predications in names are in at least one example that has these properties
         had_failure = False
         remaining_properties = {}
         for property_item in properties.items():
@@ -223,8 +234,9 @@ def compare_examples_to_properties(function_to_decorate, names, examples, exampl
             missing = missing_properties(properties, example_signature[0])
             if missing:
                 had_failure = True
-                print(f"{function_to_decorate.__module__}.{function_to_decorate.__name__}")
-                print(f"Didn't match these properties: {str(missing)}")
+                print(f"... generated a parse with these properties: {example_signature[0]}")
+                print(f"... that didn't find a match for: {str(missing)}")
+                print(f"... in declaration on: {function_to_decorate.__module__}.{function_to_decorate.__name__}")
                 print(f"From these examples:")
                 print("\n".join(["   " + str(x) for x in example_signature[2]]))
             else:
