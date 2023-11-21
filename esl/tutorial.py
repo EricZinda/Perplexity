@@ -1990,7 +1990,10 @@ def _cost_v_1_group(context, state_list, has_more, e_introduced_binding_list, x_
     yield state_list
 
 
-@Predication(vocabulary, names=["_be_v_there"])
+@Predication(vocabulary,
+             names=["_be_v_there"],
+             examples=["Which vegetarian dishes are there?"],
+             properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _be_v_there(context, state, e_introduced_binding, x_object_binding):
     def bound_variable(value):
         yield value in state.get_entities()

@@ -68,5 +68,17 @@
             "PROG": "-",
             "PERF": "-"
         }
+    },
+    "_be_v_there": {
+        "Examples": [
+            "Which vegetarian dishes are there?"
+        ],
+        "Properties": {
+            "SF": "ques",
+            "TENSE": "pres",
+            "MOOD": "indicative",
+            "PROG": "-",
+            "PERF": "-"
+        }
     }
 }
