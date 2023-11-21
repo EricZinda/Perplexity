@@ -163,6 +163,7 @@ def get_example_signatures(vocabulary, examples, predicates):
             example_list = list(generate_alternative_examples(phrase_list))
 
         for example_in_list in example_list:
+            print(f"   example: '{example_in_list}'")
             for mrs in mrs_parser.mrss_from_phrase(example_in_list):
                 for tree_orig in mrs_parser.trees_from_mrs(mrs):
                     tree_info_orig = {"Tree": tree_orig,
@@ -437,6 +438,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
         if examples:
             metadata = get_saved_metadata(function_to_decorate)
             if metadata.get("Examples", []) != examples or metadata.get("Properties", {}) != properties:
+                print(f"Generating properties for {function_to_decorate}...")
                 found_predicates, example_signatures = get_example_signatures(vocabulary, examples, names)
                 if len(found_predicates) < len(names):
                     assert False, f"No examples generated the predicate[s]: {', '.join(set(names).difference(found_predicates))}"

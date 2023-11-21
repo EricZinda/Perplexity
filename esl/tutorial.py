@@ -1843,7 +1843,13 @@ def measure_units(x):
     return None
 
 
-@Predication(vocabulary, names=["_be_v_id"])
+@Predication(vocabulary,
+             names=["_be_v_id"],
+             examples=["What are the specials?",
+                       "How much is the soup?",
+                       "How many dollars is the soup?",
+                       "soup is a vegetarian dish"],
+             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         # Just check if this is an object and a measurement, if so, handle it below
@@ -1915,7 +1921,9 @@ def yield_cost_of_subject_into_object(state, units, subject_variable, object_var
 #   which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))
 #
 # Which 2 dishes are specials?
-@Predication(vocabulary, names=["solution_group__be_v_id"])
+@Predication(vocabulary,
+             names=["solution_group__be_v_id"],
+             properties_from=_be_v_id)
 def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # If the arguments are concepts constraints need to be checked
     if x_subject_variable_group.solution_values[0].value is not None and is_concept(x_subject_variable_group.solution_values[0].value[0]):

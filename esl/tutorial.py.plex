@@ -50,5 +50,23 @@
             "PROG": "-",
             "PERF": "-"
         }
+    },
+    "_be_v_id": {
+        "Examples": [
+            "What are the specials?",
+            "How much is the soup?",
+            "How many dollars is the soup?",
+            "soup is a vegetarian dish"
+        ],
+        "Properties": {
+            "SF": [
+                "ques",
+                "prop"
+            ],
+            "TENSE": "pres",
+            "MOOD": "indicative",
+            "PROG": "-",
+            "PERF": "-"
+        }
     }
 }
