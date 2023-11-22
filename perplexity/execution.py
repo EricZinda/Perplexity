@@ -6,7 +6,7 @@ import perplexity.tree
 import perplexity.solution_groups
 from perplexity.set_utilities import product_stream
 from perplexity.utilities import sentence_force, at_least_one_generator
-from perplexity.vocabulary import ValueSize
+from perplexity.vocabulary import ValueSize, missing_properties
 
 
 # Allows code to throw an exception that should get converted
@@ -94,6 +94,27 @@ class TreeSolver(object):
 
             return InterpretationSolverPhase2(self)
 
+        # Walk the tree and compare any predication with property requirements to the tree_info
+        # Fail if they don't match
+        def tree_matches_interpretation_properties(self, tree_info, interpretation):
+            def check_predication(predication):
+                module_function = interpretation[predication.index]
+                module = sys.modules[module_function.module]
+                function = getattr(module, module_function.function)
+                if hasattr(function, "_delphin_properties"):
+                    properties_to_use = function._delphin_properties
+                    if properties_to_use:
+                        assert predication.arg_types[predication.introduced_variable_index()] == "e", f"verb '{function.__module__}.{function.__name__}' doesn't have an event as arg 0"
+                        phrase_properties = {"SF": force}
+                        phrase_properties.update(tree_info["Variables"][predication.args[predication.introduced_variable_index()]])
+                        if missing_properties(properties_to_use, phrase_properties):
+                            self.report_error_for_index(predication.index, ["formNotUnderstood", function.__name__])
+                            return False
+
+            force = sentence_force(tree_info["Variables"])
+            result = perplexity.tree.walk_tree_predications_until(tree_info["Tree"], check_predication)
+            return result is not False
+
         # Returns solutions for a specific tree interpretation that is passed in
         def solve_tree_interpretation(self, state, tree_info, interpretation, lineage_failure_callback):
             self._interpretation = interpretation
@@ -111,15 +132,16 @@ class TreeSolver(object):
             self._context.reset_scope(state)
             self._context.clear_error()
 
-            for solution in self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"]):
-                # Remember any disjunction lineages that had a solution
-                tree_lineage_binding = state.get_binding("tree_lineage")
-                if tree_lineage_binding.value is None:
-                    self._solution_lineages.add(None)
-                else:
-                    self._solution_lineages.add(tree_lineage_binding.value[0])
+            if self.tree_matches_interpretation_properties(tree_info, interpretation):
+                for solution in self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"]):
+                    # Remember any disjunction lineages that had a solution
+                    tree_lineage_binding = state.get_binding("tree_lineage")
+                    if tree_lineage_binding.value is None:
+                        self._solution_lineages.add(None)
+                    else:
+                        self._solution_lineages.add(tree_lineage_binding.value[0])
 
-                yield solution
+                    yield solution
 
             # Fire an error for the last disjunction tree (which might be the whole tree if there were no disjunctions)
             # but only if no solutions were generated

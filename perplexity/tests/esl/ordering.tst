@@ -129,6 +129,20 @@
             "ID": "988a743e-3192-46a0-8d3c-e20eaf3cfb4d"
         },
         {
+            "Command": "What will the steak cost?",
+            "Expected": "steak : 10 dollars",
+            "Tree": "which_q(x5,thing(x5),_the_q(x3,_steak_n_1(x3),_cost_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "a723cb98-7894-4702-a56d-4850d0c8f5c4"
+        },
+        {
+            "Command": "What did the steak cost?",
+            "Expected": "I don't understand the way you are using: cost",
+            "Tree": "which_q(x5,thing(x5),_the_q(x3,_steak_n_1(x3),_cost_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "e4de925b-11c5-4c07-b11a-4896e6d9fc69"
+        },
+        {
             "Command": "You will have a steak?",
             "Expected": "I don't understand the way you are using: have",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",

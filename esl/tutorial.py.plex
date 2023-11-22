@@ -54,16 +54,23 @@
     "_be_v_id": {
         "Examples": [
             "What are the specials?",
+            "What will be the specials?",
             "How much is the soup?",
+            "How much will the soup be?",
             "How many dollars is the soup?",
-            "soup is a vegetarian dish"
+            "How many dollars will the soup be?",
+            "soup is a vegetarian dish",
+            "soup will be a vegetarian dish"
         ],
         "Properties": {
             "SF": [
                 "ques",
                 "prop"
             ],
-            "TENSE": "pres",
+            "TENSE": [
+                "pres",
+                "fut"
+            ],
             "MOOD": "indicative",
             "PROG": "-",
             "PERF": "-"
@@ -99,6 +106,54 @@
         "Properties": {
             "SF": "comm",
             "TENSE": "pres",
+            "MOOD": "indicative",
+            "PROG": "-",
+            "PERF": "-"
+        }
+    },
+    "_cost_v_1": {
+        "Examples": [
+            {
+                "Example": "What does the steak cost?",
+                "IgnoreProperties": [
+                    {
+                        "SF": "ques",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "past",
+                        "MOOD": "indicative"
+                    }
+                ]
+            },
+            {
+                "Example": "What will the steak cost?",
+                "IgnoreProperties": [
+                    {
+                        "SF": "ques",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "past",
+                        "MOOD": "indicative"
+                    }
+                ]
+            }
+        ],
+        "Properties": {
+            "SF": "ques",
+            "TENSE": [
+                "pres",
+                "fut"
+            ],
             "MOOD": "indicative",
             "PROG": "-",
             "PERF": "-"

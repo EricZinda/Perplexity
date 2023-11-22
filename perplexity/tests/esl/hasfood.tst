@@ -31,6 +31,13 @@
             "ID": "88f8b6e9-7601-46e1-9bb1-d91301a52faa"
         },
         {
+            "Command": "how much will the soup be?",
+            "Expected": "4 dollars",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "86599391-5eaa-4a47-b675-21e943e40e7d"
+        },
+        {
             "Command": "I want the soup",
             "Expected": "Excellent Choice! Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",

@@ -208,12 +208,19 @@ def get_example_signatures(vocabulary, examples, predicates):
     return found_predicates, signatures
 
 
+def example_from_declaration(declaration):
+    if isinstance(declaration, dict):
+        return declaration["Example"]
+    else:
+        return declaration
+
+
 def compare_examples_to_properties(function_to_decorate, names, examples, example_signatures, properties):
     if properties is None:
         # No properties have been declared, print out what was found and fail
-        print(f"No properties specified for: '{function_to_decorate.__name__}(names={names}).\n\n")
+        print(f"No properties specified for: '{function_to_decorate.__name__}(names={names}).")
         print("Analysis is:\nExamples:")
-        print("   " + "\n   ".join(examples))
+        print("   " + "\n   ".join([example_from_declaration(x) for x in examples]))
         for signature in example_signatures:
             print(f"Properties: {signature[0]}")
             print("   " + f"\n   ".join(signature[1]))
@@ -404,7 +411,13 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
         # Attach properties to the function object as one way to make
         # properties_from= work, since inspect.getfile() doesn't work right
         # with decorators
-        function_to_decorate._delphin_properties = properties
+        if properties_from:
+            assert hasattr(properties_from, "_delphin_properties")
+            properties_to_use = properties_from._delphin_properties
+        else:
+            properties_to_use = properties
+
+        function_to_decorate._delphin_properties = properties_to_use
 
         # wrapper_function() actually wraps the predication function
         # and is the real function called at runtime
@@ -420,12 +433,6 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
                 args = args + new_args
 
-            if properties_from:
-                assert hasattr(properties_from, "_delphin_properties")
-                properties_to_use = properties_from._delphin_properties
-            else:
-                properties_to_use = properties
-
             if properties_to_use:
                 # Check the properties that the predication can handle vs. what the phrase has
                 # Collect sentence force, it could be on a different variable
@@ -434,7 +441,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
                 arg0_variable_name = args[system_added_group_arg_count].solution_values[0].variable.name if is_solution_group else args[system_added_arg_count].variable.name
                 tree_info = state.get_binding("tree").value[0]
                 phrase_properties = {"SF": sentence_force(tree_info["Variables"])}
-                assert final_arg_types[0] == "e", f"verb '{function_to_decorate.__module__}.{function_to_decorate.__name__}' doesn't have event as arg 0"
+                assert final_arg_types[0] == "e", f"verb '{function_to_decorate.__module__}.{function_to_decorate.__name__}' doesn't have an event as arg 0"
                 phrase_properties.update(tree_info["Variables"][arg0_variable_name])
                 if missing_properties(properties_to_use, phrase_properties):
                     args[system_added_context_arg].report_error(["formNotUnderstood", function_to_decorate.__name__])

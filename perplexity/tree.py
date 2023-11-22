@@ -186,11 +186,14 @@ class TreePredication(object):
             else:
                 return "h"
 
-    def introduced_variable(self):
+    def introduced_variable_index(self):
         if self.arg_names[0] == "CARG":
-            return self.args[1]
+            return 1
         else:
-            return self.args[0]
+            return 0
+
+    def introduced_variable(self):
+        return self.args[self.introduced_variable_index()]
 
     def argument_types(self):
         return self.arg_types

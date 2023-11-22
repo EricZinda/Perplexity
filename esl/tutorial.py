@@ -1851,10 +1851,15 @@ def measure_units(x):
 @Predication(vocabulary,
              names=["_be_v_id"],
              examples=["What are the specials?",
+                       "What will be the specials?",
                        "How much is the soup?",
+                       "How much will the soup be?",
                        "How many dollars is the soup?",
-                       "soup is a vegetarian dish"],
-             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+                       "How many dollars will the soup be?",
+                       "soup is a vegetarian dish",
+                       "soup will be a vegetarian dish"
+                       ],
+             properties={'SF': ['ques', 'prop'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         # Just check if this is an object and a measurement, if so, handle it below
@@ -1946,7 +1951,14 @@ def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_s
         yield True
 
 
-@Predication(vocabulary, names=["_cost_v_1"])
+@Predication(vocabulary,
+             names=["_cost_v_1"],
+             examples=[{"Example": "What does the steak cost?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                     {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative'}]},
+                       {"Example": "What will the steak cost?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                     {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative'}]}
+                       ],
+             properties={'SF': 'ques', 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if not isinstance(x_object, Measurement):
@@ -1986,7 +1998,9 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
             yield success_state
 
 
-@Predication(vocabulary, names=["solution_group__cost_v_1"])
+@Predication(vocabulary,
+             names=["solution_group__cost_v_1"],
+             properties_from=_cost_v_1)
 def _cost_v_1_group(context, state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
     if is_concept(x_act_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_act_variable_group, check_concepts=True):
