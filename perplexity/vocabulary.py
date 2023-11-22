@@ -14,7 +14,7 @@ import perplexity.tree
 from perplexity.set_utilities import product_stream
 from perplexity.transformer import build_transformed_tree
 from perplexity.utilities import parse_predication_name, system_added_state_arg, system_added_arg_count, \
-    system_added_context_arg, sentence_force, system_added_group_arg_count
+    system_added_context_arg, system_added_group_arg_count
 from perplexity.variable_binding import VariableBinding
 
 
@@ -185,7 +185,7 @@ def get_example_signatures(vocabulary, examples, predicates):
                             found_predicates.add(found.name)
 
                             # Collect sentence force, it could be on a different variable
-                            properties = {"SF": sentence_force(tree_info["Variables"])}
+                            properties = {}
 
                             # Also collect all properties provided for the verb event
                             assert found.arg_types[0] == "e", f"verb '{found}' doesn't have event as arg 0"
@@ -431,12 +431,11 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
             if properties_to_use:
                 # Check the properties that the predication can handle vs. what the phrase has
-                # Collect sentence force, it could be on a different variable
                 # Also collect all properties provided for the verb event
                 state = args[system_added_state_arg][0] if is_solution_group else args[system_added_state_arg]
                 arg0_variable_name = args[system_added_group_arg_count].solution_values[0].variable.name if is_solution_group else args[system_added_arg_count].variable.name
                 tree_info = state.get_binding("tree").value[0]
-                phrase_properties = {"SF": sentence_force(tree_info["Variables"])}
+                phrase_properties = {}
                 assert final_arg_types[0] == "e", f"verb '{function_to_decorate.__module__}.{function_to_decorate.__name__}' doesn't have an event as arg 0"
                 phrase_properties.update(tree_info["Variables"][arg0_variable_name])
                 if missing_properties(properties_to_use, phrase_properties):
@@ -458,7 +457,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
                 if len(found_predicates) < len(names):
                     assert False, f"No examples generated the predicate[s]: {', '.join(set(names).difference(found_predicates))}"
 
-                unexampled_properties, compare_success = compare_examples_to_properties(function_to_decorate, names, examples, example_signatures, properties)
+                unexampled_properties, compare_success = compare_examples_to_properties(function_to_decorate, names, examples, example_signatures, properties_to_use)
                 if not compare_success:
                     assert False, "Set the predication(properties=) argument using properties from below"
                 if unexampled_properties:
