@@ -995,7 +995,17 @@ def _check_v_1_group(context, state_list, has_more, e_introduced_binding, x_acto
         yield[final_state]
 
 
-@Predication(vocabulary, names=["_give_v_1"])
+# We do not want to support future propositions like "You will give me a table" even though
+# they are syntactically correct because they just sound weird
+@Predication(vocabulary,
+             names=["_give_v_1"],
+             examples=[{"Example": "Give me a table", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                       {"Example": "Will you give me a table?", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                     {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
+                       ],
+             properties=[{'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                         ])
 def _give_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
     if state.get_binding(x_actor_binding.variable.name).value[0] == "restaurant":
         if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):

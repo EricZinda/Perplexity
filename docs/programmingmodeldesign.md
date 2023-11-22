@@ -7,6 +7,15 @@ Examples are given to generate what the requirements *must be* to make those phr
 
 If a given example generates more than one parse (often the case), the different parses might have different property requirements.  The parses the developer does not care about should be ignored and not cause a compile error. A dictionary is used in this case to indicate which properties to ignore (see below example of "Check, please")
 
+- We need to have a more expressive way to declare properties.
+    We do not want to support future propositions like "You will give me a table" even though
+    they are technically correct because they just sound weird
+  - But we do want to support:
+       "Give me a table",
+       "Will you give me a table?"
+  - So, properties=[] should be an array. If any properties in it are arrays, we interpret them as combinatoric and expand out 
+    to interpret
+  - 
 To avoid duplication of examples and properties, users can set properties_from=function_name to use the properties defined on that function name
 Often used for a group predication
 

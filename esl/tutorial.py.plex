@@ -158,5 +158,56 @@
             "PROG": "-",
             "PERF": "-"
         }
+    },
+    "_give_v_1": {
+        "Examples": [
+            {
+                "Example": "Give me a table",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop-or-ques",
+                        "TENSE": "tensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            },
+            {
+                "Example": "Will you give me a table?",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop-or-ques",
+                        "TENSE": "tensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "pres",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            }
+        ],
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     }
 }

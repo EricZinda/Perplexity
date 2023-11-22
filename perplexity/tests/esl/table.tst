@@ -45,6 +45,27 @@
             "ID": "efc994a2-94b6-481e-9f75-c09efc44d352"
         },
         {
+            "Command": "give me a table",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x8,_table_n_1(x8),pronoun_q(x3,pron(x3),_give_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "4fb8afbc-08b7-4fa4-8a91-00cd6094a63d"
+        },
+        {
+            "Command": "will you give me a table?",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x8,_table_n_1(x8),pronoun_q(x3,pron(x3),_give_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "887398ed-4865-411d-a59f-251fc53b4002"
+        },
+        {
+            "Command": "You will give me a table",
+            "Expected": "I don't understand the way you are using: give",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x8,_table_n_1(x8),pronoun_q(x3,pron(x3),_give_v_1(e2,x3,x8,x9))))",
+            "Enabled": true,
+            "ID": "d9773e57-08fb-4df3-9897-2891b1aa2b84"
+        },
+        {
             "Command": "Can we sit down?",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
             "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
