@@ -845,13 +845,48 @@ def _grill_v_1(context, state, e_introduced_binding, i_binding, x_target_binding
 
 
 @Predication(vocabulary,
-             names=roasted.predicate_name_list)
+             names=roasted.predicate_name_list,
+             examples=[# Make sure that all kinds of sentences generate the same 'SF': 'prop' for _roast_v_cause
+                       "I want the roasted chicken",
+                       "Do you have the roasted chicken?",
+                       "Give me the roasted chicken.",
+                       {"Example": "Is the chicken roasted?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
+                                                                                  {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                  {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                  {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                       {"Example": "The chicken is roasted", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
+                                                                                 {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                 {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                 {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
+                                                                            ],
+             properties=[# I want the roasted chicken
+                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                         # Is the chicken roasted?
+                         {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             )
 def _roast_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
     yield from roasted.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
 @Predication(vocabulary,
-             names=smoked.predicate_name_list)
+             names=smoked.predicate_name_list,
+             examples=[# Make sure that all kinds of sentences generate the same 'SF': 'prop' for _roast_v_cause
+                       "I want the smoked pork",
+                       "Do you have the smoked pork?",
+                       "Give me the smoked pork.",
+                       {"Example": "Is the pork smoked?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
+                                                                                  {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                  {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                  {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                       {"Example": "The pork is smoked", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
+                                                                                 {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                 {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                 {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
+                      ],
+             properties=[# I want the smoked pork
+                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                         # Is the pork smoked?
+                         {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
 def _smoke_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
     yield from smoked.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
