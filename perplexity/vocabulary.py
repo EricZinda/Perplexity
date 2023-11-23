@@ -158,7 +158,7 @@ def get_example_signatures(vocabulary, examples, predicates):
     for example_declaration in examples:
         if isinstance(example_declaration, dict):
             example = example_declaration["Example"]
-            ignore_properties = example_declaration["IgnoreProperties"]
+            ignore_properties = expand_properties(example_declaration["IgnoreProperties"])
         else:
             example = example_declaration
             ignore_properties = []
@@ -173,6 +173,7 @@ def get_example_signatures(vocabulary, examples, predicates):
 
         for example_in_list in example_list:
             print(f"   parsing example: '{example_in_list}' ...")
+            non_ignored = []
             for mrs in mrs_parser.mrss_from_phrase(example_in_list):
                 for tree_orig in mrs_parser.trees_from_mrs(mrs):
                     tree_info_orig = {"Tree": tree_orig,
@@ -195,6 +196,9 @@ def get_example_signatures(vocabulary, examples, predicates):
                             if properties in ignore_properties:
                                 continue
                             else:
+                                if properties not in non_ignored:
+                                    non_ignored.append(properties)
+
                                 # Now see if this set of properties matches one of the signatures already generated
                                 # if not, add it as a unique signature
                                 in_list = False
@@ -206,6 +210,10 @@ def get_example_signatures(vocabulary, examples, predicates):
 
                                 if not in_list:
                                     signatures.append([properties, set([str(found.name)]), [(example_in_list, str(tree_info["Tree"]), example_declaration)]])
+            if len(non_ignored) == 0:
+                assert False, f"All property sets from '{example_in_list}' were ignored"
+            else:
+                print(f"      ... matched: {''.join(['         ' + str(x) for x in non_ignored])}")
 
     return found_predicates, signatures
 
@@ -258,6 +266,18 @@ def missing_properties(declaration_list, phrase):
 
 
 cached_files = {}
+
+
+def expand_properties(original_properties):
+    if original_properties is not None:
+        if not isinstance(original_properties, (list, tuple)):
+            original_properties = [original_properties]
+        final_properties = []
+        for property_template in original_properties:
+            for property_combination in itertools.product(
+                    *[x if isinstance(x, (list, tuple)) else [x] for x in property_template.values()]):
+                final_properties.append(dict(zip(property_template.keys(), property_combination)))
+        return final_properties
 
 
 def put_saved_metadata(decorated_function, metadata):
@@ -387,16 +407,6 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
         return tuple(new_args)
 
-    def ExpandProperties(original_properties):
-        if original_properties is not None:
-            if not isinstance(original_properties, (list, tuple)):
-                original_properties = [original_properties]
-            final_properties = []
-            for property_template in original_properties:
-                for property_combination in itertools.product(*[x if isinstance(x, (list, tuple)) else [x] for x in property_template.values()]):
-                    final_properties.append(dict(zip(property_template.keys(), property_combination)))
-            return final_properties
-
     # Gets called when the function is first created
     # function_to_decorate is the function definition
     def PredicationDecorator(function_to_decorate):
@@ -411,7 +421,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
             assert hasattr(properties_from, "_delphin_properties")
             properties_to_use = properties_from._delphin_properties
         else:
-            properties_to_use = ExpandProperties(properties)
+            properties_to_use = expand_properties(properties)
 
         function_to_decorate._delphin_properties = properties_to_use
 
@@ -456,7 +466,6 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
                 found_predicates, example_signatures = get_example_signatures(vocabulary, examples, names)
                 if len(found_predicates) < len(names):
                     assert False, f"No examples generated the predicate[s]: {', '.join(set(names).difference(found_predicates))}"
-
                 unexampled_properties, compare_success = compare_examples_to_properties(function_to_decorate, names, examples, example_signatures, properties_to_use)
                 if not compare_success:
                     assert False, "Set the predication(properties=) argument using properties from below"

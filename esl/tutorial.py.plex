@@ -209,5 +209,93 @@
             "PROG": "-",
             "PERF": "-"
         }
+    },
+    "_grill_v_1": {
+        "Examples": [
+            "I want the grilled salmon",
+            "Do you have the grilled salmon?",
+            "Give me the grilled salmon.",
+            {
+                "Example": "Is the salmon grilled?",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative"
+                    },
+                    {
+                        "SF": "prop-or-ques",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "ques",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            },
+            {
+                "Example": "The salmon is grilled",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative"
+                    },
+                    {
+                        "SF": "prop-or-ques",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "ques",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            }
+        ],
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            {
+                "SF": [
+                    "ques",
+                    "prop"
+                ],
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     }
 }

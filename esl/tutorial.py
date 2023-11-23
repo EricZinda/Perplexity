@@ -820,17 +820,38 @@ roasted = PastParticiple(["_roast_v_cause"], "roasted")
 smoked = PastParticiple(["_smoke_v_1"], "smoked")
 
 
-@Predication(vocabulary, names=grilled.predicate_name_list)
+@Predication(vocabulary,
+             names=grilled.predicate_name_list,
+             examples=[# Make sure that all kinds of sentences generate the same 'SF': 'prop' for _grill_v_1
+                       "I want the grilled salmon",
+                       "Do you have the grilled salmon?",
+                       "Give me the grilled salmon.",
+                       {"Example": "Is the salmon grilled?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
+                                                                                  {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                  {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                  {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                       {"Example": "The salmon is grilled", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
+                                                                                 {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                 {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                 {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
+                                                                            ],
+             properties=[# I want the grilled salmon
+                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                         # Is the salmon grilled?
+                         {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             )
 def _grill_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
     yield from grilled.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
-@Predication(vocabulary, names=roasted.predicate_name_list)
+@Predication(vocabulary,
+             names=roasted.predicate_name_list)
 def _roast_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
     yield from roasted.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
-@Predication(vocabulary, names=smoked.predicate_name_list)
+@Predication(vocabulary,
+             names=smoked.predicate_name_list)
 def _smoke_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
     yield from smoked.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
