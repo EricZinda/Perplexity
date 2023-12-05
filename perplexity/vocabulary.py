@@ -12,7 +12,7 @@ import re
 import perplexity.execution
 import perplexity.tree
 from perplexity.set_utilities import product_stream
-from perplexity.transformer import build_transformed_tree
+from perplexity.transformer import build_transformed_tree, TransformerMatch
 from perplexity.utilities import parse_predication_name, system_added_state_arg, system_added_arg_count, \
     system_added_context_arg, system_added_group_arg_count
 from perplexity.variable_binding import VariableBinding
@@ -531,6 +531,7 @@ class Vocabulary(object):
         # Words that should not prevent trees from being built due to being unknown
         # because a transformer removes them
         self.transformer_removed = set()
+        self.transformer_removed_wildcard = []
         # Give each module_function a unique number to identify it
         # which is len(type_list)
         self.next_implementation_id = 0
@@ -558,8 +559,20 @@ class Vocabulary(object):
 
     def add_transform(self, transformer_root):
         for removed in transformer_root.removed_predications():
-            self.transformer_removed.add(removed)
+            if isinstance(removed, TransformerMatch):
+                self.transformer_removed_wildcard.append(removed)
+            else:
+                self.transformer_removed.add(removed)
         self.transformers.append(transformer_root)
+
+    def is_potentially_removed(self, predication):
+        if predication.name in self.transformer_removed:
+            return True
+        else:
+            for match in self.transformer_removed_wildcard:
+                if match.match(predication, set(), {}):
+                    return True
+            return False
 
     def override_predications(self, library, name_list):
         for name in name_list:

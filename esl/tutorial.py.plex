@@ -185,18 +185,28 @@
                         "MOOD": "indicative"
                     }
                 ]
-            }
+            },
+            "The steak costs 10 dollars"
         ],
-        "Properties": {
-            "SF": "ques",
-            "TENSE": [
-                "pres",
-                "fut"
-            ],
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
-        }
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": [
+                    "pres",
+                    "fut"
+                ],
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_be_v_there": {
         "Examples": [

@@ -136,6 +136,13 @@
             "ID": "a723cb98-7894-4702-a56d-4850d0c8f5c4"
         },
         {
+            "Command": "The steak costs 10 dollars",
+            "Expected": "Yes, that is true.",
+            "Tree": "_the_q(x3,_steak_n_1(x3),udef_q(x8,[_dollar_n_1(x8,u15), card(10,e14,x8)],_cost_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "983116b0-36a9-4950-9d75-616087bb9061"
+        },
+        {
             "Command": "What did the steak cost?",
             "Expected": "I don't understand the way you are using: cost",
             "Tree": "which_q(x5,thing(x5),_the_q(x3,_steak_n_1(x3),_cost_v_1(e2,x3,x5)))",

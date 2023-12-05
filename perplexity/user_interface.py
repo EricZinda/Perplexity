@@ -7,7 +7,7 @@ from perplexity.response import RespondOperation
 from perplexity.state import apply_solutions_to_state
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
-    MrsParser, tree_contains_predication
+    MrsParser, tree_contains_predication, TreePredication
 from perplexity.utilities import sentence_force, module_name, import_function_from_names
 
 
@@ -402,7 +402,8 @@ class UserInterface(object):
 
             if self.vocabulary.unknown_word(state, predication.predicate, argument_types, phrase_type):
                 # BUT: if a transformer might remove it, return it as "contingent" so we can see if it did
-                if predication.predicate in self.vocabulary.transformer_removed:
+                tree_predication = TreePredication(0, predication.predicate, list(predication.args.values()), arg_names=list(predication.args.keys()), mrs_predication=predication)
+                if self.vocabulary.is_potentially_removed(tree_predication):
                     contingent_words.append((predication.predicate,
                                           argument_types,
                                           phrase_type,

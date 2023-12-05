@@ -180,10 +180,10 @@ def can_to_able_intransitive_transformer():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal"], production=production)
+                            removed=["_can_v_modal", target], production=production)
 
 
-# Convert "can I have a table/steak/etc?" or "what can I have?"
+# Convert "can I have a table/steak/etc?" or "what can I have?" or "can I get a table"
 # To: able_to
 @Transform(vocabulary)
 def can_to_able_transitive_transformer():
@@ -191,7 +191,7 @@ def can_to_able_transitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal"], production=production)
+                            removed=["_can_v_modal", target], production=production)
 
 
 # Convert "can you show me the menu" to "you show_able the menu"
@@ -201,7 +201,7 @@ def can_to_able_transitive_transformer_indir_obj():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "x"],
                               args_capture=[None, "x1", "x2", "x3"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal"], production=production)
+                            removed=["_can_v_modal", target], production=production)
 
 # can i pay with cash
 @Transform(vocabulary)
@@ -209,7 +209,7 @@ def can_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal"], production=production)
+                            removed=["_can_v_modal", target], production=production)
 
 
 # Convert "May I x?"" to "I x_request x?"
@@ -218,7 +218,7 @@ def may_to_able_intransitive_transformer():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_may_v_modal"], production=production)
+                            removed=["_may_v_modal", target], production=production)
 
 
 # Convert "may I have a table/steak/etc?" or "what may I have?"
@@ -229,15 +229,16 @@ def may_to_able_transitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_may_v_modal"], production=production)
+                            removed=["_may_v_modal", target], production=production)
+
 
 # may i pay with cash
 @Transform(vocabulary)
 def may_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1", "i1", "i2"])
     return TransformerMatch(name_pattern="_may_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_may_v_modal"], production=production)
+                            removed=["_may_v_modal", target], production=production)
 
 
 # Convert "I want to x y" to "I x_request y"
@@ -247,7 +248,7 @@ def want_removal_transitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
-                            removed=["_want_v_1"], production=production)
+                            removed=["_want_v_1", target], production=production)
 
 
 # Convert "I want to x" to "I x_request"
@@ -256,7 +257,7 @@ def want_removal_intransitive_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
-                            removed=["_want_v_1"], production=production)
+                            removed=["_want_v_1", target], production=production)
 
 
 # Convert "I want to pay with x" to "I pay_for_request"
@@ -265,7 +266,7 @@ def want_removal_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
-                            removed=["_want_v_1"], production=production)
+                            removed=["_want_v_1", target], production=production)
 
 
 # Convert "I would like to x y" to "I x_request y"
@@ -277,7 +278,7 @@ def would_like_removal_transitive_transformer():
     like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
     would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match],
-                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"],
+                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1", target],
                                    production=production)
     return would_match
 
@@ -290,7 +291,7 @@ def would_like_removal_intransitive_transformer():
     like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
     would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match],
-                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1"],
+                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1", target],
                                    production=production)
     return would_match
 
@@ -302,7 +303,7 @@ def want_removal_transitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_would_v_modal"], production=production)
+                            removed=["_would_v_modal", target], production=production)
 
 
 # ***************************
@@ -1238,14 +1239,14 @@ def def_implicit_q(context, state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
-@Predication(vocabulary, names=["_like_v_1"])
-def _like_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if is_user_type(state.get_binding(x_actor_binding.variable.name).value[0]):
-        if not state.get_binding(x_object_binding.variable.name).value[0] is None:
-            yield state.record_operations(
-                state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
-    else:
-        yield state
+# @Predication(vocabulary, names=["_like_v_1"])
+# def _like_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+#     if is_user_type(state.get_binding(x_actor_binding.variable.name).value[0]):
+#         if not state.get_binding(x_object_binding.variable.name).value[0] is None:
+#             yield state.record_operations(
+#                 state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
+#     else:
+#         yield state
 
 
 @Predication(vocabulary, names=["_please_a_1"])
@@ -1537,8 +1538,8 @@ def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
         yield None
 
 
-# Present tense scenarios:
-#   "I get x?", "I get x" --> not great english, respond with an error
+# Present tense scenarios: all of these are not great english, respond with an error
+#   "I get x?", "I get x"
 #   "What do I see?"
 #   "Who sees an x?
 #   "I see a menu?"
@@ -1548,13 +1549,15 @@ def invalid_present_transitive(context, state, e_introduced_binding, x_actor_bin
     if not is_present_tense(state.get_binding("tree").value[0]):
         context.report_error(["formNotUnderstood", "invalid_present_transitive"])
         return
-
     context.report_error(["unexpected", state.get_reprompt()])
     if False:
         yield None
 
 
-@Predication(vocabulary, names=["_order_v_1"])
+@Predication(vocabulary,
+             names=["_order_v_1"])
+             # examples=[{"Example": "Check, please", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}],
+             # properties={'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_past_tense(state.get_binding("tree").value[0]):
         context.report_error(["formNotUnderstood", "_order_v_1_past"])
@@ -2022,9 +2025,11 @@ def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_s
              examples=[{"Example": "What does the steak cost?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                                                                                      {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative'}]},
                        {"Example": "What will the steak cost?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                     {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative'}]}
+                                                                                     {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative'}]},
+                       "The steak costs 10 dollars"
                        ],
-             properties={'SF': 'ques', 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties=[{'SF': 'ques', 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
 def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if not isinstance(x_object, Measurement):
