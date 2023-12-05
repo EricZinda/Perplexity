@@ -304,7 +304,7 @@ def consumed_variables(arg_value):
     if isinstance(arg_value, str):
         yield arg_value
     elif isinstance(arg_value, list):
-        for item in list:
+        for item in arg_value:
             yield from consumed_variables(item)
     elif isinstance(arg_value, TreePredication):
         for item in arg_value.args:

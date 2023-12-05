@@ -483,5 +483,42 @@
                 "PERF": "-"
             }
         ]
+    },
+    "_order_v_1_past": {
+        "Examples": [
+            {
+                "Example": "What did I order?",
+                "IgnoreProperties": [
+                    {
+                        "SF": "ques",
+                        "TENSE": "pres",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            },
+            {
+                "Example": "I ordered a steak",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative"
+                    }
+                ]
+            },
+            "how much soup did I order?"
+        ],
+        "Properties": {
+            "SF": [
+                "ques",
+                "prop"
+            ],
+            "TENSE": "past",
+            "MOOD": "indicative",
+            "PROG": "-",
+            "PERF": "-"
+        }
     }
 }

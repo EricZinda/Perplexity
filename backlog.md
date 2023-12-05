@@ -1,8 +1,4 @@
-- "can I get a table for 2?" is broken 
-  - Because "get_v_1" is not defined
-  - It isn't listed in TransformerMatch.removed because the term is not known until runtime
-    - Need a way to add dynamic terms to .removed
-- Make "the steak costs 10 dollars" work
+
 
 - New Programming Model todo:
   - Get rid of old metadata that doesn't have a function anymore, e.g. if the user has it then deletes it

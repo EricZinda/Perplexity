@@ -924,8 +924,8 @@ def _with_p(context, state, e_introduced_binding, e_main, x_binding):
     yield state.add_to_e(e_main.variable.name, "With", x_binding.value[0])
 
 
-@Predication(vocabulary, names=["_pay_v_for","_pay_v_for_able","_pay_v_for_request"], handles=[("With", EventOption.optional)])
-def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1,i_binding2):
+@Predication(vocabulary, names=["_pay_v_for", "_pay_v_for_able", "_pay_v_for_request"], handles=[("With", EventOption.optional)])
+def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1, i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
         yield do_task(state, [("respond", context, "It's not time to pay yet.")])
         return
@@ -1555,13 +1555,12 @@ def invalid_present_transitive(context, state, e_introduced_binding, x_actor_bin
 
 
 @Predication(vocabulary,
-             names=["_order_v_1"])
-             # examples=[{"Example": "Check, please", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}],
-             # properties={'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             names=["_order_v_1"],
+             examples=[{"Example": "What did I order?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                       {"Example": "I ordered a steak", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'}]},
+                       "how much soup did I order?"],
+             properties={'SF': ['ques', 'prop'], 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if not is_past_tense(state.get_binding("tree").value[0]):
-        context.report_error(["formNotUnderstood", "_order_v_1_past"])
-        return
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
         context.report_error(["formNotUnderstood", "_order_v_1_past"])
         return
