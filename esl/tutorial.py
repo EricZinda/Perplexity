@@ -87,7 +87,7 @@ def is_request_from_tree(tree_info):
 def valid_player_request(state, x_objects, valid_types=None):
     # Things players can request
     if valid_types is None:
-        valid_types = ["food", "table", "menu", "bill"]
+        valid_types = ["food", "table", "menu", "bill", "check"]
 
     store_objects = [object_to_store(x) for x in x_objects]
     for store in store_objects:
@@ -203,11 +203,21 @@ def can_to_able_transitive_transformer_indir_obj():
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal", target], production=production)
 
+
+# can i pay the bill
+@Transform(vocabulary)
+def can_pay_object_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "i"], args_capture=[None, "x1", "x2", "i2"])
+    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_can_v_modal", target], production=production)
+
+
 # can i pay with cash
 @Transform(vocabulary)
 def can_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1","i1","i2"])
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1", "i1", "i2"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal", target], production=production)
 
@@ -247,6 +257,15 @@ def want_removal_transitive_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
+                            removed=["_want_v_1", target], production=production)
+
+# Convert "I want to x y" to "I x_request y"
+@Transform(vocabulary)
+def want_removal_transitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG3": "$i1"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "i"],
+                              args_capture=[None, "x1", "x2", "i1"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
                             removed=["_want_v_1", target], production=production)
 
@@ -921,19 +940,74 @@ def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
 
 @Predication(vocabulary, names=("_with_p",))
 def _with_p(context, state, e_introduced_binding, e_main, x_binding):
-    yield state.add_to_e(e_main.variable.name, "With", x_binding.value[0])
+    yield state.add_to_e(e_main.variable.name, "With", {"Value": x_binding.value[0], "Originator": context.current_predication_index()})
 
 
-@Predication(vocabulary, names=["_pay_v_for", "_pay_v_for_able", "_pay_v_for_request"], handles=[("With", EventOption.optional)])
+# Can I pay the bill?
+@Predication(vocabulary, names=["_pay_v_for_request"])
+def _pay_v_for_object(context, state, e_introduced_binding, x_actor_binding, x_object_binding, i_binding):
+    def both_bound_prediction_function(x_actor, x_object):
+        # Players are able to pay for any food, or the bill
+        if is_user_type(x_actor):
+            if valid_player_request(state, [x_object], ["food", "bill", "check"]):
+                return True
+            else:
+                context.report_error(["errorText", "You can't pay for that."])
+                return False
+
+    def actor_unbound(x_object):
+        # What/Who can pay for x?
+        found = False
+        if valid_player_request(state, [x_object], ["food", "bill", "check"]):
+            found = True
+            yield from user_types()
+
+        if not found:
+            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "pay for", x_object_binding.variable.name])
+
+    def object_unbound(x_actor):
+        # This is a "What can I pay for?" type question
+        if is_user_type(x_actor):
+            yield ESLConcept("bill")
+
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
+                                      both_bound_prediction_function,
+                                      actor_unbound,
+                                      object_unbound)
+
+
+@Predication(vocabulary,
+             names=["solution_group__pay_v_for_request"])
+def _pay_v_for_object_group(context, state_list, has_more, e_introduced_list, x_actor_variable_group, x_object_variable_group, i_binding_list):
+    tree_info = state_list[0].get_binding("tree").value[0]
+    wh_variable = is_wh_question(tree_info)
+    if wh_variable:
+        yield state_list
+    else:
+        # As long as these were valid objects to pay for, just interpret as "give me the bill"
+        task = ('satisfy_want', context,
+                variable_group_values_to_list(x_actor_variable_group),
+                [(ESLConcept("bill"),)],
+                1)
+
+        final_state = do_task(state_list[0].world_state_frame(), [task])
+        if final_state is None:
+            yield []
+        else:
+            yield [final_state]
+
+
+# Can I pay with x?
+@Predication(vocabulary, names=["_pay_v_for", "_pay_v_for_request"], handles=[("With", EventOption.required)])
 def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1, i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
         yield do_task(state, [("respond", context, "It's not time to pay yet.")])
         return
-    if not e_introduced_binding.value["With"] in ["cash", "card"]:
-        yield do_task(state,[("respond", context, "You can't pay with that.")])
+    if not e_introduced_binding.value["With"]["Value"] in ["cash", "card"]:
+        yield do_task(state, [("respond", context, "You can't pay with that.")])
         return
 
-    yield state.record_operations(state.handle_world_event(context, ["unknown", e_introduced_binding.value["With"]]))
+    yield state.record_operations(state.handle_world_event(context, ["unknown", e_introduced_binding.value["With"]["Value"]]))
 
 
 @Predication(vocabulary, names=["_want_v_1"])
@@ -2285,6 +2359,7 @@ def reset():
     initial_state = initial_state.add_rel("restaurant", "hasName", "restaurant")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "check")
+    initial_state = initial_state.add_rel("user", "have", "bill1")
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")
     initial_state = initial_state.add_rel("room", "contains", "user")
 
@@ -2293,6 +2368,7 @@ def reset():
     initial_state = initial_state.add_rel("user", "instanceOf", "person")
     initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
+    initial_state = initial_state.add_rel("user", "have", "card")
     initial_state = initial_state.add_rel("user", "heardSpecials", "false")
 
     initial_state = initial_state.add_rel("chicken", "isAdj", "roasted")

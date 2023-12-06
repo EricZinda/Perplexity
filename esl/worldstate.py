@@ -736,7 +736,7 @@ class WorldState(State):
         veggies = list(all_instances_and_spec(self, "veggie"))
         if self.rel_exists("ordered"):
             for i in self.all_rel("ordered"):
-                if i[0] == "user":
+                if i[0] in ["user", "son1"]:
                     if i[1] in veggies:
                         return True
         return False

@@ -1,7 +1,14 @@
+- "can I get the check?" -> yes
+  - expected: get the bill
 
+- I want to pay the bill
+  - _the_q(x11,_bill_n_of(x11,i17),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,_pay_v_for(e10,x3,x11,i12))))
 
+- What do I have --> your card
+  - should say your son
 - New Programming Model todo:
   - Get rid of old metadata that doesn't have a function anymore, e.g. if the user has it then deletes it
+  - Need to support wh-question examples as a way to filter out those when necessary too
 - Example33_reset: a few files are in a folder together
   - crazy slow now
   - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))

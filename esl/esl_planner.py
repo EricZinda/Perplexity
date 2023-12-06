@@ -192,7 +192,7 @@ def get_bill_at_table(state, context):
     for i in state.all_rel("valueOf"):
         if i[1] == "bill1":
             total = i[0]
-            if state.sys["responseState"] == "done_ordering":
+            if state.sys["responseState"] in ["done_ordering", "way_to_pay"]:
                 return [('respond', context, f"Your total is {str(total)} dollars. Would you like to pay by cash or card?"),
                         ('set_response_state', context, "way_to_pay")]
             else:
@@ -313,7 +313,7 @@ def satisfy_want_group_group(state, context, group_who, group_what, min_size):
                 return [("get_table", context, unique_group_variable_values(group_who), one_thing, min_size)]
             elif one_thing.concept_name == "menu":
                 return [("get_menu", context, unique_group_variable_values(group_who), min_size)]
-            elif one_thing.concept_name == "bill":
+            elif one_thing.concept_name in ["bill", "check"]:
                 return [("get_bill", context)]
 
         else:
