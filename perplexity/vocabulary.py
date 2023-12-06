@@ -211,7 +211,7 @@ def get_example_signatures(vocabulary, examples, predicates):
                                 if not in_list:
                                     signatures.append([properties, set([str(found.name)]), [(example_in_list, str(tree_info["Tree"]), example_declaration)]])
             if len(non_ignored) == 0:
-                assert False, f"All property sets from '{example_in_list}' were ignored"
+                assert False, f"All property sets from '{example_in_list}' were either ignored or didn't match any of the predicate names"
             else:
                 print(f"      ... matched: {''.join(['         ' + str(x) for x in non_ignored])}")
 

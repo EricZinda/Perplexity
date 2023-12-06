@@ -977,7 +977,8 @@ def _pay_v_for_object(context, state, e_introduced_binding, x_actor_binding, x_o
 
 
 @Predication(vocabulary,
-             names=["solution_group__pay_v_for_request"])
+             names=["solution_group__pay_v_for_request"],
+             properties_from=_pay_v_for_object)
 def _pay_v_for_object_group(context, state_list, has_more, e_introduced_list, x_actor_variable_group, x_object_variable_group, i_binding_list):
     tree_info = state_list[0].get_binding("tree").value[0]
     wh_variable = is_wh_question(tree_info)
@@ -997,8 +998,21 @@ def _pay_v_for_object_group(context, state_list, has_more, e_introduced_list, x_
             yield [final_state]
 
 
-# Can I pay with x?
-@Predication(vocabulary, names=["_pay_v_for", "_pay_v_for_request"], handles=[("With", EventOption.required)])
+# All of these are interpreted as "I want to pay with cash/card"
+@Predication(vocabulary,
+             names=["_pay_v_for", "_pay_v_for_request"],
+             examples=[
+                        {"Example": "I want to pay with cash", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                    {'SF': 'prop-or-ques', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                    {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                        {"Example": "I will pay with cash", "IgnoreProperties": []},
+                        {"Example": "Can I pay with cash", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+             ],
+             properties=[{'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
+             handles=[("With", EventOption.required)])
 def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1, i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
         yield do_task(state, [("respond", context, "It's not time to pay yet.")])

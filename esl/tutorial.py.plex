@@ -520,5 +520,81 @@
             "PROG": "-",
             "PERF": "-"
         }
+    },
+    "_pay_v_for": {
+        "Examples": [
+            {
+                "Example": "I want to pay with cash",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop-or-ques",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop-or-ques",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            },
+            {
+                "Example": "I will pay with cash",
+                "IgnoreProperties": []
+            },
+            {
+                "Example": "Can I pay with cash",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "pres",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            }
+        ],
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     }
 }
