@@ -571,6 +571,25 @@
                         "PERF": "-"
                     }
                 ]
+            },
+            {
+                "Example": "Could I pay with cash",
+                "IgnoreProperties": [
+                    {
+                        "SF": "ques",
+                        "TENSE": "past",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    },
+                    {
+                        "SF": "prop",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
             }
         ],
         "Properties": [
@@ -581,6 +600,49 @@
                 "PROG": "-",
                 "PERF": "-"
             },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_pay_v_for_object": {
+        "Examples": [
+            {
+                "Example": "Can I pay the bill?",
+                "IgnoreProperties": []
+            },
+            {
+                "Example": "I want to pay the bill",
+                "IgnoreProperties": []
+            },
+            {
+                "Example": "Who can pay the bill",
+                "IgnoreProperties": []
+            },
+            {
+                "Example": "What can I pay?",
+                "IgnoreProperties": []
+            }
+        ],
+        "Properties": [
             {
                 "SF": "ques",
                 "TENSE": "pres",

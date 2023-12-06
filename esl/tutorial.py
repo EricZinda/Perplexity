@@ -222,6 +222,61 @@ def can_paytype_transformer():
                             removed=["_can_v_modal", target], production=production)
 
 
+
+
+
+@Transform(vocabulary)
+def could_to_able_intransitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
+    return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_could_v_modal", target], production=production)
+
+
+# Convert "can I have a table/steak/etc?" or "what can I have?" or "can I get a table"
+# To: able_to
+@Transform(vocabulary)
+def could_to_able_transitive_transformer():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
+                              args_capture=[None, "x1", "x2"])
+    return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_could_v_modal", target], production=production)
+
+
+# Convert "can you show me the menu" to "you show_able the menu"
+@Transform(vocabulary)
+def could_to_able_transitive_transformer_indir_obj():
+    production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG4": "$x3"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "x"],
+                              args_capture=[None, "x1", "x2", "x3"])
+    return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_could_v_modal", target], production=production)
+
+
+# can i pay the bill
+@Transform(vocabulary)
+def could_pay_object_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "i"], args_capture=[None, "x1", "x2", "i2"])
+    return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_could_v_modal", target], production=production)
+
+
+# can i pay with cash
+@Transform(vocabulary)
+def could_paytype_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1", "i1", "i2"])
+    return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
+                            removed=["_could_v_modal", target], production=production)
+
+
+
+
+
+
+
 # Convert "May I x?"" to "I x_request x?"
 @Transform(vocabulary)
 def may_to_able_intransitive_transformer():
@@ -944,7 +999,16 @@ def _with_p(context, state, e_introduced_binding, e_main, x_binding):
 
 
 # Can I pay the bill?
-@Predication(vocabulary, names=["_pay_v_for_request"])
+@Predication(vocabulary,
+             names=["_pay_v_for_request"],
+             examples=[{"Example": "Can I pay the bill?", "IgnoreProperties": []},
+                       {"Example": "I want to pay the bill", "IgnoreProperties": []},
+                       {"Example": "Who can pay the bill", "IgnoreProperties": []},
+                       {"Example": "What can I pay?", "IgnoreProperties": []}
+                       ],
+             properties=[{'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             )
 def _pay_v_for_object(context, state, e_introduced_binding, x_actor_binding, x_object_binding, i_binding):
     def both_bound_prediction_function(x_actor, x_object):
         # Players are able to pay for any food, or the bill
@@ -998,7 +1062,7 @@ def _pay_v_for_object_group(context, state_list, has_more, e_introduced_list, x_
             yield [final_state]
 
 
-# All of these are interpreted as "I want to pay with cash/card"
+# All of the "can/couldpay with" alternatives are interpreted as "I want to pay with cash/card"
 @Predication(vocabulary,
              names=["_pay_v_for", "_pay_v_for_request"],
              examples=[
@@ -1008,10 +1072,13 @@ def _pay_v_for_object_group(context, state_list, has_more, e_introduced_list, x_
                         {"Example": "I will pay with cash", "IgnoreProperties": []},
                         {"Example": "Can I pay with cash", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                                                                                 {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                        {"Example": "Could I pay with cash", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                                                                                  {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
              ],
              properties=[{'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                         {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
+                         {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
              handles=[("With", EventOption.required)])
 def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1, i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
