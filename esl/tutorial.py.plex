@@ -658,5 +658,49 @@
                 "PERF": "-"
             }
         ]
+    },
+    "_seat_v_cause": {
+        "Examples": [
+            {
+                "Example": "seat me",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop-or-ques",
+                        "TENSE": "tensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            },
+            {
+                "Example": "can you seat me?",
+                "IgnoreProperties": [
+                    {
+                        "SF": "prop",
+                        "TENSE": "untensed",
+                        "MOOD": "indicative",
+                        "PROG": "-",
+                        "PERF": "-"
+                    }
+                ]
+            }
+        ],
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     }
 }

@@ -1287,7 +1287,16 @@ def _show_v_cause_group(context, state_list, has_more, e_introduced_binding, x_a
         yield [current_state]
 
 
-@Predication(vocabulary, names=["_seat_v_cause", "_seat_v_cause_able"])
+@Predication(vocabulary,
+             names=["_seat_v_cause", "_seat_v_cause_able"],
+             examples=[{"Example": "seat me", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
+                       {"Example": "can you seat me?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
+                       ],
+             properties=[
+                    {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                    {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ]
+             )
 def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
         context.report_error(["formNotUnderstood", "_seat_v_cause"])
@@ -1309,7 +1318,9 @@ def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_objec
                                       wanters_of_obj, wanted_of_actor)
 
 
-@Predication(vocabulary, names=["solution_group__seat_v_cause", "solution_group__seat_v_cause_able"])
+@Predication(vocabulary,
+             names=["solution_group__seat_v_cause", "solution_group__seat_v_cause_able"],
+             properties_from=_seat_v_cause)
 def _seat_v_cause_group(context, state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     new_state = do_task(state_list[0].world_state_frame(),
                         [('satisfy_want', context, variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])

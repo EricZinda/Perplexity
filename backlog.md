@@ -1,14 +1,14 @@
-- "could I pay with cash?" --> matched:          {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}         {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-  - none of the "can_v" alternatives are present tense
+
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
   - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...
 - Need to recheck constraints if names are changed
+- support "can we be seated?"
 - make "how can I pay the bill?" work
-- make "can I pay for the bill"
+- make "can I pay for the bill" work
 - What do I have --> your card
   - should also say your son
 - New Programming Model todo:
-  - Get rid of old metadata that doesn't have a function anymore, e.g. if the user has it then deletes it
+  - Get rid of old metadata that doesn't have a function anymore, e.g. if the developer has it then deletes it
   - Need to support wh-question examples as a way to filter out those when necessary too
 - Example33_reset: a few files are in a folder together
   - crazy slow now
