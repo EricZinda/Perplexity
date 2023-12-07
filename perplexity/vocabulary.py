@@ -291,18 +291,18 @@ def expand_properties(original_properties):
 
 
 def put_saved_metadata(decorated_function, metadata):
-    all_metadata = get_all_metadata(decorated_function)
+    all_metadata = get_all_metadata_from_function_file(decorated_function)
     all_metadata[decorated_function.__name__] = metadata
     with open(meta_file_path(decorated_function), "w") as file:
         file.write(json.dumps(all_metadata, indent=4))
 
 
 def get_saved_metadata(decorated_function):
-    cached_file = get_all_metadata(decorated_function)
+    cached_file = get_all_metadata_from_function_file(decorated_function)
     return cached_file.get(decorated_function.__name__, {})
 
 
-def get_all_metadata(decorated_function):
+def get_all_metadata_from_function_file(decorated_function):
     python_meta_file = meta_file_path(decorated_function)
     if python_meta_file not in cached_files:
         if not os.path.exists(python_meta_file):
@@ -369,8 +369,9 @@ def check_phrases(func, vocabulary, predicates, phrase_dict):
             non_matching_examples = []
             found_properties_match = False
             for mrs in mrs_parser.mrss_from_phrase(phrase):
-                # Just remember one tree for this MRS as an example
-                example_tree = None
+                # Just remember one of every alternate tree for this MRS as an example
+                # to show in errors
+                example_trees = {}
                 for tree_orig in mrs_parser.trees_from_mrs(mrs):
                     tree_info_orig = {"Tree": tree_orig,
                                       "Variables": mrs.variables}
@@ -380,28 +381,30 @@ def check_phrases(func, vocabulary, predicates, phrase_dict):
                         found = perplexity.tree.find_predication(tree_info["Tree"], predicates)
                         if found is not None:
                             assert found.arg_types[0] == "e", f"verb '{found}' doesn't have event as arg 0"
-                            found_predicates.add(found.name)
 
                             # Get the properties provided for the verb event
                             tree_properties = tree_info["Variables"][found.args[0]]
                             if tree_properties == specified_properties:
+                                found_predicates.add(found.name)
                                 if tree_properties not in properties_list:
                                     properties_list.append(tree_properties)
 
                                 found_properties_match = True
                                 break
 
-                            elif example_tree is None:
-                                example_tree = [tree_orig, tree_properties]
+                            else:
+                                key = tree_info.get("Transformed", None)
+                                if key not in example_trees:
+                                    example_trees[key] = [tree_info["Tree"], tree_properties]
 
                 if found_properties_match:
                     break
 
                 else:
-                    if example_tree is None:
+                    if len(example_trees) == 0:
                         non_matching_examples.append([tree_orig, f"Did not contain predicates listed for this function: {predicates}"])
                     else:
-                        non_matching_examples.append(example_tree)
+                        non_matching_examples += example_trees.values()
 
             if not found_properties_match:
                 success = False
@@ -411,6 +414,68 @@ def check_phrases(func, vocabulary, predicates, phrase_dict):
                     print(f"      {example[0]}: {example[1]}")
 
     return success, found_predicates, properties_list
+
+
+# Confirm that the phrases declarations match the properties
+# If they do (or there are just properties), return the properties
+# Otherwise, Assert
+def check_properties(vocabulary, function_to_decorate, names, metadata, phrases, properties, properties_from):
+    # If phrases are specified, gather the properties from them
+    # If they are valid, save them in metadata
+    if phrases:
+        if metadata.get("Phrases", []) != phrases:
+            print(f"Generating phrase properties for {function_to_decorate}...")
+            check_success, found_predicates, phrases_properties_list = check_phrases(function_to_decorate, vocabulary, names, phrases)
+            if len(found_predicates) < len(names):
+                assert False, f"No examples generated the predicate[s]: {', '.join(set(names).difference(found_predicates))}"
+            elif not check_success:
+                assert False, f"One or more phrases failed to match properties for its MRSs"
+
+            metadata["Phrases"] = phrases
+
+        else:
+            phrases_properties_list = collect_properties(function_to_decorate, phrases)
+
+    else:
+        metadata.pop("Phrases", None)
+        phrases_properties_list = None
+
+    # Gather the properties declaration
+    assert not (properties_from and properties), f"{function_to_decorate} has both a properties= and a properties_from= declaration"
+    if properties_from:
+        assert hasattr(properties_from, "_delphin_properties"), f"properties_from on {function_to_decorate} references a function with no properties specified"
+        properties_to_use = properties_from._delphin_properties
+        metadata["PropertiesFrom"] = f"{function_to_decorate.__module__}.{function_to_decorate.__name__}"
+        metadata.pop("Properties", None)
+    else:
+        metadata.pop("PropertiesFrom", None)
+        if properties:
+            properties_to_use = expand_properties(properties)
+            metadata["Properties"] = properties_to_use
+            metadata.pop("PropertiesFrom", None)
+
+        else:
+            metadata.pop("Properties", None)
+            properties_to_use = None
+
+    # If we have both a properties declaration and phrases,
+    # make sure their properties match
+    if phrases_properties_list:
+        nl = "\n"
+        if not properties_to_use or (len(phrases_properties_list) != len(properties_to_use)):
+            assert False, f"On {function_to_decorate}\nThe declared properties:\n{nl.join(str(x) for x in properties_to_use) if properties_to_use is not None else 'None'}\n\ndon't match the properties declared by the phrases:\n{nl.join(str(x) for x in phrases_properties_list)}"
+        else:
+            # Make sure they match
+            for phrases_properties in phrases_properties_list:
+                if phrases_properties not in properties_to_use:
+                    assert False, f"On {function_to_decorate}\nThe declared properties:\n{nl.join(str(x) for x in properties_to_use) if properties_to_use is not None else 'None'}\n\ndon't match the properties declared by the phrases:\n{nl.join(str(x) for x in phrases_properties_list)}"
+            for properties_used in properties_to_use:
+                if properties_used not in phrases_properties_list:
+                    assert False, f"On {function_to_decorate}\nThe declared properties:\n{nl.join(str(x) for x in properties_to_use) if properties_to_use is not None else 'None'}\n\ndon't match the properties declared by the phrases:\n{nl.join(str(x) for x in phrases_properties_list)}"
+
+    # If we got here, everything checks out and the metadata has
+    # been updated to match the declaration
+    return properties_to_use
 
 
 def Predication(vocabulary, library=None, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None, phrases=None, properties=None, properties_from=None):
@@ -521,38 +586,16 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
         predication_names = names if names is not None else [function_to_decorate.__name__]
 
-        # If phrases are specified, gather the properties from them
-        if phrases:
-            metadata = get_saved_metadata(function_to_decorate)
-            if metadata.get("Phrases", []) != phrases:
-                print(f"Generating phrase properties for {function_to_decorate}...")
-                check_success, found_predicates, phrases_properties_list = check_phrases(function_to_decorate, vocabulary, names, phrases)
-                if len(found_predicates) < len(names):
-                    assert False, f"No examples generated the predicate[s]: {', '.join(set(names).difference(found_predicates))}"
-                elif not check_success:
-                    assert False, f"One or more phrases failed to match properties for its MRSs"
+        # Compare properties metadata with the cached version, if they are the same
+        # don't bother checking again
+        metadata = get_saved_metadata(function_to_decorate)
+        check_declaration = metadata.get("Phrases", []) != phrases or metadata.get("Properties", []) != properties or metadata.get("PropertiesFrom") != properties_from
+        if check_declaration:
+            properties_to_use = check_properties(vocabulary, function_to_decorate, names, metadata, phrases, properties, properties_from)
+            put_saved_metadata(function_to_decorate, metadata)
 
-                metadata["Phrases"] = phrases
-                put_saved_metadata(function_to_decorate, {"Phrases": phrases})
-
-            else:
-                phrases_properties_list = collect_properties(function_to_decorate, phrases)
-
-        else:
-            phrases_properties_list = None
-
-        # Gather the properties declaration
-        if properties_from:
-            assert hasattr(properties_from, "_delphin_properties"), f"properties_from on {function_to_decorate} references a function with no properties specified"
-            properties_to_use = properties_from._delphin_properties
         else:
             properties_to_use = expand_properties(properties)
-
-        # If we have both a properties declaration and phrases, make sure they match
-        if phrases_properties_list:
-            if not properties_to_use or (len(phrases_properties_list) != len(properties_to_use)):
-                nl = "\n"
-                assert False, f"On {function_to_decorate}\nThe declared properties:\n{nl.join(str(x) for x in properties_to_use)}\n\ndon't match the properties declared by the phrases:\n{nl.join(str(x) for x in phrases_properties_list)}"
 
         # Attach properties to the function object as one way to make
         # properties_from= work, since inspect.getfile() doesn't work right

@@ -1,18 +1,16 @@
-- support synonyms
-- _see_v_1_able
-- _see_v_1_future
-- _show_v_1
-- _sit_v_down_able
-- _sit_v_down_future
-- _sit_v_down_request
-- _take_v_1_able
-- _want_v_1
+- Need to recheck constraints if names are changed
+- Update sit_v_invalid_present_intransitive()
+  - "I can sit": None,
+      doesn't generate sit_able alternatives
+- Update invalid_present_transitive
+- Update _have_v_1_future
+- 
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
   - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...
-- Need to recheck constraints if names are changed
 - support "can we be seated?"
 - make "how can I pay the bill?" work
 - make "can I pay for the bill" work
+- make "we want to sit at a table" work
 - What do I have --> your card
   - should also say your son
 - New Programming Model todo:

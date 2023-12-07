@@ -36,7 +36,30 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_roast_v_1": {
         "Phrases": {
@@ -75,7 +98,30 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_smoke_v_1": {
         "Phrases": {
@@ -114,7 +160,30 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_pay_v_for_object": {
         "Phrases": {
@@ -146,7 +215,23 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_pay_v_for": {
         "Phrases": {
@@ -178,7 +263,37 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_check_v_1": {
         "Phrases": {
@@ -189,7 +304,16 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_give_v_1": {
         "Phrases": {
@@ -207,7 +331,23 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_seat_v_cause": {
         "Phrases": {
@@ -225,7 +365,23 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_order_v_1_past": {
         "Phrases": {
@@ -250,7 +406,23 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_have_v_1_future": {
         "Phrases": {
@@ -261,7 +433,16 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_have_v_1_present": {
         "Phrases": {
@@ -342,7 +523,23 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_have_v_1_able": {
         "Phrases": {
@@ -374,7 +571,16 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_be_v_id": {
         "Phrases": {
@@ -434,7 +640,37 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_cost_v_1": {
         "Phrases": {
@@ -459,7 +695,30 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     },
     "_be_v_there": {
         "Phrases": {
@@ -470,6 +729,485 @@
                 "PROG": "-",
                 "PERF": "-"
             }
-        }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "count": {},
+    "pron": {},
+    "generic_entity_measure": {},
+    "generic_entity": {},
+    "_okay_a_1": {},
+    "abstr_deg": {},
+    "_for_p": {},
+    "_cash_n_1": {},
+    "_card_n_1": {},
+    "_credit_n_1": {},
+    "_dollar_n_1_measure": {},
+    "_dollar_n_1": {},
+    "unknown": {},
+    "unknown_group": {},
+    "unknown_eu": {},
+    "_yes_a_1": {},
+    "_no_a_1": {},
+    "thing_concepts": {},
+    "thing_instances": {},
+    "person_concepts": {},
+    "person_instances": {},
+    "match_all_n_concepts": {},
+    "match_all_n_instances": {},
+    "match_all_the_concept_n": {},
+    "match_all_n_i_concepts": {},
+    "match_all_n_i_instances": {},
+    "the_q": {},
+    "_vegetarian_a_1_concepts": {},
+    "_vegetarian_a_1_instances": {},
+    "on_p_loc": {},
+    "_with_p": {},
+    "_pay_v_for_object_group": {
+        "PropertiesFrom": "esl.tutorial._pay_v_for_object_group"
+    },
+    "_want_v_1": {
+        "Phrases": {
+            "we'd like a table for 2": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I want a steak": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I'd like a steak": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "My son would like a salad": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "want_group": {
+        "PropertiesFrom": "esl.tutorial.want_group"
+    },
+    "_check_v_1_group": {
+        "PropertiesFrom": "esl.tutorial._check_v_1_group"
+    },
+    "_show_v_1": {
+        "Phrases": {
+            "Can you show me the menu?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Could you show me the menu?": {
+                "SF": "ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Show me a menu": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_show_v_cause_group": {},
+    "_seat_v_cause_group": {
+        "PropertiesFrom": "esl.tutorial._seat_v_cause_group"
+    },
+    "loc_nonsp": {},
+    "loc_nonsp_eex": {},
+    "_today_a_1": {},
+    "time_n": {},
+    "def_implicit_q": {},
+    "_please_a_1": {},
+    "_too_a_also": {},
+    "_please_v_1": {},
+    "polite": {},
+    "_thanks_a_1": {},
+    "_sit_v_down_future": {},
+    "_sit_v_down_future_group": {},
+    "invalid_present_intransitive": {},
+    "_sit_v_down_able": {
+        "Phrases": {
+            "Can I sit down?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Can I sit?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Who can sit down?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_sit_v_down_request": {
+        "Phrases": {
+            "we want to sit down": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "we want to sit": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_sit_v_down_able_group": {},
+    "_see_v_1_able": {
+        "Phrases": {
+            "Can I see a menu?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_see_v_1_able_bad_english": {
+        "Phrases": {
+            "I can see a menu": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_see_v_1_able_group": {
+        "PropertiesFrom": "esl.tutorial._see_v_1_able_group"
+    },
+    "_see_v_1_future": {
+        "Phrases": {
+            "I|we will see a menu": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_see_v_1_future_bad_english": {
+        "Phrases": {
+            "I|we will see a menu?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_see_v_1_future_group": {
+        "PropertiesFrom": "esl.tutorial._see_v_1_future_group"
+    },
+    "_take_v_1_able": {
+        "Phrases": {
+            "Can I take a menu?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I can take a menu.": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "invalid_present_transitive": {},
+    "_have_v_1_future_group": {
+        "PropertiesFrom": "esl.tutorial._have_v_1_future_group"
+    },
+    "_have_v_1_present_group": {
+        "PropertiesFrom": "esl.tutorial._have_v_1_present_group"
+    },
+    "_have_v_1_able_group": {
+        "PropertiesFrom": "esl.tutorial._have_v_1_able_group"
+    },
+    "poss": {},
+    "_be_v_id_group": {
+        "PropertiesFrom": "esl.tutorial._be_v_id_group"
+    },
+    "_cost_v_1_group": {
+        "PropertiesFrom": "esl.tutorial._cost_v_1_group"
+    },
+    "wh_question": {},
+    "sit_v_invalid_present_intransitive": {
+        "Phrases": {
+            "I sit down": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Who sits down?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Who is sitting down?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "+",
+                "PERF": "-"
+            },
+            "I sit": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "+",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_sit_v_invalid_present_intransitive": {
+        "Phrases": {
+            "I sit down": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Who sits down?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Who is sitting down?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "+",
+                "PERF": "-"
+            },
+            "I sit": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I can sit down.": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "+",
+                "PERF": "-"
+            }
+        ]
     }
 }

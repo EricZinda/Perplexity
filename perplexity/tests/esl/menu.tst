@@ -150,6 +150,13 @@
             "ID": "21e7c526-6227-4537-be14-54a95bff30e7"
         },
         {
+            "Command": "could you show me the menu?",
+            "Expected": "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Tree": "pronoun_q(x12,pron(x12),_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_show_v_1_able(e2,x3,x11,x12))))",
+            "Enabled": true,
+            "ID": "60bcfe97-9570-45f5-a87e-2abf2eb0136c"
+        },
+        {
             "Command": "what vegetarian dishes are there?",
             "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i10), _vegetarian_a_1(e9,x5)],_be_v_there(e2,x5))",

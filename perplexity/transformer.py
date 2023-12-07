@@ -119,7 +119,7 @@ class AllMatchTransformer(object):
     def __init__(self):
         pass
 
-    def this_repr(self):
+    def __repr__(self):
         return "<All Match>"
 
     # Return True or False if the single predication represented by
@@ -148,7 +148,7 @@ class ConjunctionMatchTransformer(object):
         self.production = production
         self.properties_production = properties_production
 
-    def this_repr(self):
+    def __repr__(self):
         return "<ConjunctionMatchTransformer>"
 
     # When called with a root transformer will either return None or a new predication
@@ -210,7 +210,7 @@ class TransformerMatch(object):
         self.removed = removed
         self.did_transform = False
 
-    def this_repr(self):
+    def __repr__(self):
         return f"{self.name_pattern}({', '.join([str(x) for x in self.args_pattern])})"
 
     def match(self, scopal_arg, captures, metadata):
@@ -346,7 +346,7 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
             if transformer.is_root():
                 # Since this is the root: Need to return None for no new predication creation or a new predication
                 if predication_matched:
-                    transform_logger.debug(f"Root Match: {predication_matched}. Pattern:{transformer.this_repr()}, Predicate:{predication}")
+                    transform_logger.debug(f"Root Match: {predication_matched}. Pattern:{transformer}, Predicate:{predication}")
                     # This is the transformer root: we are now just trying to finish the match
                     # and fill in the capture
                     children_matched = True
@@ -384,7 +384,7 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                 # This is not the transformer root, so we are just finishing the match and
                 # filling in the capture
                 if predication_matched:
-                    transform_logger.debug(f"Child Match: {predication_matched}. Pattern:{transformer.this_repr()}, Predicate:{predication}")
+                    transform_logger.debug(f"Child Match: {predication_matched}. Pattern:{transformer}, Predicate:{predication}")
                     for scopal_arg_index in predication.scopal_arg_indices():
                         if not transformer_search(predication.args[scopal_arg_index], variables, transformer.arg_transformer(scopal_arg_index), capture, metadata, current_index):
                             # The child failed so this match fails
@@ -406,6 +406,7 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
     if transformer_root.did_transform:
         # Make sure the tree indexes are set right
         new_tree_info["Tree"] = perplexity.tree.reindex_tree(new_tree_info["Tree"])
+        new_tree_info["Transformed"] = str(transformer_root)
         pipeline_logger.debug(f"Transformed Tree: {new_tree_info['Tree'].repr_with_indices()}")
         return new_tree_info
 

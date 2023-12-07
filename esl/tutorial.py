@@ -222,9 +222,6 @@ def can_paytype_transformer():
                             removed=["_can_v_modal", target], production=production)
 
 
-
-
-
 @Transform(vocabulary)
 def could_to_able_intransitive_transformer():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
@@ -270,11 +267,6 @@ def could_paytype_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1", "i1", "i2"])
     return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_could_v_modal", target], production=production)
-
-
-
-
-
 
 
 # Convert "May I x?"" to "I x_request x?"
@@ -1064,7 +1056,17 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
     yield state.record_operations(state.handle_world_event(context, ["unknown", e_introduced_binding.value["With"]["Value"]]))
 
 
-@Predication(vocabulary, names=["_want_v_1"])
+@Predication(vocabulary,
+             names=["_want_v_1"],
+             phrases={
+                "we'd like a table for 2": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I want a steak": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I'd like a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "My son would like a salad": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
 def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if is_user_type(x_actor):
@@ -1094,7 +1096,9 @@ def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
                                       wanters_of_obj, wanted_of_actor)
 
 
-@Predication(vocabulary, names=["solution_group__want_v_1"])
+@Predication(vocabulary,
+             names=["solution_group__want_v_1"],
+             properties_from=_want_v_1)
 def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
 
@@ -1204,11 +1208,18 @@ def _give_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
     context.report_error(["formNotUnderstood", "_give_v_1"])
 
 
-@Predication(vocabulary, names=["_show_v_1", "_show_v_1_able"])
+@Predication(vocabulary,
+             names=["_show_v_1", "_show_v_1_able"],
+             phrases={
+                "Can you show me the menu?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Could you show me the menu?": {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Show me a menu": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': ['ques', 'comm'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
 def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_binding, x_to_actor_binding):
-    if not is_present_tense(state.get_binding("tree").value[0]):
-        context.report_error(["formNotUnderstood", "_show_v_1"])
-        return
     if is_concept(x_actor_binding) or is_concept(x_to_actor_binding):
         context.report_error(["formNotUnderstood", "_show_v_1"])
         return
@@ -1380,16 +1391,6 @@ def def_implicit_q(context, state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
-# @Predication(vocabulary, names=["_like_v_1"])
-# def _like_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-#     if is_user_type(state.get_binding(x_actor_binding.variable.name).value[0]):
-#         if not state.get_binding(x_object_binding.variable.name).value[0] is None:
-#             yield state.record_operations(
-#                 state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
-#     else:
-#         yield state
-
-
 @Predication(vocabulary, names=["_please_a_1"])
 def _please_a_1(context, state, e_introduced_binding, e_binding):
     yield state
@@ -1460,11 +1461,20 @@ def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_vari
         yield []
 
 
-# Scenarios:
-#   "I sit down"
-#   "Who sits down?"
-@Predication(vocabulary, names=["_sit_v_down", "_sit_v_1"])
-def invalid_present_intransitive(context, state, e_introduced_binding, x_actor_binding):
+@Predication(vocabulary,
+             names=["_sit_v_down", "_sit_v_1", "_sit_v_down_able"],
+             phrases={
+                "I sit down": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Who sits down?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Who is sitting down?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '+', 'PERF': '-'},
+                "I sit": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I can sit down.": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': ['prop', 'ques'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '+', 'PERF': '-'}
+             ])
+def _sit_v_invalid_present_intransitive(context, state, e_introduced_binding, x_actor_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
         context.report_error(["formNotUnderstood", "invalid_present_intransitive"])
         return
@@ -1477,22 +1487,20 @@ def invalid_present_intransitive(context, state, e_introduced_binding, x_actor_b
 # Scenarios:
 #   - "Can I sit down?" "Can I sit?" --> request for table
 #   - "Who can sit down?"
-#   -
+#
 #   Poor English:
-#   - "Who sits down?"
-#   - "Who is sitting down?"
 #   - "I can sit down."
-@Predication(vocabulary, names=["_sit_v_down_able", "_sit_v_1_able"])
+@Predication(vocabulary,
+             names=["_sit_v_down_able", "_sit_v_1_able"],
+             phrases={
+                "Can I sit down?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Can I sit?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Who can sit down?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
 def _sit_v_down_able(context, state, e_binding, x_actor_binding):
-    tree_info = state.get_binding("tree").value[0]
-    if not is_present_tense(tree_info):
-        context.report_error(["unexpected", state.get_reprompt()])
-        return
-
-    if not is_question(tree_info):
-        context.report_error(["unexpected", state.get_reprompt()])
-        return
-
     if is_concept(x_actor_binding):
         context.report_error(["formNotUnderstood", "_sit_v_down_able"])
         return
@@ -1511,7 +1519,15 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
     yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
 
 
-@Predication(vocabulary, names=["_sit_v_down_request", "_sit_v_1_request"])
+@Predication(vocabulary,
+             names=["_sit_v_down_request", "_sit_v_1_request"],
+             phrases={
+                 "we want to sit down": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "we want to sit": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
 def _sit_v_down_request(context, state, e_binding, x_actor_binding):
     if is_concept(x_actor_binding):
         context.report_error(["formNotUnderstood", "_sit_v_down_request"])
@@ -1531,7 +1547,8 @@ def _sit_v_down_request(context, state, e_binding, x_actor_binding):
     yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
 
 
-@Predication(vocabulary, names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
+@Predication(vocabulary,
+             names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
 def _sit_v_down_able_group(context, state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
     # If it is a wh_question, just answer it
     tree_info = state_list[0].get_binding("tree").value[0]
@@ -1546,17 +1563,15 @@ def _sit_v_down_able_group(context, state_list, has_more, e_introduced_binding_l
             yield [final_state]
 
 
-# Scenarios:
-#   "Can I see a menu? -> implied request
-#   "I can see a menu. -> poor english
-#   Anthing else --> don't understand
-@Predication(vocabulary, names=["_see_v_1_able"])
+@Predication(vocabulary,
+             names=["_see_v_1_able"],
+             phrases={
+                "Can I see a menu?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}  # -> implied request
+             },
+             properties=[
+                {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
 def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    tree_info = state.get_binding("tree").value[0]
-    if not is_question(tree_info):
-        context.report_error(["unexpected", state.get_reprompt()])
-        return
-
     def both_bound_prediction_function(x_actor, x_object):
         if is_user_type(x_actor):
             if valid_player_request(state, [x_object], valid_types=["menu"]):
@@ -1587,7 +1602,24 @@ def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_objec
                                       object_unbound)
 
 
-@Predication(vocabulary, names=["solution_group__see_v_1_able"])
+@Predication(vocabulary,
+             names=["_see_v_1_able"],
+             phrases={
+                "I can see a menu": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}  # -> implied request
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
+def _see_v_1_able_bad_english(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if False:
+        yield None
+    context.report_error(["unexpected", state.get_reprompt()])
+    return
+
+
+@Predication(vocabulary,
+             names=["solution_group__see_v_1_able"],
+             properties_from=_see_v_1_able)
 def _see_v_1_able_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
@@ -1607,17 +1639,13 @@ def _see_v_1_able_group(context, state_list, has_more, e_list, x_actor_variable_
 #   "I/we will see a menu" -> implied request
 #   Poor English:
 #       "I will see a table/steak, etc"
-@Predication(vocabulary, names=["_see_v_1"])
+@Predication(vocabulary,
+             names=["_see_v_1"],
+             phrases={
+                 "I|we will see a menu": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
 def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    tree_info = state.get_binding("tree").value[0]
-    if not is_future_tense(tree_info):
-        context.report_error(["formNotUnderstood", "_see_v_1_future"])
-        return
-    if is_question(tree_info):
-        # None of the future tense questions are valid english in this scenario
-        context.report_error(["unexpected", state.get_reprompt()])
-        return
-
     def both_bound_prediction_function(x_actor, x_object):
         if is_user_type(x_actor):
             if valid_player_request(state, [x_object], valid_types=["menu"]):
@@ -1648,13 +1676,22 @@ def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_obj
                                       object_unbound)
 
 
-@Predication(vocabulary, names=["solution_group__see_v_1"])
-def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
-    tree_info = state_list[0].get_binding("tree").value[0]
-    if not is_future_tense(tree_info):
-        context.report_error(["formNotUnderstood", "_see_v_1_future_group"])
-        return
+@Predication(vocabulary,
+             names=["_see_v_1"],
+             phrases={
+                 "I|we will see a menu?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
+def _see_v_1_future_bad_english(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if False:
+        yield None
+    context.report_error(["unexpected", state.get_reprompt()])
 
+
+@Predication(vocabulary,
+             names=["solution_group__see_v_1"],
+             properties_from=_see_v_1_future)
+def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
@@ -1669,10 +1706,15 @@ def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variabl
         yield []
 
 
-# Scenarios:
-#   - "Can I take a menu/table/steak?"
-# All are poor english
-@Predication(vocabulary, names=["_take_v_1_able"])
+@Predication(vocabulary,
+             names=["_take_v_1_able"],
+             phrases={
+                "Can I take a menu?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I can take a menu.": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
 def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     context.report_error(["unexpected", state.get_reprompt()])
     if False:
@@ -1867,8 +1909,6 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
-
-# @Predication(vocabulary, names=["solution_group__have_v_1"])
 
 @Predication(vocabulary,
              names=["solution_group__have_v_1"],
