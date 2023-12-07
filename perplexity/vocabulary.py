@@ -126,6 +126,16 @@ def build_phrase_list(alternative_parts):
     return phrase_list
 
 
+# Generate actual examples given a phrase_list which is a list
+# of either strings or lists. For every item in phrase_list which is a list
+# It will generate examples that have every combination of items in phrase_list
+# which are lists.  For example,
+# ["There", ["is", "can be"], ["a dog", "a cat]]
+# generates:
+# "There is a dog"
+# "There is a cat"
+# "There can be a dog"
+# "There can be a cat"
 def generate_alternative_examples(phrase_list):
     if isinstance(phrase_list[0], str):
         if len(phrase_list) > 1:
@@ -335,59 +345,70 @@ def collect_properties(func, phrase_dict):
 # Loop through each phrase:
 # - If it has a set of properties, see if it matches any of the MRS properties
 # - If not, or if it doesn't match the properties, print out the properties generated
+# Use the transforms that are available at the time this is called
+#   TODO: Should probably fail if more transformers get loaded later because they could break this analysis
+# Ignores vocabulary
 def check_phrases(func, vocabulary, predicates, phrase_dict):
     success = True
     found_predicates = set()
     properties_list = []
     mrs_parser = perplexity.tree.MrsParser()
     for phrase_item in phrase_dict.items():
+        phrase_declaration = phrase_item[0]
+        # If phrase has "word1|word2" in it, split into N examples
+        alternatives = phrase_declaration.split("|")
+        if len(alternatives) == 1:
+            alternative_list = [phrase_declaration]
+        else:
+            phrase_list = build_phrase_list(alternatives)
+            alternative_list = list(generate_alternative_examples(phrase_list))
 
-        phrase = phrase_item[0]
-        print(f"   parsing example: '{phrase}' ...")
-        specified_properties = phrase_item[1]
-        non_matching_examples = []
-        found_properties_match = False
-        for mrs in mrs_parser.mrss_from_phrase(phrase):
-            # Just remember one tree for this MRS as an example
-            example_tree = None
-            for tree_orig in mrs_parser.trees_from_mrs(mrs):
-                tree_info_orig = {"Tree": tree_orig,
-                                  "Variables": mrs.variables}
-                for tree_info in vocabulary.alternate_trees(None, tree_info_orig, yield_original=True):
-                    # For each tree that has one of the predicates in it, collect the properties
-                    # for the *verb introduced event* variable
-                    found = perplexity.tree.find_predication(tree_info["Tree"], predicates)
-                    if found is not None:
-                        assert found.arg_types[0] == "e", f"verb '{found}' doesn't have event as arg 0"
-                        found_predicates.add(found.name)
+        for phrase in alternative_list:
+            print(f"   parsing example: '{phrase}' ...")
+            specified_properties = phrase_item[1]
+            non_matching_examples = []
+            found_properties_match = False
+            for mrs in mrs_parser.mrss_from_phrase(phrase):
+                # Just remember one tree for this MRS as an example
+                example_tree = None
+                for tree_orig in mrs_parser.trees_from_mrs(mrs):
+                    tree_info_orig = {"Tree": tree_orig,
+                                      "Variables": mrs.variables}
+                    for tree_info in vocabulary.alternate_trees(None, tree_info_orig, yield_original=True):
+                        # For each tree that has one of the predicates in it, collect the properties
+                        # for the *verb introduced event* variable
+                        found = perplexity.tree.find_predication(tree_info["Tree"], predicates)
+                        if found is not None:
+                            assert found.arg_types[0] == "e", f"verb '{found}' doesn't have event as arg 0"
+                            found_predicates.add(found.name)
 
-                        # Get the properties provided for the verb event
-                        tree_properties = tree_info["Variables"][found.args[0]]
-                        if tree_properties == specified_properties:
-                            if tree_properties not in properties_list:
-                                properties_list.append(tree_properties)
+                            # Get the properties provided for the verb event
+                            tree_properties = tree_info["Variables"][found.args[0]]
+                            if tree_properties == specified_properties:
+                                if tree_properties not in properties_list:
+                                    properties_list.append(tree_properties)
 
-                            found_properties_match = True
-                            break
+                                found_properties_match = True
+                                break
 
-                        elif example_tree is None:
-                            example_tree = [tree_orig, tree_properties]
+                            elif example_tree is None:
+                                example_tree = [tree_orig, tree_properties]
 
-            if found_properties_match:
-                break
+                if found_properties_match:
+                    break
 
-            else:
-                if example_tree is None:
-                    non_matching_examples.append([tree_orig, f"Did not contain predicates listed for this function: {predicates}"])
                 else:
-                    non_matching_examples.append(example_tree)
+                    if example_tree is None:
+                        non_matching_examples.append([tree_orig, f"Did not contain predicates listed for this function: {predicates}"])
+                    else:
+                        non_matching_examples.append(example_tree)
 
-        if not found_properties_match:
-            success = False
-            # Either properties weren't specified or none matched it, tell the user what we found
-            print(f"      '{specified_properties}' did not match properties in any of the following parses:")
-            for example in non_matching_examples:
-                print(f"      {example[0]}: {example[1]}")
+            if not found_properties_match:
+                success = False
+                # Either properties weren't specified or none matched it, tell the user what we found
+                print(f"      '{specified_properties}' did not match properties in any of the following parses:")
+                for example in non_matching_examples:
+                    print(f"      {example[0]}: {example[1]}")
 
     return success, found_predicates, properties_list
 

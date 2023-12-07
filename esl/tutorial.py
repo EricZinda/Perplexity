@@ -1269,8 +1269,7 @@ def _show_v_cause_group(context, state_list, has_more, e_introduced_binding, x_a
                 "can you seat me?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
-                    {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                    {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                    {'SF': ['comm', 'ques'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ]
              )
 def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
@@ -1752,8 +1751,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
 @Predication(vocabulary,
              names=["_have_v_1", "_take_v_1"],
              phrases={
-                 "I will take a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "I will have a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                 "I will take|have a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties={'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
@@ -1814,10 +1812,10 @@ def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_ac
                 "Do you have a table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},          # --> implied table request
                 "Do you have this table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},       # --> fact checking question
                 "What do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},             # --> implied menu request
-                "Do you have the menu?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> implied menu request
+                "Do you have a|the menu|bill?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> implied menu request
                 "What specials do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},    # --> implied request for description of specials
-                "Do we have the table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> ask about the state of the world
-                "Do you have the steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},        # --> just asking about the steak, no implied request
+                "Do I|we have the table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> ask about the state of the world
+                "Do you have a|the steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},        # --> just asking about the steak, no implied request
                 "Do you have a bill?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},           # --> implied request, kind of
                 "Do you have menus?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},            # --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
                 "Do you have steaks?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},           # --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
@@ -1949,10 +1947,10 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
 @Predication(vocabulary,
              names=["_have_v_1_able", "_get_v_1_able"],
              phrases={
-                "Can I have a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "What can I have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Can I have|get a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "What can I have|get?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "Can the salad have nuts?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "who can get a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                "who can have|get a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):

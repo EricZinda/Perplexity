@@ -1,260 +1,4 @@
 {
-    "_check_v_1": {
-        "Phrases": {
-            "Check, please": {
-                "SF": "comm",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
-    "_give_v_1": {
-        "Phrases": {
-            "Give me a table": {
-                "SF": "comm",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Will you give me a table?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
-    "_have_v_1_future": {
-        "Phrases": {
-            "I will take a steak": {
-                "SF": "prop",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "I will have a steak": {
-                "SF": "prop",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
-    "_have_v_1_present": {
-        "Phrases": {
-            "Do you have a table?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Do you have this table?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "What do you have?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Do you have the menu?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "What specials do you have?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Do we have the table?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Do you have the steak?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Do you have a bill?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Do you have menus?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Do you have steaks?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "We have 2 menus": {
-                "SF": "prop",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
-    "_have_v_1_able": {
-        "Phrases": {
-            "Can I have a steak?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "What can I have?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Can the salad have nuts?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "who can get a steak?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
-    "_be_v_id": {
-        "Phrases": {
-            "What are the specials?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "What will be the specials?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How much is the soup?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How much will the soup be?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How many dollars is the soup?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How many dollars will the soup be?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "soup is a vegetarian dish": {
-                "SF": "prop",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "soup will be a vegetarian dish": {
-                "SF": "prop",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
-    "_cost_v_1": {
-        "Phrases": {
-            "What does the steak cost?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "What will the steak cost?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "The steak costs 10 dollars": {
-                "SF": "prop",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
-    "_be_v_there": {
-        "Phrases": {
-            "Which vegetarian dishes are there?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            }
-        }
-    },
     "_grill_v_1": {
         "Phrases": {
             "I want the grilled salmon": {
@@ -372,25 +116,32 @@
             }
         }
     },
-    "_order_v_1_past": {
+    "_pay_v_for_object": {
         "Phrases": {
-            "What did I order?": {
+            "Can I pay the bill?": {
                 "SF": "ques",
-                "TENSE": "past",
+                "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            "I ordered a steak": {
+            "I want to pay the bill": {
                 "SF": "prop",
-                "TENSE": "past",
+                "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            "how much soup did I order?": {
+            "Who can pay the bill": {
                 "SF": "ques",
-                "TENSE": "past",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What can I pay?": {
+                "SF": "ques",
+                "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
@@ -429,32 +180,29 @@
             }
         }
     },
-    "_pay_v_for_object": {
+    "_check_v_1": {
         "Phrases": {
-            "Can I pay the bill?": {
-                "SF": "ques",
+            "Check, please": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_give_v_1": {
+        "Phrases": {
+            "Give me a table": {
+                "SF": "comm",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            "I want to pay the bill": {
-                "SF": "prop",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "Who can pay the bill": {
+            "Will you give me a table?": {
                 "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "What can I pay?": {
-                "SF": "ques",
-                "TENSE": "pres",
+                "TENSE": "fut",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
@@ -471,6 +219,251 @@
                 "PERF": "-"
             },
             "can you seat me?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_order_v_1_past": {
+        "Phrases": {
+            "What did I order?": {
+                "SF": "ques",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I ordered a steak": {
+                "SF": "prop",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "how much soup did I order?": {
+                "SF": "ques",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_have_v_1_future": {
+        "Phrases": {
+            "I will take|have a steak": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_have_v_1_present": {
+        "Phrases": {
+            "Do you have a table?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have this table?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What do you have?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have a|the menu|bill?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What specials do you have?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do I|we have the table?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have a|the steak?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have a bill?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have menus?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have steaks?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "We have 2 menus": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_have_v_1_able": {
+        "Phrases": {
+            "Can I have|get a steak?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What can I have|get?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Can the salad have nuts?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "who can have|get a steak?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_be_v_id": {
+        "Phrases": {
+            "What are the specials?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What will be the specials?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How much is the soup?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How much will the soup be?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How many dollars is the soup?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How many dollars will the soup be?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "soup is a vegetarian dish": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "soup will be a vegetarian dish": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_cost_v_1": {
+        "Phrases": {
+            "What does the steak cost?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What will the steak cost?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "The steak costs 10 dollars": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        }
+    },
+    "_be_v_there": {
+        "Phrases": {
+            "Which vegetarian dishes are there?": {
                 "SF": "ques",
                 "TENSE": "pres",
                 "MOOD": "indicative",
