@@ -1,706 +1,482 @@
 {
     "_check_v_1": {
-        "Examples": [
-            {
-                "Example": "Check, please",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "tensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
+        "Phrases": {
+            "Check, please": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
-        ],
-        "Properties": {
-            "SF": "comm",
-            "TENSE": "pres",
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
         }
     },
     "_give_v_1": {
-        "Examples": [
-            {
-                "Example": "Give me a table",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "tensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            },
-            {
-                "Example": "Will you give me a table?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "tensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "pres",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            }
-        ],
-        "Properties": [
-            {
+        "Phrases": {
+            "Give me a table": {
                 "SF": "comm",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            {
+            "Will you give me a table?": {
                 "SF": "ques",
                 "TENSE": "fut",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             }
-        ]
+        }
     },
     "_have_v_1_future": {
-        "Examples": [
-            "I will take|have a steak"
-        ],
-        "Properties": {
-            "SF": "prop",
-            "TENSE": "fut",
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
+        "Phrases": {
+            "I will take a steak": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I will have a steak": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
         }
     },
     "_have_v_1_present": {
-        "Examples": [
-            "Do you have a table?",
-            "Do you have this table?",
-            "What do you have?",
-            "Do you have a|the menu|bill?",
-            "What specials do you have?",
-            "Do I|we have the table?",
-            "Do you have a|the steak?",
-            "Do you have a bill?",
-            "Do you have menus?",
-            "Do you have steaks?",
-            "We have 2 menus"
-        ],
-        "Properties": {
-            "SF": [
-                "ques",
-                "prop"
-            ],
-            "TENSE": "pres",
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
+        "Phrases": {
+            "Do you have a table?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have this table?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What do you have?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have the menu?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What specials do you have?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do we have the table?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have the steak?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have a bill?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have menus?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Do you have steaks?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "We have 2 menus": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
         }
     },
     "_have_v_1_able": {
-        "Examples": [
-            "Can I have|get a steak?",
-            "What can I have|get?",
-            "Can the salad get/have nuts?",
-            "who can have|get a steak?"
-        ],
-        "Properties": {
-            "SF": "ques",
-            "TENSE": "pres",
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
+        "Phrases": {
+            "Can I have a steak?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What can I have?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Can the salad have nuts?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "who can get a steak?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
         }
     },
     "_be_v_id": {
-        "Examples": [
-            "What are the specials?",
-            "What will be the specials?",
-            "How much is the soup?",
-            "How much will the soup be?",
-            "How many dollars is the soup?",
-            "How many dollars will the soup be?",
-            "soup is a vegetarian dish",
-            "soup will be a vegetarian dish"
-        ],
-        "Properties": {
-            "SF": [
-                "ques",
-                "prop"
-            ],
-            "TENSE": [
-                "pres",
-                "fut"
-            ],
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
+        "Phrases": {
+            "What are the specials?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What will be the specials?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How much is the soup?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How much will the soup be?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How many dollars is the soup?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How many dollars will the soup be?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "soup is a vegetarian dish": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "soup will be a vegetarian dish": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
         }
     },
     "_cost_v_1": {
-        "Examples": [
-            {
-                "Example": "What does the steak cost?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative"
-                    }
-                ]
-            },
-            {
-                "Example": "What will the steak cost?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative"
-                    }
-                ]
-            },
-            "The steak costs 10 dollars"
-        ],
-        "Properties": [
-            {
+        "Phrases": {
+            "What does the steak cost?": {
                 "SF": "ques",
-                "TENSE": [
-                    "pres",
-                    "fut"
-                ],
+                "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            {
+            "What will the steak cost?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "The steak costs 10 dollars": {
                 "SF": "prop",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             }
-        ]
+        }
     },
     "_be_v_there": {
-        "Examples": [
-            "Which vegetarian dishes are there?"
-        ],
-        "Properties": {
-            "SF": "ques",
-            "TENSE": "pres",
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
+        "Phrases": {
+            "Which vegetarian dishes are there?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
         }
     },
     "_grill_v_1": {
-        "Examples": [
-            "I want the grilled salmon",
-            "Do you have the grilled salmon?",
-            "Give me the grilled salmon.",
-            {
-                "Example": "Is the salmon grilled?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative"
-                    },
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            },
-            {
-                "Example": "The salmon is grilled",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative"
-                    },
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            }
-        ],
-        "Properties": [
-            {
+        "Phrases": {
+            "I want the grilled salmon": {
                 "SF": "prop",
                 "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "bool",
                 "PERF": "-"
             },
-            {
-                "SF": [
-                    "ques",
-                    "prop"
-                ],
+            "Do you have the grilled salmon?": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            "Give me the grilled salmon.": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            "Is the salmon grilled?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "The salmon is grilled": {
+                "SF": "prop",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             }
-        ]
+        }
     },
     "_roast_v_1": {
-        "Examples": [
-            "I want the roasted chicken",
-            "Do you have the roasted chicken?",
-            "Give me the roasted chicken.",
-            {
-                "Example": "Is the chicken roasted?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative"
-                    },
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            },
-            {
-                "Example": "The chicken is roasted",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative"
-                    },
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            }
-        ],
-        "Properties": [
-            {
+        "Phrases": {
+            "I want the roasted chicken": {
                 "SF": "prop",
                 "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "bool",
                 "PERF": "-"
             },
-            {
-                "SF": [
-                    "ques",
-                    "prop"
-                ],
+            "Do you have the roasted chicken?": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            "Give me the roasted chicken.": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            "Is the chicken roasted?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "The chicken is roasted": {
+                "SF": "prop",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             }
-        ]
+        }
     },
     "_smoke_v_1": {
-        "Examples": [
-            "I want the smoked pork",
-            "Do you have the smoked pork?",
-            "Give me the smoked pork.",
-            {
-                "Example": "Is the pork smoked?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative"
-                    },
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            },
-            {
-                "Example": "The pork is smoked",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative"
-                    },
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            }
-        ],
-        "Properties": [
-            {
+        "Phrases": {
+            "I want the smoked pork": {
                 "SF": "prop",
                 "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "bool",
                 "PERF": "-"
             },
-            {
-                "SF": [
-                    "ques",
-                    "prop"
-                ],
+            "Do you have the smoked pork?": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            "Give me the smoked pork.": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "bool",
+                "PERF": "-"
+            },
+            "Is the pork smoked?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "The pork is smoked": {
+                "SF": "prop",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             }
-        ]
+        }
     },
     "_order_v_1_past": {
-        "Examples": [
-            {
-                "Example": "What did I order?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "ques",
-                        "TENSE": "pres",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
+        "Phrases": {
+            "What did I order?": {
+                "SF": "ques",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             },
-            {
-                "Example": "I ordered a steak",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative"
-                    }
-                ]
+            "I ordered a steak": {
+                "SF": "prop",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             },
-            "how much soup did I order?"
-        ],
-        "Properties": {
-            "SF": [
-                "ques",
-                "prop"
-            ],
-            "TENSE": "past",
-            "MOOD": "indicative",
-            "PROG": "-",
-            "PERF": "-"
+            "how much soup did I order?": {
+                "SF": "ques",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
         }
     },
     "_pay_v_for": {
-        "Examples": [
-            {
-                "Example": "I want to pay with cash",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
+        "Phrases": {
+            "I want to pay with cash": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             },
-            {
-                "Example": "I will pay with cash",
-                "IgnoreProperties": []
-            },
-            {
-                "Example": "Can I pay with cash",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "pres",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            },
-            {
-                "Example": "Could I pay with cash",
-                "IgnoreProperties": [
-                    {
-                        "SF": "ques",
-                        "TENSE": "past",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    },
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            }
-        ],
-        "Properties": [
-            {
+            "I will pay with cash": {
                 "SF": "prop",
                 "TENSE": "fut",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            {
+            "Can I pay with cash": {
                 "SF": "ques",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            {
-                "SF": "prop",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            {
+            "Could I pay with cash": {
                 "SF": "ques",
                 "TENSE": "tensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             }
-        ]
+        }
     },
     "_pay_v_for_object": {
-        "Examples": [
-            {
-                "Example": "Can I pay the bill?",
-                "IgnoreProperties": []
-            },
-            {
-                "Example": "I want to pay the bill",
-                "IgnoreProperties": []
-            },
-            {
-                "Example": "Who can pay the bill",
-                "IgnoreProperties": []
-            },
-            {
-                "Example": "What can I pay?",
-                "IgnoreProperties": []
-            }
-        ],
-        "Properties": [
-            {
+        "Phrases": {
+            "Can I pay the bill?": {
                 "SF": "ques",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            {
+            "I want to pay the bill": {
                 "SF": "prop",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            "Who can pay the bill": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What can I pay?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
-        ]
+        }
     },
     "_seat_v_cause": {
-        "Examples": [
-            {
-                "Example": "seat me",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop-or-ques",
-                        "TENSE": "tensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            },
-            {
-                "Example": "can you seat me?",
-                "IgnoreProperties": [
-                    {
-                        "SF": "prop",
-                        "TENSE": "untensed",
-                        "MOOD": "indicative",
-                        "PROG": "-",
-                        "PERF": "-"
-                    }
-                ]
-            }
-        ],
-        "Properties": [
-            {
+        "Phrases": {
+            "seat me": {
                 "SF": "comm",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            {
+            "can you seat me?": {
                 "SF": "ques",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             }
-        ]
+        }
     }
 }

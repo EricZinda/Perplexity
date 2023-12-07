@@ -1,4 +1,4 @@
-
+- support synonyms
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
   - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...
 - Need to recheck constraints if names are changed

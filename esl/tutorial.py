@@ -897,22 +897,14 @@ smoked = PastParticiple(["_smoke_v_1"], "smoked")
 
 @Predication(vocabulary,
              names=grilled.predicate_name_list,
-             examples=[# Make sure that all kinds of sentences generate the same 'SF': 'prop' for _grill_v_1
-                       "I want the grilled salmon",
-                       "Do you have the grilled salmon?",
-                       "Give me the grilled salmon.",
-                       {"Example": "Is the salmon grilled?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                                                                                  {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                  {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                  {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                       {"Example": "The salmon is grilled", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                                                                                 {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                 {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                 {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
-                                                                            ],
-             properties=[# I want the grilled salmon
-                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
-                         # Is the salmon grilled?
+             phrases={
+                "I want the grilled salmon": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Do you have the grilled salmon?": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Give me the grilled salmon.": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Is the salmon grilled?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "The salmon is grilled": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
                          {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
              )
 def _grill_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
@@ -921,22 +913,14 @@ def _grill_v_1(context, state, e_introduced_binding, i_binding, x_target_binding
 
 @Predication(vocabulary,
              names=roasted.predicate_name_list,
-             examples=[# Make sure that all kinds of sentences generate the same 'SF': 'prop' for _roast_v_cause
-                       "I want the roasted chicken",
-                       "Do you have the roasted chicken?",
-                       "Give me the roasted chicken.",
-                       {"Example": "Is the chicken roasted?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                                                                                  {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                  {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                  {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                       {"Example": "The chicken is roasted", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                                                                                 {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                 {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                 {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
-                                                                            ],
-             properties=[# I want the roasted chicken
-                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
-                         # Is the chicken roasted?
+             phrases={
+                "I want the roasted chicken": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Do you have the roasted chicken?": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Give me the roasted chicken.": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Is the chicken roasted?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "The chicken is roasted": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
                          {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
              )
 def _roast_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
@@ -945,22 +929,14 @@ def _roast_v_1(context, state, e_introduced_binding, i_binding, x_target_binding
 
 @Predication(vocabulary,
              names=smoked.predicate_name_list,
-             examples=[# Make sure that all kinds of sentences generate the same 'SF': 'prop' for _roast_v_cause
-                       "I want the smoked pork",
-                       "Do you have the smoked pork?",
-                       "Give me the smoked pork.",
-                       {"Example": "Is the pork smoked?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                                                                                  {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                  {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                  {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                       {"Example": "The pork is smoked", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                                                                                 {'SF': 'prop-or-ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                 {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                 {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
-                      ],
-             properties=[# I want the smoked pork
-                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
-                         # Is the pork smoked?
+             phrases={
+                "I want the smoked pork": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Do you have the smoked pork?": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Give me the smoked pork.": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
+                "Is the pork smoked?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "The pork is smoked": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
                          {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
 def _smoke_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
     yield from smoked.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
@@ -1001,11 +977,12 @@ def _with_p(context, state, e_introduced_binding, e_main, x_binding):
 # Can I pay the bill?
 @Predication(vocabulary,
              names=["_pay_v_for_request"],
-             examples=[{"Example": "Can I pay the bill?", "IgnoreProperties": []},
-                       {"Example": "I want to pay the bill", "IgnoreProperties": []},
-                       {"Example": "Who can pay the bill", "IgnoreProperties": []},
-                       {"Example": "What can I pay?", "IgnoreProperties": []}
-                       ],
+             phrases={
+                "Can I pay the bill?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I want to pay the bill": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Who can pay the bill": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "What can I pay?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties=[{'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
              )
@@ -1065,16 +1042,12 @@ def _pay_v_for_object_group(context, state_list, has_more, e_introduced_list, x_
 # All of the "can/couldpay with" alternatives are interpreted as "I want to pay with cash/card"
 @Predication(vocabulary,
              names=["_pay_v_for", "_pay_v_for_request"],
-             examples=[
-                        {"Example": "I want to pay with cash", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                    {'SF': 'prop-or-ques', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                    {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                        {"Example": "I will pay with cash", "IgnoreProperties": []},
-                        {"Example": "Can I pay with cash", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                        {"Example": "Could I pay with cash", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                  {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
-             ],
+             phrases={
+                "I want to pay with cash": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I will pay with cash": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Can I pay with cash": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Could I pay with cash": {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties=[{'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
@@ -1180,7 +1153,9 @@ def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor
 
 @Predication(vocabulary,
              names=["_check_v_1"],
-             examples=[{"Example": "Check, please", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}],
+             phrases={
+                "Check, please": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties={'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_binding):
     if i_object_binding.value is not None:
@@ -1211,10 +1186,10 @@ def _check_v_1_group(context, state_list, has_more, e_introduced_binding, x_acto
 # they are syntactically correct because they just sound weird
 @Predication(vocabulary,
              names=["_give_v_1"],
-             examples=[{"Example": "Give me a table", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                       {"Example": "Will you give me a table?", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                     {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
-                       ],
+             phrases={
+                "Give me a table": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Will you give me a table?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties=[{'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
                          ])
@@ -1289,9 +1264,10 @@ def _show_v_cause_group(context, state_list, has_more, e_introduced_binding, x_a
 
 @Predication(vocabulary,
              names=["_seat_v_cause", "_seat_v_cause_able"],
-             examples=[{"Example": "seat me", "IgnoreProperties": [{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                       {"Example": "can you seat me?", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]}
-                       ],
+             phrases={
+                "seat me": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "can you seat me?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties=[
                     {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                     {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
@@ -1722,9 +1698,11 @@ def invalid_present_transitive(context, state, e_introduced_binding, x_actor_bin
 
 @Predication(vocabulary,
              names=["_order_v_1"],
-             examples=[{"Example": "What did I order?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]},
-                       {"Example": "I ordered a steak", "IgnoreProperties": [{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'}]},
-                       "how much soup did I order?"],
+             phrases={
+                "What did I order?": {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I ordered a steak":  {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "how much soup did I order?": {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties={'SF': ['ques', 'prop'], 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
@@ -1773,7 +1751,10 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
 #   - "Who will have x?" --> Not good english
 @Predication(vocabulary,
              names=["_have_v_1", "_take_v_1"],
-             examples=["I will take|have a steak"],
+             phrases={
+                 "I will take a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "I will have a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties={'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actors, x_objects):
@@ -1829,18 +1810,19 @@ def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_ac
 # we will hit these first and interpret them as implied requests
 @Predication(vocabulary,
              names=["_have_v_1"],
-             examples=["Do you have a table?",          # --> implied table request
-                       "Do you have this table?",       # --> fact checking question
-                       "What do you have?",             # --> implied menu request
-                       "Do you have a|the menu|bill?",  # --> implied menu request
-                       "What specials do you have?",    # --> implied request for description of specials
-                       "Do I|we have the table?",       # --> ask about the state of the world
-                       "Do you have a|the steak?",      # --> just asking about the steak, no implied request
-                       "Do you have a bill?",           # --> implied request, kind of
-                       "Do you have menus?",            # --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
-                       "Do you have steaks?",           # --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
-                       "We have 2 menus"                # --> fact checking question
-                       ],
+             phrases={
+                "Do you have a table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},          # --> implied table request
+                "Do you have this table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},       # --> fact checking question
+                "What do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},             # --> implied menu request
+                "Do you have the menu?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> implied menu request
+                "What specials do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},    # --> implied request for description of specials
+                "Do we have the table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> ask about the state of the world
+                "Do you have the steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},        # --> just asking about the steak, no implied request
+                "Do you have a bill?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},           # --> implied request, kind of
+                "Do you have menus?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},            # --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
+                "Do you have steaks?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},           # --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
+                "We have 2 menus": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}                # --> fact checking question
+             },
              properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_concept(x_actor_binding):
@@ -1966,10 +1948,12 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
 # The regular predication only checks if x is able to have y
 @Predication(vocabulary,
              names=["_have_v_1_able", "_get_v_1_able"],
-             examples=["Can I have|get a steak?",
-                       "What can I have|get?",
-                       "Can the salad get/have nuts?",
-                       "who can have|get a steak?"],
+             phrases={
+                "Can I have a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "What can I have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Can the salad have nuts?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "who can get a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actor, x_object):
@@ -2084,15 +2068,16 @@ def measure_units(x):
 
 @Predication(vocabulary,
              names=["_be_v_id"],
-             examples=["What are the specials?",
-                       "What will be the specials?",
-                       "How much is the soup?",
-                       "How much will the soup be?",
-                       "How many dollars is the soup?",
-                       "How many dollars will the soup be?",
-                       "soup is a vegetarian dish",
-                       "soup will be a vegetarian dish"
-                       ],
+             phrases={
+                 "What are the specials?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "What will be the specials?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "How much is the soup?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "How much will the soup be?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "How many dollars is the soup?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "How many dollars will the soup be?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "soup will be a vegetarian dish": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties={'SF': ['ques', 'prop'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
@@ -2187,12 +2172,11 @@ def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_s
 
 @Predication(vocabulary,
              names=["_cost_v_1"],
-             examples=[{"Example": "What does the steak cost?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                     {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative'}]},
-                       {"Example": "What will the steak cost?", "IgnoreProperties": [{'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                                                                                     {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative'}]},
-                       "The steak costs 10 dollars"
-                       ],
+             phrases={
+                "What does the steak cost?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "What will the steak cost?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "The steak costs 10 dollars": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties=[{'SF': 'ques', 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
 def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
@@ -2247,7 +2231,9 @@ def _cost_v_1_group(context, state_list, has_more, e_introduced_binding_list, x_
 
 @Predication(vocabulary,
              names=["_be_v_there"],
-             examples=["Which vegetarian dishes are there?"],
+             phrases={
+                "Which vegetarian dishes are there?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
              properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _be_v_there(context, state, e_introduced_binding, x_object_binding):
     def bound_variable(value):
