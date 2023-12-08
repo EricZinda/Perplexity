@@ -1,14 +1,9 @@
-- "let's have a steak"
-- # Examples of "any":
-#   are there any vegetarian dishes?
-#   I'll take any meat dish
-#   Are there any tables available?
-# It should be represented the same as "a"
-- "Do you have any vegetarian dishes available?" work
+- "I will have any meat dish"
+
 - table for two crashes
-- 
+- implement "how many vegetarian dishes are there"
+- implement "how many vegetarian dishes do you have?"
 - If you ask how much the soup and salad cost, johnny still thinks we haven't asked the cost
-- Let's go with two orders of the Steak, please.
 - Just two, my son Johnny and me.
 - Need a way to clear out the order
   - start over please

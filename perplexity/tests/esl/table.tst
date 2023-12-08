@@ -10,11 +10,25 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
+            "Command": "Are there any tables?",
+            "Expected": "Yes.",
+            "Tree": "_any_q(x4,_table_n_1(x4),_be_v_there(e2,x4))",
+            "Enabled": true,
+            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+        },
+        {
+            "Command": "Are any tables available?",
+            "Expected": "Yes.",
+            "Tree": "_any_q(x3,_table_n_1(x3),_available_a_to-for(e2,x3,u8))",
+            "Enabled": true,
+            "ID": "3aac6c9d-c6c1-4d4a-93f5-3d6350cdda9f"
+        },
+        {
             "Command": "I get a table?",
             "Expected": "I'm not sure what that means.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_get_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+            "ID": "d3b37b3f-5323-4310-b004-fe8fb4e49208"
         },
         {
             "Command": "Do you have a table?",

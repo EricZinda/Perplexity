@@ -45,6 +45,34 @@
             "ID": "a0e93abc-0832-4dfe-b1a7-ba4214ee4319"
         },
         {
+            "Command": "are any dishes vegetarian?",
+            "Expected": "Yes.",
+            "Tree": "_any_q(x3,_dish_n_of(x3,i8),_vegetarian_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "ed1b79b6-cb24-4ee3-ad22-72047d065a68"
+        },
+        {
+            "Command": "are there any vegetarian dishes?",
+            "Expected": "Yes.",
+            "Tree": "_any_q(x4,[_dish_n_of(x4,i10), _vegetarian_a_1(e9,x4)],_be_v_there(e2,x4))",
+            "Enabled": true,
+            "ID": "55c33452-0468-4075-b999-38e4420086b9"
+        },
+        {
+            "Command": "do you have any vegetarian dishes?",
+            "Expected": "Yes.",
+            "Tree": "pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "d9ebe110-462e-493c-8de6-27f139026627"
+        },
+        {
+            "Command": "Do you have any vegetarian dishes available?",
+            "Expected": "Yes.",
+            "Tree": "pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8,i14), _available_a_to-for(e15,x8,u16), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "d2bed2ef-2e52-4cd2-951f-c4085eb51b3e"
+        },
+        {
             "Command": "what meats do you have?",
             "Expected": "pork\nsteak\nchicken\nsalmon",
             "Tree": "_which_q(x5,_meat_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",

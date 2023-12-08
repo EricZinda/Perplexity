@@ -160,7 +160,15 @@ def which_q(context, state, x_variable_binding, h_rstr_orig, h_body_orig):
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, reversed=reverse)
 
 
-@Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q", "number_q"])
+# Examples of "any":
+#   are there any vegetarian dishes?
+#       this construction works like a, but allows plural
+#   I'll take any meat dish
+#   I'll take any meat dishes
+#       this means "all"
+#   Are there any tables available?
+# It should be represented the same as "a"
+@Predication(vocabulary, library="system", names=["udef_q", "pronoun_q", "proper_q", "number_q", "_any_q"])
 def generic_q(context, state, x_variable_binding, h_rstr, h_body):
     state = state.set_variable_data(x_variable_binding.variable.name,
                                     quantifier=VariableCriteria(context.current_predication(),

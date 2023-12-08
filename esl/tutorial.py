@@ -2310,6 +2310,18 @@ def _be_v_there(context, state, e_introduced_binding, x_object_binding):
     yield from combinatorial_predication_1(context, state, x_object_binding, bound_variable, unbound_variable)
 
 
+@Predication(vocabulary, names=["_available_a_to-for"])
+def _available_a_to_for(context, state, e_introduced_binding, x_object_binding, u_ignored):
+    def bound_variable(value):
+        yield value in state.get_entities()
+
+    def unbound_variable():
+        for i in state.get_entities():
+            yield i
+
+    yield from combinatorial_predication_1(context, state, x_object_binding, bound_variable, unbound_variable)
+
+
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
 def wh_question(context, state_list, has_more, binding_list):
