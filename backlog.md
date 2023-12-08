@@ -1,8 +1,9 @@
 - "I will have any meat dish"
-
+- I'd like a vegetarian dish for my son
+  - I'd like a steak for my son
+  - etc
+  - 
 - table for two crashes
-- implement "how many vegetarian dishes are there"
-- implement "how many vegetarian dishes do you have?"
 - If you ask how much the soup and salad cost, johnny still thinks we haven't asked the cost
 - Just two, my son Johnny and me.
 - Need a way to clear out the order
@@ -10,6 +11,8 @@
   - Let's start again
   - could we reorder?
   - I don't want X
+- implement "how many vegetarian dishes are there"
+- implement "how many vegetarian dishes do you have?"
   
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
@@ -17,7 +20,6 @@
   - Make 
     - In that case, Johnny and I will both have the Roasted Chicken.
     - Let's go with two orders of the Steak, please.
-    - I'd like a vegetarian dish for my son
     - We'd like to start with some water and menus
     - please bring us two glasses of water
     - Let's go to a table, please.

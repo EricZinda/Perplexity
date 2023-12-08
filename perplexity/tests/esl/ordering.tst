@@ -136,6 +136,13 @@
             "ID": "9a2a9945-3e16-4725-bf0a-b56918ade68a"
         },
         {
+            "Command": "I'll take any meat dish",
+            "Expected": "Son: Wait, we already spent $10 so if we get that, we won't be able to pay for it with $15. \nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "udef_q(x14,_meat_n_1(x14),pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8,i19), compound(e13,x8,x14)],_take_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "a9bc7ac2-87d1-4d2d-b8f4-07b73c699cdd"
+        },
+        {
             "Command": "I will take the chicken",
             "Expected": "Son: Wait, we already spent $10 so if we get that, we won't be able to pay for it with $15. \nWaiter: Can I get you something else before I put your order in?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_chicken_n_1(x8),_take_v_1(e2,x3,x8)))",

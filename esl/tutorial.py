@@ -524,6 +524,12 @@ def abstr_deg(context, state, x_binding):
     yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
 
 
+@Predication(vocabulary, names=["compound"])
+def compound(context, state, e_binding, x_left_binding, x_right_binding):
+    if x_left_binding.value is not None and x_right_binding.value is not None and x_left_binding.value[0] == x_right_binding.value[0]:
+        yield state
+
+
 @Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
