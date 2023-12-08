@@ -153,122 +153,6 @@ def generate_alternative_examples(phrase_list):
                 yield f"{alternative}"
 
 
-# Returns the list of property sets that are required to match all the parses from the examples that have at least one
-# of the predicates in it
-#
-# Use the transforms that are available at the time this is called
-#   TODO: Should probably fail if more transformers get loaded later because they could break this analysis
-# Ignores vocabulary
-# Ensure that the unique properties returned have at least one example from *all* of the predicates
-#   Otherwise, it will never get called but the developer will think that it will
-def get_example_signatures(vocabulary, examples, predicates):
-    signatures = []
-    found_predicates = set()
-    mrs_parser = perplexity.tree.MrsParser()
-    for example_declaration in examples:
-        if isinstance(example_declaration, dict):
-            example = example_declaration["Example"]
-            ignore_properties = expand_properties(example_declaration["IgnoreProperties"])
-        else:
-            example = example_declaration
-            ignore_properties = []
-
-        # If examples have "word1|word2" in them, split into two examples
-        alternatives = example.split("|")
-        if len(alternatives) == 1:
-            example_list = [example]
-        else:
-            phrase_list = build_phrase_list(alternatives)
-            example_list = list(generate_alternative_examples(phrase_list))
-
-        for example_in_list in example_list:
-            print(f"   parsing example: '{example_in_list}' ...")
-            non_ignored = []
-            for mrs in mrs_parser.mrss_from_phrase(example_in_list):
-                for tree_orig in mrs_parser.trees_from_mrs(mrs):
-                    tree_info_orig = {"Tree": tree_orig,
-                                      "Variables": mrs.variables}
-                    for tree_info in vocabulary.alternate_trees(None, tree_info_orig, yield_original=True):
-                        # For each tree that has one of the predicates in it, collect the properties
-                        # for the *verb introduced event* variable AND sentence force
-                        found = perplexity.tree.find_predication(tree_info["Tree"], predicates)
-                        if found is not None:
-                            found_predicates.add(found.name)
-
-                            # Collect sentence force, it could be on a different variable
-                            properties = {}
-
-                            # Also collect all properties provided for the verb event
-                            assert found.arg_types[0] == "e", f"verb '{found}' doesn't have event as arg 0"
-                            properties.update(tree_info["Variables"][found.args[0]])
-
-                            # If this set of properties should be ignored for this parse, skip it
-                            if properties in ignore_properties:
-                                continue
-                            else:
-                                if properties not in non_ignored:
-                                    non_ignored.append(properties)
-
-                                # Now see if this set of properties matches one of the signatures already generated
-                                # if not, add it as a unique signature
-                                in_list = False
-                                for signature_predicates_tree in signatures:
-                                    if not missing_properties([signature_predicates_tree[0]], properties):
-                                        in_list = True
-                                        signature_predicates_tree[1].add(str(found.name))
-                                        signature_predicates_tree[2].append((example_in_list, str(tree_info["Tree"]), example_declaration))
-
-                                if not in_list:
-                                    signatures.append([properties, set([str(found.name)]), [(example_in_list, str(tree_info["Tree"]), example_declaration)]])
-            if len(non_ignored) == 0:
-                assert False, f"All property sets from '{example_in_list}' were either ignored or didn't match any of the predicate names"
-            else:
-                print(f"      ... matched: {''.join(['         ' + str(x) for x in non_ignored])}")
-
-    return found_predicates, signatures
-
-
-def example_from_declaration(declaration):
-    if isinstance(declaration, dict):
-        return declaration["Example"]
-    else:
-        return declaration
-
-
-def compare_examples_to_properties(function_to_decorate, names, examples, example_signatures, properties):
-    if properties is None:
-        # No properties have been declared, print out what was found and fail
-        print(f"No properties specified for: '{function_to_decorate.__name__}(names={names}).")
-        print("Analysis is:\nExamples:")
-        print("   " + "\n   ".join([example_from_declaration(x) for x in examples]))
-        for signature in example_signatures:
-            print(f"Properties: {signature[0]}")
-            print("   " + f"\n   ".join(signature[1]))
-            if len(signature[1]) != len(names):
-                not_in_intersection = set(signature[1]) ^ set(names)
-                print(f"   {list(not_in_intersection)}: none of the examples have this predicate and match these properties")
-        return {}, False
-
-    else:
-        # See if the provided properties match one of the example_signatures
-        # which means that all the predications in names are in at least one example that has these properties
-        had_failure = False
-        remaining_properties = copy.deepcopy(properties)
-        for example_signature in example_signatures:
-            missing = missing_properties(properties, example_signature[0])
-            if missing:
-                had_failure = True
-                print(f"These examples:")
-                print("\n".join(["   " + str(x) for x in example_signature[2]]))
-                print(f"... generated a parse with these properties: {example_signature[0]}")
-                print(f"... that didn't find a match in declaration on: {function_to_decorate.__module__}.{function_to_decorate.__name__}")
-            else:
-                if example_signature[0] in remaining_properties:
-                    remaining_properties.remove(example_signature[0])
-
-        return remaining_properties, not had_failure
-
-
 # The list of phrase properties much match one of the declarations
 def missing_properties(declaration_list, phrase):
     if phrase not in declaration_list:
@@ -316,10 +200,6 @@ def get_all_metadata_from_function_file(decorated_function):
 
 def meta_file_path(decorated_function):
     return os.path.abspath(inspect.getfile(decorated_function)) + ".plex"
-
-
-
-
 
 
 # Initial phrase definition format is:
