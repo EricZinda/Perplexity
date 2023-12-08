@@ -1416,21 +1416,18 @@ def _thanks_a_1(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)
 
 
-# Scenarios:
-#   - "I will sit down"
-#   - "Will I sit down?"
-@Predication(vocabulary, names=["_sit_v_down", "sit_v_1"])
+@Predication(vocabulary,
+             names=["_sit_v_down", "_sit_v_1"],
+             phrases={
+                "I will sit down.": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I will sit.": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
 def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
     if is_concept(x_actor_binding):
         context.report_error(["formNotUnderstood", "_sit_v_down_future"])
-        return
-    tree_info = state.get_binding("tree").value[0]
-    if not is_future_tense(tree_info):
-        context.report_error(["formNotUnderstood", "_sit_v_down_future"])
-        return
-    if is_question(tree_info):
-        # None of the future tense questions are valid english in this scenario
-        context.report_error(["unexpected", state.get_reprompt()])
         return
 
     def bound(x_actor):
@@ -1442,11 +1439,26 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
             return
 
     def unbound():
-        context.report_error(["formNotUnderstood", "_sit_v_down_future"])
+        context.report_error(["unexpected", "_sit_v_down_future"])
         if False:
             yield None
 
     yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
+
+
+@Predication(vocabulary,
+             names=["_sit_v_down", "_sit_v_1"],
+             phrases={
+                "Will I sit down?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Will I sit?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
+def _sit_v_down_future_bad_english(context, state, e_introduced_binding, x_actor_binding):
+    context.report_error(["unexpected", state.get_reprompt()])
+    if False:
+        yield None
 
 
 @Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])

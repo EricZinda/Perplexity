@@ -1,7 +1,12 @@
 - Get rid of old code
 - Need to recheck constraints if names are changed
-- _sit_v_down_future
-- 
+- ChatGPT scenario:
+  - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
+  I am the waiter.  Interact with me only saying one thing at a time and waiting for my response.  OK?
+  - Make 
+    - "Do you have any vegetarian dishes available?" work
+    - Johnny would love the tomato soup. 
+    - Can we get one tomato soup for Johnny, please?
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
   - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...
 - support "can we be seated?"
