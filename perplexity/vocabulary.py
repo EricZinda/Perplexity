@@ -396,6 +396,9 @@ def check_phrases(func, vocabulary, predicates, phrase_dict):
                                 key = tree_info.get("Transformed", None)
                                 if key not in example_trees:
                                     example_trees[key] = [tree_info["Tree"], tree_properties]
+                        else:
+                            non_matching_examples.append(
+                                [tree_info["Tree"], f"Did not contain predicates listed for this function: {predicates}"])
 
                 if found_properties_match:
                     break

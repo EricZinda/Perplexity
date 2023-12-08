@@ -1,9 +1,6 @@
+- Get rid of old code
 - Need to recheck constraints if names are changed
-- Update sit_v_invalid_present_intransitive()
-  - "I can sit": None,
-      doesn't generate sit_able alternatives
-- Update invalid_present_transitive
-- Update _have_v_1_future
+- _sit_v_down_future
 - 
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
   - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...

@@ -1462,8 +1462,9 @@ def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_vari
 
 
 @Predication(vocabulary,
-             names=["_sit_v_down", "_sit_v_1", "_sit_v_down_able"],
+             names=["_sit_v_down", "_sit_v_1", "_sit_v_down_able", "_sit_v_1_able"],
              phrases={
+                "I can sit.": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I sit down": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "Who sits down?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "Who is sitting down?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '+', 'PERF': '-'},
@@ -1474,7 +1475,7 @@ def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_vari
                 {'SF': ['prop', 'ques'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '+', 'PERF': '-'}
              ])
-def _sit_v_invalid_present_intransitive(context, state, e_introduced_binding, x_actor_binding):
+def _sit_v_present_intransitive_bad_english(context, state, e_introduced_binding, x_actor_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
         context.report_error(["formNotUnderstood", "invalid_present_intransitive"])
         return
@@ -1723,12 +1724,20 @@ def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
 
 # Present tense scenarios: all of these are not great english, respond with an error
 #   "I get x?", "I get x"
-#   "What do I see?"
-#   "Who sees an x?
 #   "I see a menu?"
 #   "I see a menu"
-@Predication(vocabulary, names=["_get_v_1", "_take_v_1", "_see_v_1"])
-def invalid_present_transitive(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+@Predication(vocabulary,
+             names=["_get_v_1", "_take_v_1", "_see_v_1"],
+             phrases={
+                "I get|take a menu?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I get|take a menu": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I see a menu?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I see a menu": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
+def get_take_see_v_present_transitive_bad_english(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if not is_present_tense(state.get_binding("tree").value[0]):
         context.report_error(["formNotUnderstood", "invalid_present_transitive"])
         return
@@ -2531,6 +2540,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     ShowLogging("Pipeline")
+
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")

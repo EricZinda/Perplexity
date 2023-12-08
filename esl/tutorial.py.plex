@@ -1150,6 +1150,13 @@
     },
     "_sit_v_invalid_present_intransitive": {
         "Phrases": {
+            "I can sit.": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "I sit down": {
                 "SF": "prop",
                 "TENSE": "pres",
@@ -1206,6 +1213,54 @@
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "+",
+                "PERF": "-"
+            }
+        ]
+    },
+    "get_take_see_v_invalid_present_transitive": {
+        "Phrases": {
+            "I get|take a menu?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I get|take a menu": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I see a menu?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I see a menu": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
                 "PERF": "-"
             }
         ]
