@@ -426,7 +426,7 @@
     },
     "_have_v_1_future": {
         "Phrases": {
-            "I will take|have a steak": {
+            "I will take|have|get a steak": {
                 "SF": "prop",
                 "TENSE": "fut",
                 "MOOD": "indicative",
@@ -543,6 +543,13 @@
     },
     "_have_v_1_able": {
         "Phrases": {
+            "Could I have|get a steak?": {
+                "SF": "ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "Can I have|get a steak?": {
                 "SF": "ques",
                 "TENSE": "pres",
@@ -576,6 +583,13 @@
             {
                 "SF": "ques",
                 "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "tensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"

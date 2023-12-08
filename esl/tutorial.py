@@ -504,7 +504,7 @@ def generic_entity(context, state, x_binding):
     yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
 
 
-@Predication(vocabulary, names=["_okay_a_1"])
+@Predication(vocabulary, names=["_okay_a_1", "_all+right_a_1"])
 def _okay_a_1(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)
 
@@ -1812,9 +1812,9 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
 #   - "What will I have?" --> Not good english
 #   - "Who will have x?" --> Not good english
 @Predication(vocabulary,
-             names=["_have_v_1", "_take_v_1"],
+             names=["_have_v_1", "_take_v_1", "_get_v_1"],
              phrases={
-                 "I will take|have a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                 "I will take|have|get a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties={'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
@@ -1845,7 +1845,7 @@ def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_ob
 
 
 @Predication(vocabulary,
-             names=["solution_group__have_v_1", "solution_group__take_v_1"],
+             names=["solution_group__have_v_1", "solution_group__take_v_1", "solution_group__get_v_1"],
              properties_from=_have_v_1_future)
 def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
@@ -2008,12 +2008,13 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
 @Predication(vocabulary,
              names=["_have_v_1_able", "_get_v_1_able"],
              phrases={
+                "Could I have|get a steak?": {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "Can I have|get a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "What can I have|get?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "Can the salad have nuts?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "who can have|get a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties={'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actor, x_object):
         # Players are able to have any food, a table or a menu

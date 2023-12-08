@@ -45,6 +45,13 @@
             "ID": "8fd795d7-6127-4186-b87b-67680e2c551e"
         },
         {
+            "Command": "Could we have a menu?",
+            "Expected": "Sorry, you must be seated to get a menu",
+            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "4a0fe26c-88b6-4386-8e7b-af607075c4f6"
+        },
+        {
             "Command": "/reset",
             "Expected": "",
             "Tree": "None",
