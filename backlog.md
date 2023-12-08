@@ -1,9 +1,12 @@
-- Get rid of old code
-- Need to recheck constraints if names are changed
-
-
+- "let's have a steak"
+- # Examples of "any":
+#   are there any vegetarian dishes?
+#   I'll take any meat dish
+#   Are there any tables available?
+# It should be represented the same as "a"
 - "Do you have any vegetarian dishes available?" work
-
+- table for two crashes
+- 
 - If you ask how much the soup and salad cost, johnny still thinks we haven't asked the cost
 - Let's go with two orders of the Steak, please.
 - Just two, my son Johnny and me.
@@ -37,6 +40,7 @@
 - What do I have --> your card
   - should also say your son
 - New Programming Model todo:
+  - Need to recheck constraints if names are changed
   - Get rid of old metadata that doesn't have a function anymore, e.g. if the developer has it then deletes it
   - Need to support wh-question examples as a way to filter out those when necessary too
 - Example33_reset: a few files are in a folder together

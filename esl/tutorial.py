@@ -1814,10 +1814,14 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
 @Predication(vocabulary,
              names=["_have_v_1", "_take_v_1", "_get_v_1"],
              phrases={
+                 "Let's take|have|get a steak": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "I will take|have|get a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
-def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+             properties=[
+                {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                ])
+def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actors, x_objects):
         if is_user_type(x_actors):
             return valid_player_request(state, x_objects)
@@ -1846,8 +1850,8 @@ def _have_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_ob
 
 @Predication(vocabulary,
              names=["solution_group__have_v_1", "solution_group__take_v_1", "solution_group__get_v_1"],
-             properties_from=_have_v_1_future)
-def _have_v_1_future_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
+             properties_from=_have_v_1_order)
+def _have_v_1_order_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',

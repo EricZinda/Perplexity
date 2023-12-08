@@ -426,6 +426,13 @@
     },
     "_have_v_1_future": {
         "Phrases": {
+            "Let's take|have|get a steak": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "I will take|have|get a steak": {
                 "SF": "prop",
                 "TENSE": "fut",
@@ -438,6 +445,13 @@
             {
                 "SF": "prop",
                 "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "comm",
+                "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
@@ -1448,5 +1462,42 @@
                 "PERF": "-"
             }
         ]
+    },
+    "_have_v_1_order": {
+        "Phrases": {
+            "Let's take|have|get a steak": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I will take|have|get a steak": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_have_v_1_order_group": {
+        "PropertiesFrom": "_have_v_1_order_group"
     }
 }

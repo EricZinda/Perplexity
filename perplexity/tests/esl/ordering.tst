@@ -136,6 +136,13 @@
             "ID": "9a2a9945-3e16-4725-bf0a-b56918ade68a"
         },
         {
+            "Command": "Let's have the chicken",
+            "Expected": "Son: Wait, we already spent $10 so if we get that, we won't be able to pay for it with $15. \nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "_the_q(x9,_chicken_n_1(x9),pronoun_q(x5,pron(x5),_have_v_1(e2,x5,x9)))",
+            "Enabled": true,
+            "ID": "05db2218-cea5-4fcf-bd7d-25641a7261c8"
+        },
+        {
             "Command": "What do the steak and the soup cost?",
             "Expected": "steak : 10 dollars\nsoup : 4 dollars",
             "Tree": "which_q(x5,thing(x5),_the_q(x13,_steak_n_1(x13),_the_q(x18,_soup_n_1(x18),udef_q(x3,_and_c(x3,x13,x18),_cost_v_1(e2,x3,x5)))))",

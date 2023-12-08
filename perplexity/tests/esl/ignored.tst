@@ -2,6 +2,13 @@
     "ResetModule": "tutorial",
     "ResetFunction": "reset",
     "TestItems": [
+         {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "a5589109-1dc0-4fb4-b4ee-eda0ab9ce3d9"
+        },
         {
             "Command": "alright, could we have a table?",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
