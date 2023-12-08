@@ -4,6 +4,7 @@
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one thing at a time and waiting for my response.  OK?
   - Make 
+    - Let's get a table for two, please
     - "Do you have any vegetarian dishes available?" work
     - Johnny would love the tomato soup. 
     - Can we get one tomato soup for Johnny, please?

@@ -448,7 +448,7 @@ def check_properties(vocabulary, function_to_decorate, names, metadata, phrases,
     if properties_from:
         assert hasattr(properties_from, "_delphin_properties"), f"properties_from on {function_to_decorate} references a function with no properties specified"
         properties_to_use = properties_from._delphin_properties
-        metadata["PropertiesFrom"] = f"{function_to_decorate.__module__}.{function_to_decorate.__name__}"
+        metadata["PropertiesFrom"] = f"{function_to_decorate.__name__}"
         metadata.pop("Properties", None)
     else:
         metadata.pop("PropertiesFrom", None)
@@ -592,7 +592,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
         # Compare properties metadata with the cached version, if they are the same
         # don't bother checking again
         metadata = get_saved_metadata(function_to_decorate)
-        check_declaration = metadata.get("Phrases", []) != phrases or metadata.get("Properties", []) != properties or metadata.get("PropertiesFrom") != properties_from
+        check_declaration = metadata.get("Phrases", []) != phrases or metadata.get("Properties", []) != properties or metadata.get("PropertiesFrom") != (properties_from.__name__ if properties_from is not None else None)
         if check_declaration:
             properties_to_use = check_properties(vocabulary, function_to_decorate, names, metadata, phrases, properties, properties_from)
             put_saved_metadata(function_to_decorate, metadata)

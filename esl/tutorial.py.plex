@@ -772,7 +772,7 @@
     "on_p_loc": {},
     "_with_p": {},
     "_pay_v_for_object_group": {
-        "PropertiesFrom": "esl.tutorial._pay_v_for_object_group"
+        "PropertiesFrom": "_pay_v_for_object_group"
     },
     "_want_v_1": {
         "Phrases": {
@@ -823,10 +823,10 @@
         ]
     },
     "want_group": {
-        "PropertiesFrom": "esl.tutorial.want_group"
+        "PropertiesFrom": "want_group"
     },
     "_check_v_1_group": {
-        "PropertiesFrom": "esl.tutorial._check_v_1_group"
+        "PropertiesFrom": "_check_v_1_group"
     },
     "_show_v_1": {
         "Phrases": {
@@ -878,7 +878,7 @@
     },
     "_show_v_cause_group": {},
     "_seat_v_cause_group": {
-        "PropertiesFrom": "esl.tutorial._seat_v_cause_group"
+        "PropertiesFrom": "_seat_v_cause_group"
     },
     "loc_nonsp": {},
     "loc_nonsp_eex": {},
@@ -1022,7 +1022,7 @@
         ]
     },
     "_see_v_1_able_group": {
-        "PropertiesFrom": "esl.tutorial._see_v_1_able_group"
+        "PropertiesFrom": "_see_v_1_able_group"
     },
     "_see_v_1_future": {
         "Phrases": {
@@ -1065,7 +1065,7 @@
         ]
     },
     "_see_v_1_future_group": {
-        "PropertiesFrom": "esl.tutorial._see_v_1_future_group"
+        "PropertiesFrom": "_see_v_1_future_group"
     },
     "_take_v_1_able": {
         "Phrases": {
@@ -1103,20 +1103,20 @@
     },
     "invalid_present_transitive": {},
     "_have_v_1_future_group": {
-        "PropertiesFrom": "esl.tutorial._have_v_1_future_group"
+        "PropertiesFrom": "_have_v_1_future_group"
     },
     "_have_v_1_present_group": {
-        "PropertiesFrom": "esl.tutorial._have_v_1_present_group"
+        "PropertiesFrom": "_have_v_1_present_group"
     },
     "_have_v_1_able_group": {
-        "PropertiesFrom": "esl.tutorial._have_v_1_able_group"
+        "PropertiesFrom": "_have_v_1_able_group"
     },
     "poss": {},
     "_be_v_id_group": {
-        "PropertiesFrom": "esl.tutorial._be_v_id_group"
+        "PropertiesFrom": "_be_v_id_group"
     },
     "_cost_v_1_group": {
-        "PropertiesFrom": "esl.tutorial._cost_v_1_group"
+        "PropertiesFrom": "_cost_v_1_group"
     },
     "wh_question": {},
     "sit_v_invalid_present_intransitive": {
