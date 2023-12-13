@@ -1,8 +1,57 @@
-- "I will have any meat dish"
-- I'd like a vegetarian dish for my son
-  - I'd like a steak for my son
-  - etc
-  - 
+- Fix:
+  - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
+    - takes forever
+    - returns a weird error
+- Should "we" *require* that everyone is included like and_c does?
+  - Should it also imply "together" as in "we want a table (together)"
+- 'file1.txt' and 'file2.txt' are in a folder together
+- we want a table -> crashes
+  - It doesn't seem right to merge all solutions if the upper limit is inf, they should be alternatives
+    - That does fix the problem if we don't merge, BUT: it is really really slow for some scenarios
+    - If we somehow were able to run the solution group handlers from within all_plural_groups_stream() then we'd know the solution group
+      - didn't work and would create a new set for it
+  - The problem is that want_v_1 succeeds for each person getting a table for themselves
+    - Thus they are tried as a solution group
+  - Normally, we'd be checking this against the state of the world to see what part of "we" wants something
+    - But this is a case where we need to decide if it is individually or together
+  - If we say "which files are 20 mb?"
+    - We get files by themselves AND together
+    - this is a variable with 2->inf, but it must give all alternatives
+    - 
+  - Maybe: Problem is that, even if we do a lift_style predication, we will often get two solutions, one for son one for user.
+  - AND we only get these solution groups, none with collective (i.e. only x3=('user', 'son1'))
+    -1)      x3=('user',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+    -2)      x3=('user',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+             x3=('son1',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',) 
+    -3)      x3=('user',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+             x3=('son1',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+             x3=('user', 'son1'), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+    - we should get an alternative that is just (user, son1)
+    - Problem is that each new solution gets "merged" so they don't form their own set
+    - "we" has a criteria between 2 and inf 
+      - Correct because it could be a group
+    - Scenario: "Students are lifting a table" if there are only two students lifting a table *together* should work and return
+      - x3=(student1, student2)
+    - The problem might be that both of these solutions "succeed"... with "How many people?"?
+      - "I want a table":       x3=('user',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+      - "My son wants a table": x3=('son1',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+      - There really are 3 solutions that "succeed" to various levels, we want
+- Fix "for" to be more general
+  - (fixed) "a menu for me" 
+    - creates a menu concept with a criteria
+  - (fixed) I want soup for my son
+    - orders it for me
+  - (done) I want a table for my son
+    - ignores targetPossession
+    - Need to update this for everything
+      - Should probably be doing the fixup much earlier in satisfy_want_group_group
+  - (done) I'd like a vegetarian dish for my son
+    - I want a steak for my son
+    - etc
+    
+- "Did I order a steak for my son?"
+  
+  
 - table for two crashes
 - If you ask how much the soup and salad cost, johnny still thinks we haven't asked the cost
 - Just two, my son Johnny and me.
