@@ -5,15 +5,17 @@ import perplexity.tree
 import perplexity.execution
 from math import inf
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
-    all_plural_groups_stream, VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats
+    VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats, \
+    all_plural_groups_stream
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import CachedIterable
-from perplexity.utilities import at_least_one_generator
+from perplexity.utilities import at_least_one_generator, get_function
 
 
 # Yields solutions in a single solution group
 # asks its solution_group_generator to give it more than the initial group
 # when it runs out of initial solutions
+# Assumes that
 class SingleGroupGenerator(object):
     def __init__(self, group_id, solution_group_generator, group_list):
         self.group_id = group_id
@@ -28,7 +30,7 @@ class SingleGroupGenerator(object):
         if groups_logger.level == logging.DEBUG:
             groups_logger.debug(f"SingleGroupGenerator: Next solution requested for {self.group_id}, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
 
-        if self.last_yielded_index == len(self.group_list) - 1:
+        while self.last_yielded_index >= len(self.group_list) - 1:
             # If no variable has a between(N, inf) constraint,
             # Just stop now and the caller will get a subset solution group for the answer they care about
             # Note that it may not be *minimal*, might be a subset, and might be maximal.
@@ -201,12 +203,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
         # errors generated because the phrase made no sense
         best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
 
-        # Go through each variable that has a quantifier in order and gather and optimize the criteria list
-        # if it wasn't given to us
-        if criteria_list is not None:
-            declared_criteria_list = criteria_list
-        else:
-            declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
+        declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
@@ -215,238 +212,14 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
         # We also set this if the user asks a wh_question so we ensure we get all of the values
         variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
-
+        handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
         groups_stream = all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
-                                                 initial_stats_group, has_global_constraint)
+                                                 initial_stats_group, has_global_constraint,
+                                                 handlers, optimized_criteria_list, index_predication)
 
         group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
-        if all_unprocessed_groups is not None:
-            unprocessed_groups = []
-            for group in group_generator:
-                unprocessed_groups.append([x for x in group])
-            group_generator = unprocessed_groups
-            all_unprocessed_groups.append(unprocessed_groups)
 
-        at_least_one_group = at_least_one_generator(group_generator)
-        if at_least_one_group is not None:
-            if all_groups:
-                yield from at_least_one_group
-
-            else:
-                # If there are multiple solution groups, we need to add one more (fake) group
-                # and yield it so that the caller thinks there are multiple answers and will give a message
-                # to the user. The answers aren't shown so it can be anything
-                one_more = len(group_generator) > 1 if isinstance(group_generator, list) else group_generator.has_multiple_groups()
-
-                # First see if there is a solution_group handler that should be called
-                handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
-                wh_handlers = find_wh_group_handlers(execution_context, this_sentence_force)
-                phase2_context = execution_context.create_phase2_context()
-                for next_group in at_least_one_group:
-                    created_solution_group, has_more, group_list, next_best_error_info = run_handlers(phase2_context, wh_handlers, handlers, optimized_criteria_list, one_more, next_group, index_predication, wh_question_variable)
-                    if best_error_info[0] is None and next_best_error_info[0] is not None:
-                        best_error_info = next_best_error_info
-                    if created_solution_group is None:
-                        pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
-                        if wh_question_variable is not None:
-                            wh_created_solution_group = run_wh_group_handlers(phase2_context, wh_handlers, wh_question_variable, one_more, group_list)
-                            if isinstance(wh_created_solution_group, (tuple, list)) and len(wh_created_solution_group) == 0:
-                                # wh_handler said to fail
-                                if best_error_info[0] is None and phase2_context.get_error_info()[0] is not None:
-                                    best_error_info = phase2_context.get_error_info()
-                                break
-                            else:
-                                yield wh_created_solution_group
-                        else:
-                            yield group_list
-
-                        # If there are multiple solution groups, we need to add one more (fake) group
-                        # and yield it so that the caller thinks there are multiple answers and will give a message
-                        # to the user. The answers aren't shown so it can be anything
-                        if one_more:
-                            yield True
-
-                        return
-
-                    elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-                        pipeline_logger.debug(f"Handler said to skip this group")
-                        continue
-
-                    else:
-                        pipeline_logger.debug(f"Handler said this group was a solution")
-                        yield created_solution_group
-                        if has_more:
-                            yield True
-
-                        return
-
-                pipeline_logger.debug(f"No more solution groups.")
-                pipeline_logger.debug(f"Setting solution group error back to {best_error_info}.")
-                phase2_context.set_error_info(best_error_info)
-    else:
-        execution_context.set_error_info(solutions_orig.error_info)
-
-
-# Support iterating over just one variable value from a state iterator but
-# without materializing all the states up front
-class GroupVariableIterable(object):
-    class GroupVariableIterator(object):
-        def __init__(self, state_iterator, static_value=None, variable_name=None):
-            self._state_iterator = state_iterator
-            self._static_value = static_value
-            self._variable_name = variable_name
-
-        def __next__(self):
-            # Call next_state even if we're not going to use it so we quit iterating when
-            # we are out of values
-            next_state = next(self._state_iterator)
-            if self._static_value is not None:
-                return self._static_value
-            else:
-                return next_state.get_binding(self._variable_name)
-
-    def __init__(self, state_iterable, static_value=None, variable_name=None):
-        self._state_iterable = state_iterable
-        self._static_value = static_value
-        self._variable_name = variable_name
-
-    def __iter__(self):
-        return GroupVariableIterable.GroupVariableIterator(self._state_iterable.__iter__(), self._static_value, self._variable_name)
-
-    def __getitem__(self, key):
-        # Even if we aren't using it, make sure this index exists by accessing it
-        state = self._state_iterable[key]
-        if self._static_value is not None:
-            return self._static_value
-        else:
-            return state.get_binding(self._variable_name)
-
-
-class GroupVariableValues(object):
-    def __init__(self, variable_constraints, state_iterable, arg_type, arg_value):
-        self.variable_constraints = variable_constraints
-
-        if arg_type in ["c", "h"]:
-            # returns arg_value for every state
-            self.solution_values = GroupVariableIterable(state_iterable=state_iterable, static_value=arg_value)
-
-        else:
-            # return get_binding(arg_value) for every state
-            self.solution_values = GroupVariableIterable(state_iterable=state_iterable, variable_name=arg_value)
-
-
-# If a handler returns:
-#   None --> it means ignore the handler and continue
-#   [] or () --> it means fail this solution
-def run_handlers(execution_context, wh_handlers, handlers, variable_constraints, one_more, group, index_predication, wh_question_variable):
-    best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
-    created_solution_group = None
-    has_more = False
-    state_list = CachedIterable(group)
-    # state_list = list(group)
-    # if pipeline_logger.level == logging.DEBUG:
-    #     nl = '\n'
-    #     pipeline_logger.debug(f"Found solution group: {nl + '   ' + (nl + '   ').join([str(s) for s in state_list])}")
-    #     pipeline_logger.debug(f"Current execution context error: {execution_context.error()}")
-
-    if len(handlers) > 0:
-        pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
-
-        for is_predication_handler_name in handlers:
-            handler_function = is_predication_handler_name[1]
-            if is_predication_handler_name[0]:
-                # This is a predication-style solution group handler
-                # Build up an arg structure to call the predication with that
-                # has the same arguments as the normal predication but has a list for each argument that represents the solution group
-                handler_args = []
-                for arg_index in range(len(index_predication.args)):
-                    arg = index_predication.args[arg_index]
-                    found_constraint = None
-                    for constraint in variable_constraints:
-                        if constraint.variable_name == arg:
-                            found_constraint = constraint
-                            break
-                    handler_args.append(GroupVariableValues(found_constraint, state_list, index_predication.argument_types()[arg_index], arg))
-
-                handler_args = [execution_context, state_list, one_more] + handler_args
-
-            else:
-                handler_args = (execution_context, state_list, one_more) + (variable_constraints, )
-
-            debug_name = is_predication_handler_name[2][0] + "." + is_predication_handler_name[2][1]
-            pipeline_logger.debug(f"Running {debug_name} solution group handler")
-            for next_solution_group in handler_function(*handler_args):
-                if created_solution_group is None:
-                    created_solution_group = next_solution_group
-                    if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-                        # handler said to fail
-                        if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
-                            best_error_info = execution_context.get_error_info()
-                        break
-                    pipeline_logger.debug(f"{debug_name} succeeded with first solution")
-                    if wh_question_variable is not None:
-                        created_solution_group = run_wh_group_handlers(execution_context, wh_handlers, wh_question_variable, one_more, created_solution_group)
-                        if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-                            # handler said to fail
-                            if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
-                                best_error_info = execution_context.get_error_info()
-                            break
-                else:
-                    pipeline_logger.debug(f"{handler_function.__name__} succeeded with second solution")
-                    has_more = True
-                    break
-
-            # First solution_group handler that yields, wins
-            if created_solution_group:
-                pipeline_logger.debug(f"{debug_name} succeeded so no more solution group handlers will be run")
-                break
-            else:
-                pipeline_logger.debug(f"{debug_name} failed, so trying alternative solution group handlers...")
-
-        pipeline_logger.debug(f"Done trying solution group handlers, best error: {best_error_info}")
-        return created_solution_group, has_more, state_list, best_error_info
-
-    else:
-        return None, None, state_list, perplexity.execution.ExecutionContext.blank_error_info()
-
-
-def get_function(module_function):
-    module = sys.modules[module_function[0]]
-    function = getattr(module, module_function[1])
-    return function
-
-
-def find_wh_group_handlers(execution_context, this_sentence_force):
-    # First get the list of handlers, if any
-    handlers = []
-    for module_function in execution_context.vocabulary.predications("solution_group_wh", [], this_sentence_force):
-        handlers.append((get_function(module_function), module_function[0], module_function[1]))
-
-    return handlers
-
-
-# Called only if we have a successful solution group
-# Same semantic as solution group handlers: First wh_group handler that yields, wins
-def run_wh_group_handlers(execution_context, wh_handlers, wh_question_variable, one_more, group):
-    # If there are responses in the group, don't run the handlers
-    for solution in group:
-        for operation in solution.get_operations():
-            if isinstance(operation, RespondOperation):
-                return group
-
-    if len(wh_handlers) > 0:
-        value_binding_list = [solution.get_binding(wh_question_variable) for solution in group]
-        for function_module_functionname in wh_handlers:
-            pipeline_logger.debug(f"Running {function_module_functionname[1]}.{function_module_functionname[2]} wh-solution group handler")
-
-            for resulting_group in function_module_functionname[0](execution_context, group, one_more, value_binding_list):
-                if resulting_group is not None and len(resulting_group) > 0:
-                    return resulting_group
-                else:
-                    pipeline_logger.debug(f"{function_module_functionname[1]}.{function_module_functionname[2]} handler said to ignore")
-
-    else:
-        return group
+        yield from group_generator
 
 
 # Returns predication_handlers, global_handlers

@@ -393,7 +393,9 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
             measurement_count = 0
             measurement_units = None
             for solution_group in tree_record["SolutionGroupGenerator"]:
+                solution_group_list = []
                 for solution_state in solution_group:
+                    solution_group_list.append(solution_state)
                     value = solution_state.get_binding(x_item_to_count_binding.variable.name).value
                     if is_concept(value[0]):
                         context.report_error(["formNotUnderstood", "count"])
@@ -432,7 +434,7 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
 
                 if len(unique_values) > 0 or measurement_units is not None:
                     # Make sure any operations that were created on solutions get passed on
-                    responses, new_state = apply_solutions_to_state(state, solution_group, record_operations=True)
+                    responses, new_state = apply_solutions_to_state(state, solution_group_list, record_operations=True)
                     if len(responses) > 0:
                         response = "\n".join(responses)
                         new_state = new_state.apply_operations([RespondOperation(response)], record_operations=True)
@@ -2334,8 +2336,6 @@ def wh_question(context, state_list, has_more, binding_list):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list], has_more)])
     if current_state is not None:
         yield (current_state,)
-    else:
-        yield state_list
 
 
 # Generates all the responses that predications can
@@ -2578,7 +2578,7 @@ if __name__ == '__main__':
 
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")

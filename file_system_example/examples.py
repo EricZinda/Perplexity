@@ -982,10 +982,10 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -1012,7 +1012,7 @@ if __name__ == '__main__':
     # Example16()
     # Example17()
     # Example18()
-    Example19()
+    # Example19()
     # Example20()
     # Example21()
     # Example22()
@@ -1034,7 +1034,7 @@ if __name__ == '__main__':
     # Example35()
     # Example36()
     # Example37()
-    # Example38()
+    Example38()
     # Example39()
     # Example40()
     # Example41()

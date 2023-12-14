@@ -12,6 +12,13 @@ system_added_arg_count = 2
 system_added_group_has_more = 2
 system_added_group_arg_count = 3
 
+
+def get_function(module_function):
+    module = sys.modules[module_function[0]]
+    function = getattr(module, module_function[1])
+    return function
+
+
 # Returns a dict:
 # {
 #     "Surface" : True | False

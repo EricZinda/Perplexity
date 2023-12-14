@@ -115,7 +115,7 @@ class UserInterface(object):
             if len(mrs_record["UnknownWords"]) > 0:
                 unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", mrs_record["UnknownWords"]])
                 tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
-                                                               response_generator=self.response_function(self.message_function, None, [], unknown_words_error),
+                                                               response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
                                                                tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)
                 mrs_record["Trees"].append(tree_record)
                 self.evaluate_best_response(None)
@@ -178,7 +178,7 @@ class UserInterface(object):
                                             self.state = new_state
 
                                         except MessageException as error:
-                                            response = self.response_function(self.response_function, self.message_function, tree_info, [], [0, error.message_object()])
+                                            response = self.response_function(self.vocabulary, self.message_function, tree_info, [], [0, error.message_object()])
                                             tree_record["ResponseMessage"] += f"\n{str(response)}"
 
                                         if len(operation_responses) > 0:
@@ -218,7 +218,7 @@ class UserInterface(object):
                     if len(contingent) > 0 and not alternate_tree_generated:
                         unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
                         tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
-                                                                       response_generator=self.response_function(self.message_function, None, [], unknown_words_error),
+                                                                       response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
                                                                        tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)
                         mrs_record["Trees"].append(tree_record)
                         self.evaluate_best_response(None)

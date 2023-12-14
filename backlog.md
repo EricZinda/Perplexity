@@ -1,3 +1,16 @@
+- Run solution_group code within all_plural_groups_stream2() so that failed solution groups cause the right alternative sets to be created
+Problems:
+    - SingleGroupGenerator assumes that, if it gets a new group with the same lineage, that there will be *more* records in it
+        - and furthermore that the records that we already returned are still there
+    - Neither is true anymore because the group handler can completely swap things out
+
+TODO:
+    Need to figure out how to do "there is more" again in the new system
+    Get proper errors to be returned again
+      - Example23_reset: what is in this 'blue' -> There isn't a 'blue' in the system
+        Expected: a thing is not in this 'blue'
+
+
 - Fix:
   - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
     - takes forever

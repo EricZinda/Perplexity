@@ -1,15 +1,19 @@
+import logging
+import sys
+
+from perplexity.execution import ExecutionContext
 from perplexity.response import RespondOperation
 from perplexity.sstring import s, convert_complex_variable
 from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication, \
     find_index_predication
-from perplexity.utilities import parse_predication_name, sentence_force
+from perplexity.utilities import parse_predication_name, sentence_force, get_function
 
 
 # Implements the response for a given tree
 # yields: response, solution_group that generated the response
 # In scenarios where there is an open solution group (meaning like "files are ..." where there is an initial solution that will
 # grow), this will yield once for every additional solution
-def respond_to_mrs_tree(message_function, tree, solution_groups, error):
+def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary
     if tree is None:
@@ -63,6 +67,10 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
                 solution_group = next(solution_groups)
                 solution_group_list = list(solution_group)
 
+                # Run the wh_handlers to give the developer a chance to handle lists of things
+                wh_handlers = find_wh_group_handlers(vocabulary, sentence_force_type)
+                solution_group_list = run_wh_group_handlers(vocabulary, wh_handlers, wh_variable, solution_group_list)
+
                 # If any solution in the group has a RespondOperation in it, assume that the response
                 # has been handled by that and just return an empty string
                 # This is how the user can replace the default behavior of listing out the answers
@@ -88,6 +96,43 @@ def respond_to_mrs_tree(message_function, tree, solution_groups, error):
         else:
             message = message_function(tree, error)
             yield message, None
+
+
+def find_wh_group_handlers(vocabulary, this_sentence_force):
+    handlers = []
+    for module_function in vocabulary.predications("solution_group_wh", [], this_sentence_force):
+        handlers.append((get_function(module_function), module_function[0], module_function[1]))
+
+    return handlers
+
+
+# Called only if we have a successful solution group
+# Same semantic as solution group handlers: First wh_group handler that yields, wins
+def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group):
+    # TODO: Get rid of this argument and use a different approach
+    one_more = False
+
+    # If there are responses in the group, don't run the handlers
+    for solution in group:
+        for operation in solution.get_operations():
+            if isinstance(operation, RespondOperation):
+                return group
+
+    if len(wh_handlers) > 0:
+        value_binding_list = [solution.get_binding(wh_question_variable) for solution in group]
+        for function_module_functionname in wh_handlers:
+            pipeline_logger.debug(f"Running {function_module_functionname[1]}.{function_module_functionname[2]} wh-solution group handler")
+
+            # TODO: This should not be a generator since we only grab the first value
+            for resulting_group in function_module_functionname[0](ExecutionContext(vocabulary), group, one_more, value_binding_list):
+                if resulting_group is not None and len(resulting_group) > 0:
+                    return resulting_group
+
+            pipeline_logger.debug(f"{function_module_functionname[1]}.{function_module_functionname[2]} handler didn't replace anything, using original group")
+            return group
+
+    else:
+        return group
 
 
 def generate_message(tree_info, error_term):
@@ -297,3 +342,5 @@ error_priority_dict = {
     # Nothing should be higher because higher is used for phase 2 errors
     "success": 10000000
 }
+
+pipeline_logger = logging.getLogger('Pipeline')

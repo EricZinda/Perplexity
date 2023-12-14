@@ -2,9 +2,10 @@ import enum
 import logging
 from math import inf
 import perplexity.predications
-from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream
+from perplexity.response import RespondOperation
+from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream, CachedIterable
 import perplexity.tree
-from perplexity.utilities import plural_from_tree_info, parse_predication_name, is_plural
+from perplexity.utilities import plural_from_tree_info, parse_predication_name, is_plural, at_least_one_generator
 from perplexity.vocabulary import ValueSize
 
 
@@ -86,20 +87,144 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
     return variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max
 
 
-# Every set that is generated has a StatsGroup object that does all
-# the counting needed to see if it meets the criteria
-#
-# New groups are created by copying an existing set and adding a new solution into it
-# or merging in special cases.
-#
-# Criteria like "the" and "only" (as in "only 2") also need to track information *across groups*
-# to ensure there is "only 2" solutions generated. This is tracked in the criteria object itself
-# since it is reused across the sets
-#
-# yields: stats, solution_group, set_id
-# set_id is a lineage like 1:3:5 ... so that the caller can detect when a solution is just more rows in an existing set_id by seeing
-# if it came from a previous group
-def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint):
+# Returns a (possibly different) solution group that meets the code criteria
+# or None if the incoming group does not meet the criteria
+def check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, group):
+    phase2_context = execution_context.create_phase2_context()
+    created_solution_group, has_more, group_list, next_best_error_info = run_handlers(phase2_context,
+                                                                                      handlers,
+                                                                                      optimized_criteria_list,
+                                                                                      group,
+                                                                                      index_predication)
+
+    if created_solution_group is None:
+        pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
+        return group_list
+
+    elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
+        pipeline_logger.debug(f"Handler said to skip this group")
+        return
+
+    else:
+        pipeline_logger.debug(f"Handler said this group was a solution")
+        return created_solution_group
+
+
+# If a handler returns:
+#   None --> it means ignore the handler and continue
+#   [] or () --> it means fail this solution
+def run_handlers(execution_context, handlers, variable_constraints, group, index_predication):
+    # TODO: Get rid of this argument and use a different approach
+    one_more = False
+
+    best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
+    created_solution_group = None
+    has_more = False
+    state_list = CachedIterable(group)
+    if len(handlers) > 0:
+        pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
+
+        for is_predication_handler_name in handlers:
+            handler_function = is_predication_handler_name[1]
+            if is_predication_handler_name[0]:
+                # This is a predication-style solution group handler
+                # Build up an arg structure to call the predication with that
+                # has the same arguments as the normal predication but has a list for each argument that represents the solution group
+                handler_args = []
+                for arg_index in range(len(index_predication.args)):
+                    arg = index_predication.args[arg_index]
+                    found_constraint = None
+                    for constraint in variable_constraints:
+                        if constraint.variable_name == arg:
+                            found_constraint = constraint
+                            break
+                    handler_args.append(GroupVariableValues(found_constraint, state_list, index_predication.argument_types()[arg_index], arg))
+
+                handler_args = [execution_context, state_list, one_more] + handler_args
+
+            else:
+                handler_args = (execution_context, state_list, one_more) + (variable_constraints, )
+
+            debug_name = is_predication_handler_name[2][0] + "." + is_predication_handler_name[2][1]
+            pipeline_logger.debug(f"Running {debug_name} solution group handler")
+            for next_solution_group in handler_function(*handler_args):
+                if created_solution_group is None:
+                    created_solution_group = next_solution_group
+                    if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
+                        # handler said to fail
+                        if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
+                            best_error_info = execution_context.get_error_info()
+                        break
+                    pipeline_logger.debug(f"{debug_name} succeeded with first solution")
+                else:
+                    pipeline_logger.debug(f"{handler_function.__name__} succeeded with second solution")
+                    has_more = True
+                    break
+
+            # First solution_group handler that yields, wins
+            if created_solution_group:
+                pipeline_logger.debug(f"{debug_name} succeeded so no more solution group handlers will be run")
+                break
+            else:
+                pipeline_logger.debug(f"{debug_name} failed, so trying alternative solution group handlers...")
+
+        pipeline_logger.debug(f"Done trying solution group handlers, best error: {best_error_info}")
+        return created_solution_group, has_more, state_list, best_error_info
+
+    else:
+        return None, None, state_list, perplexity.execution.ExecutionContext.blank_error_info()
+
+
+# Support iterating over just one variable value from a state iterator but
+# without materializing all the states up front
+class GroupVariableIterable(object):
+    class GroupVariableIterator(object):
+        def __init__(self, state_iterator, static_value=None, variable_name=None):
+            self._state_iterator = state_iterator
+            self._static_value = static_value
+            self._variable_name = variable_name
+
+        def __next__(self):
+            # Call next_state even if we're not going to use it so we quit iterating when
+            # we are out of values
+            next_state = next(self._state_iterator)
+            if self._static_value is not None:
+                return self._static_value
+            else:
+                return next_state.get_binding(self._variable_name)
+
+    def __init__(self, state_iterable, static_value=None, variable_name=None):
+        self._state_iterable = state_iterable
+        self._static_value = static_value
+        self._variable_name = variable_name
+
+    def __iter__(self):
+        return GroupVariableIterable.GroupVariableIterator(self._state_iterable.__iter__(), self._static_value, self._variable_name)
+
+    def __getitem__(self, key):
+        # Even if we aren't using it, make sure this index exists by accessing it
+        state = self._state_iterable[key]
+        if self._static_value is not None:
+            return self._static_value
+        else:
+            return state.get_binding(self._variable_name)
+
+
+class GroupVariableValues(object):
+    def __init__(self, variable_constraints, state_iterable, arg_type, arg_value):
+        self.variable_constraints = variable_constraints
+
+        if arg_type in ["c", "h"]:
+            # returns arg_value for every state
+            self.solution_values = GroupVariableIterable(state_iterable=state_iterable, static_value=arg_value)
+
+        else:
+            # return get_binding(arg_value) for every state
+            self.solution_values = GroupVariableIterable(state_iterable=state_iterable, variable_name=arg_value)
+
+
+def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint,
+                              handlers, optimized_criteria_list, index_predication):
     # Give a unique set_id to every group that gets created
     set_id = 0
     initial_empty_set = [initial_stats_group, [], str(set_id)]
@@ -141,7 +266,19 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     break
 
                 else:
-                    # Didn't fail
+                    # Didn't fail, now check against any code criteria to make sure it really did succeed
+                    final_group = existing_set[1] + [next_solution]
+                    if state == CriteriaResult.meets:
+                        code_group = check_group_against_code_criteria(execution_context, handlers,
+                                                                        optimized_criteria_list, index_predication,
+                                                                        final_group)
+                        if code_group:
+                            # Convert from whatever object to a real list
+                            final_group = [x for x in code_group]
+                        else:
+                            # It doesn't meet the criteria, but might if we combine with other solutions
+                            state = CriteriaResult.contender
+
                     # decide whether to merge into the existing set or create a new one
                     # Merge if the only variables that got updated had a criteria with an upper bound of inf
                     # since alternatives won't be used anyway
@@ -155,7 +292,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                         new_sets.append(new_set)
 
                     new_set[0] = new_set_stats_group
-                    new_set[1] = existing_set[1] + [next_solution]
+                    new_set[1] = final_group
 
                     if state == CriteriaResult.meets:
                         # Clear any errors that occurred trying to generate solution groups that didn't work
@@ -192,7 +329,19 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
         # so that the error that gets returned is whatever happens while *processing* the solution group
         execution_context.clear_error()
 
-        yield from pending_global_criteria
+        for pending in pending_global_criteria:
+            final_group = pending[0]
+            final_group = check_group_against_code_criteria(execution_context, handlers,
+                                                            optimized_criteria_list, index_predication,
+                                                            final_group)
+            if final_group:
+                # Convert from whatever object to a real list
+                final_group = [x for x in final_group]
+                yield final_group, pending[1], pending[2]
+
+            else:
+                # Fail (doesn't meet code criteria): don't add, don't yield
+                continue
 
 
 class StatsGroup(object):
@@ -697,3 +846,4 @@ criteria_transitions = {CriteriaResult.meets: {CriteriaResult.meets: CriteriaRes
 
 
 groups_logger = logging.getLogger('SolutionGroups')
+pipeline_logger = logging.getLogger('Pipeline')

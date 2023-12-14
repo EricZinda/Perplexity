@@ -85,7 +85,7 @@ def solution_group(context, state_list, has_more, variable_constraints):
                 new_group = []
                 index = 0
                 for state in state_list:
-                    new_group.append(state.set_x(wh_variable, ( "fakefile" + str(index),)))
+                    new_group.append(state.set_x(wh_variable, ("fakefile" + str(index),)))
                     index += 1
                 yield new_group
                 yield True
