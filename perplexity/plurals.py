@@ -36,43 +36,6 @@ def quantifier_from_binding(state, binding):
     return binding.variable.quantifier
 
 
-# If a solution has combinatorial variables:
-# expand one solution with combinatorial variables into multiple solutions
-def expand_combinatorial_variables(variable_metadata, solution):
-    alternatives = {}
-    for variable_item in variable_metadata.items():
-        binding = solution.get_binding(variable_item[0])
-        variable_plural_type = variable_item[1]["ValueSize"]
-        if binding.variable.combinatoric:
-            # If variable_name is combinatoric, all of its appropriate alternative combinations
-            # have to be used. Thus, if the variable_plural_type is collective, we only add sets > 1, etc
-            min_size = 1
-            max_size = float(inf)
-            if variable_plural_type == ValueSize.exactly_one:
-                max_size = 1
-
-            elif variable_plural_type == ValueSize.more_than_one:
-                min_size = 2
-
-            else:
-                assert variable_plural_type == ValueSize.all
-
-            alternatives[binding.variable.name] = all_nonempty_subsets_stream(binding.value, min_size=min_size, max_size=max_size)
-
-    if len(alternatives) == 0:
-        yield solution
-
-    else:
-        variable_names = list(alternatives.keys())
-        # create combinations by picking one from each
-        for assignment in product_stream(*alternatives.values()):
-            assignment_list = list(assignment)
-            new_solution = solution
-            for variable_index in range(len(variable_names)):
-                new_solution = new_solution.set_x(variable_names[variable_index], tuple(assignment_list[variable_index]), False)
-            yield new_solution
-
-
 # Needs to be called before all_plural_groups_stream. Allows the caller to
 # Gather useful stats that all_plural_groups_stream also consumes
 def plural_groups_stream_initial_stats(execution_context, var_criteria):
@@ -237,81 +200,77 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
     # When we know we have failed early (early_fail_quit)
     early_fail_quit = False
-    for combinatorial_solution in solutions:
-        for next_solution in expand_combinatorial_variables(variable_metadata, combinatorial_solution):
+    for next_solution in solutions:
+        if groups_logger.level == logging.DEBUG:
+            groups_logger.debug(f"Processing solution: {next_solution}")
+        new_sets = []
+        was_merged = False
+        for existing_set in sets + [initial_empty_set]:
+            if len(existing_set[1]) == 0 and was_merged:
+                # Don't create a brand-new set by merging with the final empty set if it was
+                # already merged into something. Because: it is already being tracked.
+                continue
+
+            new_set_stats_group = existing_set[0].copy()
+            merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution)
             if groups_logger.level == logging.DEBUG:
-                groups_logger.debug(f"Processing solution: {next_solution}")
-            new_sets = []
-            was_merged = False
-            for existing_set in sets + [initial_empty_set]:
-                if len(existing_set[1]) == 0 and was_merged:
-                    # Don't create a brand-new set by merging with the final empty set if it was
-                    # already merged into something. Because: it is already being tracked.
-                    continue
+                nl = "\n     "
+                groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
 
-                new_set_stats_group = existing_set[0].copy()
-                merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution)
-                if groups_logger.level == logging.DEBUG:
-                    nl = "\n     "
-                    groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
+            if state == CriteriaResult.fail_one:
+                # Fail (doesn't meet criteria): don't add, don't yield
+                continue
 
-                if state == CriteriaResult.fail_one:
-                    # Fail (doesn't meet criteria): don't add, don't yield
-                    continue
+            elif state == CriteriaResult.fail_all:
+                # A global criteria wasn't met so none will ever work
+                # Still run global constraints to get a good error
+                early_fail_quit = True
+                break
 
-                elif state == CriteriaResult.fail_all:
-                    # A global criteria wasn't met so none will ever work
-                    # Still run global constraints to get a good error
-                    early_fail_quit = True
-                    break
+            else:
+                # Didn't fail, now check against any code criteria to make sure it really did succeed
+                final_group = existing_set[1] + [next_solution]
+                if state == CriteriaResult.meets:
+                    code_group = check_group_against_code_criteria(execution_context, handlers,
+                                                                    optimized_criteria_list, index_predication,
+                                                                    final_group)
+                    if code_group:
+                        # Convert from whatever object to a real list
+                        final_group = [x for x in code_group]
+                    else:
+                        # It doesn't meet the criteria, but might if we combine with other solutions
+                        state = CriteriaResult.contender
+
+                # decide whether to merge into the existing set or create a new one
+                # Merge if the only variables that got updated had a criteria with an upper bound of inf
+                # since alternatives won't be used anyway
+                if merge:
+                    was_merged = True
+                    new_set = existing_set
 
                 else:
-                    # Didn't fail, now check against any code criteria to make sure it really did succeed
-                    final_group = existing_set[1] + [next_solution]
-                    if state == CriteriaResult.meets:
-                        code_group = check_group_against_code_criteria(execution_context, handlers,
-                                                                        optimized_criteria_list, index_predication,
-                                                                        final_group)
-                        if code_group:
-                            # Convert from whatever object to a real list
-                            final_group = [x for x in code_group]
-                        else:
-                            # It doesn't meet the criteria, but might if we combine with other solutions
-                            state = CriteriaResult.contender
+                    new_set = [None, None, existing_set[2] + ":" + str(set_id)]
+                    set_id += 1
+                    new_sets.append(new_set)
 
-                    # decide whether to merge into the existing set or create a new one
-                    # Merge if the only variables that got updated had a criteria with an upper bound of inf
-                    # since alternatives won't be used anyway
-                    if merge:
-                        was_merged = True
-                        new_set = existing_set
+                new_set[0] = new_set_stats_group
+                new_set[1] = final_group
 
-                    else:
-                        new_set = [None, None, existing_set[2] + ":" + str(set_id)]
-                        set_id += 1
-                        new_sets.append(new_set)
+                if state == CriteriaResult.meets:
+                    # Clear any errors that occurred trying to generate solution groups that didn't work
+                    # so that the error that gets returned is whatever happens while *processing* the solution group
+                    execution_context.clear_error()
 
-                    new_set[0] = new_set_stats_group
-                    new_set[1] = final_group
+                    yield new_set[1], new_set[2], new_set[0]
 
-                    if state == CriteriaResult.meets:
-                        # Clear any errors that occurred trying to generate solution groups that didn't work
-                        # so that the error that gets returned is whatever happens while *processing* the solution group
-                        execution_context.clear_error()
+                elif state == CriteriaResult.meets_pending_global:
+                    pending_global_criteria.append([new_set[1], new_set[2], new_set[0]])
 
-                        yield new_set[1], new_set[2], new_set[0]
+                elif state == CriteriaResult.contender:
+                    # Not yet a solution, don't track it as one
+                    pass
 
-                    elif state == CriteriaResult.meets_pending_global:
-                        pending_global_criteria.append([new_set[1], new_set[2], new_set[0]])
-
-                    elif state == CriteriaResult.contender:
-                        # Not yet a solution, don't track it as one
-                        pass
-
-            sets += new_sets
-
-            if early_fail_quit:
-                break
+        sets += new_sets
 
         if early_fail_quit:
             break

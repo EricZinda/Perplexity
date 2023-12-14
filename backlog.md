@@ -9,6 +9,7 @@ TODO:
     Get proper errors to be returned again
       - Example23_reset: what is in this 'blue' -> There isn't a 'blue' in the system
         Expected: a thing is not in this 'blue'
+    Get /showall and /allsolutions to work again
 
 
 - Fix:

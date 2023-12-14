@@ -217,9 +217,7 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                                                  initial_stats_group, has_global_constraint,
                                                  handlers, optimized_criteria_list, index_predication)
 
-        group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
-
-        yield from group_generator
+        yield from SolutionGroupGenerator(groups_stream, variable_has_inf_max)
 
 
 # Returns predication_handlers, global_handlers
