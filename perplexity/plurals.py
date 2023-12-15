@@ -215,7 +215,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution)
             if groups_logger.level == logging.DEBUG:
                 nl = "\n     "
-                groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
+                groups_logger.debug(f"Pre-code solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
 
             if state == CriteriaResult.fail_one:
                 # Fail (doesn't meet criteria): don't add, don't yield
@@ -230,21 +230,30 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             else:
                 # Didn't fail, now check against any code criteria to make sure it really did succeed
                 final_group = existing_set[1] + [next_solution]
+                code_criteria_failed = False
                 if state == CriteriaResult.meets:
-                    code_group = check_group_against_code_criteria(execution_context, handlers,
-                                                                    optimized_criteria_list, index_predication,
-                                                                    final_group)
+                    code_group = check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, final_group)
                     if code_group:
                         # Convert from whatever object to a real list
                         final_group = [x for x in code_group]
+
                     else:
                         # It doesn't meet the criteria, but might if we combine with other solutions
+                        code_criteria_failed = True
                         state = CriteriaResult.contender
 
-                # decide whether to merge into the existing set or create a new one
+                # Decide whether to merge into the existing set or create a new one
                 # Merge if the only variables that got updated had a criteria with an upper bound of inf
-                # since alternatives won't be used anyway
-                if merge:
+                # since alternatives won't be used anyway because the inf means that any set > lower bound is a solution
+                # However, if the code criteria failed, it means that this particular set is not a solution group
+                # Thus it is either a contender or a failure.
+                # Leaving it as a contender is safest since the worst that will happen is we do some extra processing.
+                #   Removing it altogether could cause us to miss a solution group and affect correctness.
+                # Furthermore, we can stop merging and again, we'll just end up processing extra stuff by producing more combinations than we needed
+                #   Whereas continuing to merge might miss some alternatives that should be generated
+                # So, because this failed, it means we stop this "merging optimization" and try the alternatives, even though it might be slower, so we
+                #   don't miss any cases
+                if merge and not code_criteria_failed:
                     was_merged = True
                     new_set = existing_set
 

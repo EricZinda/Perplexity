@@ -256,7 +256,7 @@
         },
         {
             "Command": "Which two dishes are specials?",
-            "Expected": "soup\nsalad\n(among others)",
+            "Expected": "pork\nsoup",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e8e03861-59c8-4f05-b5db-c88d3646a572"
@@ -382,7 +382,7 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "soup\nsalad",
+            "Expected": "salad\nsoup",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"
