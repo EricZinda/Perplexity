@@ -491,8 +491,7 @@ class TreeSolver(object):
             tree_record["Error"] = self._context.error()
             if message_function is not None and response_function is not None:
                 tree_record["ResponseGenerator"] = at_least_one_generator(
-                    response_function(self._context.vocabulary, message_function, tree_info, tree_record["SolutionGroupGenerator"],
-                                      tree_record["Error"]))
+                    response_function(self._context.vocabulary, message_function, tree_info, tree_record["SolutionGroupGenerator"], tree_record["Error"]))
             else:
                 tree_record["ResponseGenerator"] = None
 

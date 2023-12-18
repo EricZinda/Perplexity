@@ -10,9 +10,10 @@ from perplexity.utilities import parse_predication_name, sentence_force, get_fun
 
 
 # Implements the response for a given tree
-# yields: response, solution_group that generated the response
-# In scenarios where there is an open solution group (meaning like "files are ..." where there is an initial solution that will
-# grow), this will yield once for every additional solution
+# This is a generator so that it can have delayed execution and "at_least_one_generator()" wrapped around it
+# BUT: It will only ever be called once
+# yields: response, solution_group that generated the response if it called next(solution_groups) to get one
+# May also call next(solution_groups) to see if there is more than one solution group
 def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary

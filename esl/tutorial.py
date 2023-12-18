@@ -434,10 +434,12 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
 
                 if len(unique_values) > 0 or measurement_units is not None:
                     # Make sure any operations that were created on solutions get passed on
-                    responses, new_state = apply_solutions_to_state(state, solution_group_list, record_operations=True)
-                    if len(responses) > 0:
-                        response = "\n".join(responses)
-                        new_state = new_state.apply_operations([RespondOperation(response)], record_operations=True)
+                    all_operations = []
+                    for solution in solution_group_list:
+                        for operation in solution.get_operations():
+                            all_operations.append(operation)
+
+                    new_state = state.apply_operations(all_operations, True)
 
                     # Mark as a "negated_predication" so we don't try to check global constraints on it
                     measurement = Measurement(measurement_units if measurement_units is not None else "", len(unique_values) + measurement_count)
@@ -2333,7 +2335,7 @@ def _available_a_to_for(context, state, e_introduced_binding, x_object_binding, 
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
 def wh_question(context, state_list, has_more, binding_list):
-    current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list], has_more)])
+    current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list])])
     if current_state is not None:
         yield (current_state,)
 

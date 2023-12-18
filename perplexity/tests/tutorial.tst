@@ -536,7 +536,7 @@
         },
         {
             "Command": "which files are in folders",
-            "Expected": "('fakefile0',)('fakefile1',)('fakefile2',)('fakefile3',)('fakefile4',)('fakefile5',)('fakefile6',)('fakefile7',)(there are more)",
+            "Expected": "('fakefile0',)('fakefile1',)('fakefile2',)('fakefile3',)('fakefile4',)('fakefile5',)('fakefile6',)('fakefile7',)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,_folder_n_of(x9,i14),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "75d771c6-b11a-4c34-a3ee-9495aa385c07"

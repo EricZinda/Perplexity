@@ -7,7 +7,7 @@ from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type,
     find_unused_item, ResetOrderAndBillOp,  object_to_store, \
     find_unused_instances_from_concept
 from perplexity.predications import is_concept
-from perplexity.response import RespondOperation
+from perplexity.response import RespondOperation, ResponseLocation
 from perplexity.set_utilities import Measurement
 from perplexity.utilities import at_least_one_generator
 
@@ -375,6 +375,10 @@ def respond(state, context, message):
     return state.apply_operations([RespondOperation(message)])
 
 
+def respond_has_more(state, context, message, has_more):
+    return state.apply_operations([RespondOperation(message, location=ResponseLocation.last, show_if_has_more=has_more)])
+
+
 def add_rel(state, context, subject, rel, object):
     return state.apply_operations([AddRelOp((subject, rel, object))])
 
@@ -395,7 +399,7 @@ def reset_order_and_bill(state, context):
     return state.apply_operations([ResetOrderAndBillOp()])
 
 
-gtpyhop.declare_actions(respond, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill)
+gtpyhop.declare_actions(respond, respond_has_more, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill)
 
 add_declarations(gtpyhop)
 

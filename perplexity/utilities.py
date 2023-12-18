@@ -164,6 +164,17 @@ class AtLeastOneIterator(object):
         else:
             return next(self.generator)
 
+    def has_at_least_one_more(self):
+        if self.first_item:
+            return True
+        else:
+            try:
+                self.first_item = next(self.generator)
+                return True
+
+            except StopIteration:
+                return False
+
 
 def yield_all(set_or_answer):
     if isinstance(set_or_answer, (list, tuple)):

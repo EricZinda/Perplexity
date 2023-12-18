@@ -7,8 +7,6 @@ from math import inf
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats, \
     all_plural_groups_stream
-from perplexity.response import RespondOperation
-from perplexity.set_utilities import CachedIterable
 from perplexity.utilities import at_least_one_generator, get_function
 
 
@@ -196,13 +194,6 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
     pipeline_logger.debug(f"Finding solution groups for {tree_info['Tree']}")
     solutions = at_least_one_generator(solutions_orig)
     if solutions is not None:
-        # Returning errors:
-        # If no solution groups are found, errors from trying to generate them should be returned
-        # If even one solution group was found, but failed in the handlers, the error from that handler should be
-        # returned because it means the phrase made sense, but something about the world made it fail when is better than
-        # errors generated because the phrase made no sense
-        best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
-
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
@@ -218,6 +209,9 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                                                  handlers, optimized_criteria_list, index_predication)
 
         yield from SolutionGroupGenerator(groups_stream, variable_has_inf_max)
+
+    else:
+        execution_context.set_error_info(solutions_orig.error_info)
 
 
 # Returns predication_handlers, global_handlers

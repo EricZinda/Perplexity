@@ -1,0 +1,3 @@
+- "Which two dishes are specials?" -> how to show "there are more"?
+  - allow Response() operations to have an argument "more" that only gets printed if it matches whether there is or isn't more
+  - If the user didn't customize the message, show "there are more" by default

@@ -213,9 +213,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
             new_set_stats_group = existing_set[0].copy()
             merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution)
-            if groups_logger.level == logging.DEBUG:
+            if groups_logger.level == logging.DEBUG and state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
                 nl = "\n     "
-                groups_logger.debug(f"Pre-code solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
+                groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
 
             if state == CriteriaResult.fail_one:
                 # Fail (doesn't meet criteria): don't add, don't yield
@@ -264,6 +264,11 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
                 new_set[0] = new_set_stats_group
                 new_set[1] = final_group
+
+                if groups_logger.level == logging.DEBUG:
+                    nl = "\n     "
+                    groups_logger.debug(
+                        f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
 
                 if state == CriteriaResult.meets:
                     # Clear any errors that occurred trying to generate solution groups that didn't work
