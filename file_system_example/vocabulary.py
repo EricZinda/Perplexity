@@ -46,7 +46,7 @@ def in_scope(initial_data, state, value):
 
 
 @Predication(vocabulary, names=["solution_group__in_p_loc"])
-def in_p_loc_fail(context, state_list, has_more, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
+def in_p_loc_fail(context, state_list, e_introduced_binding_list, x_actor_binding_list, x_location_binding_list):
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None and test_binding.value[0] == "failAll":
         context.report_error(["beMoreSpecific"], force=True)
@@ -54,7 +54,7 @@ def in_p_loc_fail(context, state_list, has_more, e_introduced_binding_list, x_ac
 
 
 @Predication(vocabulary, names=["solution_group__copy_v_1"])
-def fail_to_copy(context, state_list, has_more, e_introduced_binding_list, x_actor_group_variable_values, x_what_group_variable_values):
+def fail_to_copy(context, state_list, e_introduced_binding_list, x_actor_group_variable_values, x_what_group_variable_values):
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None and test_binding.value[0] == "fakeValues":
         for x_what_binding in x_what_group_variable_values.solution_values:
@@ -64,7 +64,7 @@ def fail_to_copy(context, state_list, has_more, e_introduced_binding_list, x_act
 
 
 @Predication(vocabulary, names=["solution_group"])
-def solution_group(context, state_list, has_more, variable_constraints):
+def solution_group(context, state_list, variable_constraints):
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None:
         if test_binding.value[0] == "cannotAnswer":
@@ -88,7 +88,6 @@ def solution_group(context, state_list, has_more, variable_constraints):
                     new_group.append(state.set_x(wh_variable, ("fakefile" + str(index),)))
                     index += 1
                 yield new_group
-                yield True
 
 
 def variable_is_megabyte(binding):

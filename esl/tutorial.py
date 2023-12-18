@@ -7,7 +7,6 @@ from perplexity.predications import combinatorial_predication_1, in_style_predic
     lift_style_predication_2, concept_meets_constraint
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
-from perplexity.state import apply_solutions_to_state
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
     PropertyTransformerProduction, ConjunctionMatchTransformer
@@ -659,14 +658,6 @@ def unknown(context, state, e_binding, x_binding):
         context.report_error(["formNotUnderstood", "unknown"])
 
 
-@Predication(vocabulary, names=["solution_group_unknown"])
-def unknown_group(context, state_list, has_more, e_variable_group, x_variable_group):
-    # Ignore any other solutions that cause has_more=True so that
-    # it doesn't say "(there are more)"
-    yield state_list
-    return
-
-
 @Predication(vocabulary, names=["unknown"])
 def unknown_eu(context, state, e_binding, u_binding):
     yield state
@@ -1022,18 +1013,14 @@ def _pay_v_for_object(context, state, e_introduced_binding, x_actor_binding, x_o
 @Predication(vocabulary,
              names=["solution_group__pay_v_for_request"],
              properties_from=_pay_v_for_object)
-def _pay_v_for_object_group(context, state_list, has_more, e_introduced_list, x_actor_variable_group, x_object_variable_group, i_binding_list):
+def _pay_v_for_object_group(context, state_list, e_introduced_list, x_actor_variable_group, x_object_variable_group, i_binding_list):
     tree_info = state_list[0].get_binding("tree").value[0]
     wh_variable = is_wh_question(tree_info)
     if wh_variable:
         yield state_list
     else:
         # As long as these were valid objects to pay for, just interpret as "give me the bill"
-        task = ('satisfy_want', context,
-                variable_group_values_to_list(x_actor_variable_group),
-                [(ESLConcept("bill"),)],
-                1)
-
+        task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [(ESLConcept("bill"),)], 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state is None:
             yield []
@@ -1109,7 +1096,7 @@ def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
 @Predication(vocabulary,
              names=["solution_group__want_v_1"],
              properties_from=_want_v_1)
-def want_group(context, state_list, has_more, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+def want_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
 
     # This may be getting called with concepts or instances, before we call the planner
@@ -1187,7 +1174,7 @@ def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_b
 @Predication(vocabulary,
              names=["solution_group__check_v_1"],
              properties_from=_check_v_1)
-def _check_v_1_group(context, state_list, has_more, e_introduced_binding, x_actor_binding, i_object_binding):
+def _check_v_1_group(context, state_list, e_introduced_binding, x_actor_binding, i_object_binding):
     current_state = copy.deepcopy(state_list[0])
     final_state = do_task(current_state.world_state_frame(), [('get_bill', context)])
     if final_state is None:
@@ -1265,7 +1252,7 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
 
 
 @Predication(vocabulary, names=["solution_group__show_v_1", "solution_group__show_v_1_able"])
-def _show_v_cause_group(context, state_list, has_more, e_introduced_binding, x_actor_variable_group, x_target_variable_group, x_to_actor_variable_group):
+def _show_v_cause_group(context, state_list, e_introduced_binding, x_actor_variable_group, x_target_variable_group, x_to_actor_variable_group):
     # Only need to check constraints on x_target_variable_group since it is the only variable that is a concept
     # The player is asking to be shown *instances* so check_concepts = False
     if not check_concept_solution_group_constraints(context, state_list, x_target_variable_group, check_concepts=False):
@@ -1317,7 +1304,7 @@ def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_objec
 @Predication(vocabulary,
              names=["solution_group__seat_v_cause", "solution_group__seat_v_cause_able"],
              properties_from=_seat_v_cause)
-def _seat_v_cause_group(context, state_list, has_more, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
+def _seat_v_cause_group(context, state_list, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     new_state = do_task(state_list[0].world_state_frame(),
                         [('satisfy_want', context, variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
     if new_state is None:
@@ -1472,7 +1459,7 @@ def _sit_v_down_future_bad_english(context, state, e_introduced_binding, x_actor
 
 
 @Predication(vocabulary, names=["solution_group__sit_v_down", "solution_group__sit_v_1"])
-def _sit_v_down_future_group(context, state_list, has_more, e_list, x_actor_variable_group):
+def _sit_v_down_future_group(context, state_list, e_list, x_actor_variable_group):
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
     final_state = do_task(state_list[0].world_state_frame(), [task])
@@ -1572,7 +1559,7 @@ def _sit_v_down_request(context, state, e_binding, x_actor_binding):
 
 @Predication(vocabulary,
              names=["solution_group__sit_v_down_able", "solution_group__sit_v_1_able", "solution_group__sit_v_down_request", "solution_group__sit_v_1_request"])
-def _sit_v_down_able_group(context, state_list, has_more, e_introduced_binding_list, x_actor_variable_group):
+def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_actor_variable_group):
     # If it is a wh_question, just answer it
     tree_info = state_list[0].get_binding("tree").value[0]
     if is_wh_question(tree_info):
@@ -1643,7 +1630,7 @@ def _see_v_1_able_bad_english(context, state, e_introduced_binding, x_actor_bind
 @Predication(vocabulary,
              names=["solution_group__see_v_1_able"],
              properties_from=_see_v_1_able)
-def _see_v_1_able_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
+def _see_v_1_able_group(context, state_list, e_list, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
@@ -1714,7 +1701,7 @@ def _see_v_1_future_bad_english(context, state, e_introduced_binding, x_actor_bi
 @Predication(vocabulary,
              names=["solution_group__see_v_1"],
              properties_from=_see_v_1_future)
-def _see_v_1_future_group(context, state_list, has_more, e_list, x_actor_variable_group, x_object_variable_group):
+def _see_v_1_future_group(context, state_list, e_list, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
@@ -1861,7 +1848,7 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
 @Predication(vocabulary,
              names=["solution_group__have_v_1", "solution_group__take_v_1", "solution_group__get_v_1"],
              properties_from=_have_v_1_order)
-def _have_v_1_order_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
+def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # The only valid scenarios for will have are requests, so ...
     # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
@@ -1948,7 +1935,7 @@ def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_o
 @Predication(vocabulary,
              names=["solution_group__have_v_1"],
              properties_from=_have_v_1_present)
-def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x_obj_list):
+def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list):
     # The solution predication guarantees that this is either actor and object instances or
     # actor instance and object concept. We only have to check one solution since they will all be the same
     first_x_obj = x_obj_list.solution_values[0].value[0]
@@ -1957,7 +1944,6 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
     if not object_concepts:
         # This is a "x has y" type statement with instances and these have already been checked
         yield state_list
-        return
 
     else:
         # Since this is a concept, the solution handler already checked that the actor is
@@ -2014,7 +2000,6 @@ def _have_v_1_present_group(context, state_list, has_more, e_list, x_act_list, x
                 final_states.append(state)
 
         yield final_states
-        return
 
 
 # Used only when there is a form of have that means "able to"
@@ -2082,7 +2067,7 @@ def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
 @Predication(vocabulary,
              names=["solution_group__have_v_1_able", "solution_group__get_v_1_able"],
              properties_from=_have_v_1_able)
-def _have_v_1_able_group(context, state_list, has_more, e_variable_group, x_actor_variable_group, x_object_variable_group):
+def _have_v_1_able_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):
     # At this point they were *able* to have the item, now we see if this was an implicit request for it
     # If this is a question, but not a wh question, involving the players, then it is also a request for something
     tree_info = state_list[0].get_binding("tree").value[0]
@@ -2100,7 +2085,6 @@ def _have_v_1_able_group(context, state_list, has_more, e_variable_group, x_acto
     else:
         # Not an implicit request
         yield state_list
-        return
 
 
 @Predication(vocabulary, names=["poss"])
@@ -2227,7 +2211,7 @@ def yield_cost_of_subject_into_object(state, units, subject_variable, object_var
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
              properties_from=_be_v_id)
-def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+def _be_v_id_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # If the arguments are concepts constraints need to be checked
     if x_subject_variable_group.solution_values[0].value is not None and is_concept(x_subject_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_subject_variable_group, check_concepts=True):
@@ -2240,8 +2224,6 @@ def _be_v_id_group(context, state_list, has_more, e_introduced_binding_list, x_s
             return
 
     yield state_list
-    if has_more:
-        yield True
 
 
 @Predication(vocabulary,
@@ -2295,7 +2277,7 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
 @Predication(vocabulary,
              names=["solution_group__cost_v_1"],
              properties_from=_cost_v_1)
-def _cost_v_1_group(context, state_list, has_more, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
+def _cost_v_1_group(context, state_list, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
     if is_concept(x_act_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_act_variable_group, check_concepts=True):
             yield []
@@ -2334,7 +2316,7 @@ def _available_a_to_for(context, state, e_introduced_binding, x_object_binding, 
 
 # Any successful solution group that is a wh_question will call this
 @Predication(vocabulary, names=["solution_group_wh"])
-def wh_question(context, state_list, has_more, binding_list):
+def wh_question(context, state_list, binding_list):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list])])
     if current_state is not None:
         yield (current_state,)

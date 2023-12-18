@@ -110,9 +110,6 @@ def find_wh_group_handlers(vocabulary, this_sentence_force):
 # Called only if we have a successful solution group
 # Same semantic as solution group handlers: First wh_group handler that yields, wins
 def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group):
-    # TODO: Get rid of this argument and use a different approach
-    one_more = False
-
     # If there are responses in the group, don't run the handlers
     for solution in group:
         for operation in solution.get_operations():
@@ -124,8 +121,7 @@ def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group):
         for function_module_functionname in wh_handlers:
             pipeline_logger.debug(f"Running {function_module_functionname[1]}.{function_module_functionname[2]} wh-solution group handler")
 
-            # TODO: This should not be a generator since we only grab the first value
-            for resulting_group in function_module_functionname[0](ExecutionContext(vocabulary), group, one_more, value_binding_list):
+            for resulting_group in function_module_functionname[0](ExecutionContext(vocabulary), group, value_binding_list):
                 if resulting_group is not None and len(resulting_group) > 0:
                     return resulting_group
 

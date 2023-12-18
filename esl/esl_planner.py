@@ -298,9 +298,7 @@ gtpyhop.declare_task_methods('complete_order', complete_order)
 def satisfy_want_group_group(state, context, group_who, group_what, min_size):
     if not isinstance(group_who, list) or not isinstance(group_what, list): return
 
-    # To support "we would like a table/the bill/etc" not going to every person,@Predication(vocabulary, names=["solution_group__be_v_id"])
-    # def _be_v_id_group(state_list, has_more, e_introduced_binding_list, x_obj1_variable_group, x_obj2_variable_group):
-    #     yield state_list
+    # To support "we would like a table/the bill/etc" not going to every person,
     # conceptual things like "the bill", or "a table" or "a menu" should be collapsed into a single item
     # and handled once if everyone wants the same thing
     unique_whats = unique_group_variable_values(group_what)

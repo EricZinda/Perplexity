@@ -54,11 +54,11 @@ def plural_groups_stream_initial_stats(execution_context, var_criteria):
 # or None if the incoming group does not meet the criteria
 def check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, group):
     phase2_context = execution_context.create_phase2_context()
-    created_solution_group, has_more, group_list, next_best_error_info = run_handlers(phase2_context,
-                                                                                      handlers,
-                                                                                      optimized_criteria_list,
-                                                                                      group,
-                                                                                      index_predication)
+    created_solution_group, group_list, next_best_error_info = run_handlers(phase2_context,
+                                                                            handlers,
+                                                                            optimized_criteria_list,
+                                                                            group,
+                                                                            index_predication)
 
     if created_solution_group is None:
         pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
@@ -77,12 +77,8 @@ def check_group_against_code_criteria(execution_context, handlers, optimized_cri
 #   None --> it means ignore the handler and continue
 #   [] or () --> it means fail this solution
 def run_handlers(execution_context, handlers, variable_constraints, group, index_predication):
-    # TODO: Get rid of this argument and use a different approach
-    one_more = False
-
     best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
     created_solution_group = None
-    has_more = False
     state_list = CachedIterable(group)
     if len(handlers) > 0:
         pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
@@ -103,26 +99,22 @@ def run_handlers(execution_context, handlers, variable_constraints, group, index
                             break
                     handler_args.append(GroupVariableValues(found_constraint, state_list, index_predication.argument_types()[arg_index], arg))
 
-                handler_args = [execution_context, state_list, one_more] + handler_args
+                handler_args = [execution_context, state_list] + handler_args
 
             else:
-                handler_args = (execution_context, state_list, one_more) + (variable_constraints, )
+                handler_args = (execution_context, state_list) + (variable_constraints, )
 
             debug_name = is_predication_handler_name[2][0] + "." + is_predication_handler_name[2][1]
             pipeline_logger.debug(f"Running {debug_name} solution group handler")
             for next_solution_group in handler_function(*handler_args):
-                if created_solution_group is None:
-                    created_solution_group = next_solution_group
-                    if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-                        # handler said to fail
-                        if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
-                            best_error_info = execution_context.get_error_info()
-                        break
-                    pipeline_logger.debug(f"{debug_name} succeeded with first solution")
-                else:
-                    pipeline_logger.debug(f"{handler_function.__name__} succeeded with second solution")
-                    has_more = True
+                created_solution_group = next_solution_group
+                if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
+                    # handler said to fail
+                    if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
+                        best_error_info = execution_context.get_error_info()
                     break
+                pipeline_logger.debug(f"{debug_name} succeeded")
+                break
 
             # First solution_group handler that yields, wins
             if created_solution_group:
@@ -132,10 +124,10 @@ def run_handlers(execution_context, handlers, variable_constraints, group, index
                 pipeline_logger.debug(f"{debug_name} failed, so trying alternative solution group handlers...")
 
         pipeline_logger.debug(f"Done trying solution group handlers, best error: {best_error_info}")
-        return created_solution_group, has_more, state_list, best_error_info
+        return created_solution_group, state_list, best_error_info
 
     else:
-        return None, None, state_list, perplexity.execution.ExecutionContext.blank_error_info()
+        return None, state_list, perplexity.execution.ExecutionContext.blank_error_info()
 
 
 # Support iterating over just one variable value from a state iterator but

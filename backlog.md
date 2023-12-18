@@ -5,19 +5,6 @@
         - Neither is true anymore because the group handler can completely swap things out
   
   Undone:
-      - (fixed) "Which two dishes are specials?" -> Doesn't show "there are more"
-          - Because wh_questions() get customized via operations
-          - And operations automatically don't show "there are more"
-        - allow Response() operations to have an argument "more" that only gets printed if it matches whether there is or isn't more
-        - If the user didn't customize the message, show "there are more" by default
-            - Fix list:
-                - (fixed) Make respond_to_mrs_tree() only get called once, it should just return a response. that way, we don't have to iterate over it
-                - (fixed) add "show_if_has_more" to RespondOperation
-                - (fixed) Use show_if_has_more in esl_planner_description when listing things out
-                - (fixed) Fix how count works
-                - (fixed) who can pay the bill
-    - Get rid of all the show_more arguments
-    - Get rid of all the times we yield twice for "show more"
     - Get /showall and /allsolutions to work again
 
 
