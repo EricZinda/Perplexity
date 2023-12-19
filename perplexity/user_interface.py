@@ -158,7 +158,8 @@ class UserInterface(object):
                                                                           self.response_function,
                                                                           self.message_function,
                                                                           tree_index,
-                                                                          self.run_tree_index):
+                                                                          self.run_tree_index,
+                                                                          find_all_solution_groups=self.show_all_answers):
                                 mrs_record["Trees"].append(tree_record)
 
                                 solution_group_generator = tree_record["SolutionGroupGenerator"]
@@ -378,6 +379,7 @@ class UserInterface(object):
                         print(f"\nSolution group:")
                         for solution in solution_group:
                             print(f"{str(solution)}")
+                    print()
 
                 else:
                     print(f"Error: {tree_info['Error']}")
@@ -700,7 +702,7 @@ command_data = {
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first trees",
              "Example": "/show or /show all or /show all, 1"},
     "soln": {"Function": command_soln, "Category": "Parsing",
-             "Description": "Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else to only see what is required",
+             "Description": "Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else toggles the current setting",
              "Example": "/soln or /soln all"},
     "runall": {"Function": command_run_all_parses, "Category": "Parsing",
                   "Description": "Runs all parses, doesn't stop after success",

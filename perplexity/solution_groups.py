@@ -190,9 +190,10 @@ class SolutionGroupGenerator(object):
 #   if they return [], it means "skip this solution group" and we'll try the next one
 # yields an iterator that returns solution groups
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info, all_groups=False, all_unprocessed_groups=None, criteria_list=None):
+def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info, all_groups=False, all_solution_groups=None, criteria_list=None):
     pipeline_logger.debug(f"Finding solution groups for {tree_info['Tree']}")
     solutions = at_least_one_generator(solutions_orig)
+
     if solutions is not None:
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
@@ -208,7 +209,17 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                                                  initial_stats_group, has_global_constraint,
                                                  handlers, optimized_criteria_list, index_predication)
 
-        yield from SolutionGroupGenerator(groups_stream, variable_has_inf_max)
+        group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
+        if all_solution_groups is not None:
+            # We were asked to collect all the solution groups, so
+            # do that first
+            unprocessed_groups = []
+            for group in group_generator:
+                unprocessed_groups.append([x for x in group])
+            group_generator = unprocessed_groups
+            all_solution_groups.append(unprocessed_groups)
+
+        yield from group_generator
 
     else:
         execution_context.set_error_info(solutions_orig.error_info)

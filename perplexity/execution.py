@@ -468,7 +468,8 @@ class TreeSolver(object):
     # yields a tree_record for every interpretation and combination of disjunctions
     # that was attempted (including records if they were skipped for debugging purposes)
     def tree_solutions(self, state, tree_info, response_function=None, message_function=None,
-                       current_tree_index=0, target_tree_index=None, interpretation=None):
+                       current_tree_index=0, target_tree_index=None, interpretation=None,
+                       find_all_solution_groups=True):
         wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
         this_sentence_force = sentence_force(tree_info["Variables"])
         for context, solutions in self.phase1(state, tree_info, current_tree_index=[current_tree_index], target_tree_index=target_tree_index, interpretation=interpretation):
@@ -480,10 +481,11 @@ class TreeSolver(object):
             tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=current_tree_index)
 
             # solution_groups() should return an iterator that iterates *groups*
+            all_solution_groups = [] if find_all_solution_groups else None
             tree_record["SolutionGroupGenerator"] = at_least_one_generator(
-                perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force,
-                                                           wh_phrase_variable, tree_info))
+                perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_solution_groups=all_solution_groups))
 
+            tree_record["SolutionGroups"] = all_solution_groups
             tree_record["Interpretation"] = ", ".join([f"{x.module}.{x.function}" for x in context.interpretation().values()])
 
             # Collect any error that might have occurred from the first solution group

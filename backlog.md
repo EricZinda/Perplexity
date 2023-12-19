@@ -1,13 +1,3 @@
-- Run solution_group code within all_plural_groups_stream2() so that failed solution groups cause the right alternative sets to be created
-  Problems:
-      - SingleGroupGenerator assumes that, if it gets a new group with the same lineage, that there will be *more* records in it
-          - and furthermore that the records that we already returned are still there
-        - Neither is true anymore because the group handler can completely swap things out
-  
-  Undone:
-    - Get /showall and /allsolutions to work again
-
-
 - Fix:
   - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
     - takes forever
@@ -130,6 +120,9 @@
             - We'd have to collect all the solutions
 
 Code cleanup:
+- SingleGroupGenerator assumes that, if it gets a new group with the same lineage, that there will be *more* records in it
+    - and furthermore that the records that we already returned are still there
+    - Neither is true anymore because the group handler can completely swap out one set of solutions for an arbitrary different set
 - Get rid of reordering
   - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
   - But we need a way to optimize somehow, it really is slow
