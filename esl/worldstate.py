@@ -247,11 +247,18 @@ def is_instance(state, thing):
 
 
 def location_of_type(state, who, where_type):
-    for location in rel_objects(state, who, "at"):
-        if sort_of(state, location, where_type):
-            return True
+    if not isinstance(who, (list, tuple, set)):
+        who = [who]
+    for who_item in who:
+        found = False
+        for location in rel_objects(state, who_item, "at"):
+            if sort_of(state, location, where_type):
+                found = True
+                break
+        if not found:
+            return False
 
-    return False
+    return True
 
 
 def count_of_instances_and_concepts(context, state, concepts_original):
@@ -322,6 +329,19 @@ def find_unused_item(state, object_type):
 def has_item_of_type(state, object_type):
     for item in rel_subjects_objects(state, "have"):
         if sort_of(state, item[1], object_type):
+            yield item[0]
+
+
+# Some criteria aren't involved in instance selection, they are involved
+# in where the instance ends up.  targetPossession is set by "a menu for me"
+# and so it just includes everything
+def noop_criteria(state, ignored1, ignored2):
+    return True
+
+
+def rel_subjects_greater_or_equal(state, rel, object):
+    for item in state.all_rel(rel):
+        if item[1] >= object:
             yield item[0]
 
 
@@ -477,9 +497,13 @@ class ESLConcept(Concept):
         found_cumulative = None if initial_instances is None else initial_instances
         for current_criteria in final_criteria:
             found = []
-            for result in current_criteria[0](state, current_criteria[1], current_criteria[2]):
-                if found_cumulative is None or result in found_cumulative:
-                    found.append(result)
+
+            if current_criteria[0] == noop_criteria:
+                found = found_cumulative
+            else:
+                for result in current_criteria[0](state, current_criteria[1], current_criteria[2]):
+                    if found_cumulative is None or result in found_cumulative:
+                        found.append(result)
 
             found_cumulative = found
             if len(found_cumulative) == 0:
@@ -932,12 +956,12 @@ class WorldState(State):
                 else:
                     return [RespondOperation("Sorry, we don't have that" + self.get_reprompt())]
             else:
-                return [RespondOperation("Sorry, we don't allow ordering specific things like that"+ self.get_reprompt())]
+                return [RespondOperation("Sorry, we don't allow ordering specific things like that" + self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
             if isinstance(x, numbers.Number):
                 table_concept = ESLConcept("table")
-                table_concept = table_concept.add_criteria(rel_subjects, "maxCapacity", x)
+                table_concept = table_concept.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x)
                 actors = [("user",)]
                 whats = [(table_concept,)]
                 return self.find_plan([('satisfy_want', context, actors, whats, 1)])

@@ -2,10 +2,60 @@
   - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
     - takes forever
     - returns a weird error
+
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"
 - 'file1.txt' and 'file2.txt' are in a folder together
-- we want a table -> crashes
+- Don't generate one more if nothing cares
+
+- We would like the menus -> Takes forever
+    - /runparse 0,5: We would like the menus
+    - every possible combination will fail because the_concept() returns instances and want_v_1() fails for instances
+    BUT: it will take a long time to exhaust all the alternatives since there are a lot to try
+    - If we knew that _steak_n_1(x11) woudl only generate instances and that _want_v_1(e2,x3,x11) required non-instances we could solve this by failing quickly
+
+                         ┌────── _steak_n_1(x11)
+        _the_q(x11,RSTR,BODY)               ┌────── pron(x3)
+                          └─ pronoun_q(x3,RSTR,BODY)
+                                                 └─ _want_v_1(e2,x3,x11)
+
+        Text Tree: _the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))
+
+        Interpretation: perplexity.system_vocabulary.the_all_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.generic_q, __main__.pron, __main__._want_v_1
+- We would like the menus/the steaks
+    - match_all_the_concept_n() does not check the plurality of "menus/steaks" to make sure there are conceptually 2 or more
+
+
+- I want a steak and a soup ->
+        Excellent Choice! Can I get you anything else?
+        Son: Wait, let's not order that before we know how much it costs.
+        Waiter: Can I get you something else before I put your order in?
+    Expected: One thing at a time, please!
+
+- See if "we want a table" really generates (user, son1) want (table)
+- (fixed) I want a table / 2 -> How many in your party?
+- (fixed) We would like the menus -> Exception in test run: 'NoneType' object is not iterable
+- (Fixed) My son and I want a table
+- (fixed) we'd like a table for 2 -->
+    Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.
+    Waiter: Hi there, can I get you something to eat?
+    Um... You're at a table.
+    Waiter: Can I get you something to eat?
+    - Seems to be that we are modifying the original solution state when we ask for one more
+    - Problem is that we now store a solution group set *after* code might have modified it and even *after* code might have changed the solutions in it
+        - The next solution that comes in gets added to it
+    - ALSO: I think the new record is getting merged into the existing set, thus modifying the original solution group and causing this bizarre answer to get returned
+    - Possible solutions:
+        - make plurals.py retain the original set states AND the solution states (which could be anything)
+        - When it yields solutions, it yields the solution states
+        - When it creates new groups, it uses the original set states
+        - How does merge work?
+            - Creation the original set states is easy: just add the new one into the original
+                -
+            Is it really that operations happen at the solution group level?  Does that help?
+
+- (fixed) BUG: could we have a table -> yes
+- (fixed) we want a table -> crashes
   - It doesn't seem right to merge all solutions if the upper limit is inf, they should be alternatives
     - That does fix the problem if we don't merge, BUT: it is really really slow for some scenarios
     - If we somehow were able to run the solution group handlers from within all_plural_groups_stream() then we'd know the solution group

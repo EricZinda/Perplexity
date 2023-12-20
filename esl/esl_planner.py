@@ -4,8 +4,8 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, has_type, \
     rel_subjects, is_instance, AddBillOp, DeleteRelOp, \
-    find_unused_item, ResetOrderAndBillOp,  object_to_store, \
-    find_unused_instances_from_concept
+    find_unused_item, ResetOrderAndBillOp, object_to_store, \
+    find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria
 from perplexity.predications import is_concept
 from perplexity.response import RespondOperation, ResponseLocation
 from perplexity.set_utilities import Measurement
@@ -125,8 +125,13 @@ def get_table_at_entrance(state, context, who_multiple, table, min_size):
             # This needs to be done against the concept (not the instance) because there is no way, after the fact, to know
             # if the way they asked for the table specified how many people it should have or if it just happened to have
             # that many
-            for_criteria = table.find_criteria(rel_subjects, "maxCapacity", None)
-            for_value = for_criteria[2] if for_criteria is not None else None
+            for_value = None
+            for_capacity = table.find_criteria(rel_subjects_greater_or_equal, "maxCapacity", None)
+            for_possession = table.find_criteria(noop_criteria, "targetPossession", None)
+            if for_possession is not None:
+                for_value = for_possession[2]
+            elif for_capacity is not None:
+                for_value = for_capacity[2]
 
         # If they say "we want a table" (because we means 2 in this scenario) or "table for 2" the size is implied
         if for_value is not None and not isinstance(for_value, tuple) and isinstance(for_value, numbers.Number):
@@ -144,12 +149,12 @@ def get_table_at_entrance(state, context, who_multiple, table, min_size):
                     # "We want a table"
                     for_count = len(who_multiple)
                 else:
-                    # "I want a table", "Do you have a table?"
+                    # "I want a table", "Do you have a table?", "I want a table for my son"
                     for_count = None
 
         if for_count == 2:
             if min_size > 1:
-                return [('respond', context, "I suspect you want to sit together."+ state.get_reprompt())]
+                return [('respond', context, "I suspect you want to sit together." + state.get_reprompt())]
             else:
                 unused_table = at_least_one_generator(find_unused_instances_from_concept(context, state, table))
                 if unused_table is not None:
@@ -168,7 +173,7 @@ def get_table_at_entrance(state, context, who_multiple, table, min_size):
             if for_count < 2:
                 stop_plan_with_error(context, "Johnny: Hey! That's not enough seats!" + state.get_reprompt())
             elif for_count > 2:
-                return [('respond', context, "Host: Sorry, we don't have a table with that many seats"+ state.get_reprompt())]
+                return [('respond', context, "Host: Sorry, we don't have a table with that many seats" + state.get_reprompt())]
 
         else:
             # didn't specify size
@@ -180,7 +185,7 @@ def get_table_repeat(state, context, who_multiple, table, min_size):
     if all_are_players(who_multiple) and \
             location_of_type(state, who_multiple[0], "table"):
         if min_size != 1:
-            return [('respond', context, "I suspect you want to sit together."+ state.get_reprompt())]
+            return [('respond', context, "I suspect you want to sit together." + state.get_reprompt())]
         else:
             return [('respond', context, "Um... You're at a table." + state.get_reprompt())]
 
@@ -202,46 +207,42 @@ def get_bill_at_table(state, context):
 gtpyhop.declare_task_methods('get_bill', get_bill_at_table)
 
 
-# order_food methods are all passed single objects, not tuples
-# so we don't have to check
-def order_food_at_entrance(state, context, who, what):
-    if all_are_players([who]) and not location_of_type(state, who, "table"):
-        return [('respond', context, "Sorry, you must be seated to order"+ state.get_reprompt())]
+def order_food_at_entrance(state, context, who_list, what):
+    if all_are_players(who_list) and not location_of_type(state, who_list, "table"):
+        return [('respond', context, "Sorry, you must be seated to order" + state.get_reprompt())]
 
 
-def order_food_price_unknown(state, context, who, what):
-    if all_are_players([who]) and location_of_type(state, who, "table"):
+def order_food_price_unknown(state, context, who_list, what):
+    if all_are_players(who_list) and location_of_type(state, who_list, "table"):
         if (object_to_store(what), "user") in state.all_rel("priceUnknownTo"):
             return [('respond', context, "Son: Wait, let's not order that before we know how much it costs." + state.get_reprompt())]
 
 
-def order_food_too_expensive(state, context, who, what):
-    if all_are_players([who]) and location_of_type(state, who, "table"):
+def order_food_too_expensive(state, context, who_list, what):
+    if all_are_players([who_list]) and location_of_type(state, who_list, "table"):
         store_what = object_to_store(what)
         assert store_what in state.sys["prices"]
         if state.sys["prices"][store_what] + state.bill_total() > 15:
             return [('respond', context, f"Son: Wait, we already spent ${str(state.bill_total())} so if we get that, we won't be able to pay for it with $15.{state.get_reprompt()}")]
 
 
-def order_food_out_of_stock(state, context, who, what):
-    if all_are_players([who]) and location_of_type(state, who, "table"):
-        store_what = object_to_store(what)
-        for item in state.all_rel("ordered"):
-            if item[1] == store_what:
-                return [('respond',
-                         context,
-                         "Sorry, you got the last one of those. We don't have any more. Can I get you something else?" + state.get_reprompt())]
+# Convert a list of people into individual tasks so that things like
+# running out of food will work properly
+def order_food_at_table(state, context, who_list, what):
+    if isinstance(who_list, (list, tuple, set)) and all_are_players(who_list):
+        new_tasks = []
+        for who in who_list:
+            new_tasks.append(('order_food', context, who, what))
+
+        return new_tasks
 
 
-def order_food_at_table(state, context, who, what):
-    if all_are_players([who]) and location_of_type(state, who, "table"):
-        # Evaluate the "what" concept to make sure we understand all the terms that were used with it
-        # The user could have said "steak" or "steak for 2" or "rare steak", etc
-        # If we get back a state, it means the user said something that made sense
-        # and they at least meant e.g. "a steak" of some kind, that exists in the system
+def order_food_at_table_per_person(state, context, who, what):
+    if not isinstance(who, (list, tuple, set)) and all_are_players([who]) and location_of_type(state, who, "table"):
         food_instances = [x for x in find_unused_instances_from_concept(context, state, what)]
         if len(food_instances) == 0:
-            return
+            return [('respond', context, f"I'm sorry, we're all out of {what}." + state.get_reprompt())]
+
         else:
             new_tasks = [('respond', context, "Excellent Choice! Can I get you anything else?")]
             for food_instance in food_instances:
@@ -250,12 +251,13 @@ def order_food_at_table(state, context, who, what):
                                   ('add_bill', context, what.concept_name)]
                 else:
                     return
+
                 break
             new_tasks.append(('set_response_state', context, "anything_else"))
             return new_tasks
 
 
-gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_out_of_stock, order_food_too_expensive, order_food_at_table)
+gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_price_unknown, order_food_at_table, order_food_too_expensive, order_food_at_table_per_person)
 
 
 def complete_order(state, context):
@@ -291,12 +293,13 @@ gtpyhop.declare_task_methods('complete_order', complete_order)
 
 
 # This task deals with lists that map to each other. I.e. the first who goes with the first what
-# Its job is to analyze the top level solution group would could have a lot of different collections
+# Its job is to analyze the top level solution group. It could have a lot of different combinations
 # that need to be analyzed.  One or more people, one or more things wanted, etc.
-# For concepts, it requires that the caller has made sure that wanted concepts are valid, meaning "I want the (conceptual) table"
-# Should never get to this point
+# For concepts, it requires that the caller has made sure that wanted concepts are valid, meaning "I want *the* (conceptual) table"
+# should never get to this point
 def satisfy_want_group_group(state, context, group_who, group_what, min_size):
-    if not isinstance(group_who, list) or not isinstance(group_what, list): return
+    if not isinstance(group_who, list) or not isinstance(group_what, list):
+        return
 
     # To support "we would like a table/the bill/etc" not going to every person,
     # conceptual things like "the bill", or "a table" or "a menu" should be collapsed into a single item
@@ -323,40 +326,61 @@ def satisfy_want_group_group(state, context, group_who, group_what, min_size):
     # and plan them one at a time
     tasks = []
     assert len(group_who) == len(group_what)
-    for index in range(len(group_who)):
-        for who in group_who[index]:
-            for what in group_what[index]:
-                tasks.append(('satisfy_want', context, who, what, min_size))
 
-    return tasks
+    # To support "we would like a table/the bill" not going to every person,
+    # We need to examine the whole solution group and only allow collective mode for these items
+    if is_concept(group_what[0][0]):
+        unique_whats = unique_group_variable_values(group_what)
+        if len(unique_whats) == 1:
+            # Everybody wanted the same kind of thing
+            # Only need to check the first because: If one item in the group is a concept, they all are
+            one_thing = unique_whats[0]
+            if len(group_what) > 1:
+                # Multiple solutions in this solution group, thus people want this
+                if one_thing.concept_name == "table":
+                    stop_plan_with_error(context, "Johnny: Hey, let's sit together alright?" + state.get_reprompt())
 
+                elif one_thing.concept_name in ["bill", "check"]:
+                    stop_plan_with_error(context, "Host: I don't have that many bills." + state.get_reprompt())
 
-# Requires actual values not a list
-def satisfy_want(state, context, who, what, min_size):
-    # if len(who) != 1 or len(what) != 1: return
-    if isinstance(who, (list, tuple, set)) or isinstance(who, (list, tuple, set)): return
+    # Iterate through each group_who / group_what pair
+    tasks = []
+    for index in range(len(group_what)):
+        what_list = group_what[index]
 
-    if is_instance(state, what):
-        # They are asking for a *particular instance of a table* (or whatever)
-        # report an error if this is the best we can do
-        return [('respond', context, "I'm sorry, we don't allow requesting specific things like that" + state.get_reprompt())]
-    else:
-        actions = []
-        for _ in range(min_size):
-            concept = what.concept_name
-            if sort_of(state, concept, "menu"):
-                actions.append(('get_menu', context, who))
+        # Only need to check the first item since they will all be concepts
+        # or instances
+        if is_concept(what_list[0]):
+            # We don't care if someone "wants" a "what" together or
+            # separately (since it isn't semantically different) so we treat the "whats"
+            # as separate and plan them one at a time
+            for what in what_list:
+                # If "I want x for somebody" we need to fixup the who
+                target_criteria = what.find_criteria(noop_criteria, "targetPossession", None)
+                if target_criteria is not None:
+                    who_list = target_criteria[2]
+                else:
+                    who_list = group_who[index]
 
-            elif concept == "special":
-                actions.append(('describe_item', context, "special"))
+                for _ in range(min_size):
+                    concept = what.concept_name
+                    if sort_of(state, concept, "menu"):
+                        tasks.append(('get_menu', context, who_list, min_size))
 
-            elif sort_of(state, concept, "table"):
-                actions.append(('get_menu', context, who))
+                    elif concept == "special":
+                        tasks.append(('describe_item', context, "special"))
 
-            elif sort_of(state, concept, "food"):
-                actions.append(('order_food', context, who, what))
+                    elif sort_of(state, concept, "table"):
+                        tasks.append(('get_table', context, who_list, what, min_size))
 
-        return actions
+                    elif sort_of(state, concept, "food"):
+                        tasks.append(('order_food', context, who_list, what))
+
+                    elif sort_of(state, concept, ["bill", "check"]):
+                        tasks.append(("get_bill", context))
+
+    if len(tasks) > 0:
+        return tasks
 
 
 # Last option should just report an error
@@ -364,7 +388,7 @@ def satisfy_want_fail(state, context, who, what, min_size):
     stop_plan_with_error(context, "Sorry, I'm not sure what to do about that" + state.get_reprompt())
 
 
-gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group_group, satisfy_want, satisfy_want_fail)
+gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group_group, satisfy_want_fail)
 
 
 ###############################################################################

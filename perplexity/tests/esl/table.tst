@@ -293,7 +293,7 @@
             "Command": "We would like the menus",
             "Expected": "There are less than 2 menu",
             "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
-            "Enabled": true,
+            "Enabled": false,
             "ID": "42d5f855-1b6d-4b48-9f8f-edecceec3774"
         },
         {

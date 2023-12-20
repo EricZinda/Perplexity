@@ -178,11 +178,19 @@ class GroupVariableValues(object):
             self.solution_values = GroupVariableIterable(state_iterable=state_iterable, variable_name=arg_value)
 
 
+class GroupSet(object):
+    def __init__(self, stats_group, raw_set, set_id, final_set=None):
+        self.stats_group = stats_group
+        self.raw_set = raw_set
+        self.set_id = set_id
+        self.final_set = final_set
+
+
 def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint,
                               handlers, optimized_criteria_list, index_predication):
     # Give a unique set_id to every group that gets created
     set_id = 0
-    initial_empty_set = [initial_stats_group, [], str(set_id)]
+    initial_empty_set = GroupSet(stats_group=initial_stats_group, raw_set=[], set_id=str(set_id), final_set=[])
     sets = []
     set_id += 1
 
@@ -197,17 +205,17 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             groups_logger.debug(f"Processing solution: {next_solution}")
         new_sets = []
         was_merged = False
-        for existing_set in sets + [initial_empty_set]:
-            if len(existing_set[1]) == 0 and was_merged:
+        for existing_group_set in sets + [initial_empty_set]:
+            if len(existing_group_set.raw_set) == 0 and was_merged:
                 # Don't create a brand-new set by merging with the final empty set if it was
                 # already merged into something. Because: it is already being tracked.
                 continue
 
-            new_set_stats_group = existing_set[0].copy()
+            new_set_stats_group = existing_group_set.stats_group.copy()
             merge, state = check_criteria_all(execution_context, var_criteria, new_set_stats_group, next_solution)
             if groups_logger.level == logging.DEBUG and state in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
                 nl = "\n     "
-                groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
+                groups_logger.debug(f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_group_set.raw_set + [next_solution]))}")
 
             if state == CriteriaResult.fail_one:
                 # Fail (doesn't meet criteria): don't add, don't yield
@@ -221,13 +229,19 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
             else:
                 # Didn't fail, now check against any code criteria to make sure it really did succeed
-                final_group = existing_set[1] + [next_solution]
+                raw_set = existing_group_set.raw_set + [next_solution]
                 code_criteria_failed = False
+                final_set = None
                 if state == CriteriaResult.meets:
-                    code_group = check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, final_group)
-                    if code_group:
+                    if groups_logger.level == logging.DEBUG:
+                        nl = "\n     "
+                        groups_logger.debug(
+                            f"Pre-code criteria Solution group raw: {state} \n     {nl.join(str(x) for x in raw_set)}")
+
+                    final_set = check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, raw_set)
+                    if final_set:
                         # Convert from whatever object to a real list
-                        final_group = [x for x in code_group]
+                        final_set = [x for x in final_set]
 
                     else:
                         # It doesn't meet the criteria, but might if we combine with other solutions
@@ -247,30 +261,30 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 #   don't miss any cases
                 if merge and not code_criteria_failed:
                     was_merged = True
-                    new_set = existing_set
+                    new_group_set = existing_group_set
 
                 else:
-                    new_set = [None, None, existing_set[2] + ":" + str(set_id)]
+                    new_group_set = GroupSet(stats_group=None, raw_set=None, set_id=existing_group_set.set_id + ":" + str(set_id))
                     set_id += 1
-                    new_sets.append(new_set)
+                    new_sets.append(new_group_set)
 
-                new_set[0] = new_set_stats_group
-                new_set[1] = final_group
+                new_group_set.stats_group = new_set_stats_group
+                new_group_set.raw_set = raw_set
+                new_group_set.final_set = final_set
 
                 if groups_logger.level == logging.DEBUG:
                     nl = "\n     "
-                    groups_logger.debug(
-                        f"Solution group state: {state} \n     {nl.join(str(x) for x in (existing_set[1] + [next_solution]))}")
+                    groups_logger.debug(f"Solution group raw: {state} \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
 
                 if state == CriteriaResult.meets:
                     # Clear any errors that occurred trying to generate solution groups that didn't work
                     # so that the error that gets returned is whatever happens while *processing* the solution group
                     execution_context.clear_error()
-
-                    yield new_set[1], new_set[2], new_set[0]
+                    yield new_group_set.final_set, new_group_set.set_id, new_group_set.stats_group
 
                 elif state == CriteriaResult.meets_pending_global:
-                    pending_global_criteria.append([new_set[1], new_set[2], new_set[0]])
+                    # Remember the values we would have yielded it if it had met the criteria
+                    pending_global_criteria.append([new_group_set.raw_set, new_group_set.set_id, new_group_set.stats_group])
 
                 elif state == CriteriaResult.contender:
                     # Not yet a solution, don't track it as one
@@ -295,15 +309,14 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
         execution_context.clear_error()
 
         for pending in pending_global_criteria:
-            final_group = pending[0]
+            raw_set = pending[0]
             final_group = check_group_against_code_criteria(execution_context, handlers,
                                                             optimized_criteria_list, index_predication,
-                                                            final_group)
+                                                            raw_set)
             if final_group:
                 # Convert from whatever object to a real list
                 final_group = [x for x in final_group]
                 yield final_group, pending[1], pending[2]
-
             else:
                 # Fail (doesn't meet code criteria): don't add, don't yield
                 continue

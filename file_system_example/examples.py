@@ -1018,7 +1018,7 @@ if __name__ == '__main__':
     Example23()
     # Example24()
     # Example25()
-    # Example26()
+    Example26()
     # Example27()
     # Example27a()
     # Example28()
