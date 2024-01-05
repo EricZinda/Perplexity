@@ -1,5 +1,6 @@
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations
+from perplexity.predications import is_concept
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 
@@ -83,7 +84,7 @@ def describe_analyzed_at_table(state, context, analysis):
     if len(analysis["MenuItems"]) > 0 and not has_menu:
         # Describe the menu if the user hasn't heard it and they ask a question
         # that results in any number of menu items being generated
-        new_methods.append(("get_menu", context, ["user"], 1))
+        new_methods.append(("get_menu", context, [["user"]], 1))
         return new_methods
 
     analysis_specials_count = len(analysis["Specials"])
@@ -162,6 +163,9 @@ task_methods.append(['describe_item', describe_item_list, describe_item])
 
 
 def convert_to_english(state, what):
+    if is_concept(what):
+        return what.concept_name
+
     if is_type(state, what):
         return what
 

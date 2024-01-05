@@ -62,15 +62,15 @@ def check_group_against_code_criteria(execution_context, handlers, optimized_cri
 
     if created_solution_group is None:
         pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
-        return group_list
+        return group_list, next_best_error_info
 
     elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
         pipeline_logger.debug(f"Handler said to skip this group")
-        return
+        return None, next_best_error_info
 
     else:
         pipeline_logger.debug(f"Handler said this group was a solution")
-        return created_solution_group
+        return created_solution_group, next_best_error_info
 
 
 # If a handler returns:
@@ -190,9 +190,11 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                               handlers, optimized_criteria_list, index_predication):
     # Give a unique set_id to every group that gets created
     set_id = 0
-    initial_empty_set = GroupSet(stats_group=initial_stats_group, raw_set=[], set_id=str(set_id), final_set=[])
     sets = []
     set_id += 1
+
+    def initial_empty_set():
+        return GroupSet(stats_group=initial_stats_group, raw_set=[], set_id=str(set_id), final_set=[])
 
     # Track solution groups that work so far, but need to wait till the end
     # because they require a global criteria to be true
@@ -205,7 +207,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
             groups_logger.debug(f"Processing solution: {next_solution}")
         new_sets = []
         was_merged = False
-        for existing_group_set in sets + [initial_empty_set]:
+        for existing_group_set in sets + [initial_empty_set()]:
             if len(existing_group_set.raw_set) == 0 and was_merged:
                 # Don't create a brand-new set by merging with the final empty set if it was
                 # already merged into something. Because: it is already being tracked.
@@ -236,9 +238,9 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                     if groups_logger.level == logging.DEBUG:
                         nl = "\n     "
                         groups_logger.debug(
-                            f"Pre-code criteria Solution group raw: {state} \n     {nl.join(str(x) for x in raw_set)}")
+                            f"Pre-code criteria Solution group raw (merged = {merge}): {state} \n     {nl.join(str(x) for x in raw_set)}")
 
-                    final_set = check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, raw_set)
+                    final_set, best_error_info = check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, raw_set)
                     if final_set:
                         # Convert from whatever object to a real list
                         final_set = [x for x in final_set]
@@ -262,6 +264,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 if merge and not code_criteria_failed:
                     was_merged = True
                     new_group_set = existing_group_set
+                    if len(existing_group_set.raw_set) == 0:
+                        new_sets.append(new_group_set)
 
                 else:
                     new_group_set = GroupSet(stats_group=None, raw_set=None, set_id=existing_group_set.set_id + ":" + str(set_id))
@@ -274,17 +278,17 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
                 if groups_logger.level == logging.DEBUG:
                     nl = "\n     "
-                    groups_logger.debug(f"Solution group raw: {state} \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
+                    groups_logger.debug(f"Solution group raw (merged: {was_merged}): {state} \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
 
                 if state == CriteriaResult.meets:
                     # Clear any errors that occurred trying to generate solution groups that didn't work
                     # so that the error that gets returned is whatever happens while *processing* the solution group
                     execution_context.clear_error()
-                    yield new_group_set.final_set, new_group_set.set_id, new_group_set.stats_group
+                    yield new_group_set.final_set, new_group_set.set_id, new_group_set.stats_group, new_group_set.raw_set
 
                 elif state == CriteriaResult.meets_pending_global:
                     # Remember the values we would have yielded it if it had met the criteria
-                    pending_global_criteria.append([new_group_set.raw_set, new_group_set.set_id, new_group_set.stats_group])
+                    pending_global_criteria.append([new_group_set.raw_set, new_group_set.set_id, new_group_set.stats_group, new_group_set.raw_set])
 
                 elif state == CriteriaResult.contender:
                     # Not yet a solution, don't track it as one
@@ -310,13 +314,13 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
         for pending in pending_global_criteria:
             raw_set = pending[0]
-            final_group = check_group_against_code_criteria(execution_context, handlers,
-                                                            optimized_criteria_list, index_predication,
-                                                            raw_set)
+            final_group, best_error_info = check_group_against_code_criteria(execution_context, handlers,
+                                                                             optimized_criteria_list, index_predication,
+                                                                             raw_set)
             if final_group:
                 # Convert from whatever object to a real list
                 final_group = [x for x in final_group]
-                yield final_group, pending[1], pending[2]
+                yield final_group, pending[1], pending[2], pending[3]
             else:
                 # Fail (doesn't meet code criteria): don't add, don't yield
                 continue
@@ -365,7 +369,14 @@ class StatsGroup(object):
         new_group = StatsGroup(self.variable_has_inf_max, self.group_state, self.merge)
         previous_new_stat = None
         for stat in self.variable_stats:
-            new_stat = VariableStats(stat.variable_name, stat.whole_group_unique_individuals.copy(), stat.whole_group_unique_values.copy(), stat.distributive_state, stat.collective_state, stat.cumulative_state, stat.variable_value_type)
+            new_stat = VariableStats(stat.variable_name,
+                                     stat.whole_group_unique_individuals.copy(),
+                                     stat.whole_group_unique_values.copy(),
+                                     stat.distributive_state,
+                                     stat.collective_state,
+                                     stat.cumulative_state,
+                                     stat.variable_value_type,
+                                     stat.only_single_values)
             new_stat.prev_variable_stats = previous_new_stat
             if previous_new_stat is not None:
                 previous_new_stat.next_variable_stats = new_stat
@@ -387,7 +398,15 @@ class StatsGroup(object):
 
 
 class VariableStats(object):
-    def __init__(self, variable_name, whole_group_unique_individuals=None, whole_group_unique_values=None, distributive_state=None, collective_state=None, cumulative_state=None, variable_value_type=None):
+    def __init__(self,
+                 variable_name,
+                 whole_group_unique_individuals=None,
+                 whole_group_unique_values=None,
+                 distributive_state=None,
+                 collective_state=None,
+                 cumulative_state=None,
+                 variable_value_type=None,
+                 only_single_values=None):
         self.variable_name = variable_name
         self.whole_group_unique_individuals = set() if whole_group_unique_individuals is None else whole_group_unique_individuals
         self.whole_group_unique_values = {} if whole_group_unique_values is None else whole_group_unique_values
@@ -399,6 +418,7 @@ class VariableStats(object):
         self.collective_state = None if collective_state is None else collective_state
         self.cumulative_state = None if cumulative_state is None else cumulative_state
         self.variable_value_type = variable_value_type
+        self.only_single_values = only_single_values
 
     def __repr__(self):
         soln_modes = self.solution_modes()
@@ -417,7 +437,7 @@ class VariableStats(object):
         return tuple(solution_modes)
 
     # Check if this variable will be a valid coll/dist/cuml variable after
-    # adding this solution to the group this stats is tracking
+    # adding this solution to the group this stats object is tracking
     # Succeeds if the group, only considering this variable, can be interpreted as any (or multiple) of
     # cumulative/collective/distributive across all variables
     def add_solution(self, execution_context, variable_criteria, solution):
@@ -448,6 +468,15 @@ class VariableStats(object):
         # each set value as a key, with a value that is a list of the values the next variable has
         # This data will be used *by the next variable* not by this one. It is just maintained by this one
         if binding_value not in self.whole_group_unique_values:
+            if self.only_single_values is None:
+                # Haven't decided if we are singles or sets of two or more yet, so this decides it
+                self.only_single_values = len(binding_value) == 1
+            elif (self.only_single_values and len(binding_value) > 1) or \
+                    (not self.only_single_values and len(binding_value) == 1):
+                # Don't allow a mix of sets of 1 and sets > 1
+                self.current_state = CriteriaResult.fail_one
+                return new_individuals, self.current_state
+
             self.whole_group_unique_values[binding_value] = [set(next_value if next_value is not None else []), [solution]]
         else:
             self.whole_group_unique_values[binding_value][0].update(next_value if next_value is not None else [])

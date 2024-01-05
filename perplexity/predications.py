@@ -458,7 +458,7 @@ def predication_2(context, state, binding1, binding2,
                                                       bound_set,
                                                       combinatoric=False).set_x(unbound_binding.variable.name,
                                                                                 group_semantic_item,
-                                                                                combinatoric=False).set_x()
+                                                                                combinatoric=False)
                     else:
                         # unbound_binding_descriptor.group == VariableStyle.ignore
                         # Each of the items in intersection_last is true for all bound values, return all combinations

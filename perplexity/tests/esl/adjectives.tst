@@ -39,7 +39,7 @@
         },
         {
             "Command": "I want the grilled salmon",
-            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "07526a10-6eaa-43f9-b1ed-25f12369342a"
@@ -81,7 +81,7 @@
         },
         {
             "Command": "I want the smoked pork",
-            "Expected": "Son: Wait, let's not order that before we know how much it costs.",
+            "Expected": "Son: Wait, let's not order pork before we know how much it costs.\n",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_pork_n_1(x8), _smoke_v_1(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "9b022abb-9691-4bc6-8993-e8d8fbee0952"
@@ -123,7 +123,7 @@
         },
         {
             "Command": "I want the roasted chicken",
-            "Expected": "Son: Wait, we already spent $12 so if we get that, we won't be able to pay for it with $15.",
+            "Expected": "Son: Wait, we already spent $12 so if we get 1 chicken, we won't be able to pay for it with $15.\n",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_chicken_n_1(x8), _roast_v_cause(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "a69bd72f-0a97-423e-98e8-2947e8d8d5ab"

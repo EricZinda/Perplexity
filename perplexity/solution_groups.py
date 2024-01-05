@@ -101,7 +101,7 @@ class SolutionGroupGenerator(object):
     def next_solution_in_group(self, current_id, trace_string=None):
         while True:
             try:
-                next_group, next_id, stats_group = next(self.all_plural_groups_stream)
+                next_group, next_id, stats_group, raw_group = next(self.all_plural_groups_stream)
 
             except StopIteration:
                 self.complete = True
@@ -165,7 +165,9 @@ class SolutionGroupGenerator(object):
                     if groups_logger.level == logging.DEBUG:
                         nl = "\n     "
                         groups_logger.debug(
-                            f"{trace_string}: {''.join([nl + str(x) for x in next_group])}")
+                            f"Processed: {trace_string}: {''.join([nl + str(x) for x in next_group])}")
+                        groups_logger.debug(
+                            f"Raw: {trace_string}: {''.join([nl + str(x) for x in raw_group])}")
                 return True
 
     def has_multiple_groups(self):

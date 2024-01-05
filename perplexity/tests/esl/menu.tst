@@ -102,7 +102,7 @@
         },
         {
             "Command": "show me 2 menus",
-            "Expected": "That seems like an excessive number of menus ...\n\nOh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(2,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "cde58b5d-7df0-4173-a792-d2379fdf4716"
@@ -116,7 +116,7 @@
         },
         {
             "Command": "show us 3 menus",
-            "Expected": "That seems like an excessive number of menus ...\n\nOh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n",
+            "Expected": "That seems like an excessive number of menus ...\n",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"

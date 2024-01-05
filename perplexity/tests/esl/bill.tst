@@ -18,14 +18,14 @@
         },
         {
             "Command": "I'd like a salmon'",
-            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
             "Tree": "_a_q(x11,_salmon_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "6dc5aeff-5095-436f-923f-b814daf709be"
         },
         {
             "Command": "I'd like a soup'",
-            "Expected": "Son: Wait, let's not order that before we know how much it costs. \nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you something else before I put your order in?",
             "Tree": "_a_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "9ec2db5e-4c9c-4fb2-8fb8-2ef9a00e2f55"

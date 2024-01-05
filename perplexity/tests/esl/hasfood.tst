@@ -39,14 +39,14 @@
         },
         {
             "Command": "I want the soup",
-            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "1746a509-05db-475b-b0ed-619fed5432bf"
         },
         {
             "Command": "my son wants the soup",
-            "Expected": "Excellent Choice! Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
             "Tree": "pronoun_q(x9,pron(x9),_the_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "3cf08778-3bbd-46b5-8aed-472b80b92b01"

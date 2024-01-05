@@ -378,6 +378,9 @@ class AddRelOp(object):
     def __init__(self, rel):
         self.toAdd = rel
 
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.toAdd)
+
     def apply_to(self, state):
         state.mutate_add_rel(self.toAdd[0], self.toAdd[1], self.toAdd[2])
 
@@ -386,6 +389,9 @@ class DeleteRelOp(object):
     def __init__(self, rel):
         self.toDelete = rel
 
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.toDelete)
+
     def apply_to(self, state):
         state.mutate_delete_rel(self.toDelete[0], self.toDelete[1], self.toDelete[2])
 
@@ -393,6 +399,9 @@ class DeleteRelOp(object):
 class AddBillOp(object):
     def __init__(self, item):
         self.toAdd = item
+
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.toAdd)
 
     def apply_to(self, state):
         prices = state.sys["prices"]
@@ -403,6 +412,9 @@ class AddBillOp(object):
 class SetKnownPriceOp(object):
     def __init__(self, item):
         self.toAdd = item
+
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.toAdd)
 
     def apply_to(self, state):
         state.mutate_remove_unknown_price(self.toAdd)
@@ -417,6 +429,9 @@ class ResetOrderAndBillOp(object):
 class ResponseStateOp(object):
     def __init__(self, item):
         self.toAdd = item
+
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.toAdd)
 
     def apply_to(self, state):
         state.mutate_set_response_state(self.toAdd)
@@ -745,15 +760,16 @@ class WorldState(State):
                 entities.add(j[1])
         return entities
 
-    def get_reprompt(self):
+    def get_reprompt(self, return_first=True):
+        prefix = " \n" if return_first else ""
         if self.sys["responseState"] == "something_to_eat":
-            return " \nWaiter: Can I get you something to eat?"
+            return prefix + "Waiter: Can I get you something to eat?"
         if self.sys["responseState"] == "anticipate_party_size":
-            return " \nWaiter: How many in your party?"
+            return prefix + "Waiter: How many in your party?"
         if self.sys["responseState"] == "anything_else":
-            return " \nWaiter: Can I get you something else before I put your order in?"
+            return prefix + "Waiter: Can I get you something else before I put your order in?"
         if self.sys["responseState"] == "way_to_pay":
-            return " \nWaiter: So did you want to pay with cash or card?"
+            return prefix + "Waiter: So did you want to pay with cash or card?"
         return ""
 
     def user_ordered_veg(self):
@@ -926,7 +942,7 @@ class WorldState(State):
             return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
 
     def no(self, context):
-        return self.find_plan([('complete_order', context)])
+        return self.find_plan(context, [('complete_order', context)])
 
     def yes(self):
         if self.sys["responseState"] in ["anything_else", "something_to_eat"]:
@@ -964,20 +980,20 @@ class WorldState(State):
                 table_concept = table_concept.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x)
                 actors = [("user",)]
                 whats = [(table_concept,)]
-                return self.find_plan([('satisfy_want', context, actors, whats, 1)])
+                return self.find_plan(context, [('satisfy_want', context, actors, whats, 1)])
 
         context.report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 
-    def find_plan(self, tasks):
+    def find_plan(self, context, tasks):
         current_state = esl.esl_planner.do_task(self.world_state_frame(), tasks)
         if current_state is not None:
             return current_state.get_operations()
         else:
-            return [RespondOperation("I'm not sure what to do about that." + self.get_reprompt())]
+            context.report_error(["errorText", "I'm not sure what to do about that." + self.get_reprompt()])
 
     def handle_world_event(self, context, args):
         if args[0] == "user_wants":
-            return self.find_plan([('satisfy_want', context, [("user",)], [(args[1],)], 1)])
+            return self.find_plan(context, [('satisfy_want', context, [("user",)], [(args[1],)], 1)])
         elif args[0] == "user_wants_to_see":
             return self.user_wants_to_see(args[1])
         elif args[0] == "user_wants_multiple":
@@ -997,7 +1013,7 @@ class WorldState(State):
         elif args[0] == "user_wants_group":
             who_list = [binding.value for binding in args[1].solution_values]
             what_list = [binding.value for binding in args[2].solution_values]
-            return self.find_plan([('satisfy_want', context, who_list, what_list)])
+            return self.find_plan(context, [('satisfy_want', context, who_list, what_list)])
 
             return self.user_wants_group(context, args[1], args[2])
         elif args[0] == "user_wants_to_see_group":

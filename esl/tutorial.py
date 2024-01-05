@@ -1178,9 +1178,6 @@ def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
              properties_from=_want_v_1)
 def want_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
-
-    # This may be getting called with concepts or instances, before we call the planner
-    # we need to decide if we have the requisite amount of them
     if is_concept(x_actor_variable_group.solution_values[0]):
         # We don't want to deal with conceptual actors, fail this solution group
         # and wait for the one with real actors
@@ -1198,21 +1195,6 @@ def want_group(context, state_list, e_introduced_binding_list, x_actor_variable_
         # (as in "I want a steak" meaning "I want 1 instance of the concept of steak", we tell
         # check_concept_solution_group_constraints to check instances via check_concepts=False
         if check_concept_solution_group_constraints(context, state_list, x_what_variable_group, check_concepts=False):
-            # If there is more than one concept here, they said something like "we want steaks and fries" but doing the magic
-            # To figure that out how much of each is too much
-            # x_what_values = [x.value for x in x_what_variable_group.solution_values]
-            # x_what_individuals_set = set()
-            # for value in x_what_values:
-            #     x_what_individuals_set.update(value)
-            #
-            # if len(x_what_individuals_set) > 1:
-            #     context.report_error(["errorText", "One thing at a time, please!", current_state.get_reprompt()], force=True)
-            #     yield []
-            #     return
-
-            # At this point we are only dealing with one concept
-            first_x_what_binding_value = copy.deepcopy(x_what_variable_group.solution_values[0].value[0])
-
             # Even though it is only one thing, they could have said something like "We want steaks" so they really want more than one
             # Give them the minimum number by adding a card() predication into the concept
             #   - card(state, c_number, e_binding, x_binding):
@@ -1256,11 +1238,14 @@ def _check_v_1(context, state, e_introduced_binding, x_actor_binding, i_object_b
              properties_from=_check_v_1)
 def _check_v_1_group(context, state_list, e_introduced_binding, x_actor_binding, i_object_binding):
     current_state = copy.deepcopy(state_list[0])
-    final_state = do_task(current_state.world_state_frame(), [('get_bill', context)])
-    if final_state is None:
-        yield []
-    else:
-        yield[final_state]
+
+    actors = variable_group_values_to_list(x_actor_binding)
+    if len(actors) == 1 and len(actors[0]) == 1 and actors[0][0] == "restaurant":
+        final_state = do_task(current_state.world_state_frame(), [('get_bill', context, [("user",)], min_from_variable_group(x_actor_binding))])
+        if final_state is None:
+            yield []
+        else:
+            yield[final_state]
 
 
 # We do not want to support future propositions like "You will give me a table" even though
@@ -1358,8 +1343,7 @@ def _show_v_cause_group(context, state_list, e_introduced_binding, x_actor_varia
              },
              properties=[
                     {'SF': ['comm', 'ques'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-             ]
-             )
+             ])
 def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if is_concept(x_actor_binding) or is_concept(x_object_binding):
         context.report_error(["formNotUnderstood", "_seat_v_cause"])
@@ -1589,7 +1573,8 @@ def _sit_v_present_intransitive_bad_english(context, state, e_introduced_binding
              },
              properties=[
                 {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-             ])
+             ],
+             arguments=[("e",), ("x", ValueSize.all)])
 def _sit_v_down_able(context, state, e_binding, x_actor_binding):
     if is_concept(x_actor_binding):
         context.report_error(["formNotUnderstood", "_sit_v_down_able"])
@@ -1617,7 +1602,8 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
              },
              properties=[
                 {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-             ])
+             ],
+             arguments=[("e",), ("x", ValueSize.all)])
 def _sit_v_down_request(context, state, e_binding, x_actor_binding):
     if is_concept(x_actor_binding):
         context.report_error(["formNotUnderstood", "_sit_v_down_request"])
@@ -1646,11 +1632,15 @@ def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_act
         yield state_list
 
     else:
-        # The planner will only satisfy a want wrt the players
-        task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [[ESLConcept("table")]], 1)
+        # 'satisfy_want' understands ("user", "son") want (table) as meaning they want a table *together*
+        #
+        actors = variable_group_values_to_list(x_actor_variable_group)
+        task = ('satisfy_want', context, actors, [(ESLConcept("table"),)] * len(actors), 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
+        else:
+            yield []
 
 
 @Predication(vocabulary,
@@ -2093,32 +2083,34 @@ def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list)
                 "Can the salad have nuts?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "who can have|get a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties={'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    def both_bound_prediction_function(x_actor, x_object):
+    def both_bound_prediction_function(x_actors, x_objects):
         # Players are able to have any food, a table or a menu
-        if is_user_type(x_actor):
-            return valid_player_request(state, [x_object])
+        if is_user_type(x_actors):
+            return valid_player_request(state, x_objects)
 
         # Food is able to have ingredients, restaurant can have food, etc.
         # Whatever we have modelled
         else:
-            store_actor = object_to_store(x_actor)
-            store_object = object_to_store(x_object)
+            store_actor = object_to_store(x_actors)
+            store_object = object_to_store(x_objects)
 
             return rel_check(state, store_actor, "have", store_object)
 
-    def actor_unbound(x_object):
+    def actor_unbound(x_objects):
         # What/Who can have x? Comes in unbound because it is reorderable
         # so we need to return everything that can have x
         found = False
-        if valid_player_request(state, [x_object]):
+        if valid_player_request(state, x_objects):
             found = True
-            yield from user_types()
+            for item in user_types():
+                yield (item,)
 
-        for item in rel_subjects(state, "have", x_object):
+        for item in rel_subjects(state, "have", x_objects):
             found = True
-            yield item
+            yield (item,)
 
         if not found:
             context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "have", x_object_binding.variable.name])
@@ -2129,9 +2121,9 @@ def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
         #   - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
         #     - So it is a special case that we interpret as a request for a menu
         if is_user_type(x_actor):
-            yield ESLConcept("menu")
+            yield (ESLConcept("menu"), )
 
-    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
+    yield from lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
                                         actor_unbound,
                                         object_unbound)

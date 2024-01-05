@@ -48,10 +48,14 @@ INDICATOR_PATTERN = re.compile(r"(\{[^{}]+?\})", re.MULTILINE | re.UNICODE)
 #
 # returns a SStringFormat object
 def s(origin, tree_info=None, reverse_pronouns=False):
-    return sstringify(origin, tree_info, reverse_pronouns=reverse_pronouns)
+    caller_frame = inspect.currentframe().f_back
+    return sstringify(origin, tree_info, reverse_pronouns=reverse_pronouns, caller_frame=caller_frame)
 
 
-def sstringify(origin, tree_info=None, reverse_pronouns=False):
+def sstringify(origin, tree_info=None, reverse_pronouns=False, caller_frame=None):
+    if caller_frame is None:
+        caller_frame = inspect.currentframe().f_back
+
     # This is a really dirty hack that I need to find a better, cleaner,
     # more stable and better performance solution for.
     sstringified = re.sub(r"(?:{{)+?", "\x15", origin)[::-1]
@@ -73,7 +77,7 @@ def sstringify(origin, tree_info=None, reverse_pronouns=False):
     for match in INDICATOR_PATTERN.findall(sstringified):
         indicator = match[1:-1]
         format_object = parse_s_string_element(indicator)
-        value = format_object.format(tree_info, reverse_pronouns=reverse_pronouns)
+        value = format_object.format(tree_info, caller_frame, reverse_pronouns=reverse_pronouns)
         if value is None:
             value = "<unknown>"
         sstringified = sstringified.replace(match, str(value))
@@ -145,39 +149,20 @@ class SStringFormat(object):
     def plural_template_is_delphin_variable(self):
         return self.plural_template_delphin is not None
 
-    # By default skip_to_level = 2 which means:
-    # 0 skip this level
-    # 1 skip the caller (since they wouldn't be trying to resolve their own variables)
-    # 2 go to the caller of the caller
-    def get_frame_by_variable_name(self, name, skip_to_level=2):
-        frame = inspect.stack()[skip_to_level][0]
-        while name not in frame.f_locals:
-            frame = frame.f_back
-            if frame is None:
-                return dict()
-
-        return frame.f_locals
-
-    def resolve_variable(self, indicator_expression):
+    def resolve_variable(self, indicator_expression, stack_frame):
         # Lookup just the first variable name (i.e. foo) in an expression like foo.bar.goo
         initial_variable_name = next(iter(filter(None, re.split(r"(\w+)", indicator_expression))))
-        frame = self.get_frame_by_variable_name(initial_variable_name, skip_to_level=4)
         try:
             # ... but then evaluate the whole expression
-            return eval(indicator_expression, None, frame)  # pylint: disable=eval-used
+            return eval(indicator_expression, stack_frame.f_globals, stack_frame.f_locals)  # pylint: disable=eval-used
 
         # This is to handle a multi-line string.
         # Once again, this is a dirty hack. I need to
         # Re-implement this using format()
         except SyntaxError:
-            return eval(indicator_expression.replace("\n", ""), None, frame)  # pylint: disable=eval-used
-        except NameError:
-            if indicator_expression.find("@") != -1:
-                raise SyntaxError(f"{indicator_expression} is not defined. Did you forget a ':'?")
-            else:
-                raise SyntaxError(f"{indicator_expression} is not defined")
+            return eval(indicator_expression.replace("\n", ""), stack_frame.f_globals, stack_frame.f_locals)  # pylint: disable=eval-used
 
-    def format(self, tree_info, reverse_pronouns=False):
+    def format(self, tree_info, stack_frame, reverse_pronouns=False):
         if tree_info is not None:
             mrs = simplemrs.loads(tree_info["MRS"])[0]
             tree = tree_info["Tree"]
@@ -191,7 +176,7 @@ class SStringFormat(object):
         # First resolve the template if it exists
         if self.has_plural_template():
             if self.plural_template_is_delphin_variable():
-                template_variable_name = self.resolve_variable(self.plural_template_delphin)
+                template_variable_name = self.resolve_variable(self.plural_template_delphin, stack_frame)
                 template_variable_name, _ = convert_complex_variable(template_variable_name)
 
                 template_variable_properties = mrs.variables.get(template_variable_name, {})
@@ -199,7 +184,7 @@ class SStringFormat(object):
 
             else:
                 if self.plural_template_variable:
-                    plural_template_value = self.resolve_variable(self.plural_template_variable)
+                    plural_template_value = self.resolve_variable(self.plural_template_variable, stack_frame)
                 else:
                     plural_template_value = self.plural_template_literal
 
@@ -222,7 +207,7 @@ class SStringFormat(object):
             if tree_info is None:
                 raise SyntaxError("sstringify must have a tree_info argument if a DELPH-IN variable is being used")
 
-            variable_name = self.resolve_variable(self.delphin_variable)
+            variable_name = self.resolve_variable(self.delphin_variable, stack_frame)
             sstring_logger.debug(f"sstring: variable_name is '{variable_name}'")
 
             # If the variable value is not just a variable value, decode it
@@ -250,7 +235,7 @@ class SStringFormat(object):
                 sstring_logger.debug(f"sstring: meaning_at_index specified by complex variable: {meaning_at_index_value}")
 
             else:
-                meaning_at_index_value = self.resolve_variable(self.meaning_at_index_variable)
+                meaning_at_index_value = self.resolve_variable(self.meaning_at_index_variable, stack_frame)
                 sstring_logger.debug(f"sstring: meaning_at_index specified: '{meaning_at_index_value}'")
 
             formatted_string, _, _ = english_for_variable_using_mrs(mrs_parser, mrs, meaning_at_index_value, variable_name, tree, plural=resolved_plural, determiner=self.determiner, reverse_pronouns=reverse_pronouns)
@@ -268,7 +253,7 @@ class SStringFormat(object):
 
         else:
             if self.value_is_raw_variable():
-                singular_variable_value = self.resolve_variable(self.raw_variable)
+                singular_variable_value = self.resolve_variable(self.raw_variable, stack_frame)
             else:
                 singular_variable_value = self.string_literal
 

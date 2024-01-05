@@ -1,4 +1,6 @@
 import copy
+import logging
+
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.variable_binding import VariableBinding, VariableData
@@ -18,6 +20,9 @@ def apply_solutions_to_state(state, has_more, solutions, record_operations=False
                 all_operations.append(operation)
 
     # Now apply all the operations to the original state object
+    if pipeline_logger.level == logging.DEBUG:
+        pipeline_logger.debug("State changes:\n" + "\n".join([("   " + str(x) if x is not None else "   None") for x in all_operations]))
+        pipeline_logger.debug("\n".join([("   " + str(x) if x is not None else "   None") for x in responses]))
     new_state = state.apply_operations(all_operations, record_operations)
     return responses, new_state
 
@@ -152,3 +157,6 @@ class State(object):
 
     def get_operations(self):
         return copy.deepcopy(self.operations)
+
+
+pipeline_logger = logging.getLogger('Pipeline')
