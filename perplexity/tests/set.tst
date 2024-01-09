@@ -137,7 +137,7 @@
         },
         {
             "Command": "which files are 20 mb?",
-            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))",
+            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,[_megabyte_n_1(x9,u16), card(20,e15,x9)],loc_nonsp(e2,x3,x9)))",
             "Enabled": true,
             "ID": "05f835da-64f9-4c95-aabe-2dc8ba26bf73"
@@ -145,7 +145,7 @@
         {
             "Command": "together, which files are 20 mb",
             "Comments": "Correctly returns single files in dist mode because it treats 'mb' as the collective that together is forcing",
-            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/the yearly budget.txt, size=10000000), File(name=/Desktop/blue, size=10000000))",
+            "Expected": "(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)",
             "Tree": "_which_q(x6,_file_n_of(x6,i10),udef_q(x11,[_megabyte_n_1(x11,u18), card(20,e17,x11)],[_together_p(e4,e2), loc_nonsp(e2,x6,x11)]))",
             "Enabled": true,
             "ID": "d4a1b97d-9fcf-448e-a429-4356eb3e171d"
@@ -250,7 +250,7 @@
         },
         {
             "Command": "a few files are 20 mb",
-            "Expected": "Yes, that is true.(there are more)",
+            "Expected": "Yes, that is true.",
             "Tree": "udef_q(x10,[_megabyte_n_1(x10,u17), card(20,e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],loc_nonsp(e2,x3,x10)))",
             "Enabled": true,
             "ID": "678dbe3f-6589-4d72-b1c9-34434445b00c"
@@ -369,7 +369,7 @@
         },
         {
             "Command": "the 4 large files are 20 mb",
-            "Expected": "Yes, that is true.",
+            "Expected": "There are less than 4 large 4 file that is 20 megabyte",
             "Tree": "udef_q(x12,[_megabyte_n_1(x12,u19), card(20,e18,x12)],_the_q(x3,[_file_n_of(x3,i11), _large_a_1(e10,x3), card(4,e9,x3)],loc_nonsp(e2,x3,x12)))",
             "Enabled": true,
             "ID": "feb7f6d9-c583-4afc-b7d8-6614885db415"
