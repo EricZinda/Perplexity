@@ -24,9 +24,9 @@
             "ID": "e9ec6d48-008b-4c51-82e2-3f8d8b844b2c"
         },
         {
-            "Command": "What did my son order?",
-            "Expected": "son ordered nothing",
-            "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
+            "Command": "What did Johnny order?",
+            "Expected": "Johnny ordered nothing",
+            "Tree": "which_q(x5,thing(x5),proper_q(x3,named(Johnny,x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "b202f65f-9778-4423-a925-395e1b0d8252"
         },
@@ -382,7 +382,7 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "soup\nsalad",
+            "Expected": "salad\nsoup",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"

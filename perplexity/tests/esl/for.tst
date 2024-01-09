@@ -73,9 +73,9 @@
             "ID": "64ef0380-b1b8-447b-83aa-d50e2f6a5aa4"
         },
         {
-            "Command": "I want a vegetarian dish for my son",
+            "Command": "I want a vegetarian dish for Johnny",
             "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
-            "Tree": "def_explicit_q(x16,pronoun_q(x22,pron(x22),[_son_n_of(x16,i27), poss(e21,x16,x22)]),pronoun_q(x3,pron(x3),_a_q(x8,[_dish_n_of(x8,i14), _for_p(e15,x8,x16), _vegetarian_a_1(e13,x8)],_want_v_1(e2,x3,x8))))",
+            "Tree": "proper_q(x16,named(Johnny,x16),pronoun_q(x3,pron(x3),_a_q(x8,[_dish_n_of(x8,i14), _for_p(e15,x8,x16), _vegetarian_a_1(e13,x8)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "da6923a2-db45-44d0-88a8-cf0e842f12c5"
         },
@@ -88,7 +88,7 @@
         },
         {
             "Command": "who ordered soup?",
-            "Expected": "your son",
+            "Expected": "Johnny",
             "Tree": "which_q(x3,person(x3),udef_q(x8,_soup_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c78aeda0-1690-4e8f-b7fc-73aa0038c394"

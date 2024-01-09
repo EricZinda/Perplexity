@@ -1,7 +1,3 @@
-- Fix:
-  - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
-    - takes forever
-    - returns a weird error
 
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"
@@ -25,22 +21,11 @@
 
 
 
+- /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
+    - takes forever
+    - returns a weird error
 - BUG: We would like the menus/the steaks
     - match_all_the_concept_n() does not check the plurality of "menus/steaks" to make sure there are conceptually 2 or more
-
-- START HERE NEXT: Fix "for" to be more general
-  - (fixed) "a menu for me" 
-    - creates a menu concept with a criteria
-  - (fixed) I want soup for my son
-    - orders it for me
-  - (done) I want a table for my son
-    - ignores targetPossession
-    - Need to update this for everything
-      - Should probably be doing the fixup much earlier in satisfy_want_group_group
-  - (done) I'd like a vegetarian dish for my son
-    - I want a steak for my son
-    - etc
-
 - show us 3 menus -> there are less than 2 "we"
     - the error for "we usually give on menu per customer" isn't coming through
     - Because "Phase2LessThan" is forced and overwrites the error
@@ -56,7 +41,8 @@
   - I don't want X
 - implement "how many vegetarian dishes are there"
 - implement "how many vegetarian dishes do you have?"
-  
+
+
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?

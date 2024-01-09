@@ -173,6 +173,10 @@ def refine_nlg_with_predication(tree_info, variable, predication, nlg_data):
 
                     nlg_data["Modifiers"].append(predication.args[0])
 
+                elif parsed_predication["Lemma"] == "named":
+                    nlg_data["Topic"] = predication.args[0]
+
+
     # Assume that adjectives that take the variable as their first argument
     # are adding an adjective modifier to the phrase
     elif parsed_predication["Pos"] == "a" and predication.args[1] == variable:

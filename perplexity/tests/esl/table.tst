@@ -164,6 +164,13 @@
             "ID": "569f6ea4-c643-4d90-9eca-eed604923296"
         },
         {
+            "Command": "I'd like a table for Johnny and me",
+            "Expected": "Um... You're at a table. \nWaiter: Can I get you something to eat?",
+            "Tree": "_a_q(x11,udef_q(x17,proper_q(x22,named(Johnny,x22),pronoun_q(x28,pron(x28),_and_c(x17,x22,x28))),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "5e581819-0549-4c62-9d1e-b2bca7ab4d2b"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

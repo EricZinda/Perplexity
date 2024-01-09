@@ -794,6 +794,22 @@ def person_instances(context, state, x_person_binding):
     yield from match_all_n_instances("person", context, state, x_person_binding)
 
 
+@Predication(vocabulary, names=["named"])
+def named_instances(context, state, c_arg, x_binding):
+    def bound_variable(value):
+        return rel_check(state, value, "hasName", c_arg)
+
+    def unbound_variable_concepts():
+        for person in all_instances(state, "person"):
+            if rel_check(state, person, "hasName", c_arg):
+                yield person
+
+    # Then yield a combinatorial value of all types
+    for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable,
+                                                 unbound_variable_concepts):
+        yield new_state
+
+
 def handles_noun(state, noun_lemma):
     handles = ["thing"] + list(all_specializations(state, "thing"))
     return noun_lemma in handles
@@ -2586,7 +2602,7 @@ def reset():
     initial_state = initial_state.add_rel("room", "contains", "user")
 
     initial_state = initial_state.add_rel("son1", "instanceOf", "son")
-    initial_state = initial_state.add_rel("son1", "hasName", "your son")
+    initial_state = initial_state.add_rel("son1", "hasName", "Johnny")
     initial_state = initial_state.add_rel("user", "instanceOf", "person")
     initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
