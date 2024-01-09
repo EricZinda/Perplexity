@@ -28,13 +28,7 @@
 - BUG: We would like the menus/the steaks
     - match_all_the_concept_n() does not check the plurality of "menus/steaks" to make sure there are conceptually 2 or more
 
-
-- show us 3 menus -> there are less than 2 "we"
-    - the error for "we usually give on menu per customer" isn't coming through
-    - Because "Phase2LessThan" is forced and overwrites the error
-    - Need to take another look at the way errors get propagated through
-
-- Fix "for" to be more general
+- START HERE NEXT: Fix "for" to be more general
   - (fixed) "a menu for me" 
     - creates a menu concept with a criteria
   - (fixed) I want soup for my son
@@ -46,10 +40,12 @@
   - (done) I'd like a vegetarian dish for my son
     - I want a steak for my son
     - etc
-    
-- "Did I order a steak for my son?"
-  
-  
+
+- show us 3 menus -> there are less than 2 "we"
+    - the error for "we usually give on menu per customer" isn't coming through
+    - Because "Phase2LessThan" is forced and overwrites the error
+    - Need to take another look at the way errors get propagated through
+- "Did I order a steak for my son?" -> There isn't such a son here
 - table for two crashes
 - If you ask how much the soup and salad cost, johnny still thinks we haven't asked the cost
 - Just two, my son Johnny and me.
