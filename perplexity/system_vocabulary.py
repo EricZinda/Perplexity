@@ -315,7 +315,8 @@ def neg(context, state, e_introduced_binding, h_scopal):
     subtree_state = state.set_x("tree", (new_tree_info,))
     had_negative_success = False
     had_negative_failure = False
-    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info):
+    wh_phrase_variable = perplexity.tree.get_wh_question_variable(state.get_binding("tree").value[0])
+    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info, wh_phrase_variable=wh_phrase_variable):
         if tree_record["SolutionGroupGenerator"] is not None:
             # There were solutions, so this is true,
             # don't yield it since neg() makes it False

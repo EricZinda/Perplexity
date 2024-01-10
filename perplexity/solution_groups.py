@@ -14,11 +14,12 @@ from perplexity.utilities import at_least_one_generator, get_function
 # asks its solution_group_generator to give it more than the initial group
 # when it runs out of initial solutions
 # Assumes that
-class SingleGroupGenerator(object):
-    def __init__(self, group_id, solution_group_generator, group_list):
+class SingleMaximalGroupGenerator(object):
+    def __init__(self, group_id, solution_group_generator, group_list, generate_maximal_group):
         self.group_id = group_id
         self.solution_group_generator = solution_group_generator
         self.group_list = group_list
+        self.generate_maximal_group = generate_maximal_group
         self.last_yielded_index = -1
 
     def __iter__(self):
@@ -36,7 +37,7 @@ class SingleGroupGenerator(object):
             # If it does have a between(N, inf) constraint, return them all
             # This is a performance optimization that really improves the performance of
             # "a few files are in a folder together"
-            if not self.solution_group_generator.variable_has_inf_max:
+            if not self.solution_group_generator.variable_has_inf_max or not self.generate_maximal_group:
                 raise StopIteration
 
             # See if we can get more items
@@ -66,10 +67,14 @@ class SingleGroupGenerator(object):
 # be returned as other groups.
 #
 # So, a yielded SingleGroupGenerator will "follow" the first lineage that matches it
-class SolutionGroupGenerator(object):
-    def __init__(self, all_plural_groups_stream, variable_has_inf_max):
+# If generate_maximal_group is False, then only the solutions in initial group will be yielded
+# for that group, and the groups that would have been "followed" are simply discarded.  This allows
+# the caller to find a minimal group and determine if there are other solution groups
+class SolutionMaximalGroupGenerator(object):
+    def __init__(self, all_plural_groups_stream, variable_has_inf_max, generate_maximal_group=True):
         self.all_plural_groups_stream = all_plural_groups_stream
         self.variable_has_inf_max = variable_has_inf_max
+        self.generate_maximal_group = generate_maximal_group
         self.solution_groups = {}
         # Use a dict so that we retain the order things got added in
         # but also have a fast way to find ids
@@ -130,7 +135,7 @@ class SolutionGroupGenerator(object):
 
             if existing_solution_group_id == "":
                 # There wasn't an existing solution group to put this in, start tracking this as a new one
-                self.solution_groups[next_id] = SingleGroupGenerator(next_id, self, next_group)
+                self.solution_groups[next_id] = SingleMaximalGroupGenerator(next_id, self, next_group, self.generate_maximal_group)
                 self.unyielded_solution_groups[next_id] = None
 
             else:
@@ -185,9 +190,6 @@ class SolutionGroupGenerator(object):
 # If the criteria has any between(N, inf) criteria, it will keep streaming answers until the end
 # If not, it will stop after the first (minimal) solution is found.
 #
-# A second solution group will be returned, if it exists, but will be bogus. It is just there so that the caller can see there is one. This is
-# to reduce the cost of generating the answer
-#
 # Allows the developer to choose which solution group to return
 #   if they return [], it means "skip this solution group" and we'll try the next one
 # yields an iterator that returns solution groups
@@ -211,7 +213,11 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
                                                  initial_stats_group, has_global_constraint,
                                                  handlers, optimized_criteria_list, index_predication)
 
-        group_generator = SolutionGroupGenerator(groups_stream, variable_has_inf_max)
+        # yes/no questions and propositions only need the minimal solution, so don't return a SolutionMaximalGroupGenerator
+        get_maximal_solution_group = not (this_sentence_force == "prop" or
+            (this_sentence_force in ["prop-or-ques", "ques"] and wh_question_variable is None))
+
+        group_generator = SolutionMaximalGroupGenerator(groups_stream, variable_has_inf_max, generate_maximal_group=get_maximal_solution_group)
         if all_solution_groups is not None:
             # We were asked to collect all the solution groups, so
             # do that first

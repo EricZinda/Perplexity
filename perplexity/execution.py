@@ -122,7 +122,7 @@ class TreeSolver(object):
             self._predication = None
             self._phrase_type = sentence_force(tree_info["Variables"])
             self.tree_info = tree_info
-            self._variable_metadata = perplexity.tree.gather_predication_metadata(self._context.vocabulary, tree_info)
+            self._variable_metadata = perplexity.tree.gather_predication_metadata(self._context.vocabulary, tree_info, interpretation)
             self._predication_runtime_settings = {}
             self._lineage_failure_callback = lineage_failure_callback
             self._solution_lineages = set()
@@ -469,8 +469,7 @@ class TreeSolver(object):
     # that was attempted (including records if they were skipped for debugging purposes)
     def tree_solutions(self, state, tree_info, response_function=None, message_function=None,
                        current_tree_index=0, target_tree_index=None, interpretation=None,
-                       find_all_solution_groups=True):
-        wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
+                       find_all_solution_groups=True, wh_phrase_variable=None):
         this_sentence_force = sentence_force(tree_info["Variables"])
         for context, solutions in self.phase1(state, tree_info, current_tree_index=[current_tree_index], target_tree_index=target_tree_index, interpretation=interpretation):
             if isinstance(solutions, dict):

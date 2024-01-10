@@ -385,7 +385,8 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
     subtree_state = state.set_x("tree", (new_tree_info,))
 
     # Don't try all alternative interpretations, just the one being used now
-    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info, interpretation=context._interpretation):
+    wh_phrase_variable = perplexity.tree.get_wh_question_variable(state.get_binding("tree").value[0])
+    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info, interpretation=context._interpretation, wh_phrase_variable=wh_phrase_variable):
         if tree_record["SolutionGroupGenerator"] is not None:
             # There were solutions, so this is true
             unique_values = set()
@@ -1903,7 +1904,8 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
              properties=[
                 {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-                ])
+                ],
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actors, x_objects):
         if is_user_type(x_actors):

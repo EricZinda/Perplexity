@@ -652,8 +652,10 @@ def gather_referenced_x_variables_from_tree(tree):
 # Gather the metadata that a developer has decorated a predication with
 # using @vocabulary.  Merge it *across* predications so the final metadata has
 # the union
-def gather_predication_metadata(vocabulary, tree_info):
+def gather_predication_metadata(vocabulary, tree_info, interpretation):
     def gather_metadata(predication):
+        nonlocal interpretation
+
         # Any variable referenced under negation should not allow the predication that introduces it
         # to be reordered in its quantifier.  Because: that would allow the variable to be unbound and
         # returning the value of an unbound variable that fails (and thus succeeds) under negation is hard
@@ -666,7 +668,11 @@ def gather_predication_metadata(vocabulary, tree_info):
                 variable_metadata[variable]["ReferencedUnderNegation"] = True
 
         metadata_list = vocabulary.metadata(predication.name, predication.arg_types)
+        interpretation_module = interpretation[predication.index].module
+        interpretation_function = interpretation[predication.index].function
         for metadata in metadata_list:
+            if metadata.function != interpretation_function or metadata.module != interpretation_module:
+                continue
             for arg_index in range(len(metadata.args_metadata)):
                 if predication.arg_types[arg_index] == "h":
                     continue

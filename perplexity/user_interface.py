@@ -149,6 +149,7 @@ class UserInterface(object):
                         # Used to loop through different frames, for now this is turned off
                         # until we decide if is necessary again since it is expensive
                         # was: for frame_state in self.state.frames():
+                        wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
                         for frame_state in [self.state]:
                             pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
 
@@ -159,7 +160,8 @@ class UserInterface(object):
                                                                           self.message_function,
                                                                           tree_index,
                                                                           self.run_tree_index,
-                                                                          find_all_solution_groups=self.show_all_answers):
+                                                                          find_all_solution_groups=self.show_all_answers,
+                                                                          wh_phrase_variable=wh_phrase_variable):
                                 mrs_record["Trees"].append(tree_record)
 
                                 solution_group_generator = tree_record["SolutionGroupGenerator"]
@@ -174,8 +176,8 @@ class UserInterface(object):
                                     # Because this worked, we need to apply any Operations that were added to
                                     # any solution to the current world state.
                                     try:
-                                        has_more = solution_group_generator.has_at_least_one_more()
-                                        operation_responses, new_state = apply_solutions_to_state(self.state, has_more, [solution for solution in solution_group])
+                                        has_more_func = solution_group_generator.has_at_least_one_more
+                                        operation_responses, new_state = apply_solutions_to_state(self.state, has_more_func, [solution for solution in solution_group])
                                         self.state = new_state
 
                                     except MessageException as error:

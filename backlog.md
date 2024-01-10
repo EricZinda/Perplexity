@@ -41,6 +41,9 @@
   - I don't want X
 - implement "how many vegetarian dishes are there"
 - implement "how many vegetarian dishes do you have?"
+- There should be an exception if lift is called on a function that doesn't have its parameters marked as taking all types of sets
+
+- Bugs:
 
 
 - ChatGPT scenario:
@@ -48,7 +51,11 @@
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make 
     - In that case, Johnny and I will both have the Roasted Chicken.
+        - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
     - Let's go with two orders of the Steak, please.
+        - (fixed) Let's get 2 steaks
+        - I want two orders of the steak
+        - Let's go with a steak
     - We'd like to start with some water and menus
     - please bring us two glasses of water
     - Let's go to a table, please.

@@ -523,7 +523,7 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
         is_solution_group = any(name.startswith("solution_group") for name in predication_names)
 
-        metadata = PredicationMetadata(library, argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
+        metadata = PredicationMetadata(function_to_decorate.__module__, function_to_decorate.__name__, library, argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
         final_arg_types = metadata.arg_types()
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
 
@@ -535,7 +535,9 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
 
 class PredicationMetadata(object):
-    def __init__(self, library, args_metadata, match_all, matches_lemmas):
+    def __init__(self, module, function, library, args_metadata, match_all, matches_lemmas):
+        self.module = module
+        self.function = function
         self.args_metadata = args_metadata
         self._match_all = match_all
         self.matches_lemmas = matches_lemmas
