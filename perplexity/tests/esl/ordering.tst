@@ -150,6 +150,13 @@
             "ID": "d8ca1c3b-7a12-4913-8427-67c51d28ecb0"
         },
         {
+            "Command": "Let's go with two orders of the Steak, please",
+            "Expected": "Son: Wait, we already spent $10 so if we get 2 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[[_please_a_1(e22,e2)], _want_v_1(e2,x5,x10)]))",
+            "Enabled": true,
+            "ID": "676c8863-4d33-4570-8141-145bbff1b417"
+        },
+        {
             "Command": "Let's have the chicken",
             "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
             "Tree": "_the_q(x9,_chicken_n_1(x9),pronoun_q(x5,pron(x5),_have_v_1(e2,x5,x9)))",

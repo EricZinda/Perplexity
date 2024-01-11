@@ -96,6 +96,30 @@ class PropertyTransformerMatch(object):
         return True
 
 
+# conjunction_list must be a list of either: a string which is eval'd like elsewhere or
+# another production
+class ConjunctionProduction(object):
+    def __init__(self, conjunction_list=None):
+        self.conjunction_list = conjunction_list
+
+    def create(self, vocabulary, state, variables, captures, current_index):
+        production_list = []
+        for item in self.conjunction_list:
+            if isinstance(item, str):
+                value = replace_str_captures(item, captures)
+                if value != "":
+                    production_list.append(value)
+            elif hasattr(item, "create"):
+                production_list.append(item.create(vocabulary, state, variables, captures, current_index))
+            else:
+                assert False, "ConjunctionProduction(conjunction_list) must be a list of a combination of strings or productions only"
+
+        if len(production_list) == 1:
+            return production_list[0]
+        else:
+            return production_list
+
+
 class PropertyTransformerProduction(object):
     # requires a dictionary where:
     #   each key is a capture name of a variable
@@ -142,11 +166,12 @@ class AllMatchTransformer(object):
 # Matches a conjunction, where the items in the conjunction
 # are other MatchTransforers
 class ConjunctionMatchTransformer(object):
-    def __init__(self, transformer_list, property_transformer=None, production=None, properties_production=None):
+    def __init__(self, transformer_list, extra_conjuncts_capture=None, property_transformer=None, production=None, properties_production=None):
         self.transformer_list = transformer_list
         self.property_transformer = property_transformer
         self.production = production
         self.properties_production = properties_production
+        self.extra_conjuncts_capture = extra_conjuncts_capture
 
     def __repr__(self):
         return "<ConjunctionMatchTransformer>"
@@ -154,16 +179,16 @@ class ConjunctionMatchTransformer(object):
     # When called with a root transformer will either return None or a new predication
     # Otherwise returns True for a match, or False
     def match_tree(self, transformer_search, conjunction, variables, capture, metadata, current_index):
-        if not isinstance(conjunction, list) or len(self.transformer_list) != len(conjunction):
+        if not isinstance(conjunction, list) or (not self.extra_conjuncts_capture and len(self.transformer_list) != len(conjunction)):
             return False
 
         unmatched_indices = [x for x in range(len(conjunction))]
-        for predication_index in range(len(conjunction)):
+        for predication_index in range(len(self.transformer_list)):
             found_match = False
             for match_index in unmatched_indices:
-                if transformer_search(conjunction[predication_index],
+                if transformer_search(conjunction[match_index],
                                       variables,
-                                      self.transformer_list[match_index],
+                                      self.transformer_list[predication_index],
                                       capture,
                                       metadata,
                                       current_index):
@@ -174,6 +199,12 @@ class ConjunctionMatchTransformer(object):
             if not found_match:
                 return False
 
+        if self.extra_conjuncts_capture:
+            unmatched_list = []
+            for unmatched_index in unmatched_indices:
+                unmatched_list.append(conjunction[unmatched_index])
+
+            capture[self.extra_conjuncts_capture] = unmatched_list if len(unmatched_list) > 0 else ""
         if self.property_transformer is not None:
             return self.property_transformer.match(self.tree_info, capture, metadata)
 

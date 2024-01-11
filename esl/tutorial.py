@@ -9,7 +9,7 @@ from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
-    PropertyTransformerProduction, ConjunctionMatchTransformer
+    PropertyTransformerProduction, ConjunctionMatchTransformer, ConjunctionProduction
 from perplexity.tree import find_predication_from_introduced, get_wh_question_variable, \
     gather_scoped_variables_from_tree_at_index
 from perplexity.user_interface import UserInterface
@@ -118,13 +118,14 @@ def min_from_variable_group(variable_group):
 @Transform(vocabulary)
 def lets_go_with_to_want():
     want_production = TransformerProduction(name="_want_v_1", args={"ARG0": "$verb_event", "ARG1": "$who", "ARG2": "$what"})
-    quantifier_production = TransformerProduction(name="pronoun_q", args={"ARG0": "$quantifier_var", "ARG1": "$quantifier_rstr", "ARG2": want_production})
+    conjunction_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", want_production])
+    quantifier_production = TransformerProduction(name="pronoun_q", args={"ARG0": "$quantifier_var", "ARG1": "$quantifier_rstr", "ARG2": conjunction_production})
     sf_production = PropertyTransformerProduction({"$verb_event": {"SF": "prop"},
                                                    "$who": {"NUM": "sg"}})
 
     with_p_match = TransformerMatch(name_pattern="_with_p", args_pattern=["e", "e", "x"], args_capture=[None, None, "what"])
     go_match = TransformerMatch(name_pattern="_go_v_1", args_pattern=["e", "x"], args_capture=["verb_event", "who"])
-    conjunction_match = ConjunctionMatchTransformer(transformer_list=[with_p_match, go_match])
+    conjunction_match = ConjunctionMatchTransformer(transformer_list=[with_p_match, go_match], extra_conjuncts_capture="extra_conjuncts")
     property_match = PropertyTransformerMatch({"$verb_event": {"SF": "comm"},
                                                "$who": {"PERS": "1",
                                                         "NUM": "pl"}})

@@ -46,18 +46,13 @@
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
-  - Make 
-    - In that case, Johnny and I will both have the Roasted Chicken.
-        - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
-    - Let's go with two orders of the Steak, please.
-        - (fixed) Let's get 2 steaks
-        - (fixed) I want two orders of the steak
-        - (fixed) Let's go with a steak
-        - Finally: Let's go with two orders of the Steak, please
+  - Make these work
     - Let's get a table for two, please
-    - Just two, my son Johnny and me.
     - Johnny would love the tomato soup.
     - Can we get one tomato soup for Johnny, please?
+    - In that case, Johnny and I will both have the Roasted Chicken.
+        - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
+    - Just two, my son Johnny and me.
     - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
 
     - We'd like to start with some water and menus
