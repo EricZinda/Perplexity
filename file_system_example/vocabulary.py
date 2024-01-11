@@ -6,7 +6,6 @@ from perplexity.predications import combinatorial_predication_1, lift_style_pred
     individual_style_predication_1, discrete_variable_generator
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
-from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.tree import used_predicatively, is_this_last_fw_seq, find_predication
 from perplexity.utilities import sentence_force

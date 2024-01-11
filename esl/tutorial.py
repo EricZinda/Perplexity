@@ -100,7 +100,43 @@ def min_from_variable_group(variable_group):
     return variable_group.variable_constraints.min_size if variable_group.variable_constraints is not None else 1
 
 
-# ******** Transforms ************
+# ******** Transforms "lets go with" to "I want" ************
+# Convert:
+#            ┌────── _steak_n_1(x10)
+# _a_q(x10,RSTR,BODY)               ┌────── pron(x5)
+#                 └─ pronoun_q(x5,RSTR,BODY)    ┌── _with_p(e9,e2,x10)
+#                                        └─ and(0,1)
+#                                                 └ _go_v_1(e2,x5)
+#
+# To:
+#            ┌────── _steak_n_1(x10)
+# _a_q(x10,RSTR,BODY)               ┌────── pron(x5)
+#                 └─ pronoun_q(x5,RSTR,BODY)
+#                                        └─ _want_v_1(e2, x5, x10)
+
+# Change SF:comm to SF:prop
+@Transform(vocabulary)
+def lets_go_with_to_want():
+    want_production = TransformerProduction(name="_want_v_1", args={"ARG0": "$verb_event", "ARG1": "$who", "ARG2": "$what"})
+    quantifier_production = TransformerProduction(name="pronoun_q", args={"ARG0": "$quantifier_var", "ARG1": "$quantifier_rstr", "ARG2": want_production})
+    sf_production = PropertyTransformerProduction({"$verb_event": {"SF": "prop"},
+                                                   "$who": {"NUM": "sg"}})
+
+    with_p_match = TransformerMatch(name_pattern="_with_p", args_pattern=["e", "e", "x"], args_capture=[None, None, "what"])
+    go_match = TransformerMatch(name_pattern="_go_v_1", args_pattern=["e", "x"], args_capture=["verb_event", "who"])
+    conjunction_match = ConjunctionMatchTransformer(transformer_list=[with_p_match, go_match])
+    property_match = PropertyTransformerMatch({"$verb_event": {"SF": "comm"},
+                                               "$who": {"PERS": "1",
+                                                        "NUM": "pl"}})
+
+    return TransformerMatch(name_pattern="pronoun_q",
+                            args_pattern=["x", "*", conjunction_match],
+                            args_capture=["quantifier_var", "quantifier_rstr", None],
+                            property_transformer=property_match,
+                            production=quantifier_production,
+                            properties_production=sf_production,
+                            removed=["_go_v_1", "_with_p"])
+
 
 # Helper function that supports several transformers doing the same thing but with different
 # noun shapes
@@ -1514,6 +1550,27 @@ def polite(context, state, c_arg, i_binding, e_binding):
 @Predication(vocabulary, names=["_thanks_a_1", "_then_a_1"])
 def _thanks_a_1(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)
+
+
+# @Predication(vocabulary,
+#              names=["_go_v_1"])
+# def _go_v_1(context, state, e_binding, x_actor_binding):
+#     if is_concept(x_actor_binding):
+#         context.report_error(["formNotUnderstood", "_go_v_1"])
+#         return
+#
+#     def bound(x_actor):
+#         if is_user_type(x_actor):
+#             return True
+#
+#         else:
+#             context.report_error(["unexpected", state.get_reprompt()])
+#             return
+#
+#     def unbound():
+#         yield "user"
+#
+#     yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
 
 
 @Predication(vocabulary,

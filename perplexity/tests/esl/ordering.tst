@@ -157,6 +157,13 @@
             "ID": "05db2218-cea5-4fcf-bd7d-25641a7261c8"
         },
         {
+            "Command": "Let's go with the chicken",
+            "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "_the_q(x10,_chicken_n_1(x10),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x10)))",
+            "Enabled": true,
+            "ID": "ba113d31-5097-4ab5-a93b-a48b2b26ccdd"
+        },
+        {
             "Command": "I want an order of the chicken",
             "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
             "Tree": "_the_q(x13,_chicken_n_1(x13),pronoun_q(x3,pron(x3),_a_q(x8,_order_n_of(x8,x13),_want_v_1(e2,x3,x8))))",

@@ -52,16 +52,17 @@
     - Let's go with two orders of the Steak, please.
         - (fixed) Let's get 2 steaks
         - (fixed) I want two orders of the steak
-        - Let's go with a steak
+        - (fixed) Let's go with a steak
         - Finally: Let's go with two orders of the Steak, please
+    - Let's get a table for two, please
+    - Just two, my son Johnny and me.
+    - Johnny would love the tomato soup.
+    - Can we get one tomato soup for Johnny, please?
+    - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
+
     - We'd like to start with some water and menus
     - please bring us two glasses of water
     - Let's go to a table, please.
-    - Just two, my son Johnny and me.
-    - Let's get a table for two, please
-    - Johnny would love the tomato soup. 
-    - Can we get one tomato soup for Johnny, please?
-    - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
   - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...
 - support "can we be seated?"

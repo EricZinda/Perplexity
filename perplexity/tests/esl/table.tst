@@ -94,6 +94,13 @@
             "ID": "45f7c9b4-b7be-4538-bef7-ba834de8f293"
         },
         {
+            "Command": "Let's go with a table",
+            "Expected": "Um... You're at a table. \nWaiter: Can I get you something to eat?",
+            "Tree": "_a_q(x10,_table_n_1(x10),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x10)))",
+            "Enabled": true,
+            "ID": "7e20872c-bf6e-408e-94ab-61db6e66970d"
+        },
+        {
             "Command": "I will have a table?",
             "Expected": "I don't understand the way you are using: have",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
