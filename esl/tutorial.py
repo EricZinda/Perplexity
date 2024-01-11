@@ -1694,11 +1694,12 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
 @Predication(vocabulary,
              names=["_sit_v_down_request", "_sit_v_1_request"],
              phrases={
+                 "I would like to sit": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "we want to sit down": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "we want to sit": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
-                {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ],
              arguments=[("e",), ("x", ValueSize.all)])
 def _sit_v_down_request(context, state, e_binding, x_actor_binding):

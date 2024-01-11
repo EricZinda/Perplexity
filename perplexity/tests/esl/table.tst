@@ -52,6 +52,13 @@
             "ID": "9cf12d44-d1bb-4c9a-bde8-915f7f8e0747"
         },
         {
+            "Command": "I would like to sit",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_1_request(e2,x3))",
+            "Enabled": true,
+            "ID": "e57230ed-8ed0-4367-ab6d-d3ee17138dc5"
+        },
+        {
             "Command": "Can I sit?",
             "Expected": "How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_sit_v_1_able(e2,x3))",

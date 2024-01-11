@@ -983,6 +983,13 @@
     },
     "_sit_v_down_request": {
         "Phrases": {
+            "I would like to sit": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "we want to sit down": {
                 "SF": "prop",
                 "TENSE": "pres",
@@ -1002,6 +1009,13 @@
             {
                 "SF": "prop",
                 "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "tensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
