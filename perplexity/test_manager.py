@@ -158,13 +158,15 @@ class TestManager(object):
     def check_result(self, test_iterator, test_item, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
         chosen_tree_index = interaction_mrs_record["ChosenTreeIndex"]
-        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
+        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index] if chosen_mrs_index is not None and chosen_tree_index is not None else None
+        interaction_response = interaction_record["ResponseMessage"] if interaction_record is not None else None
+        interaction_tree = interaction_record["Tree"] if interaction_record is not None else None
 
         prompt = None
-        if test_item["Expected"] != interaction_record["ResponseMessage"]:
+        if test_item["Expected"] != interaction_response:
             prompt = f"\nExpected: {test_item['Expected']}"
-        elif not (test_item["Tree"] is None and interaction_record["Tree"] is None) and test_item["Tree"] != str(interaction_record["Tree"]):
-            prompt = f"\nPrevious Tree: {test_item['Tree']}\nNew Tree: {str(interaction_record['Tree'])}"
+        elif not (test_item["Tree"] is None and interaction_tree is None) and test_item["Tree"] != str(interaction_tree):
+            prompt = f"\nPrevious Tree: {test_item['Tree']}\nNew Tree: {str(interaction_tree)}"
 
         if prompt is not None:
             print(prompt)
@@ -176,8 +178,8 @@ class TestManager(object):
 
                 elif answer == "u":
                     updated_test = copy.deepcopy(test_item)
-                    updated_test["Expected"] = interaction_record['ResponseMessage']
-                    updated_test["Tree"] = str(interaction_record["Tree"])
+                    updated_test["Expected"] = interaction_response
+                    updated_test["Tree"] = str(interaction_tree)
                     test_iterator.update_test(updated_test["ID"], updated_test)
                     return True
 
@@ -230,10 +232,10 @@ class TestManager(object):
             for interaction_record in interaction_records:
                 chosen_mrs_index = interaction_record["ChosenMrsIndex"]
                 chosen_tree_index = interaction_record["ChosenTreeIndex"]
-                tree_record = interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
+                tree_record = interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index] if chosen_mrs_index is not None and chosen_tree_index is not None else None
                 test_items.append({"Command": interaction_record["UserInput"],
-                                   "Expected": tree_record["ResponseMessage"],
-                                   "Tree": str(tree_record["Tree"]),
+                                   "Expected": tree_record["ResponseMessage"] if tree_record is not None else None,
+                                   "Tree": str(tree_record["Tree"] if tree_record is not None else None),
                                    "Enabled": True,
                                    "ID": str(uuid.uuid4())
                                    })

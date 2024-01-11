@@ -10,11 +10,18 @@
             "ID": "69c95107-36db-4bca-b2b2-ee7d0a2a1a0e"
         },
         {
+            "Command": "I want an order of the table",
+            "Expected": "Host: There isn't such an order here",
+            "Tree": "_the_q(x13,_table_n_1(x13),pronoun_q(x3,pron(x3),_a_q(x8,_order_n_of(x8,x13),_want_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+        },
+        {
             "Command": "Can I take a table?",
             "Expected": "I'm not sure what that means.",
             "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_take_v_1_able(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+            "ID": "82b6ed9b-e700-48e9-bee5-0e0cf89f89cf"
         },
         {
             "Command": "Can you take a table?",

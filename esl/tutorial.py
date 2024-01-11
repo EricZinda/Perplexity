@@ -687,6 +687,28 @@ def _card_n_1(context, state, x_bind):
     yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
+@Predication(vocabulary, names=["_order_n_of"])
+def _order_n_of(context, state, x_order_binding, x_of_what_binding):
+    def both_bound(order, of_what):
+        return sort_of(state, object_to_store(order), ["of_what"])
+
+    def of_what_bound(of_what):
+        if sort_of(state, object_to_store(of_what), ["food"]):
+            yield of_what
+
+    def order_bound(order):
+        if sort_of(state, object_to_store(order), ["food"]):
+            yield order
+
+    yield from in_style_predication_2(context,
+                                      state,
+                                      x_order_binding,
+                                      x_of_what_binding,
+                                      both_bound,
+                                      of_what_bound,
+                                      order_bound)
+
+
 @Predication(vocabulary, names=["_credit_n_1"])
 def _credit_n_1(context, state, x_bind):
     def bound(val):

@@ -43,9 +43,6 @@
 - implement "how many vegetarian dishes do you have?"
 - There should be an exception if lift is called on a function that doesn't have its parameters marked as taking all types of sets
 
-- Bugs:
-
-
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
@@ -54,8 +51,9 @@
         - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
     - Let's go with two orders of the Steak, please.
         - (fixed) Let's get 2 steaks
-        - I want two orders of the steak
+        - (fixed) I want two orders of the steak
         - Let's go with a steak
+        - Finally: Let's go with two orders of the Steak, please
     - We'd like to start with some water and menus
     - please bring us two glasses of water
     - Let's go to a table, please.
