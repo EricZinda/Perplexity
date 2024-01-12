@@ -975,6 +975,9 @@ class WorldState(State):
                 return [RespondOperation("Sorry, we don't allow ordering specific things like that" + self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
+            if is_user_type(x):
+                x = len(x) if isinstance(x, (tuple, list)) else 1
+
             if isinstance(x, numbers.Number):
                 table_concept = ESLConcept("table")
                 table_concept = table_concept.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x)

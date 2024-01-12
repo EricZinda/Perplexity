@@ -780,7 +780,48 @@
     "_credit_n_1": {},
     "_dollar_n_1_measure": {},
     "_dollar_n_1": {},
-    "unknown": {},
+    "unknown": {
+        "Phrases": {
+            "a table for 2": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative"
+            },
+            "a table for 2, please!": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "2": {
+                "SF": "prop-or-ques"
+            },
+            "Johnny and me": {
+                "SF": "prop-or-ques"
+            },
+            "yes": {
+                "SF": "prop-or-ques"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop-or-ques"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
     "unknown_group": {},
     "unknown_eu": {},
     "_yes_a_1": {},
@@ -1518,5 +1559,6 @@
     "compound": {},
     "named_instances": {},
     "_order_n_of": {},
-    "_go_v_1": {}
+    "_go_v_1": {},
+    "_just_a_1": {}
 }
