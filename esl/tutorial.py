@@ -203,10 +203,13 @@ def what_is_singular_to_underspecified_transformer():
 @Transform(vocabulary)
 def would_like_to_want_transformer():
     production = TransformerProduction(name="_want_v_1", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
-    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", "x"],
+    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", "x"],
                                   args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match], args_capture=["e1", None],
-                            removed=["_would_v_modal", "_like_v_1"], production=production)
+    return TransformerMatch(name_pattern="_would_v_modal",
+                            args_pattern=["e", like_match],
+                            args_capture=["e1", None],
+                            removed=["_would_v_modal", "_like_v_1", "_love_v_1"],
+                            production=production)
 
 
 # Convert "Can/could I x?", "I can/could x?" to "I x_able x?"
@@ -377,10 +380,12 @@ def would_like_removal_transitive_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
-    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target],
+    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
-    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match],
-                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1", target],
+    would_match = TransformerMatch(name_pattern="_would_v_modal",
+                                   args_pattern=["e", like_match],
+                                   args_capture=["e1", None],
+                                   removed=["_would_v_modal", "_like_v_1", "_love_v_1", target],
                                    production=production)
     return would_match
 
@@ -390,10 +395,12 @@ def would_like_removal_transitive_transformer():
 def would_like_removal_intransitive_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
-    like_match = TransformerMatch(name_pattern="_like_v_1", args_pattern=["e", "x", target],
+    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
-    would_match = TransformerMatch(name_pattern="_would_v_modal", args_pattern=["e", like_match],
-                                   args_capture=["e1", None], removed=["_would_v_modal", "_like_v_1", target],
+    would_match = TransformerMatch(name_pattern="_would_v_modal",
+                                   args_pattern=["e", like_match],
+                                   args_capture=["e1", None],
+                                   removed=["_would_v_modal", "_like_v_1", "_love_v_1", target],
                                    production=production)
     return would_match
 

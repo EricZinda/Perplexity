@@ -252,7 +252,8 @@ class TransformerMatch(object):
                     metadata["SystemWH"] = []
                 metadata["SystemWH"].append(scopal_arg.args[0])
 
-            if self.name_pattern == "*" or self.name_pattern == scopal_arg.name:
+            name_alternatives = self.name_pattern.split("|")
+            if self.name_pattern == "*" or scopal_arg.name in name_alternatives:
                 local_capture = {}
                 if self.name_capture is not None:
                     local_capture[self.name_capture] = scopal_arg.name

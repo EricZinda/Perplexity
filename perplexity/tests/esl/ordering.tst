@@ -325,6 +325,20 @@
             "ID": "603ebce5-dcab-45a3-abdd-df45f4106a1b"
         },
         {
+            "Command": "Johnny would love the salmon",
+            "Expected": "Son: Wait, we already spent $10 so if we get 1 salmon, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "_the_q(x12,_salmon_n_1(x12),proper_q(x3,named(Johnny,x3),_want_v_1(e2,x3,x12)))",
+            "Enabled": true,
+            "ID": "99d72ecb-d330-4bc9-bc81-17c870cf26c8"
+        },
+        {
+            "Command": "Can we get one soup for Johnny, please?",
+            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you something else before I put your order in?",
+            "Tree": "udef_q(x11,proper_q(x19,named(Johnny,x19),[_soup_n_1(x11), _for_p(e18,x11,x19), card(1,e17,x11)]),pronoun_q(x3,pron(x3),[_please_a_1(e25,e2), _get_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "b3589252-e0bf-4534-8bfa-c2d079bc4700"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

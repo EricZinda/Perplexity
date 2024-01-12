@@ -59,6 +59,13 @@
             "ID": "e57230ed-8ed0-4367-ab6d-d3ee17138dc5"
         },
         {
+            "Command": "I would love to sit",
+            "Expected": "How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_sit_v_1_request(e2,x3))",
+            "Enabled": true,
+            "ID": "c2877e87-aaec-4dc5-8af5-e23d9581ecf3"
+        },
+        {
             "Command": "Can I sit?",
             "Expected": "How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_sit_v_1_able(e2,x3))",
@@ -106,6 +113,13 @@
             "Tree": "_a_q(x10,_table_n_1(x10),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x10)))",
             "Enabled": true,
             "ID": "7e20872c-bf6e-408e-94ab-61db6e66970d"
+        },
+        {
+            "Command": "Let's get a table for two, please",
+            "Expected": "Um... You're at a table. \nWaiter: Can I get you something to eat?",
+            "Tree": "_a_q(x9,number_q(x15,card(2,x15,i21),[_table_n_1(x9), _for_p(e14,x9,x15)]),pronoun_q(x5,pron(x5),[_please_a_1(e22,e2), _get_v_1(e2,x5,x9)]))",
+            "Enabled": true,
+            "ID": "d230cfe4-dc43-4d40-848b-c23b185eb602"
         },
         {
             "Command": "I will have a table?",
@@ -386,6 +400,13 @@
             "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "b5cfa314-b577-44c0-888c-e79450771d13"
+        },
+        {
+            "Command": "I would love a table",
+            "Expected": "Um... You're at a table. \nWaiter: Can I get you something to eat?",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "976882a9-8fa0-4af3-9c7b-eda65b712812"
         },
         {
             "Command": "/reset",
