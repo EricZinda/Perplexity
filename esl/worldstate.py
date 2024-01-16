@@ -781,82 +781,6 @@ class WorldState(State):
                         return True
         return False
 
-    # def user_wants(self, wanted):
-    #     # if wanted not in self.get_entities():
-    #     #   return [RespondOperation("Sorry, we don't have that.")]
-    #
-    #     if wanted[0] == "{":
-    #         wanted_dict = json.loads(wanted)
-    #         if wanted_dict["structure"] == "noun_for":
-    #             if wanted_dict["noun"] == "table1":
-    #                 if ("user", "table") in self.all_rel("at"):
-    #                     return [RespondOperation("Um... You're at a table." + self.get_reprompt()),
-    #                             ResponseStateOp("anything_else")]
-    #                 if wanted_dict["for_count"] > 2:
-    #                     return [RespondOperation("Host: Sorry, we don't have a table with that many seats")]
-    #                 if wanted_dict["for_count"] < 2:
-    #                     return [RespondOperation("Johnny: Hey! That's not enough seats!")]
-    #                 if wanted_dict["for_count"] == 2:
-    #                     return (RespondOperation(
-    #                         "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. "
-    #                         "A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?"),
-    #                             AddRelOp(("user", "at", "table")), ResponseStateOp("something_to_eat"))
-    #
-    #             else:
-    #                 wanted = wanted_dict["noun"]
-    #
-    #     if sort_of(self, wanted, "food"):
-    #         if ("user", "table") in self.all_rel("at"):
-    #             if "ordered" in self.rel.keys():
-    #                 if ("user", wanted) in self.all_rel("ordered"):
-    #                     return [RespondOperation(
-    #                         "Sorry, you got the last one of those. We don't have any more. Can I get you something else?"),
-    #                         ResponseStateOp("anything_else")]
-    #             if (instance_of_what(self, wanted), "user") in self.all_rel("priceUnknownTo"):
-    #                 return [RespondOperation(
-    #                     "Son: Wait, let's not order that before we know how much it costs." + self.get_reprompt())]
-    #
-    #             assert (instance_of_what(self,wanted) in self.sys["prices"])
-    #             if self.sys["prices"][instance_of_what(self,wanted)] + self.bill_total() > 15:
-    #                 return [RespondOperation("Son: Wait, we already spent $" + str(
-    #                     self.bill_total()) + " so if we get that, we won't be able to pay for it with $15." + self.get_reprompt())]
-    #
-    #             return [RespondOperation("Excellent Choice! Can I get you anything else?"),
-    #                     AddRelOp(("user", "ordered", wanted)), AddBillOp(wanted),
-    #                     ResponseStateOp("anything_else")]
-    #
-    #         return [RespondOperation("Sorry, you must be seated to order")]
-    #
-    #     for i in all_instances(self, "table"):
-    #         if i == wanted:
-    #             if ("user", "table") in self.all_rel("at"):
-    #                 return [RespondOperation("Um... You're at a table." + self.get_reprompt())]
-    #             return [RespondOperation("How many in your party?"), ResponseStateOp("anticipate_party_size")]
-    #
-    #     if sort_of(self, wanted, "menu"):
-    #         if ("user", "table") in self.all_rel("at"):
-    #             if ("user", "menu1") not in self.all_rel("have"):
-    #                 return [AddRelOp(("user", "have", "menu1")), RespondOperation(
-    #                     "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?"),
-    #                         ResponseStateOp("anticipate_dish")]
-    #             else:
-    #                 return [RespondOperation(
-    #                     "Oh, I already gave you a menu. You look and see that there is a menu in front of you.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n" + self.get_reprompt())]
-    #         return [RespondOperation("Sorry, you must be seated to order")]
-    #
-    #     if wanted == "bill1":
-    #         for i in self.all_rel("valueOf"):
-    #             if i[1] == "bill1":
-    #                 total = i[0]
-    #                 if self.sys["responseState"] == "done_ordering":
-    #                     return [RespondOperation(
-    #                         "Your total is " + str(total) + " dollars. Would you like to pay by cash or card?"),
-    #                         ResponseStateOp("way_to_pay")]
-    #                 else:
-    #                     return [RespondOperation("But... you haven't got any food yet!" + self.get_reprompt())]
-    #
-    #     return [RespondOperation("Sorry, I can't get that for you at the moment.")]
-
     def user_wants_multiple(self, wanted_tuple):
         foods = list(all_instances(self, "food"))
         if len(wanted_tuple) == 1:
@@ -952,38 +876,35 @@ class WorldState(State):
 
     # This should always be the answer to a question since it is a partial sentence that generated
     # an unknown() predication in the MRS for the verb
+    # x will be a variable value, thus it will be a set of one or more items
     def unknown(self, context, x):
-        concept_name = None
-        if is_concept(x):
-            concept_name = x.concept_name
-
         if self.sys["responseState"] == "way_to_pay":
-            if x in ["cash"]:
-                return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
-            elif x in ["card", "card, credit"]:
-                return [RespondOperation("You reach into your pocket and realize you don’t have a credit card." + self.get_reprompt())]
-            else:
-                return [RespondOperation("Waiter: Hmm. I didn't understand what you said." + self.get_reprompt())]
+            if len(x) == 1:
+                x = x[0]
+                if x in ["cash"]:
+                    return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
+                elif x in ["card", "card, credit"]:
+                    return [RespondOperation("You reach into your pocket and realize you don’t have a credit card." + self.get_reprompt())]
+                else:
+                    return [RespondOperation("Waiter: Hmm. I didn't understand what you said." + self.get_reprompt())]
 
         elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
-            if concept_name is not None:
-                if concept_name in self.get_entities():
-                    return self.handle_world_event(context, ["user_wants", x])
-                else:
-                    return [RespondOperation("Sorry, we don't have that" + self.get_reprompt())]
-            else:
-                return [RespondOperation("Sorry, we don't allow ordering specific things like that" + self.get_reprompt())]
+            return self.handle_world_event(context, ["user_wants", x])
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
             if is_user_type(x):
-                x = len(x) if isinstance(x, (tuple, list)) else 1
+                # The user said something like "me" or "me and my son"
+                # since we are asking about party size convert to a count
+                x = (len(x), ) if isinstance(x, (tuple, list)) else (1, )
 
-            if isinstance(x, numbers.Number):
-                table_concept = ESLConcept("table")
-                table_concept = table_concept.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x)
-                actors = [("user",)]
-                whats = [(table_concept,)]
-                return self.find_plan(context, [('satisfy_want', context, actors, whats, 1)])
+            if len(x) == 1:
+                x = x[0]
+                if isinstance(x, numbers.Number):
+                    table_concept = ESLConcept("table")
+                    table_concept = table_concept.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x)
+                    actors = [("user",)]
+                    whats = [(table_concept,)]
+                    return self.find_plan(context, [('satisfy_want', context, actors, whats, 1)])
 
         context.report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 
@@ -996,7 +917,7 @@ class WorldState(State):
 
     def handle_world_event(self, context, args):
         if args[0] == "user_wants":
-            return self.find_plan(context, [('satisfy_want', context, [("user",)], [(args[1],)], 1)])
+            return self.find_plan(context, [('satisfy_want', context, [("user",)], [args[1]], 1)])
         elif args[0] == "user_wants_to_see":
             return self.user_wants_to_see(args[1])
         elif args[0] == "user_wants_multiple":

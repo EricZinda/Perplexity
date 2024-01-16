@@ -121,7 +121,9 @@ class UserInterface(object):
 
             else:
                 # Loop through all the "official" DELPH-IN trees using the official predications
+                tree_generated = False
                 for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
+                    tree_generated = True
                     tree_info_orig = {"Index": mrs.index,
                                       "Variables": mrs.variables,
                                       "Tree": tree_orig,
@@ -335,7 +337,7 @@ class UserInterface(object):
             print(f"{len(self.interaction_record['Mrss'])} Parses")
 
             for mrs_index in range(0, len(self.interaction_record["Mrss"])):
-                if all or mrs_index == self.interaction_record["ChosenMrsIndex"]:
+                if all or self.interaction_record["ChosenMrsIndex"] is None or mrs_index == self.interaction_record["ChosenMrsIndex"]:
                     extra = "CHOSEN " if mrs_index == self.interaction_record["ChosenMrsIndex"] else ""
                     print(f"\n***** {extra}Parse #{mrs_index}:")
                     mrs_record = self.interaction_record["Mrss"][mrs_index]

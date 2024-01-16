@@ -189,6 +189,104 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
+            "ID": "1a942f1b-375f-4421-9a2b-9856f666f7b6"
+        },
+        {
+            "Command": "a table",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "b37ddc44-76f4-41e4-9073-9d1760ae43c1"
+        },
+        {
+            "Command": "Johnny and me",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "pronoun_q(x15,pron(x15),udef_q(x4,proper_q(x9,named(Johnny,x9),_and_c(x4,x9,x15)),unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "10093ffa-58d5-494c-843e-43fe0e6e5b5a"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "de70bf4f-4d76-4bd6-887f-696f9bec8abf"
+        },
+        {
+            "Command": "a table",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "9b7614f6-b920-4508-9157-3981dc72b265"
+        },
+        {
+            "Command": "My son Johnny and me",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "def_explicit_q(x10,pronoun_q(x17,pron(x17),[_son_n_of(x10,i22), poss(e16,x10,x17)]),proper_q(x11,named(Johnny,x11),pronoun_q(x28,pron(x28),udef_q(x4,[_and_c(x4,x10,x28), appos(e9,x10,x11)],unknown(e2,x4)))))",
+            "Enabled": true,
+            "ID": "39f43c15-387a-47f3-9783-7474f41a453b"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "2698d4e9-10aa-4e73-a6da-1813031add43"
+        },
+        {
+            "Command": "a table",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "c03122f5-b566-4c9f-bdb8-03f6f46f3c55"
+        },
+        {
+            "Command": "just two",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "number_q(x4,card(2,x4,i11),[_just_a_1(e5,e2), unknown(e2,x4)])",
+            "Enabled": true,
+            "ID": "ce3be103-f9d0-45b2-a430-270082aa498c"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "0c5d94c2-9a67-43d5-ab3d-43de440888a7"
+        },
+        {
+            "Command": "a table",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "df1281d1-2be5-46d6-961d-1727f66546c3"
+        },
+        {
+            "Command": "/runparse 88,1",
+            "Expected": "How many in your party?",
+            "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "c65c7797-46ca-40c8-98e1-6cdf6fcdf1e3"
+        },
+        {
+            "Command": "Just two, my son Johnny and me.",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "udef_q(x7,def_explicit_q(x19,pronoun_q(x26,pron(x26),[_son_n_of(x19,i31), poss(e25,x19,x26)]),proper_q(x20,named(Johnny,x20),pronoun_q(x37,pron(x37),[_and_c(x7,x19,x37), appos(e18,x19,x20)]))),number_q(x4,card(2,x4,i13),[appos(e6,x4,x7), _just_a_1(e5,e2), unknown(e2,x4)]))",
+            "Enabled": true,
+            "ID": "e3951b1a-656b-4214-9a60-951be1ef4413"
+        },
+        {
+            "Command": "/runparse",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Tree": "udef_q(x7,def_explicit_q(x19,pronoun_q(x26,pron(x26),[_son_n_of(x19,i31), poss(e25,x19,x26)]),proper_q(x20,named(Johnny,x20),pronoun_q(x37,pron(x37),[_and_c(x7,x19,x37), appos(e18,x19,x20)]))),number_q(x4,card(2,x4,i13),[appos(e6,x4,x7), _just_a_1(e5,e2), unknown(e2,x4)]))",
+            "Enabled": true,
+            "ID": "8fc8a668-a2c6-4bbf-94dc-9a962482a536"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
             "ID": "bf913033-2a48-41ff-bb83-c0299a893193"
         },
         {

@@ -39,7 +39,16 @@ class MrsParser(object):
             # Keep track of the original phrase on the object
             mrs = ace_response.result(parse_index).mrs()
             mrs.surface = phrase
-            pipeline_logger.debug(f"Parse {parse_index}: {mrs}")
+            mrs_list = []
+            for ep in mrs.predications:
+                arg_types = []
+                for arg_item in ep.args.items():
+                    if arg_item[0] == "CARG":
+                        arg_types.append("c")
+                    else:
+                        arg_types.append(arg_item[1][0])
+                mrs_list.append(f"{ep.predicate}({','.join(arg_types)})")
+            pipeline_logger.debug(f"Parse {parse_index}: {', '.join(mrs_list)}")
             yield mrs
 
     def phrase_from_simple_mrs(self, simple, trace=False):

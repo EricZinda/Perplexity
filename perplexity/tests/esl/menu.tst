@@ -144,7 +144,7 @@
         },
         {
             "Command": "2",
-            "Expected": "Sorry, we don't allow ordering specific things like that",
+            "Expected": "Sorry, I'm not sure what to do about that",
             "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
             "Enabled": true,
             "ID": "9dd7913d-e27e-4750-9204-6dc50b87c258"

@@ -519,7 +519,9 @@ def pron(context, state, x_who_binding):
             else:
                 yield "user"
 
-    yield from combinatorial_predication_1(context, state, x_who_binding, bound_variable, unbound_variable)
+    for item in combinatorial_predication_1(context, state, x_who_binding, bound_variable, unbound_variable):
+        yield item
+
 
 
 @Predication(vocabulary, names=["generic_entity"])
@@ -808,7 +810,7 @@ def _dollar_n_1(context, state, x_binding, u_unused):
                          {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
              arguments=[("e",), ("x", ValueSize.all)])
 def unknown(context, state, e_binding, x_binding):
-    operations = state.handle_world_event(context, ["unknown", x_binding.value[0]])
+    operations = state.handle_world_event(context, ["unknown", x_binding.value])
     if operations is not None:
         yield state.record_operations(operations)
 
@@ -819,6 +821,18 @@ def unknown(context, state, e_binding, x_binding):
 @Predication(vocabulary, names=["unknown"])
 def unknown_eu(context, state, e_binding, u_binding):
     yield state
+
+
+@Predication(vocabulary, names=["appos"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+def appos(context, state, e_binding, x_left_binding, x_right_binding):
+    # Handle "two, my son Johnny and me", 2 will be in apposition with Johnny and me
+    if len(x_left_binding.value) == 1 and (isinstance(x_left_binding.value[0], numbers.Number) or (isinstance(x_left_binding.value[0], str) and x_left_binding.value[0].isnumeric())):
+        number = int(x_left_binding.value[0])
+        if len(x_right_binding.value) == number:
+            yield state
+    else:
+        if x_left_binding.value == x_right_binding.value:
+            yield state
 
 
 @Predication(vocabulary, names=["_yes_a_1", "_yup_a_1", "_sure_a_1", "_yeah_a_1"])
@@ -966,7 +980,8 @@ def match_all_n_i_concepts(noun_type, context, state, x_binding, i_binding):
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_i_instances(noun_type, context, state, x_binding, i_binding):
-    yield from match_all_n_instances(noun_type, context, state, x_binding)
+    for item in match_all_n_instances(noun_type, context, state, x_binding):
+        yield item
 
 
 @Predication(vocabulary, names=["_some_q"])
@@ -1224,7 +1239,7 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
         yield do_task(state, [("respond", context, "You can't pay with that.")])
         return
 
-    yield state.record_operations(state.handle_world_event(context, ["unknown", e_introduced_binding.value["With"]["Value"]]))
+    yield state.record_operations(state.handle_world_event(context, ["unknown", (e_introduced_binding.value["With"]["Value"], )]))
 
 
 @Predication(vocabulary,
@@ -1359,7 +1374,7 @@ def _give_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
         if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
             if not state.get_binding(x_object_binding.variable.name).value[0] is None:
                 yield state.record_operations(
-                    state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value[0]]))
+                    state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value]))
                 return
 
     context.report_error(["formNotUnderstood", "_give_v_1"])
@@ -1549,6 +1564,11 @@ def def_implicit_q(context, state, x_variable_binding, h_rstr, h_body):
 
 @Predication(vocabulary, names=["_just_a_1"])
 def _just_a_1(context, state, e_introduced_binding, e_binding):
+    yield state
+
+
+@Predication(vocabulary, names=["_just_a_1"])
+def _just_a_1(context, state, e_introduced_binding, x_binding):
     yield state
 
 
@@ -2303,8 +2323,9 @@ def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding
             if i[0] == x_actor:
                 yield store_to_object(i[1])
 
-    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
-                                      object_from_actor)
+    for item in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
+                                      object_from_actor):
+        yield item
 
 
 # Returns:
