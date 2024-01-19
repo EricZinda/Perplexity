@@ -422,8 +422,9 @@ class SetKnownPriceOp(object):
 
 class ResetOrderAndBillOp(object):
     def apply_to(self, state):
-        state.mutate_reset_bill()
-        state.mutate_reset_order()
+        state.mutate_clear_last_order()
+        # state.mutate_reset_bill()
+        # state.mutate_reset_order()
 
 
 class ResponseStateOp(object):
@@ -734,19 +735,32 @@ class WorldState(State):
                 new_relation["valueOf"][i] = (addition + new_relation["valueOf"][i][0], "bill1")
         world_state._rel = new_relation
 
-    def mutate_reset_bill(self):
+    def mutate_clear_last_order(self):
         world_state = self.world_state_frame()
         new_relation = copy.deepcopy(world_state._rel)
-        for i in range(len(new_relation["valueOf"])):
-            if new_relation["valueOf"][i][1] == "bill1":
-                new_relation["valueOf"][i] = (0, "bill1")
-        world_state._rel = new_relation
 
-    def mutate_reset_order(self):
-        world_state = self.world_state_frame()
-        new_relation = copy.deepcopy(world_state._rel)
-        new_relation["ordered"] = []
+        subtract = 0
+        for who_item in self.ordered_but_not_delivered():
+            new_relation["ordered"].remove((who_item[0], who_item[1], None))
+            order_type = instance_of_what(self, who_item[1])
+            if order_type in self.sys["prices"]:
+                subtract += self.sys["prices"][order_type]
         world_state._rel = new_relation
+        self.mutate_add_bill(-subtract)
+
+    # def mutate_reset_bill(self):
+    #     world_state = self.world_state_frame()
+    #     new_relation = copy.deepcopy(world_state._rel)
+    #     for i in range(len(new_relation["valueOf"])):
+    #         if new_relation["valueOf"][i][1] == "bill1":
+    #             new_relation["valueOf"][i] = (0, "bill1")
+    #     world_state._rel = new_relation
+    #
+    # def mutate_reset_order(self):
+    #     world_state = self.world_state_frame()
+    #     new_relation = copy.deepcopy(world_state._rel)
+    #     new_relation["ordered"] = []
+    #     world_state._rel = new_relation
 
     def mutate_set_response_state(self, new_state):
         world_state = self.world_state_frame()
@@ -762,15 +776,45 @@ class WorldState(State):
 
     def get_reprompt(self, return_first=True):
         prefix = " \n" if return_first else ""
-        if self.sys["responseState"] == "something_to_eat":
-            return prefix + "Waiter: Can I get you something to eat?"
         if self.sys["responseState"] == "anticipate_party_size":
-            return prefix + "Waiter: How many in your party?"
-        if self.sys["responseState"] == "anything_else":
-            return prefix + "Waiter: Can I get you something else before I put your order in?"
+            return prefix + "Host: How many in your party?"
+        if self.sys["responseState"] == "anticipate_dish":
+            if [item for item in self.ordered_but_not_delivered()]:
+                return prefix + "Waiter: Can I get you anything else?"
+            else:
+                return prefix + "Waiter: What can I get you?"
         if self.sys["responseState"] == "way_to_pay":
-            return prefix + "Waiter: So did you want to pay with cash or card?"
-        return ""
+            return prefix + "Waiter: So, do you want to pay with cash or card?"
+        if self.sys["responseState"] in ["initial"]:
+            return ""
+        assert False, f"Unknown state {self.sys['responseState']}"
+
+    def have_food(self):
+        for who_item in self.all_rel("have"):
+            if is_user_type(who_item[0]) and sort_of(self, who_item[1], ["food"]):
+                yield who_item
+
+    def ordered_food(self):
+        for who_item in self.all_rel("ordered"):
+            if sort_of(self, who_item[1], ["food"]):
+                yield who_item
+
+    def ordered_but_not_delivered(self):
+        for who_item in self.all_rel("ordered"):
+            if who_item[1] in rel_objects(self, who_item[0], "have"):
+                # They already got this item
+                continue
+            else:
+                yield who_item
+
+    def only_ordered_not_delivered_water_or_menus(self):
+        has_items = False
+        for item in self.ordered_but_not_delivered():
+            has_items = True
+            if not sort_of(self, item[1], ["water", "menu"]):
+                return False
+
+        return has_items
 
     def user_ordered_veg(self):
         veggies = list(all_instances_and_spec(self, "veggie"))
@@ -800,10 +844,10 @@ class WorldState(State):
         for i in wanted_tuple:
             total_price += self.sys["prices"][instance_of_what(self, i)]
 
-        if total_price + self.bill_total() > 15:
+        if total_price + self.bill_total() > 20:
             return [RespondOperation(
                 "Son: Wait, we've spent $" + str(self.bill_total()) + " and all that food costs $" + str(
-                    total_price) + " so if we get all that, we won't be able to pay for it with $15." + self.get_reprompt())]
+                    total_price) + " so if we get all that, we won't be able to pay for it with $20." + self.get_reprompt())]
 
         for i in wanted_tuple:
             if "ordered" in self.rel.keys():
@@ -816,7 +860,7 @@ class WorldState(State):
                     RespondOperation("Sorry, we only have one" + i + ". Please try again." + self.get_reprompt())]
 
         toReturn = [RespondOperation("Excellent Choices! Can I get you anything else?"),
-                    ResponseStateOp("anything_else")]
+                    ResponseStateOp("anticipate_dish")]
         for i in wanted_tuple:
             toReturn += [AddRelOp(("user", "ordered", i)), AddBillOp(i)]
         return toReturn
@@ -869,7 +913,7 @@ class WorldState(State):
         return self.find_plan(context, [('complete_order', context)])
 
     def yes(self):
-        if self.sys["responseState"] in ["anything_else", "something_to_eat"]:
+        if self.sys["responseState"] in ["anticipate_dish"]:
             return [RespondOperation("Ok, what?"), ResponseStateOp("anticipate_dish")]
         else:
             return [RespondOperation("Host: Hmm. I didn't understand what you said." + self.get_reprompt())]
@@ -888,7 +932,7 @@ class WorldState(State):
                 else:
                     return [RespondOperation("Waiter: Hmm. I didn't understand what you said." + self.get_reprompt())]
 
-        elif self.sys["responseState"] in ["anticipate_dish", "anything_else", "initial"]:
+        elif self.sys["responseState"] in ["anticipate_dish", "initial"]:
             return self.handle_world_event(context, ["user_wants", x])
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:

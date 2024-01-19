@@ -11,7 +11,7 @@
         },
         {
             "Command": "we'd like a table for 2'",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "4a436537-1f34-4de5-8e2b-a4cb177c7605"
@@ -39,7 +39,7 @@
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "you did not order a steak  \nWaiter: Can I get you something to eat?",
+            "Expected": "you did not order a steak  \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "13ce708f-ec2a-41f8-b2dd-416711a3b810"
@@ -60,42 +60,42 @@
         },
         {
             "Command": "What can I have?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu? Here it is. The waiter walks off.\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\nYou read the menu and then the waiter returns.\nWaiter: What can I get you?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x5)))",
             "Enabled": true,
             "ID": "9a9c9df7-aa60-4471-8afc-113bc4b32488"
         },
         {
             "Command": "I want a steak and a soup",
-            "Expected": "Waiter: steak is an excellent choice!\nSon: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: steak is an excellent choice!\nSon: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you anything else?",
             "Tree": "_a_q(x13,_steak_n_1(x13),_a_q(x18,_soup_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
             "Enabled": true,
             "ID": "95ee387b-e08d-4263-b95e-a8f250546df3"
         },
         {
             "Command": "Can I have a steak?",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "30071c2b-e13e-4ff0-9fa8-fea5b58b1873"
         },
         {
             "Command": "What did I order?",
-            "Expected": "steak",
+            "Expected": "2 steak\nmenu",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e0b92b58-14c2-40f2-a985-d36a356ed8dd"
         },
         {
             "Command": "I ordered the steak",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "10f63f95-11f4-48d0-b722-94c8bc3e5d53"
         },
         {
             "Command": "I ordered 2 steaks",
-            "Expected": "There are less than 2 2 steak",
+            "Expected": "Yes, that is true.",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "e966e46f-9893-46de-a53c-efc026cafe28"
@@ -116,77 +116,77 @@
         },
         {
             "Command": "I will have a steak",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "76c09b78-40f9-4d01-ab0f-c7b9bd8946d9"
         },
         {
             "Command": "I will get the chicken",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_chicken_n_1(x8),_get_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "036118de-a9ab-429c-8d63-e65414a98b78"
         },
         {
             "Command": "I will have any meat",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_any_q(x8,_meat_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "9a2a9945-3e16-4725-bf0a-b56918ade68a"
         },
         {
             "Command": "I'll take any meat dish",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "udef_q(x14,_meat_n_1(x14),pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8,i19), compound(e13,x8,x14)],_take_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "a9bc7ac2-87d1-4d2d-b8f4-07b73c699cdd"
         },
         {
             "Command": "I will take the chicken",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_chicken_n_1(x8),_take_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d8ca1c3b-7a12-4913-8427-67c51d28ecb0"
         },
         {
             "Command": "Let's go with two orders of the Steak, please",
-            "Expected": "Son: Wait, we already spent $10 so if we get 2 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: I'm sorry, we don't have enough steak for your order.\nWaiter: Can I get you anything else?",
             "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[[_please_a_1(e22,e2)], _want_v_1(e2,x5,x10)]))",
             "Enabled": true,
             "ID": "676c8863-4d33-4570-8141-145bbff1b417"
         },
         {
             "Command": "Let's have the chicken",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x9,_chicken_n_1(x9),pronoun_q(x5,pron(x5),_have_v_1(e2,x5,x9)))",
             "Enabled": true,
             "ID": "05db2218-cea5-4fcf-bd7d-25641a7261c8"
         },
         {
             "Command": "Let's go with the chicken",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x10,_chicken_n_1(x10),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x10)))",
             "Enabled": true,
             "ID": "ba113d31-5097-4ab5-a93b-a48b2b26ccdd"
         },
         {
             "Command": "I want an order of the chicken",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 chicken, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x13,_chicken_n_1(x13),pronoun_q(x3,pron(x3),_a_q(x8,_order_n_of(x8,x13),_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "a44c27d7-6a35-4828-9925-0da3ee1f6cf6"
         },
         {
             "Command": "What do the steak and the soup cost?",
-            "Expected": "steak : 10 dollars\nsoup : 4 dollars",
+            "Expected": "steak : 10 dollars\nsoup : 4 dollars\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x5,thing(x5),_the_q(x13,_steak_n_1(x13),_the_q(x18,_soup_n_1(x18),udef_q(x3,_and_c(x3,x13,x18),_cost_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "988a743e-3192-46a0-8d3c-e20eaf3cfb4d"
         },
         {
             "Command": "What will the steak cost?",
-            "Expected": "steak : 10 dollars",
+            "Expected": "steak : 10 dollars\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x5,thing(x5),_the_q(x3,_steak_n_1(x3),_cost_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "a723cb98-7894-4702-a56d-4850d0c8f5c4"
@@ -242,42 +242,42 @@
         },
         {
             "Command": "we'd like a table for 2'",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "4f7dd64f-df78-46b5-8700-3b4e2c5097f5"
         },
         {
             "Command": "What are the specials?",
-            "Expected": "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you something to eat?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),_the_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "169a1146-bc00-4e1c-936c-cc2b903e3f46"
         },
         {
             "Command": "What specials do you have?",
-            "Expected": "soup\nsalad\npork",
+            "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"
         },
         {
             "Command": "What are your specials?",
-            "Expected": "soup\nsalad\npork",
+            "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_special_n_1(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
             "Enabled": true,
             "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
         },
         {
             "Command": "Which dishes are specials?",
-            "Expected": "pork\nsoup\nsalad",
+            "Expected": "pork\nsoup\nsalad\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "082d7d3e-6087-44b3-907b-3b1c6f46348c"
         },
         {
             "Command": "Which two dishes are specials?",
-            "Expected": "pork\nsoup\n(among others)",
+            "Expected": "pork\nsoup\n(among others)\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e8e03861-59c8-4f05-b5db-c88d3646a572"
@@ -291,49 +291,49 @@
         },
         {
             "Command": "we'd like a table for 2'",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "b4d472d4-4e03-4787-9360-8cf5a2920847"
         },
         {
             "Command": "I want a salad",
-            "Expected": "Son: Wait, let's not order salad before we know how much it costs.\nWaiter: Can I get you something to eat?",
+            "Expected": "Son: Wait, let's not order salad before we know how much it costs.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_salad_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4ee8d866-b726-444f-9abd-ba2db97f8caf"
         },
         {
             "Command": "I'd like a steak'",
-            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "2e558271-ef87-41e2-a5ba-d67ea0b5e4a3"
         },
         {
             "Command": "I'd like a steak'",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "ac9ca7b7-60b3-4d02-8b03-9fa62fb80095"
         },
         {
             "Command": "My son would like a salmon",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 salmon, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 salmon, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x9,pron(x9),_a_q(x18,_salmon_n_1(x18),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x18))))",
             "Enabled": true,
             "ID": "603ebce5-dcab-45a3-abdd-df45f4106a1b"
         },
         {
             "Command": "Johnny would love the salmon",
-            "Expected": "Son: Wait, we already spent $10 so if we get 1 salmon, we won't be able to pay for it with $15.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 salmon, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x12,_salmon_n_1(x12),proper_q(x3,named(Johnny,x3),_want_v_1(e2,x3,x12)))",
             "Enabled": true,
             "ID": "99d72ecb-d330-4bc9-bc81-17c870cf26c8"
         },
         {
             "Command": "Can we get one soup for Johnny, please?",
-            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you anything else?",
             "Tree": "udef_q(x11,proper_q(x19,named(Johnny,x19),[_soup_n_1(x11), _for_p(e18,x11,x19), card(1,e17,x11)]),pronoun_q(x3,pron(x3),[_please_a_1(e25,e2), _get_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "b3589252-e0bf-4534-8bfa-c2d079bc4700"
@@ -347,14 +347,14 @@
         },
         {
             "Command": "we'd like a table for 2'",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "8d7e82ba-9d89-46b2-8532-8ca326bea794"
         },
         {
             "Command": "I would like the salmon",
-            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x11,_salmon_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "3003a1eb-14b6-4dfe-9fe9-496d3a3e44a1"
@@ -375,42 +375,42 @@
         },
         {
             "Command": "we'd like a table for 2'",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "5463c147-27e5-4920-934b-c6bfddc3741c"
         },
         {
             "Command": "How much is the soup?",
-            "Expected": "4 dollars",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "0c66d40d-000d-4f44-b15b-ec79e5bd018a"
         },
         {
             "Command": "How many dollars is the soup?",
-            "Expected": "4 dollars",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
             "Tree": "which_q(x9,abstr_deg(x9),_the_q(x3,_soup_n_1(x3),count(e14,x9,x5,udef_q(x5,_dollar_n_1(x5,u16),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "bf8680e8-0acf-42da-93c5-defa879f7f10"
         },
         {
             "Command": "How much is the salad?",
-            "Expected": "3 dollars",
+            "Expected": "3 dollars\nWaiter: What can I get you?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_salad_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "5d7616ff-0fe6-482a-a57b-67ea07f9cf72"
         },
         {
             "Command": "I would like the salad",
-            "Expected": "Waiter: salad is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: salad is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x11,_salad_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "7a84fe83-a358-4884-932d-cf00e69eb5bb"
         },
         {
             "Command": "I would like the soup",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you something else before I put your order in?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "ad7a56d1-f75d-4cef-9649-99aa5aaae31d"
@@ -438,14 +438,14 @@
         },
         {
             "Command": "How much are the dishes?",
-            "Expected": "10 dollars\n7 dollars\n12 dollars\n8 dollars\n4 dollars\n3 dollars",
+            "Expected": "10 dollars\n7 dollars\n12 dollars\n8 dollars\n4 dollars\n3 dollars\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_dish_n_of(x3,i20),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "e13e91ec-7395-4c36-a509-3296ec3d427c"
         },
         {
             "Command": "How much are the specials?",
-            "Expected": "4 dollars\n3 dollars\n8 dollars",
+            "Expected": "4 dollars\n3 dollars\n8 dollars\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_special_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "ca595830-25f1-4b1b-a74e-3d47e4515acd"
@@ -459,15 +459,15 @@
         },
         {
             "Command": "a table for 2",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there, can I get you something to eat?",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
             "ID": "e679d41e-af04-4f80-8192-5cbf08eb33af"
         },
         {
-            "Command": "I want 2 steaks",
-            "Expected": "Son: Wait, we already spent $0 so if we get 2 steak, we won't be able to pay for it with $15.\nWaiter: Can I get you something to eat?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_want_v_1(e2,x3,x8)))",
+            "Command": "I want 3 steaks",
+            "Expected": "Son: Wait, we already spent $0 so if we get 3 steak, we won't be able to pay for it with $20.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(3,e14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f412ffe0-207b-4b36-b8a4-b4e541ff3817"
         },
@@ -479,9 +479,9 @@
             "ID": "18d4ddaa-a0b5-4c6e-be76-f52dc41dda77"
         },
         {
-            "Command": "I ordered 2 steaks",
-            "Expected": "you did not order 2 steak  \nWaiter: Can I get you something to eat?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
+            "Command": "I ordered 3 steaks",
+            "Expected": "you did not order 3 steak  \nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(3,e14,x8)],_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "326fcaba-7595-4143-9309-9142c06b5607"
         },

@@ -2604,7 +2604,7 @@ def generate_custom_message(tree_info, error_term):
 def reset():
     initial_state = WorldState({},
                                {"prices": {"salad": 3, "steak": 10, "soup": 4, "salmon": 12,
-                                           "chicken": 7, "pork": 8},
+                                           "chicken": 7, "pork": 8, "water": 0},
                                 "responseState": "initial"
                                 })
 
@@ -2628,6 +2628,9 @@ def reset():
 
     initial_state = initial_state.add_rel("person", "specializes", "thing")
     initial_state = initial_state.add_rel("son", "specializes", "person")
+
+    initial_state = initial_state.add_rel("drink", "specializes", "thing")
+    initial_state = initial_state.add_rel("water", "specializes", "drink")
 
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("dish", "specializes", "food")
@@ -2686,6 +2689,13 @@ def reset():
     initial_state = initial_state.add_rel("menu3", "instanceOf", "menu")
     initial_state = initial_state.add_rel("restaurant", "have", "menu3")
 
+    initial_state = initial_state.add_rel("water1", "instanceOf", "water")
+    initial_state = initial_state.add_rel("restaurant", "have", "water1")
+    initial_state = initial_state.add_rel("water2", "instanceOf", "water")
+    initial_state = initial_state.add_rel("restaurant", "have", "water2")
+    initial_state = initial_state.add_rel("water3", "instanceOf", "water")
+    initial_state = initial_state.add_rel("restaurant", "have", "water3")
+
     menu_types = ["salmon", "steak", "chicken"]
     special_types = ["soup", "salad", "pork"]
     dish_types = menu_types + special_types
@@ -2734,7 +2744,7 @@ def reset():
     initial_state = initial_state.add_rel("user", "instanceOf", "person")
     initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
-    initial_state = initial_state.add_rel("user", "have", "card")
+    # initial_state = initial_state.add_rel("user", "have", "card")
     initial_state = initial_state.add_rel("user", "heardSpecials", "false")
 
     initial_state = initial_state.add_rel("chicken", "isAdj", "roasted")
@@ -2784,10 +2794,10 @@ if __name__ == '__main__':
 
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
-    print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.\nHost: Hello! How can I help you today?")
+    print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")
     # ShowLogging("Transformer")
     hello_world()

@@ -3,7 +3,7 @@
   - Should it also imply "together" as in "we want a table (together)"
 - 'file1.txt' and 'file2.txt' are in a folder together
 - Don't generate one more if nothing cares
-
+- Make "what is the bill?" work
 - OPTIMIZATION: We would like the menus -> Takes forever
     - /runparse 0,5: We would like the menus
     - every possible combination will fail because the_concept() returns instances and want_v_1() fails for instances
@@ -42,16 +42,16 @@
 - implement "how many vegetarian dishes are there"
 - implement "how many vegetarian dishes do you have?"
 - There should be an exception if lift is called on a function that doesn't have its parameters marked as taking all types of sets
-
+- table for 1 crashes
 - Need to redo how unknown() works to handle sets > 1
-
 - (start) Table (then) Just two, my son Johnny and me.
     - takes forever to get to parse 88,1 which is the first that works
+- "I'll just have a menu" --> means: clear the order and just give me a menu
 
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
-  - Make these work
+  - Make these work:
     - We'd like to start with some water and menus
     - please bring us two glasses of water
     - Let's go to a table, please.

@@ -46,15 +46,15 @@ def describe_analyzed_at_entrance(state, context, analysis):
 
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
-        new_methods.append(('respond', context, "If you'd like to hear about our menu items, you'll need to have a seat." + state.get_reprompt()))
+        new_methods.append(('respond', context, "Host: If you'd like to hear about our menu items, you'll need to have a seat." + state.get_reprompt()))
 
     elif len(analysis["Bills"]) > 0:
-        new_methods.append(('respond', context, "Let's talk about the bill once you've finished eating." + state.get_reprompt()))
+        new_methods.append(('respond', context, "Waiter: Let's talk about the bill once you've finished eating." + state.get_reprompt()))
 
     else:
         for item in analysis["Others"]:
             if isinstance(item, Measurement) and item.measurement_type == "dollar":
-                new_methods.append(('respond', context, "Let's talk about prices once you've been seated." + state.get_reprompt()))
+                new_methods.append(('respond', context, "Host: Let's talk about prices once you've been seated." + state.get_reprompt()))
 
             else:
                 new_methods.insert(0, ('describe_item', context, item))
@@ -84,7 +84,8 @@ def describe_analyzed_at_table(state, context, analysis):
     if len(analysis["MenuItems"]) > 0 and not has_menu:
         # Describe the menu if the user hasn't heard it and they ask a question
         # that results in any number of menu items being generated
-        new_methods.append(("get_menu", context, [["user"]], 1))
+        new_methods += [("get_menu", context, [["user"]], 1),
+                        ('reprompt', context)]
         return new_methods
 
     analysis_specials_count = len(analysis["Specials"])
@@ -92,7 +93,7 @@ def describe_analyzed_at_table(state, context, analysis):
         if not heard_specials:
             # If we are being ask to describe any specials and the user hasn't heard of them yet,
             # give the special, detailed description
-            new_methods.append(('respond', context, "Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+            new_methods.append(('respond', context, "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
             new_methods.append(('delete_rel', context, "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', context, "user", "heardSpecials", "true"))
             return new_methods
@@ -104,7 +105,8 @@ def describe_analyzed_at_table(state, context, analysis):
                 # the long version, give a terser response
                 new_methods.append(('respond',
                                     context,
-                                    "So again, we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+                                    "Waiter: So again, we have tomato soup, green salad, and smoked pork."),
+                                   ('reprompt', context))
                 return new_methods
 
     rel = list(state.all_rel("have"))
@@ -122,7 +124,8 @@ def describe_analyzed_at_table(state, context, analysis):
                     else:
                         new_methods.append(('describe_item', context, j))
 
-    return new_methods + [('respond_has_more', context, "(among others)", True)]
+    return new_methods + [('respond_has_more', context, "(among others)", True),
+                          ('reprompt', context)]
 
 
 task_methods.append(['describe_analyzed', describe_analyzed_at_entrance, describe_analyzed_at_table])
@@ -161,6 +164,16 @@ def describe_item(state, context, what):
 
 task_methods.append(['describe_item', describe_item_list, describe_item])
 
+
+def oxford_comma(words):
+    if isinstance(words, str):
+        return words
+    if len(words) == 1:
+        return words[0]
+    elif len(words) == 2:
+        return '{} and {}'.format(words[0], words[1])
+    else:
+        return '{}, and {}'.format(', '.join(words[:-1]), words[-1])
 
 def convert_to_english(state, what):
     if is_concept(what):

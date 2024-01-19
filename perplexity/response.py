@@ -13,9 +13,11 @@ class RespondOperation(object):
         self.response_location = location
         self.show_if_has_more = show_if_has_more
 
+    def __repr__(self):
+        return self.response_string(True if self.show_if_has_more else False)
+
     def apply_to(self, state):
         pass
-
 
     def response_string(self, has_more):
         if self.show_if_has_more is None or (has_more == self.show_if_has_more):

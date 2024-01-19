@@ -32,6 +32,15 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
     return responses, new_state
 
 
+class SetXOperation(object):
+    def __init__(self, x_name, value):
+        self._x_name = x_name
+        self.value = value
+
+    def apply_to(self, state):
+        return state.set_x(self._x_name, self.value)
+
+
 # "class" declares an object-oriented class in Python
 # The parenthesis after the "State" class name surround
 # the object the class derives from (object)

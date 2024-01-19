@@ -3,6 +3,13 @@
     "ResetFunction": "reset",
     "TestItems": [
         {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
+        },
+        {
             "Command": "is the soup vegetarian?",
             "Expected": "Yes.",
             "Tree": "_the_q(x3,_soup_n_1(x3),_vegetarian_a_1(e2,x3))",

@@ -192,8 +192,11 @@ def get_all_metadata_from_function_file(decorated_function):
             cached_files[python_meta_file] = {}
         else:
             with open(python_meta_file, "r") as file:
-                cached_files[python_meta_file] = json.loads(file.read())
-
+                try:
+                    cached_files[python_meta_file] = json.loads(file.read())
+                except Exception as e:
+                    print(f"Error loading {python_meta_file}: {str(e)}")
+                    raise 
     return cached_files[python_meta_file]
 
 
