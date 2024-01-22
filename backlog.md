@@ -47,11 +47,14 @@
 - (start) Table (then) Just two, my son Johnny and me.
     - takes forever to get to parse 88,1 which is the first that works
 - "I'll just have a menu" --> means: clear the order and just give me a menu
+- "We want water and menus" - only gives one menu
 
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
+    - Could I start with ...
+    - I want some water
     - We'd like to start with some water and menus
     - please bring us two glasses of water
     - Let's go to a table, please.

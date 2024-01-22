@@ -6,8 +6,24 @@ import perplexity.execution
 from math import inf
 from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
     VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats, \
-    all_plural_groups_stream
-from perplexity.utilities import at_least_one_generator, get_function
+    all_plural_groups_stream, GroupVariableValues
+from perplexity.utilities import at_least_one_generator, get_function, sentence_force
+
+
+# Used to create new GroupVariableValues() when predications need to create them at runtime
+def create_group_variable_values(context, state_list, variable_name):
+    declared_criteria_list = [data for data in declared_determiner_infos(context, state_list[0])]
+    tree_info = state_list[0].get_binding("tree").value[0]
+    this_sentence_force = sentence_force(tree_info["Variables"])
+    wh_question_variable = perplexity.tree.get_wh_question_variable(tree_info)
+    optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
+    found_constraint = None
+    for constraint in optimized_criteria_list:
+        if constraint.variable_name == variable_name:
+            found_constraint = constraint
+            break
+
+    return GroupVariableValues(found_constraint, state_list, variable_name[0], variable_name)
 
 
 # Yields solutions in a single solution group

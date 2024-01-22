@@ -1561,5 +1561,100 @@
     "_order_n_of": {},
     "_go_v_1": {},
     "_just_a_1": {},
-    "appos": {}
+    "appos": {},
+    "_start_v_1_request": {
+        "Phrases": {
+            "I want to start": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_start_v_1_with_request": {
+        "Phrases": {
+            "I would like to start with a steak": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I want to start with a steak": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "event_replace": {},
+    "solution_group__start_v_1_request": {
+        "PropertiesFrom": "solution_group__start_v_1_request"
+    },
+    "_start_v_1_order": {
+        "Phrases": {
+            "Let's start with a steak": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I will start with a steak": {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_start_v_1_order_group": {
+        "PropertiesFrom": "_start_v_1_order_group"
+    }
 }

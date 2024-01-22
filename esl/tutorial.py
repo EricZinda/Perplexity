@@ -2,10 +2,12 @@ import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
 from perplexity.generation import english_for_delphin_variable
-from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
+from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication, GroupVariableValues
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
 from perplexity.set_utilities import Measurement
+from perplexity.solution_groups import declared_determiner_infos, optimize_determiner_infos, \
+    create_group_variable_values
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
@@ -14,6 +16,7 @@ from perplexity.tree import find_predication_from_introduced, get_wh_question_va
     gather_scoped_variables_from_tree_at_index
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
+from perplexity.variable_binding import VariableBinding, VariableData
 from perplexity.vocabulary import Predication, EventOption, Transform, ValueSize
 from esl.worldstate import *
 
@@ -113,6 +116,7 @@ def min_from_variable_group(variable_group):
 # _a_q(x10,RSTR,BODY)               ┌────── pron(x5)
 #                 └─ pronoun_q(x5,RSTR,BODY)
 #                                        └─ _want_v_1(e2, x5, x10)
+
 
 # Change SF:comm to SF:prop
 @Transform(vocabulary)
@@ -374,27 +378,31 @@ def want_removal_paytype_transformer():
                             removed=["_want_v_1", target], production=production)
 
 
+# TODO: allow the x in target(e, x) to be a conjunction
+# Convert "I would like to x" to "I x_request x"
+@Transform(vocabulary)
+def would_like_removal_intransitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1"})
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+    target_predication = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=["target_e", "x1"])
+    target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", target],
+                                  args_capture=[None, None, None])
+    would_match = TransformerMatch(name_pattern="_would_v_modal",
+                                   args_pattern=["e", like_match],
+                                   args_capture=["e1", None],
+                                   removed=["_would_v_modal", "_like_v_1", "_love_v_1", target_predication],
+                                   production=conjuct_production)
+    return would_match
+
+
 # Convert "I would like to x y" to "I x_request y"
 @Transform(vocabulary)
 def would_like_removal_transitive_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
-    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", target],
-                                  args_capture=[None, None, None])
-    would_match = TransformerMatch(name_pattern="_would_v_modal",
-                                   args_pattern=["e", like_match],
-                                   args_capture=["e1", None],
-                                   removed=["_would_v_modal", "_like_v_1", "_love_v_1", target],
-                                   production=production)
-    return would_match
-
-
-# Convert "I would like to x" to "I x_request x"
-@Transform(vocabulary)
-def would_like_removal_intransitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
     would_match = TransformerMatch(name_pattern="_would_v_modal",
@@ -416,6 +424,17 @@ def want_removal_transitive_transformer():
 
 
 # ***************************
+# This fake predication is used for when predications are removed during transformations
+# but we need to make events equal each other so that information on them transfers through
+# Start with a u variable so it doesn't look like it is introducing the new event
+@Predication(vocabulary, names=["event_replace"])
+def event_replace(context, state, u_ununused, e_new_binding, e_replaced_binding):
+    if e_replaced_binding.value is not None:
+        for item in e_replaced_binding.value.items():
+            state = state.add_to_e(e_new_binding.variable.name, item[0], item[1])
+
+    yield state
+
 
 @Predication(vocabulary, names=["count"])
 def count(context, state, e_binding, x_total_count_binding, x_item_to_count_binding, h_scopal_binding):
@@ -1153,7 +1172,9 @@ def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
 
 @Predication(vocabulary, names=("_with_p",))
 def _with_p(context, state, e_introduced_binding, e_main, x_binding):
-    yield state.add_to_e(e_main.variable.name, "With", {"Value": x_binding.value[0], "Originator": context.current_predication_index()})
+    yield state.add_to_e(e_main.variable.name, "With", {"VariableName": x_binding.variable.name,
+                                                        "Value": x_binding.value[0],
+                                                        "Originator": context.current_predication_index()})
 
 
 # Can I pay the bill?
@@ -1597,25 +1618,70 @@ def _thanks_a_1(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)
 
 
-# @Predication(vocabulary,
-#              names=["_go_v_1"])
-# def _go_v_1(context, state, e_binding, x_actor_binding):
-#     if is_concept(x_actor_binding):
-#         context.report_error(["formNotUnderstood", "_go_v_1"])
-#         return
-#
-#     def bound(x_actor):
-#         if is_user_type(x_actor):
-#             return True
-#
-#         else:
-#             context.report_error(["unexpected", state.get_reprompt()])
-#             return
-#
-#     def unbound():
-#         yield "user"
-#
-#     yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
+# Simply interpret "start with" as "want
+@Predication(vocabulary,
+             names=["_start_v_1_request"],
+             phrases={
+                 "I would like to start with a steak":  {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "I want to start with a steak":        {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                 # ,
+                 # "Could I start with a steak?": None
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ],
+             arguments=[("e",), ("x", ValueSize.all)],
+             handles=[("With", EventOption.required)])
+def _start_v_1_with_request(context, state, e_binding, x_actor_binding):
+    variable_data = VariableData(e_binding.value["With"]["VariableName"])
+    x_object_binding = VariableBinding(variable_data, (e_binding.value["With"]["Value"], ))
+
+    variable_data_e = VariableData(e_binding.variable.name)
+    want_e_binding = VariableBinding(variable_data_e, copy.deepcopy(e_binding.value))
+    want_e_binding.value.pop("With")
+
+    for item in _want_v_1(context, state, want_e_binding, x_actor_binding, x_object_binding):
+        yield item
+
+
+@Predication(vocabulary,
+             names=["solution_group__start_v_1_request"],
+             properties_from=_start_v_1_with_request)
+def solution_group__start_v_1_request(context, state_list, e_introduced_binding_list, x_actor_variable_group):
+    x_what_variable_name = e_introduced_binding_list.solution_values[0].value["With"]["VariableName"]
+    yield from want_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, create_group_variable_values(context, state_list, x_what_variable_name))
+
+
+@Predication(vocabulary,
+             names=["_start_v_1"],
+             phrases={
+                 "Let's start with a steak": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "I will start with a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                ],
+             arguments=[("e",), ("x", ValueSize.all)],
+             handles=[("With", EventOption.required)])
+def _start_v_1_order(context, state, e_binding, x_actor_binding):
+    variable_data = VariableData(e_binding.value["With"]["VariableName"])
+    x_object_binding = VariableBinding(variable_data, (e_binding.value["With"]["Value"],))
+
+    variable_data_e = VariableData(e_binding.variable.name)
+    have_e_binding = VariableBinding(variable_data_e, copy.deepcopy(e_binding.value))
+    have_e_binding.value.pop("With")
+
+    yield from _have_v_1_order(context, state, have_e_binding, x_actor_binding, x_object_binding)
+
+
+@Predication(vocabulary,
+             names=["solution_group__start_v_1"],
+             properties_from=_start_v_1_order)
+def _start_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group):
+    x_what_variable_name = e_variable_group.solution_values[0].value["With"]["VariableName"]
+    yield from _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group, create_group_variable_values(context, state_list, x_what_variable_name))
+
 
 
 @Predication(vocabulary,
@@ -2794,8 +2860,8 @@ if __name__ == '__main__':
 
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
-    # ShowLogging("Transformer")
+    ShowLogging("SolutionGroups")
+    ShowLogging("Transformer")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")

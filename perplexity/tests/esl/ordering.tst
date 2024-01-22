@@ -10,9 +10,9 @@
             "ID": "a5589109-1dc0-4fb4-b4ee-eda0ab9ce3d9"
         },
         {
-            "Command": "we'd like a table for 2'",
+            "Command": "we'd like to start with a table",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Tree": "_a_q(x15,_table_n_1(x15),pronoun_q(x3,pron(x3),[_with_p(e14,e13,x15), event_replace(u99,e2,e13), _start_v_1_request(e2,x3)]))",
             "Enabled": true,
             "ID": "4a436537-1f34-4de5-8e2b-a4cb177c7605"
         },
@@ -66,9 +66,9 @@
             "ID": "9a9c9df7-aa60-4471-8afc-113bc4b32488"
         },
         {
-            "Command": "I want a steak and a soup",
+            "Command": "I'd like to start with a steak and a soup",
             "Expected": "Waiter: steak is an excellent choice!\nSon: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you anything else?",
-            "Tree": "_a_q(x13,_steak_n_1(x13),_a_q(x18,_soup_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
+            "Tree": "udef_q(x15,_a_q(x20,_steak_n_1(x20),_a_q(x25,_soup_n_1(x25),_and_c(x15,x20,x25))),pronoun_q(x3,pron(x3),[_with_p(e14,e13,x15), event_replace(u99,e2,e13), _start_v_1_request(e2,x3)]))",
             "Enabled": true,
             "ID": "95ee387b-e08d-4263-b95e-a8f250546df3"
         },
@@ -122,6 +122,13 @@
             "ID": "76c09b78-40f9-4d01-ab0f-c7b9bd8946d9"
         },
         {
+            "Command": "I'll start with a steak",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
+            "Tree": "_a_q(x9,_steak_n_1(x9),pronoun_q(x3,pron(x3),[_with_p(e8,e2,x9), _start_v_1(e2,x3)]))",
+            "Enabled": true,
+            "ID": "d0bd68b7-26e9-4575-ac55-49b7178169b1"
+        },
+        {
             "Command": "I will get the chicken",
             "Expected": "Son: Wait, we already spent $20 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_chicken_n_1(x8),_get_v_1(e2,x3,x8)))",
@@ -152,7 +159,7 @@
         {
             "Command": "Let's go with two orders of the Steak, please",
             "Expected": "Waiter: I'm sorry, we don't have enough steak for your order.\nWaiter: Can I get you anything else?",
-            "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[[_please_a_1(e22,e2)], _want_v_1(e2,x5,x10)]))",
+            "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[_please_a_1(e22,e2), _want_v_1(e2,x5,x10)]))",
             "Enabled": true,
             "ID": "676c8863-4d33-4570-8141-145bbff1b417"
         },
@@ -417,7 +424,7 @@
         },
         {
             "Command": "What did I order?",
-            "Expected": "soup\nsalad",
+            "Expected": "salad\nsoup",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f04f7d4e-c918-4d46-81f0-a4bf4044dae4"

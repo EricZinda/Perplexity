@@ -108,7 +108,10 @@ class ConjunctionProduction(object):
             if isinstance(item, str):
                 value = replace_str_captures(item, captures)
                 if value != "":
-                    production_list.append(value)
+                    if isinstance(value, list):
+                        production_list += value
+                    else:
+                        production_list.append(value)
             elif hasattr(item, "create"):
                 production_list.append(item.create(vocabulary, state, variables, captures, current_index))
             else:
@@ -179,7 +182,10 @@ class ConjunctionMatchTransformer(object):
     # When called with a root transformer will either return None or a new predication
     # Otherwise returns True for a match, or False
     def match_tree(self, transformer_search, conjunction, variables, capture, metadata, current_index):
-        if not isinstance(conjunction, list) or (not self.extra_conjuncts_capture and len(self.transformer_list) != len(conjunction)):
+        if not isinstance(conjunction, list):
+            conjunction = [conjunction]
+
+        if not self.extra_conjuncts_capture and len(self.transformer_list) != len(conjunction):
             return False
 
         unmatched_indices = [x for x in range(len(conjunction))]
@@ -342,6 +348,9 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
     # When called with a root transformer will either return None or a new predication
     # Otherwise returns True for a match, or False
     def transformer_search(scopal_arg, variables, transformer, capture, metadata, current_index):
+        if isinstance(transformer, ConjunctionMatchTransformer) and not isinstance(scopal_arg, list):
+            scopal_arg = [scopal_arg]
+
         if isinstance(scopal_arg, list):
             if isinstance(transformer, ConjunctionMatchTransformer):
                 if transformer.is_root():
