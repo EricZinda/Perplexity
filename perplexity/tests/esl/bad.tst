@@ -96,14 +96,14 @@
         {
             "Command": "I can sit down",
             "Expected": "I'm not sure what that means.",
-            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
+            "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _sit_v_down_able(e2,x3)])",
             "Enabled": true,
             "ID": "76780ce0-5445-401f-85d5-aac3fba9bd12"
         },
         {
             "Command": "I can sit",
             "Expected": "I'm not sure what that means.",
-            "Tree": "pronoun_q(x3,pron(x3),_sit_v_1_able(e2,x3))",
+            "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _sit_v_1_able(e2,x3)])",
             "Enabled": true,
             "ID": "9295777f-f7fe-4346-93d3-217accf792bb"
         },

@@ -40,7 +40,7 @@
         {
             "Command": "can i sit down?",
             "Expected": "Host: How many in your party?",
-            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
+            "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _sit_v_down_able(e2,x3)])",
             "Enabled": true,
             "ID": "18ac5796-4c38-4731-869d-2937736ac2b4"
         },

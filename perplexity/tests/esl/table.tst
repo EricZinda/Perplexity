@@ -38,6 +38,20 @@
             "ID": "5bf54692-5d9b-408c-8b19-bb6f986082e2"
         },
         {
+            "Command": "Could I start with a table?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "_a_q(x12,_table_n_1(x12),pronoun_q(x3,pron(x3),[_with_p(e11,e10,x12), event_replace(u99,e2,e10), _start_v_1_able(e2,x3)]))",
+            "Enabled": true,
+            "ID": "fe485f27-c4ce-46c7-ad85-d6a3a3f3ced8"
+        },
+        {
+            "Command": "Can I start with a table?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "_a_q(x12,_table_n_1(x12),pronoun_q(x3,pron(x3),[_with_p(e11,e10,x12), event_replace(u99,e2,e10), _start_v_1_able(e2,x3)]))",
+            "Enabled": true,
+            "ID": "c86ca27d-1d95-4bc4-be3b-2d322b4aab64"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
@@ -103,7 +117,7 @@
         {
             "Command": "Can I sit?",
             "Expected": "Host: How many in your party?",
-            "Tree": "pronoun_q(x3,pron(x3),_sit_v_1_able(e2,x3))",
+            "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _sit_v_1_able(e2,x3)])",
             "Enabled": true,
             "ID": "efc994a2-94b6-481e-9f75-c09efc44d352"
         },
@@ -131,7 +145,7 @@
         {
             "Command": "Can we sit down?",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x3,pron(x3),_sit_v_down_able(e2,x3))",
+            "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _sit_v_down_able(e2,x3)])",
             "Enabled": true,
             "ID": "1a4bbc05-6aee-4462-b9fb-c944eb2d5257"
         },

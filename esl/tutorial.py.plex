@@ -1597,6 +1597,20 @@
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            "Could I start with a steak?": {
+                "SF": "ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "Can I start with a steak?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
         },
         "Properties": [
@@ -1609,6 +1623,20 @@
             },
             {
                 "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
                 "TENSE": "tensed",
                 "MOOD": "indicative",
                 "PROG": "-",

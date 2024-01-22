@@ -221,9 +221,17 @@ def would_like_to_want_transformer():
 @Transform(vocabulary)
 def can_to_able_intransitive_transformer():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
-    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal", target], production=production)
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+
+    target_predication = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=["target_e", "x1"])
+    target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+
+    return TransformerMatch(name_pattern="_can_v_modal",
+                            args_pattern=["e", target],
+                            args_capture=["e1", None],
+                            removed=["_can_v_modal", target],
+                            production=conjuct_production)
 
 
 # Convert "can I have a table/steak/etc?" or "what can I have?" or "can I get a table"
@@ -268,9 +276,16 @@ def can_paytype_transformer():
 @Transform(vocabulary)
 def could_to_able_intransitive_transformer():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
-    return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_could_v_modal", target], production=production)
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+
+    target_predication = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=["target_e", "x1"])
+    target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+    return TransformerMatch(name_pattern="_could_v_modal",
+                            args_pattern=["e", target],
+                            args_capture=["e1", None],
+                            removed=["_could_v_modal", target],
+                            production=conjuct_production)
 
 
 # Convert "can I have a table/steak/etc?" or "what can I have?" or "can I get a table"
@@ -1276,6 +1291,12 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
              ],
              arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    yield from want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
+
+
+# This is its own raw function so it can be called by many different predications and not get checked
+# for verb properties (like sentence_force)
+def want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if is_user_type(x_actor):
             return True
@@ -1301,13 +1322,17 @@ def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
                     yield i[1]
 
     yield from lift_style_predication_2(context, state, x_actor_binding, x_object_binding, criteria_bound,
-                                      wanters_of_obj, wanted_of_actor)
+                                        wanters_of_obj, wanted_of_actor)
 
 
 @Predication(vocabulary,
              names=["solution_group__want_v_1"],
              properties_from=_want_v_1)
 def want_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+    yield from want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)
+
+
+def want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
     if is_concept(x_actor_variable_group.solution_values[0]):
         # We don't want to deal with conceptual actors, fail this solution group
@@ -1620,15 +1645,16 @@ def _thanks_a_1(context, state, i_binding, h_binding):
 
 # Simply interpret "start with" as "want
 @Predication(vocabulary,
-             names=["_start_v_1_request"],
+             names=["_start_v_1_request", "_start_v_1_able"],
              phrases={
                  "I would like to start with a steak":  {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "I want to start with a steak":        {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-                 # ,
-                 # "Could I start with a steak?": None
+                 "I want to start with a steak":        {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "Could I start with a steak?":         {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "Can I start with a steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
-                {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                {'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ],
              arguments=[("e",), ("x", ValueSize.all)],
              handles=[("With", EventOption.required)])
@@ -1640,16 +1666,16 @@ def _start_v_1_with_request(context, state, e_binding, x_actor_binding):
     want_e_binding = VariableBinding(variable_data_e, copy.deepcopy(e_binding.value))
     want_e_binding.value.pop("With")
 
-    for item in _want_v_1(context, state, want_e_binding, x_actor_binding, x_object_binding):
+    for item in want_v_1_helper(context, state, want_e_binding, x_actor_binding, x_object_binding):
         yield item
 
 
 @Predication(vocabulary,
-             names=["solution_group__start_v_1_request"],
+             names=["solution_group__start_v_1_request", "solution_group__start_v_1_able"],
              properties_from=_start_v_1_with_request)
 def solution_group__start_v_1_request(context, state_list, e_introduced_binding_list, x_actor_variable_group):
     x_what_variable_name = e_introduced_binding_list.solution_values[0].value["With"]["VariableName"]
-    yield from want_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, create_group_variable_values(context, state_list, x_what_variable_name))
+    yield from want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, create_group_variable_values(context, state_list, x_what_variable_name))
 
 
 @Predication(vocabulary,

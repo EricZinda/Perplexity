@@ -372,8 +372,9 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                     new_predication = transformer_search(predication, variables, transformer, {}, metadata, current_index)
                     if new_predication is None:
                         new_predication = predication
-                    new_predication.index = current_index[0]
-                    current_index[0] += 1
+                    if not isinstance(new_predication, list):
+                        new_predication.index = current_index[0]
+                        current_index[0] += 1
                     new_conjunction.append(new_predication)
                 return new_conjunction
 
