@@ -1026,8 +1026,7 @@ def the_q(context, state, x_variable_binding, h_rstr, h_body):
                                     quantifier=VariableCriteria(context.current_predication(),
                                                                 x_variable_binding.variable.name,
                                                                 min_size=1,
-                                                                max_size=float('inf'),
-                                                                global_criteria=GlobalCriteria.all_rstr_meet_criteria))
+                                                                max_size=float('inf')))
 
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 

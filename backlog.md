@@ -46,16 +46,20 @@
 - Need to redo how unknown() works to handle sets > 1
 - (start) Table (then) Just two, my son Johnny and me.
     - takes forever to get to parse 88,1 which is the first that works
+    - ditto for: We'd like to start with some water and menus
+        - /runparse 2, 39
+
 - "I'll just have a menu" --> means: clear the order and just give me a menu
 - "We want water and menus" - only gives one menu
+    - We'd like to start with some water and menus
+        - /runparse 2, 39
+        - only gives one menu
 
+- support multiple answers for tests
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
-    - Can/Could I start with ...
-    - I want some water
-    - We'd like to start with some water and menus
     - please bring us two glasses of water
     - Let's go to a table, please.
     - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
@@ -319,7 +323,7 @@ Plurals work
                   - How to find the right target in the scopal arg?
                     - Find all predications that use it as their ARG1?
                   - And then let "quoting" create a representation that puts them into "classes"
-                    - "quoting" has to be special case code per predication because conversion into a canoncal form is per predication and not directly determinable from arguments. For example "copy the file above folderx" has above(folderx) but the copying should happen in the folder above it
+                    - "quoting" has to be special case code per predication because conversion into a canonical form is per predication and not directly determinable from arguments. For example "copy the file above folderx" has above(folderx) but the copying should happen in the folder above it
   - also copy x in y (the same scenario)
 
   - Support for prepositions

@@ -163,7 +163,10 @@ class TestManager(object):
         interaction_tree = interaction_record["Tree"] if interaction_record is not None else None
 
         prompt = None
-        if test_item["Expected"] != interaction_response:
+        if isinstance(test_item["Expected"], list):
+            if interaction_response not in test_item["Expected"]:
+                prompt = f"\nExpected (one of): {test_item['Expected']}"
+        elif test_item["Expected"] != interaction_response:
             prompt = f"\nExpected: {test_item['Expected']}"
         elif not (test_item["Tree"] is None and interaction_tree is None) and test_item["Tree"] != str(interaction_tree):
             prompt = f"\nPrevious Tree: {test_item['Tree']}\nNew Tree: {str(interaction_tree)}"
@@ -172,7 +175,7 @@ class TestManager(object):
             print(prompt)
 
             while True:
-                answer = input(f"(<enter>)ignore, (b)reak to end testing, (u)pdate test, (d)isable test\n")
+                answer = input(f"(<enter>)ignore, (b)reak to end testing, (u)pdate test, (a) add alternative correct result, (d)isable test\n")
                 if answer == "":
                     return True
 
@@ -191,6 +194,18 @@ class TestManager(object):
 
                 elif answer == "b":
                     return False
+
+                elif answer == "a":
+                    updated_test = copy.deepcopy(test_item)
+                    if isinstance(updated_test["Expected"], list):
+                        new_expected = updated_test["Expected"] + [interaction_response]
+                    else:
+                        new_expected = [updated_test["Expected"], interaction_response]
+
+                    updated_test["Expected"] = new_expected
+                    updated_test["Tree"] = str(interaction_tree)
+                    test_iterator.update_test(updated_test["ID"], updated_test)
+                    return True
 
                 else:
                     print(f"'{answer}' is not a valid option")
