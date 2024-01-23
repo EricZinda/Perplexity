@@ -57,9 +57,9 @@ def compare_generated_output(original, generated, exact=False):
 
 
 # Given an MRS and Tree that represents a phrase, generate a
-# new MRS that represents what variable means at the point in tree up to,
+# new MRS that represents what variable means at the point in the tree up to,
 # but not including failure_index.  Modifies the original to match whatever plural or determiner
-# specify.  If None, just leaves as-is
+# specify.  If None, just leaves as-is.
 #
 # returns the new MRS or None if an MRS wasn't able to be built that generates the fragment
 def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, determiner=None, reverse_pronouns=False):
@@ -72,7 +72,7 @@ def mrs_fragment_from_variable(mrs, failure_index, variable, tree, plural=None, 
         nonlocal can_generate_fragment
         new_variables.add(predication.mrs_predication.label)
         for arg_item in predication.mrs_predication.args.items():
-            if arg_item[0] != "CARG":
+            if arg_item[0] != "CARG" and not isinstance(arg_item[1], list):
                 new_variables.add(arg_item[1])
 
         predication_data = parse_predication_name(predication.name)

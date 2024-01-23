@@ -317,14 +317,14 @@
     },
     "_give_v_1": {
         "Phrases": {
-            "Give me a table": {
+            "Give|bring me a table": {
                 "SF": "comm",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
-            "Will you give me a table?": {
+            "Will you give|bring me a table?": {
                 "SF": "ques",
                 "TENSE": "fut",
                 "MOOD": "indicative",
@@ -1684,5 +1684,9 @@
     },
     "_start_v_1_order_group": {
         "PropertiesFrom": "_start_v_1_order_group"
-    }
+    },
+    "solution_group__give_v_1": {
+        "PropertiesFrom": "solution_group__give_v_1"
+    },
+    "_glass_n_of": {}
 }

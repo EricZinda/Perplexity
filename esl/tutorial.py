@@ -89,7 +89,7 @@ def is_request_from_tree(tree_info):
 def valid_player_request(state, x_objects, valid_types=None):
     # Things players can request
     if valid_types is None:
-        valid_types = ["food", "table", "menu", "bill", "check"]
+        valid_types = ["food", "drink", "table", "menu", "bill", "check"]
 
     store_objects = [object_to_store(x) for x in x_objects]
     for store in store_objects:
@@ -789,6 +789,28 @@ def _order_n_of(context, state, x_order_binding, x_of_what_binding):
                                       order_bound)
 
 
+@Predication(vocabulary, names=["_glass_n_of"])
+def _glass_n_of(context, state, x_glass_binding, x_of_what_binding):
+    def both_bound(order, of_what):
+        return sort_of(state, object_to_store(order), [object_to_store(of_what)])
+
+    def of_what_bound(of_what):
+        if sort_of(state, object_to_store(of_what), ["water"]):
+            yield of_what
+
+    def glass_bound(glass):
+        if sort_of(state, object_to_store(glass), ["water"]):
+            yield glass
+
+    yield from in_style_predication_2(context,
+                                      state,
+                                      x_glass_binding,
+                                      x_of_what_binding,
+                                      both_bound,
+                                      of_what_bound,
+                                      glass_bound)
+
+
 @Predication(vocabulary, names=["_credit_n_1"])
 def _credit_n_1(context, state, x_bind):
     def bound(val):
@@ -1300,8 +1322,7 @@ def want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_obj
         if is_user_type(x_actor):
             return True
 
-        elif "want" in state.rel.keys():
-            if (x_actor, x_object) in state.all_rel("want"):
+        elif (x_actor, x_object) in state.all_rel("want"):
                 return True
 
         else:
@@ -1406,23 +1427,25 @@ def _check_v_1_group(context, state_list, e_introduced_binding, x_actor_binding,
 # We do not want to support future propositions like "You will give me a table" even though
 # they are syntactically correct because they just sound weird
 @Predication(vocabulary,
-             names=["_give_v_1"],
+             names=["_give_v_1", "_bring_v_1"],
              phrases={
-                "Give me a table": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "Will you give me a table?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                "Give|bring me a table": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Will you give|bring me a table?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[{'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
                          ])
 def _give_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding, x_target_binding):
     if state.get_binding(x_actor_binding.variable.name).value[0] == "restaurant":
-        if is_user_type(state.get_binding(x_target_binding.variable.name).value[0]):
-            if not state.get_binding(x_object_binding.variable.name).value[0] is None:
-                yield state.record_operations(
-                    state.handle_world_event(context, ["user_wants", state.get_binding(x_object_binding.variable.name).value]))
-                return
+        for item in want_v_1_helper(context, state, e_introduced_binding, x_target_binding, x_object_binding):
+            yield item
 
-    context.report_error(["formNotUnderstood", "_give_v_1"])
+
+@Predication(vocabulary,
+             names=["solution_group__give_v_1", "solution_group__bring_v_1"],
+             properties_from=_give_v_1)
+def solution_group__give_v_1(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_object_variable_group, x_target_variable_group):
+    yield from want_group_helper(context, state_list, e_introduced_binding_list, x_target_variable_group, x_object_variable_group)
 
 
 @Predication(vocabulary,

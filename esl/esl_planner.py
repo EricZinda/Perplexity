@@ -232,14 +232,39 @@ def order_food_at_entrance(state, context, who_group, what_group, what_count_con
         return [('respond', context, "Sorry, you must be seated to order.")]
 
 
-# Convert a group of people and associated orders into individual tasks so that things like
-# running out of food will work properly
-def order_food_at_table(state, context, who_group, what_group, what_count_constraint):
+# what_size_constraint can apply to distributive OR collective.  I.e. what_size_constraint = 1 in
+# "we want a menu" could mean (mySon, me) want (1 menu) or we each want one
+# This version assumes  what_count_constraint is cumulative
+def order_food_at_table_cumulative(state, context, who_group, what_group, what_count_constraint):
     if not isinstance(who_group, (list, tuple, set)) or any([not all_are_players(who_value) for who_value in who_group]):
         return
 
-    new_tasks = []
     assert len(who_group) == len(what_group)
+    if what_count_constraint % len(who_group) != 0:
+        # Can't be evenly distributed, don't do cumulative
+        return
+
+    new_tasks = []
+    for index in range(len(who_group)):
+        who_value = who_group[index]
+        # "what" is already limited to single items by satisfy_want_group_group()
+        what = what_group[index]
+        if len(who_value) > 1:
+            stop_plan_with_error(state, context, "Waiter: I'm sorry, we don't allow sharing orders")
+
+        new_tasks.append(('order_food', context, who_value[0], what, what_count_constraint // len(who_group)))
+
+    return new_tasks
+
+
+# Convert a group of people and associated orders into individual tasks so that things like
+# running out of food will work properly
+def order_food_at_table_distributive(state, context, who_group, what_group, what_count_constraint):
+    if not isinstance(who_group, (list, tuple, set)) or any([not all_are_players(who_value) for who_value in who_group]):
+        return
+
+    assert len(who_group) == len(what_group)
+    new_tasks = []
     for index in range(len(who_group)):
         who_value = who_group[index]
         # "what" is already limited to single items by satisfy_want_group_group()
@@ -257,7 +282,8 @@ def order_food_at_table_per_person_per_item(state, context, who, what, what_coun
             all_are_players([who]) and location_of_type(state, who, "table"):
         food_instances = [x for x in find_unused_instances_from_concept(context, state, what)]
         if len(food_instances) < what_count_constraint:
-            return [('respond', context, s("Waiter: I'm sorry, we don't have enough {bare *convert_to_english(state, what):} for your order."))]
+            stop_plan_with_error(state, context, s("Waiter: I'm sorry, we don't have enough {bare *convert_to_english(state, what):} for your order."))
+            # return [('respond', context, s("Waiter: I'm sorry, we don't have enough {bare *convert_to_english(state, what):} for your order."))]
 
         else:
             store_what = object_to_store(what)
@@ -287,7 +313,7 @@ def order_food_at_table_per_person_per_item(state, context, who, what, what_coun
                 return new_tasks
 
 
-gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_at_table, order_food_at_table_per_person_per_item)
+gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_at_table_cumulative, order_food_at_table_distributive, order_food_at_table_per_person_per_item)
 
 
 # Go and get all the things that were asked for

@@ -48,19 +48,20 @@
     - takes forever to get to parse 88,1 which is the first that works
     - ditto for: We'd like to start with some water and menus
         - /runparse 2, 39
-
+- "what did we order" --> "less than 2 people did that"
+    - when only one person ordered
 - "I'll just have a menu" --> means: clear the order and just give me a menu
 - "We want water and menus" - only gives one menu
     - We'd like to start with some water and menus
         - /runparse 2, 39
         - only gives one menu
 
-- support multiple answers for tests
+- Clean up unused portions of state.handle_world_event()
+
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
-    - please bring us two glasses of water
     - Let's go to a table, please.
     - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
     - In that case, Johnny and I will both have the Roasted Chicken.
