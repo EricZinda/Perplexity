@@ -52,6 +52,48 @@
             "ID": "c86ca27d-1d95-4bc4-be3b-2d322b4aab64"
         },
         {
+            "Command": "Hi, table for 2",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "proper_q(x4,named(Hawaii,x4),number_q(x17,card(2,x17,i23),udef_q(x6,[_table_n_1(x6), _for_p(e16,x6,x17)],[appos(e5,x4,x6), unknown(e2,x4)])))",
+            "Enabled": true,
+            "ID": "6c18bda1-3844-4677-9fc9-8fb867b69429"
+        },
+        {
+            "Command": "Hello, table for 2",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x4,_hello_n_1(x4),number_q(x16,card(2,x16,i22),udef_q(x6,[_table_n_1(x6), _for_p(e15,x6,x16)],[appos(e5,x4,x6), unknown(e2,x4)])))",
+            "Enabled": true,
+            "ID": "dbcc0867-b71d-4f35-948c-b05c4c6af90f"
+        },
+        {
+            "Command": "Howdy, table for 2",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "proper_q(x4,named(Howdy,x4),number_q(x17,card(2,x17,i23),udef_q(x6,[_table_n_1(x6), _for_p(e16,x6,x17)],[appos(e5,x4,x6), unknown(e2,x4)])))",
+            "Enabled": true,
+            "ID": "3840f232-880b-48de-ba47-f4cea768b7a4"
+        },
+        {
+            "Command": "hello, table for 2, please",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x4,_hello_n_1(x4),number_q(x16,card(2,x16,i22),udef_q(x6,[_table_n_1(x6), _for_p(e15,x6,x16)],[appos(e5,x4,x6), unknown(e2,x4), _please_a_1(e2,e2)])))",
+            "Enabled": true,
+            "ID": "19f0bc45-2a55-4c94-b775-eca3afd7979c"
+        },
+        {
+            "Command": "Howdy, could I have a table",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x16,_table_n_1(x16),_have_v_1_able(e8,x3,x16)))",
+            "Enabled": true,
+            "ID": "13882ec7-3e70-4025-96b7-e5e00b974eb2"
+        },
+        {
+            "Command": "Hi, could I have a table for 2, please?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x16,number_q(x22,card(2,x22,i28),[_table_n_1(x16), _for_p(e21,x16,x22)]),[_please_a_1(e29,e8), _have_v_1_able(e8,x3,x16)]))",
+            "Enabled": true,
+            "ID": "1fad1ba9-a1c9-43c8-af00-48b7b20cc0d7"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

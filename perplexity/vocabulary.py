@@ -663,7 +663,13 @@ class Vocabulary(object):
         for transformer_root in self.transformers:
             new_tree_info = build_transformed_tree(self, state, tree_info, transformer_root)
             if new_tree_info:
-                yield new_tree_info
+                # Run the rules from the start on this new tree
+                found_next_tree = False
+                for next_tree in self.alternate_trees(state, new_tree_info, False):
+                    found_next_tree = True
+                    yield next_tree
+                if not found_next_tree:
+                    yield new_tree_info
 
         if yield_original:
             yield tree_info

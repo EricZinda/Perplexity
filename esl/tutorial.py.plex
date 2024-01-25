@@ -782,6 +782,13 @@
     "_dollar_n_1": {},
     "unknown": {
         "Phrases": {
+            "Hi, table for two, please": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "a table for 2": {
                 "SF": "prop",
                 "TENSE": "untensed",
@@ -1688,5 +1695,8 @@
     "solution_group__give_v_1": {
         "PropertiesFrom": "solution_group__give_v_1"
     },
-    "_glass_n_of": {}
+    "_glass_n_of": {},
+    "_hello_n_1": {},
+    "greet": {},
+    "discourse": {}
 }

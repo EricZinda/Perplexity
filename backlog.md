@@ -57,11 +57,17 @@
         - only gives one menu
 
 - Clean up unused portions of state.handle_world_event()
-
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
+      Elapsed time: 647.23938
+      Elapsed time: 979.71158
+
+
+
+    - We'll have one tomato soup and one green salad, please.
+    - Could you please recommend a vegetarian dish for my son?
     - Let's go to a table, please.
     - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
     - In that case, Johnny and I will both have the Roasted Chicken.

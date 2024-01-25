@@ -227,7 +227,7 @@ def best_generation_index(mrs, original_text, exact=False):
         diff_list = compare_generated_output(original_text, generated_phrase, exact)
         if len(diff_list) == 0:
             # Exact match! Stop now, not going to get better
-            return index
+            return index, generated_phrase
         matches.append([len(diff_list), generated_phrase, diff_list, index])
         index += 1
 

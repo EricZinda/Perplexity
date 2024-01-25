@@ -1,5 +1,7 @@
 import copy
 import logging
+import re
+
 from delphin.mrs import EP
 import perplexity.tree
 from perplexity.utilities import sentence_force
@@ -35,13 +37,14 @@ def replace_str_captures(value, captures):
 
 
 class TransformerProduction(object):
-    def __init__(self, name, args, label="h999"):
+    def __init__(self, name, args, label="h999", args_rest=None):
         # Name can be a string that contains any number of $ replacements
         # args can be:
         #   a string that contains any number of $ replacements like foo$bar or foo$|bar|goo
         #   another TransformerProduction
         self.name = name
         self.args = args
+        self.args_rest = args_rest
         self.label = label
 
     def create(self, vocabulary, state, tree_info, captures, current_index):
@@ -50,6 +53,10 @@ class TransformerProduction(object):
         name = self.transform_using_captures(self.name, vocabulary, state, tree_info, captures, current_index)
         args_values = [self.transform_using_captures(x, vocabulary, state, tree_info, captures, current_index) for x in self.args.values()]
         args_names = list(self.args.keys())
+        if self.args_rest is not None:
+            resolved_args_rest = self.transform_using_captures(self.args_rest, vocabulary, state, tree_info, captures, current_index)
+            args_values += list(resolved_args_rest.values())
+            args_names += list(resolved_args_rest.keys())
         label = self.transform_using_captures(self.label, vocabulary, state, tree_info, captures, current_index)
         args_handle_values = []
         for arg_value in args_values:
@@ -60,12 +67,9 @@ class TransformerProduction(object):
 
         new_ep = EP(predicate=name, label=label, args=dict(zip(args_names, args_handle_values)))
         new_predication = perplexity.tree.TreePredication(my_index, name, args_values, arg_names=args_names, mrs_predication=new_ep)
-        phrase_type = sentence_force(tree_info["Variables"])
-        if state is None or not vocabulary.unknown_word(state, new_predication.name, new_predication.argument_types(), phrase_type):
-            return new_predication
-        else:
-            transform_logger.debug(
-                f"Predication: {new_predication.name} could not be created by the transformer because it has no implementation")
+
+        # Allow rules to generate predications that have no implementation because they might be removed by further rules
+        return new_predication
 
     def transform_using_captures(self, value, vocabulary, state, tree_info, captures, current_index):
         if isinstance(value, str):
@@ -234,16 +238,45 @@ class ConjunctionMatchTransformer(object):
         return self.production is not None or self.properties_production is not None
 
 
+def match_names(name, alternatives):
+    for alternative in alternatives:
+        if alternative == "*":
+            return True
+        elif isinstance(alternative, str):
+            if name == alternative:
+                return True
+        else:
+            if alternative.search(name):
+                return True
+    return False
+
+
+def compile_name_alternatives(templates):
+    if not isinstance(templates, (list, tuple)):
+        templates = [templates]
+
+    final_list = []
+    for item in templates:
+        if item.startswith("regex:"):
+            final_list.append(re.compile(item[6:]))
+        else:
+            final_list.append(item)
+    return final_list
+
+
 class TransformerMatch(object):
-    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, label_capture=None, property_transformer=None, removed=None, production=None, properties_production=None):
+    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, args_rest_capture=None, label_capture=None, property_transformer=None, removed=None, production=None, properties_production=None, new_index=None):
         self.name_pattern = name_pattern
+        self.name_alternatives = compile_name_alternatives(self.name_pattern)
         self.name_capture = name_capture if name_pattern is not None else [None] * len(name_pattern)
         self.args_pattern = args_pattern
         self.args_capture = args_capture if args_capture is not None else [None] * len(args_pattern)
+        self.args_rest_capture = args_rest_capture
         self.label_capture = label_capture
         self.property_transformer = property_transformer
         self.production = production
         self.properties_production = properties_production
+        self.new_index = new_index
         self.removed = removed
         self.did_transform = False
 
@@ -258,16 +291,23 @@ class TransformerMatch(object):
                     metadata["SystemWH"] = []
                 metadata["SystemWH"].append(scopal_arg.args[0])
 
-            name_alternatives = self.name_pattern.split("|")
-            if self.name_pattern == "*" or scopal_arg.name in name_alternatives:
+            if match_names(scopal_arg.name, self.name_alternatives):
                 local_capture = {}
                 if self.name_capture is not None:
                     local_capture[self.name_capture] = scopal_arg.name
                 if self.label_capture is not None:
                     local_capture[self.label_capture] = scopal_arg.mrs_predication.label
-                if len(self.args_pattern) == len(scopal_arg.args):
-                    for arg_index in range(len(self.args_pattern)):
-                        pattern = self.args_pattern[arg_index]
+                if len(self.args_pattern) == len(scopal_arg.args) or \
+                        (len(self.args_pattern) < len(scopal_arg.args) and self.args_pattern[-1] == "**"):
+                    for arg_index in range(len(scopal_arg.args)):
+                        if arg_index > len(self.args_pattern) - 1:
+                            pattern = "*"
+                        else:
+                            if self.args_pattern[arg_index] == "**":
+                                pattern = "*"
+                            else:
+                                pattern = self.args_pattern[arg_index]
+
                         if isinstance(pattern, str) and len(pattern) > 2:
                             assert pattern[0:2] == "wh", f"Unknown argument pattern: {pattern}"
                             match_wh = pattern[2]
@@ -287,7 +327,14 @@ class TransformerMatch(object):
                                 is_wh = False
 
                             if match_wh == "+" and is_wh or match_wh == "-" and not is_wh or match_wh is None:
-                                if self.args_capture[arg_index] is not None:
+                                # We have a match
+                                if arg_index > len(self.args_capture) - 1:
+                                    if self.args_rest_capture:
+                                        if self.args_rest_capture not in local_capture:
+                                            local_capture[self.args_rest_capture] = {}
+                                        local_capture[self.args_rest_capture][scopal_arg.arg_names[arg_index]] = scopal_arg.args[arg_index]
+
+                                elif self.args_capture[arg_index] is not None:
                                     local_capture[self.args_capture[arg_index]] = scopal_arg.args[arg_index]
                             else:
                                 # WH didn't match
@@ -327,10 +374,13 @@ class TransformerMatch(object):
 # rewrites the tree in place
 def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
     def build_production(transformer, variables, capture, current_index):
+        nonlocal new_mrs_index
         if transformer.properties_production:
             # The properties production will simply update the tree directly
             transformer.properties_production.create(vocabulary, state, variables, capture, current_index)
-            transformer.record_transform()
+
+        if transformer.new_index:
+            new_mrs_index = replace_str_captures(transformer.new_index, capture)
 
         # The node might not be able to be created if there is no implementation
         if transformer.production:
@@ -340,9 +390,11 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                 # and record that at least one transform occurred
                 transformer.record_transform()
                 return new_node
-
-        elif transformer.properties_production:
-            # Just properties got updated
+            else:
+                assert False, "should always be a production"
+        elif transformer.properties_production or transformer.new_index:
+            # Just properties or index got updated
+            transformer.record_transform()
             return True
 
     # When called with a root transformer will either return None or a new predication
@@ -443,13 +495,17 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
     new_tree_info = copy.deepcopy(tree_info)
     current_index = [0]
     transformer_root.reset_transform(tree_info)
+    new_mrs_index = None
     metadata = {}
-    transformer_search(new_tree_info["Tree"], new_tree_info["Variables"], transformer_root, {}, metadata, current_index)
+    root_created_tree = transformer_search(new_tree_info["Tree"], new_tree_info["Variables"], transformer_root, {}, metadata, current_index)
+    created_tree = root_created_tree if root_created_tree not in [None, True] else new_tree_info["Tree"]
     if transformer_root.did_transform:
         # Make sure the tree indexes are set right
-        new_tree_info["Tree"] = perplexity.tree.reindex_tree(new_tree_info["Tree"])
+        new_tree_info["Tree"] = perplexity.tree.reindex_tree(created_tree)
         new_tree_info["Transformed"] = str(transformer_root)
-        pipeline_logger.debug(f"Transformed Tree: {new_tree_info['Tree'].repr_with_indices()}")
+        if new_mrs_index is not None:
+            new_tree_info["Index"] = new_mrs_index
+        pipeline_logger.debug(f"Transformed: Index {new_tree_info['Index']}, Tree:{new_tree_info['Tree'].repr_with_indices()}")
         return new_tree_info
 
 

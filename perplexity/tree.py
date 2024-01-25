@@ -43,10 +43,7 @@ class MrsParser(object):
             for ep in mrs.predications:
                 arg_types = []
                 for arg_item in ep.args.items():
-                    if arg_item[0] == "CARG":
-                        arg_types.append("c")
-                    else:
-                        arg_types.append(arg_item[1][0])
+                    arg_types.append(arg_item[1])
                 mrs_list.append(f"{ep.predicate}({','.join(arg_types)})")
             pipeline_logger.debug(f"Parse {parse_index}: {', '.join(mrs_list)}")
             yield mrs

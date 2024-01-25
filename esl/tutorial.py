@@ -13,7 +13,7 @@ from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
     PropertyTransformerProduction, ConjunctionMatchTransformer, ConjunctionProduction
 from perplexity.tree import find_predication_from_introduced, get_wh_question_variable, \
-    gather_scoped_variables_from_tree_at_index
+    gather_scoped_variables_from_tree_at_index, TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
 from perplexity.variable_binding import VariableBinding, VariableData
@@ -103,6 +103,31 @@ def min_from_variable_group(variable_group):
     return variable_group.variable_constraints.min_size if variable_group.variable_constraints is not None else 1
 
 
+# **** Transforms ****
+
+# Transform discourse(i2,greet(X,i6),Y) to Y
+@Transform(vocabulary)
+def discourse_transformer():
+    production = TransformerProduction(name="$target_name", args={"ARG0": "$target_e"}, args_rest="$target_rest_args")
+    conjunction_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production])
+
+    # Be sure to only match the verbs as the target
+    target_match = TransformerMatch(name_pattern=["regex:_v_", "unknown"],
+                                    name_capture="target_name",
+                                    args_pattern=["e", "**"],
+                                    args_capture=["target_e"],
+                                    args_rest_capture="target_rest_args")
+    conjunction_match = ConjunctionMatchTransformer(transformer_list=[target_match], extra_conjuncts_capture="extra_conjuncts")
+    greet_match = TransformerMatch(name_pattern="greet",
+                                   args_pattern=["c", "i"])
+    return TransformerMatch(name_pattern="discourse",
+                            args_pattern=["i", greet_match, conjunction_match],
+                            args_capture=[None, None, "target_predication"],
+                            removed=["discourse", "greet"],
+                            production=conjunction_production,
+                            new_index="$target_e")
+
+
 # ******** Transforms "lets go with" to "I want" ************
 # Convert:
 #            ┌────── _steak_n_1(x10)
@@ -116,8 +141,6 @@ def min_from_variable_group(variable_group):
 # _a_q(x10,RSTR,BODY)               ┌────── pron(x5)
 #                 └─ pronoun_q(x5,RSTR,BODY)
 #                                        └─ _want_v_1(e2, x5, x10)
-
-
 # Change SF:comm to SF:prop
 @Transform(vocabulary)
 def lets_go_with_to_want():
@@ -207,7 +230,7 @@ def what_is_singular_to_underspecified_transformer():
 @Transform(vocabulary)
 def would_like_to_want_transformer():
     production = TransformerProduction(name="_want_v_1", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
-    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", "x"],
+    like_match = TransformerMatch(name_pattern=["_like_v_1", "_love_v_1"], args_pattern=["e", "x", "x"],
                                   args_capture=[None, "x1", "x2"])
     return TransformerMatch(name_pattern="_would_v_modal",
                             args_pattern=["e", like_match],
@@ -402,7 +425,7 @@ def would_like_removal_intransitive_transformer():
     conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
     target_predication = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=["target_e", "x1"])
     target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
-    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", target],
+    like_match = TransformerMatch(name_pattern=["_like_v_1", "_love_v_1"], args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
     would_match = TransformerMatch(name_pattern="_would_v_modal",
                                    args_pattern=["e", like_match],
@@ -418,7 +441,7 @@ def would_like_removal_transitive_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
                               args_capture=[None, "x1", "x2"])
-    like_match = TransformerMatch(name_pattern="_like_v_1|_love_v_1", args_pattern=["e", "x", target],
+    like_match = TransformerMatch(name_pattern=["_like_v_1", "_love_v_1"], args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
     would_match = TransformerMatch(name_pattern="_would_v_modal",
                                    args_pattern=["e", like_match],
@@ -767,6 +790,17 @@ def _card_n_1(context, state, x_bind):
     yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
+@Predication(vocabulary, names=["_hello_n_1"])
+def _hello_n_1(context, state, x_bind):
+    def bound(val):
+        return val == "hello"
+
+    def unbound():
+        yield "hello"
+
+    yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
+
+
 @Predication(vocabulary, names=["_order_n_of"])
 def _order_n_of(context, state, x_order_binding, x_of_what_binding):
     def both_bound(order, of_what):
@@ -855,6 +889,7 @@ def _dollar_n_1(context, state, x_binding, u_unused):
 @Predication(vocabulary,
              names=["unknown"],
              phrases={
+                "Hi, table for two, please": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "a table for 2": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
                 "a table for 2, please!": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "2": {'SF': 'prop-or-ques'},
@@ -879,6 +914,22 @@ def unknown_eu(context, state, e_binding, u_binding):
     yield state
 
 
+def greetings():
+    return ["hello", "hi", "howdy"]
+#
+#
+# @Predication(vocabulary, names=["greet"])
+# def greet(context, state, c_arg, i_unused):
+#     yield state
+#
+#
+# @Predication(vocabulary, names=["discourse"])
+# def discourse(context, state, i_unused, h_left_binding, h_right_binding):
+#     if isinstance(h_left_binding, TreePredication) and h_left_binding.name == "greet":
+#         for solution in context.call(state, h_right_binding):
+#             yield solution
+
+
 @Predication(vocabulary, names=["appos"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def appos(context, state, e_binding, x_left_binding, x_right_binding):
     # Handle "two, my son Johnny and me", 2 will be in apposition with Johnny and me
@@ -886,6 +937,11 @@ def appos(context, state, e_binding, x_left_binding, x_right_binding):
         number = int(x_left_binding.value[0])
         if len(x_right_binding.value) == number:
             yield state
+    # Handle "Hello, table for 2 please"
+    if len(x_left_binding.value) == 1 and isinstance(x_left_binding.value[0], str) and x_left_binding.value[0].lower() in greetings():
+        # HACK: Need to replace the value of "hello" with whatever it is in opposition with because that's the variable that is used elsewhere
+        # in the MRS
+        yield state.set_x(x_left_binding.variable.name, x_right_binding.value)
     else:
         if x_left_binding.value == x_right_binding.value:
             yield state
@@ -949,9 +1005,9 @@ def named_instances(context, state, c_arg, x_binding):
         return rel_check(state, value, "hasName", c_arg)
 
     def unbound_variable_concepts():
-        for person in all_instances(state, "person"):
-            if rel_check(state, person, "hasName", c_arg):
-                yield person
+        for item_name in rel_subjects_objects(state, "hasName"):
+            if item_name[1].lower() == c_arg.lower():
+                yield item_name[0]
 
     # Then yield a combinatorial value of all types
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable,
@@ -2845,6 +2901,8 @@ def reset():
             if dish_type == "pork":
                 initial_state = initial_state.add_rel(food_instance, "isAdj", "smoked")
 
+    initial_state = initial_state.add_rel("hi", "hasName", "Hawaii")
+    initial_state = initial_state.add_rel("howdy", "hasName", "howdy")
     initial_state = initial_state.add_rel("restaurant", "have", "special")
     initial_state = initial_state.add_rel("restaurant", "hasName", "restaurant")
     initial_state = initial_state.add_rel("bill1", "instanceOf", "bill")
