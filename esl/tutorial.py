@@ -633,9 +633,24 @@ def abstr_deg(context, state, x_binding):
 
 @Predication(vocabulary, names=["compound"])
 def compound(context, state, e_binding, x_left_binding, x_right_binding):
-    if x_left_binding.value is not None and x_right_binding.value is not None and x_left_binding.value[0] == x_right_binding.value[0]:
-        yield state
+    if x_left_binding.value is not None and x_right_binding.value is not None:
+        if x_left_binding.value[0] == x_right_binding.value[0]:
+            yield state
+        elif is_concept(x_right_binding.value[0]):
+            # Records that predication index X is a disjunction
+            context.set_disjunction()
 
+            # Since these are *alternative* interpretations, they need to be in different lineages
+            # just like if there were separate predication implementations yielding them
+            interpretation_id = 0
+            tree_lineage_binding = state.get_binding("tree_lineage")
+            tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+
+            for concept_state in adjective_default_concepts(x_right_binding.value[0].concept_name, context, state, x_left_binding):
+                yield concept_state.set_x("tree_lineage", (f"{tree_lineage}.1",))
+
+            for instance_state in adjective_default_instances(x_right_binding.value[0].concept_name, context, state, x_left_binding):
+                yield instance_state.set_x("tree_lineage", (f"{tree_lineage}.2",))
 
 # Scenarios:
 # I want a steak for my son
@@ -1015,13 +1030,25 @@ def named_instances(context, state, c_arg, x_binding):
         yield new_state
 
 
+def handles_adjective(state, adjective_lemma):
+    return True
+
+
+@Predication(vocabulary, names=["match_all_a"], matches_lemma_function=handles_adjective)
+def match_all_a_concepts(adjective_type, context, state, e_introduced, x_binding):
+    yield from adjective_default_concepts(adjective_type, context, state, x_binding)
+
+
+@Predication(vocabulary, names=["match_all_a"], matches_lemma_function=handles_adjective)
+def match_all_a_instances(adjective_type, context, state, e_introduced, x_binding):
+    yield from adjective_default_instances(adjective_type, context, state, x_binding)
+
+
 def handles_noun(state, noun_lemma):
     handles = ["thing"] + list(all_specializations(state, "thing"))
     return noun_lemma in handles
 
 
-# Simple example of using match_all that doesn't do anything except
-# make sure we don't say "I don't know the word book"
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_concepts(noun_type, context, state, x_binding):
     def bound_variable(value):
@@ -1040,8 +1067,6 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
         yield new_state
 
 
-# Simple example of using match_all that doesn't do anything except
-# make sure we don't say "I don't know the word book"
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_instances(noun_type, context, state, x_binding):
     def bound_variable(value):
@@ -1111,52 +1136,59 @@ def the_q(context, state, x_variable_binding, h_rstr, h_body):
 
 def adjective_default_concepts(adjective_type, context, state, x_binding):
     def bound_variable(value):
-        if sort_of(state, object_to_store(value), adjective_type):
-            return True
-        elif rel_check(state, object_to_store(value), "isAdj", adjective_type):
-            return True
-        else:
-            context.report_error(["not_adj", adjective_type, state.get_reprompt(), x_binding.variable.name])
-            return False
+        if is_concept(value):
+            if rel_check(state, object_to_store(x_binding.value[0]), "isAdj", adjective_type):
+                return True
+
+            else:
+                context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+                return False
 
     def unbound_variable_concepts():
-        # Shouldn't return "veggie" when variable is unbound because that happens when
-        # "what is vegetarian" is said and we don't want to return "vegetarian" for that case
-        # so: ignore_root=True
-        yield from concept_disjunctions_reverse(state, adjective_type, ignore_root=True)
+        # Phrases like "What is a green food?"
+        for item in rel_subjects(state, "isAdj", adjective_type):
+            if is_concept(item):
+                yield item
 
     # Then yield a combinatorial value of all types
-    for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable,
-                                                 unbound_variable_concepts):
+    for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
         yield new_state
 
 
 def adjective_default_instances(adjective_type, context, state, x_binding):
     def bound_variable(value):
-        if sort_of(state, value, adjective_type):
-            return True
-        elif rel_check(state, object_to_store(value), "isAdj", adjective_type):
-            return True
-        else:
-            context.report_error(["not_adj", adjective_type, state.get_reprompt(),  x_binding.variable.name])
-            return False
+        if not is_concept(value):
+            if rel_check(state, value, "isAdj", adjective_type):
+                return True
+            else:
+                has_match = False
+                for type in all_ancestors(state, value):
+                    if rel_check(state, type, "isAdj", adjective_type):
+                        has_match = True
+                        return True
+
+                if not has_match:
+                    context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+                    return False
 
     def unbound_variable_instances():
-        for item in all_instances(state, adjective_type):
-            yield item
+        for item in rel_subjects(state, "isAdj", adjective_type):
+            if not is_concept(item):
+                yield item
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances)
 
 
+# 'vegetarian food" is modelled as anything that has a "veggie" base class, not
+# things that have a "hasAdj" relationship
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_concepts(context, state, e_introduced_binding, x_target_binding):
-    for new_state in adjective_default_concepts("veggie", context, state, x_target_binding):
-        yield new_state
+    yield from match_all_n_concepts("veggie", context, state, x_target_binding)
 
 
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_instances(context, state, e_introduced_binding, x_target_binding):
-    yield from adjective_default_instances("veggie", context, state, x_target_binding)
+    yield from match_all_n_instances("veggie", context, state, x_target_binding)
 
 
 class PastParticiple:
@@ -2814,7 +2846,12 @@ def reset():
     initial_state = initial_state.add_rel("pork", "specializes", "meat")
 
     initial_state = initial_state.add_rel("soup", "specializes", "veggie")
+    initial_state = initial_state.add_rel("tomato", "specializes", "food")
+    initial_state = initial_state.add_rel("soup", "isAdj", "tomato")
+
     initial_state = initial_state.add_rel("salad", "specializes", "veggie")
+    initial_state = initial_state.add_rel("green", "specializes", "thing")
+    initial_state = initial_state.add_rel("salad", "isAdj", "green")
 
     # These concepts are "in scope" meaning it is OK to say "the X"
     initial_state = initial_state.add_rel("special", "conceptInScope", "true")
@@ -2961,13 +2998,13 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("SString")
-    # ShowLogging("UserInterface")
+    ShowLogging("UserInterface")
     ShowLogging("Pipeline")
 
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
-    ShowLogging("Transformer")
+    # ShowLogging("Transformer")
 
     print("You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?")
     # ShowLogging("Pipeline")

@@ -7,6 +7,83 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
+            "ID": "8f560020-3575-4937-b66d-353a3fa6e2af"
+        },
+        {
+            "Command": "a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "b93aa427-f664-451e-950f-d142ac3df72a"
+        },
+        {
+            "Command": "do you have vegetarian food?",
+            "Expected": "Yes.(there are more)",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_food_n_1(x8), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "0494e3db-dfae-4a1f-aeeb-f08560e495b7"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "a0dad2a1-544d-4e1a-bec0-3f463f4b6a4d"
+        },
+        {
+            "Command": "table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "81e06a8c-a1ca-4cee-a718-74d0885455cf"
+        },
+        {
+            "Command": "how much is the green salad?",
+            "Expected": "3 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,[_salad_n_1(x3), _green_a_2(e20,x3)],count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "b3ac7119-4e10-4a6f-80ee-66e9bbf9a4f4"
+        },
+        {
+            "Command": "how much is the tomato soup?",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,udef_q(x21,_tomato_n_1(x21),[_soup_n_1(x3), compound(e20,x3,x21)]),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "d189a743-e47c-409d-86e6-130647d194c6"
+        },
+        {
+            "Command": "I want a green dish and a tomato dish, please!",
+            "Expected": "Waiter: salad is an excellent choice!\nWaiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "_a_q(x13,[_dish_n_of(x13,i18), _green_a_2(e17,x13)],_a_q(x20,udef_q(x26,_tomato_n_1(x26),[_dish_n_of(x20,i31), compound(e25,x20,x26)]),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x20),[_please_a_1(e32,e2), _want_v_1(e2,x3,x8)]))))",
+            "Enabled": true,
+            "ID": "59291b86-c54a-4f8b-b8da-d380d7fed0e4"
+        },
+        {
+            "Command": "no",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a salad and soup for you.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
+            "Tree": "_no_a_1(i6,unknown(e2,u5))",
+            "Enabled": true,
+            "ID": "b5596cde-1097-4c46-9101-bb5534463c3b"
+        },
+        {
+            "Command": "I have a green salad",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_salad_n_1(x8), _green_a_2(e13,x8)],_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "53adcedd-3198-4849-a66b-5d44ff7f04f5"
+        },
+        {
+            "Command": "I have a tomato soup",
+            "Expected": "Yes, that is true.",
+            "Tree": "udef_q(x14,_tomato_n_1(x14),pronoun_q(x3,pron(x3),_a_q(x8,[_soup_n_1(x8), compound(e13,x8,x14)],_have_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "20232d68-23ea-4832-b9e0-3404f288d7a3"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
             "ID": "9071a4e3-01d8-4452-b484-498ae0163de9"
         },
         {

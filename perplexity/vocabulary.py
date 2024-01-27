@@ -595,6 +595,8 @@ class Vocabulary(object):
         return f"{delphin_name}__{''.join(arg_types)}__{phrase_type}"
 
     def generic_key(self, delphin_name, arg_types, phrase_type):
+        if delphin_name.startswith("solution_group__"):
+            return None, None
         predication_info = parse_predication_name(delphin_name)
         return predication_info["Lemma"], f"match_all_{predication_info['Pos']}__{''.join(arg_types)}__{phrase_type}"
 

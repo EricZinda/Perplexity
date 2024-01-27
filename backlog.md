@@ -57,15 +57,19 @@
         - only gives one menu
 
 - Clean up unused portions of state.handle_world_event()
+- Performance fix: checkin was cca6733
+    Before allowing rules to continue running over a transformed tree:
+          Elapsed time: 647.23938
+    After:
+      Elapsed time: 979.71158
+- could we see menus? -> I don't understand the way you are using: see
+- what is green? --> crashes
+
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
-      Elapsed time: 647.23938
-      Elapsed time: 979.71158
-
-
-
+    - table for two please
     - We'll have one tomato soup and one green salad, please.
     - Could you please recommend a vegetarian dish for my son?
     - Let's go to a table, please.

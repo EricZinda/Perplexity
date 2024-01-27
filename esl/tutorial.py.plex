@@ -1698,5 +1698,7 @@
     "_glass_n_of": {},
     "_hello_n_1": {},
     "greet": {},
-    "discourse": {}
+    "discourse": {},
+    "match_all_a_concepts": {},
+    "match_all_a_instances": {}
 }
