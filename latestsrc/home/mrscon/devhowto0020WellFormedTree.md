@@ -212,14 +212,14 @@ You can see that 'Floater' is initially set to `None` for all the holes. The goa
 
 `try_alternative_hole_assignments()` does this by searching a tree of all possible assignments. 
 
-It starts with the assignments above. Since there are some holes that don’t have a predication assigned, it will:
+It starts with the `all_holes_dict` from above. Since there are some holes that don’t have a predication assigned, it will:
 
 1. Pick the next unassigned hole: in this case, `h0`.
 2. Pick the next unassigned floater: in this case, `h1`.
-3. If this assignment doesn't violate any constraints on building a scope-resolved tree: update `all_holes_dict()` to contain this assignment and recurse at step #1 with the new `all_holes_dict()`.
+3. If assigning `h1` to `h0` doesn't violate any constraints on building a scope-resolved tree: update `all_holes_dict()` to contain this assignment and recurse at step #1 with the new `all_holes_dict()`.
 4. If the assignment does violate a constraint, skip it and jump to step #2 to try the next floater.
-... 
-5. If you recurse to the point where there are no more holes you've found a valid tree: yield it, and then keep searching for more.
+
+If you recurse to the point where there are no more holes you've found a valid tree: yield it, and then keep searching for more.
 
 ```
 def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, nodeRemainingFloatersList, nodeAssignmentList):
