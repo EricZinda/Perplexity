@@ -65,7 +65,6 @@ There were 4 failures encountered when solving the MRS for this case. The user w
 
 > One heuristic that works well in practice is this: If there is a solution for an MRS, don't report any errors. If there is no solution for an MRS, report the error from the "deepest/farthest" failure possible.
 
-
 The intuition for why this works is this:
 
 If there *was* a solution, it means that there was a way to make the phrase work logically in the world. Presumably, it will make sense to the user too, even if it isn't what they meant (though likely it is), so no failure should be reported. 

@@ -1,7 +1,6 @@
 {% raw %}## The Predication Contract
 > It is important to understand [what MRS is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) and what [a well-formed MRS tree is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
-
 As discussed in [the "Backtracking" conceptual topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver), we'll be solving MRS well-formed trees using a backtracking approach. That topic discusses "calling" or "evaluating" predications without discussing exactly *how* this happens. This section will get specific.
 
 As discussed previously, a [well-formed MRS tree](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) can be thought of as an *equation* that can be solved against a certain state of the world. One approach to solving an MRS is to walk the well-formed tree in depth-first order and iteratively find assignments of variables that make the MRS `true`, using [backtracking](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) to try alternatives when they exist. This is the approach we'll be using. To solve an MRS tree using the backtracking approach, we need to code the predications to meet a specific contract that our backtracking solver will rely on. This is the "predication contract".
@@ -25,7 +24,6 @@ The contract is designed to "solve" an MRS for the variables defined in it, such
 > - It then returns each solution (i.e. assignment of variables) for which the Quantifier Predication itself is true, given what was returned by its arguments and the quantification it is doing.
 > 
 > The "solution" to an MRS is the set of all variable assignments that resulted in the entire MRS tree being `true`
-
 
 A few observations about the contract:
 - What the variables *are* -- i.e. how the world is represented in the program -- is not defined in the contract. It doesn't care.
@@ -74,7 +72,6 @@ The performance of the contract can be greatly improved. Let's imagine a world w
 
 > A large file is in the folder.
 
-
 Which results in this as one of the well-formed MRS trees:
 
 ```
@@ -112,7 +109,6 @@ So, the contract we'll use in the rest of the tutorial is the "practical contrac
 > 
 > Calling any predication with *bound* variables should simply return the same values if `True` or fail if not. In other words, it should iterate at most once.
 
-
 Let's go through our same example with the new contract. The world has these objects:
 
 ```
@@ -145,6 +141,5 @@ There are other ways to solve an MRS for the variables that make it true. For ex
 We've talked through the contract required on functions that implement a predication, but aren't yet ready to implement one. First, we need to describe a key object used in the implementation: [the `State` object](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0010PredicationContract.md)]{% endraw %}

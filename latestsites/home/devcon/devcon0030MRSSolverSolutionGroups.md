@@ -37,7 +37,6 @@ So, to discuss the whole phenomena across the phrase (and not just how the stude
 >   - Exactly 1 "subgroup" that contains the entire set of students
 > - Tables: Identical to the distributive reading, but using just one "subgroup" that contains everyone
 
-
 ### Cumulative Readings
 If we change the phrase again just slightly to allow for more than one table:
 
@@ -71,7 +70,6 @@ This interpretation distributively groups the students, but *counts the tables d
 > - Students: Identical to the distributive reading.
 > - Tables: The total of tables across all subgroups must *add up* to `M`
 
-
 Note how the math for the cumulative reading is different than the math for collective and distributive readings. Collective and distributive readings require `M` tables *per student subgroup*, whereas cumulative requires `M` tables, total, *across all student subgroups*.
 
 It is important to note that this is not some DELPH-IN feature or artifact, this is how human language works. We are just trying to emulate it by building an algorithm that processes phrases like a human would.
@@ -84,11 +82,9 @@ The backtracking algorithm we've defined in previous sections will actually find
 > 2. *The collective reading*: "Two students [together] lifted two tables [at the same time]"
 > 3. *The cumulative reading*: "One student lifted one table and another student lifted a different table"
 
-
 Note that situations #1 and #3 are only properly represented by a *group* of solutions as we've defined "solution": 
 
 > Solution: Assignments of single set-based values to all variables that make the MRS `true` 
-
 
 There isn't a way to represent #1 and #3 as a *single* solution (i.e. a single set of variable assignments) in this model. For example, look at #1: Since each student is lifting a different "two tables", it will take 4 solutions to capture the meaning:
 
@@ -134,7 +130,6 @@ The *solution group* that represents this can actually be represented by a singl
 |---|---|
 |x=[alice, bob], y=[table1, table2]| Alice and Bob [together] lifted two tables [at the same time]|
 
-
 Next, a distributive reading scenario:
 
 ```
@@ -167,7 +162,6 @@ The *solution group* that represents this requires multiple solutions in the gro
 |x=[bob], y=[table3]| Bob [separately] lifted one table|
 |x=[bob], y=[table4]| Bob [separately] lifted another table|
 
-
 Finally, a cumulative reading:
 ```
 formula: student(x), table(y), lift(x, y)
@@ -192,7 +186,6 @@ The *solution group* that represents this also requires multiple solutions in th
 |---|---|
 |x=[alice], y=[table1]| Alice [separately] lifted one table|
 |x=[bob], y=[table2]| Bob [separately] lifted one table|
-
 
 ## Summary
 With the addition of solution groups, the solver can now properly represent the meaning of plural sentences across collective, distributive and cumulative readings.

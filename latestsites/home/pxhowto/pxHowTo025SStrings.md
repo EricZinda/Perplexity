@@ -97,7 +97,6 @@ Elements in an s-string have the format `{determiner value:pluralization@meaning
 ## Value
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
 
-
 The only required part of an s-string is: `value`:
 
 - `value` is interpreted as a Python variable that contains a string representing a DELPH-IN variable such as `"x8"`
@@ -108,7 +107,6 @@ Note: When using the `*value` or `"value"` forms, any text can be used and will 
 
 ## Determiner
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
-
 
 Put one of the following as `determiner` to force that type of article to be used instead of what the user said:
 - `a` or `an` to include an indefinite article. Either works and will be changed to match the text when the string is evaluated.
@@ -129,7 +127,6 @@ User says 'the lively party':
 ## Capitalization
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
 
-
 To capitalize the generated text, capitalize `determiner`, like `{The value}` or `{Bare value}`
 
 ```
@@ -141,7 +138,6 @@ User says 'the lively party':
 
 ## Pluralization
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
-
 
 `pluralization` specifies how to shape the plural of the item represented by `value`. To force the item into plural or singular form, use `:` followed by:
 - `sg` : singular
@@ -157,7 +153,6 @@ Note that for pluralization to work when `value` is not a DELPH-IN variable:
 
 ### Meaning at Index
 > s-string format: `{determiner value:pluralization@meaning_at_index}`
-
 
 The meaning of a DELPH-IN variable in an MRS tree depends on where in the tree it gets evaluated.  `@meaning_at_index` tells the system to convert a DELPH-IN variable to what its meaning would be after evaluating all the predications up to, but not including, the predication at that index. The index represents the depth-first evaluation order the system uses, starting at zero.
 

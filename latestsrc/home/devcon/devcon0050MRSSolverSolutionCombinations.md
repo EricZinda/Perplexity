@@ -3,7 +3,6 @@ In the section introducing the solution grouping algorithm, the algorithm starts
 
 > For each possible combination of solutions from Phase 1 ...
 
-
 And leaves how to generate them as an exercise for the reader. In this section, we'll go through one approach to generating combinations of solutions that properly deals with the kinds of answers users expect and allows for some performance optimizations.
 
 ## Only 2 Solution Groups Are Needed

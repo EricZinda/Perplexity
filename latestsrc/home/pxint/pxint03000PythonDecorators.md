@@ -18,7 +18,6 @@ class Vocabulary(object):
 
 The `Predication` class is the actual "decorator" class. It uses the fact that Python functions can define other functions within them.
 > TODO: Describe in more detail how this decorator works
-
 ```
 def Predication(vocabulary, name=None):
     # Gets called when the function is first created
@@ -38,6 +37,5 @@ def Predication(vocabulary, name=None):
 ```
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint03000PythonDecorators.md)]{% endraw %}

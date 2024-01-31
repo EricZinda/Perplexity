@@ -354,24 +354,24 @@
 
 <p>The <code class="language-plaintext highlighter-rouge">Predication</code> class is the actual “decorator” class. It uses the fact that Python functions can define other functions within them.</p>
 <blockquote>
-  <p>TODO: Describe in more detail how this decorator works</p>
-</blockquote>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Predication(vocabulary, name=None):
+  <p>TODO: Describe in more detail how this decorator works
+```
+def Predication(vocabulary, name=None):
     # Gets called when the function is first created
     # function_to_decorate is the function definition
     def PredicationDecorator(function_to_decorate):
-        def WrapperFunction(*args, **kwargs):
+        def WrapperFunction(<em>args, **kwargs):
             # For now just iterate from the predication,
-            # later we'll do more here
-            yield from function_to_decorate(*args, **kwargs)
+            # later we’ll do more here
+            yield from function_to_decorate(</em>args, **kwargs)</p>
+</blockquote>
 
-        predication_name = name if name is not None else function_to_decorate.__name__
-        vocabulary.AddPredication(function_to_decorate.__module__, function_to_decorate.__name__, predication_name)
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    predication_name = name if name is not None else function_to_decorate.__name__
+    vocabulary.AddPredication(function_to_decorate.__module__, function_to_decorate.__name__, predication_name)
 
-        return WrapperFunction
+    return WrapperFunction
 
-    return PredicationDecorator
+return PredicationDecorator ```
 </code></pre></div></div>
 
 <blockquote>
@@ -458,7 +458,7 @@
   </ul>
 </div>
 
-<div class="page__footer-copyright">&copy; 2023 Your Name. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+<div class="page__footer-copyright">&copy; 2024 Your Name. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
 
       </footer>
     </div>

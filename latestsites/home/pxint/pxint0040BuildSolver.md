@@ -90,5 +90,4 @@ With this in place, we can tackle more complicated groups of predications such a
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0040BuildSolver.md)]{% endraw %}

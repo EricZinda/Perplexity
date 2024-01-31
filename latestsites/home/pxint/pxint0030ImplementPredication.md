@@ -63,5 +63,4 @@ Since we are going to start calling more than one predication and eventually dea
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md)]{% endraw %}

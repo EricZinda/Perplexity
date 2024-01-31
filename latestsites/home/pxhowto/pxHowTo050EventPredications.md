@@ -140,5 +140,4 @@ Now we are ready to tackle action verbs in the [next topic](https://blog.inducto
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
 Last update: 2023-05-16 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo050EventPredications.md)]{% endraw %}

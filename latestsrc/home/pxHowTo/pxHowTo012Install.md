@@ -6,7 +6,6 @@ Below are instructions for installing everything you'll need to run Perplexity a
 ### Clone Perplexity Using GitHub LFS
 > VERY IMPORTANT: This project uses [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) for storing grammar files. You won't be able to use it properly unless you install [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) and activate it for the repository by following the below steps.
 
-
 1. The Perplexity repository contains very large grammar files and it uses [GitHub LFS](https://git-lfs.com/) to store them. If you don't have GitHub LFS installed yet:
    - Install [GitHub LFS](https://git-lfs.com/) following the instructions at that link
    - `git lfs install` for the git user account that you will clone Perplexity with
@@ -19,14 +18,12 @@ Now you can choose to run Perplexity in a Docker container or on your local mach
 ### Option 1: Run Perplexity via Docker
 > VERY IMPORTANT: This project uses [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) for storing large grammar files. You won't be able to use it properly unless you install [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage), activate it for your account, and *then* clone the repository as described above.
 
-
 0. Clone Perplexity using GitHub LFS as described above
 1. [Install Docker](https://docs.docker.com/engine/install/)
 2. Follow the instructions at the top of the [docker/Dockerfile](https://github.com/EricZinda/Perplexity/blob/main/docker/Dockerfile) file in the Perplexity repository to build an image and run a sample
 
 ### Option 2: Run Perplexity on Your Machine
 > VERY IMPORTANT: This project uses [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) for storing large grammar files. You won't be able to use it properly unless you install [GitHub LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage), activate it for your account, and *then* clone the repository as described above.
-
 
 0. Clone Perplexity using GitHub LFS as described above
 1. [Install Python 3.8](https://www.python.org/downloads/) or greater on your machine
@@ -46,7 +43,6 @@ Now you need to install the ACE Parser, which is the only non-Python part of the
 2. Make sure your operating system path is set to the ACE binary you download from there. 
 
 > The mac download in the ACE link above *does not* support the Mac M1 processor. You'll need a special build that is only available on the forum at the moment if you have an M1. Download that [here](https://delphinqa.ling.washington.edu/t/compiling-ace-on-macos/486/26).
-
 
 Notes: 
 - The best location for the ACE binary on a Mac is: `/usr/local/bin`, but it can be anywhere as long as the path points to it
@@ -76,7 +72,7 @@ Once everything in installed, to begin a session of Perplexity development you n
 2. Activate the environment
    - `source env/bin/activate`
 3. Tell Python that it should look in this directory for modules:
-   - `export PYTHONPATH=PYTHONPATH:<Perplexity repository path>`
+   - `export PYTHONPATH=$PYTHONPATH:<Perplexity repository path>`
 4. Start the Perplexity engine:
    - `python3 ./file_system_example/examples.py` 
 

@@ -1,7 +1,6 @@
 {% raw %}## Solving an MRS
 > It is important to understand [what MRS is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) and what [a well-formed MRS tree is](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
-
 A well-formed MRS tree can be thought of as an *equation* that is `true` or `false` depending on the values of its variables. Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are `true` when their arguments are set to values that *are* or *mean* what the predication means. 
 
 So:
@@ -101,7 +100,6 @@ The backtracking algorithm does its job by recursively "evaluating" the `scope()
 > - If `true`, try the next predication in the list
 > - If `false`, the list is `false`
 > - If all the predications are `true`, the list is `true`
-
 
 So, working through the example:
 

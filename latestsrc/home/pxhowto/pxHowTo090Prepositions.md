@@ -5,7 +5,6 @@ The phrase:
 
 > go to a folder
 
-
 ... yields 4 parses, one of which is:
 
 ```
@@ -150,6 +149,5 @@ Done!
 The system says "(there are more)" in response to "where am i" because the user is in both "/Desktop" and "/". The reasons are described in the [Combinations and Proper Responses topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations). The same is true for "go to a folder" ... there are several folders.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-05-16 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo090Prepositions.md)]{% endraw %}

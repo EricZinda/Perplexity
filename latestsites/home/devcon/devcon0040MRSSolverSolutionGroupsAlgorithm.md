@@ -29,7 +29,6 @@ Here's an overview of how the algorithm can determine groups that properly accou
 > 3. If either count meets the variable constraint, it succeeds and the next variable in the order is tried. If not, this group fails.
 > 4. If the end is reached and all variables succeeded, this is a valid solution group.
 
-
 To get the groups that should be checked using the process above, we (you guessed it...) try every combination of solutions that solving the tree produced. We will end this entire section with ways of efficiently doing this, but we'll start with the simplistic approach because it is easier to follow and does work, just not efficiently as it could. 
 
 Figuring out which constraints are on the variables is a longer story, which the next few sections will cover.
@@ -150,7 +149,6 @@ So, now we have an approach to gathering the constraints from the MRS:
 > 3. Add the `NUM: pl` or `NUM: sg` constraint
 > 4. Reduce them to the minimal set
 
-
 ### The Final Algorithm: Introducing Phase 0
 This section started by describing the two phases of the solver algorithm:
 - Phase 1: Evaluate the MRS tree to get the solutions
@@ -208,7 +206,6 @@ Here's the full algorithm all in one place:
 >    - If not: this group fails and the next combination group starts at step #5
 > 9. If the end of the variables is reached and all succeeded, this combination is a valid solution group
 
-
 When numeric constraints are removed from an MRS we are left with a relatively straightforward constraint satisfaction problem that should be able to return solutions quickly, but there still may be *many* solutions.
 
 ### Example
@@ -237,7 +234,6 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
 > - Determine the list of `x` variables in the tree and the order they will be evaluated in
 > - Determine the constraints placed on each `x` variable by predications that modify it.
 
-
 Using the approach described above, the evaluation order of variables is [`x3`, `x10`] in a depth-first traversal and the found constraints for the variables are:
 
 |`x3` (students)|`x10`(table)|
@@ -255,7 +251,6 @@ When simplified, they are:
 >   - Removing adjective predications that added numeric constraints
 >   - Changing quantifiers that added numeric constraints to `udef_q`
 
-
 The modified tree is:
 
 ```
@@ -268,7 +263,6 @@ udef_q(x3,RSTR,BODY)             ┌────── _table_n_1(x10)
 #### Phase 1: Solution Generation
 
 > - Generate the list of solutions to the modified tree using the approach described in the previous section
-
 
 Using a (unshown) world state, and using the approach described in the previous section, the solutions to the modified tree are (let's say):
 ```
@@ -292,7 +286,6 @@ Solution 12: x3=[student12], x10=[table14]
 
 #### Phase 2: Group Generation
 > 6. For each possible combination of solutions from Phase 1: Walk the `x` variables in evaluation order. 
-
 
 Start by generating (as yet untested) groups that are all combinations of the above solutions. These may or may not be solution groups, we don't know yet: we need to test each one:
 
@@ -320,7 +313,6 @@ Group 3:
 > - If either count meets the variable constraints: it succeeds and the next variable in the order is tried
 >   - If not: this group fails and the next group starts at step #5
 > - If the end of the variables is reached and all succeeded, this combination is a valid solution group
-
 
 Using the constraints we determined:
 
