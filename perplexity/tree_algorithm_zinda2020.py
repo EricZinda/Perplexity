@@ -20,9 +20,9 @@ First some definitions:
 
 As a reminder, a tree is "well-formed" if:
 
-1. Each floater is assigned to one, and only one, hole. No holes or floaters are left at the end  
-2. None of the assignments of floaters to holes violates a `qeq` constraint 
-3. Any variable introduced by a quantifier is not used outside of the branches assigned to its `RSTR` or `Body` arguments  
+1. Each predication is assigned to one, and only one, hole. No holes are left unfilled, and no predications are unassigned at the end  
+2. None of the assignments of predications to holes violates a `qeq` constraint 
+3. Any variable introduced by a quantifier is not used outside of the branches assigned to its `RSTR` or `BODY` arguments  
 
 **Here's the intuition for how the algorithm works**: We are going to walk a search tree.  Every node of the search tree represents a partial assignment of floaters to holes that meets the above 3 constraints. Every arc from a parent node in the search tree to a child node in the search tree represents a unique assignment of a (otherwise unassigned) floater to a hole.  If that assignment violates a constraint, the search tree node is not valid (since obviously keeping this assignment and adding floaters to it can't be valid either) and we stop searching that whole branch of the search tree. This pruning is what makes it faster than the really naive "try every option" approach. Every node in the search tree that has no holes left to assign is a solution.
 

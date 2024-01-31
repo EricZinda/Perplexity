@@ -136,13 +136,13 @@ This description is for those that are interested in how the algorithm works, an
 
 First some definitions used in this algorithm:
 - **Hole**: A scopal (i.e. `h` type) argument in an MRS predicate that doesn't refer to an existing predication
-- **Floater**: A tree of predications that have had zero or more of their scopal (i.e. `h` type) arguments filled by unique predications.  [This is not at official MRS term, it is one created for this algorithm]
+- **Floater**: A tree of predications that have had zero or more of their scopal (i.e. `h` type) arguments filled by predications.  [This is not at official MRS term, it is one created for this algorithm]
 
 As a reminder, a tree is "well-formed" if:
 
-1. Each floater is assigned to one, and only one, hole. No holes or floaters are left at the end  
-2. None of the assignments of floaters to holes violates a `qeq` constraint 
-3. Any variable introduced by a quantifier is not used outside of the branches assigned to its `RSTR` or `Body` arguments  
+1. Each predication is assigned to one, and only one, hole. No holes are left unfilled, and no predications are unassigned at the end  
+2. None of the assignments of predications to holes violates a `qeq` constraint 
+3. Any variable introduced by a quantifier is not used outside of the branches assigned to its `RSTR` or `BODY` arguments  
 
 **Here's the intuition for how the algorithm works**: We are going to walk a search tree.  Every node of the search tree represents a partial assignment of floaters to holes that meets the above 3 constraints. Every arc from a parent node in the search tree to a child node in the search tree represents a unique assignment of a (otherwise unassigned) floater to a hole.  If that assignment violates a constraint, the search tree node is not valid (since obviously keeping this assignment and adding floaters to it can't be valid either) and we stop searching that whole branch of the search tree. This pruning is what makes it faster than the really naive "try every option" approach. Every node in the search tree that has no holes left to assign is a solution.
 
@@ -179,7 +179,49 @@ Starting at the initial node:
 
 Once this has run its course you will have all the valid well-formed trees for the MRS. 
 
-Here is the Python code for the main routine, all of the code is available [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py):
+**Code and Example**
+Below is the Python code for the main routine, all of the code is available [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py).
+
+Let's walk through an example of "Every person eats a steak” to see how the code works:
+
+~~~
+[ "Every person eats a steak"
+  TOP: h0
+  INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ]
+  RELS: < [ _every_q<0:5> LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg ] RSTR: h5 BODY: h6 ]
+          [ _person_n_1<6:12> LBL: h7 ARG0: x3 ]
+          [ _eat_v_1<13:17> LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: sg IND: + ] ]
+          [ _a_q<18:19> LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ]
+          [ _steak_n_1<20:25> LBL: h12 ARG0: x8 ] >
+  HCONS: < h0 qeq h1 h5 qeq h7 h10 qeq h12 > ]
+~~~
+
+There are 5 holes in the MRS that need to be assigned a predication: `h0`, `h5`, `h6`, `h10`, `h11`.
+
+To do this, `try_alternative_hole_assignments()` gets called initially with `all_holes_dict` assigned like this:
+
+~~~
+all_holes_dict = {
+   'h0' = {'Constraints':  {'InScope': {},     'QeqLo': {'h1': False}},    'Floater': None, 'Label': 'h0'}
+   'h5' = {'Constraints':  {'InScope': {'x3'}, 'QeqLo': {'h7': False}},    'Floater': None, 'Label': 'h5'}
+   'h6' = {'Constraints':  {'InScope': {'x3'}, 'QeqLo': {}},               'Floater': None, 'Label': 'h6'}
+   'h10' = {'Constraints': {'InScope': {'x8'}, 'QeqLo': {'h12': False}},   'Floater': None, 'Label': 'h10'}
+   'h11' = {'Constraints': {'InScope': {'x8'}, 'QeqLo': {}},               'Floater': None, 'Label': 'h11'}}
+~~~
+
+You can see that 'Floater' is initially set to `None` for all the holes. The goal is to figure out which unassigned predications (i.e. floaters) should get assigned to each of these holes.
+
+`try_alternative_hole_assignments()` does this by searching a tree of all possible assignments. 
+
+It starts with the assignments above. Since there are some holes that don’t have a predication assigned, it will:
+
+1. Pick the next unassigned hole: in this case, `h0`.
+2. Pick the next unassigned floater: in this case, `h1`.
+3. If this assignment doesn't violate any constraints on building a scope-resolved tree: update `all_holes_dict()` to contain this assignment and recurse at step #1 with the new `all_holes_dict()`.
+4. If the assignment does violate a constraint, skip it and jump to step #2 to try the next floater.
+... 
+5. If you recurse to the point where there are no more holes you've found a valid tree: yield it, and then keep searching for more.
+
 
 ~~~
 def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, nodeRemainingFloatersList, nodeAssignmentList):
