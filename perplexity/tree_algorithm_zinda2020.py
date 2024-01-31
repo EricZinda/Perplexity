@@ -494,11 +494,13 @@ def find_unquantified_x_variables(mrs):
 
 
 # Figure out which predication labels are unused in any argument. i.e. "floating".
-# Those need to be assigned to holes.
-# Also figure out which Label references are not defined as the Label of an EP, those are the holes
+# Those need to be assigned to holes. Also figure out which Label references are not defined as the Label of an EP, those are the holes
 #
-# is generator that returns a solution dictionary of all key = hole and value = predication handle that fills it each time it is iterated
+# Is generator that returns a solution dictionary of all different sets of key = hole and value = predication handles that fill
+# it each time it is iterated
 #
+# For phrases that are wh-questions, the root predication needs to be which_q, and setting required_root_label to the MRS label for the
+# which_q predication ensures this
 def valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs=""):
     # Add the "top" Label as an ARG0 to an unused MRS predication, which makes it a hole,
     # just to make the logic simpler since we will later map floaters to holes and want to have
