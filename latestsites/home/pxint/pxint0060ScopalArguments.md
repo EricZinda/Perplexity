@@ -10,7 +10,6 @@ _a_q(x3, RSTR,BODY)
 ```
 > We can ignore for the moment variables of type `e`. We'll handle those later, they don't matter for this example.
 
-
 If we convert this into text, it would be something like:
 ```
  _a_q(x3, _file_n_of(x3), _large_a_1(e2, x3))
@@ -43,6 +42,5 @@ At this point we have a fully functional evaluator, now we need to use it to pro
 We'll start by stepping back and walking through how [MRS documents and trees are generated](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees) in the first place.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md)]{% endraw %}

@@ -1,7 +1,6 @@
 {% raw %}## The Minimal Recursion Semantics (MRS) Format
 > This section is designed to give application developers an *overview* of the Minimal Recursion Semantics format which is the primary artifact used by DELPH-IN to represent the meaning of a phrase. For a deeper dive into MRS, or one that has a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).
 
-
 The DELPH-IN English Resource Grammar (ERG) converts an English phrase into a data structure called an ["Minimal Recursion Semantics Formalism" (MRS)](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) which is a technical representation of human language. The [ACE processor](http://sweaglesw.org/linguistics/ace/), among other processors, processes the grammar and the phrase to produce the MRS formalism and represent it in one of several formats, such as Simple MRS. Processors can be used with any of the other DELPH-IN grammars to convert other natural languages into the MRS format. While the examples below use English, the concepts apply across the DELPH-IN grammars.
 
 Because language is ambiguous, most phrases parse into more than one MRS document, each representing a different interpretation of the phrase. Each MRS document encodes one high-level meaning of the phrase into a list of predicate-logic-like predicates (called *predications*).
@@ -281,7 +280,6 @@ The other three types of variables represent a type that is "in-between" or "und
 
 > "i (for individual) is a generalization over eventualities and instances; p (the half-way mark in the alphabet between h and x) is a generalization over labels and instances; and u (for unspecific or maybe unbound) generalizes over all of the above. Note that Copestake et al. (2001) use individual for what is called instance here."
 
-
 In practice, they appear in two pretty specific scenarios:
 
 **Unquantified `x` variables**: Some predications in the ERG have an argument that is conceptually an individual (`x`) type, but does not require quantification. Since the rules require that all `x` variables are scoped by a quantifier, the most appropriate of the three "in-between" types will be used instead as a "work-around". This is usually `i` since these are most often of type `x`, and `i` is the most specific of the options that includes `x`. As with all non-`x` variables, this will be "existentially quantified" (globally defined) -- that is the whole point of using them here.
@@ -362,7 +360,6 @@ A `qeq` constraint always relates an `h` argument of one predication, called a "
 
 > A qeq constraint of "X qeq Y" says that the direct path from X to Y must only contain quantifiers (except for the final predication Y).
 
-
 As we work through fully resolving the MRS into a tree, we'll see more description and examples of how the `HCONS` section is used.
 
 ## Index
@@ -407,6 +404,5 @@ More information on `INDEX` is described in the section on sentence force.
 The next topic walks through the rules of creating "well-formed MRS trees", and is the last big chunk of conceptual background needed before we start building the system.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-06-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}

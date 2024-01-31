@@ -201,5 +201,4 @@ Note that we have a subtle bug in our implementation of `default_quantifier`: we
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0090SimpleQuestions.md)]{% endraw %}

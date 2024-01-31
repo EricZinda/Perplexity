@@ -162,5 +162,4 @@ Also note that "you" refers to "the computer" and we haven't put it anywhere, th
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
 Last update: 2023-06-01 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md)]{% endraw %}

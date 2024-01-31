@@ -120,5 +120,4 @@ The [next topic](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint00
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0070GenerateMRSAndTrees.md)]{% endraw %}

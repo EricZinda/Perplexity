@@ -32,7 +32,6 @@ This is the list of properties for that variable. It provides various informatio
 
 > `SF: prop` ("sentence force": "proposition").  
 
-
 Every sentence is categorized into a *type*, indicated by the `SF` ("sentence force") property of one or more of its variables (note that the `SF` should be the same even if it appears on more than one variable):
 
 - Proposition (`SF: prop`): "A file is large."
@@ -58,7 +57,6 @@ So, the sentence force property is key to understanding the types of responses a
 In the [next section](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure) we'll talk about how to handle failures in a backtracking system.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0070SentenceForce.md)]{% endraw %}

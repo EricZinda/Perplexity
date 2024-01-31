@@ -148,7 +148,6 @@ Note that the `set_x()` method does not actually "set" a value in the `State` ob
 
 > Note: There are much more efficient ways to isolate the data than copying the entire world, but we're doing a copy to keep the code simple. For example, database engines like MySQL have transactions to isolate different parts of code from changes until they should be seen. We could improve our simple implementation by keeping a difference list and not copying the entire state for every copy, but for now we'll keep it simple.
 
-
 The `add_to_e()` method is used for adding information to an event (or `e`) variable. Instead of replacing the value of the variable, it represents each `e` variable as a Python `dict` and allows the caller to set or replace key/value pairs in it. Event variables have a very different semantic than `x` variables, as described in [the Event section of the "MRS" topic](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS). This behavior implements that semantic.
 
 Creating a `State` object with the list of the objects representing files and folders could be done like this:
@@ -165,6 +164,5 @@ Note that an instance of the `State` object is created by calling it like a func
 Now you've seen some of the basic Python you'll see throughout the tutorial and we've defined the core `State` class we'll use in our predications.  Next, we'll [implement a predication](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0030ImplementPredication).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-05-15 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0020PythonBasics.md)]{% endraw %}

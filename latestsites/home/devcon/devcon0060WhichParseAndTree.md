@@ -7,7 +7,6 @@ With that in mind, a simple approach to choosing the "right" interpretation that
 
 > Solve each well-formed tree against the world state in the provided partial ordering of MRS documents. Assume the first one that succeeds is what the user meant. If none succeed, return the first failure.
 
-
 This works for the same reason human interactions work: Most phrases are meant to convey information that *makes sense*. I.e. the phrase discusses things that actually exist, uses verbs that make sense with objects being discussed, etc. So, most phrases the user gives your system *should* have a solution given the current world state. Furthermore, humans have an intuitive understanding of the ambiguity of language and are forgiving of errors when they are understandable and logical failures. I.e. "I can see why you thought that, even though it wasn't what I meant...". 
 
 So, if the system finds a tree that has a solution in the current world state, it is likely to be at least close to what the user meant. Even if it isn't, given that it was a solution in the world state, it will still be *logical* and the user will very often understand (and sometimes be delighted by) how their phrase was misinterpreted.
@@ -19,6 +18,5 @@ Things get a little trickier if none of them works. However, the same principle 
 [Perplexity Internals](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0071WhichParseAndTree) walks through how Perplexity implements this logic internally.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0060WhichParseAndTree.md)]{% endraw %}

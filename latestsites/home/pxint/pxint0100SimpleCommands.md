@@ -140,7 +140,6 @@ An "operation" in our system is simply an object that has an `ApplyTo()` method 
 
 > This is a case where our "immutable" `State` class is actually being changed. That's OK, though, because only the `State` class will be asking it to do this, and only on a fresh `State` object that isn't in use yet.
 
-
 When an operation is applied to the `State` class, we'll remember what happened by adding the operation to the new `State` object's list of operations.  Then, once we've collected all the solutions to a problem like "delete every file", we can gather the operations from each of the solutions using the `GetOperations()` method, and apply them, as a group, to the original state. This will give us a new state object that combines them all. You'll see this at the end of this section.
 
 So now we can finally implement the verb `delete_v_1`:
@@ -156,7 +155,6 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
 `delete_v_1` first checks to make sure the actor is "Computer". That's because the user could have said "Bill deletes a file" and we'd prefer the system to say "I don't know who Bill is" than to just delete the file. We should only delete the file when *the computer* is told to delete it. 
 
 > TODO: Need to implement the full predication contract for the verb
-
 
 Then, we use our new `ApplyOperations()` method to do the deleting and return the new state object with the object gone.
 
@@ -270,6 +268,5 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
 ```
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
-
 
 Last update: 2023-05-17 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0100SimpleCommands.md)]{% endraw %}

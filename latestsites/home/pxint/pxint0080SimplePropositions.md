@@ -110,5 +110,4 @@ In the next section, we'll respond to questions.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
 Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0080SimplePropositions.md)]{% endraw %}

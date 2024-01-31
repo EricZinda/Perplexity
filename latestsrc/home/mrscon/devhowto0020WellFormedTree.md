@@ -1,7 +1,6 @@
 {% raw %}## Building Well-Formed MRS Trees
 > This section is designed to help application developers understand how to build well-formed trees from MRS documents. To understand this section, first make sure you have a [basic understanding of the MRS format](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) or, for a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).  
 
-
 Let's use the sentence "every book is in a cave" as an example. If the phrase is parsed with [the ACE parser](http://sweaglesw.org/linguistics/ace/), you get an MRS document like this:
 
 ```
@@ -44,7 +43,6 @@ When `a_q` is the leftmost node, it starts by selecting a cave on its upper bran
 
 > Don't worry if you don't completely understand how the solutions are obtained yet.  The point is that there are different interpretations for the same MRS, represented by different trees. The rest of the tutorial will work through how these get solved.
 
-
 Both of these trees are represented by the same MRS document. The MRS structure is said to be *underspecified*, meaning that a single MRS document allows multiple interpretations. 
 
 Here's the MRS for "Every book is in a cave" again, so we can see how:
@@ -75,7 +73,6 @@ The only kind of constraint used in "modern" MRS is a `qeq` constraint.  A `qeq`
 Said a different way: 
 
 > A qeq constraint of `h0 qeq h1` (as in the above example) says that the direct path in the final tree from `h0` to `h1` must only contain quantifier predicates, but can contain as many as you want, as long as they don't violate other constraints.
-
 
 So, in this MRS:
 
@@ -134,7 +131,6 @@ There are definitely more efficient approaches, but the algorithm below has the 
 ## A Simple, Fast Enough, Algorithm
 > It isn't important to fully understand this algorithm as long as you understand what it has to do: build a well-formed MRS tree, and what the rules are in doing that. We'll use this code as a library routine all throughout the tutorial, but we won't dive into its implementation again. If you've followed along and understood the content so far, you've got enough background to go to the next section where we start to dive into how to implement the predications.
 
-
 This description is for those that are interested in how the algorithm works, and isn't necessary for understanding the rest of the tutorial:
 
 First some definitions used in this algorithm:
@@ -182,7 +178,7 @@ Starting at the initial node:
 
 Once this has run its course you will have all the valid well-formed trees for the MRS. 
 
-Here is the Python code for the main routine:
+Here is the Python code for the main routine, all of the code is available [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py):
 
 ```
 def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, nodeRemainingFloatersList, nodeAssignmentList):
@@ -235,5 +231,4 @@ def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, node
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-
-Last update: 2023-06-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}
+Last update: 2024-01-31 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}
