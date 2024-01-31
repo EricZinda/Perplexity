@@ -179,7 +179,7 @@ Starting at the initial node:
 
 Once this has run its course you will have all the valid well-formed trees for the MRS. 
 
-Here is the Python code for the main routine:
+Here is the Python code for the main routine, all of the code is available [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py):
 
 ~~~
 def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, nodeRemainingFloatersList, nodeAssignmentList):

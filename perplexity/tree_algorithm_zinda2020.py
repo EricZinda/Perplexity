@@ -498,6 +498,7 @@ def find_unquantified_x_variables(mrs):
 # Also figure out which Label references are not defined as the Label of an EP, those are the holes
 #
 # is generator that returns a solution dictionary of all key = hole and value = predication handle that fills it each time it is iterated
+#
 def valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs=""):
     # Add the "top" Label as an ARG0 to an unused MRS predication, which makes it a hole,
     # just to make the logic simpler since we will later map floaters to holes and want to have
