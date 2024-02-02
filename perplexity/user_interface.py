@@ -1,4 +1,7 @@
 import logging
+import os
+import sys
+
 import perplexity.messages
 from delphin.codecs import simplemrs
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
@@ -54,6 +57,16 @@ class UserInterface(object):
         return {"Mrs": mrs,
                 "UnknownWords": unknown_words,
                 "Trees": []}
+
+    def default_loop(self):
+        command_line_commands = sys.argv[1:] if len(sys.argv) > 1 else []
+        while True:
+            command = command_line_commands.pop(0) if len(command_line_commands) > 0 else None
+            if command == "exit":
+                os._exit(0)
+            else:
+                self.interact_once(force_input=command)
+            print()
 
     def interact_once(self, force_input=None):
         if force_input is None:

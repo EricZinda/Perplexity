@@ -1,3 +1,6 @@
+import os
+import sys
+
 import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
@@ -2988,10 +2991,7 @@ def hello_world():
     user_interface = UserInterface(reset, vocabulary, message_function=generate_custom_message,
                                    error_priority_function=error_priority, scope_function=in_scope,
                                    scope_init_function=in_scope_initialize)
-
-    while True:
-        user_interface.interact_once()
-        print()
+    user_interface.default_loop()
 
 
 if __name__ == '__main__':

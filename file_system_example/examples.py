@@ -1,3 +1,6 @@
+import os
+import sys
+
 from file_system_example.messages import error_priority, generate_message
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
 from file_system_example.state import State, FileSystemState
@@ -977,6 +980,19 @@ def state_test():
     # print("=============")
 
 
+def Example_main_reset():
+    return FileSystemState(FileSystemMock([(True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file3.txt", {"size": 10000}),
+                                           (True, "/documents/file4.txt", {"size": 10000000}),
+                                           (True, "/documents/file5.txt", {"size": 10000})],
+                                           "/Desktop"))
+
+
+def Example_main():
+    user_interface = UserInterface(Example_main_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree, scope_function=in_scope, scope_init_function=in_scope_initialize)
+    user_interface.default_loop()
+
+
 if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
@@ -1015,10 +1031,10 @@ if __name__ == '__main__':
     # Example20()
     # Example21()
     # Example22()
-    Example23()
+    # Example23()
     # Example24()
     # Example25()
-    Example26()
+    # Example26()
     # Example27()
     # Example27a()
     # Example28()
@@ -1063,3 +1079,5 @@ if __name__ == '__main__':
     # /show
     # which 2 files are in 2 folders together? -> show the parse that worked
     # /show
+
+    Example_main()
