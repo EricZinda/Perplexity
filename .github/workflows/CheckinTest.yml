@@ -1,0 +1,76 @@
+name: Checkin Test
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      testCommandLine:
+        description: 'Command to use for testing (e.g. /runtest foo or a single phrase like "what do you see?")'
+        required: true
+        default: '/runfolder esl'
+
+permissions:
+  id-token: write
+  contents: read
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+#      - uses: aws-actions/configure-aws-credentials@v1-node16
+#        with:
+#          aws-region: us-east-1
+#          role-to-assume: arn:aws:iam::864551525312:role/GithubActionsRole
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
+      # From https://docs.docker.com/ci-cd/github-actions/
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: inductorsoftware/p8ypythontest:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+      - name: Run the tests
+        env:
+          OPENAIKEY: ${{ secrets.OPENAIKEY }}
+        run: |
+          docker run --name testrun --env PYTHONPATH='/' --env OPENAIKEY-i inductorsoftware/p8ypythontest:latest /usr/src/Python-3.8.0/python /esl/tutorial.py "/logtests true" "${{ github.event.inputs.testCommandLine }}" "exit"
+          docker cp testrun:/testresults.txt .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test results
+          path: ./testresults.txt
+          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`
