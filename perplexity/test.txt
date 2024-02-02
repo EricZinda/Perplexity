@@ -1,0 +1,2 @@
+/logtests
+/runfolder esl

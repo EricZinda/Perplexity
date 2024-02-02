@@ -40,6 +40,7 @@ class UserInterface(object):
         self.show_all_answers = False
         self.run_all_parses = False
         self.mrs_parser = MrsParser(self.max_holes)
+        self.log_tests = False
 
     def chosen_tree_record(self):
         chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
@@ -533,6 +534,25 @@ def command_run_test(ui, arg):
     return True
 
 
+def StringBooleanToBoolean(value):
+    return value.lower() in ['true', '1', 't', 'y', 'yes']
+
+
+def command_log_tests(ui, arg):
+    if len(arg) == 0:
+        value = not ui.log_tests
+    else:
+        value = StringBooleanToBoolean(arg)
+    ui.log_tests = value
+    print("Log Test Results is now {}".format(value))
+    return True
+
+
+def command_resolve_tests(ui, arg):
+    ui.test_manager.resolve_tests()
+    return True
+
+
 def command_soln(ui, arg):
     if len(arg) == 0:
         ui.show_all_answers = not ui.show_all_answers
@@ -561,9 +581,8 @@ def command_run_parse(ui, arg):
 
 
 def command_run_folder(ui, arg):
-    test_folder = ui.test_manager.full_test_path(arg)
-    ui.test_manager.record_session_data("LastTestFolder", test_folder)
-    test_iterator = TestFolderIterator(ui.test_manager, test_folder)
+    ui.test_manager.record_session_data("LastTestFolder", arg)
+    test_iterator = TestFolderIterator(ui.test_manager, arg)
     ui.test_manager.run_tests(test_iterator, ui)
 
     return True
@@ -731,6 +750,12 @@ command_data = {
     "runtest": {"Function": command_run_test, "Category": "Testing",
                 "Description": "Runs a test",
                 "Example": "/runtest subdirectory/foo"},
+    "resolvetests": {"Function": command_resolve_tests, "Category": "Testing",
+                "Description": "Resolves all the test results stored in 'testresults.txt'",
+                "Example": "/resolvetests"},
+    "logtests": {"Function": command_log_tests, "Category": "Testing",
+                "Description": "Logs test results to the file 'testresults.txt'",
+                "Example": "/logtests true"},
     "runfolder": {"Function": command_run_folder, "Category": "Testing", "WebSafe": False,
                   "Description": "Runs all tests in a directory",
                   "Example": "/runfolder foldername"},

@@ -1,0 +1,68 @@
+# Before doing any of this you'll need to install Docker
+# To publish it, you'll need to get a DockerHub account
+#
+# To build the base image:
+# From the repository root, run:
+#   docker build --no-cache -t p8ybase -f ./docker/DockerBaseFile ./
+#
+# To push your image to docker hub so others can access it:
+# 1. Tag it with <your docker username>/<what you want to call it>, for example: inductorsoftware/p8ybase
+#   docker tag p8ybase:latest inductorsoftware/p8ybase
+#
+# 2. Push it to docker hub:
+#   docker push inductorsoftware/p8ybase
+#
+# 3. Others can then access it by going to: https://hub.docker.com/r/inductorsoftware/p8ybase
+#       i.e. the URL is https://hub.docker.com/r/<your docker hub user name>/<what you called it>
+#
+# 4. Others can then run your project using the instructions above for running an image
+
+FROM ubuntu
+WORKDIR ./
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt clean && apt -y update && apt -y upgrade
+# RUN apt -y update
+RUN apt-get -y install wget build-essential checkinstall
+RUN apt-get -y install libreadline-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev
+
+# Download and build Python
+WORKDIR /usr/src
+RUN wget https://www.python.org/ftp/python/3.8.0/Python-3.8.0.tgz
+RUN tar xzf Python-3.8.0.tgz
+WORKDIR /usr/src/Python-3.8.0
+RUN ./configure --enable-optimizations
+RUN make altinstall
+
+# Install all the tools we'll need later
+RUN apt-get update
+RUN apt-get -y install git
+RUN apt-get -y install nano
+RUN apt-get -y install strace
+RUN apt-get -y install locales
+
+# Install all the required python libraries
+RUN /usr/src/Python-3.8.0/python -m ensurepip
+RUN /usr/src/Python-3.8.0/python -m pip install --upgrade pip
+RUN /usr/src/Python-3.8.0/python -m pip install pydelphin
+RUN /usr/src/Python-3.8.0/python -m pip install inflect
+
+# Make sure we are running as english UTF-8 so the ACE Parser
+# can build new grammar images if we ask it to
+RUN locale-gen en_US.UTF-8
+ENV LANG C.UTF-8
+
+# Get the ERG ACE parser
+WORKDIR /usr/src
+RUN wget http://sweaglesw.org/linguistics/ace/download/ace-0.9.31-x86-64.tar.gz
+RUN tar xzf ace-0.9.31-x86-64.tar.gz
+RUN cp ./ace-0.9.31/ace /usr/bin
+RUN chmod uog+x /usr/bin/ace
+
+# Make a temp dir with execute permissions for ACE
+WORKDIR /usr/src
+RUN mkdir mytempdir
+RUN chmod uog+x /usr/src/mytempdir
+ENV TMPDIR='/usr/src/mytempdir'
+# Used by tests to group results of runs on different machines
+ENV MACHINE_NAME=docker

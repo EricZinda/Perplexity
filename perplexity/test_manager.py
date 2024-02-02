@@ -31,6 +31,10 @@ from perplexity.utilities import module_name
 class TestIterator(object):
     def __init__(self, test_manager, test_path_and_file, resume=False):
         print(f"**** Running test: {test_path_and_file}...\n")
+        relative_path = os.path.relpath(test_path_and_file, start=test_manager.test_root_folder)
+        split_path = os.path.split(relative_path)
+        self.test_folder = split_path[0]
+        self.test_name, _ = os.path.splitext(split_path[1])
 
         self.resume = resume
         self.test_manager = test_manager
@@ -80,6 +84,11 @@ class TestIterator(object):
 
                 yield test_item
 
+    def test_from_id(self, id):
+        for item_index in range(0, len(self.test["TestItems"])):
+            if self.test["TestItems"][item_index]["ID"] == id:
+                return self.test["TestItems"][item_index]
+
     def update_test(self, id, new_item):
         for item_index in range(0, len(self.test["TestItems"])):
             if self.test["TestItems"][item_index]["ID"] == id:
@@ -98,19 +107,22 @@ class TestFolderIterator(object):
         self.test_folder = test_folder
         self.test_path_and_file = None
         self.test_manager = test_manager
+        self.test_name = None
         self.resume = resume
         if self.resume:
-            self.target_test = test_manager.get_session_data("LastTest")
+            self.current_test = test_manager.get_session_data("LastTest")
 
     def __iter__(self):
-        for filename in os.listdir(self.test_folder):
+        for filename in os.listdir(self.test_manager.full_test_path(self.test_folder)):
             if filename.lower().endswith(".tst"):
-                self.test_path_and_file = os.path.join(self.test_folder, filename)
+                self.test_path_and_file = os.path.join(self.test_manager.full_test_path(self.test_folder), filename)
                 if self.resume:
-                    if self.target_test is not None and self.test_path_and_file.lower() != self.target_test.lower():
+                    if self.current_test is not None and self.test_path_and_file.lower() != self.current_test.lower():
                         continue
 
-                self.test_iterator = TestIterator(self.test_manager, self.test_path_and_file, resume=self.resume)
+                self.current_test = self.test_path_and_file
+                self.test_iterator = TestIterator(self.test_manager, self.current_test, resume=self.resume)
+                self.test_name = self.test_iterator.test_name
                 self.resume = False
                 yield from self.test_iterator
 
@@ -135,6 +147,17 @@ class TestManager(object):
         return os.path.join(self.test_root_folder, test_name)
 
     def run_tests(self, test_iterator, ui):
+        if ui.log_tests:
+            scriptPath = os.path.dirname(os.path.realpath(__file__))
+            testFile = os.path.join(scriptPath, "testresults.txt")
+            if os.path.exists(testFile):
+                os.remove(testFile)
+            testResultsFile = open(testFile, "w")
+            print(f"Logging test results to: {testFile}")
+
+        else:
+            testResultsFile = None
+
         print("\n**** Begin Testing...\n")
         testItemStartTime = time.perf_counter()
         for test_item in test_iterator:
@@ -147,13 +170,118 @@ class TestManager(object):
                 traceback.print_tb(error.__traceback__, file=sys.stdout)
                 break
 
-            if not self.check_result(test_iterator, test_item, ui.interaction_record):
-                print(f"**** Cancel test run: {test_iterator.test_path_and_file}")
-                break
+            interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator, test_item, ui.interaction_record)
+
+            if result is not None:
+                if testResultsFile:
+                    # if silent, just log result
+                    self.log_test_result(testResultsFile, test_iterator.test_folder, test_iterator.test_name, test_item["ID"], ui.interaction_record["UserInput"], interaction_response, interaction_tree)
+
+                else:
+                    # otherwise interactively resolve
+                    prompt = self.get_prompt(test_iterator, test_item, interaction_response, interaction_tree)
+                    if prompt is not None:
+                        if not self.resolve_result(test_iterator, test_item, interaction_response, interaction_tree):
+                            ui.Output(f"Breaking during {test_iterator.folder_name}:{test_iterator.test_name} -> TestID: {test_item['ID']}")
+                            break
 
         elapsed = round(time.perf_counter() - testItemStartTime, 5)
 
         print(f"\n**** Testing Complete. Elapsed time: {elapsed}\n")
+
+    def resolve_tests(self):
+        script_path = os.path.dirname(os.path.realpath(__file__))
+        test_file = os.path.join(script_path, "testresults.txt")
+        iterator_cache = {}
+        if os.path.exists(test_file):
+            test_results_file = open(test_file, "r")
+            print(f"Resolving test results in: {test_file}")
+
+            while True:
+                entry_string = test_results_file.readline()
+                if entry_string == "":
+                    break
+                entry = json.loads(entry_string)
+                key = (entry["FolderName"], entry["TestName"])
+                if key in iterator_cache:
+                    test_iterator = iterator_cache[key]
+
+                else:
+                    test_iterator = TestIterator(self, os.path.join(self.test_root_folder, entry["FolderName"], entry["TestName"] + ".tst"))
+                    iterator_cache[key] = test_iterator
+                prompt = self.get_prompt(test_iterator, test_iterator.test_from_id(entry["TestID"]), entry["InteractionResponse"], entry["InteractionTree"])
+                if prompt is not None:
+                    print(f"**** Test ID: {entry['TestID']}")
+                    print(entry["UserInput"])
+                    print(entry["InteractionResponse"])
+                    print(prompt)
+                    self.resolve_result(test_iterator, test_iterator.test_from_id(entry["TestID"]), entry["InteractionResponse"], entry["InteractionTree"])
+
+        else:
+            print(f"No results to resolve.")
+
+    def log_test_result(self, file, folder_name, test_name, test_id, user_input, interaction_response, interaction_tree):
+        entry = {"FolderName": folder_name, "TestName": test_name, "TestID": test_id, "UserInput": user_input, "InteractionResponse": interaction_response, "InteractionTree": str(interaction_tree)}
+        file.write(json.dumps(entry, indent=None))
+        file.write("\n")
+        file.flush()
+
+    def resolve_result(self, test_iterator, test_item, interaction_response, interaction_tree):
+        while True:
+            answer = input(f"(<enter>)ignore, (b)reak to end testing, (u)pdate test, (a) add alternative correct result, (d)isable test\n")
+            if answer == "":
+                return True
+
+            elif answer == "u":
+                updated_test = copy.deepcopy(test_item)
+                updated_test["Expected"] = interaction_response
+                updated_test["Tree"] = str(interaction_tree)
+                test_iterator.update_test(updated_test["ID"], updated_test)
+                return True
+
+            elif answer == "d":
+                updated_test = copy.deepcopy(test_item)
+                updated_test["Enabled"] = False
+                test_iterator.update_test(updated_test["ID"], updated_test)
+                return True
+
+            elif answer == "b":
+                return False
+
+            elif answer == "a":
+                updated_test = copy.deepcopy(test_item)
+                if isinstance(updated_test["Expected"], list):
+                    new_expected = updated_test["Expected"] + [interaction_response]
+                else:
+                    new_expected = [updated_test["Expected"], interaction_response]
+
+                updated_test["Expected"] = new_expected
+                updated_test["Tree"] = str(interaction_tree)
+                test_iterator.update_test(updated_test["ID"], updated_test)
+                return True
+
+            else:
+                print(f"'{answer}' is not a valid option")
+
+    def get_result_from_interaction(self, test_iterator, test_item, interaction_mrs_record):
+        chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
+        chosen_tree_index = interaction_mrs_record["ChosenTreeIndex"]
+        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index] if chosen_mrs_index is not None and chosen_tree_index is not None else None
+        interaction_response = interaction_record["ResponseMessage"] if interaction_record is not None else None
+        interaction_tree = interaction_record["Tree"] if interaction_record is not None else None
+        return interaction_response, interaction_tree, self.get_prompt(test_iterator, test_item, interaction_response, interaction_tree)
+
+    def get_prompt(self, test_iterator, test_item, interaction_response, interaction_tree):
+        prompt = None
+        if isinstance(test_item["Expected"], list):
+            if interaction_response not in test_item["Expected"]:
+                prompt = f"\nExpected (one of): \n{test_item['Expected']}"
+        elif test_item["Expected"] != interaction_response:
+            prompt = f"\nExpected: \n{test_item['Expected']}"
+        elif not (test_item["Tree"] is None and interaction_tree is None) and test_item["Tree"] != str(interaction_tree):
+            prompt = f"\nPrevious Tree: {test_item['Tree']}\nNew Tree: {str(interaction_tree)}"
+
+        return prompt
 
     def check_result(self, test_iterator, test_item, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
