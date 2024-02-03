@@ -26,7 +26,7 @@
 #
 # 4. Others can then run your project using the instructions above for running an image
 
-FROM p8ybase
+FROM inductorsoftware/p8ybase:latest
 
 # Copy the source for Perplexity
 RUN mkdir /data

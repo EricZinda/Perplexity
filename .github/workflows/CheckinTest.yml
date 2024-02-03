@@ -33,8 +33,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           lfs: true
+
       - name: Checkout LFS objects
         run: git lfs checkout
+
       # From https://docs.docker.com/ci-cd/github-actions/
       - name: Cache Docker layers
         uses: actions/cache@v2
@@ -43,14 +45,17 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
+
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
@@ -62,11 +67,12 @@ jobs:
           tags: inductorsoftware/p8ypythontest:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
+
       - name: Run the tests
         env:
           OPENAIKEY: ${{ secrets.OPENAIKEY }}
         run: |
-          docker run --name testrun --env PYTHONPATH='/' --env OPENAIKEY-i inductorsoftware/p8ypythontest:latest /usr/src/Python-3.8.0/python /esl/tutorial.py "/logtests true" "${{ github.event.inputs.testCommandLine }}" "exit"
+          docker run --name testrun --env PYTHONPATH='/' --env OPENAIKEY -i inductorsoftware/p8ypythontest:latest /usr/src/Python-3.8.0/python /esl/tutorial.py "/logtests true" "${{ github.event.inputs.testCommandLine }}" "exit"
           docker cp testrun:/testresults.txt .
 
       - uses: actions/upload-artifact@v2
