@@ -79,4 +79,4 @@ jobs:
         with:
           name: test results
           path: /perplexity/testresults.txt
-          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`
+          if-no-files-found: ignore # 'warn' or 'ignore' are also available, defaults to `warn`
