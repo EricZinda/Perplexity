@@ -78,5 +78,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: test results
-          path: ./testresults.txt
+          path: /perplexity/testresults.txt
           if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`
