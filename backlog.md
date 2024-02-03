@@ -1,3 +1,5 @@
+- Support running tests with different vocabularies in the same session
+
 
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"

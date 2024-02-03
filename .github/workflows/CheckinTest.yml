@@ -48,7 +48,7 @@ jobs:
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -73,10 +73,10 @@ jobs:
           OPENAIKEY: ${{ secrets.OPENAIKEY }}
         run: |
           docker run --name testrun --env PYTHONPATH='/' --env OPENAIKEY -i inductorsoftware/p8ypythontest:latest /usr/src/Python-3.8.0/python /esl/tutorial.py "/logtests true" "${{ github.event.inputs.testCommandLine }}" "exit"
-          docker cp testrun:/testresults.txt .
+          docker cp testrun:/perplexity/testresults.txt .
 
       - uses: actions/upload-artifact@v2
         with:
           name: test results
-          path: /perplexity/testresults.txt
+          path: ./testresults.txt
           if-no-files-found: ignore # 'warn' or 'ignore' are also available, defaults to `warn`
