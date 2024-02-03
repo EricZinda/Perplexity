@@ -30,7 +30,7 @@ jobs:
 #          aws-region: us-east-1
 #          role-to-assume: arn:aws:iam::864551525312:role/GithubActionsRole
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           lfs: true
 
@@ -39,7 +39,7 @@ jobs:
 
       # From https://docs.docker.com/ci-cd/github-actions/
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -75,7 +75,7 @@ jobs:
           docker run --name testrun --env PYTHONPATH='/' --env OPENAIKEY -i inductorsoftware/p8ypythontest:latest /usr/src/Python-3.8.0/python /esl/tutorial.py "/logtests true" "${{ github.event.inputs.testCommandLine }}" "exit"
           docker cp testrun:/perplexity/testresults.txt .
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: test results
           path: ./testresults.txt
