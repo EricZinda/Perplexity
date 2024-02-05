@@ -543,9 +543,7 @@ def valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs=""):
     hole_dict["h0"]["Constraints"]["InScope"] = find_unquantified_x_variables(mrs)
 
     # TryAlternativeHoleAssignments requires a floater list, not a dict
-    floater_list = []
-    for key in floater_dict.keys():
-        floater_list.append(floater_dict[key])
+    floater_list = list(floater_dict.values())
 
     # Finally return each valid set of assignments
     logger.debug("Finding Hole assignments for: {}".format(raw_mrs))
