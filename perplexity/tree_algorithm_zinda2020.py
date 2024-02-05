@@ -537,7 +537,7 @@ def valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs=""):
         if qeq["Hi"] == "h0":
             hole_dict["h0"]["Constraints"]["QeqLo"][qeq["Lo"]] = False
 
-    # There are cases in the grammar (e.g. yell "I am free") where x variables
+    # There are cases in the grammar (e.g. "yell 'I am free'") where x variables
     # are used but not put in scope by a quantifier and the grammar is supposedly valid
     # enable these cases by putting those variables in scope for the top
     hole_dict["h0"]["Constraints"]["InScope"] = find_unquantified_x_variables(mrs)
