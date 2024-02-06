@@ -311,8 +311,9 @@ def reset():
     initial_state = initial_state.add_rel("have", "computer", "pizza")
     return initial_state
 
+
 def hello_world():
-    user_interface = UserInterface(reset, vocabulary)
+    user_interface = UserInterface("none", reset, vocabulary)
 
     while True:
         user_interface.interact_once()

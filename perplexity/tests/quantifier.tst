@@ -1,9 +1,8 @@
 {
-    "ResetModule": "examples",
-    "ResetFunction": "Example25_reset",
+    "WorldName": "example",
     "TestItems": [
         {
-            "Command": "/new examples.Example25_reset",
+            "Command": "/new file_system_example.examples.Example25_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,

@@ -1,5 +1,25 @@
-- Support running tests with different vocabularies in the same session
 
+
+- Support loading and saving state
+    - Options:
+        - How to list available games?
+        - How to know which state goes with which person?
+        - How to find the code to import?
+        - How to get all the different functions required?
+            - Options
+                - First: all of this magic is simply for running tests.  So the solution can be test specific.
+        - How do tests find their implementations?
+            - Don't want them in the same folder so the runtime can be distributed without the tests easily
+            - Also don't want them in the Perplexity folder for the same reason
+
+            - We want a simple UI for tests where tests are just stored in a simple hierarchy
+            - Have the test engine assume that the test root is the parent folder of where the test_manager.py is stored
+                - /runfolder esl means: run the /tests folder in the esl project
+    - Design:
+        - Have the test engine assume that the test and import root is the parent folder of where the test_manager.py is stored
+            - assume that tests are under a test folder there
+        - The test has a way to generate the proper UserInterface object to run the test
+            - Need to separate out the state and the rest of the metadata because the state may be loaded from elsewhere
 
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"

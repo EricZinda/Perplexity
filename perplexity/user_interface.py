@@ -21,17 +21,19 @@ def no_error_priority(error):
 
 
 class UserInterface(object):
-    def __init__(self, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
+    def __init__(self, world_name, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
         self.max_holes = 14
-        self.reset = reset
-        self.state = reset()
 
-        self.vocabulary = vocabulary
-        self.scope_function = scope_function
-        self.scope_init_function = scope_init_function
-        self.response_function = response_function
-        self.message_function = message_function
-        self.error_priority_function = error_priority_function
+        self.world_name = world_name
+        self.reset = None
+        self.vocabulary = None
+        self.scope_function = None
+        self.scope_init_function = None
+        self.response_function = None
+        self.message_function = None
+        self.error_priority_function = None
+        self.state = None
+        self.load_ui(reset(), reset, vocabulary, message_function, error_priority_function, response_function, scope_init_function, scope_function)
 
         self.interaction_record = None
         self.records = None
@@ -44,6 +46,17 @@ class UserInterface(object):
         self.run_all_parses = False
         self.mrs_parser = MrsParser(self.max_holes)
         self.log_tests = False
+
+    def load_ui(self, state, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
+        self.reset = reset
+        self.vocabulary = vocabulary
+        self.message_function = message_function
+        self.error_priority_function = error_priority_function
+        self.response_function = response_function
+        self.scope_function = scope_function
+        self.scope_init_function = scope_init_function
+
+        self.state = state
 
     def chosen_tree_record(self):
         chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
@@ -507,7 +520,7 @@ def command_create_test(ui, arg):
         print(f"Please supply a test name.")
 
     else:
-        ui.test_manager.create_test(ui.reset, arg, ui.records)
+        ui.test_manager.create_test(ui, arg, ui.records)
         ui.records = None
         print(f"Recording is now off")
 
@@ -533,15 +546,7 @@ def command_run_test(ui, arg):
     else:
         # Remember that we ran a single test not a folder
         ui.test_manager.record_session_data("LastTestFolder", "")
-
         test_iterator = TestIterator(ui.test_manager, ui.test_manager.full_test_path(arg + ".tst"))
-
-        # Set the state to the state function the test requires
-        # and reset it
-        ui.reset = import_function_from_names(test_iterator.test["ResetModule"], test_iterator.test["ResetFunction"])
-        print(command_reset(ui, arg))
-
-        # Now run the tests in that state
         ui.test_manager.run_tests(test_iterator, ui)
 
     return True

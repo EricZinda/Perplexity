@@ -223,7 +223,7 @@ def reset():
 
 
 def hello_world():
-    user_interface = UserInterface(reset, vocabulary, generate_custom_message)
+    user_interface = UserInterface("none", reset, vocabulary, generate_custom_message)
 
     while True:
         user_interface.interact_once()

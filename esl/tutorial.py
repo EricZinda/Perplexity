@@ -2987,10 +2987,13 @@ error_priority_dict = {
 }
 
 
+def ui():
+    return UserInterface("esl", reset, vocabulary, message_function=generate_custom_message,
+                           error_priority_function=error_priority, scope_function=in_scope,
+                           scope_init_function=in_scope_initialize)
+
 def hello_world():
-    user_interface = UserInterface(reset, vocabulary, message_function=generate_custom_message,
-                                   error_priority_function=error_priority, scope_function=in_scope,
-                                   scope_init_function=in_scope_initialize)
+    user_interface = ui()
     user_interface.default_loop()
 
 

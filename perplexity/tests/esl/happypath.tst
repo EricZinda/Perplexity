@@ -1,6 +1,5 @@
 {
-    "ResetModule": "tutorial",
-    "ResetFunction": "reset",
+    "WorldName": "esl",
     "TestItems": [
         {
             "Command": "/reset",

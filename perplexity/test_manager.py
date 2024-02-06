@@ -5,7 +5,7 @@ import sys
 import time
 import traceback
 import uuid
-from perplexity.utilities import module_name
+from perplexity.utilities import module_name, import_function_from_names
 
 
 # Just a simple iterator that must return
@@ -14,8 +14,7 @@ from perplexity.utilities import module_name
 # "test items" are JSON objects in a format like this:
 #
 # {
-#     "ResetModule": "examples",
-#     "ResetFunction": "Example16_reset",
+#     "WorldName": "esl",
 #     "TestItems": [
 #         {
 #             "Command": "/reset",
@@ -45,6 +44,8 @@ class TestIterator(object):
 
         with open(test_path_and_file, "r") as file:
             self.test = json.loads(file.read())
+
+        self.world_name = self.test["WorldName"]
 
         # Make sure all IDs are unique!
         ids = {}
@@ -108,6 +109,7 @@ class TestFolderIterator(object):
         self.test_path_and_file = None
         self.test_manager = test_manager
         self.test_name = None
+        self.world_name = None
         self.resume = resume
         if self.resume:
             self.current_test = test_manager.get_session_data("LastTest")
@@ -123,6 +125,7 @@ class TestFolderIterator(object):
                 self.current_test = self.test_path_and_file
                 self.test_iterator = TestIterator(self.test_manager, self.current_test, resume=self.resume)
                 self.test_name = self.test_iterator.test_name
+                self.world_name = self.test_iterator.world_name
                 self.resume = False
                 yield from self.test_iterator
 
@@ -141,13 +144,19 @@ class TestManager(object):
         if not os.path.exists(self.test_root_folder):
             os.makedirs(self.test_root_folder)
 
+        self.worlds = dict()
+        self.worlds["esl"] = {"WorldModule": "esl.tutorial",
+                              "WorldUIFunction": "ui"}
+        self.worlds["example"] = {"WorldModule": "file_system_example.examples",
+                                  "WorldUIFunction": "Example_ui"}
+        self.current_world_name = None
         self.load_session_data()
 
     def full_test_path(self, test_name):
         return os.path.join(self.test_root_folder, test_name)
 
-    def run_tests(self, test_iterator, ui):
-        if ui.log_tests:
+    def run_tests(self, test_iterator, initial_ui):
+        if initial_ui.log_tests:
             scriptPath = os.path.dirname(os.path.realpath(__file__))
             testFile = os.path.join(scriptPath, "testresults.txt")
             if os.path.exists(testFile):
@@ -160,29 +169,47 @@ class TestManager(object):
 
         print("\n**** Begin Testing...\n")
         testItemStartTime = time.perf_counter()
+        test_ui = None
         for test_item in test_iterator:
+            if test_iterator.world_name != self.current_world_name or test_ui is None:
+                # World changed, load the new world
+                if test_iterator.world_name not in self.worlds:
+                    print(f"World {test_iterator.world_name} is not registered as a world in the Test Manager")
+                    return
+                else:
+                    test_ui_function = import_function_from_names(self.worlds[test_iterator.world_name]["WorldModule"], self.worlds[test_iterator.world_name]["WorldUIFunction"])
+                    test_ui = test_ui_function()
+                    self.current_world_name = test_iterator.world_name
+
             print(f"\nTest: {test_item['Command']}")
             try:
-                ui.interact_once(test_item["Command"])
+                test_ui.interact_once(test_item["Command"])
 
             except Exception as error:
                 print(f"**** HALTING: Exception in test run: {error}")
                 traceback.print_tb(error.__traceback__, file=sys.stdout)
                 break
 
-            interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator, test_item, ui.interaction_record)
+            interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator, test_item, test_ui.interaction_record)
 
             if result is not None:
                 if testResultsFile:
                     # if silent, just log result
-                    self.log_test_result(testResultsFile, test_iterator.test_folder, test_iterator.test_name, test_item["ID"], ui.interaction_record["UserInput"], interaction_response, interaction_tree)
+                    self.log_test_result(testResultsFile,
+                                         test_iterator.test_folder,
+                                         test_iterator.test_name,
+                                         test_item["ID"],
+                                         test_ui.interaction_record["UserInput"],
+                                         interaction_response,
+                                         interaction_tree)
 
                 else:
                     # otherwise interactively resolve
                     prompt = self.get_prompt(test_iterator, test_item, interaction_response, interaction_tree)
                     if prompt is not None:
+                        print(prompt)
                         if not self.resolve_result(test_iterator, test_item, interaction_response, interaction_tree):
-                            ui.Output(f"Breaking during {test_iterator.folder_name}:{test_iterator.test_name} -> TestID: {test_item['ID']}")
+                            print(f"Breaking during {test_iterator.folder_name}:{test_iterator.test_name} -> TestID: {test_item['ID']}")
                             break
 
         elapsed = round(time.perf_counter() - testItemStartTime, 5)
@@ -348,19 +375,19 @@ class TestManager(object):
         with open(self.full_test_path(test_name + ".tst"), "w") as file:
             file.write(json.dumps(test, indent=4))
 
-    def create_test(self, reset, test_name, interaction_records):
+    def create_test(self, ui, test_name, interaction_records):
         # Remember the name of the module and function
         # that created the state for the test
-        reset_module = module_name(reset)
-        reset_function = reset.__name__
+        # reset_module = module_name(reset)
+        # reset_function = reset.__name__
 
+        # Make sure we have the directory structure to hold the test
         test_name_parts = os.path.split(test_name)
         full_path = self.full_test_path(test_name_parts[0])
         if not os.path.exists(full_path):
             os.mkdir(full_path)
 
-        test = {"ResetModule": reset_module,
-                "ResetFunction": reset_function,
+        test = {"WorldName": ui.world_name,
                 "TestItems": []}
 
         self._add_to_test(test, interaction_records)

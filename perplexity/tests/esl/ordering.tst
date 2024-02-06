@@ -1,6 +1,5 @@
 {
-    "ResetModule": "tutorial",
-    "ResetFunction": "reset",
+    "WorldName": "esl",
     "TestItems": [
         {
             "Command": "/new esl.tutorial.reset",
@@ -184,7 +183,8 @@
                 "2 soup\nwater\nmenu\nsteak",
                 "2 soup\nmenu\nwater\nsteak",
                 "steak\n2 soup\nmenu\nwater",
-                "steak\nwater\n2 soup\nmenu"
+                "steak\nwater\n2 soup\nmenu",
+                "steak\n2 soup\nwater\nmenu"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
