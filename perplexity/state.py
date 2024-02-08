@@ -1,9 +1,12 @@
 import copy
 import logging
-
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.variable_binding import VariableBinding, VariableData
+
+
+class LoadException(Exception):
+    pass
 
 
 def apply_solutions_to_state(state, has_more_func, solutions, record_operations=False):

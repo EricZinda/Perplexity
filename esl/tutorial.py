@@ -2987,14 +2987,27 @@ error_priority_dict = {
 }
 
 
-def ui():
-    return UserInterface("esl", reset, vocabulary, message_function=generate_custom_message,
-                           error_priority_function=error_priority, scope_function=in_scope,
-                           scope_init_function=in_scope_initialize)
+def ui(loading_info=None, file=None):
+    loaded_state = None
+    if loading_info is not None:
+        if loading_info.get("Version", None) != 1:
+            raise LoadException()
+
+        if file is not None:
+            loaded_state = load_world_state(file)
+
+    return UserInterface("esl", reset, vocabulary,
+                         message_function=generate_custom_message,
+                         error_priority_function=error_priority,
+                         scope_function=in_scope,
+                         scope_init_function=in_scope_initialize,
+                         loaded_state=loaded_state)
+
 
 def hello_world():
     user_interface = ui()
-    user_interface.default_loop()
+    while user_interface:
+        user_interface = user_interface.default_loop()
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@ import time
 import traceback
 import uuid
 from perplexity.utilities import module_name, import_function_from_names
+from perplexity.world_registry import world_information
 
 
 # Just a simple iterator that must return
@@ -143,12 +144,6 @@ class TestManager(object):
             else os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests")
         if not os.path.exists(self.test_root_folder):
             os.makedirs(self.test_root_folder)
-
-        self.worlds = dict()
-        self.worlds["esl"] = {"WorldModule": "esl.tutorial",
-                              "WorldUIFunction": "ui"}
-        self.worlds["example"] = {"WorldModule": "file_system_example.examples",
-                                  "WorldUIFunction": "Example_ui"}
         self.current_world_name = None
         self.load_session_data()
 
@@ -173,11 +168,12 @@ class TestManager(object):
         for test_item in test_iterator:
             if test_iterator.world_name != self.current_world_name or test_ui is None:
                 # World changed, load the new world
-                if test_iterator.world_name not in self.worlds:
-                    print(f"World {test_iterator.world_name} is not registered as a world in the Test Manager")
+                world_info = world_information(test_iterator.world_name)
+                if world_info is None:
+                    print(f"World {test_iterator.world_name} is not registered as a world")
                     return
                 else:
-                    test_ui_function = import_function_from_names(self.worlds[test_iterator.world_name]["WorldModule"], self.worlds[test_iterator.world_name]["WorldUIFunction"])
+                    test_ui_function = import_function_from_names(world_info["WorldModule"], world_info["WorldUIFunction"])
                     test_ui = test_ui_function()
                     self.current_world_name = test_iterator.world_name
 

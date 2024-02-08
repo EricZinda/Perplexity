@@ -1,6 +1,6 @@
 
-
 - Support loading and saving state
+    - Stored game file should also reference what game it goes with
     - Options:
         - How to list available games?
         - How to know which state goes with which person?
@@ -16,10 +16,7 @@
             - Have the test engine assume that the test root is the parent folder of where the test_manager.py is stored
                 - /runfolder esl means: run the /tests folder in the esl project
     - Design:
-        - Have the test engine assume that the test and import root is the parent folder of where the test_manager.py is stored
-            - assume that tests are under a test folder there
-        - The test has a way to generate the proper UserInterface object to run the test
-            - Need to separate out the state and the rest of the metadata because the state may be loaded from elsewhere
+        - UserInterface.state property is where Data is stored and loaded
 
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"

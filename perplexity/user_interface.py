@@ -1,16 +1,20 @@
+import json
 import logging
 import os
+import pickle
 import sys
 
 import perplexity.messages
 from delphin.codecs import simplemrs
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
-from perplexity.state import apply_solutions_to_state
+from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
     MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable
+from perplexity.user_state import GetStateDirectoryName
 from perplexity.utilities import sentence_force, module_name, import_function_from_names
+from perplexity.world_registry import world_information
 
 
 def no_error_priority(error):
@@ -20,8 +24,25 @@ def no_error_priority(error):
         return 1
 
 
+def load_ui(path_and_filename):
+    with open(path_and_filename, "rb") as file:
+        metadata = pickle.load(file)
+        world_info = world_information(metadata.get("WorldName", None))
+        if world_info is None:
+            raise LoadException
+        else:
+            ui_function = import_function_from_names(world_info["WorldModule"], world_info["WorldUIFunction"])
+            return ui_function(metadata, file)
+
+
 class UserInterface(object):
-    def __init__(self, world_name, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
+    def __init__(self, world_name, reset, vocabulary,
+                 message_function=perplexity.messages.generate_message,
+                 error_priority_function=no_error_priority,
+                 response_function=perplexity.messages.respond_to_mrs_tree,
+                 scope_init_function=None,
+                 scope_function=None,
+                 loaded_state=None):
         self.max_holes = 14
 
         self.world_name = world_name
@@ -33,7 +54,9 @@ class UserInterface(object):
         self.message_function = None
         self.error_priority_function = None
         self.state = None
-        self.load_ui(reset(), reset, vocabulary, message_function, error_priority_function, response_function, scope_init_function, scope_function)
+        if loaded_state is None:
+            loaded_state = reset()
+        self.load_ui(loaded_state, reset, vocabulary, message_function, error_priority_function, response_function, scope_init_function, scope_function)
 
         self.interaction_record = None
         self.records = None
@@ -46,6 +69,7 @@ class UserInterface(object):
         self.run_all_parses = False
         self.mrs_parser = MrsParser(self.max_holes)
         self.log_tests = False
+        self.new_ui = None
 
     def load_ui(self, state, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
         self.reset = reset
@@ -57,6 +81,11 @@ class UserInterface(object):
         self.scope_init_function = scope_init_function
 
         self.state = state
+
+    def save(self, path_and_filename):
+        with open(path_and_filename, "wb") as file:
+            pickle.dump({"WorldName": self.world_name, "Version": 1}, file, 5)
+            self.state.save(file)
 
     def chosen_tree_record(self):
         chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
@@ -79,6 +108,9 @@ class UserInterface(object):
                 os._exit(0)
             else:
                 self.interact_once(force_input=command)
+                if self.new_ui:
+                    # The user gave a command to load a new UI
+                    return self.new_ui
             print()
 
     def interact_once(self, force_input=None):
@@ -646,6 +678,29 @@ def command_new(ui, arg):
     return command_reset(ui, arg)
 
 
+def command_save(ui, arg):
+    if arg is None or arg == "":
+        path = GetStateDirectoryName("default")
+        if not os.path.exists(path):
+            os.makedirs(path)
+        arg = os.path.join(path, "state.p8y")
+    ui.save(arg)
+    print(f"World saved at: {arg}")
+    return True
+
+
+def command_load(ui, arg):
+    if arg is None or arg == "":
+        path = GetStateDirectoryName("default")
+        arg = os.path.join(path, "state.p8y")
+        if not os.path.exists(arg):
+            print("There is no saved state")
+
+    ui.new_ui = load_ui(arg)
+    print(f"World loaded from: {arg}")
+    return True
+
+
 def command_help(ui, arg):
     helpText = "\nCommands start with /:\n"
 
@@ -739,6 +794,12 @@ command_data = {
     "reset": {"Function": command_reset, "Category": "General",
               "Description": "Resets to the initial state",
               "Example": "/reset"},
+    "save": {"Function": command_save, "Category": "General",
+              "Description": "Saves the current world state to the ./data/default directory. If given a path, saves to that path instead.",
+              "Example": "/save"},
+    "load": {"Function": command_load, "Category": "General",
+             "Description": "Loads the current world state from the ./data/default directory. If given a path, loads from that path instead.",
+             "Example": "/load"},
     "show": {"Function": command_show, "Category": "Parsing",
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first trees",
              "Example": "/show or /show all or /show all, 1"},

@@ -3,12 +3,13 @@ import sys
 
 from file_system_example.messages import error_priority, generate_message
 from file_system_example.objects import Folder, File, Actor, FileSystemMock
-from file_system_example.state import State, FileSystemState
+from file_system_example.state import State, FileSystemState, load_file_system_state
 from file_system_example.vocabulary import vocabulary, in_scope_initialize, in_scope
 from perplexity.execution import ExecutionContext
 from perplexity.generation import english_for_delphin_variable
 from perplexity.messages import respond_to_mrs_tree
 from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
+from perplexity.state import LoadException
 from perplexity.tree import TreePredication
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging
@@ -990,11 +991,23 @@ def Example_main_reset():
 
 def Example_main():
     user_interface = Example_ui()
-    user_interface.default_loop()
+    while user_interface:
+        user_interface = user_interface.default_loop()
 
 
-def Example_ui():
-    user_interface = UserInterface("example", Example_main_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree, scope_function=in_scope, scope_init_function=in_scope_initialize)
+def Example_ui(loading_info=None, file=None):
+    loaded_state = None
+    if loading_info is not None:
+        if loading_info.get("Version", None) != 1:
+            raise LoadException()
+
+        if file is not None:
+            loaded_state = load_file_system_state(file)
+
+    user_interface = UserInterface("example", Example_main_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree,
+                                   scope_function=in_scope,
+                                   scope_init_function=in_scope_initialize,
+                                   loaded_state=loaded_state)
     return user_interface
 
 

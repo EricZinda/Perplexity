@@ -1,11 +1,13 @@
 import copy
 import json
 import numbers
+import pickle
+
 import esl.esl_planner
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import DisjunctionValue
-from perplexity.state import State
+from perplexity.state import State, LoadException
 from perplexity.utilities import at_least_one_generator
 
 
@@ -528,6 +530,12 @@ class ESLConcept(Concept):
         return found_cumulative
 
 
+def load_world_state(file):
+    sys = pickle.load(file)
+    rel = pickle.load(file)
+    return WorldState(rel, sys)
+
+
 class WorldState(State):
     def __init__(self, relations, system, name=None, world_state_frame=None):
         super().__init__([])
@@ -611,6 +619,10 @@ class WorldState(State):
             return super().__repr__()
         else:
             return self._world_state_frame.__repr__()
+
+    def save(self, file):
+        pickle.dump(self.sys, file, 5)
+        pickle.dump(self._rel, file, 5)
 
     def get_binding(self, variable_name):
         # return super().get_binding(variable_name)
