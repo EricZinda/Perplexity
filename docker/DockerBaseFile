@@ -47,6 +47,10 @@ RUN /usr/src/Python-3.8.0/python -m pip install --upgrade pip
 RUN /usr/src/Python-3.8.0/python -m pip install pydelphin
 RUN /usr/src/Python-3.8.0/python -m pip install inflect
 
+# Install libraries needed for REST hosting
+RUN /usr/src/Python-3.8.0/python -m pip install -I gunicorn
+RUN /usr/src/Python-3.8.0/python -m pip install gevent
+
 # Make sure we are running as english UTF-8 so the ACE Parser
 # can build new grammar images if we ask it to
 RUN locale-gen en_US.UTF-8

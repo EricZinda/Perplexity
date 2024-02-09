@@ -995,7 +995,7 @@ def Example_main():
         user_interface = user_interface.default_loop()
 
 
-def Example_ui(loading_info=None, file=None):
+def Example_ui(loading_info=None, file=None, user_output=None, debug_output=None):
     loaded_state = None
     if loading_info is not None:
         if loading_info.get("Version", None) != 1:
@@ -1007,7 +1007,9 @@ def Example_ui(loading_info=None, file=None):
     user_interface = UserInterface("example", Example_main_reset, vocabulary, generate_message, error_priority, respond_to_mrs_tree,
                                    scope_function=in_scope,
                                    scope_init_function=in_scope_initialize,
-                                   loaded_state=loaded_state)
+                                   loaded_state=loaded_state,
+                                   user_output=user_output,
+                                   debug_output=debug_output)
     return user_interface
 
 

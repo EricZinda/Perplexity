@@ -28,6 +28,10 @@
 
 FROM inductorsoftware/p8ybase:latest
 
+# Set up gunicorn
+COPY ./hosting/gunicorndocker /
+RUN chmod uog+x /gunicorndocker
+
 # Copy the source for Perplexity
 RUN mkdir /data
 WORKDIR /
@@ -35,3 +39,5 @@ COPY ./perplexity/ /perplexity/
 COPY ./file_system_example/ /file_system_example/
 COPY ./esl/ /esl/
 
+EXPOSE 80
+CMD ["/gunicorndocker"]

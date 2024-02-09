@@ -6,6 +6,7 @@ data/
 env/
 venv/
 __pycache__/
+perplexity/data
 *.pem
 .DS_Store
 perplexity/tests/session_info.json

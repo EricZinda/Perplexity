@@ -24,7 +24,7 @@ def no_error_priority(error):
         return 1
 
 
-def load_ui(path_and_filename):
+def load_ui(path_and_filename, user_output=None, debug_output=None):
     with open(path_and_filename, "rb") as file:
         metadata = pickle.load(file)
         world_info = world_information(metadata.get("WorldName", None))
@@ -32,7 +32,7 @@ def load_ui(path_and_filename):
             raise LoadException
         else:
             ui_function = import_function_from_names(world_info["WorldModule"], world_info["WorldUIFunction"])
-            return ui_function(metadata, file)
+            return ui_function(metadata, file, user_output, debug_output)
 
 
 class UserInterface(object):
@@ -42,7 +42,13 @@ class UserInterface(object):
                  response_function=perplexity.messages.respond_to_mrs_tree,
                  scope_init_function=None,
                  scope_function=None,
-                 loaded_state=None):
+                 loaded_state=None,
+                 user_output=None,
+                 debug_output=None):
+
+        self.user_output = print if user_output is None else user_output
+        self.debug_output = print if debug_output is None else debug_output
+
         self.max_holes = 14
 
         self.world_name = world_name
@@ -111,7 +117,7 @@ class UserInterface(object):
                 if self.new_ui:
                     # The user gave a command to load a new UI
                     return self.new_ui
-            print()
+            self.user_output()
 
     def interact_once(self, force_input=None):
         if force_input is None:
@@ -141,7 +147,7 @@ class UserInterface(object):
             mrs_record["Trees"].append(tree_record)
             self.interaction_record["ChosenMrsIndex"] = 0
             self.interaction_record["ChosenTreeIndex"] = 0
-            print(command_result)
+            self.user_output(command_result)
 
         else:
             self.test_manager.record_session_data("last_phrase", self.user_input)
@@ -149,7 +155,7 @@ class UserInterface(object):
         # self.records is a list if we are recording commands
         if isinstance(self.records, list):
             self.records.append(self.interaction_record)
-            print(f"Recorded ({len(self.records)} items).")
+            self.user_output(f"Recorded ({len(self.records)} items).")
 
         if command_result is not None:
             return
@@ -264,14 +270,14 @@ class UserInterface(object):
                                             response = "(no response)"
 
                                     tree_record["ResponseMessage"] += response
-                                    print(response)
+                                    self.user_output(response)
 
                                     # Only show if the developer didn't provide a custom message
                                     if not had_operations:
                                         more_message = self.generate_more_message(tree_info, solution_group_generator)
                                         if more_message is not None:
                                             tree_record["ResponseMessage"] += more_message
-                                            print(more_message)
+                                            self.user_output(more_message)
 
                                     if not self.run_all_parses:
                                         return
@@ -292,14 +298,14 @@ class UserInterface(object):
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_tree_record()
         if chosen_record is None:
-            print("Sorry, did you mean to say something?")
+            self.user_output("Sorry, did you mean to say something?")
 
         else:
             response, _ = next(chosen_record["ResponseGenerator"])
             if response is None:
                 response = "(no error specified)"
             chosen_record["ResponseMessage"] += response
-            print(response)
+            self.user_output(response)
 
     def generate_more_message(self, tree, solution_groups):
         if solution_groups is None:
@@ -381,28 +387,28 @@ class UserInterface(object):
                             return command_info["Function"](self, " ".join(text.split()[1:]))
 
                         else:
-                            print("Don't know that command ...")
+                            self.user_output("Don't know that command ...")
                             return True
 
         except Exception as error:
-            print(str(error))
+            self.user_output(str(error))
             return True
 
         return None
 
     def print_diagnostics(self, all, first_tree_only):
         if self.interaction_record is not None:
-            print(f"User Input: {self.interaction_record['UserInput']}")
-            print(f"{len(self.interaction_record['Mrss'])} Parses")
+            self.user_output(f"User Input: {self.interaction_record['UserInput']}")
+            self.user_output(f"{len(self.interaction_record['Mrss'])} Parses")
 
             for mrs_index in range(0, len(self.interaction_record["Mrss"])):
                 if all or self.interaction_record["ChosenMrsIndex"] is None or mrs_index == self.interaction_record["ChosenMrsIndex"]:
                     extra = "CHOSEN " if mrs_index == self.interaction_record["ChosenMrsIndex"] else ""
-                    print(f"\n***** {extra}Parse #{mrs_index}:")
+                    self.user_output(f"\n***** {extra}Parse #{mrs_index}:")
                     mrs_record = self.interaction_record["Mrss"][mrs_index]
                     mrs = mrs_record['Mrs']
-                    print(f"Sentence Force: {sentence_force(mrs.variables)}")
-                    print(simplemrs.encode(mrs, indent=True))
+                    self.user_output(f"Sentence Force: {sentence_force(mrs.variables)}")
+                    self.user_output(simplemrs.encode(mrs, indent=True))
 
                     if all:
                         chosen_tree = None
@@ -431,27 +437,27 @@ class UserInterface(object):
 
             if all or chosen_tree == tree_index:
                 extra = "CHOSEN " if chosen_tree == tree_index else ""
-                print(f"\n-- {extra}Parse #{parse_number}, {extra}Tree #{tree_index}: \n")
+                self.user_output(f"\n-- {extra}Parse #{parse_number}, {extra}Tree #{tree_index}: \n")
                 draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
                 renderer = TreeRenderer()
                 renderer.print_tree(draw_tree)
-                print(f"\nText Tree: {tree_info['Tree']}")
-                print(f"\nInterpretation: {tree_info['Interpretation']}")
+                self.user_output(f"\nText Tree: {tree_info['Tree']}")
+                self.user_output(f"\nInterpretation: {tree_info['Interpretation']}")
                 if tree_info['SolutionGroups'] is not None:
                     for solution_group in tree_info['SolutionGroups']:
-                        print(f"\nSolution group:")
+                        self.user_output(f"\nSolution group:")
                         for solution in solution_group:
-                            print(f"{str(solution)}")
-                    print()
+                            self.user_output(f"{str(solution)}")
+                    self.user_output()
 
                 else:
-                    print(f"Error: {tree_info['Error']}")
+                    self.user_output(f"Error: {tree_info['Error']}")
 
                 if tree_info['ResponseMessage'] == "" and tree_info['ResponseGenerator'] is not None:
                     tree_info['ResponseMessage'] = ""
                     for response in tree_info['ResponseGenerator']:
                         tree_info['ResponseMessage'] += str(response)
-                print(f"Response:\n{tree_info['ResponseMessage']}")
+                self.user_output(f"Response:\n{tree_info['ResponseMessage']}")
 
             tree_index += 1
 
@@ -496,7 +502,7 @@ class UserInterface(object):
 
 def command_run_all_parses(ui, arg):
     turn_on = bool(arg) if len(arg) > 0 else True
-    print(f"Run all parses is now {turn_on}")
+    ui.user_output(f"Run all parses is now {turn_on}")
     ui.run_all_parses = turn_on
     return True
 
@@ -513,7 +519,7 @@ def command_show(ui, arg):
         first_tree_only = bool(parts[1])
 
     if len(parts) >= 3:
-        print("Don't know that argument set")
+        ui.user_output("Don't know that argument set")
         return True
 
     ui.print_diagnostics(all, first_tree_only)
@@ -524,18 +530,18 @@ def command_repeat_system_command(ui, arg):
     if "last_system_command" in ui.test_manager.session_data:
         repeat_phrase = ui.test_manager.session_data["last_system_command"]
         ui.user_input = repeat_phrase
-        print(f"Repeat: {repeat_phrase}")
+        ui.user_output(f"Repeat: {repeat_phrase}")
         return ui.handle_command(repeat_phrase)
 
     else:
-        print("No last command to repeat")
+        ui.user_output("No last command to repeat")
 
     return None
 
 
 def command_repeat(ui, arg):
     repeat_phrase = ui.test_manager.session_data["last_phrase"]
-    print(f"Repeat: {repeat_phrase}")
+    ui.user_output(f"Repeat: {repeat_phrase}")
     ui.user_input = repeat_phrase
     return None
 
@@ -543,37 +549,37 @@ def command_repeat(ui, arg):
 def command_record_test(ui, arg):
     turn_on = bool(arg) if len(arg) > 0 else True
     ui.records = [] if turn_on else None
-    print(f"Recording is now {turn_on}")
+    ui.user_output(f"Recording is now {turn_on}")
     return True
 
 
 def command_create_test(ui, arg):
     if len(arg) == 0:
-        print(f"Please supply a test name.")
+        ui.user_output(f"Please supply a test name.")
 
     else:
         ui.test_manager.create_test(ui, arg, ui.records)
         ui.records = None
-        print(f"Recording is now off")
+        ui.user_output(f"Recording is now off")
 
     return True
 
 
 def command_append_test(ui, arg):
     if len(arg) == 0:
-        print(f"Please supply a test name.")
+        ui.user_output(f"Please supply a test name.")
 
     else:
         ui.test_manager.append_test(arg, ui.records)
         ui.records = None
-        print(f"Recording is now off")
+        ui.user_output(f"Recording is now off")
 
     return True
 
 
 def command_run_test(ui, arg):
     if len(arg) == 0:
-        print(f"Please supply a test name.")
+        ui.user_output(f"Please supply a test name.")
 
     else:
         # Remember that we ran a single test not a folder
@@ -594,7 +600,7 @@ def command_log_tests(ui, arg):
     else:
         value = StringBooleanToBoolean(arg)
     ui.log_tests = value
-    print("Log Test Results is now {}".format(value))
+    ui.user_output("Log Test Results is now {}".format(value))
     return True
 
 
@@ -609,7 +615,7 @@ def command_soln(ui, arg):
     else:
         ui.show_all_answers = arg.strip().lower() == "all"
 
-    print(f"Show all solutions is now: {ui.show_all_answers}")
+    ui.user_output(f"Show all solutions is now: {ui.show_all_answers}")
 
     return True
 
@@ -618,7 +624,7 @@ def command_run_parse(ui, arg):
     if arg.strip() == '':
         ui.run_mrs_index = None
         ui.run_tree_index = None
-        print("Runparse is off")
+        ui.user_output("Runparse is off")
         return True
 
     parts = arg.split(",")
@@ -641,22 +647,22 @@ def command_run_folder(ui, arg):
 def command_resume_test(ui, arg):
     test_folder = ui.test_manager.get_session_data("LastTestFolder")
     if test_folder is None:
-        print(f"Nothing to resume.")
+        ui.user_output(f"Nothing to resume.")
         return True
 
     else:
         if test_folder == "":
             test_name = ui.test_manager.get_session_data("LastTest")
             if test_name is None:
-                print("No test to resume.")
+                ui.user_output("No test to resume.")
                 return True
 
             else:
-                print(f"**** Resuming test: {test_name}")
+                ui.user_output(f"**** Resuming test: {test_name}")
                 test_iterator = TestIterator(ui.test_manager, test_name)
 
         else:
-            print(f"**** Resuming test folder: {test_folder}")
+            ui.user_output(f"**** Resuming test folder: {test_folder}")
             test_iterator = TestFolderIterator(ui.test_manager, test_folder, resume=True)
 
         ui.test_manager.run_tests(test_iterator, ui)
@@ -671,7 +677,7 @@ def command_reset(ui, arg):
 def command_new(ui, arg):
     arg_parts = arg.split(".")
     if len(arg_parts) < 2:
-        print("reset function must be in the form: module_name.function_name")
+        ui.user_output("reset function must be in the form: module_name.function_name")
         return True
 
     ui.reset = import_function_from_names(".".join(arg_parts[0:-1]), arg_parts[-1])
@@ -685,7 +691,7 @@ def command_save(ui, arg):
             os.makedirs(path)
         arg = os.path.join(path, "state.p8y")
     ui.save(arg)
-    print(f"World saved at: {arg}")
+    ui.user_output(f"World saved at: {arg}")
     return True
 
 
@@ -694,10 +700,10 @@ def command_load(ui, arg):
         path = GetStateDirectoryName("default")
         arg = os.path.join(path, "state.p8y")
         if not os.path.exists(arg):
-            print("There is no saved state")
+            ui.user_output("There is no saved state")
 
     ui.new_ui = load_ui(arg)
-    print(f"World loaded from: {arg}")
+    ui.user_output(f"World loaded from: {arg}")
     return True
 
 
@@ -711,7 +717,7 @@ def command_help(ui, arg):
             helpText += f"\n****** {category} ******\n"
 
         helpText += "/" + descKey + " " + command_data[descKey]["Description"] + " -> e.g. " + command_data[descKey]["Example"] + "\n"
-    print(helpText)
+    ui.user_output(helpText)
     return True
 
 
@@ -731,7 +737,7 @@ def command_debug_tree(ui, arg):
             else:
                 predication_args.append(clean_arg)
 
-        print(f"searching for trees containing predication: {predication_name}({','.join(predication_args)})\n")
+        ui.user_output(f"searching for trees containing predication: {predication_name}({','.join(predication_args)})\n")
 
     if ui.interaction_record is not None:
         for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
@@ -750,15 +756,15 @@ def command_debug_tree(ui, arg):
             for tree_info in tree_generator:
                 if predication_name is not None:
                     if len(find_predications_with_arg_types(tree_info["Tree"], predication_name, predication_args)):
-                        print(f"Found in parse #{mrs_index}:\n")
+                        ui.user_output(f"Found in parse #{mrs_index}:\n")
                         draw_tree = create_draw_tree(mrs_record["Mrs"], tree_info["Tree"])
                         renderer = TreeRenderer()
                         renderer.print_tree(draw_tree)
-                        print(f"\nText Tree: {tree_info['Tree']}\n")
+                        ui.user_output(f"\nText Tree: {tree_info['Tree']}\n")
 
                     break
                 else:
-                    print(f"QUOTED: {str(find_predications(tree_info['Tree'], 'quoted'))}")
+                    ui.user_output(f"QUOTED: {str(find_predications(tree_info['Tree'], 'quoted'))}")
 
     return True
 
@@ -772,7 +778,7 @@ def command_debug_mrs(ui, arg):
                 if predication.predicate == "quoted" or predication.predicate == "fw_seq":
                     found.append(predication)
 
-            print(found)
+            ui.user_output(found)
 
     return True
 

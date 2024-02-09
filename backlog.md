@@ -1,22 +1,4 @@
-
-- Support loading and saving state
-    - Stored game file should also reference what game it goes with
-    - Options:
-        - How to list available games?
-        - How to know which state goes with which person?
-        - How to find the code to import?
-        - How to get all the different functions required?
-            - Options
-                - First: all of this magic is simply for running tests.  So the solution can be test specific.
-        - How do tests find their implementations?
-            - Don't want them in the same folder so the runtime can be distributed without the tests easily
-            - Also don't want them in the Perplexity folder for the same reason
-
-            - We want a simple UI for tests where tests are just stored in a simple hierarchy
-            - Have the test engine assume that the test root is the parent folder of where the test_manager.py is stored
-                - /runfolder esl means: run the /tests folder in the esl project
-    - Design:
-        - UserInterface.state property is where Data is stored and loaded
+- Support hosting games in a REST interface
 
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"
