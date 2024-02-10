@@ -7,29 +7,34 @@
 # Then, from the repository root, run:
 #   docker build --no-cache -t p8y -f ./docker/Dockerfile ./
 #
-# To run the image and start the esl app (you'll need to replace "something" with a unique image name):
-#   docker run --name something --env PYTHONPATH='/' -i p8y:latest /usr/src/Python-3.8.0/python /esl/tutorial.py
+# To run the image as a local web server (without using the cloud for storage):
+#   docker run --env PYTHONPATH='/' --env DONTUSECLOUD=1 -p 8000:8000 -i p8y:latest
 #
-# To run the image and start the file system app (you'll need to replace "something" with a unique image name):
-#   docker run --name something --env PYTHONPATH='/' -i p8y:latest /usr/src/Python-3.8.0/python /file_system_example/examples.py
-
 # To push your image to docker hub so others can access it:
 # 1. Tag it with <your docker username>/<what you want to call it>, for example: inductorsoftware/p8y
 #   docker tag p8y:latest inductorsoftware/p8y
 #
 # 2. Push it to docker hub:
 #   docker push inductorsoftware/p8y
-#   docker push p8y
 #
 # 3. Others can then access it by going to: https://hub.docker.com/r/inductorsoftware/p8y
 #       i.e. the URL is https://hub.docker.com/r/<your docker hub user name>/<what you called it>
 #
 # 4. Others can then run your project using the instructions above for running an image
-
+#
+# Pushing to AWS:
+#   docker tag p8y:latest 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v4
+#   docker push 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v4
+#
+# Run a shell on an image
+#   docker run -it imagename /bin/bash
+#
+# Get a new shell on a running container:
+#   docker container exec -it containername /bin/bash
 FROM inductorsoftware/p8ybase:latest
 
 # Set up gunicorn
-COPY ./hosting/gunicorndocker /
+COPY ./hosting/* /
 RUN chmod uog+x /gunicorndocker
 
 # Copy the source for Perplexity
@@ -39,5 +44,5 @@ COPY ./perplexity/ /perplexity/
 COPY ./file_system_example/ /file_system_example/
 COPY ./esl/ /esl/
 
-EXPOSE 80
+EXPOSE 8000
 CMD ["/gunicorndocker"]

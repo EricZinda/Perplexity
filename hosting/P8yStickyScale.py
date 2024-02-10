@@ -14,6 +14,8 @@ import time
 import traceback
 import urllib
 import uuid
+from pathlib import Path
+
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from AWSState import CloudState, CloudLog
@@ -554,8 +556,8 @@ def DoWork(workQueue, responseQueue):
                 log.info(f"Worker {processID} responding: ID: {currentWorkItem['ID']}, Response:{currentWorkItem['Reply']}")
 
                 # Don't record any system messages for the user from here on out
-                currentWorkItem = None
                 responseQueue.put(currentWorkItem)
+                currentWorkItem = None
 
                 # Finally actually save all the work off
                 SaveDataAfterTurn(backupLogID, rawStatePath, cached_ui, state, dataInfo, userID, unencodedUserID, message)
@@ -679,16 +681,25 @@ def LogFileName(userID):
     return os.path.join(stateDir, "user.log")
 
 
+def EnsureDirectoriesForFile(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
 def ClearLog(userID):
-    logFileName = LogFileName(userID)
-    with open(logFileName, "w+") as f:
+    log_file = LogFileName(userID)
+    EnsureDirectoriesForFile(log_file)
+    with open(log_file, "w+") as f:
         f.flush()
         os.fsync(f.fileno())
 
 
 def LogText(userID, value):
     if value is not None and value.strip() != "":
-        with open(LogFileName(userID), "a") as f:
+        log_file = LogFileName(userID)
+        EnsureDirectoriesForFile(log_file)
+        with open(log_file, "a") as f:
             f.write(value)
             f.flush()
             os.fsync(f.fileno())
@@ -881,4 +892,4 @@ if __name__ == '__main__':
             startGameDefault = gameArgs[1]
 
     log.info("Starting webserver NO HTTPS")
-    app.run(debug=False, host="0.0.0.0", use_reloader=False, port=80)
+    app.run(debug=False, host="0.0.0.0", use_reloader=False, port=8000)

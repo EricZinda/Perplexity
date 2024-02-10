@@ -48,8 +48,11 @@ RUN /usr/src/Python-3.8.0/python -m pip install pydelphin
 RUN /usr/src/Python-3.8.0/python -m pip install inflect
 
 # Install libraries needed for REST hosting
+RUN /usr/src/Python-3.8.0/python -m pip install flask
+RUN /usr/src/Python-3.8.0/python -m pip install flask.cors
 RUN /usr/src/Python-3.8.0/python -m pip install -I gunicorn
 RUN /usr/src/Python-3.8.0/python -m pip install gevent
+RUN /usr/src/Python-3.8.0/python -m pip install boto3
 
 # Make sure we are running as english UTF-8 so the ACE Parser
 # can build new grammar images if we ask it to

@@ -1,5 +1,6 @@
 - Support hosting games in a REST interface
 
+- I have 20 dollars -> you did not have 20 dollar
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"
 - 'file1.txt' and 'file2.txt' are in a folder together
