@@ -1,11 +1,21 @@
 - Support hosting games in a REST interface
 
+- table for two crashes
+- show us 3 menus -> there are less than 2 "we"
+    - the error for "we usually give on menu per customer" isn't coming through
+    - Because "Phase2LessThan" is forced and overwrites the error
+    - Need to take another look at the way errors get propagated through
+- BUG: We would like the menus/the steaks
+    - match_all_the_concept_n() does not check the plurality of "menus/steaks" to make sure there are conceptually 2 or more
+- "Did I order a steak for my son?" -> There isn't such a son here
+
 - I have 20 dollars -> you did not have 20 dollar
+- Make "what is the bill?" work
+
 - Should "we" *require* that everyone is included like and_c does?
   - Should it also imply "together" as in "we want a table (together)"
-- 'file1.txt' and 'file2.txt' are in a folder together
+
 - Don't generate one more if nothing cares
-- Make "what is the bill?" work
 - OPTIMIZATION: We would like the menus -> Takes forever
     - /runparse 0,5: We would like the menus
     - every possible combination will fail because the_concept() returns instances and want_v_1() fails for instances
@@ -20,20 +30,10 @@
         Text Tree: _the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))
 
         Interpretation: perplexity.system_vocabulary.the_all_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.generic_q, __main__.pron, __main__._want_v_1
-
-
-
 - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
     - takes forever
     - returns a weird error
-- BUG: We would like the menus/the steaks
-    - match_all_the_concept_n() does not check the plurality of "menus/steaks" to make sure there are conceptually 2 or more
-- show us 3 menus -> there are less than 2 "we"
-    - the error for "we usually give on menu per customer" isn't coming through
-    - Because "Phase2LessThan" is forced and overwrites the error
-    - Need to take another look at the way errors get propagated through
-- "Did I order a steak for my son?" -> There isn't such a son here
-- table for two crashes
+
 - If you ask how much the soup and salad cost, johnny still thinks we haven't asked the cost
 - Just two, my son Johnny and me.
 - Need a way to clear out the order

@@ -561,6 +561,13 @@
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x9,[_folder_n_of(x9,i16), card(3,e15,x9)],_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "5d924bb8-b229-44f4-a13a-28118017708a"
+        },
+        {
+            "Command": "'file1.txt' and 'file2.txt' are in a folder together",
+            "Expected": "Yes, that is true.",
+            "Tree": "proper_q(x15,[quoted(file2.txt,i20), fw_seq(x15,i20)],_a_q(x22,_folder_n_of(x22,i27),udef_q(x3,proper_q(x8,[quoted(file1.txt,i12), fw_seq(x8,i12)],_and_c(x3,x8,x15)),[_together_p(e28,x3), _in_p_loc(e2,x3,x22)])))",
+            "Enabled": true,
+            "ID": "089fbac4-1e08-45ad-a939-d36a5064f701"
         }
     ]
 }
