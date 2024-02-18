@@ -561,6 +561,27 @@
             "ID": "8d7e82ba-9d89-46b2-8532-8ca326bea794"
         },
         {
+            "Command": "We'll have one tomato soup and one green salad, please.",
+            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nSon: Wait, let's not order salad before we know how much it costs.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x13,udef_q(x20,_tomato_n_1(x20),[_soup_n_1(x13), compound(e19,x13,x20), card(1,e18,x13)]),udef_q(x26,[_salad_n_1(x26), _green_a_2(e33,x26), card(1,e32,x26)],pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x26),[_please_a_1(e34,e2), _have_v_1(e2,x3,x8)]))))",
+            "Enabled": true,
+            "ID": "c06eb8ef-1e74-42dd-b82c-a1a02c54ec08"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "97832479-2a91-409f-a087-01583cf1e068"
+        },
+        {
+            "Command": "we'd like a table for 2'",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "a20ee8de-8e51-4482-9732-b55e2081b7d6"
+        },
+        {
             "Command": "I would like the salmon",
             "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x11,_salmon_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
