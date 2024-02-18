@@ -2272,6 +2272,60 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
 
 
 @Predication(vocabulary,
+             names=["_get_v_1"],
+             phrases={
+                 "Get a steak for me": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                ],
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+def _get_v_1_command(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    def both_bound_prediction_function(x_actor, x_object):
+        if is_computer_type(x_actor):
+            return valid_player_request(state, [x_object])
+
+    def actor_unbound(x_object):
+        # Anything about "Who gets x?"
+        context.report_error(["unexpected", state.get_reprompt()])
+        if False:
+            yield None
+
+    def object_unbound(x_actor):
+        # "What can you get?"
+        context.report_error(["unexpected", state.get_reprompt()])
+        if False:
+            yield None
+
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
+                                        both_bound_prediction_function,
+                                        actor_unbound,
+                                        object_unbound)
+
+
+@Predication(vocabulary,
+             names=["solution_group__get_v_1"],
+             properties_from=_get_v_1_command)
+def _get_v_1_command_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):
+    actor_list = variable_group_values_to_list(x_actor_variable_group)
+    if not is_computer_type(actor_list[0]):
+        return
+
+    object_list = variable_group_values_to_list(x_object_variable_group)
+    actor_list = [("user", )] * len(object_list)
+    task = ('satisfy_want',
+            context,
+            actor_list,
+            object_list,
+            min_from_variable_group(x_object_variable_group))
+    final_state = do_task(state_list[0].world_state_frame(), [task])
+    if final_state:
+        yield [final_state]
+    else:
+        yield []
+
+
+@Predication(vocabulary,
              names=["solution_group__have_v_1", "solution_group__take_v_1", "solution_group__get_v_1"],
              properties_from=_have_v_1_order)
 def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):

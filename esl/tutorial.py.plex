@@ -1700,5 +1700,49 @@
     "greet": {},
     "discourse": {},
     "match_all_a_concepts": {},
-    "match_all_a_instances": {}
+    "match_all_a_instances": {},
+    "_for_p_event": {},
+    "_get_v_1": {
+        "Phrases": {
+            "Get a steak for me": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_get_v_1_command": {
+        "Phrases": {
+            "Get a steak for me": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_get_v_1_command_group": {
+        "PropertiesFrom": "_get_v_1_command_group"
+    }
 }

@@ -1,5 +1,9 @@
 - Support hosting games in a REST interface
 
+- I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
+    - works: I'll have the Grilled Salmon for myself/I'll have the Roasted Chicken for my son
+    - fails: for my son, I'll have the roasted chicken
+
 - Fix some of the user interface issues:
     - implement a timeout
     - do a better response than "I don't understand the way you used X" and other default messages
@@ -81,9 +85,9 @@
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
+    - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
     - Could you please recommend a vegetarian dish for my son?
     - Let's go to a table, please.
-    - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
     - In that case, Johnny and I will both have the Roasted Chicken.
         - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
