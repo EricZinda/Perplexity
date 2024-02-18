@@ -655,6 +655,14 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
             for instance_state in adjective_default_instances(x_right_binding.value[0].concept_name, context, state, x_left_binding):
                 yield instance_state.set_x("tree_lineage", (f"{tree_lineage}.2",))
 
+
+# @Predication(vocabulary, names=["_for_x_cause"])
+# def _for_x_cause(context, state, e_introduced, h_left_binding, h_right_binding):
+#     if isinstance(h_left_binding, TreePredication) and h_left_binding.name == "greet":
+#         for solution in context.call(state, h_right_binding):
+#             yield solution
+
+
 # Scenarios:
 # I want a steak for my son
 #   Needs to be conceptual since it doesn't actually exist in the world
@@ -2742,7 +2750,15 @@ def _available_a_to_for(context, state, e_introduced_binding, x_object_binding, 
 def wh_question(context, state_list, binding_list):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list])])
     if current_state is not None:
-        yield (current_state,)
+        # Make sure any operations that were created on solutions get passed on
+        all_operations = []
+        for solution in state_list:
+            for operation in solution.get_operations():
+                all_operations.append(operation)
+
+        new_state = current_state.apply_operations(all_operations, True)
+
+        yield (new_state,)
 
 
 # Generates all the responses that predications can
@@ -3030,6 +3046,4 @@ if __name__ == '__main__':
     ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
-    # ShowLogging("Pipeline")
-    # ShowLogging("Transformer")
     hello_world()

@@ -676,6 +676,48 @@
             "ID": "34976bba-3203-4639-a0eb-68903a90ca33"
         },
         {
+            "Command": "How much do the specials cost?",
+            "Expected": "4 dollars\n3 dollars\n8 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_special_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_cost_v_1(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "6085ec6b-9636-47db-bb63-03192fe8605f"
+        },
+        {
+            "Command": "I want soup",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "888ee475-5cac-4f92-87b5-8a04d7b0fed0"
+        },
+        {
+            "Command": "I want salad",
+            "Expected": "Waiter: salad is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_salad_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "6f10abe3-2b46-47fc-8fec-63bccadb36bb"
+        },
+        {
+            "Command": "I want pork",
+            "Expected": "Waiter: pork is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_pork_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "59a2e11f-c5cd-4613-9628-7ffb6d53cee2"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "24b825d2-634c-43c8-97f9-038a5fbb2829"
+        },
+        {
+            "Command": "a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "bf163c10-e572-44eb-b403-6d2ef7a2073b"
+        },
+        {
             "Command": "I want 3 steaks",
             "Expected": "Son: Wait, we already spent $0 so if we get 3 steak, we won't be able to pay for it with $20.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(3,e14,x8)],_want_v_1(e2,x3,x8)))",

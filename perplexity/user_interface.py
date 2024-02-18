@@ -244,7 +244,8 @@ class UserInterface(object):
                                     # any solution to the current world state.
                                     try:
                                         has_more_func = solution_group_generator.has_at_least_one_more
-                                        operation_responses, new_state = apply_solutions_to_state(self.state, has_more_func, [solution for solution in solution_group])
+                                        solution_group_solutions = [solution for solution in solution_group]
+                                        operation_responses, new_state = apply_solutions_to_state(self.state, has_more_func, solution_group_solutions)
                                         self.state = new_state
 
                                     except MessageException as error:

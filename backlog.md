@@ -1,12 +1,25 @@
 - Support hosting games in a REST interface
 
+- Fix some of the user interface issues:
+    - implement a timeout
+    - do a better response than "I don't understand the way you used X" and other default messages
+        - I don't know the words: plase/nn and I don't know the way you used: for
+- How much is the soup and the salad?
+    - takes forever
+- How much does the soup and the salad cost? --> I don't know the way you used: cost
 - table for two crashes
+- table for 1 crashes
 - show us 3 menus -> there are less than 2 "we"
     - the error for "we usually give on menu per customer" isn't coming through
     - Because "Phase2LessThan" is forced and overwrites the error
     - Need to take another look at the way errors get propagated through
 - BUG: We would like the menus/the steaks
     - match_all_the_concept_n() does not check the plurality of "menus/steaks" to make sure there are conceptually 2 or more
+    - "We want water and menus" - only gives one menu
+    - We'd like to start with some water and menus
+        - /runparse 2, 39
+        - only gives one menu
+
 - "Did I order a steak for my son?" -> There isn't such a son here
 
 - I have 20 dollars -> you did not have 20 dollar
@@ -16,26 +29,26 @@
   - Should it also imply "together" as in "we want a table (together)"
 
 - Don't generate one more if nothing cares
-- OPTIMIZATION: We would like the menus -> Takes forever
-    - /runparse 0,5: We would like the menus
-    - every possible combination will fail because the_concept() returns instances and want_v_1() fails for instances
-    BUT: it will take a long time to exhaust all the alternatives since there are a lot to try
-    - If we knew that _steak_n_1(x11) woudl only generate instances and that _want_v_1(e2,x3,x11) required non-instances we could solve this by failing quickly
+- OPTIMIZATIONS:
+    - How much is the soup and the salad? -> Takes forever
+    - We would like the menus -> Takes forever
+        - /runparse 0,5: We would like the menus
+        - every possible combination will fail because the_concept() returns instances and want_v_1() fails for instances
+        BUT: it will take a long time to exhaust all the alternatives since there are a lot to try
+        - If we knew that _steak_n_1(x11) woudl only generate instances and that _want_v_1(e2,x3,x11) required non-instances we could solve this by failing quickly
 
-                         ┌────── _steak_n_1(x11)
-        _the_q(x11,RSTR,BODY)               ┌────── pron(x3)
-                          └─ pronoun_q(x3,RSTR,BODY)
-                                                 └─ _want_v_1(e2,x3,x11)
+                             ┌────── _steak_n_1(x11)
+            _the_q(x11,RSTR,BODY)               ┌────── pron(x3)
+                              └─ pronoun_q(x3,RSTR,BODY)
+                                                     └─ _want_v_1(e2,x3,x11)
 
-        Text Tree: _the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))
+            Text Tree: _the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))
 
-        Interpretation: perplexity.system_vocabulary.the_all_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.generic_q, __main__.pron, __main__._want_v_1
-- /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
-    - takes forever
-    - returns a weird error
+            Interpretation: perplexity.system_vocabulary.the_all_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.generic_q, __main__.pron, __main__._want_v_1
+    - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
+        - takes forever
+        - returns a weird error
 
-- If you ask how much the soup and salad cost, johnny still thinks we haven't asked the cost
-- Just two, my son Johnny and me.
 - Need a way to clear out the order
   - start over please
   - Let's start again
@@ -44,19 +57,14 @@
 - implement "how many vegetarian dishes are there"
 - implement "how many vegetarian dishes do you have?"
 - There should be an exception if lift is called on a function that doesn't have its parameters marked as taking all types of sets
-- table for 1 crashes
 - Need to redo how unknown() works to handle sets > 1
-- (start) Table (then) Just two, my son Johnny and me.
+- Table (then) Just two, my son Johnny and me.
     - takes forever to get to parse 88,1 which is the first that works
     - ditto for: We'd like to start with some water and menus
         - /runparse 2, 39
 - "what did we order" --> "less than 2 people did that"
     - when only one person ordered
 - "I'll just have a menu" --> means: clear the order and just give me a menu
-- "We want water and menus" - only gives one menu
-    - We'd like to start with some water and menus
-        - /runparse 2, 39
-        - only gives one menu
 
 - Clean up unused portions of state.handle_world_event()
 - Performance fix: checkin was cca6733
@@ -66,12 +74,13 @@
       Elapsed time: 979.71158
 - could we see menus? -> I don't understand the way you are using: see
 - what is green? --> crashes
-
+- table for two please
+    - also: table for two, please
+    - only generate _for_x_cause, unclear what that means
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
-    - table for two please
     - We'll have one tomato soup and one green salad, please.
     - Could you please recommend a vegetarian dish for my son?
     - Let's go to a table, please.
