@@ -1,3 +1,5 @@
+import numbers
+
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations
 from perplexity.predications import is_concept
@@ -175,6 +177,7 @@ def oxford_comma(words):
     else:
         return '{}, and {}'.format(', '.join(words[:-1]), words[-1])
 
+
 def convert_to_english(state, what):
     if is_concept(what):
         return what.concept_name
@@ -193,6 +196,10 @@ def convert_to_english(state, what):
         names = list(rel_objects(state, what, "hasName"))
         if len(names) > 0:
             return names[0]
+
+    # Numbers should just return the number
+    if isinstance(what, numbers.Number):
+        return what
 
     # Instances of commodities like steaks (i.e. steak1, steak2) that don't have
     # a name should always just return their type name
