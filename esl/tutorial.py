@@ -663,6 +663,124 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
 #             yield solution
 
 
+@Predication(vocabulary, names=["_for_p"])
+def _for_p_event(context, state, e_binding, e_target_binding, x_for_binding):
+    yield state.add_to_e(e_target_binding.variable.name, "for", {"Value": x_for_binding.value, "Originator": context.current_predication_index()})
+
+
+# Checks to make sure a "for" construct is valid, and determines what kind of "for" construct it is
+# Returns True | False, for_type, x_what_type
+def for_check(context, x_what_list, x_for_list):
+    # values must be all instances or all concepts so we only need to check the type of the first
+    x_what_type = perplexity.predications.value_type(x_what_list[0])
+
+    # If multiple items are given, they are all the same scenario or we fail
+    for_types = set()
+    store_whats = [object_to_store(value) for value in x_what_list]
+    for item in x_for_list:
+        if isinstance(item, numbers.Number):
+            # if 'for' is a number like: "Table for 2" or "walk for a mile" it means "to the extent or amount of"
+            #       If x is an instance, this effectively means "has the capacity of" and it just needs to be check if it has that capacity
+            for_types.add("to the extent or amount of")
+
+            # We support "Table for 2" or "steak for N" but nothing
+            # else with this construction. "table for 2 and 4" doesn't make sense
+            if len(x_for_list) > 1:
+                context.report_error(["unexpected", state.get_reprompt()])
+                return False, for_type, x_what_type
+
+            if x_what_type == perplexity.predications.VariableValueType.instance:
+                # If it is an instance, check to make sure it can handle that capacity
+                for what in store_whats:
+                    for value in rel_objects(state, what, "maxCapacity"):
+                        if value < x_for_list[0]:
+                            context.report_error(['arg_is_not_value_arg', x_what_binding.variable.name, "for",
+                                                  x_for_binding.variable.name])
+                            return False, for_type, x_what_type
+
+        elif is_user_type(item):
+            # if 'for' refers to a person like "Table for my son and I", "steak for me", etc. it means "intended to belong to"
+            # Since "what" is collective, they both have to have it
+            #       If x is an instance, this effectively means "was ordered for"
+            #       Since this is an instance and not a concept
+            #       "steak for my son" is really equivalent to saying "my son's steak"
+            #       "is this steak for my son and I?" can be checked by seeing if we both have it
+            for_types.add("intended to belong to")
+
+            if x_what_type == perplexity.predications.VariableValueType.instance:
+                # the people in "for" must have it *together*, so we check if they, together, have it
+                if (object_to_store(x_for_list), store_whats) not in state.all_rel("have"):
+                    context.report_error(
+                        ['errorText', f"Host: That is not for both {'and'.join(store_whats)}.", state.get_reprompt()])
+                    return False, for_type, x_what_type
+
+        elif sort_of(state, object_to_store(item), "course"):
+            # if 'for' refers to a course like "steak for my main course|dinner" it means "in order to obtain, gain, or acquire" (as in "a suit for alimony")
+            #       If x is an instance, this effectively means "can be used for" which is true as long as the "for" is "main course/dinner/appetizer/etc"
+            for_types.add("in order to obtain")
+
+            # We'll accept "I want the steak for my appetizer" but not for two courses
+            if len(x_for_list) > 1:
+                context.report_error(["unexpected", state.get_reprompt()])
+                return False, for_type, x_what_type
+
+            if not sort_of(state, store_whats, ["food"]):
+                context.report_error(["unexpected", state.get_reprompt()])
+                return False, for_type, x_what_type
+
+
+            else:
+                return False
+
+        if len(for_types) > 1:
+            context.report_error(["unexpected", state.get_reprompt()])
+            return False, for_type, x_what_type
+        else:
+            for_type = next(iter(for_types))
+
+        return True, for_type, x_what_type
+
+
+# Called to actually update the state when a "for" construct is used so that the
+# conceptual value has the meaning of the "for" included in it as criteria
+#
+# Returns an updated version of the solution state that has x_what_binding
+# updated to include the information that x_for_binding added to it
+def for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_list):
+    if x_what_type == perplexity.predications.VariableValueType.instance:
+        # Already fully checked above
+        return solution
+
+    else:
+        # Add the appropriate "for" information to the concepts
+        x_what_values = x_what_binding.value
+        if for_type == "to the extent or amount of":
+            # x_for_list was already checked to make sure it was only one number
+            x_for_value = x_for_list[0]
+
+            # x_what_binding could be multiple like "a steak and a salad for 2"
+            modified_values = [value.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x_for_value) for value
+                               in x_what_values]
+
+        elif for_type == "intended to belong to":
+            if sort_of(solution, x_what_values, "table"):
+                # If "what" is a table, we've already made sure there is only one above
+                # and we assume they are talking about "capacity" not ownership so:
+                modified_values = [x_what_values[0].add_criteria(rel_subjects, "maxCapacity", len(x_for_list))]
+
+            else:
+                # Anything else gets "targetPossession" as a criteria to indicate what is desired
+                # But any instance can be used so it is a noop function
+                modified_values = [value.add_criteria(noop_criteria, "targetPossession", x_for_list) for value
+                                   in x_what_values]
+
+        elif for_type == "in order to obtain":
+            # We're just going to ignore courses, so nothing to add
+            modified_values = x_what_values
+
+        return solution.set_x(x_what_binding.variable.name, tuple(modified_values))
+
+
 # Scenarios:
 # I want a steak for my son
 #   Needs to be conceptual since it doesn't actually exist in the world
@@ -675,72 +793,8 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
 def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
         nonlocal for_type, x_what_type
-
-        # values must be all instances or all concepts so we only need to check the type of the first
-        x_what_type = perplexity.predications.value_type(x_what[0])
-
-        # If multiple items are given, they are all the same scenario or we fail
-        for_types = set()
-        store_whats = [object_to_store(value) for value in x_what]
-        for item in x_for:
-            if isinstance(item, numbers.Number):
-                # if 'for' is a number like: "Table for 2" or "walk for a mile" it means "to the extent or amount of"
-                #       If x is an instance, this effectively means "has the capacity of" and it just needs to be check if it has that capacity
-                for_types.add("to the extent or amount of")
-
-                # We support "Table for 2" or "steak for N" but nothing
-                # else with this construction. "table for 2 and 4" doesn't make sense
-                if len(x_for) > 1:
-                    context.report_error(["unexpected", state.get_reprompt()])
-                    return False
-
-                if x_what_type == perplexity.predications.VariableValueType.instance:
-                    # If it is an instance, check to make sure it can handle that capacity
-                    for what in store_whats:
-                        for value in rel_objects(state, what, "maxCapacity"):
-                            if value < x_for[0]:
-                                context.report_error(['arg_is_not_value_arg', x_what_binding.variable.name, "for", x_for_binding.variable.name])
-                                return False
-
-            elif is_user_type(item):
-                # if 'for' refers to a person like "Table for my son and I", "steak for me", etc. it means "intended to belong to"
-                # Since "what" is collective, they both have to have it
-                #       If x is an instance, this effectively means "was ordered for"
-                #       Since this is an instance and not a concept
-                #       "steak for my son" is really equivalent to saying "my son's steak"
-                #       "is this steak for my son and I?" can be checked by seeing if we both have it
-                for_types.add("intended to belong to")
-
-                if x_what_type == perplexity.predications.VariableValueType.instance:
-                    # the people in "for" must have it *together*, so we check if they, together, have it
-                    if (object_to_store(x_for), store_whats) not in state.all_rel("have"):
-                        context.report_error(['errorText', f"Host: That is not for both {'and'.join(store_whats)}.", state.get_reprompt()])
-                        return False
-
-            elif sort_of(state, object_to_store(item), "course"):
-                # if 'for' refers to a course like "steak for my main course|dinner" it means "in order to obtain, gain, or acquire" (as in "a suit for alimony")
-                #       If x is an instance, this effectively means "can be used for" which is true as long as the "for" is "main course/dinner/appetizer/etc"
-                for_types.add("in order to obtain")
-
-                # We'll accept "I want the steak for my appetizer" but not for two courses
-                if len(x_for) > 1:
-                    context.report_error(["unexpected", state.get_reprompt()])
-                    return False
-
-                if not sort_of(state, store_whats, ["food"]):
-                    context.report_error(["unexpected", state.get_reprompt()])
-                    return False
-
-            else:
-                return False
-
-        if len(for_types) > 1:
-            context.report_error(["unexpected", state.get_reprompt()])
-            return False
-        else:
-            for_type = next(iter(for_types))
-
-        return True
+        result, for_type, x_what_type = for_check(context, x_what, x_for)
+        return result
 
     def x_what_unbound(x_for):
         context.report_error(["formNotUnderstood", "_for_p"])
@@ -762,36 +816,7 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
                                              both_bound_function,
                                              x_what_unbound,
                                              x_for_unbound):
-        if x_what_type == perplexity.predications.VariableValueType.instance:
-            # Already fully checked above
-            yield solution
-
-        else:
-            # Add the appropriate "for" information to the concepts
-            x_what_values = x_what_binding.value
-            if for_type == "to the extent or amount of":
-                # x_for_binding was already checked to make sure it was only one number
-                x_for_value = x_for_binding.value[0]
-
-                # x_what_binding could be multiple like "a steak and a salad for 2"
-                modified_values = [value.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x_for_value) for value in x_what_values]
-
-            elif for_type == "intended to belong to":
-                if sort_of(state, x_what_values, "table"):
-                    # If "what" is a table, we've already made sure there is only one above
-                    # and we assume they are talking about "capacity" not ownership so:
-                    modified_values = [x_what_values[0].add_criteria(rel_subjects, "maxCapacity", len(x_for_binding.value))]
-
-                else:
-                    # Anything else gets "targetPossession" as a criteria to indicate what is desired
-                    # But any instance can be used so it is a noop function
-                    modified_values = [value.add_criteria(noop_criteria, "targetPossession", x_for_binding.value) for value in x_what_values]
-
-            elif for_type == "in order to obtain":
-                # We're just going to ignore courses, so nothing to add
-                modified_values = x_what_values
-
-            yield solution.set_x(x_what_binding.variable.name, tuple(modified_values))
+        yield for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_binding.value)
 
 
 @Predication(vocabulary, names=["_cash_n_1"])
@@ -2243,11 +2268,19 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
                 {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
                 ],
-             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)],
+             handles=[("for", EventOption.optional)])
 def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actors, x_objects):
-        if is_user_type(x_actors):
-            return valid_player_request(state, x_objects)
+        nonlocal for_type, x_what_type
+
+        if is_user_type(x_actors) and valid_player_request(state, x_objects):
+            if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
+                for_list = e_introduced_binding.value["for"]["Value"]
+                result, for_type, x_what_type = for_check(context, x_objects, for_list)
+                return result
+            else:
+                return True
 
         else:
             # Anything about "you/they will have" is not good english
@@ -2265,10 +2298,16 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
         if False:
             yield None
 
-    yield from lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
-                                        both_bound_prediction_function,
-                                        actor_unbound,
-                                        object_unbound)
+    # These get set by each call to lift_style_predication_2
+    for_type = None
+    x_what_type = None
+    for new_state in lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
+                                                both_bound_prediction_function,
+                                                actor_unbound,
+                                                object_unbound):
+        if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
+            for_list = e_introduced_binding.value["for"]["Value"]
+            yield for_update_state(new_state, x_what_type, for_type, x_object_binding, for_list)
 
 
 @Predication(vocabulary,
