@@ -2308,7 +2308,8 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
         if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
             for_list = e_introduced_binding.value["for"]["Value"]
             yield for_update_state(new_state, x_what_type, for_type, x_object_binding, for_list)
-
+        else:
+            yield new_state
 
 @Predication(vocabulary,
              names=["_get_v_1"],
@@ -2318,11 +2319,19 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
              properties=[
                 {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
                 ],
-             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)],
+             handles=[("for", EventOption.optional)])
 def _get_v_1_command(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actor, x_object):
-        if is_computer_type(x_actor):
-            return valid_player_request(state, [x_object])
+        nonlocal for_type, x_what_type
+
+        if is_computer_type(x_actor) and valid_player_request(state, [x_object]):
+            if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
+                for_list = e_introduced_binding.value["for"]["Value"]
+                result, for_type, x_what_type = for_check(context, [x_object], for_list)
+                return result
+            else:
+                return True
 
     def actor_unbound(x_object):
         # Anything about "Who gets x?"
@@ -2336,10 +2345,18 @@ def _get_v_1_command(context, state, e_introduced_binding, x_actor_binding, x_ob
         if False:
             yield None
 
-    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
-                                        both_bound_prediction_function,
-                                        actor_unbound,
-                                        object_unbound)
+    # These get set by each call to in_style_predication_2
+    for_type = None
+    x_what_type = None
+    for new_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding,
+                                            both_bound_prediction_function,
+                                            actor_unbound,
+                                            object_unbound):
+        if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
+            for_list = e_introduced_binding.value["for"]["Value"]
+            yield for_update_state(new_state, x_what_type, for_type, x_object_binding, for_list)
+        else:
+            yield new_state
 
 
 @Predication(vocabulary,

@@ -23,8 +23,15 @@
             "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
         },
         {
+            "Command": "for my son, please get the salmon",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_the_q(x23,_salmon_n_1(x23),def_explicit_q(x5,[_son_n_of(x5,i16), poss(e10,x5,x11)],[polite(please,i18,e2), _for_p(e4,e2,x5), _get_v_1(e2,x3,x23)]))))",
+            "Enabled": true,
+            "ID": "c8ec9537-7d43-4110-9600-650930b1e87f"
+        },
+        {
             "Command": "what did Johnny order?",
-            "Expected": "chicken",
+            "Expected": "salmon\nchicken",
             "Tree": "which_q(x5,thing(x5),proper_q(x3,named(Johnny,x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "3e8edf8d-ab16-4c70-a35b-9976843a11e3"
