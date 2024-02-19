@@ -46,9 +46,23 @@
         {
             "Command": "Can I have the bill",
             "Expected": "Waiter: Let's finish up this order before we get your bill.\nWaiter: Can I get you anything else?",
-            "Tree": "_the_q(x11,_bill_n_of(x11,i16),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Tree": "_the_q(x11,_bill_n_of(x11,i16),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "76892157-de31-423b-9717-632e623b2316"
+        },
+        {
+            "Command": "can we please have the check?",
+            "Expected": "Waiter: Let's finish up this order before we get your bill.\nWaiter: Can I get you anything else?",
+            "Tree": "_the_q(x12,_check_n_of(x12,i17),pronoun_q(x3,pron(x3),[_please_a_1(e10,e11), event_replace(u99,e2,e11), _have_v_1_able(e2,x3,x12)]))",
+            "Enabled": true,
+            "ID": "6ae8c19c-ba52-4a47-98f5-890110bd8e01"
+        },
+        {
+            "Command": "could we please have the check?",
+            "Expected": "Waiter: Let's finish up this order before we get your bill.\nWaiter: Can I get you anything else?",
+            "Tree": "_the_q(x12,_check_n_of(x12,i17),pronoun_q(x3,pron(x3),[_please_a_1(e10,e11), event_replace(u99,e2,e11), _have_v_1_able(e2,x3,x12)]))",
+            "Enabled": true,
+            "ID": "827e8da2-0cab-4d3d-9c61-5909d5221959"
         }
     ]
 }

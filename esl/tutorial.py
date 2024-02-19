@@ -265,10 +265,17 @@ def can_to_able_intransitive_transformer():
 @Transform(vocabulary)
 def can_to_able_transitive_transformer():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
-                              args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal", target], production=production)
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+
+    target_predication = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=["target_e", "x1", "x2"])
+    target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+
+    return TransformerMatch(name_pattern="_can_v_modal",
+                            args_pattern=["e", target],
+                            args_capture=["e1", None],
+                            removed=["_can_v_modal", target],
+                            production=conjuct_production)
 
 
 # Convert "can you show me the menu" to "you show_able the menu"
@@ -314,15 +321,20 @@ def could_to_able_intransitive_transformer():
                             production=conjuct_production)
 
 
-# Convert "can I have a table/steak/etc?" or "what can I have?" or "can I get a table"
-# To: able_to
 @Transform(vocabulary)
 def could_to_able_transitive_transformer():
     production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
-                              args_capture=[None, "x1", "x2"])
-    return TransformerMatch(name_pattern="_could_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_could_v_modal", target], production=production)
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+
+    target_predication = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"], args_capture=["target_e", "x1", "x2"])
+    target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+
+    return TransformerMatch(name_pattern="_could_v_modal",
+                            args_pattern=["e", target],
+                            args_capture=["e1", None],
+                            removed=["_could_v_modal", target],
+                            production=conjuct_production)
 
 
 # Convert "can you show me the menu" to "you show_able the menu"
@@ -662,6 +674,11 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
 #         for solution in context.call(state, h_right_binding):
 #             yield solution
 
+
+@Predication(vocabulary, names=["_can_v_modal"])
+def test_can_v_modal(context, state, e_binding, h_target_binding):
+    if False:
+        yield None
 
 @Predication(vocabulary, names=["_for_p"])
 def _for_p_event(context, state, e_binding, e_target_binding, x_for_binding):
@@ -2281,13 +2298,16 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
     def both_bound_prediction_function(x_actors, x_objects):
         nonlocal for_type, x_what_type
 
-        if is_user_type(x_actors) and valid_player_request(state, x_objects):
-            if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
-                for_list = e_introduced_binding.value["for"]["Value"]
-                result, for_type, x_what_type = for_check(state, context, x_objects, for_list)
-                return result
+        if is_user_type(x_actors):
+            if valid_player_request(state, x_objects):
+                if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
+                    for_list = e_introduced_binding.value["for"]["Value"]
+                    result, for_type, x_what_type = for_check(state, context, x_objects, for_list)
+                    return result
+                else:
+                    return True
             else:
-                return True
+                return False
 
         else:
             # Anything about "you/they will have" is not good english
