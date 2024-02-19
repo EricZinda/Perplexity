@@ -1017,10 +1017,10 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
 
     # Early examples need a context to set the vocabulary since
     # respond_to_mrs hadn't been built yet
@@ -1065,7 +1065,7 @@ if __name__ == '__main__':
     # Example33()
     # Example33a()
     # Example33_performance_test()
-    Example34()
+    # Example34()
     # Example35()
     # Example36()
     # Example37()
@@ -1100,4 +1100,4 @@ if __name__ == '__main__':
     # which 2 files are in 2 folders together? -> show the parse that worked
     # /show
 
-    # Example_main()
+    Example_main()

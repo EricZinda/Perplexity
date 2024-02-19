@@ -1,10 +1,3 @@
-- Support hosting games in a REST interface
-
-- I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
-    - works: I'll have the Grilled Salmon for myself/I'll have the Roasted Chicken for my son
-    - fails: for my son, I'll have the roasted chicken
-        - works: I'll have the roasted chicken for my son
-        - Need to implement _have_v_1(e2,x3,x21), _for_p(e4,e2,x5)
 - Fix some of the user interface issues:
     - implement a timeout
     - do a better response than "I don't understand the way you used X" and other default messages
@@ -35,6 +28,7 @@
 
 - Don't generate one more if nothing cares
 - OPTIMIZATIONS:
+    - for my son, Johnny, please get the Roasted Chicken -> takes forever
     - How much is the soup and the salad? -> Takes forever
     - We would like the menus -> Takes forever
         - /runparse 0,5: We would like the menus

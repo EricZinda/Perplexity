@@ -670,12 +670,13 @@ def _for_p_event(context, state, e_binding, e_target_binding, x_for_binding):
 
 # Checks to make sure a "for" construct is valid, and determines what kind of "for" construct it is
 # Returns True | False, for_type, x_what_type
-def for_check(context, x_what_list, x_for_list):
+def for_check(state, context, x_what_list, x_for_list):
     # values must be all instances or all concepts so we only need to check the type of the first
     x_what_type = perplexity.predications.value_type(x_what_list[0])
 
     # If multiple items are given, they are all the same scenario or we fail
     for_types = set()
+    for_type = None
     store_whats = [object_to_store(value) for value in x_what_list]
     for item in x_for_list:
         if isinstance(item, numbers.Number):
@@ -694,8 +695,9 @@ def for_check(context, x_what_list, x_for_list):
                 for what in store_whats:
                     for value in rel_objects(state, what, "maxCapacity"):
                         if value < x_for_list[0]:
-                            context.report_error(['arg_is_not_value_arg', x_what_binding.variable.name, "for",
-                                                  x_for_binding.variable.name])
+                            context.report_error(
+                                ['errorText', f"{convert_to_english(state, what)} is not for {convert_to_english(state, x_for_list[0])}.",
+                                 state.get_reprompt()])
                             return False, for_type, x_what_type
 
         elif is_user_type(item):
@@ -735,6 +737,11 @@ def for_check(context, x_what_list, x_for_list):
         if len(for_types) > 1:
             context.report_error(["unexpected", state.get_reprompt()])
             return False, for_type, x_what_type
+
+        elif len(for_types) == 0:
+            context.report_error(["unexpected", state.get_reprompt()])
+            return False, for_type, x_what_type
+
         else:
             for_type = next(iter(for_types))
 
@@ -793,7 +800,7 @@ def for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_list
 def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
         nonlocal for_type, x_what_type
-        result, for_type, x_what_type = for_check(context, x_what, x_for)
+        result, for_type, x_what_type = for_check(state, context, x_what, x_for)
         return result
 
     def x_what_unbound(x_for):
@@ -2277,7 +2284,7 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
         if is_user_type(x_actors) and valid_player_request(state, x_objects):
             if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
                 for_list = e_introduced_binding.value["for"]["Value"]
-                result, for_type, x_what_type = for_check(context, x_objects, for_list)
+                result, for_type, x_what_type = for_check(state, context, x_objects, for_list)
                 return result
             else:
                 return True
@@ -2328,7 +2335,7 @@ def _get_v_1_command(context, state, e_introduced_binding, x_actor_binding, x_ob
         if is_computer_type(x_actor) and valid_player_request(state, [x_object]):
             if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
                 for_list = e_introduced_binding.value["for"]["Value"]
-                result, for_type, x_what_type = for_check(context, [x_object], for_list)
+                result, for_type, x_what_type = for_check(state, context, [x_object], for_list)
                 return result
             else:
                 return True
@@ -3148,12 +3155,12 @@ if __name__ == '__main__':
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("SString")
-    ShowLogging("UserInterface")
-    ShowLogging("Pipeline")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Pipeline")
 
     # ShowLogging("SString")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

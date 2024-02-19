@@ -31,7 +31,10 @@
         },
         {
             "Command": "what did Johnny order?",
-            "Expected": "salmon\nchicken",
+            "Expected": [
+                "salmon\nchicken",
+                "chicken\nsalmon"
+            ],
             "Tree": "which_q(x5,thing(x5),proper_q(x3,named(Johnny,x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "3e8edf8d-ab16-4c70-a35b-9976843a11e3"
@@ -60,7 +63,7 @@
         {
             "Command": "get a steak for my son",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
-            "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),_a_q(x8,[_steak_n_1(x8), _for_p(e13,x8,x14)],_get_v_1(e2,x3,x8))))",
+            "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),[_for_p(e13,e2,x14), _get_v_1(e2,x3,x8)])))",
             "Enabled": true,
             "ID": "99b1429b-cf55-4ca0-a26b-3748fcff3358"
         },
@@ -261,7 +264,8 @@
                 "2 soup\nmenu\nwater\nsteak",
                 "steak\n2 soup\nmenu\nwater",
                 "steak\nwater\n2 soup\nmenu",
-                "steak\n2 soup\nwater\nmenu"
+                "steak\n2 soup\nwater\nmenu",
+                "water\n2 soup\nsteak\nmenu"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
