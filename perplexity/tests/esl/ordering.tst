@@ -227,7 +227,7 @@
         {
             "Command": "Can we have some menus?",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything else?",
-            "Tree": "_some_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Tree": "_some_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "7a4b134b-3dcd-4290-a657-18dc3f2ed059"
         },
@@ -327,21 +327,21 @@
         {
             "Command": "I can have a steak",
             "Expected": "I don't understand the way you are using: have",
-            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Tree": "_can_v_modal(e2,_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1(e10,x3,x11))))",
             "Enabled": true,
             "ID": "84e4fc9b-4d71-4538-8561-36449163906c"
         },
         {
             "Command": "Who can have a steak?",
             "Expected": "you\n(among others)",
-            "Tree": "which_q(x3,person(x3),_a_q(x11,_steak_n_1(x11),_have_v_1_able(e2,x3,x11)))",
+            "Tree": "which_q(x3,person(x3),_a_q(x11,_steak_n_1(x11),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "121251c1-efe2-47b5-a25f-a08648a34b5d"
         },
         {
             "Command": "What can I have?",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
-            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x5)))",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e15), _have_v_1_able(e2,x3,x5)]))",
             "Enabled": true,
             "ID": "9a9c9df7-aa60-4471-8afc-113bc4b32488"
         },
@@ -355,7 +355,7 @@
         {
             "Command": "Can I have a steak?",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
-            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "30071c2b-e13e-4ff0-9fa8-fea5b58b1873"
         },
@@ -624,7 +624,7 @@
         {
             "Command": "Can we get one soup for Johnny, please?",
             "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you anything else?",
-            "Tree": "udef_q(x11,proper_q(x19,named(Johnny,x19),[_soup_n_1(x11), _for_p(e18,x11,x19), card(1,e17,x11)]),pronoun_q(x3,pron(x3),[_please_a_1(e25,e2), _get_v_1_able(e2,x3,x11)]))",
+            "Tree": "udef_q(x11,proper_q(x19,named(Johnny,x19),[_soup_n_1(x11), _for_p(e18,x11,x19), card(1,e17,x11)]),pronoun_q(x3,pron(x3),[_please_a_1(e25,e10), event_replace(u99,e2,e10), _get_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "b3589252-e0bf-4534-8bfa-c2d079bc4700"
         },

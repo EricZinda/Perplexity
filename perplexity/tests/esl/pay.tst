@@ -18,7 +18,7 @@
         {
             "Command": "can I have the menu",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
-            "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "0103f25f-496a-4f74-a051-2c6bc984fed5"
         },
@@ -88,7 +88,7 @@
         {
             "Command": "can I get the check?",
             "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
-            "Tree": "_the_q(x11,_check_n_of(x11,i16),pronoun_q(x3,pron(x3),_get_v_1_able(e2,x3,x11)))",
+            "Tree": "_the_q(x11,_check_n_of(x11,i16),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _get_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "d059492d-e95d-4ec7-a6bb-15d25f2d7601"
         },

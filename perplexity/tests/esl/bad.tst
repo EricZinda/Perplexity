@@ -18,14 +18,14 @@
         {
             "Command": "Can I take a table?",
             "Expected": "I'm not sure what that means.",
-            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_take_v_1_able(e2,x3,x11)))",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _take_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "82b6ed9b-e700-48e9-bee5-0e0cf89f89cf"
         },
         {
             "Command": "Can you take a table?",
             "Expected": "I'm not sure what that means.",
-            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_take_v_1_able(e2,x3,x11)))",
+            "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _take_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "aad1420f-f6b6-4e90-8a3d-301e7b516689"
         },
@@ -81,7 +81,7 @@
         {
             "Command": "I can see a menu",
             "Expected": "I'm not sure what that means.",
-            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_see_v_1_able(e2,x3,x11)))",
+            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _see_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "ad7a32a4-cce3-4517-a576-3796abdb839c"
         },

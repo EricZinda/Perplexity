@@ -18,7 +18,7 @@
         {
             "Command": "Can I see a menu?",
             "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\n",
-            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_see_v_1_able(e2,x3,x11)))",
+            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _see_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "ed0e789c-6ba1-4e91-98fd-a9bea2f02e27"
         },
@@ -46,7 +46,7 @@
         {
             "Command": "Could we have a menu?",
             "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\n",
-            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
+            "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "4a0fe26c-88b6-4386-8e7b-af607075c4f6"
         },
@@ -144,7 +144,7 @@
         {
             "Command": "can you seat me?",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_seat_v_cause_able(e2,x3,x11)))",
+            "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _seat_v_cause_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "5e54a63a-49e8-444f-9b6f-b50555f6f63c"
         },

@@ -115,7 +115,7 @@
         },
         {
             "Command": "my steak is for 3",
-            "Expected": "steak is not for 3 thing",
+            "Expected": "steak is not for 3.",
             "Tree": "pronoun_q(x9,pron(x9),number_q(x14,card(3,x14,i20),def_explicit_q(x3,[_steak_n_1(x3), poss(e8,x3,x9)],_for_p(e2,x3,x14))))",
             "Enabled": true,
             "ID": "d3726b90-3af5-491e-8aab-521915ab8fb1"

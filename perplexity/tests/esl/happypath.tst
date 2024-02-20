@@ -32,7 +32,7 @@
         {
             "Command": "can I see the menu?",
             "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
-            "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_see_v_1_able(e2,x3,x11)))",
+            "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _see_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "d86c1b84-85f6-4f94-980e-e5b05874cf4a"
         },
