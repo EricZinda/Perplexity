@@ -1745,5 +1745,6 @@
     "_get_v_1_command_group": {
         "PropertiesFrom": "_get_v_1_command_group"
     },
-    "test_can_v_modal": {}
+    "test_can_v_modal": {},
+    "no_standalone": {}
 }

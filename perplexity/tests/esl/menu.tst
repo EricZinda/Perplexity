@@ -114,9 +114,9 @@
             "ID": "94dafbfe-00ea-4830-ab9b-e3069733741c"
         },
         {
-            "Command": "no",
+            "Command": "that will be all, thanks",
             "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for you.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "_no_a_1(i6,unknown(e2,u5))",
+            "Tree": "_thanks_a_1(i11,no_standalone(e2,x6))",
             "Enabled": true,
             "ID": "ec1ad85b-ce21-4f93-a7e7-c67a616fb8e8"
         },
@@ -198,9 +198,9 @@
             "ID": "bc1ce7b9-3611-48fa-9baf-5288edde5c55"
         },
         {
-            "Command": "no",
+            "Command": "that will be all",
             "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "_no_a_1(i6,unknown(e2,u5))",
+            "Tree": "no_standalone(e2,x5)",
             "Enabled": true,
             "ID": "4ee29d7a-4ec4-45ae-be8e-d0735a4718c2"
         },

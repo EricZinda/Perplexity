@@ -1,6 +1,5 @@
 import os
 import sys
-
 import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
@@ -107,6 +106,24 @@ def min_from_variable_group(variable_group):
 
 
 # **** Transforms ****
+
+# Transform _all_q(x5,generic_entity(x5),_be_v_id(e2,i4,x5)) to _no_a(e, x)
+@Transform(vocabulary)
+def that_will_be_all_transformer():
+    production = TransformerProduction(name="no_standalone", args={"ARG0": "$target_e", "ARG1":"$target_x"})
+
+    generic_entity_match = TransformerMatch(name_pattern="generic_entity",
+                                   args_pattern=["x"])
+    be_eix_match = TransformerMatch(name_pattern="_be_v_id",
+                                    args_pattern=["e", "i", "x"],
+                                    args_capture=["target_e", None, "target_x"])
+    all_match = TransformerMatch(name_pattern="_all_q",
+                     args_pattern=["x", generic_entity_match, be_eix_match],
+                     removed=["_be_v_id"],
+                     production=production)
+
+    return all_match
+
 
 # Transform discourse(i2,greet(X,i6),Y) to Y
 @Transform(vocabulary)
@@ -1029,6 +1046,11 @@ def _yes_a_1(context, state, i_binding, h_binding):
 
 @Predication(vocabulary, names=["_no_a_1", "_nope_a_1"])
 def _no_a_1(context, state, i_binding, h_binding):
+    yield state.record_operations(state.handle_world_event(context, ["no"]))
+
+
+@Predication(vocabulary, names=["no_standalone"])
+def no_standalone(context, state, e_binding, x_binding):
     yield state.record_operations(state.handle_world_event(context, ["no"]))
 
 
@@ -3176,11 +3198,11 @@ if __name__ == '__main__':
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
 
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
-    # ShowLogging("Transformer")
+    ShowLogging("Transformer")
 
     hello_world()

@@ -80,9 +80,8 @@
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter, you are the customer.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
-    - can we please have the check?/Could we please have the check? --> don't know words
-        - can we have the check --> works
     - That will be all, thank you.
+        - implicit_conj(e2,e4,e5), _be_v_id(e4,i7,x8), _all_q(x8,h10,h11), generic_entity(x8), _thank_v_1(e5,i7,x13), pron(x13), pronoun_q(x13,h16,h17)
     - Thank you! You too. --> I don't know the way you used: implicit_conj
     - We'll pay with cash, here is 15 dollars.
     - How much does the tomato soup and the green salad cost? --> I don't know the way you used: cost
