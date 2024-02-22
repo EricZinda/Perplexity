@@ -82,8 +82,6 @@
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter, you are the customer.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
-    - Thank you! You too. --> I don't know the way you used: implicit_conj
-    - We'll pay with cash, here is 15 dollars.
     - How much does the tomato soup and the green salad cost? --> I don't know the way you used: cost
     - Could you recommend a few vegetarian options, then?
     -  Hi! Could we have the vegetarian menu, please?
@@ -96,6 +94,13 @@
     - Let's go to a table, please.
     - In that case, Johnny and I will both have the Roasted Chicken.
         - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
+    - We'll pay with cash, here is 15 dollars.
+        First make each conjunct work:
+        - (done) We'll pay with cash
+        - Here is 15 dollars
+             udef_q(x3,[_dollar_n_1(x3,u16), card(15,e15,x3)],def_implicit_q(x4,[place_n(x4), _here_a_1(e9,x4)],loc_nonsp(e2,x3,x4)))
+             implicit command triggered by an observation
+
 - Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
   - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...
 - support "can we be seated?"

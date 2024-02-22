@@ -996,11 +996,13 @@ def _dollar_n_1(context, state, x_binding, u_unused):
                 "a table for 2, please!": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "2": {'SF': 'prop-or-ques'},
                 "Johnny and me": {'SF': 'prop-or-ques'},
-                "yes": {'SF': 'prop-or-ques'}
+                "yes": {'SF': 'prop-or-ques'},
+                "You too.": {'SF': 'prop'}
              },
              properties=[{'SF': 'prop-or-ques'},
                          {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
+                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': 'prop'}],
              arguments=[("e",), ("x", ValueSize.all)])
 def unknown(context, state, e_binding, x_binding):
     operations = state.handle_world_event(context, ["unknown", x_binding.value])
@@ -3209,7 +3211,7 @@ if __name__ == '__main__':
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
 
     # ShowLogging("SString")
     # ShowLogging("Determiners")

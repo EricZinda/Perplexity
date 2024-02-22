@@ -809,6 +809,9 @@
             },
             "yes": {
                 "SF": "prop-or-ques"
+            },
+            "You too.": {
+                "SF": "prop"
             }
         },
         "Properties": [
@@ -826,6 +829,9 @@
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            {
+                "SF": "prop"
             }
         ]
     },
