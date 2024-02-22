@@ -661,7 +661,9 @@ class Vocabulary(object):
                     type_list.append(VocabularyEntry(module=module, function=function, id=self.next_implementation_id, extra_arg=None))
                 self.next_implementation_id += 1
 
-    def alternate_trees(self, state, tree_info, yield_original):
+    # Perform any tree transforms that match AND only evaluate one of N conjuncts if the phrase
+    # is a conjunction
+    def alternate_trees(self, state, tree_info, yield_original, conjunct_index_list=None):
         for transformer_root in self.transformers:
             new_tree_info = build_transformed_tree(self, state, tree_info, transformer_root)
             if new_tree_info:
@@ -669,12 +671,54 @@ class Vocabulary(object):
                 found_next_tree = False
                 for next_tree in self.alternate_trees(state, new_tree_info, False):
                     found_next_tree = True
-                    yield next_tree
+                    yield self.select_tree_conjunct(next_tree, conjunct_index_list=conjunct_index_list)
                 if not found_next_tree:
-                    yield new_tree_info
+                    yield self.select_tree_conjunct(new_tree_info, conjunct_index_list=conjunct_index_list)
 
         if yield_original:
-            yield tree_info
+            yield self.select_tree_conjunct(tree_info, conjunct_index_list=conjunct_index_list)
+
+    # Remove any conjunction terms like implicit_con() as well as all but one of the verbs it points to
+    # Which one is kept is indicated by conjunct_index_list
+    def select_tree_conjunct(self, tree_info, conjunct_index_list=None):
+        # Remove all the actual conjunctions
+        conjunctions = perplexity.tree.find_predications(tree_info["Tree"], ["implicit_conj"])
+        if len(conjunctions) == 0:
+            return tree_info
+
+        remove_introduced_variables = [item.introduced_variable() for item in conjunctions]
+
+        # Then remove all but one of their conjuncts too
+        if conjunct_index_list is None:
+            conjunct_index_list = [0] * len(conjunctions)
+        assert (len(conjunct_index_list) == len(conjunctions))
+        for index in range(len(conjunctions)):
+            # Remove the non-introduced argument that wasn't chosen
+            removed_conjunct_arg = 1 if conjunct_index_list[index] == 1 else 2
+            remove_introduced_variables.append(conjunctions[index].args[removed_conjunct_arg])
+
+        # Remove the implicit_conj and the conjuncts that weren't selected in conjunct_index_list
+        # We assume all of those predications are in a conjunction (i.e. a list) so we just have to remove those items
+        def rewrite_conjunctions(predication, index_by_ref):
+            if isinstance(predication, list):
+                new_conjunction = []
+                for item in predication:
+                    if item.introduced_variable() not in remove_introduced_variables:
+                        new_conjunction.append(item)
+                return new_conjunction
+
+        index_by_ref = [0]
+        new_tree = perplexity.tree.rewrite_tree_predications2(tree_info["Tree"], rewrite_conjunctions, index_by_ref)
+
+        # Switch the index to be the chosen conjunct
+        new_tree_info = copy.deepcopy(tree_info)
+        new_tree_info["Tree"] = new_tree
+        new_tree_info["SelectedConjuncts"] = conjunct_index_list
+        if new_tree_info["Index"] in remove_introduced_variables:
+            # The index was removed, revector it to whichever verb remains
+            new_tree_info["Index"] = conjunctions[0].args[conjunct_index_list[0] + 1]
+
+        return new_tree_info
 
     def predications(self, name, arg_types, predication_type):
         name_key = self.name_key(name, arg_types, predication_type)

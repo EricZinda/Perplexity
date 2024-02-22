@@ -1,4 +1,6 @@
 from collections import OrderedDict
+
+import delphin.codecs.simplemrs
 from delphin.mrs import *
 import copy
 import logging
@@ -351,6 +353,56 @@ def get_holes_and_floaters(predications, global_qeqs):
         predication_by_label = potential_child_dict
 
 
+def attempt_grammar_patches(mrs):
+    patched_mrs = patch_51(mrs)
+    if patched_mrs:
+        print("PATCHED: Patch 51")
+        return patched_mrs
+
+
+# https://github.com/delph-in/erg/issues/50
+# In ERG 2020, the phrase "That will be all, thank you." generates 15 parses (below). The MRS in parse 6, 7 and 10 is misformed in that there
+# are too few holes for the handles which must be assigned when building a well-formed MRS. I suspect the problem is that implicit_conj should
+# have the same handle as the predications is it joining in ARG1 and ARG2.
+def patch_51(mrs_orig):
+    # Make a copy using serialization since copy.deepcopy() doesn't work
+    mrs_string = delphin.codecs.simplemrs.encode(mrs_orig)
+    mrs = delphin.codecs.simplemrs.decode(mrs_string)
+
+    patched = False
+    for item in mrs.predications:
+        if item.predicate == "implicit_conj":
+            conjuncts_iv = [item.args["ARG1"], item.args["ARG2"]]
+            found_labels = list()
+            for target in mrs.predications:
+                if target.iv in conjuncts_iv:
+                    found_labels.append(target.label)
+            found_all_conjuncts = len(found_labels) == len(conjuncts_iv)
+            conjuncts_share_one_label = len(set(found_labels)) == 1
+            implicit_conj_has_different_label = item.label != found_labels[0]
+            if found_all_conjuncts and conjuncts_share_one_label and implicit_conj_has_different_label:
+                hcons = []
+                for hcon in mrs.hcons:
+                    if hcon.hi == item.label:
+                        hi = found_labels[0]
+                    else:
+                        hi = hcon.hi
+
+                    if hcon.lo == item.label:
+                        lo = found_labels[0]
+                    else:
+                        lo = hcon.lo
+
+                    hcons.append(HCons(hi=hi, relation="qeq", lo=lo))
+                mrs.hcons.clear()
+                mrs.hcons.extend(hcons)
+
+                item.label = found_labels[0]
+                patched = True
+    if patched:
+        return mrs
+
+
 # Builds the initial tree for one or more predications that share the same handle
 # i.e. that are in conjunction
 def build_initial_tree_from_predication_item(global_qeqs, predication_item, remaining_predications_by_label, holes_dict):
@@ -517,7 +569,12 @@ def valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs=""):
     hole_dict, floater_dict = get_holes_and_floaters(all_predications, global_qeqs)
     if hole_dict is None:
         logger.debug("NO Solutions for mrs: {}".format(mrs))
-        return None
+        mrs = attempt_grammar_patches(mrs)
+        if mrs is not None:
+            yield from valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs)
+            return
+        else:
+            return
 
     pipeline_logger.debug("{} holes to assign. Holes: {}".format(len(hole_dict), hole_dict.keys()))
     if max_holes is not None and len(hole_dict) > max_holes:
@@ -553,7 +610,10 @@ def valid_hole_assignments(mrs, max_holes, required_root_label, raw_mrs=""):
             if floater_list[floater_index]["Label"] == required_root_label:
                 force_hole_floater = [0, floater_index]
                 break
-    yield from try_alternative_hole_assignments(hole_dict, [mrs.top], floater_list, {}, force_hole_floater=force_hole_floater)
+
+    for assignment in try_alternative_hole_assignments(hole_dict, [mrs.top], floater_list, {}, force_hole_floater=force_hole_floater):
+        yield mrs, assignment
+
 
 logger = logging.getLogger('TreeAlgorithm')
 pipeline_logger = logging.getLogger('Pipeline')

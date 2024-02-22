@@ -165,6 +165,10 @@ class TestManager(object):
         print("\n**** Begin Testing...\n")
         testItemStartTime = time.perf_counter()
         test_ui = None
+        conjunct_input = None
+        conjunct_mrs_index = None
+        conjunct_tree_index = None
+        next_conjuncts = None
         for test_item in test_iterator:
             if test_iterator.world_name != self.current_world_name or test_ui is None:
                 # World changed, load the new world
@@ -177,16 +181,58 @@ class TestManager(object):
                     test_ui = test_ui_function()
                     self.current_world_name = test_iterator.world_name
 
-            print(f"\nTest: {test_item['Command']}")
             try:
-                test_ui.interact_once(test_item["Command"])
+                if test_item['Command'] in ["/next_conjunct"]:
+                    # This is a test item meant to test the next conjuct of a phrase that includes a conjunction
+                    print(f"\nTest: Next conjunct of: '{conjunct_input}'")
+                    if next_conjuncts is None:
+                        # There is no conjuct to be "next"
+                        result = "There is no conjuct to be 'next''"
+                        interaction_response = ""
+                        interaction_tree = None
+
+                    else:
+                        test_ui.interact_once(force_input=conjunct_input,
+                                              conjunct_mrs_index=conjunct_mrs_index,
+                                              conjunct_tree_index=conjunct_tree_index,
+                                              next_conjuncts=next_conjuncts)
+
+                        interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator,
+                                                                                                            test_item,
+                                                                                                            test_ui.interaction_record)
+                        # Assume there are only ever 2 conjunctions and end now
+                        conjunct_mrs_index = None
+                        conjunct_tree_index = None
+                        next_conjuncts = None
+
+                else:
+                    if next_conjuncts is not None:
+                        # There are unhandled conjuncts from the previous statement
+                        print(f"**** HALTING: There are unhandled conjuncts from the previous statement. Please add tests with a command of '/next_conjunct' to handle them")
+                        break
+
+                    print(f"\nTest: {test_item['Command']}")
+                    test_ui.interact_once(test_item["Command"])
+
+                    record = test_ui.chosen_tree_record()
+                    conjunct_input = test_ui.user_input
+                    if record is not None and "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None and record["SelectedConjuncts"][0] == 0:
+                        # This phrase generated conjuncts, remember them
+                        next_conjuncts = [1]
+                        conjunct_mrs_index = test_ui.interaction_record["ChosenMrsIndex"]
+                        conjunct_tree_index = test_ui.interaction_record["ChosenTreeIndex"]
+
+                    else:
+                        conjunct_mrs_index = None
+                        conjunct_tree_index = None
+                        next_conjuncts = None
+
+                    interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator, test_item, test_ui.interaction_record)
 
             except Exception as error:
                 print(f"**** HALTING: Exception in test run: {error}")
                 traceback.print_tb(error.__traceback__, file=sys.stdout)
                 break
-
-            interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator, test_item, test_ui.interaction_record)
 
             if result is not None:
                 if testResultsFile:
@@ -209,7 +255,6 @@ class TestManager(object):
                             break
 
         elapsed = round(time.perf_counter() - testItemStartTime, 5)
-
         print(f"\n**** Testing Complete. Elapsed time: {elapsed}\n")
 
     def resolve_tests(self):
@@ -399,7 +444,11 @@ class TestManager(object):
                 chosen_mrs_index = interaction_record["ChosenMrsIndex"]
                 chosen_tree_index = interaction_record["ChosenTreeIndex"]
                 tree_record = interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index] if chosen_mrs_index is not None and chosen_tree_index is not None else None
-                test_items.append({"Command": interaction_record["UserInput"],
+                if "SelectedConjuncts" in tree_record and tree_record["SelectedConjuncts"] is not None and tree_record["SelectedConjuncts"][0] > 0:
+                    command = "/next_conjuct"
+                else:
+                    command = interaction_record["UserInput"]
+                test_items.append({"Command": command,
                                    "Expected": tree_record["ResponseMessage"] if tree_record is not None else None,
                                    "Tree": str(tree_record["Tree"] if tree_record is not None else None),
                                    "Enabled": True,

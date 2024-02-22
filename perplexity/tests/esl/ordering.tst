@@ -266,7 +266,8 @@
                 "steak\nwater\n2 soup\nmenu",
                 "steak\n2 soup\nwater\nmenu",
                 "water\n2 soup\nsteak\nmenu",
-                "2 soup\nmenu\nsteak\nwater"
+                "2 soup\nmenu\nsteak\nwater",
+                "2 soup\nsteak\nwater\nmenu"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,

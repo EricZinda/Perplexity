@@ -94,6 +94,9 @@ class UserInterface(object):
             self.state.save(file)
 
     def chosen_tree_record(self):
+        if self.interaction_record is None:
+            return None
+
         chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
         chosen_tree_index = self.interaction_record["ChosenTreeIndex"]
         if chosen_mrs_index is None:
@@ -112,14 +115,57 @@ class UserInterface(object):
             command = command_line_commands.pop(0) if len(command_line_commands) > 0 else None
             if command == "exit":
                 os._exit(0)
+
             else:
-                self.interact_once(force_input=command)
+                self.interact_once_across_conjunctions(command)
                 if self.new_ui:
                     # The user gave a command to load a new UI
                     return self.new_ui
+
             self.user_output()
 
-    def interact_once(self, force_input=None):
+    # If the phrase is an implicit or explicit conjunction -- basically more than
+    # one phrase put together -- run the interaction loop N times, once for each conjunct
+    # collects, and then returns, a list of interaction records that represent each of the conjuncts
+    def interact_once_across_conjunctions(self, force_input=None):
+        interaction_records = []
+        next_conjuncts = None
+        conjunct_mrs_index = None
+        conjunct_tree_index = None
+        while True:
+            self.interact_once(force_input=force_input, conjunct_mrs_index=conjunct_mrs_index,
+                               conjunct_tree_index=conjunct_tree_index, next_conjuncts=next_conjuncts)
+            interaction_records.append(self.interaction_record)
+
+            next_ui = self.new_ui if self.new_ui else self
+            record = self.chosen_tree_record()
+            if record is not None:
+                if "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None:
+                    assert len(record["SelectedConjuncts"]) == 1
+                    if record["SelectedConjuncts"][0] == 1:
+                        # We've processed all the conjuncts
+                        break
+
+                    else:
+                        force_input = self.user_input
+                        next_conjuncts = [1]
+                        conjunct_mrs_index = self.interaction_record["ChosenMrsIndex"]
+                        conjunct_tree_index = self.interaction_record["ChosenTreeIndex"]
+
+                else:
+                    # No conjuncts to process
+                    break
+
+        if self is not next_ui:
+            # The user gave a command to load a new UI
+            self.new_ui = next_ui
+
+        return interaction_records
+
+    # If a phrase is an implicit or explicit conjunction, interact_once will treat it like different sentences and only
+    # evaluate one at a time. It can be called again with conjunct_mrs_index, conjunct_tree_index, and next_conjuncts set
+    # to evaluate the non default conjuncts
+    def interact_once(self, force_input=None, conjunct_mrs_index=None, conjunct_tree_index=None, next_conjuncts=None):
         if force_input is None:
             # input() pauses the program and waits for the user to
             # type input and hit enter, and then returns it
@@ -171,6 +217,8 @@ class UserInterface(object):
             mrs_index += 1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 continue
+            if conjunct_mrs_index is not None and conjunct_mrs_index != mrs_index:
+                continue
 
             unknown, contingent = self.unknown_words(mrs, self.state)
             mrs_record = self.new_mrs_record(mrs=mrs, unknown_words=unknown)
@@ -196,7 +244,7 @@ class UserInterface(object):
 
                     # Now loop through any tree modifications that have been built for this application
                     alternate_tree_generated = False
-                    for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0):
+                    for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0, conjunct_index_list=next_conjuncts):
                         # At this point we have locked down which predications should be used and that won't change
                         # However: there might be multiple interpretations of these predications as well as disjunctions
                         # that cause various solution sets to be created. Each will be in its own tree_record
@@ -226,7 +274,7 @@ class UserInterface(object):
                                                                           self.response_function,
                                                                           self.message_function,
                                                                           tree_index,
-                                                                          self.run_tree_index,
+                                                                          conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index,
                                                                           find_all_solution_groups=self.show_all_answers,
                                                                           wh_phrase_variable=wh_phrase_variable):
                                 mrs_record["Trees"].append(tree_record)

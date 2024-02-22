@@ -477,7 +477,7 @@ class TreeSolver(object):
                 yield solutions
                 continue
 
-            tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=current_tree_index)
+            tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=current_tree_index, selected_conjuncts=tree_info.get("SelectedConjuncts", None))
 
             # solution_groups() should return an iterator that iterates *groups*
             all_solution_groups = [] if find_all_solution_groups else None
@@ -526,7 +526,7 @@ class TreeSolver(object):
 
     @staticmethod
     def new_tree_record(tree=None, error=None, response_generator=None, response_message=None, tree_index=None,
-                        error_tree=False, interpretation=None):
+                        error_tree=False, interpretation=None, selected_conjuncts=None):
         value = {"Tree": tree,
                  "Interpretation": interpretation,
                  "SolutionGroups": None,
@@ -535,7 +535,8 @@ class TreeSolver(object):
                  "TreeIndex": tree_index,
                  "SolutionGroupGenerator": None,
                  "ResponseGenerator": [] if response_generator is None else response_generator,
-                 "ResponseMessage": "" if response_message is None else response_message}
+                 "ResponseMessage": "" if response_message is None else response_message,
+                 "SelectedConjuncts": selected_conjuncts}
 
         if error_tree:
             value["ErrorTree"] = True

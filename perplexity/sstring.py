@@ -401,7 +401,6 @@ if __name__ == '__main__':
             print_variable = True
             for tree in mrs_parser.trees_from_mrs(mrs):
 
-
                 if print_variable:
                     print(f"\n{tree.repr_with_indices()}")
                     print(f"\n{variable} --> {find_predication_from_introduced(tree, variable)}")

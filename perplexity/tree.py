@@ -96,32 +96,35 @@ class MrsParser(object):
         # one tree since they will all be the same
         unscoped = self.unscoped_tree(mrs)
 
-        # Create a dict of predications using their labels as each key
-        # for easy access when building trees
-        # Note that a single label could represent multiple predications
-        # in conjunction so we need a list for each label
-        mrs_predication_dict = {}
         required_root_label = None
         for predication in mrs.predications:
             # which_q should always have widest scope for questions
             # See: https://delphinqa.ling.washington.edu/t/understanding-neg-e-h-which-rocks-are-not-blue/860
             if predication.predicate in ["which_q", "_which_q"] and sentence_force(mrs.variables) in ["prop-or-ques", "ques"]:
                 required_root_label = predication.label
-            if predication.label not in mrs_predication_dict.keys():
-                mrs_predication_dict[predication.label] = []
-            mrs_predication_dict[predication.label].append(predication)
+                break
 
         # Iteratively return well-formed trees from the MRS
-        for holes_assignments in valid_hole_assignments(mrs, self.max_holes, required_root_label):
+        for new_mrs, holes_assignments in valid_hole_assignments(mrs, self.max_holes, required_root_label):
             # valid_hole_assignments can return None if the grammar returns something
             # that doesn't have the same number of holes and floaters (which is a grammar bug)
             if holes_assignments is not None:
+                # Create a dict of predications using their labels as each key
+                # for easy access when building trees
+                # Note that a single label could represent multiple predications
+                # in conjunction so we need a list for each label
+                mrs_predication_dict = {}
+                for predication in new_mrs.predications:
+                    if predication.label not in mrs_predication_dict.keys():
+                        mrs_predication_dict[predication.label] = []
+                    mrs_predication_dict[predication.label].append(predication)
+
                 # Now we have the assignments of labels to holes, but we need
                 # to actually build the *tree* using that information
-                well_formed_tree = tree_from_assignments(mrs.top,
+                well_formed_tree = tree_from_assignments(new_mrs.top,
                                                          holes_assignments,
                                                          mrs_predication_dict,
-                                                         mrs)
+                                                         new_mrs)
                 pipeline_logger.debug(f"Tree: {well_formed_tree}")
                 yield well_formed_tree
                 if unscoped:
@@ -735,13 +738,16 @@ def find_predication(term, predication_name):
 
 
 # Return all of the predications named predication_name
-def find_predications(term, predication_name):
+def find_predications(term, predication_names):
     # This function gets called for every predication
     # in the tree. It is a private function since it is
     # only used here
     def match_predication_name(predication):
-        if predication.name == predication_name:
+        if predication.name in predication_names:
             found_predications.append(predication)
+
+    if not isinstance(predication_names, (list, tuple, set)):
+        predication_names = (predication_names,)
 
     found_predications = []
 
@@ -815,6 +821,46 @@ def predication_from_index(tree_info, index):
     walk_tree_predications_until(tree_info["Tree"], stop_at_index)
 
     return index_predication
+
+
+# predication_rewrite_func gets called with each predication AND each list that represents a conjunction
+# predication_rewrite_func must return a new predication or None if it wants to use the old one
+# rewrite_tree_predications2 will then iterate on the arguments from the returned predication
+# or the items in the list regardless if it is a new predication or the old one
+def rewrite_tree_predications2(term, predication_rewrite_func, index_by_ref):
+    if isinstance(term, list):
+        # This is a conjunction, give predication_rewrite_func a chance to rewrite it
+        # and, for example, remove or add items to it
+        new_conjunction = predication_rewrite_func(term, index_by_ref)
+        if new_conjunction is None:
+            # no rewrite, copy and keep the conjunction
+            new_conjunction = copy.deepcopy(term)
+
+        new_term = []
+        for predication in new_conjunction:
+            new_term.append(rewrite_tree_predications2(predication, predication_rewrite_func, index_by_ref))
+
+        return new_term
+
+    else:
+        # This is a predication, rewrite it
+        new_term = predication_rewrite_func(term, index_by_ref)
+        if new_term is None:
+            # no rewrite, copy and keep the term, but use the new index_by_ref
+            new_term = copy.deepcopy(term)
+            new_term.index = index_by_ref[0]
+            index_by_ref[0] += 1
+
+        else:
+            # New term has been rewritten, the rewriter needs to have reset its index
+            pass
+
+        # See if any of its terms are scopal
+        # i.e. are predications themselves
+        for scopal_index in new_term.scopal_arg_indices():
+            new_term.args[scopal_index] = rewrite_tree_predications2(new_term.args[scopal_index], predication_rewrite_func, index_by_ref)
+
+        return new_term
 
 
 # Rewrite all the indexes in the tree to ensure there aren't any duplicates

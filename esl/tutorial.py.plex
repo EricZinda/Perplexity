@@ -1746,5 +1746,7 @@
         "PropertiesFrom": "_get_v_1_command_group"
     },
     "test_can_v_modal": {},
-    "no_standalone": {}
+    "no_standalone": {},
+    "implicit_conj": {},
+    "_thank_v_1": {}
 }
