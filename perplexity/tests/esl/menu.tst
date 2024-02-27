@@ -45,7 +45,7 @@
         },
         {
             "Command": "/next_conjunct",
-            "Expected": "You are welcome!",
+            "Expected": "You are welcome!  \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x13,pron(x13),[_thank_v_1(e5,i7,x13)])",
             "Enabled": true,
             "ID": "58151920-c1ae-43e1-88f7-c12df527b746"
