@@ -108,21 +108,28 @@ def min_from_variable_group(variable_group):
 # **** Transforms ****
 
 # Convert "That will be all" to "no"
-# Transform _all_q(x5,generic_entity(x5),_be_v_id(e2,i4,x5)) to _no_a(e, x)
+# Transform: _all_q(x9,generic_entity(x9),udef_q(x5,generic_entity(x5),_be_v_id(e2,x5,x9)))
+# to: _no_a(e, x)
 @Transform(vocabulary)
 def that_will_be_all_transformer():
     no_standalone_production = TransformerProduction(name="no_standalone", args={"ARG0": "$target_e"})
     conjunction_production = ConjunctionProduction(conjunction_list=[no_standalone_production, "$extra_conjuncts"])
 
+    be_exx_match = TransformerMatch(name_pattern="_be_v_id",
+                                    args_pattern=["e", "x", "x"],
+                                    args_capture=["target_e", None, None])
+    conjunction_match = ConjunctionMatchTransformer(transformer_list=[be_exx_match], extra_conjuncts_capture="extra_conjuncts")
+    generic_entity_match_2 = TransformerMatch(name_pattern="generic_entity",
+                                   args_pattern=["x"])
+    udef_match = TransformerMatch(name_pattern="udef_q",
+                     args_pattern=["x", generic_entity_match_2, conjunction_match],
+                     removed=["_be_v_id"])
+
     generic_entity_match = TransformerMatch(name_pattern="generic_entity",
                                    args_pattern=["x"])
-    be_eix_match = TransformerMatch(name_pattern="_be_v_id",
-                                    args_pattern=["e", "i", "x"],
-                                    args_capture=["target_e", None, None])
-    conjunction_match = ConjunctionMatchTransformer(transformer_list=[be_eix_match], extra_conjuncts_capture="extra_conjuncts")
 
     all_match = TransformerMatch(name_pattern="_all_q",
-                     args_pattern=["x", generic_entity_match, conjunction_match],
+                     args_pattern=["x", generic_entity_match, udef_match],
                      removed=["_be_v_id"],
                      production=conjunction_production)
 
@@ -196,8 +203,9 @@ def lets_go_with_to_want():
 # How many steaks did I order?
 # Text Tree: which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),udef_q(x5,[_steak_n_1(x5), measure(e14,e15,x9), much-many_a(e15,x5)],_order_v_1(e2,x3,x5))))
 #   converts to:
-# count(e14, x9, x5, udef_q(x5,_steak_n_1(x5),_order_v_1(e2,x3,x5)))
-#   meaning: put into x9 the count of x5 where(...)
+#       count(e14, x9, x5, udef_q(x5,_steak_n_1(x5),_order_v_1(e2,x3,x5)))
+#   meaning:
+#       put into x9 the count of x5 where(...)
 #
 # Note that the shape of "how many soups did I order?" and "how much soup did I order?" is the same except for the plurality of "soup"
 # In fact, the plurality of "how many soups did I order?" should always be underspecified since it might be "1", but if it is "1" and the variable is set as plural, it will fail
@@ -313,6 +321,7 @@ def can_to_able_transitive_transformer_indir_obj():
 @Transform(vocabulary)
 def can_pay_object_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG3": "$i2"})
+
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x", "i"], args_capture=[None, "x1", "x2", "i2"])
     return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
                             removed=["_can_v_modal", target], production=production)
@@ -322,9 +331,18 @@ def can_pay_object_transformer():
 @Transform(vocabulary)
 def can_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
-    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=[None, "x1", "i1", "i2"])
-    return TransformerMatch(name_pattern="_can_v_modal", args_pattern=["e", target], args_capture=["e1", None],
-                            removed=["_can_v_modal", target], production=production)
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+
+    target_predication = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "i", "i"], args_capture=["target_e", "x1", "i1", "i2"])
+    target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+    return TransformerMatch(name_pattern=["_can_v_modal", "could_v_modal"],
+                            name_capture="target_name",
+                            args_pattern=["e", target],
+                            args_capture=["e1", None],
+                            removed=["$target_name",
+                                     target_predication],
+                            production=conjuct_production)
 
 
 @Transform(vocabulary)
@@ -338,7 +356,7 @@ def could_to_able_intransitive_transformer():
     return TransformerMatch(name_pattern="_could_v_modal",
                             args_pattern=["e", target],
                             args_capture=["e1", None],
-                            removed=["_could_v_modal", target],
+                            removed=["_could_v_modal", target_predication],
                             production=conjuct_production)
 
 
@@ -368,7 +386,7 @@ def could_to_able_transitive_transformer_indir_obj():
                             removed=["_could_v_modal", target], production=production)
 
 
-# can i pay the bill
+# coulc i pay the bill
 @Transform(vocabulary)
 def could_pay_object_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2", "ARG3": "$i2"})
@@ -377,7 +395,7 @@ def could_pay_object_transformer():
                             removed=["_could_v_modal", target], production=production)
 
 
-# can i pay with cash
+# could i pay with cash
 @Transform(vocabulary)
 def could_paytype_transformer():
     production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$i1", "ARG3": "$i2"})
@@ -510,9 +528,21 @@ def event_replace(context, state, u_ununused, e_new_binding, e_replaced_binding)
     yield state
 
 
+# @Predication(vocabulary,
+#              names=["_thank_v_1"],
+#              phrases={
+#                  "That will be all, thank you": None
+#              },
+#              properties=None)
 @Predication(vocabulary, names=["_thank_v_1"])
-def _thank_v_1(context, state, e_binding, i_binding_1, x_binding_2):
-    if is_computer_type(x_binding_2.value):
+def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2):
+    single_value_is_generic_entity_concept = x_binding_1.value is not None and \
+                                             len(x_binding_1.value) == 1 and \
+                                             is_concept(x_binding_1.value[0]) and \
+                                             x_binding_1.value[0].concept_name == "generic_entity"
+
+    # x_binding_1.value can be None if a transform removes a generic_entity() that sets its value
+    if (single_value_is_generic_entity_concept or x_binding_1.value is None) and is_computer_type(x_binding_2.value):
         yield state.record_operations([RespondOperation(f"You are welcome! {state.get_reprompt()}")])
 
 
@@ -1464,12 +1494,12 @@ def _pay_v_for_object_group(context, state_list, e_introduced_list, x_actor_vari
                 "I want to pay with cash": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I will pay with cash": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "Can I pay with cash": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "Could I pay with cash": {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                "Could I pay with cash": {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[{'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                         {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
+                         {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
              handles=[("With", EventOption.required)])
 def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1, i_binding2):
     if not state.sys["responseState"] == "way_to_pay":
@@ -3216,6 +3246,6 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
-    # ShowLogging("Transformer")
+    ShowLogging("Transformer")
 
     hello_world()

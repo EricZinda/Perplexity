@@ -25,7 +25,7 @@
         {
             "Command": "what is the bill?",
             "Expected": "Waiter: Let's talk about the bill once you've finished eating.",
-            "Tree": "which_q(x5,thing(x5),_the_q(x3,_bill_n_of(x3,i13),_be_v_id(e2,x3,x5)))",
+            "Tree": "which_q(x3,thing(x3),_the_q(x8,_bill_n_of(x8,i13),_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d6b53f06-71c4-4ffb-9152-5e41635d1197"
         },

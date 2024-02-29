@@ -258,7 +258,7 @@
             },
             "Could I pay with cash": {
                 "SF": "ques",
-                "TENSE": "tensed",
+                "TENSE": "past",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
@@ -288,7 +288,7 @@
             },
             {
                 "SF": "ques",
-                "TENSE": "tensed",
+                "TENSE": "past",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"

@@ -109,14 +109,14 @@
         {
             "Command": "can I pay with cash?",
             "Expected": "Ah. Perfect! Have a great rest of your day.",
-            "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e2,x14), _pay_v_for_request(e2,x3,i11,i12)]))",
+            "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "e5ae3021-f61e-44c2-88c9-985e50ab51b4"
         },
         {
             "Command": "can I pay with a card?",
             "Expected": "You reach into your pocket and realize you don\u2019t have a credit card. \nWaiter: So, do you want to pay with cash or card?",
-            "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e2,x14), _pay_v_for_request(e2,x3,i11,i12)]))",
+            "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "54deedbd-3254-4d86-8f1d-6c86a4032bea"
         },
@@ -151,14 +151,14 @@
         {
             "Command": "could I pay with cash?",
             "Expected": "Ah. Perfect! Have a great rest of your day.",
-            "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e2,x14), _pay_v_for_request(e2,x3,i11,i12)]))",
+            "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "0d2939c4-874d-43a6-86ab-91767ac33a20"
         },
         {
             "Command": "could I pay with a card?",
             "Expected": "You reach into your pocket and realize you don\u2019t have a credit card. \nWaiter: So, do you want to pay with cash or card?",
-            "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e2,x14), _pay_v_for_request(e2,x3,i11,i12)]))",
+            "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "35300d37-33ae-42eb-b8c8-f6945a26647e"
         }

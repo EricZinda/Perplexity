@@ -39,14 +39,14 @@
         {
             "Command": "that will be all, thank you.",
             "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x13,pron(x13),[no_standalone(e4)])",
+            "Tree": "pronoun_q(x16,pron(x16),[no_standalone(e9)])",
             "Enabled": true,
             "ID": "3eb18b1a-240f-4fea-957b-4e9c98bcbdce"
         },
         {
             "Command": "/next_conjunct",
             "Expected": "You are welcome!  \nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x13,pron(x13),[_thank_v_1(e5,i7,x13)])",
+            "Tree": "pronoun_q(x16,pron(x16),[_thank_v_1(e10,x5,x16)])",
             "Enabled": true,
             "ID": "58151920-c1ae-43e1-88f7-c12df527b746"
         },
@@ -172,7 +172,7 @@
         {
             "Command": "that will be all, thanks",
             "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for you.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "_thanks_a_1(i11,no_standalone(e2))",
+            "Tree": "_thanks_a_1(i15,no_standalone(e2))",
             "Enabled": true,
             "ID": "ec1ad85b-ce21-4f93-a7e7-c67a616fb8e8"
         },

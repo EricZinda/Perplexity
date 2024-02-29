@@ -67,7 +67,7 @@
         {
             "Command": "what is a table for 2?",
             "Expected": "table\nWaiter: What can I get you?",
-            "Tree": "which_q(x5,thing(x5),number_q(x14,card(2,x14,i20),_a_q(x3,[_table_n_1(x3), _for_p(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
+            "Tree": "which_q(x3,thing(x3),number_q(x14,card(2,x14,i20),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "594b7dbd-be33-41e2-af85-e763c66143cc"
         },

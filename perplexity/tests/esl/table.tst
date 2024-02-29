@@ -74,7 +74,7 @@
         {
             "Command": "hello, table for 2, please",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "udef_q(x4,_hello_n_1(x4),number_q(x16,card(2,x16,i22),udef_q(x6,[_table_n_1(x6), _for_p(e15,x6,x16)],[polite(please,i24,e2), appos(e5,x4,x6), unknown(e2,x4)])))",
+            "Tree": "udef_q(x4,_hello_n_1(x4),number_q(x16,card(2,x16,i22),udef_q(x6,[_table_n_1(x6), _for_p(e15,x6,x16)],[_please_a_1(e23,e2), appos(e5,x4,x6), unknown(e2,x4)])))",
             "Enabled": true,
             "ID": "19f0bc45-2a55-4c94-b775-eca3afd7979c"
         },
@@ -585,7 +585,7 @@
         {
             "Command": "A table for two, please!",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],[unknown(e2,x4), _please_a_1(e2,e2)]))",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],[_please_a_1(e17,e2), unknown(e2,x4)]))",
             "Enabled": true,
             "ID": "e8bd5597-ff18-4f78-b784-9ca3cd615e93"
         }

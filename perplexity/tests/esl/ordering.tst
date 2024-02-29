@@ -63,7 +63,7 @@
         {
             "Command": "get a steak for my son",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
-            "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),[_for_p(e13,e2,x14), _get_v_1(e2,x3,x8)])))",
+            "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),_a_q(x8,[_steak_n_1(x8), _for_p(e13,x8,x14)],_get_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "99b1429b-cf55-4ca0-a26b-3748fcff3358"
         },
@@ -166,25 +166,11 @@
             "ID": "5e83ae9f-8377-430d-9ff6-4afd4325a537"
         },
         {
-            "Command": "/runparse 2, 39",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
-            "Enabled": true,
-            "ID": "ef623ff4-31ff-438d-8db0-0cb8e796ae0a"
-        },
-        {
             "Command": "We'd like to start with some water and menus",
             "Expected": "Waiter: water is an excellent choice!\nWaiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
             "Tree": "_some_q(x15,udef_q(x20,_water_n_1(x20),udef_q(x25,_menu_n_1(x25),_and_c(x15,x20,x25))),pronoun_q(x3,pron(x3),[_with_p(e14,e13,x15), event_replace(u99,e2,e13), _start_v_1_request(e2,x3)]))",
             "Enabled": true,
             "ID": "2ef6be00-e7ea-44a9-b73f-aea220402f94"
-        },
-        {
-            "Command": "/runparse",
-            "Expected": "Waiter: water is an excellent choice!\nWaiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
-            "Tree": "_some_q(x15,udef_q(x20,_water_n_1(x20),udef_q(x25,_menu_n_1(x25),_and_c(x15,x20,x25))),pronoun_q(x3,pron(x3),[_with_p(e14,e13,x15), event_replace(u99,e2,e13), _start_v_1_request(e2,x3)]))",
-            "Enabled": true,
-            "ID": "020cfae6-cf77-48ff-9de7-925f06821531"
         },
         {
             "Command": "What did I order?",
@@ -542,7 +528,7 @@
         {
             "Command": "What are the specials?",
             "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
-            "Tree": "which_q(x5,thing(x5),_the_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
+            "Tree": "which_q(x3,thing(x3),_the_q(x8,_special_n_1(x8),_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "169a1146-bc00-4e1c-936c-cc2b903e3f46"
         },
@@ -556,7 +542,7 @@
         {
             "Command": "What are your specials?",
             "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
-            "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_special_n_1(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
+            "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
         },

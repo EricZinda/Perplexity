@@ -714,7 +714,7 @@ class Vocabulary(object):
         new_tree_info = copy.deepcopy(tree_info)
         new_tree_info["Tree"] = new_tree
         new_tree_info["SelectedConjuncts"] = conjunct_index_list
-        if new_tree_info["Index"] in remove_introduced_variables:
+        if "Index" in new_tree_info and new_tree_info["Index"] in remove_introduced_variables:
             # The index was removed, revector it to whichever verb remains
             new_tree_info["Index"] = conjunctions[0].args[conjunct_index_list[0] + 1]
 

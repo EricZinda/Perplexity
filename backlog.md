@@ -1,11 +1,9 @@
+- change all the could/can transforms to use OR so there are less
 - make conjunctions work when hosted
-
 - Fix some of the user interface issues:
     - implement a timeout
     - do a better response than "I don't understand the way you used X" and other default messages
         - I don't know the words: plase/nn and I don't know the way you used: for
-- How much is the soup and the salad?
-    - takes forever
 - How much does the soup and the salad cost? --> I don't know the way you used: cost
 - table for two crashes
 - table for 1 crashes

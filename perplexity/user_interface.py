@@ -256,8 +256,10 @@ class UserInterface(object):
                         if len(contingent) > 0:
                             if tree_contains_predication(tree_info["Tree"], [x[0] for x in contingent]):
                                 # It is still there, fail this tree
-                                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=f"One or more of these words not transformed out of tree: {[x[0] for x in contingent]}")
+                                error_text = f"One or more of these words not transformed out of tree: {[x[0] for x in contingent]}"
+                                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=error_text)
                                 mrs_record["Trees"].append(tree_record)
+                                pipeline_logger.debug(error_text)
                                 continue
 
                         # Try the state from each frame that is available
@@ -350,7 +352,11 @@ class UserInterface(object):
             self.user_output("Sorry, did you mean to say something?")
 
         else:
-            response, _ = next(chosen_record["ResponseGenerator"])
+            if isinstance(chosen_record["ResponseGenerator"], list) and len(chosen_record["ResponseGenerator"]) == 0:
+                response = None
+            else:
+                response, _ = next(chosen_record["ResponseGenerator"])
+
             if response is None:
                 response = "(no error specified)"
             chosen_record["ResponseMessage"] += response
