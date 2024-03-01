@@ -428,56 +428,71 @@ class TreeSolver(object):
 
     # Yields an interpretation_solver and a generator for solutions for a particular lineage
     # Only does phase1 evaluation on the tree
-    def phase1(self, state, tree_info, normalize=False, current_tree_index=None, target_tree_index=None, interpretation=None):
+    def phase1(self, state, tree_info, current_tree_index=None, normalize=False, target_interpretation_index=None, interpretation=None):
         if current_tree_index is None:
-            current_tree_index = [0]
+            current_tree_index = 0
 
         if interpretation is not None:
             interpretation_list = [interpretation]
         else:
             interpretation_list = self._mrs_tree_interpretations(tree_info, normalize)
 
+        current_interpretation = -1
         for interpretation in interpretation_list:
+            current_interpretation += 1
             if pipeline_logger.level == logging.DEBUG:
                 func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
-                pipeline_logger.debug(f"Evaluating alternative {current_tree_index[0]} '{func_list}'")
 
-            if target_tree_index is not None:
-                if current_tree_index[0] < target_tree_index:
-                    skipped_tree_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"], error=ExecutionContext.blank_error(predication_index=0, error=['skipped']),
-                                                                           tree_index=current_tree_index[0])
-                    current_tree_index[0] += 1
+            if target_interpretation_index is not None:
+                if current_interpretation < target_interpretation_index:
+                    skipped_interpretation_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"],
+                                                                                     error=ExecutionContext.blank_error(predication_index=0, error=['skipped']),
+                                                                                     tree_index=current_tree_index)
                     if pipeline_logger.level == logging.DEBUG:
-                        pipeline_logger.debug(f"skipping tree_record for '{tree_info['Tree']}'")
+                        pipeline_logger.debug(f"Skipping interpretation #{current_interpretation}: '{func_list}'")
 
-                    yield None, skipped_tree_record
+                    yield None, skipped_interpretation_record
                     continue
 
-                elif current_tree_index[0] > target_tree_index:
+                elif current_interpretation > target_interpretation_index:
+                    pipeline_logger.debug(f"Stopping alternatives since the target tree index {current_interpretation} has been passed")
                     return
+
+            if pipeline_logger.level == logging.DEBUG:
+                pipeline_logger.debug(f"Tree #{current_tree_index}, interpretation #{current_interpretation}: '{func_list}'")
 
             interpretation_solver = TreeSolver.InterpretationSolver(self._context)
             lineage_generator = TreeSolver.MrsTreeLineageGenerator(interpretation_solver, state, tree_info, interpretation)
             for solutions in lineage_generator:
                 yield interpretation_solver, solutions
 
-            current_tree_index[0] += 1
-
     # Main call to resolve a tree
     # Given a particular scope-resolved tree in tree_info,
     # yields a tree_record for every interpretation and combination of disjunctions
     # that was attempted (including records if they were skipped for debugging purposes)
-    def tree_solutions(self, state, tree_info, response_function=None, message_function=None,
-                       current_tree_index=0, target_tree_index=None, interpretation=None,
-                       find_all_solution_groups=True, wh_phrase_variable=None):
+    def tree_solutions(self, state,
+                       tree_info,
+                       response_function=None,
+                       message_function=None,
+                       current_tree_index=0,
+                       target_tree_index=None,
+                       target_interpretation_index=None,
+                       interpretation=None,
+                       find_all_solution_groups=True,
+                       wh_phrase_variable=None):
         this_sentence_force = sentence_force(tree_info["Variables"])
-        for context, solutions in self.phase1(state, tree_info, current_tree_index=[current_tree_index], target_tree_index=target_tree_index, interpretation=interpretation):
+        for context, solutions in self.phase1(state, tree_info,
+                                              current_tree_index=current_tree_index,
+                                              target_interpretation_index=target_interpretation_index,
+                                              interpretation=interpretation):
             if isinstance(solutions, dict):
                 # This is a record of a skipped true
                 yield solutions
                 continue
 
-            tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=current_tree_index, selected_conjuncts=tree_info.get("SelectedConjuncts", None))
+            tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"],
+                                                     tree_index=current_tree_index,
+                                                     selected_conjuncts=tree_info.get("SelectedConjuncts", None))
 
             # solution_groups() should return an iterator that iterates *groups*
             all_solution_groups = [] if find_all_solution_groups else None
@@ -521,8 +536,11 @@ class TreeSolver(object):
     # Errors are encoded in a fake tree
     @staticmethod
     def new_error_tree_record(tree=None, error=None, response_generator=None, tree_index=None):
-        return TreeSolver.new_tree_record(tree=tree, error=error, response_generator=response_generator,
-                                          tree_index=tree_index, error_tree=True)
+        return TreeSolver.new_tree_record(tree=tree,
+                                          error=error,
+                                          response_generator=response_generator,
+                                          tree_index=tree_index,
+                                          error_tree=True)
 
     @staticmethod
     def new_tree_record(tree=None, error=None, response_generator=None, response_message=None, tree_index=None,

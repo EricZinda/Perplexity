@@ -1,3 +1,20 @@
+- that will be all, thank you
+    - should not generate a measure(generic_entity)?
+    - Needs to not stop and continue to give the alternative for generic_entity that is not measure()
+        - Does not because conjunct_tree_index=0 seems to stop trying the alternative interpretations
+            - force_input=that will be all, thank you, conjunct_mrs_index=4, conjunct_tree_index=0, next_conjuncts=[1]
+            - We need the notion of a:
+                - parse index
+                - tree index
+                - interpretation index
+            - (fixed) interact once needs to skip trees if it is looking for a particular one
+            - ChosenTreeIndex uses the length of the trees array to decide what index we are on
+                - (fixed) Really the key should be "Interpretations" not "Trees"
+                - (fixed) chosen_tree_record should be chosen_interpretation_record
+                - (fixed) "ChosenTreeIndex" should be "ChosenInterpretationIndex"
+                - (fixed) "TreeIndex" needs to stay 'TreeIndex' but we need to ensure it is tree, not interpretation
+                - (fixed) make sure everything that calls new_tree_record() is passing the right tree_index
+                - START HERE NEXT
 - change all the could/can transforms to use OR so there are less
 - make conjunctions work when hosted
 - Fix some of the user interface issues:

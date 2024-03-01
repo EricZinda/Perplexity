@@ -93,21 +93,22 @@ class UserInterface(object):
             pickle.dump({"WorldName": self.world_name, "Version": 1}, file, 5)
             self.state.save(file)
 
-    def chosen_tree_record(self):
+    def chosen_interpretation_record(self):
         if self.interaction_record is None:
             return None
 
         chosen_mrs_index = self.interaction_record["ChosenMrsIndex"]
-        chosen_tree_index = self.interaction_record["ChosenTreeIndex"]
         if chosen_mrs_index is None:
             return None
+
         else:
-            return self.interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index]
+            chosen_interpretation_index = self.interaction_record["ChosenInterpretationIndex"]
+            return self.interaction_record["Mrss"][chosen_mrs_index]["Interpretations"][chosen_interpretation_index]
 
     def new_mrs_record(self, mrs=None, unknown_words=None):
         return {"Mrs": mrs,
                 "UnknownWords": unknown_words,
-                "Trees": []}
+                "Interpretations": []}
 
     def default_loop(self):
         command_line_commands = sys.argv[1:] if len(sys.argv) > 1 else []
@@ -133,12 +134,14 @@ class UserInterface(object):
         conjunct_mrs_index = None
         conjunct_tree_index = None
         while True:
-            self.interact_once(force_input=force_input, conjunct_mrs_index=conjunct_mrs_index,
-                               conjunct_tree_index=conjunct_tree_index, next_conjuncts=next_conjuncts)
+            self.interact_once(force_input=force_input,
+                               conjunct_mrs_index=conjunct_mrs_index,
+                               conjunct_tree_index=conjunct_tree_index,
+                               next_conjuncts=next_conjuncts)
             interaction_records.append(self.interaction_record)
 
             next_ui = self.new_ui if self.new_ui else self
-            record = self.chosen_tree_record()
+            record = self.chosen_interpretation_record()
             if record is not None:
                 if "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None:
                     assert len(record["SelectedConjuncts"]) == 1
@@ -150,7 +153,7 @@ class UserInterface(object):
                         force_input = self.user_input
                         next_conjuncts = [1]
                         conjunct_mrs_index = self.interaction_record["ChosenMrsIndex"]
-                        conjunct_tree_index = self.interaction_record["ChosenTreeIndex"]
+                        conjunct_tree_index = self.interaction_record["Mrss"][self.interaction_record["ChosenMrsIndex"]]["Interpretations"][self.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
 
                 else:
                     # No conjuncts to process
@@ -166,6 +169,8 @@ class UserInterface(object):
     # evaluate one at a time. It can be called again with conjunct_mrs_index, conjunct_tree_index, and next_conjuncts set
     # to evaluate the non default conjuncts
     def interact_once(self, force_input=None, conjunct_mrs_index=None, conjunct_tree_index=None, next_conjuncts=None):
+        if conjunct_mrs_index is not None:
+            pipeline_logger.debug(f"Interact Once: force_input='{force_input}', conjunct_mrs_index={conjunct_mrs_index}, conjunct_tree_index={conjunct_tree_index}, next_conjuncts={next_conjuncts}")
         if force_input is None:
             # input() pauses the program and waits for the user to
             # type input and hit enter, and then returns it
@@ -183,16 +188,16 @@ class UserInterface(object):
         self.interaction_record = {"UserInput": self.user_input,
                                    "Mrss": [],
                                    "ChosenMrsIndex": None,
-                                   "ChosenTreeIndex": None}
+                                   "ChosenInterpretationIndex": None}
 
         if command_result is not None:
             self.test_manager.record_session_data("last_system_command", self.user_input)
             mrs_record = self.new_mrs_record()
             self.interaction_record["Mrss"].append(mrs_record)
             tree_record = TreeSolver.new_error_tree_record(response_generator=[command_result])
-            mrs_record["Trees"].append(tree_record)
+            mrs_record["Interpretations"].append(tree_record)
             self.interaction_record["ChosenMrsIndex"] = 0
-            self.interaction_record["ChosenTreeIndex"] = 0
+            self.interaction_record["ChosenInterpretationIndex"] = 0
             self.user_output(command_result)
 
         else:
@@ -228,13 +233,14 @@ class UserInterface(object):
                 unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", mrs_record["UnknownWords"]])
                 tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
                                                                response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
-                                                               tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)
-                mrs_record["Trees"].append(tree_record)
+                                                               tree_index=0)
+                mrs_record["Interpretations"].append(tree_record)
                 self.evaluate_best_response(has_solution_group=False)
 
             else:
                 # Loop through all the "official" DELPH-IN trees using the official predications
                 tree_generated = False
+                tree_index = -1
                 for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
                     tree_generated = True
                     tree_info_orig = {"Index": mrs.index,
@@ -243,24 +249,35 @@ class UserInterface(object):
                                       "MRS": self.mrs_parser.mrs_to_string(mrs)}
 
                     # Now loop through any tree modifications that have been built for this application
-                    alternate_tree_generated = False
                     for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0, conjunct_index_list=next_conjuncts):
                         # At this point we have locked down which predications should be used and that won't change
                         # However: there might be multiple interpretations of these predications as well as disjunctions
                         # that cause various solution sets to be created. Each will be in its own tree_record
-                        alternate_tree_generated = True
-                        tree_index = 0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1
+                        tree_index += 1
+                        target_tree_index = conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index
+                        if target_tree_index is not None:
+                            if tree_index < target_tree_index:
+                                error_text = f"MRS #{mrs_index}, Tree #{tree_index}: Skipping"
+                                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=error_text)
+                                mrs_record["Interpretations"].append(tree_record)
+                                pipeline_logger.debug(error_text)
+                                continue
 
-                        # TODO: Figure out how to count this for tree index purposes properly
+                            elif tree_index > target_tree_index:
+                                pipeline_logger.debug(f"MRS #{mrs_index}, Tree #{tree_index}: Skipping all trees beyond index #{tree_index}")
+                                break
+
                         # Make sure the contingent words were removed by a transformer
                         if len(contingent) > 0:
                             if tree_contains_predication(tree_info["Tree"], [x[0] for x in contingent]):
                                 # It is still there, fail this tree
-                                error_text = f"One or more of these words not transformed out of tree: {[x[0] for x in contingent]}"
+                                error_text = f"MRS #{mrs_index}, Tree #{tree_index}: One or more of these words not transformed out of tree: {[x[0] for x in contingent]}"
                                 tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=error_text)
-                                mrs_record["Trees"].append(tree_record)
+                                mrs_record["Interpretations"].append(tree_record)
                                 pipeline_logger.debug(error_text)
                                 continue
+
+                        pipeline_logger.debug(f"MRS #{mrs_index}, Tree #{tree_index}: {tree_info['Tree']}")
 
                         # Try the state from each frame that is available
                         # Used to loop through different frames, for now this is turned off
@@ -275,11 +292,11 @@ class UserInterface(object):
                                                                           tree_info,
                                                                           self.response_function,
                                                                           self.message_function,
-                                                                          tree_index,
-                                                                          conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index,
+                                                                          current_tree_index=tree_index,
+                                                                          target_tree_index=conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index,
                                                                           find_all_solution_groups=self.show_all_answers,
                                                                           wh_phrase_variable=wh_phrase_variable):
-                                mrs_record["Trees"].append(tree_record)
+                                mrs_record["Interpretations"].append(tree_record)
 
                                 solution_group_generator = tree_record["SolutionGroupGenerator"]
                                 if solution_group_generator is not None:
@@ -338,16 +355,17 @@ class UserInterface(object):
                                     # which we currently define as the first one
                                     self.evaluate_best_response(has_solution_group=False)
 
+                    alternate_tree_generated = tree_index > -1
                     if len(contingent) > 0 and not alternate_tree_generated:
                         unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
                         tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
                                                                        response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
-                                                                       tree_index=0 if len(mrs_record["Trees"]) == 0 else mrs_record["Trees"][-1]["TreeIndex"] + 1)
-                        mrs_record["Trees"].append(tree_record)
+                                                                       tree_index=tree_index)
+                        mrs_record["Interpretations"].append(tree_record)
                         self.evaluate_best_response(has_solution_group=False)
 
         # If we got here, nothing worked: print out the best failure
-        chosen_record = self.chosen_tree_record()
+        chosen_record = self.chosen_interpretation_record()
         if chosen_record is None:
             self.user_output("Sorry, did you mean to say something?")
 
@@ -409,16 +427,16 @@ class UserInterface(object):
 
     def evaluate_best_response(self, has_solution_group):
         current_mrs_index = len(self.interaction_record["Mrss"]) - 1
-        current_tree_index = len(self.interaction_record["Mrss"][current_mrs_index]["Trees"]) - 1
-        tree_record = self.interaction_record["Mrss"][current_mrs_index]["Trees"][current_tree_index]
-        chosen_record = self.chosen_tree_record()
+        current_interpretation_index = len(self.interaction_record["Mrss"][current_mrs_index]["Interpretations"]) - 1
+        tree_record = self.interaction_record["Mrss"][current_mrs_index]["Interpretations"][current_interpretation_index]
+        chosen_record = self.chosen_interpretation_record()
         chosen_error = chosen_record["Error"] if chosen_record is not None else None
         # If there was a success, return it as the best answer
         if has_solution_group or \
                 (self.error_priority_function(tree_record["Error"]) > self.error_priority_function(chosen_error)):
             self.interaction_record["ChosenMrsIndex"] = current_mrs_index
-            self.interaction_record["ChosenTreeIndex"] = current_tree_index
-            pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_tree_index}, Error: {tree_record['Error'] if not has_solution_group is None else 'none'}")
+            self.interaction_record["ChosenInterpretationIndex"] = current_interpretation_index
+            pipeline_logger.debug(f"Recording best answer: MRSIndex {current_mrs_index}, TreeIndex: {current_interpretation_index}, Error: {tree_record['Error'] if not has_solution_group is None else 'none'}")
 
     # Commands always start with "/", followed by a string of characters and then
     # a space. Any arguments are after the space and their format is command specific.
@@ -468,22 +486,24 @@ class UserInterface(object):
                     if all:
                         chosen_tree = None
                     else:
-                        chosen_tree = self.interaction_record["ChosenTreeIndex"]
+                        chosen_tree = self.interaction_record["ChosenInterpretationIndex"]
 
                     self.print_diagnostics_trees(all, mrs_index, chosen_tree, mrs_record, first_tree_only)
 
     def print_diagnostics_trees(self, all, parse_number, chosen_tree, mrs_record, first_tree_only):
-        # is_system_command_record = len(mrs_record["Trees"]) == 1 and mrs_record["Mrs"] is None and "ErrorTree" in mrs_record["Trees"][0]
-        is_ungenerated_tree = len(mrs_record["Trees"]) == 1 and mrs_record["Mrs"] is not None and "ErrorTree" in mrs_record["Trees"][0]
+        is_ungenerated_tree = len(mrs_record["Interpretations"]) == 1 and mrs_record["Mrs"] is not None and "ErrorTree" in mrs_record["Interpretations"][0]
         if is_ungenerated_tree:
             # The trees aren't generated if we don't know terms for performance
             # reasons (since we won't be evaluating anything)
             tree_generator = []
             for tree in self.mrs_parser.trees_from_mrs(mrs_record["Mrs"]):
-                tree_generator.append(TreeSolver.new_tree_record(tree=tree, error=mrs_record["Trees"][0]["Error"], response_generator=mrs_record["Trees"][0]["ResponseGenerator"], response_message=mrs_record["Trees"][0]["ResponseMessage"]))
+                tree_generator.append(TreeSolver.new_tree_record(tree=tree,
+                                                                 error=mrs_record["Interpretations"][0]["Error"],
+                                                                 response_generator=mrs_record["Interpretations"][0]["ResponseGenerator"],
+                                                                 response_message=mrs_record["Interpretations"][0]["ResponseMessage"]))
 
         else:
-            tree_generator = mrs_record["Trees"]
+            tree_generator = mrs_record["Interpretations"]
 
         tree_index = 0
         for tree_info in tree_generator:
@@ -798,7 +818,7 @@ def command_debug_tree(ui, arg):
         for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
             mrs_record = ui.interaction_record["Mrss"][mrs_index]
 
-            if len(mrs_record["Trees"]) == 1 and mrs_record["Trees"][0]["Tree"] is None:
+            if len(mrs_record["Interpretations"]) == 1 and mrs_record["Interpretations"][0]["Tree"] is None:
                 # The trees aren't generated if we don't know terms for performance
                 # reasons (since we won't be evaluating anything)
                 tree_generator = [{"Tree": tree,
@@ -806,7 +826,7 @@ def command_debug_tree(ui, arg):
                                    "Error": None,
                                    "ResponseMessage": None} for tree in ui.mrs_parser.trees_from_mrs(mrs_record["Mrs"])]
             else:
-                tree_generator = mrs_record["Trees"]
+                tree_generator = mrs_record["Interpretations"]
 
             for tree_info in tree_generator:
                 if predication_name is not None:

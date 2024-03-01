@@ -214,13 +214,13 @@ class TestManager(object):
                     print(f"\nTest: {test_item['Command']}")
                     test_ui.interact_once(test_item["Command"])
 
-                    record = test_ui.chosen_tree_record()
+                    record = test_ui.chosen_interpretation_record()
                     conjunct_input = test_ui.user_input
                     if record is not None and "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None and record["SelectedConjuncts"][0] == 0:
                         # This phrase generated conjuncts, remember them
                         next_conjuncts = [1]
                         conjunct_mrs_index = test_ui.interaction_record["ChosenMrsIndex"]
-                        conjunct_tree_index = test_ui.interaction_record["ChosenTreeIndex"]
+                        conjunct_tree_index = test_ui.interaction_record["Mrss"][test_ui.interaction_record["ChosenMrsIndex"]]["Interpretations"][test_ui.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
 
                     else:
                         conjunct_mrs_index = None
@@ -333,8 +333,8 @@ class TestManager(object):
 
     def get_result_from_interaction(self, test_iterator, test_item, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
-        chosen_tree_index = interaction_mrs_record["ChosenTreeIndex"]
-        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index] if chosen_mrs_index is not None and chosen_tree_index is not None else None
+        chosen_interpretation_index = interaction_mrs_record["ChosenInterpretationIndex"]
+        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Interpretations"][chosen_interpretation_index] if chosen_mrs_index is not None and chosen_interpretation_index is not None else None
         interaction_response = interaction_record["ResponseMessage"] if interaction_record is not None else None
         interaction_tree = interaction_record["Tree"] if interaction_record is not None else None
         return interaction_response, interaction_tree, self.get_prompt(test_iterator, test_item, interaction_response, interaction_tree)
@@ -353,8 +353,8 @@ class TestManager(object):
 
     def check_result(self, test_iterator, test_item, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
-        chosen_tree_index = interaction_mrs_record["ChosenTreeIndex"]
-        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index] if chosen_mrs_index is not None and chosen_tree_index is not None else None
+        chosen_interpretation_index = interaction_mrs_record["ChosenInterpretationIndex"]
+        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Interpretations"][chosen_interpretation_index] if chosen_mrs_index is not None and chosen_interpretation_index is not None else None
         interaction_response = interaction_record["ResponseMessage"] if interaction_record is not None else None
         interaction_tree = interaction_record["Tree"] if interaction_record is not None else None
 
@@ -442,12 +442,13 @@ class TestManager(object):
             test_items = test["TestItems"]
             for interaction_record in interaction_records:
                 chosen_mrs_index = interaction_record["ChosenMrsIndex"]
-                chosen_tree_index = interaction_record["ChosenTreeIndex"]
-                tree_record = interaction_record["Mrss"][chosen_mrs_index]["Trees"][chosen_tree_index] if chosen_mrs_index is not None and chosen_tree_index is not None else None
+                chosen_interpretation_index = interaction_record["ChosenInterpretationIndex"]
+                tree_record = interaction_record["Mrss"][chosen_mrs_index]["Interpretations"][chosen_interpretation_index] if chosen_mrs_index is not None and chosen_interpretation_index is not None else None
                 if "SelectedConjuncts" in tree_record and tree_record["SelectedConjuncts"] is not None and tree_record["SelectedConjuncts"][0] > 0:
                     command = "/next_conjuct"
                 else:
                     command = interaction_record["UserInput"]
+
                 test_items.append({"Command": command,
                                    "Expected": tree_record["ResponseMessage"] if tree_record is not None else None,
                                    "Tree": str(tree_record["Tree"] if tree_record is not None else None),

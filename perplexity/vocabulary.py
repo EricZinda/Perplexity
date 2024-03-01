@@ -718,6 +718,7 @@ class Vocabulary(object):
             # The index was removed, revector it to whichever verb remains
             new_tree_info["Index"] = conjunctions[0].args[conjunct_index_list[0] + 1]
 
+        pipeline_logger.debug(f"Tree Conjunct Option: {new_tree_info['Tree']}")
         return new_tree_info
 
     def predications(self, name, arg_types, predication_type):

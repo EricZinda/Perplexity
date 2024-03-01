@@ -652,12 +652,13 @@ def pron(context, state, x_who_binding):
         yield item
 
 
-
+# One interpretation is a measurement, as in "How much is the steak?"
 @Predication(vocabulary, names=["generic_entity"])
 def generic_entity_measure(context, state, x_binding):
     def bound(val):
         if val == Measurement(ESLConcept("generic_entity"), None):
             return True
+
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
             return False
@@ -988,11 +989,13 @@ def _credit_n_1(context, state, x_bind):
     yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
+# One interpretation is a measurement, as in "How many dollars is the steak?"
 @Predication(vocabulary, names=["_dollar_n_1"])
 def _dollar_n_1_measure(context, state, x_binding, u_unused):
     def bound(val):
         if val == Measurement(ESLConcept("dollar"), None):
             return True
+
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
             return False
@@ -2819,12 +2822,17 @@ def yield_cost_of_subject_into_object(state, units, subject_variable, object_var
             price = Measurement("dollar", state.sys["prices"][concept_item])
             # Remember that we now know the price
             yield state.set_x(object_variable, (price,)).record_operations([SetKnownPriceOp(concept_item)])
+
         elif concept_item == "bill":
             total = list(rel_objects(state, "bill1", "valueOf"))
             if len(total) == 0:
                 total.append(0)
             price = Measurement("dollar", total[0])
             yield state.set_x(object_variable, (price,))
+
+        elif concept_item is None or concept_item == "generic_entity":
+            # Happens for "That will be all, thank you"
+            return
 
         else:
             yield state.record_operations([RespondOperation("Haha, it's not for sale.")])
