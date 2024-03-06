@@ -1,4 +1,5 @@
-Why is performance so much slower?
+- Make all tests run on new grammar
+- Why is performance so much slower?
 
 - How much does the soup and the salad cost? --> I don't know the way you used: cost
     - Needs to be cost_v_1() but referencing and?

@@ -12,6 +12,19 @@ system_added_arg_count = 2
 system_added_group_arg_count = 2
 
 
+def running_under_debugger():
+    # This is a hack to see if we're running under the debugger
+    # https://stackoverflow.com/questions/38634988/check-if-program-runs-in-debug-mode
+    gettrace = getattr(sys, 'gettrace', None)
+    if gettrace is None:
+        print('No sys.gettrace')
+        return False
+
+    elif gettrace is not None and gettrace():
+        # running under debugger, don't time out
+        return True
+
+
 def get_function(module_function):
     module = sys.modules[module_function[0]]
     function = getattr(module, module_function[1])

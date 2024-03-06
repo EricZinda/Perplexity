@@ -5,7 +5,7 @@ import sys
 import time
 import traceback
 import uuid
-from perplexity.utilities import module_name, import_function_from_names
+from perplexity.utilities import module_name, import_function_from_names, running_under_debugger
 from perplexity.world_registry import world_information
 
 
@@ -112,12 +112,14 @@ class TestFolderIterator(object):
         self.test_name = None
         self.world_name = None
         self.resume = resume
+        self.record_time = False
         if self.resume:
             self.current_test = test_manager.get_session_data("LastTest")
 
     def __iter__(self):
         for filename in os.listdir(self.test_manager.full_test_path(self.test_folder)):
             if filename.lower().endswith(".tst"):
+                self.record_time = not running_under_debugger()
                 self.test_path_and_file = os.path.join(self.test_manager.full_test_path(self.test_folder), filename)
                 if self.resume:
                     if self.current_test is not None and self.test_path_and_file.lower() != self.current_test.lower():
@@ -128,7 +130,11 @@ class TestFolderIterator(object):
                 self.test_name = self.test_iterator.test_name
                 self.world_name = self.test_iterator.world_name
                 self.resume = False
+                testStartTime = time.perf_counter()
                 yield from self.test_iterator
+                elapsed = round(time.perf_counter() - testStartTime, 5)
+                if self.record_time:
+                    self.test_manager.update_test_info(self.test_path_and_file, {"ElapsedTime": elapsed})
 
     def update_test(self, id, new_item):
         self.test_iterator.update_test(id, new_item)
@@ -235,6 +241,8 @@ class TestManager(object):
                 break
 
             if result is not None:
+                # Don't record this timing since a test item failed
+                test_iterator.record_time = False
                 if testResultsFile:
                     # if silent, just log result
                     self.log_test_result(testResultsFile,
@@ -407,6 +415,13 @@ class TestManager(object):
                     print(f"'{answer}' is not a valid option")
 
         return True
+
+    def update_test_info(self, test_path_and_file, new_items):
+        with open(test_path_and_file, "r") as file:
+            test = json.loads(file.read())
+            test.update(new_items)
+        with open(self.full_test_path(test_path_and_file), "w") as file:
+            file.write(json.dumps(test, indent=4))
 
     def append_test(self, test_name, interaction_records):
         test_path_and_file = self.full_test_path(test_name + ".tst")
