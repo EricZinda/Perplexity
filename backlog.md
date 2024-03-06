@@ -1,3 +1,8 @@
+Why is performance so much slower?
+
+- How much does the soup and the salad cost? --> I don't know the way you used: cost
+    - Needs to be cost_v_1() but referencing and?
+
 - that will be all, thank you
     - should not generate a measure(generic_entity)?
     - Needs to not stop and continue to give the alternative for generic_entity that is not measure()
@@ -21,7 +26,7 @@
     - implement a timeout
     - do a better response than "I don't understand the way you used X" and other default messages
         - I don't know the words: plase/nn and I don't know the way you used: for
-- How much does the soup and the salad cost? --> I don't know the way you used: cost
+
 - table for two crashes
 - table for 1 crashes
 - show us 3 menus -> there are less than 2 "we"
@@ -98,6 +103,8 @@
   I am the waiter, you are the customer.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
   - Make these work:
     - How much does the tomato soup and the green salad cost? --> I don't know the way you used: cost
+        - Parse 26
+    - How much does the soup and salad cost?
     - Could you recommend a few vegetarian options, then?
     -  Hi! Could we have the vegetarian menu, please?
         - Fails
