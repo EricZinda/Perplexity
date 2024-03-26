@@ -1,8 +1,21 @@
 - Make all tests run on new grammar
 - Why is performance so much slower?
+    - For.txt? concepts.txt?
+    - **** Testing Complete. Elapsed time: 2169.29134
 
 - How much does the soup and the salad cost? --> I don't know the way you used: cost
     - Needs to be cost_v_1() but referencing and?
+
+- Fix Luis bugs:
+    -	Still have some holes with handling “and” in all constructions (i.e. “and I'll have the salmon”
+    -	Need to support vegetarian “options” and “mains” and "items"
+    -	Gotta strip off the extra characters for words not in the grammar like “chiken/nn”
+    -	I already had on my list handling all the constructions like “forgot what I said” or “let’s start over”, etc.  All the ways you’d tell a waiter you want to start fresh
+    -	This was just a funny bug I need to fix:
+        o	USER: I don't want the chicken
+        o	That isn't true, there isn't the chicken that isn't the chicken
+    -	Need to handle this construction: “My son needs something vegetarian”
+    -	And the implied request given by: “My son is a vegetarian”
 
 - that will be all, thank you
     - should not generate a measure(generic_entity)?
