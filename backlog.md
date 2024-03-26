@@ -1,7 +1,20 @@
 - Make all tests run on new grammar
 - Why is performance so much slower?
+    - Slow (new time is first):
+        concepts.tst
+            "ElapsedTime": 629.18121
+            "ElapsedTime": 40.25109
+        for.tst
+            "ElapsedTime": 860.21797
+            "ElapsedTime": 59.31334
+    - faster
+        ordering
+            "ElapsedTime": 132.20766
+            "ElapsedTime": 346.8957
+
     - For.txt? concepts.txt?
     - **** Testing Complete. Elapsed time: 2169.29134
+    - Old: **** Testing Complete. Elapsed time: 766.39824
 
 - How much does the soup and the salad cost? --> I don't know the way you used: cost
     - Needs to be cost_v_1() but referencing and?
