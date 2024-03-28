@@ -11,9 +11,19 @@
         ordering
             "ElapsedTime": 132.20766
             "ElapsedTime": 346.8957
+    - Theory: "I want a table for my son and me" takes 420 seconds
+        Parse 0 generates a TON of trees: 200 which all fail
+            Because it means "I want [(a table for my son) and (me)]"
+        Parse 1 succeeds on the first tree
+        Also: "i want a menu for my son and me" takes 400 seconds
 
-    - For.txt? concepts.txt?
-    - **** Testing Complete. Elapsed time: 2169.29134
+    - Possible fixes:
+        - If the first tree doesn't work, try the next MRS
+            - Then come back later and try the others
+        - Implement code which picks the right MRS for a very specific phrase
+            We use the simple MRS of the first parse as the index into a dict of "the best known parse" for scenarios where we want to skip right to the probable best parse
+            This just sorts the list differently -- it doesn't remove the others.  That's because they may be right in this scenario
+    - New: **** Testing Complete. Elapsed time: 2169.29134
     - Old: **** Testing Complete. Elapsed time: 766.39824
 
 - How much does the soup and the salad cost? --> I don't know the way you used: cost

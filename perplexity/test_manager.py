@@ -1,5 +1,6 @@
 import copy
 import json
+import logging
 import os
 import sys
 import time
@@ -218,7 +219,11 @@ class TestManager(object):
                         break
 
                     print(f"\nTest: {test_item['Command']}")
+
+                    itemStartTime = time.perf_counter()
                     test_ui.interact_once(test_item["Command"])
+                    elapsed = round(time.perf_counter() - itemStartTime, 5)
+                    logger.debug(f"Test timing: {elapsed}")
 
                     record = test_ui.chosen_interpretation_record()
                     conjunct_input = test_ui.user_input
@@ -490,3 +495,6 @@ class TestManager(object):
 
     def get_session_data(self, key):
         return self.session_data.get(key, None)
+
+
+logger = logging.getLogger('Testing')
