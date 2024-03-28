@@ -3,17 +3,19 @@ import logging
 import os
 import pickle
 import sys
+import uuid
 
 import perplexity.messages
 from delphin.codecs import simplemrs
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
+from perplexity.set_utilities import CachedIterable
 from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
     MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable
 from perplexity.user_state import GetStateDirectoryName
-from perplexity.utilities import sentence_force, module_name, import_function_from_names
+from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator
 from perplexity.world_registry import world_information
 
 
@@ -44,12 +46,19 @@ class UserInterface(object):
                  scope_function=None,
                  loaded_state=None,
                  user_output=None,
-                 debug_output=None):
+                 debug_output=None,
+                 best_parses_file=None):
 
         self.user_output = print if user_output is None else user_output
         self.debug_output = print if debug_output is None else debug_output
-
+        self.best_parses_file = best_parses_file
         self.max_holes = 14
+
+        if best_parses_file is not None and os.path.exists(best_parses_file):
+            with open(best_parses_file) as json_file:
+                self.best_parses = json.load(json_file)
+        else:
+            self.best_parses = {}
 
         self.world_name = world_name
         self.reset = None
@@ -111,6 +120,7 @@ class UserInterface(object):
                 "Interpretations": []}
 
     def default_loop(self):
+        # Deal with command line arguments so that testing works the same across all worlds
         command_line_commands = sys.argv[1:] if len(sys.argv) > 1 else []
         while True:
             command = command_line_commands.pop(0) if len(command_line_commands) > 0 else None
@@ -127,7 +137,7 @@ class UserInterface(object):
 
     # If the phrase is an implicit or explicit conjunction -- basically more than
     # one phrase put together -- run the interaction loop N times, once for each conjunct
-    # collects, and then returns, a list of interaction records that represent each of the conjuncts
+    # collects, and then returns a list of interaction records that represent each of the conjuncts
     def interact_once_across_conjunctions(self, force_input=None):
         interaction_records = []
         next_conjuncts = None
@@ -165,16 +175,24 @@ class UserInterface(object):
 
         return interaction_records
 
+    def save_best_parses(self):
+        self.best_parses["timestamp"] = str(uuid.uuid4())
+        if self.best_parses_file is not None:
+            with open(self.best_parses_file, "w") as json_file:
+                json_file.write(json.dumps(self.best_parses, indent=True))
+
     # If a phrase is an implicit or explicit conjunction, interact_once will treat it like different sentences and only
     # evaluate one at a time. It can be called again with conjunct_mrs_index, conjunct_tree_index, and next_conjuncts set
     # to evaluate the non default conjuncts
     def interact_once(self, force_input=None, conjunct_mrs_index=None, conjunct_tree_index=None, next_conjuncts=None):
         if conjunct_mrs_index is not None:
             pipeline_logger.debug(f"Interact Once: force_input='{force_input}', conjunct_mrs_index={conjunct_mrs_index}, conjunct_tree_index={conjunct_tree_index}, next_conjuncts={next_conjuncts}")
+
         if force_input is None:
             # input() pauses the program and waits for the user to
             # type input and hit enter, and then returns it
             self.user_input = str(input("? "))
+
         else:
             self.user_input = force_input
 
@@ -215,10 +233,28 @@ class UserInterface(object):
         self.user_input = self.autocorrect(self.user_input)
         self.interaction_record["UserInput"] = self.user_input
 
+        # If we have recorded a particular MRS that is normally the best, move it
+        # to the front. If this is a conjunct, we have already settled on the MRS so don't bother
+        mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input))
+        if not conjunct_mrs_index and mrs_generator.at_least_one():
+            best_parse_index_simple_mrs = simplemrs.dumps([mrs_generator[0]], lnk=False)
+            best_parse_index = self.best_parses.get(best_parse_index_simple_mrs, {"Phrase": "none", "MRSIndex": 0})["MRSIndex"]
+            if best_parse_index > 0:
+                try:
+                    # Move the best MRS to be first and remove it from its previous position
+                    mrs_generator.cached_values.insert(0, mrs_generator[best_parse_index])
+                    mrs_generator.cached_values.pop(best_parse_index + 1)
+                    pipeline_logger.debug(f"Starting with best parse MRS: {best_parse_index}")
+
+                except StopIteration:
+                    # The best parse doesn't exist anymore, clear this out
+                    self.best_parses.pop(best_parse_index_simple_mrs)
+                    self.save_best_parses()
+
         # Loop through each MRS and each tree that can be
         # generated from it...
         mrs_index = -1
-        for mrs in self.mrs_parser.mrss_from_phrase(self.user_input):
+        for mrs in mrs_generator:
             mrs_index += 1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 continue
@@ -303,6 +339,12 @@ class UserInterface(object):
                                     # There were solutions, so this is our answer.
                                     # Return it and stop looking
                                     self.evaluate_best_response(has_solution_group=True)
+
+                                    # If it was not the first MRS parse (and it isn't a conjunct), record it as the best alternative so that we start there next time
+                                    if not conjunct_mrs_index and mrs_index != 0:
+                                        self.best_parses[best_parse_index_simple_mrs] = {"Phrase": self.user_input,
+                                                                                         "MRSIndex": mrs_index}
+                                        self.save_best_parses()
 
                                     # Go through all the responses in this solution group
                                     had_operations = False

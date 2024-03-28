@@ -6,6 +6,9 @@ import itertools
 # BUT: it does not actually materialize the list more than it has to. So, multiple
 # iterators can be started on it, and they will share the same underlying (perhaps partially)
 # materialized list.
+#
+# Also allows one to iterate through an iterable, reorder the items in .cached_values() and then
+# start a new iterator on that order
 # Not threadsafe.
 class CachedIterable(object):
     class CachedIterator(object):
@@ -47,6 +50,14 @@ class CachedIterable(object):
             raise
 
         return self.cached_values[index]
+
+    def at_least_one(self):
+        try:
+            self.get_from_index(0)
+            return True
+
+        except StopIteration:
+            return False
 
 
 class Measurement(object):

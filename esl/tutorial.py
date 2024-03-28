@@ -3214,6 +3214,8 @@ error_priority_dict = {
 
 
 def ui(loading_info=None, file=None, user_output=None, debug_output=None):
+    scriptPath = os.path.dirname(os.path.realpath(__file__))
+    best_parses_file = os.path.join(scriptPath, "tutorial.bestparse")
     loaded_state = None
     if loading_info is not None:
         if loading_info.get("Version", None) != 1:
@@ -3223,6 +3225,7 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
             loaded_state = load_world_state(file)
 
         message = ""
+
     else:
         message = "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
 
@@ -3233,7 +3236,9 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
                          scope_init_function=in_scope_initialize,
                          loaded_state=loaded_state,
                          user_output=user_output,
-                         debug_output=debug_output)
+                         debug_output=debug_output,
+                         best_parses_file=best_parses_file)
+
     ui.user_output(message)
     return ui
 
