@@ -53,7 +53,7 @@
         {
             "Command": "Hi, table for 2",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "proper_q(x4,named(Hawaii,x4),number_q(x17,card(2,x17,i23),udef_q(x6,[_table_n_1(x6), _for_p(e16,x6,x17)],[appos(e5,x4,x6), unknown(e2,x4)])))",
+            "Tree": "proper_q(x10,named(Hawaii,x10),number_q(x17,card(2,x17,i23),udef_q(x4,[_table_n_1(x4), _for_p(e16,x4,x17), compound(e9,x4,x10)],unknown(e2,x4))))",
             "Enabled": true,
             "ID": "6c18bda1-3844-4677-9fc9-8fb867b69429"
         },
@@ -67,7 +67,7 @@
         {
             "Command": "Howdy, table for 2",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "proper_q(x4,named(Howdy,x4),number_q(x17,card(2,x17,i23),udef_q(x6,[_table_n_1(x6), _for_p(e16,x6,x17)],[appos(e5,x4,x6), unknown(e2,x4)])))",
+            "Tree": "proper_q(x10,named(Howdy,x10),number_q(x17,card(2,x17,i23),udef_q(x4,[_table_n_1(x4), _for_p(e16,x4,x17), compound(e9,x4,x10)],unknown(e2,x4))))",
             "Enabled": true,
             "ID": "3840f232-880b-48de-ba47-f4cea768b7a4"
         },

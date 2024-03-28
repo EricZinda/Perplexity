@@ -709,6 +709,11 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
     if x_left_binding.value is not None and x_right_binding.value is not None:
         if x_left_binding.value[0] == x_right_binding.value[0]:
             yield state
+        elif len(x_right_binding.value) == 1 and isinstance(x_right_binding.value[0], str) and x_right_binding.value[
+                0].lower() in greetings():
+            # Handle "Hi/Howdy, ...phrase..."
+            yield state
+
         elif is_concept(x_right_binding.value[0]):
             # Records that predication index X is a disjunction
             context.set_disjunction()
@@ -3250,8 +3255,8 @@ def hello_world():
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
-    ShowLogging("Testing")
+    ShowLogging("Pipeline")
+    # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("SString")
