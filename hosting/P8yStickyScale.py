@@ -652,7 +652,7 @@ def RunGameIteration(cachedUser, perfDict, rawStatePath, dataInfo, startGame, st
 
         currentTime = datetime.datetime.now()
         log.info(f"Working on: {userID} - {message}")
-        ui.interact_once(force_input=message)
+        ui.interact_once_across_conjunctions(force_input=message)
 
     return ui
 
