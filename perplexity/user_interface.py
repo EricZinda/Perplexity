@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import os
@@ -12,6 +13,7 @@ from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.set_utilities import CachedIterable
 from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
+from perplexity.transformer import TransformerMatch
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
     MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable
 from perplexity.user_state import GetStateDirectoryName
@@ -257,6 +259,8 @@ class UserInterface(object):
         for mrs in mrs_generator:
             mrs_index += 1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
+                mrs_record = self.new_mrs_record(mrs=mrs)
+                self.interaction_record["Mrss"].append(mrs_record)
                 continue
             if conjunct_mrs_index is not None and conjunct_mrs_index != mrs_index:
                 continue
@@ -889,13 +893,71 @@ def command_debug_tree(ui, arg):
 def command_debug_mrs(ui, arg):
     if ui.interaction_record is not None:
         for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
-            found =[]
+            found = []
             mrs_record = ui.interaction_record["Mrss"][mrs_index]
             for predication in mrs_record["Mrs"].predications:
                 if predication.predicate == "quoted" or predication.predicate == "fw_seq":
                     found.append(predication)
 
             ui.user_output(found)
+
+    return True
+
+
+# Prints any MRS that matches the criteria, which is a comma separated list of predications.
+# - If the same predication appears twice, there must be two of them
+# _for_x_cause -> match that name with any arguments
+# _for_x_cause(x,h,h)   -> match that name with those exact arguments
+# _for_x_cause(e,x,_,h) -> match that name with hose arguments, but arg 3 can be anything (but must exist)
+# _for_x_cause(e,x,*,h) -> match that name with those arguments, but arg 3 can be anything (and can be missing, i.e. only 3 arguments)
+# *(x, h, h)            -> match any name with those arguments
+def command_find_mrs(ui, arg):
+    # First parse the string into TransformerMatch objects
+    predication_patterns = []
+    parts = arg.split("(")
+    index = 0
+    if len(parts) < 2:
+        print("use /help for instructions on how to use")
+        return True
+
+    # parts = ['a', 'b, c), d', ... ]
+    while index < len(parts):
+        arg_parts = parts[index + 1].split(")")
+        predication_string = f"{parts[index]}({arg_parts[0]})"
+        next_name = arg_parts[1].strip(", ")
+        if len(next_name) > 0:
+            parts.insert(index + 2, next_name)
+        index += 2
+        predication_patterns.append(TransformerMatch.from_string_definition(predication_string))
+
+    print("Searching ...")
+
+    # Then search all the MRS
+    found = False
+    if ui.interaction_record is not None:
+        for mrs_index in range(0, len(ui.interaction_record["Mrss"])):
+            mrs_predications = []
+            unmatched_predications = []
+            mrs_record = ui.interaction_record["Mrss"][mrs_index]["Mrs"]
+            remaining_patterns = copy.deepcopy(predication_patterns)
+            for ep in mrs_record.rels:
+                predication = TreePredication.from_ep(ep)
+                mrs_predications.append(predication)
+                for pattern in remaining_patterns:
+                    if pattern.match(predication, {}, {}):
+                        remaining_patterns.remove(pattern)
+                        predication = None
+                        break
+                if predication is not None:
+                    unmatched_predications.append(predication)
+
+            if len(remaining_patterns) == 0:
+                # Match!
+                found = True
+                pipeline_logger.debug(f"Match Parse {mrs_index}: {', '.join([str(x) for x in mrs_predications])}\n      unmatched: {', '.join([str(x) for x in unmatched_predications])}")
+
+    if not found:
+        print("None found.")
 
     return True
 
@@ -941,6 +1003,10 @@ command_data = {
     "debugmrs": {"Function": command_debug_mrs, "Category": "Parsing",
                   "Description": "Shows tracing information about the mrs",
                   "Example": "/debugmrs"},
+    "findmrs": {"Function": command_find_mrs, "Category": "Parsing",
+                 "Description": "?",
+                 "Example": "/findmrs"},
+
     "recordtest": {"Function": command_record_test, "Category": "Testing",
                    "Description": "Starts recording a test. Finish with /createtest or /appendtest", "Example": "/record"},
     "createtest": {"Function": command_create_test, "Category": "Testing",
@@ -963,5 +1029,6 @@ command_data = {
                   "Example": "/runfolder foldername"},
     "resume": {"Function": command_resume_test, "Category": "Testing", "WebSafe": False,
                   "Description": "Resume running the last test (or sequence of tests in a folder) at the last reset before it was stopped",
-                  "Example": "/resume"}
+                  "Example": "/resume"},
+
     }

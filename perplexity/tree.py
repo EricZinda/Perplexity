@@ -171,6 +171,14 @@ class TreePredication(object):
             for arg_index in range(0, len(self.arg_names)):
                 self.arg_types.append(self.type_from_argument(self.arg_names[arg_index], self.args[arg_index]))
 
+    @staticmethod
+    def from_ep(ep):
+        return TreePredication(index=0,
+                               name=ep.predicate,
+                               args=list(ep.args.values()),
+                               arg_names=list(ep.args.keys()),
+                               mrs_predication=ep)
+
     def __eq__(self, other):
         if isinstance(other, TreePredication):
             if self.name == other.name:

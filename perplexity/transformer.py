@@ -246,6 +246,7 @@ def match_names(name, alternatives):
             if name == alternative:
                 return True
         else:
+            # regex
             if alternative.search(name):
                 return True
     return False
@@ -264,8 +265,29 @@ def compile_name_alternatives(templates):
     return final_list
 
 
+# name_pattern               -> Name of the predication. Can be of the form:
+#   _for_x_cause             -> matches the name "_for_x_cause" exactly
+#   regex:_v_                -> all names that match the regex after regex:
+#   *                        -> Matches any name
+#   ["regex:_v_", "unknown"] -> treated like an "or" matches any of the names in the list
+#
+# args_pattern               ->
+# "x"                        -> Matches an argument of type "x"
+# "*"                        -> Matches any type of argument, but there must be one
+# ["x", "**"]                -> Must have first argument of "x" and then any number and type
+#                               of other arguments.  "**" must be at the end.
 class TransformerMatch(object):
-    def __init__(self, name_pattern, args_pattern, name_capture=None, args_capture=None, args_rest_capture=None, label_capture=None, property_transformer=None, removed=None, production=None, properties_production=None, new_index=None):
+    def __init__(self, name_pattern,
+                 args_pattern,
+                 name_capture=None,
+                 args_capture=None,
+                 args_rest_capture=None,
+                 label_capture=None,
+                 property_transformer=None,
+                 removed=None,
+                 production=None,
+                 properties_production=None,
+                 new_index=None):
         self.name_pattern = name_pattern
         self.name_alternatives = compile_name_alternatives(self.name_pattern)
         self.name_capture = name_capture if name_pattern is not None else [None] * len(name_pattern)
@@ -282,6 +304,29 @@ class TransformerMatch(object):
 
     def __repr__(self):
         return f"{self.name_pattern}({', '.join([str(x) for x in self.args_pattern])})"
+
+    # definition must be of the form:
+    # name_pattern(arg_pattern) where name_pattern and arg_pattern follow the rules described above
+    # To create alternatives for name_pattern, use |, like this:
+    #   regex:_v_|unknown(e, x, x)
+    @staticmethod
+    def from_string_definition(definition):
+        parts = definition.split("(")
+        predication_name = parts[0]
+        name_pattern = predication_name.split("|")
+
+        arg_parts = parts[1].split(",")
+        arg_parts[-1] = arg_parts[-1].strip(")")
+        args_pattern = []
+        for part in arg_parts:
+            clean_arg = part.strip()
+            if clean_arg in ["_", "None", "none", ""]:
+                args_pattern.append("_")
+            else:
+                args_pattern.append(clean_arg)
+
+        transform_logger.debug(f"searching for trees containing predication(s): {name_pattern}({','.join(args_pattern)})\n")
+        return TransformerMatch(name_pattern=name_pattern, args_pattern=args_pattern)
 
     def match(self, scopal_arg, captures, metadata):
         if isinstance(scopal_arg, perplexity.tree.TreePredication):
