@@ -10,6 +10,9 @@
 # To run the image as a local web server (without using the cloud for storage):
 #   docker run --env PYTHONPATH='/' --env DONTUSECLOUD=1 -p 8000:8000 -i p8y:latest
 #
+# Then you can test using the web browser like this:
+#   http://127.0.0.1:8000/?From=user&Body=hello
+#
 # To push your image to docker hub so others can access it:
 # 1. Tag it with <your docker username>/<what you want to call it>, for example: inductorsoftware/p8y
 #   docker tag p8y:latest inductorsoftware/p8y
@@ -23,8 +26,8 @@
 # 4. Others can then run your project using the instructions above for running an image
 #
 # Pushing to AWS:
-#   docker tag p8y:latest 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v4
-#   docker push 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v4
+#   docker tag p8y:latest 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v5
+#   docker push 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v5
 #
 # Run a shell on an image
 #   docker run -it imagename /bin/bash
