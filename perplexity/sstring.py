@@ -166,7 +166,7 @@ class SStringFormat(object):
         if tree_info is not None:
             mrs = simplemrs.loads(tree_info["MRS"])[0]
             tree = tree_info["Tree"]
-            sstring_logger.debug(f"sstring: tree is: {tree.repr_with_indices()}")
+            sstring_logger.debug(f"sstring: tree is: {str(tree)}")
 
         else:
             mrs = None
