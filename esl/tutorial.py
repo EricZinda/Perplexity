@@ -3240,15 +3240,17 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
     else:
         message = "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
 
-    ui = UserInterface("esl", reset, vocabulary,
-                         message_function=generate_custom_message,
-                         error_priority_function=error_priority,
-                         scope_function=in_scope,
-                         scope_init_function=in_scope_initialize,
-                         loaded_state=loaded_state,
-                         user_output=user_output,
-                         debug_output=debug_output,
-                         best_parses_file=best_parses_file)
+    ui = UserInterface("esl",
+                        reset,
+                        vocabulary,
+                        message_function=generate_custom_message,
+                        error_priority_function=error_priority,
+                        scope_function=in_scope,
+                        scope_init_function=in_scope_initialize,
+                        loaded_state=loaded_state,
+                        user_output=user_output,
+                        debug_output=debug_output,
+                        best_parses_file=best_parses_file)
 
     ui.user_output(message)
     return ui

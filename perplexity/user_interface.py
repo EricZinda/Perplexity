@@ -8,6 +8,8 @@ import uuid
 
 import perplexity.messages
 from delphin.codecs import simplemrs
+
+from perplexity.autocorrect import autocorrect, get_autocorrect
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.set_utilities import CachedIterable
@@ -40,7 +42,10 @@ def load_ui(path_and_filename, user_output=None, debug_output=None):
 
 
 class UserInterface(object):
-    def __init__(self, world_name, reset, vocabulary,
+    def __init__(self,
+                 world_name,
+                 reset,
+                 vocabulary,
                  message_function=perplexity.messages.generate_message,
                  error_priority_function=no_error_priority,
                  response_function=perplexity.messages.respond_to_mrs_tree,
@@ -54,6 +59,7 @@ class UserInterface(object):
         self.user_output = print if user_output is None else user_output
         self.debug_output = print if debug_output is None else debug_output
         self.best_parses_file = best_parses_file
+        self.autocorrect_file = get_autocorrect(world_name)
         self.max_holes = 14
 
         if best_parses_file is not None and os.path.exists(best_parses_file):
@@ -469,7 +475,7 @@ class UserInterface(object):
             else:
                 index += 1
 
-        return final_phrase
+        return autocorrect(self.autocorrect_file, final_phrase)
 
     def evaluate_best_response(self, has_solution_group):
         current_mrs_index = len(self.interaction_record["Mrss"]) - 1

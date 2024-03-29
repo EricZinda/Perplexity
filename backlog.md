@@ -3,6 +3,7 @@
 
 - Handle all the possible greetings...
     - Replace the known ones with "Hello"?
+
 - How much does the soup and the salad cost? --> I don't know the way you used: cost
     - Needs to be cost_v_1() but referencing and?
 
