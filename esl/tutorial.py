@@ -1084,6 +1084,7 @@ def appos(context, state, e_binding, x_left_binding, x_right_binding):
         # HACK: Need to replace the value of "hello" with whatever it is in opposition with because that's the variable that is used elsewhere
         # in the MRS
         yield state.set_x(x_left_binding.variable.name, x_right_binding.value)
+
     else:
         if x_left_binding.value == x_right_binding.value:
             yield state
@@ -1858,6 +1859,11 @@ def _just_a_1(context, state, e_introduced_binding, e_binding):
 
 @Predication(vocabulary, names=["_just_a_1"])
 def _just_a_1(context, state, e_introduced_binding, x_binding):
+    yield state
+
+
+@Predication(vocabulary, names=["_just_x_deg"])
+def _just_x_deg(context, state, e_introduced_binding, u_binding):
     yield state
 
 

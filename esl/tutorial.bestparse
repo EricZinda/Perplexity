@@ -3,7 +3,7 @@
   "Phrase": "What can I pay?",
   "MRSIndex": 1
  },
- "timestamp": "23534b40-776a-499c-accb-27c29c0bc3b5",
+ "timestamp": "8305fb76-ea43-4031-82e7-57535603d4af",
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: h8 ] [ _pay_v_for LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: i11 ARG3: i12 ] [ _with_p LBL: h9 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x14 [ x PERS: 3 NUM: sg GEND: n IND: - ] ] [ udef_q LBL: h15 ARG0: x14 RSTR: h16 BODY: h17 ] [ _cash_n_1 LBL: h18 ARG0: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h8 qeq h9 h16 qeq h18 > ]": {
   "Phrase": "I want to pay with cash",
   "MRSIndex": 1
@@ -115,5 +115,9 @@
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: pl ] ] [ udef_q LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ] [ _a_q LBL: h12 ARG0: x13 [ x PERS: 3 NUM: sg IND: + ] RSTR: h14 BODY: h15 ] [ _menu_n_1 LBL: h16 ARG0: x13 ] [ _for_p LBL: h16 ARG0: e17 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x13 ARG2: x18 [ x PERS: 3 NUM: sg IND: + ] ] [ def_explicit_q LBL: h19 ARG0: x18 RSTR: h20 BODY: h21 ] [ poss LBL: h22 ARG0: e23 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x18 ARG2: x24 [ x PERS: 1 NUM: sg PT: std ] ] [ pronoun_q LBL: h25 ARG0: x24 RSTR: h26 BODY: h27 ] [ pron LBL: h28 ARG0: x24 ] [ _son_n_of LBL: h22 ARG0: x18 ARG1: i29 ] [ _and_c LBL: h30 ARG0: x8 ARG1: x13 ARG2: x31 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pron LBL: h32 ARG0: x31 ] [ pronoun_q LBL: h33 ARG0: x31 RSTR: h34 BODY: h35 ] > HCONS: < h0 qeq h1 h6 qeq h4 h10 qeq h30 h14 qeq h16 h20 qeq h22 h26 qeq h28 h34 qeq h32 > ]": {
   "Phrase": "i want a menu for my son and me",
   "MRSIndex": 1
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: prop ] RELS: < [ unknown LBL: h1 ARG: x4 [ x PERS: 3 NUM: sg IND: + ] ARG0: e2 ] [ appos LBL: h1 ARG0: e5 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x4 ARG2: x6 [ x PERS: 3 NUM: sg IND: + ] ] [ _just_x_deg LBL: h7 ARG0: e8 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x4 ] [ basic_numbered_hour LBL: h7 ARG0: x4 CARG: \"2\" ] [ def_implicit_q LBL: h10 ARG0: x4 RSTR: h11 BODY: h12 ] [ appos LBL: h1 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x6 ARG2: x14 [ x PERS: 3 NUM: pl ] ] [ def_explicit_q LBL: h15 ARG0: x6 RSTR: h16 BODY: h17 ] [ poss LBL: h18 ARG0: e19 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x6 ARG2: x20 [ x PERS: 1 NUM: sg PT: std ] ] [ pronoun_q LBL: h21 ARG0: x20 RSTR: h22 BODY: h23 ] [ pron LBL: h24 ARG0: x20 ] [ _son_n_of LBL: h18 ARG0: x6 ARG1: i25 ] [ udef_q LBL: h26 ARG0: x14 RSTR: h27 BODY: h28 ] [ proper_q LBL: h29 ARG0: x30 [ x PERS: 3 NUM: sg IND: + ] RSTR: h31 BODY: h32 ] [ named LBL: h33 ARG0: x30 CARG: \"Johnny\" ] [ _and_c LBL: h35 ARG0: x14 ARG1: x30 ARG2: x36 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pron LBL: h37 ARG0: x36 ] [ pronoun_q LBL: h38 ARG0: x36 RSTR: h39 BODY: h40 ] > HCONS: < h0 qeq h1 h11 qeq h7 h16 qeq h18 h22 qeq h24 h27 qeq h35 h31 qeq h33 h39 qeq h37 > ]": {
+  "Phrase": "Just two, my son Johnny and me.",
+  "MRSIndex": 112
  }
 }

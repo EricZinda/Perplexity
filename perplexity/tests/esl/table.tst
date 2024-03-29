@@ -352,25 +352,11 @@
             "ID": "df1281d1-2be5-46d6-961d-1727f66546c3"
         },
         {
-            "Command": "/runparse 88,1",
-            "Expected": "Host: How many in your party?",
-            "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
-            "Enabled": true,
-            "ID": "c65c7797-46ca-40c8-98e1-6cdf6fcdf1e3"
-        },
-        {
             "Command": "Just two, my son Johnny and me.",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "udef_q(x7,def_explicit_q(x19,pronoun_q(x26,pron(x26),[_son_n_of(x19,i31), poss(e25,x19,x26)]),proper_q(x20,named(Johnny,x20),pronoun_q(x37,pron(x37),[_and_c(x7,x19,x37), appos(e18,x19,x20)]))),number_q(x4,card(2,x4,i13),[appos(e6,x4,x7), _just_a_1(e5,e2), unknown(e2,x4)]))",
             "Enabled": true,
             "ID": "e3951b1a-656b-4214-9a60-951be1ef4413"
-        },
-        {
-            "Command": "/runparse",
-            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "udef_q(x7,def_explicit_q(x19,pronoun_q(x26,pron(x26),[_son_n_of(x19,i31), poss(e25,x19,x26)]),proper_q(x20,named(Johnny,x20),pronoun_q(x37,pron(x37),[_and_c(x7,x19,x37), appos(e18,x19,x20)]))),number_q(x4,card(2,x4,i13),[appos(e6,x4,x7), _just_a_1(e5,e2), unknown(e2,x4)]))",
-            "Enabled": true,
-            "ID": "8fc8a668-a2c6-4bbf-94dc-9a962482a536"
         },
         {
             "Command": "/new esl.tutorial.reset",
