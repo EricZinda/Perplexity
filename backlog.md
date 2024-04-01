@@ -1,11 +1,3 @@
-- "Which vegetarian menu items do you have?" --> doesn't work
-    - Need to make "Menu Item" work as a compound
--	Need to support vegetarian “options” and “mains” and "items"
-    - This requires supporting synonyms
-        - These should be converted immediately into their base noun
-
-- How much does the soup and the salad cost? --> I don't know the way you used: cost
-    - Needs to be cost_v_1() but referencing and?
 
 - Fix Luis bugs:
     -	Gotta strip off the extra characters for words not in the grammar like “chiken/nn”
@@ -18,6 +10,8 @@
         o	That isn't true, there isn't the chicken that isn't the chicken
     -	And the implied request given by: “My son is a vegetarian”
 
+- How much does the soup and the salad cost? --> I don't know the way you used: cost
+    - Needs to be cost_v_1() but referencing and?
 - change all the could/can transforms to use OR so there are less
 - Fix some of the user interface issues:
     - implement a timeout

@@ -43,8 +43,13 @@ def parse_predication_name(name):
     result = {"PredicateRaw": name}
 
     if name[0] == "_":
+        params = name.split("/")
+        if len(params) > 1:
+            name = params[0]
+
         params = name[1:].split("_")
         result["Surface"] = True
+
     else:
         params = name.split("_")
         result["Surface"] = False
