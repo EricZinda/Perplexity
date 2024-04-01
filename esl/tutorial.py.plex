@@ -879,6 +879,13 @@
                 "PROG": "-",
                 "PERF": "-"
             },
+            "I need a steak": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "My son would like a salad": {
                 "SF": "prop",
                 "TENSE": "tensed",

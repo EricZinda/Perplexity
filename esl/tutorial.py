@@ -1556,11 +1556,12 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
 
 
 @Predication(vocabulary,
-             names=["_want_v_1"],
+             names=["_want_v_1", "_need_v_1"],
              phrases={
                 "we'd like a table for 2": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I want a steak": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I'd like a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I need a steak": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "My son would like a salad": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
@@ -1602,7 +1603,7 @@ def want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_obj
 
 
 @Predication(vocabulary,
-             names=["solution_group__want_v_1"],
+             names=["solution_group__want_v_1", "solution_group__need_v_1"],
              properties_from=_want_v_1)
 def want_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     yield from want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)

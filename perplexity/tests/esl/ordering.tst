@@ -16,11 +16,18 @@
             "ID": "e679d41e-af04-4f80-8192-5cbf08eb33af"
         },
         {
+            "Command": "My son needs a vegetarian dish",
+            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x15,[_dish_n_of(x15,i21), _vegetarian_a_1(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_need_v_1(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
+        },
+        {
             "Command": "and I'll have the roasted chicken",
             "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "_the_q(x11,[_chicken_n_1(x11), _roast_v_cause(e16,i17,x11)],pronoun_q(x7,pron(x7),[event_replace(u99,e5,e2), _have_v_1(e5,x7,x11)]))",
             "Enabled": true,
-            "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
+            "ID": "0b467c65-c266-45f3-a8bd-9b4ff1dddf6f"
         },
         {
             "Command": "/new esl.tutorial.reset",

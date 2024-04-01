@@ -9,11 +9,25 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
+            "Command": "I need a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x14,card(2,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_need_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "293837ea-30f7-4bcf-8093-3a1ce8ac9453"
+        },
+        {
             "Command": "I want a water and a table",
             "Expected": "Host: Sorry, you'll need to talk to your waiter about a water when you have a table.\nHost: How many in your party?",
             "Tree": "_a_q(x13,_water_n_1(x13),_a_q(x18,_table_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
             "Enabled": true,
-            "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+            "ID": "321e3d3c-653d-4393-85e3-2542de6db1af"
         },
         {
             "Command": "I want a table and a menu",
