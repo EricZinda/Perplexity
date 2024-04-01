@@ -176,6 +176,8 @@ class UserInterface(object):
                 else:
                     # No conjuncts to process
                     break
+            else:
+                break
 
         if self is not next_ui:
             # The user gave a command to load a new UI

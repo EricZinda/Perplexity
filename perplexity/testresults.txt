@@ -1,1 +1,0 @@
-{"FolderName": "esl", "TestName": "menu", "TestID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb", "UserInput": "show us 3 menus", "InteractionResponse": "There are less than 2 we", "InteractionTree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))"}
