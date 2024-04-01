@@ -1755,5 +1755,7 @@
     "no_standalone": {},
     "implicit_conj": {},
     "_thank_v_1": {},
-    "_just_x_deg": {}
+    "_just_x_deg": {},
+    "item_concepts": {},
+    "item_instances": {}
 }

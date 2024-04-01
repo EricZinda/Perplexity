@@ -1,17 +1,21 @@
-- make conjunctions work when hosted
+- "Which vegetarian menu items do you have?" --> doesn't work
+    - Need to make "Menu Item" work as a compound
+-	Need to support vegetarian “options” and “mains” and "items"
+    - This requires supporting synonyms
+        - These should be converted immediately into their base noun
 
 - How much does the soup and the salad cost? --> I don't know the way you used: cost
     - Needs to be cost_v_1() but referencing and?
 
 - Fix Luis bugs:
-    -	Still have some holes with handling “and” in all constructions (i.e. “and I'll have the salmon”
-    -	Need to support vegetarian “options” and “mains” and "items"
     -	Gotta strip off the extra characters for words not in the grammar like “chiken/nn”
+    -	Need to handle this construction: “My son needs something vegetarian”
+        - also handle "wants something"/"would like something"
+    -	Still have some holes with handling “and” in all constructions (i.e. “and I'll have the salmon”
     -	I already had on my list handling all the constructions like “forgot what I said” or “let’s start over”, etc.  All the ways you’d tell a waiter you want to start fresh
     -	This was just a funny bug I need to fix:
         o	USER: I don't want the chicken
         o	That isn't true, there isn't the chicken that isn't the chicken
-    -	Need to handle this construction: “My son needs something vegetarian”
     -	And the implied request given by: “My son is a vegetarian”
 
 - change all the could/can transforms to use OR so there are less

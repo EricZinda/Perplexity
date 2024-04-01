@@ -709,10 +709,16 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
     if x_left_binding.value is not None and x_right_binding.value is not None:
         if x_left_binding.value[0] == x_right_binding.value[0]:
             yield state
+
         elif len(x_right_binding.value) == 1 and isinstance(x_right_binding.value[0], str) and x_right_binding.value[
                 0].lower() in greetings():
             # Handle "Hi/Howdy, ...phrase..."
             yield state
+
+        elif len(x_right_binding.value) == 1 and is_concept(x_right_binding.value[0]) and x_right_binding.value[0].concept_name == "menu":
+            # Support "menu item" by interpreting it as a "menu dish"
+            if sort_of(state, object_to_store(x_left_binding.value[0]), "dish"):
+                yield state
 
         elif is_concept(x_right_binding.value[0]):
             # Records that predication index X is a disjunction
@@ -1132,7 +1138,7 @@ def thing_instances(context, state, x_binding):
             return False
 
     def unbound_variable():
-        for item in state.all_instances():
+        for item in state.all_individuals():
             yield item
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
@@ -1179,14 +1185,17 @@ def match_all_a_instances(adjective_type, context, state, e_introduced, x_bindin
 
 
 def handles_noun(state, noun_lemma):
+    noun_lemmas = [noun_lemma] + [x for x in rel_subjects(state, "hasSynonym", noun_lemma)]
     handles = ["thing"] + list(all_specializations(state, "thing"))
-    return noun_lemma in handles
+    return any([x in handles for x in noun_lemmas])
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_concepts(noun_type, context, state, x_binding):
     def bound_variable(value):
-        if sort_of(state, object_to_store(value), noun_type):
+        store_value = object_to_store(value)
+        noun_lemmas = [store_value] + [x for x in rel_objects(state, "hasSynonym", store_value)]
+        if any([sort_of(state, x, noun_type) for x in noun_lemmas]):
             return True
 
         else:
@@ -1194,7 +1203,10 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             return False
 
     def unbound_variable_concepts():
-        yield from concept_disjunctions_reverse(state, noun_type)
+        store_value = object_to_store(noun_type)
+        noun_lemmas = [store_value] + [x for x in rel_subjects(state, "hasSynonym", store_value)]
+        for noun_lemma in noun_lemmas:
+            yield from concept_disjunctions_reverse(state, noun_lemma)
 
     # Then yield a combinatorial value of all types
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
@@ -3051,6 +3063,9 @@ def reset():
                                 })
 
     # Some basic rules:
+    initial_state = initial_state.add_rel("thing", "hasSynonym", "item")
+
+
     # The restaurant has to "have" all the things in it so that questions like "Do you have this table?" work
     initial_state = initial_state.add_rel("bill_type", "specializes", "thing")
     initial_state = initial_state.add_rel("bill", "specializes", "bill_type")
@@ -3076,6 +3091,10 @@ def reset():
 
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("dish", "specializes", "food")
+    initial_state = initial_state.add_rel("dish", "hasSynonym", "option")
+    initial_state = initial_state.add_rel("dish", "hasSynonym", "choice")
+    initial_state = initial_state.add_rel("dish", "hasSynonym", "main")
+    initial_state = initial_state.add_rel("dish", "hasSynonym", "speciality")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
