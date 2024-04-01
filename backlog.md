@@ -1,9 +1,7 @@
 
 - Fix Luis bugs:
-    -	Gotta strip off the extra characters for words not in the grammar like “chiken/nn”
     -	Need to handle this construction: “My son needs something vegetarian”
         - also handle "wants something"/"would like something"
-    -	Still have some holes with handling “and” in all constructions (i.e. “and I'll have the salmon”
     -	I already had on my list handling all the constructions like “forgot what I said” or “let’s start over”, etc.  All the ways you’d tell a waiter you want to start fresh
     -	This was just a funny bug I need to fix:
         o	USER: I don't want the chicken

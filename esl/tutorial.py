@@ -107,6 +107,28 @@ def min_from_variable_group(variable_group):
 
 # **** Transforms ****
 
+# # Convert "and <phrase>?" to "<phrase>"
+# # as in "and I'll take the steak"
+@Transform(vocabulary)
+def and_with_single_phrase_transformer():
+    target_and_predication = TransformerMatch(name_pattern="_and_c", args_pattern=["e", "u", "e"], args_capture=["e_original", None, "e_target"])
+    target_verb_predication = TransformerMatch(name_pattern="*", name_capture="verb_name", args_pattern=["e", "**"], args_capture=["e_verb"], args_rest_capture="verb_rest_args")
+    target_conjunction = ConjunctionMatchTransformer([target_and_predication, target_verb_predication], extra_conjuncts_capture="extra_conjuncts")
+
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e_target", "ARG2": "$e_original"})
+    production_other_verb = TransformerProduction(name="$verb_name", args={"ARG0": "$e_verb"}, args_rest="$verb_rest_args")
+    conjuct_production = ConjunctionProduction(conjunction_list=[production_event_replace, production_other_verb, "$extra_conjuncts"])
+    quantifier_production = TransformerProduction(name="$quantifier_name", args={"ARG0": "$x_quantifier", "ARG1": "$rstr_quantifier", "ARG2": conjuct_production})
+
+    return TransformerMatch(name_pattern="*",
+                             name_capture="quantifier_name",
+                             args_pattern=["x", "h", target_conjunction],
+                             args_capture=["x_quantifier", "rstr_quantifier", None],
+                             removed=["_and_c"],
+                             new_index="$e_verb",
+                             production=quantifier_production)
+
+
 # Convert "That will be all" to "no"
 # Transform: _all_q(x9,generic_entity(x9),udef_q(x5,generic_entity(x5),_be_v_id(e2,x5,x9)))
 # to: _no_a(e, x)
@@ -3290,6 +3312,6 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
-    # ShowLogging("Transformer")
+    ShowLogging("Transformer")
 
     hello_world()

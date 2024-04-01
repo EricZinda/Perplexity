@@ -16,11 +16,32 @@
             "ID": "e679d41e-af04-4f80-8192-5cbf08eb33af"
         },
         {
+            "Command": "and I'll have the roasted chicken",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "_the_q(x11,[_chicken_n_1(x11), _roast_v_cause(e16,i17,x11)],pronoun_q(x7,pron(x7),[event_replace(u99,e5,e2), _have_v_1(e5,x7,x11)]))",
+            "Enabled": true,
+            "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "087c0bc7-9003-4d1d-9bca-c78a42c415ff"
+        },
+        {
+            "Command": "a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "63b80562-70b0-4885-804e-151b73d850c8"
+        },
+        {
             "Command": "for my son, I'll have the roasted chicken",
             "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),_the_q(x21,[_chicken_n_1(x21), _roast_v_cause(e26,i27,x21)],def_explicit_q(x5,[_son_n_of(x5,i16), poss(e10,x5,x11)],[_for_p(e4,e2,x5), _have_v_1(e2,x3,x21)]))))",
             "Enabled": true,
-            "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
+            "ID": "3c03fc87-432d-4481-b06b-1efa3defa634"
         },
         {
             "Command": "for my son, please get the salmon",
