@@ -1764,5 +1764,45 @@
     "_thank_v_1": {},
     "_just_x_deg": {},
     "item_concepts": {},
-    "item_instances": {}
+    "item_instances": {},
+    "_start_v_over": {
+        "Phrases": {
+            "Can I start over?": {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_start_v_over_able": {
+        "Phrases": {
+            "Can I start over?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    }
 }

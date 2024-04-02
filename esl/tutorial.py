@@ -1359,6 +1359,29 @@ def _vegetarian_a_1_instances(context, state, e_introduced_binding, x_target_bin
     yield from match_all_n_instances("veggie", context, state, x_target_binding)
 
 
+
+@Predication(vocabulary,
+             names=["_start_v_over_able"],
+             phrases={
+                "Can I start over?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+             },
+             properties=[{'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             )
+def _start_v_over_able(context, state, e_introduced_binding, x_who_binding):
+    # "Can I start over" is ambiguous, it might mean just the parent, but it might mean the parent and the son too
+    # assume the latter
+    if x_who_binding.value is not None and len(x_who_binding.value) == 1 and x_who_binding.value[0] in ["user"]:
+        final_state = do_task(state, [('reset_order_and_bill_for_person', context, "user"),
+                                      ('reset_order_and_bill_for_person', context, "son1")])
+        if final_state is not None:
+            yield final_state
+
+    elif x_who_binding.value is not None and len(x_who_binding.value) == 1 and x_who_binding.value[0] in ["son1"]:
+        final_state = do_task(state, [('reset_order_and_bill_for_person', context, "son1")])
+        if final_state is not None:
+            yield final_state
+
+
 class PastParticiple:
     def __init__(self, predicate_name_list, lemma):
         self.predicate_name_list = predicate_name_list

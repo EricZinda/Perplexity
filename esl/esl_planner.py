@@ -5,7 +5,8 @@ from esl.esl_planner_description import add_declarations, convert_to_english, ox
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, has_type, \
     AddBillOp, DeleteRelOp, \
     find_unused_item, ResetOrderAndBillOp, object_to_store, \
-    find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria, rel_objects
+    find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria, rel_objects, \
+    ResetOrderAndBillForPersonOp
 from perplexity.predications import is_concept
 from perplexity.response import RespondOperation, ResponseLocation
 from perplexity.set_utilities import Measurement
@@ -587,6 +588,10 @@ def reset_order_and_bill(state, context):
     return state.apply_operations([ResetOrderAndBillOp()])
 
 
+def reset_order_and_bill_for_person(state, context, for_person):
+    return state.apply_operations([ResetOrderAndBillForPersonOp(for_person)])
+
+
 def reprompt(state, context):
     return state.apply_operations([RespondOperation(state.get_reprompt(return_first=False), location=ResponseLocation.last)])
 
@@ -602,7 +607,7 @@ def add_plan_local(state, context, name, value):
     return state.apply_operations([SetXOperation("plan_locals", (next_current, ))])
 
 
-gtpyhop.declare_actions(respond, respond_location, respond_has_more, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill, reprompt, add_plan_local)
+gtpyhop.declare_actions(respond, respond_location, respond_has_more, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill, reset_order_and_bill_for_person, reprompt, add_plan_local)
 
 add_declarations(gtpyhop)
 
