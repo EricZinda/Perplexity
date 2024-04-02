@@ -31,7 +31,10 @@
         },
         {
             "Command": "what did we order",
-            "Expected": "chicken\nsoup",
+            "Expected": [
+                "chicken\nsoup",
+                "soup\nchicken"
+            ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "aa2f35b6-f3a1-4152-af96-d84c3be87a7b"
@@ -84,6 +87,13 @@
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "f8da4a84-5816-40eb-b9a7-ddb765b10aa0"
+        },
+        {
+            "Command": "could we start over?",
+            "Expected": "Yes.",
+            "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _start_v_over_able(e2,x3)])",
+            "Enabled": true,
+            "ID": "4cda3658-8a91-4bed-aa59-f887e4dc135d"
         }
     ]
 }

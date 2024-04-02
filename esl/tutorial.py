@@ -1364,8 +1364,9 @@ def _vegetarian_a_1_instances(context, state, e_introduced_binding, x_target_bin
              names=["_start_v_over_able"],
              phrases={
                 "Can I start over?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Could I start over?": {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
              },
-             properties=[{'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             properties=[{'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
              )
 def _start_v_over_able(context, state, e_introduced_binding, x_who_binding):
     # "Can I start over" is ambiguous, it might mean just the parent, but it might mean the parent and the son too
