@@ -1787,6 +1787,13 @@
     },
     "_start_v_over_able": {
         "Phrases": {
+            "Can you start over?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "Can I start over?": {
                 "SF": "ques",
                 "TENSE": "pres",

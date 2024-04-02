@@ -3,7 +3,8 @@
     -	I already had on my list handling all the constructions like “forgot what I said” or “let’s start over”, etc.  All the ways you’d tell a waiter you want to start fresh
         - (fixed) Can we start over?
         - (fixed) Could we start over?
-        - Can we cancel my order?
+        - (fixed) can/could *you* start over?
+        - Can we/you/I cancel my order?
         - Can we cancel my X?
         - I don't want X anymore?
     -	This was just a funny bug I need to fix:
