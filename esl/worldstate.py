@@ -431,6 +431,9 @@ class ResetOrderAndBillForPersonOp(object):
     def __init__(self, person):
         self.person = person
 
+    def __repr__(self):
+        return str(self.__class__) + ": " + str(self.person)
+
     def apply_to(self, state):
         state.mutate_clear_last_order(for_person=self.person)
 
@@ -754,12 +757,14 @@ class WorldState(State):
         world_state._rel = new_relation
 
     def mutate_clear_last_order(self, for_person=None):
+        if not isinstance(for_person, (list, tuple)):
+            for_person = (for_person, )
         world_state = self.world_state_frame()
         new_relation = copy.deepcopy(world_state._rel)
 
         subtract = 0
         for who_item in self.ordered_but_not_delivered():
-            if for_person is not None and who_item[0] != for_person:
+            if for_person is not None and who_item[0] not in for_person:
                 continue
 
             new_relation["ordered"].remove((who_item[0], who_item[1], None))

@@ -1,45 +1,25 @@
 - test, "I want my order to be ..."
-
+- Potential writeups
+    - Walk through implementing "What is my/my son's order?"
+    - starts at b7a3556
+    - Key points
+        - Give them a default order that is always there, and one that is shared
+        - made poss() be lift style to get a shared order
+        - interpret be_v_id() in a one off way
 - "My order is chicken and soup" fails properly but takes forever and gives a bad error
 
-- What is my order?
-
-    - Option 1: treat this as a Pragmatic phrase and just look for the pattern of "what is my order" or "My order is X" and run special code on it?
-        - Implementation
-            - Theory: use the concept of order and add ownership to it as criteria
-        - Bugs
-            - My order is 2 chickens
-
-            - (fixed) "What is our order?" --> There are less than 2 we
-            - (fixed) "what is not soup" -> crash
-            - (fixed) "my steak is for 3" -> Yes, that is true.
-                - Used to be: steak is not for 3.
-                - because it turns into a conceptual state, that is mine, for 3, but we never resolve it
-                - Need to handle "for" differently when used predicatively
-            - (fixed) now the "ordering" test is almost 2x slower...
-                - Because "Let's go with 2 orders of the steak is crazy slow"
-            - (fixed, but slow) (when nothing is ordered): "What is my order?" -> order
-            - (fixed, but VERY slow!) Bugs: "My order is chicken and soup" succeeds if my order is only chicken
-            - (fixed) what is my order? succeeds on general purpose be_v_id()
-                - Fixed by putting a check to on run the Pragmatic one for orders
-
-    - Option 2: Could make one interpretation of "x is y" be that if y are all the parts of x, it is true. That would make it more general purpose
-
-    - Theory?: an order is an actual object, that can be empty, i.e. "there is nothing in your order yet"
-    - order needs to return ...
-        - option 1: a set of things in my order?
-        - option 2: the concept of my order?
-    - poss() needs to work against that order
+- Can Johnny/we/you/I cancel my/our/his order?
+    - "can johnny cancel his order" -> fails
 
 - Fix Luis bugs:
     -	I already had on my list handling all the constructions like “forgot what I said” or “let’s start over”, etc.  All the ways you’d tell a waiter you want to start fresh
-        - (fixed) Can we start over?
-        - (fixed) Could we start over?
-        - (fixed) can/could *you* start over?
         - Can we/you/I cancel my order?
         - Can we cancel my X?
         - I want to cancel my X
         - I don't want X anymore?
+        - (fixed) Can we start over?
+        - (fixed) Could we start over?
+        - (fixed) can/could *you* start over?
     -	This was just a funny bug I need to fix:
         o	USER: I don't want the chicken
         o	That isn't true, there isn't the chicken that isn't the chicken

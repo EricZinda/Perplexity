@@ -652,6 +652,8 @@ def pron(context, state, x_who_binding):
         plurality = (state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["NUM"])
 
     def bound_variable(value):
+        if person == 3 and value == "son1":
+            return True
         if person == 2 and value == "restaurant":
             return True
         if person == 1 and is_user_type(value):
@@ -660,6 +662,8 @@ def pron(context, state, x_who_binding):
             context.report_error(["dontKnowActor", x_who_binding.variable.name, state.get_reprompt()])
 
     def unbound_variable():
+        if person == 3:
+            yield "son1"
         if person == 2:
             yield "restaurant"
         if person == 1:
@@ -2392,6 +2396,38 @@ def get_take_see_v_present_transitive_bad_english(context, state, e_introduced_b
 
 
 @Predication(vocabulary,
+             names=["_cancel_v_1_able"],
+             phrases={
+                 "Can I cancel my order?":  {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    def bound(x_actor, x_object):
+        # We support "Can I/we/you cancel my order"
+        if (is_user_type(x_actor) or is_computer_type(x_actor)) and not is_concept(x_object) and sort_of(state, x_object, "order"):
+            return True
+
+        else:
+            context.report_error(["dontKnowHow"])
+
+    def actor_from_object(x_object):
+        pass
+
+    def object_from_actor(x_actor):
+        pass
+
+    for new_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object, object_from_actor):
+        # First figure out who this order belongs to
+        order = new_state.get_binding(x_object_binding.variable.name).value[0]
+        owner_list = [x for x in rel_subjects(state, "have", object_to_store(order))]
+        owners = owner_list[0]
+        names = [convert_to_english(state, owners)] if not isinstance(owners, tuple) else [convert_to_english(state, owner) for owner in owners]
+
+        yield new_state.record_operations([ResetOrderAndBillForPersonOp(owners),
+                                           RespondOperation(f"Waiter: No problem! Let me know what {' and '.join(names)} would like instead.")])
+
+
+@Predication(vocabulary,
              names=["_order_v_1"],
              phrases={
                 "What did I order?": {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
@@ -2863,42 +2899,6 @@ def poss_lift_style(context, state, e_introduced_binding, x_object_binding, x_ac
             yield item
 
 
-# @Predication(vocabulary, names=["poss"])
-# def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
-#     def bound(x_actor, x_object):
-#         if is_concept(x_object):
-#             # This is converted to a concept that has the criteria "actor has" below
-#             return True
-#
-#         else:
-#             if (object_to_store(x_actor), object_to_store(x_object)) in state.all_rel("have"):
-#                 return True
-#             else:
-#                 context.report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
-#                 return False
-#
-#     def actor_from_object(x_object):
-#         for i in state.all_rel("have"):
-#             if i[1] == x_object:
-#                 yield store_to_object(i[0])
-#
-#     def object_from_actor(x_actor):
-#         for i in state.all_rel("have"):
-#             if i[0] == x_actor:
-#                 yield store_to_object(i[1])
-#
-#     for item in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
-#                                       object_from_actor):
-#         if x_actor_binding is not None and len(x_actor_binding.value) == 1 and \
-#                 x_object_binding.value is not None and len(x_object_binding.value) == 1 and is_concept(x_object_binding.value[0]):
-#             # Add extra criteria to the concept to represent possession by x_actor
-#             x_object = x_object_binding.value[0].add_criteria(rel_objects, x_actor_binding.value[0], "have")
-#             yield state.set_x(x_object_binding.variable.name, (x_object, ))
-#
-#         else:
-#             yield item
-
-
 # Returns:
 # the variable to measure into, the units to measure
 # or None if not a measurement unbound variable
@@ -3006,65 +3006,15 @@ def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_ob
             else:
                 context.report_error(["errorText", "Nothing"])
 
-        # if len(x_subject) == 1 and is_concept(x_subject[0]) and x_subject[0].concept_name == "order":
-        #     # "My order is X" --> See if the set of items in x_object are the same as what was ordered
-        #     listed_food_types = sorted([object_to_store(x) for x in x_object])
-        #     for order in x_subject[0].instances(context, state):
-        #         order_foods = sorted([x for x in state.food_in_order(order)])
-        #         if len(order_foods) > 0:
-        #             for food_type in listed_food_types:
-        #                 found_type = False
-        #                 for order_item in order_foods:
-        #                     if sort_of(state, order_item, food_type):
-        #                         order_foods.remove(order_item)
-        #                         found_type = True
-        #                         break
-        #
-        #                 if not found_type:
-        #                     break
-        #
-        #             if found_type and len(order_foods) == 0:
-        #                 return True
-        #
-        #         else:
-        #             context.report_error(["errorText", "Nothing"])
-
     def unbound(x_object):
         # The phrase "What is my order?" means "what are the things in my order"
         if len(x_object) == 1 and not is_concept(x_object[0]) and sort_of(state, x_object[0], "order"):
             order = x_object[0]
-            for item in state.food_in_order(order):
-                yield (item, )
-
-        #     order_foods = sorted([x for x in state.food_in_order(order)])
-        #     if len(order_foods) > 0:
-        #         for food_type in listed_food_types:
-        #             found_type = False
-        #             for order_item in order_foods:
-        #                 if sort_of(state, order_item, food_type):
-        #                     order_foods.remove(order_item)
-        #                     found_type = True
-        #                     break
-        #
-        #             if not found_type:
-        #                 break
-        #
-        #         if found_type and len(order_foods) == 0:
-        #             return True
-        #
-        #     else:
-        #         context.report_error(["errorText", "Nothing"])
-        #
-        # # The phrase "What is my order?" means "what are the things in my order"
-        # if len(x_object) == 1 and is_concept(x_object[0]) and x_object[0].concept_name == "order":
-        #     orders = [x for x in x_object[0].instances(context, state)]
-        #     if len(orders) > 0:
-        #         for order in orders:
-        #             order_content = [x for x in state.food_in_order(order)]
-        #             if len(order_content) == 0:
-        #                 context.report_error(["errorText", "Nothing"])
-        #             else:
-        #                 yield tuple(order_content)
+            order_foods = tuple([x for x in state.food_in_order(order)])
+            if len(order_foods) > 0:
+                yield order_foods
+            else:
+                context.report_error(["errorText", "Nothing"])
 
     # Only use this interpretation if we are talking about an "order"
     found = False

@@ -1862,5 +1862,25 @@
             }
         ]
     },
-    "poss_lift_style": {}
+    "poss_lift_style": {},
+    "_cancel_v_1_request": {
+        "Phrases": {
+            "Can I cancel my order?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    }
 }

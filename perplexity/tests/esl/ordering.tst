@@ -16,6 +16,13 @@
             "ID": "e679d41e-af04-4f80-8192-5cbf08eb33af"
         },
         {
+            "Command": "what is my order?",
+            "Expected": "Nothing",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_order_n_of(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "e3c26e28-39e7-47cc-bfb2-cba28f48cb1f"
+        },
+        {
             "Command": "I want 2 steaks",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_want_v_1(e2,x3,x8)))",
@@ -35,6 +42,13 @@
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x14,[_steak_n_1(x14), card(2,e20,x14)],def_explicit_q(x3,[_order_n_of(x3), poss(e8,x3,x9)],_be_v_id(e2,x3,x14))))",
             "Enabled": true,
             "ID": "121f854a-efb4-447f-b774-7532df6eedbc"
+        },
+        {
+            "Command": "what is my order",
+            "Expected": "2 steak",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_order_n_of(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
+            "Enabled": true,
+            "ID": "9468312e-4b6f-40ea-ba76-2c6e6f7d0e45"
         },
         {
             "Command": "/new esl.tutorial.reset",
