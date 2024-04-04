@@ -716,6 +716,10 @@ def command_run_test(ui, arg):
         test_iterator = TestIterator(ui.test_manager, ui.test_manager.full_test_path(arg + ".tst"))
         ui.test_manager.run_tests(test_iterator, ui)
 
+        # Set the test world state as the new word state if we are just running a single test
+        if ui.test_manager.final_ui is not None:
+            ui.new_ui = ui.test_manager.final_ui
+
     return True
 
 

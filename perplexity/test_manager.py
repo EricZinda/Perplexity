@@ -153,6 +153,7 @@ class TestManager(object):
             os.makedirs(self.test_root_folder)
         self.current_world_name = None
         self.load_session_data()
+        self.final_ui = None
 
     def full_test_path(self, test_name):
         return os.path.join(self.test_root_folder, test_name)
@@ -268,6 +269,7 @@ class TestManager(object):
                             break
 
         elapsed = round(time.perf_counter() - testItemStartTime, 5)
+        self.final_ui = test_ui
         print(f"\n**** Testing Complete. Elapsed time: {elapsed}\n")
 
     def resolve_tests(self):
