@@ -796,6 +796,17 @@ class WorldState(State):
             return ""
         assert False, f"Unknown state {self.sys['responseState']}"
 
+    def food_in_order(self, order):
+        # First figure out who this order belongs to
+        owner_list = [x for x in rel_subjects(self, "have", object_to_store(order))]
+        owners = owner_list[0]
+        if not isinstance(owners, (tuple, list)):
+            owners = (owners, )
+
+        for who_food in self.ordered_food():
+            if who_food[0] in owners:
+                yield who_food[1]
+
     def have_food(self):
         for who_item in self.all_rel("have"):
             if is_user_type(who_item[0]) and sort_of(self, who_item[1], ["food"]):

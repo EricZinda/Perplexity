@@ -931,8 +931,21 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
                                              both_bound_function,
                                              x_what_unbound,
                                              x_for_unbound):
-        yield for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_binding.value)
+        new_state = for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_binding.value)
 
+        if perplexity.tree.used_predicatively(context, state):
+            # "This steak is for 2" or "This steak is for my son"
+            final_value = new_state.get_binding(x_what_binding.variable.name).value
+            if len(final_value) == 1 and is_concept(final_value[0]):
+                # Make sure there are actually *instances* of these or it is false
+                if final_value[0].instances(context, state):
+                    yield new_state
+                else:
+                    context.report_error(
+                        ['errorText', "Host: No that is not true", state.get_reprompt()])
+
+        else:
+            yield new_state
 
 @Predication(vocabulary, names=["_cash_n_1"])
 def _cash_n_1(context, state, x_bind):
@@ -1573,9 +1586,19 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
     if not state.sys["responseState"] == "way_to_pay":
         yield do_task(state, [("respond", context, "It's not time to pay yet.")])
         return
-    if not e_introduced_binding.value["With"]["Value"] in ["cash", "card"]:
-        yield do_task(state, [("respond", context, "You can't pay with that.")])
-        return
+
+    if "With" in e_introduced_binding.value:
+        if is_concept(e_introduced_binding.value["With"]["Value"]):
+            values = [x for x in e_introduced_binding.value["With"]["Value"].instances(context, state)]
+            if len(values) == 0:
+                yield do_task(state, [("respond", context, "You don't have one of those.")])
+                return
+        else:
+            values = [e_introduced_binding.value["With"]["Value"]]
+
+        if not any(x in ["cash", "card"] for x in values):
+            yield do_task(state, [("respond", context, "You can't pay with that.")])
+            return
 
     yield state.record_operations(state.handle_world_event(context, ["unknown", (e_introduced_binding.value["With"]["Value"], )]))
 
@@ -2796,11 +2819,16 @@ def _have_v_1_able_group(context, state_list, e_variable_group, x_actor_variable
 @Predication(vocabulary, names=["poss"])
 def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
     def bound(x_actor, x_object):
-        if (object_to_store(x_actor), object_to_store(x_object)) in state.all_rel("have"):
+        if is_concept(x_object):
+            # This is converted to a concept that has the criteria "actor has" below
             return True
+
         else:
-            context.report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
-            return False
+            if (object_to_store(x_actor), object_to_store(x_object)) in state.all_rel("have"):
+                return True
+            else:
+                context.report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
+                return False
 
     def actor_from_object(x_object):
         for i in state.all_rel("have"):
@@ -2814,7 +2842,14 @@ def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding
 
     for item in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor):
-        yield item
+        if x_actor_binding is not None and len(x_actor_binding.value) == 1 and \
+                x_object_binding.value is not None and len(x_object_binding.value) == 1 and is_concept(x_object_binding.value[0]):
+            # Add extra criteria to the concept to represent possession by x_actor
+            x_object = x_object_binding.value[0].add_criteria(rel_objects, x_actor_binding.value[0], "have")
+            yield state.set_x(x_object_binding.variable.name, (x_object, ))
+
+        else:
+            yield item
 
 
 # Returns:
@@ -2873,6 +2908,11 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
         # since it is plural
         yield from concept_disjunctions_reverse(state, object_to_store(x_object))
 
+    # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
+    for check_binding in [x_subject_binding, x_object_binding]:
+        if check_binding.value is not None and len(check_binding.value) == 1 and instance_of_or_concept_name(state, check_binding.value[0]) == "order":
+            return
+
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
         units = measure_units(x_object_value)
@@ -2883,6 +2923,65 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
 
         else:
             yield success_state
+
+
+# This is the implementation for "My order is X" or "What is my order?"
+@Predication(vocabulary,
+             names=["_be_v_id"],
+             phrases={
+                 "What is my order?":   {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "My order is chicken": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    def criteria_bound(x_subject, x_object):
+        if len(x_subject) == 1 and is_concept(x_subject[0]) and x_subject[0].concept_name == "order":
+            # "My order is X" --> See if the set of items in x_object are the same as what was ordered
+            listed_food_types = sorted([object_to_store(x) for x in x_object])
+            for order in x_subject[0].instances(context, state):
+                order_foods = sorted([x for x in state.food_in_order(order)])
+                if len(order_foods) > 0:
+                    for food_type in listed_food_types:
+                        found_type = False
+                        for order_item in order_foods:
+                            if sort_of(state, order_item, food_type):
+                                order_foods.remove(order_item)
+                                found_type = True
+                                break
+
+                        if not found_type:
+                            break
+
+                    if found_type and len(order_foods) == 0:
+                        return True
+
+                else:
+                    context.report_error(["errorText", "Nothing"])
+
+    def unbound(x_object):
+        # The phrase "What is my order?" means "what are the things in my order"
+        if len(x_object) == 1 and is_concept(x_object[0]) and x_object[0].concept_name == "order":
+            orders = [x for x in x_object[0].instances(context, state)]
+            if len(orders) == 1:
+                order_content = [x for x in state.food_in_order(orders[0])]
+                if len(order_content) == 0:
+                    context.report_error(["errorText", "Nothing"])
+                else:
+                    yield tuple(order_content)
+
+    # Only use this interpretation if we are talking about an "order"
+    found = False
+    for check_binding in [x_subject_binding, x_object_binding]:
+        if check_binding.value is not None and len(check_binding.value) == 1 and instance_of_or_concept_name(state, check_binding.value[0]) == "order":
+            found = True
+            break
+    if not found:
+        return
+
+    # Use lift_style so that we get everything in the order as a single value, meaning "together"
+    for success_state in lift_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
+        yield success_state
 
 
 def yield_cost_of_subject_into_object(state, units, subject_variable, object_variable):
@@ -3112,6 +3211,7 @@ def reset():
 
     # Some basic rules:
     initial_state = initial_state.add_rel("thing", "hasSynonym", "item")
+    initial_state = initial_state.add_rel("order", "specializes", "thing")
 
 
     # The restaurant has to "have" all the things in it so that questions like "Do you have this table?" work
@@ -3255,6 +3355,13 @@ def reset():
     initial_state = initial_state.add_rel(0, "valueOf", "bill1")
     initial_state = initial_state.add_rel("room", "contains", "user")
 
+    # Give the parent and the son each their own order (which might be empty) so they can say things like
+    # "My order is x" or "Could we restart my order?", etc
+    initial_state = initial_state.add_rel("order1", "instanceOf", "order")
+    initial_state = initial_state.add_rel("user", "have", "order1")
+    initial_state = initial_state.add_rel("order2", "instanceOf", "order")
+    initial_state = initial_state.add_rel("son1", "have", "order2")
+
     initial_state = initial_state.add_rel("son1", "instanceOf", "son")
     initial_state = initial_state.add_rel("son1", "hasName", "Johnny")
     initial_state = initial_state.add_rel("user", "instanceOf", "person")
@@ -3338,6 +3445,6 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
-    ShowLogging("Transformer")
+    # ShowLogging("Transformer")
 
     hello_world()

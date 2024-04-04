@@ -1,3 +1,34 @@
+- test, "I want my order to be ..."
+
+
+- What is my order?
+
+    - Option 1: treat this as a Pragmatic phrase and just look for the pattern of "what is my order" or "My order is X" and run special code on it?
+        - Implementation
+            - Theory: use the concept of order and add ownership to it as criteria
+        - Bugs
+            - "what is not soup" -> crash
+
+            - (fixed) "my steak is for 3" -> Yes, that is true.
+                - Used to be: steak is not for 3.
+                - because it turns into a conceptual state, that is mine, for 3, but we never resolve it
+                - Need to handle "for" differently when used predicatively
+            - (fixed) now the "ordering" test is almost 2x slower...
+                - Because "Let's go with 2 orders of the steak is crazy slow"
+            - (fixed, but slow) (when nothing is ordered): "What is my order?" -> order
+            - (fixed, but VERY slow!) Bugs: "My order is chicken and soup" succeeds if my order is only chicken
+            - (fixed) what is my order? succeeds on general purpose be_v_id()
+                - Fixed by putting a check to on run the Pragmatic one for orders
+            - "What is our order?" --> There are less than 2 we
+            - "My order is chicken and soup" fails properly but gives a bad error
+            - My order is 2 chickens
+    - Option 2: Could make one interpretation of "x is y" be that if y are all the parts of x, it is true. That would make it more general purpose
+
+    - Theory?: an order is an actual object, that can be empty, i.e. "there is nothing in your order yet"
+    - order needs to return ...
+        - option 1: a set of things in my order?
+        - option 2: the concept of my order?
+    - poss() needs to work against that order
 
 - Fix Luis bugs:
     -	I already had on my list handling all the constructions like “forgot what I said” or “let’s start over”, etc.  All the ways you’d tell a waiter you want to start fresh
@@ -6,6 +37,7 @@
         - (fixed) can/could *you* start over?
         - Can we/you/I cancel my order?
         - Can we cancel my X?
+        - I want to cancel my X
         - I don't want X anymore?
     -	This was just a funny bug I need to fix:
         o	USER: I don't want the chicken

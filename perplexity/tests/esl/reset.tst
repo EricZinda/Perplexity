@@ -2,6 +2,13 @@
     "WorldName": "esl",
     "TestItems": [
         {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "6a3cc4d3-60e5-48e4-a624-f63883ff0403"
+        },
+        {
             "Command": "table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
@@ -144,5 +151,6 @@
             "Enabled": true,
             "ID": "f037ab19-ceb5-4acd-972e-15dcadada49e"
         }
-    ]
+    ],
+    "ElapsedTime": 16.42517
 }

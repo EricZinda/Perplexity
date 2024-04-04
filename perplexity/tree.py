@@ -522,7 +522,6 @@ def is_this_last_fw_seq(context, state):
     return is_last_fw_seq(this_tree["Tree"], this_predication)
 
 
-# TODO: Change this to the better approach for checking for attributively used adjectives
 # As per this thread: https://delphinqa.ling.washington.edu/t/converting-mrs-output-to-a-logical-form/413/29
 def used_predicatively(context, state):
     tree_info = state.get_binding("tree").value[0]

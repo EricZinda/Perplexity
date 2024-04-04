@@ -1825,5 +1825,41 @@
                 "PERF": "-"
             }
         ]
+    },
+    "_order_n_1": {},
+    "_order_n_of_x": {},
+    "_be_v_id_order": {
+        "Phrases": {
+            "What is my order?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "My order is chicken": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     }
 }

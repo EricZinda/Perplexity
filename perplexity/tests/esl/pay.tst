@@ -129,7 +129,7 @@
         },
         {
             "Command": "I will pay with my card",
-            "Expected": "Host: There isn't such a card here",
+            "Expected": "You don't have one of those.",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_card_n_1(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[_with_p(e10,e2,x11), _pay_v_for(e2,x3,i8,i9)]))",
             "Enabled": true,
             "ID": "5dbbce66-c57c-4e82-af30-a3db81744cde"
@@ -163,5 +163,5 @@
             "ID": "35300d37-33ae-42eb-b8c8-f6945a26647e"
         }
     ],
-    "ElapsedTime": 12.3682
+    "ElapsedTime": 11.79935
 }

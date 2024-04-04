@@ -332,7 +332,7 @@ def neg(context, state, e_introduced_binding, h_scopal):
             generate_not_error(context, unscoped_referenced_variables)
             had_negative_success = True
             break
-        elif tree_record["Error"][1][0] == "formNotUnderstood":
+        elif tree_record["Error"] is not None and tree_record["Error"][1] is not None and tree_record["Error"][1][0] == "formNotUnderstood":
             # this was not a logical failure, we simply didn't understand
             continue
         else:

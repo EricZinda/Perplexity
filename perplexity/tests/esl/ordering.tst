@@ -65,7 +65,7 @@
             "ID": "c8ec9537-7d43-4110-9600-650930b1e87f"
         },
         {
-            "Command": "what did Johnny order?",
+            "Command": "what is Johnny's order?",
             "Expected": [
                 "salmon\nchicken",
                 "chicken\nsalmon"
@@ -103,16 +103,16 @@
             "ID": "99b1429b-cf55-4ca0-a26b-3748fcff3358"
         },
         {
-            "Command": "what did I order?",
-            "Expected": "chicken",
-            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Command": "My order is chicken",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x14,_chicken_n_1(x14),def_explicit_q(x3,[_order_n_of(x3), poss(e8,x3,x9)],_be_v_id(e2,x3,x14))))",
             "Enabled": true,
             "ID": "a267e43b-17ce-4e94-a258-96cdf2e20b7a"
         },
         {
-            "Command": "what did Johnny order?",
-            "Expected": "steak",
-            "Tree": "which_q(x5,thing(x5),proper_q(x3,named(Johnny,x3),_order_v_1(e2,x3,x5)))",
+            "Command": "My son's order is steak",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x10,pron(x10),def_explicit_q(x3,def_explicit_q(x5,[_son_n_of(x5,i15), poss(e9,x5,x10)],[_order_n_of(x3), poss(e20,x3,x5)]),udef_q(x21,_steak_n_1(x21),_be_v_id(e2,x3,x21))))",
             "Enabled": true,
             "ID": "9f85cd3c-3ef6-4776-a0eb-eea2c3704c39"
         },
@@ -290,7 +290,9 @@
                 "2 soup\nmenu\nsteak\nwater",
                 "2 soup\nsteak\nwater\nmenu",
                 "steak\nwater\nmenu\n2 soup",
-                "menu\n2 soup\nwater\nsteak"
+                "menu\n2 soup\nwater\nsteak",
+                "menu\nwater\n2 soup\nsteak",
+                "menu\nsteak\n2 soup\nwater"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -464,11 +466,25 @@
             "ID": "d8ca1c3b-7a12-4913-8427-67c51d28ecb0"
         },
         {
-            "Command": "Let's go with two orders of the Steak, please",
-            "Expected": "Waiter: I'm sorry, we don't have enough steak for your order. \nWaiter: Can I get you anything else?",
-            "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[_please_a_1(e22,e2), _want_v_1(e2,x5,x10)]))",
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "849d662d-f1dc-4ea8-9666-69b9f8e522aa"
+        },
+        {
+            "Command": "table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
             "ID": "676c8863-4d33-4570-8141-145bbff1b417"
+        },
+        {
+            "Command": "Let's go with two orders of the Steak, please",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[_please_a_1(e22,e2), _want_v_1(e2,x5,x10)]))",
+            "Enabled": true,
+            "ID": "be43e6b3-7a3f-4a03-8c31-9827b586a766"
         },
         {
             "Command": "Let's have the chicken",
@@ -873,5 +889,5 @@
             "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"
         }
     ],
-    "ElapsedTime": 132.39432
+    "ElapsedTime": 85.75967
 }

@@ -52,10 +52,7 @@
         },
         {
             "Command": "what do I have?",
-            "Expected": [
-                "Johnny\nbill",
-                "bill\nJohnny"
-            ],
+            "Expected": "bill\nJohnny\norder",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ce0108a8-950a-408d-8e4b-ec61b6da04ce"
