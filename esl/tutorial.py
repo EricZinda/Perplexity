@@ -2816,32 +2816,43 @@ def _have_v_1_able_group(context, state_list, e_variable_group, x_actor_variable
         yield state_list
 
 
-@Predication(vocabulary, names=["poss"])
-def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
-    def bound(x_actor, x_object):
-        if is_concept(x_object):
+
+@Predication(vocabulary, names=["poss"],
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+def poss_lift_style(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
+    def bound(x_actors, x_objects):
+        # If any are concepts, they all are since thats how the solver works
+        if is_concept(x_objects[0]):
             # This is converted to a concept that has the criteria "actor has" below
-            return True
+            if len(x_objects) == 1:
+                return True
 
         else:
-            if (object_to_store(x_actor), object_to_store(x_object)) in state.all_rel("have"):
+            store_actors = object_to_store(x_actors[0]) if len(x_actors) == 1 else tuple([object_to_store(x_actor) for x_actor in x_actors])
+            store_objects = object_to_store(x_objects[0]) if len(x_objects) == 1 else tuple([object_to_store(x_object) for x_object in x_objects])
+            if (store_actors, store_objects) in state.all_rel("have"):
                 return True
             else:
-                context.report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
+                context.report_error(["verbDoesntApply", x_actors, "have", x_objects, state.get_reprompt()])
                 return False
 
-    def actor_from_object(x_object):
+    def actor_from_objects(x_objects):
         for i in state.all_rel("have"):
-            if i[1] == x_object:
-                yield store_to_object(i[0])
+            if i[1] == x_objects:
+                actor = store_to_object(i[0])
+                if not isinstance(actor, tuple):
+                    actor = (actor, )
+                yield actor
 
-    def object_from_actor(x_actor):
+    def object_from_actors(x_actors):
         for i in state.all_rel("have"):
-            if i[0] == x_actor:
-                yield store_to_object(i[1])
+            if i[0] == x_actors:
+                object = store_to_object(i[1])
+                if not isinstance(object, tuple):
+                    object = (object, )
+                yield object
 
-    for item in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
-                                      object_from_actor):
+    for item in lift_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_objects, object_from_actors):
         if x_actor_binding is not None and len(x_actor_binding.value) == 1 and \
                 x_object_binding.value is not None and len(x_object_binding.value) == 1 and is_concept(x_object_binding.value[0]):
             # Add extra criteria to the concept to represent possession by x_actor
@@ -2850,6 +2861,42 @@ def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding
 
         else:
             yield item
+
+
+# @Predication(vocabulary, names=["poss"])
+# def poss(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
+#     def bound(x_actor, x_object):
+#         if is_concept(x_object):
+#             # This is converted to a concept that has the criteria "actor has" below
+#             return True
+#
+#         else:
+#             if (object_to_store(x_actor), object_to_store(x_object)) in state.all_rel("have"):
+#                 return True
+#             else:
+#                 context.report_error(["verbDoesntApply", x_actor, "have", x_object, state.get_reprompt()])
+#                 return False
+#
+#     def actor_from_object(x_object):
+#         for i in state.all_rel("have"):
+#             if i[1] == x_object:
+#                 yield store_to_object(i[0])
+#
+#     def object_from_actor(x_actor):
+#         for i in state.all_rel("have"):
+#             if i[0] == x_actor:
+#                 yield store_to_object(i[1])
+#
+#     for item in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
+#                                       object_from_actor):
+#         if x_actor_binding is not None and len(x_actor_binding.value) == 1 and \
+#                 x_object_binding.value is not None and len(x_object_binding.value) == 1 and is_concept(x_object_binding.value[0]):
+#             # Add extra criteria to the concept to represent possession by x_actor
+#             x_object = x_object_binding.value[0].add_criteria(rel_objects, x_actor_binding.value[0], "have")
+#             yield state.set_x(x_object_binding.variable.name, (x_object, ))
+#
+#         else:
+#             yield item
 
 
 # Returns:
@@ -2936,39 +2983,88 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
              arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
-        if len(x_subject) == 1 and is_concept(x_subject[0]) and x_subject[0].concept_name == "order":
+        if len(x_subject) == 1 and not is_concept(x_subject[0]) and sort_of(state, x_subject[0], "order"):
             # "My order is X" --> See if the set of items in x_object are the same as what was ordered
             listed_food_types = sorted([object_to_store(x) for x in x_object])
-            for order in x_subject[0].instances(context, state):
-                order_foods = sorted([x for x in state.food_in_order(order)])
-                if len(order_foods) > 0:
-                    for food_type in listed_food_types:
-                        found_type = False
-                        for order_item in order_foods:
-                            if sort_of(state, order_item, food_type):
-                                order_foods.remove(order_item)
-                                found_type = True
-                                break
-
-                        if not found_type:
+            order = x_subject[0]
+            order_foods = sorted([x for x in state.food_in_order(order)])
+            if len(order_foods) > 0:
+                for food_type in listed_food_types:
+                    found_type = False
+                    for order_item in order_foods:
+                        if sort_of(state, order_item, food_type):
+                            order_foods.remove(order_item)
+                            found_type = True
                             break
 
-                    if found_type and len(order_foods) == 0:
-                        return True
+                    if not found_type:
+                        break
 
-                else:
-                    context.report_error(["errorText", "Nothing"])
+                if found_type and len(order_foods) == 0:
+                    return True
+
+            else:
+                context.report_error(["errorText", "Nothing"])
+
+        # if len(x_subject) == 1 and is_concept(x_subject[0]) and x_subject[0].concept_name == "order":
+        #     # "My order is X" --> See if the set of items in x_object are the same as what was ordered
+        #     listed_food_types = sorted([object_to_store(x) for x in x_object])
+        #     for order in x_subject[0].instances(context, state):
+        #         order_foods = sorted([x for x in state.food_in_order(order)])
+        #         if len(order_foods) > 0:
+        #             for food_type in listed_food_types:
+        #                 found_type = False
+        #                 for order_item in order_foods:
+        #                     if sort_of(state, order_item, food_type):
+        #                         order_foods.remove(order_item)
+        #                         found_type = True
+        #                         break
+        #
+        #                 if not found_type:
+        #                     break
+        #
+        #             if found_type and len(order_foods) == 0:
+        #                 return True
+        #
+        #         else:
+        #             context.report_error(["errorText", "Nothing"])
 
     def unbound(x_object):
         # The phrase "What is my order?" means "what are the things in my order"
-        if len(x_object) == 1 and is_concept(x_object[0]) and x_object[0].concept_name == "order":
-            orders = [x for x in x_object[0].instances(context, state)]
-            if len(orders) == 1:
-                order_content = [x for x in state.food_in_order(orders[0])]
-                if len(order_content) == 0:
-                    context.report_error(["errorText", "Nothing"])
-                else:
-                    yield tuple(order_content)
+        if len(x_object) == 1 and not is_concept(x_object[0]) and sort_of(state, x_object[0], "order"):
+            order = x_object[0]
+            for item in state.food_in_order(order):
+                yield (item, )
+
+        #     order_foods = sorted([x for x in state.food_in_order(order)])
+        #     if len(order_foods) > 0:
+        #         for food_type in listed_food_types:
+        #             found_type = False
+        #             for order_item in order_foods:
+        #                 if sort_of(state, order_item, food_type):
+        #                     order_foods.remove(order_item)
+        #                     found_type = True
+        #                     break
+        #
+        #             if not found_type:
+        #                 break
+        #
+        #         if found_type and len(order_foods) == 0:
+        #             return True
+        #
+        #     else:
+        #         context.report_error(["errorText", "Nothing"])
+        #
+        # # The phrase "What is my order?" means "what are the things in my order"
+        # if len(x_object) == 1 and is_concept(x_object[0]) and x_object[0].concept_name == "order":
+        #     orders = [x for x in x_object[0].instances(context, state)]
+        #     if len(orders) > 0:
+        #         for order in orders:
+        #             order_content = [x for x in state.food_in_order(order)]
+        #             if len(order_content) == 0:
+        #                 context.report_error(["errorText", "Nothing"])
+        #             else:
+        #                 yield tuple(order_content)
 
     # Only use this interpretation if we are talking about an "order"
     found = False
@@ -3361,6 +3457,8 @@ def reset():
     initial_state = initial_state.add_rel("user", "have", "order1")
     initial_state = initial_state.add_rel("order2", "instanceOf", "order")
     initial_state = initial_state.add_rel("son1", "have", "order2")
+    initial_state = initial_state.add_rel("order3", "instanceOf", "order")
+    initial_state = initial_state.add_rel(("user", "son1"), "have", "order3")
 
     initial_state = initial_state.add_rel("son1", "instanceOf", "son")
     initial_state = initial_state.add_rel("son1", "hasName", "Johnny")
@@ -3444,7 +3542,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

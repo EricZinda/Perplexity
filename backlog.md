@@ -7,8 +7,11 @@
         - Implementation
             - Theory: use the concept of order and add ownership to it as criteria
         - Bugs
-            - "what is not soup" -> crash
+            - "What is our order?" --> There are less than 2 we
+            - "My order is chicken and soup" fails properly but gives a bad error
+            - My order is 2 chickens
 
+            - (fixed) "what is not soup" -> crash
             - (fixed) "my steak is for 3" -> Yes, that is true.
                 - Used to be: steak is not for 3.
                 - because it turns into a conceptual state, that is mine, for 3, but we never resolve it
@@ -19,9 +22,7 @@
             - (fixed, but VERY slow!) Bugs: "My order is chicken and soup" succeeds if my order is only chicken
             - (fixed) what is my order? succeeds on general purpose be_v_id()
                 - Fixed by putting a check to on run the Pragmatic one for orders
-            - "What is our order?" --> There are less than 2 we
-            - "My order is chicken and soup" fails properly but gives a bad error
-            - My order is 2 chickens
+
     - Option 2: Could make one interpretation of "x is y" be that if y are all the parts of x, it is true. That would make it more general purpose
 
     - Theory?: an order is an actual object, that can be empty, i.e. "there is nothing in your order yet"

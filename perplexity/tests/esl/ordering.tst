@@ -37,6 +37,13 @@
             "ID": "0b467c65-c266-45f3-a8bd-9b4ff1dddf6f"
         },
         {
+            "Command": "what did we order?",
+            "Expected": "Less than 2 people did that.",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "fd743d50-17c2-4097-adef-8e252b58ebe6"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
@@ -115,6 +122,13 @@
             "Tree": "pronoun_q(x10,pron(x10),def_explicit_q(x3,def_explicit_q(x5,[_son_n_of(x5,i15), poss(e9,x5,x10)],[_order_n_of(x3), poss(e20,x3,x5)]),udef_q(x21,_steak_n_1(x21),_be_v_id(e2,x3,x21))))",
             "Enabled": true,
             "ID": "9f85cd3c-3ef6-4776-a0eb-eea2c3704c39"
+        },
+        {
+            "Command": "What did we order?",
+            "Expected": "chicken\nsteak",
+            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "e22dfd49-438f-46a2-98ad-30c4be9da431"
         },
         {
             "Command": "/new esl.tutorial.reset",
@@ -292,7 +306,8 @@
                 "steak\nwater\nmenu\n2 soup",
                 "menu\n2 soup\nwater\nsteak",
                 "menu\nwater\n2 soup\nsteak",
-                "menu\nsteak\n2 soup\nwater"
+                "menu\nsteak\n2 soup\nwater",
+                "menu\n2 soup\nsteak\nwater"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
