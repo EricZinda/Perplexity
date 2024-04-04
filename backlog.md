@@ -1,5 +1,6 @@
 - test, "I want my order to be ..."
 
+- "My order is chicken and soup" fails properly but takes forever and gives a bad error
 
 - What is my order?
 
@@ -7,10 +8,9 @@
         - Implementation
             - Theory: use the concept of order and add ownership to it as criteria
         - Bugs
-            - "What is our order?" --> There are less than 2 we
-            - "My order is chicken and soup" fails properly but gives a bad error
             - My order is 2 chickens
 
+            - (fixed) "What is our order?" --> There are less than 2 we
             - (fixed) "what is not soup" -> crash
             - (fixed) "my steak is for 3" -> Yes, that is true.
                 - Used to be: steak is not for 3.
