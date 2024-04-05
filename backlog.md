@@ -1,4 +1,10 @@
+- Docs
+    - Get the terminology straight
+        - fix the docs
+        - fix the code
+    -
 - test, "I want my order to be ..."
+
 - Potential writeups
     - Walk through implementing "What is my/my son's order?"
     - starts at b7a3556

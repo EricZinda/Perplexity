@@ -7,7 +7,7 @@ Each predication in that scope-resolved MRS might have multiple, alternative, in
 
 A given interpretation of a predication might, itself, generate independent assignments (i.e. disjunctions) based on the values of the arguments.  These also need to be tried in all combinations.
 
-Finally, a set of solutions that have chosen a particular set of assignment sets for every predication interpretation AND for every disjunction alternative from a predication, constitute a self-consistent solution set. This can go through phase 2 as a unit.
+Finally, a set of solutions that have chosen a particular set of assignment sets for every predication interpretation AND for every disjunction alternative from a predication, constitute a self-consistent set of solutions. This can go through phase 2 as a unit.
 
 Errors: Errors need to be tracked for each full interpretation of the tree. I.e. a view of a tree that has chosen interpretations for all predications AND chosen disjunction alternatives constitutes and interpretation, if it fails, it needs to be identified as an interpretation that failed and be able to return a unique error for the failure.
 
