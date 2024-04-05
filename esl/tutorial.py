@@ -2394,16 +2394,36 @@ def get_take_see_v_present_transitive_bad_english(context, state, e_introduced_b
     if False:
         yield None
 
+@Predication(vocabulary,
+             names=["_cancel_v_1_request"],
+             phrases={
+                 "I want to cancel my order":  {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if x_actor_binding.value is not None and len(x_actor_binding.value) == 1 and x_actor_binding.value[0] == "restaurant":
+        # Don't support "You want to cancel my order"
+        context.report_error(["unexpected", state.get_reprompt()])
+        return
+
+    # All other combinations are OK
+    yield from _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
+
 
 @Predication(vocabulary,
              names=["_cancel_v_1_able"],
              phrases={
+                 "Could I cancel my order?":  {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "Can I cancel my order?":  {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
-def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+             properties={'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _cancel_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    yield from _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
+
+
+def _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def bound(x_actor, x_object):
-        # We support "Can I/we/you cancel my order"
+        # We support "Can/Could I/we/you cancel my/Johnnys order"
         if (is_user_type(x_actor) or is_computer_type(x_actor)) and not is_concept(x_object) and sort_of(state, x_object, "order"):
             return True
 

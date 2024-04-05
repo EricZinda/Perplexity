@@ -1865,6 +1865,33 @@
     "poss_lift_style": {},
     "_cancel_v_1_request": {
         "Phrases": {
+            "I want to cancel my order": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_cancel_v_1_able": {
+        "Phrases": {
+            "Could I cancel my order?": {
+                "SF": "ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "Can I cancel my order?": {
                 "SF": "ques",
                 "TENSE": "pres",
@@ -1877,6 +1904,13 @@
             {
                 "SF": "ques",
                 "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "tensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"

@@ -47,6 +47,13 @@
             "ID": "27599b97-ed77-4328-aae2-47cd93688319"
         },
         {
+            "Command": "Could I cancel my order?",
+            "Expected": "Waiter: No problem! Let me know what you would like instead.",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "e9ee1777-a400-43fe-a45c-6071f430831b"
+        },
+        {
             "Command": "My son wants chicken",
             "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_chicken_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
@@ -111,6 +118,13 @@
             "Tree": "def_explicit_q(x12,pronoun_q(x18,pron(x18),[_order_n_of(x12), poss(e17,x12,x18)]),proper_q(x3,named(Johnny,x3),[event_replace(u99,e2,e11), _cancel_v_1_able(e2,x3,x12)]))",
             "Enabled": true,
             "ID": "8979dc57-2c4a-4a77-bbc2-6340ba4a94c6"
+        },
+        {
+            "Command": "You want to cancel my order",
+            "Expected": "I'm not sure what that means.",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),_cancel_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "9a1c3395-a7e6-4f4e-bd7d-0b086c2c188d"
         },
         {
             "Command": "/new esl.tutorial.reset",

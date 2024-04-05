@@ -8,15 +8,13 @@
         - interpret be_v_id() in a one off way
 - "My order is chicken and soup" fails properly but takes forever and gives a bad error
 
-- Can Johnny/we/you/I cancel my/our/his order?
-    - "can johnny cancel his order" -> fails
-
 - Fix Luis bugs:
     -	I already had on my list handling all the constructions like “forgot what I said” or “let’s start over”, etc.  All the ways you’d tell a waiter you want to start fresh
-        - Can we/you/I cancel my order?
         - Can we cancel my X?
         - I want to cancel my X
         - I don't want X anymore?
+        - I want to/Could I cancel my order
+        - (fixed) Can we/you/I cancel my order?
         - (fixed) Can we start over?
         - (fixed) Could we start over?
         - (fixed) can/could *you* start over?
