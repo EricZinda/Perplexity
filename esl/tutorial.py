@@ -984,6 +984,7 @@ def _hello_n_1(context, state, x_bind):
     yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
+# Implement "One order of chicken"
 @Predication(vocabulary, names=["_order_n_of"])
 def _order_n_of(context, state, x_order_binding, x_of_what_binding):
     def both_bound(order, of_what):
