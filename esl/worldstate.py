@@ -757,7 +757,7 @@ class WorldState(State):
         world_state._rel = new_relation
 
     def mutate_clear_last_order(self, for_person=None):
-        if not isinstance(for_person, (list, tuple)):
+        if for_person is not None and not isinstance(for_person, (list, tuple)):
             for_person = (for_person, )
         world_state = self.world_state_frame()
         new_relation = copy.deepcopy(world_state._rel)

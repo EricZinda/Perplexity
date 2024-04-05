@@ -54,7 +54,8 @@
             "Command": "what do I have?",
             "Expected": [
                 "bill\nJohnny\norder",
-                "bill\norder\nJohnny"
+                "bill\norder\nJohnny",
+                "Johnny\norder\nbill"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
