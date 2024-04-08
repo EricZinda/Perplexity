@@ -1,4 +1,3 @@
-import copy
 import logging
 import queue
 import sys
@@ -6,7 +5,7 @@ import perplexity.tree
 import perplexity.solution_groups
 from perplexity.set_utilities import product_stream
 from perplexity.utilities import sentence_force, at_least_one_generator
-from perplexity.vocabulary import ValueSize, missing_properties
+import perplexity.vocabulary
 
 
 # Allows code to throw an exception that should get converted
@@ -107,7 +106,7 @@ class TreeSolver(object):
                         assert predication.arg_types[predication.introduced_variable_index()] == "e", f"verb '{function.__module__}.{function.__name__}' doesn't have an event as arg 0"
                         phrase_properties = {"SF": force}
                         phrase_properties.update(tree_info["Variables"][predication.args[predication.introduced_variable_index()]])
-                        if missing_properties(properties_to_use, phrase_properties):
+                        if perplexity.vocabulary.missing_properties(properties_to_use, phrase_properties):
                             self.report_error_for_index(predication.index, ["formNotUnderstood", function.__name__])
                             return False
 
@@ -200,7 +199,7 @@ class TreeSolver(object):
 
         def get_variable_metadata(self, variable_name):
             # TODO: This is a hack to enable metadata for eval(). Need to fix it
-            return self._variable_metadata.get(variable_name, {"ValueSize": ValueSize.all})
+            return self._variable_metadata.get(variable_name, {"ValueSize": perplexity.vocabulary.ValueSize.all})
 
         def call(self, state, term):
             # See if the term is actually a list

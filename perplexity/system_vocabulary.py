@@ -3,9 +3,7 @@ import logging
 import numbers
 import perplexity.predications
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
-from perplexity.predications import combinatorial_predication_1, all_combinations_of_states, \
-    in_style_predication_2
-from perplexity.set_utilities import all_nonempty_subsets_stream
+from perplexity.predications import combinatorial_predication_1
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
     gather_referenced_x_variables_from_tree
 from perplexity.vocabulary import Predication, Vocabulary

@@ -6,7 +6,6 @@ import itertools
 import json
 import logging
 import os
-import pathlib
 from typing import NamedTuple
 import re
 import perplexity.execution

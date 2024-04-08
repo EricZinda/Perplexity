@@ -2,11 +2,9 @@ import enum
 import logging
 from math import inf
 import perplexity.predications
-from perplexity.response import RespondOperation
-from perplexity.set_utilities import count_set, all_nonempty_subsets_stream, product_stream, CachedIterable
+from perplexity.set_utilities import count_set, CachedIterable
 import perplexity.tree
-from perplexity.utilities import plural_from_tree_info, parse_predication_name, is_plural, at_least_one_generator
-from perplexity.vocabulary import ValueSize
+from perplexity.utilities import plural_from_tree_info, parse_predication_name
 
 
 def determiner_from_binding(state, binding):

@@ -8,11 +8,9 @@ from collections import defaultdict
 from delphin import ace
 from delphin.codecs.simplemrs import encode
 from delphin.predicate import split
-
-import perplexity.execution
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name, sentence_force
-from perplexity.vocabulary import ValueSize
+import perplexity.vocabulary
 
 
 class MrsParser(object):
@@ -711,9 +709,9 @@ def gather_predication_metadata(vocabulary, tree_info, interpretation):
                     if variable_metadata[arg_name]["ValueSize"] is None:
                         variable_metadata[arg_name]["ValueSize"] = arg_metadata["ValueSize"]
 
-                    elif variable_metadata[arg_name]["ValueSize"] != ValueSize.all:
+                    elif variable_metadata[arg_name]["ValueSize"] != perplexity.vocabulary.ValueSize.all:
                         if variable_metadata[arg_name]["ValueSize"] != arg_metadata["ValueSize"]:
-                            variable_metadata[arg_name]["ValueSize"] = ValueSize.all
+                            variable_metadata[arg_name]["ValueSize"] = perplexity.vocabulary.ValueSize.all
 
     variable_metadata = {}
     walk_tree_predications_until(tree_info["Tree"], gather_metadata)

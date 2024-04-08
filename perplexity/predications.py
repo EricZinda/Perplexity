@@ -1,4 +1,3 @@
-import copy
 import enum
 import inspect
 import itertools
@@ -7,7 +6,6 @@ import perplexity.plurals
 from perplexity.set_utilities import all_nonempty_subsets, product_stream, all_nonempty_subsets_stream, \
     DisjunctionIterable, DisjunctionValue
 import perplexity.tree
-from perplexity.utilities import at_least_one_generator, parse_predication_name
 from perplexity.variable_binding import VariableBinding
 from perplexity.vocabulary import ValueSize
 

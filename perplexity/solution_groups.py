@@ -1,12 +1,9 @@
 import copy
 import logging
-import sys
 import perplexity.tree
 import perplexity.execution
 from math import inf
-from perplexity.plurals import determiner_from_binding, quantifier_from_binding, \
-    VariableCriteria, GlobalCriteria, plural_groups_stream_initial_stats, \
-    all_plural_groups_stream, GroupVariableValues
+import perplexity.plurals
 from perplexity.utilities import at_least_one_generator, get_function, sentence_force
 
 
@@ -23,7 +20,7 @@ def create_group_variable_values(context, state_list, variable_name):
             found_constraint = constraint
             break
 
-    return GroupVariableValues(found_constraint, state_list, variable_name[0], variable_name)
+    return perplexity.plurals.GroupVariableValues(found_constraint, state_list, variable_name[0], variable_name)
 
 
 # Yields solutions in a single solution group
@@ -220,12 +217,12 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
         # solution. Otherwise, we can just stop when we have a solution and return a minimal solution
-        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
+        variable_metadata, initial_stats_group, has_global_constraint, variable_has_inf_max = perplexity.plurals.plural_groups_stream_initial_stats(execution_context, optimized_criteria_list)
 
         # We also set this if the user asks a wh_question so we ensure we get all of the values
         variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
         handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
-        groups_stream = all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
+        groups_stream = perplexity.plurals.all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
                                                  initial_stats_group, has_global_constraint,
                                                  handlers, optimized_criteria_list, index_predication)
 
@@ -277,12 +274,12 @@ def declared_determiner_infos(execution_context, state, variables=None):
             binding = state.get_binding(variable_name)
 
             # First get the determiner
-            determiner = determiner_from_binding(state, binding)
+            determiner = perplexity.plurals.determiner_from_binding(state, binding)
             if determiner is not None:
                 yield determiner
 
             # Then get the quantifier
-            quantifier_determiner = quantifier_from_binding(state, binding)
+            quantifier_determiner = perplexity.plurals.quantifier_from_binding(state, binding)
             if quantifier_determiner is not None:
                 yield quantifier_determiner
 
@@ -297,17 +294,17 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
     required_values_constraint = None
     predication = None
     for constraint in variable_info_list:
-        if constraint.global_criteria == GlobalCriteria.exactly:
+        if constraint.global_criteria == perplexity.plurals.GlobalCriteria.exactly:
             # If there is more than one "only" ... that should never happen. Unclear what words would cause it
             assert exactly_constraint is None
             exactly_constraint = constraint
 
-        elif constraint.global_criteria == GlobalCriteria.all_rstr_meet_criteria:
+        elif constraint.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
             # ditto
             assert all_rstr_constraint is None
             all_rstr_constraint = constraint
 
-        elif constraint.global_criteria == GlobalCriteria.every_rstr_meet_criteria:
+        elif constraint.global_criteria == perplexity.plurals.GlobalCriteria.every_rstr_meet_criteria:
             # ditto
             assert every_rstr_constraint is None
             every_rstr_constraint = constraint
@@ -332,7 +329,7 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
         assert exactly_constraint.min_size >= min_size and exactly_constraint.max_size <= max_size
         min_size = exactly_constraint.min_size
         max_size = exactly_constraint.max_size
-        global_constraint = GlobalCriteria.exactly
+        global_constraint = perplexity.plurals.GlobalCriteria.exactly
         predication = exactly_constraint.predication
 
     if all_rstr_constraint is not None:
@@ -340,7 +337,7 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
             # convert "the 2" into a single constraint so it can ensure there are really only 2
             # Should only ever be "the"
             assert all_rstr_constraint.min_size == 1 and all_rstr_constraint.max_size == float(inf)
-            global_constraint = GlobalCriteria.all_rstr_meet_criteria
+            global_constraint = perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria
             predication = all_rstr_constraint.predication
 
         else:
@@ -355,19 +352,19 @@ def reduce_variable_determiners(variable_info_list, this_sentence_force, wh_ques
                 max_size = float(inf)
 
             # Now that we have converted the singular to plural, it is just "all"
-            global_constraint = GlobalCriteria.all_rstr_meet_criteria
+            global_constraint = perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria
             predication = every_rstr_constraint.predication
 
         else:
             # This was the only constraint, use it, but convert to all_rstr_meet_criteria
             all_rstr_constraint = copy.deepcopy(every_rstr_constraint)
-            all_rstr_constraint.global_criteria = GlobalCriteria.all_rstr_meet_criteria
+            all_rstr_constraint.global_criteria = perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria
             return [all_rstr_constraint]
 
     if predication is None:
         predication = variable_info_list[0].predication
 
-    return [VariableCriteria(predication, variable_info_list[0].variable_name, min_size, max_size, global_criteria=global_constraint, required_values=required_values_constraint)]
+    return [perplexity.plurals.VariableCriteria(predication, variable_info_list[0].variable_name, min_size, max_size, global_criteria=global_constraint, required_values=required_values_constraint)]
 
 
 def reduce_determiner_infos(determiner_info_list_orig, this_sentence_force, wh_question_variable):
