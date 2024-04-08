@@ -1,3 +1,10 @@
+- check_concept_solution_group_constraints() fails for Concept(dish) because there are no direct instances of "dish" they are only derived types
+    - i.e. Concept("dish").instances() returns []
+    - Fixed! but unclear if the logic is right...
+
+- Error handling Bugs:
+    - error in solution_group is not returned because failing to match a different implementation puts formNotUnderstood in the error context and that overrides everything
+
 - Docs
     - Get the terminology straight
         - fix the docs

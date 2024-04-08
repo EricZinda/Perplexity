@@ -59,6 +59,14 @@ class CachedIterable(object):
         except StopIteration:
             return False
 
+    def only_one(self):
+        if self.at_least_one():
+            try:
+                self.get_from_index(1)
+                return False
+
+            except StopIteration:
+                return True
 
 class Measurement(object):
     def __init__(self, measurement_type, count):

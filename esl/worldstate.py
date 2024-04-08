@@ -368,6 +368,10 @@ def rel_subjects(state, rel, object):
             yield item[0]
 
 
+def rel_all_instances(state, _, type):
+    return all_instances(state, type)
+
+
 def has_type(state, subject, type):
     for item in state.all_rel("have"):
         if item[0] == subject and sort_of(state, item[1], type):
@@ -500,7 +504,7 @@ class ESLConcept(Concept):
 
     # return any instances that meet all the criteria in self.criteria
     def instances(self, context, state, potential_instances=None):
-        return self._meets_criteria(context, state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria, initial_instances=potential_instances)
+        return self._meets_criteria(context, state, [(rel_all_instances, None, self.concept_name)] + self.criteria, initial_instances=potential_instances)
 
     def concepts(self, context, state, potential_concepts=None):
         # get the actual identifiers of all concepts that meet all the criteria
