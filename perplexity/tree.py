@@ -138,7 +138,7 @@ class MrsParser(object):
 
             if "ARM" in unameResult.version:
                 # M1 silicon
-                assert False, "This grammar hasn't been compiled yet for the M1 Macintosh"
+                ergFile = "erg-2023-osx-m1-perplexity.dat"
 
             else:
                 # Intel silicon

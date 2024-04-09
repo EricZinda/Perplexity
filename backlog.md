@@ -1,3 +1,10 @@
+How to compile grammar:
+
+svn checkout http://svn.delph-in.net/erg/tags/2020
+cd 2020/ace
+ace -G grammar.dat -g ./config.tdl
+
+
 - check_concept_solution_group_constraints() fails for Concept(dish) because there are no direct instances of "dish" they are only derived types
     - i.e. Concept("dish").instances() returns []
     - Fixed! but unclear if the logic is right...
