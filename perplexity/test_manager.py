@@ -265,7 +265,7 @@ class TestManager(object):
                     if prompt is not None:
                         print(prompt)
                         if not self.resolve_result(test_iterator, test_item, interaction_response, interaction_tree):
-                            print(f"Breaking during {test_iterator.folder_name}:{test_iterator.test_name} -> TestID: {test_item['ID']}")
+                            print(f"Breaking during {test_iterator.test_folder}:{test_iterator.test_name} -> TestID: {test_item['ID']}")
                             break
 
         elapsed = round(time.perf_counter() - testItemStartTime, 5)

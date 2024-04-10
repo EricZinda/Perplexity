@@ -49,7 +49,11 @@ def in_p_loc_fail(context, state_list, e_introduced_binding_list, x_actor_bindin
     test_binding = state_list[0].get_binding("test_solution_group")
     if test_binding.value is not None and test_binding.value[0] == "failAll":
         context.report_error(["beMoreSpecific"], force=True)
-        yield []
+    else:
+        context.report_error(["formNotUnderstood"], force=True)
+
+    if False:
+        yield None
 
 
 @Predication(vocabulary, names=["solution_group__copy_v_1"])
@@ -61,6 +65,11 @@ def fail_to_copy(context, state_list, e_introduced_binding_list, x_actor_group_v
             if hasattr(x_what_binding_value, "name") and x_what_binding_value.name == '/documents/file5.txt':
                 yield [state_list[0].record_operations([RespondOperation("I cannot copy that")])]
 
+    else:
+        # Not using fake values, try other handlers
+        context.report_error(["formNotUnderstood"])
+        return
+
 
 @Predication(vocabulary, names=["solution_group"])
 def solution_group(context, state_list, variable_constraints):
@@ -68,6 +77,7 @@ def solution_group(context, state_list, variable_constraints):
     if test_binding.value is not None:
         if test_binding.value[0] == "cannotAnswer":
             yield [state_list[0].record_operations([RespondOperation("I cannot respond to this")])]
+            return
 
         elif test_binding.value[0] == "fakeValues":
             tree = state_list[0].get_binding("tree").value[0]
@@ -78,6 +88,7 @@ def solution_group(context, state_list, variable_constraints):
                 if wh_predication is None:
                     wh_predication = find_predication(tree["Tree"], "which_q")
                     if wh_predication is None:
+                        context.report_error(["formNotUnderstood"], force=True)
                         return
 
                 wh_variable = wh_predication.introduced_variable()
@@ -87,6 +98,9 @@ def solution_group(context, state_list, variable_constraints):
                     new_group.append(state.set_x(wh_variable, ("fakefile" + str(index),)))
                     index += 1
                 yield new_group
+                return
+
+    context.report_error(["formNotUnderstood"], force=True)
 
 
 def variable_is_megabyte(binding):
@@ -846,6 +860,17 @@ def fw_seq2(context, state, x_phrase_binding, i_part1_binding, i_part2_binding):
 
 
 @Predication(vocabulary, names=["fw_seq"])
+def fw_seq2_i(context, state, i_phrase_binding, i_part1_binding, i_part2_binding):
+    # Only succeed if part1 and part2 are bound and are QuotedText instances to avoid
+    # having to split x into pieces somehow
+    if i_part1_binding.value is not None and i_part2_binding.value is not None and \
+        len(i_part1_binding.value) == 1 and len(i_part2_binding.value) == 1 and \
+            isinstance(i_part1_binding.value[0], QuotedText) and isinstance(i_part2_binding.value[0], QuotedText):
+        combined_value = QuotedText(" ".join([i_part1_binding.value[0].name, i_part2_binding.value[0].name]))
+        yield from yield_from_fw_seq(context, state, i_phrase_binding, combined_value)
+
+
+@Predication(vocabulary, names=["fw_seq"])
 def fw_seq3(context, state, x_phrase_binding, x_part1_binding, i_part2_binding):
     # Only succeed if part1 and part2 are set and are QuotedText instances to avoid
     # having to split x into pieces somehow
@@ -854,4 +879,3 @@ def fw_seq3(context, state, x_phrase_binding, x_part1_binding, i_part2_binding):
             isinstance(x_part1_binding.value[0], QuotedText) and isinstance(i_part2_binding.value[0], QuotedText):
         combined_value = QuotedText(" ".join([x_part1_binding.value[0].name, i_part2_binding.value[0].name]))
         yield from yield_from_fw_seq(context, state, x_phrase_binding, combined_value)
-
