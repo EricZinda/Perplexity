@@ -1,22 +1,30 @@
-- and how much is the soup -> doesn't work
--  I'll have the chicken and my son will have the soup and the salad
-    - Crashes with "too many holes"
-- Optimization: don't go past the first N% of MRSs because they will never be right
-- Also: Make ace not get more than X parses
-
-How to compile grammar:
-
-svn checkout http://svn.delph-in.net/erg/tags/2020
-cd 2020/ace
-ace -G grammar.dat -g ./config.tdl
-
+- Error handling Bugs:
+    - (fixed) phase2LessThan ... from previous failure ? ... is overriding formNotUnderstood
+    - (fixed) error in solution_group is not returned because failing to match a different implementation puts formNotUnderstood in the error context and that overrides everything
+    - (fixed) let's get a table -> done!
+        - should actually get a table
+        - _have_v_1_order_group does below which allows trying alternatives
+            context.report_error(["formNotUnderstood"])
+            return
+            - used to yield []
+    - (fixed) could we have a table?
+    - Waiter: What can I get you?
+        - Test: 2 -> I don't understand the way you are using: unknown
 
 - check_concept_solution_group_constraints() fails for Concept(dish) because there are no direct instances of "dish" they are only derived types
     - i.e. Concept("dish").instances() returns []
     - Fixed! but unclear if the logic is right...
 
-- Error handling Bugs:
-    - error in solution_group is not returned because failing to match a different implementation puts formNotUnderstood in the error context and that overrides everything
+- Bug: and how much is the soup -> doesn't work
+- Bug: I'll have the chicken and my son will have the soup and the salad
+    - Crashes with "too many holes"
+- Optimization: don't go past the first N% of MRSs because they will never be right
+    - Also: Make ace not get more than X parses
+
+How to compile grammar:
+    svn checkout http://svn.delph-in.net/erg/tags/2020
+    cd 2020/ace
+    ace -G grammar.dat -g ./config.tdl
 
 - Docs
     - Get the terminology straight
