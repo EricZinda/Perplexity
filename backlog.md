@@ -1,3 +1,9 @@
+- and how much is the soup -> doesn't work
+-  I'll have the chicken and my son will have the soup and the salad
+    - Crashes with "too many holes"
+- Optimization: don't go past the first N% of MRSs because they will never be right
+- Also: Make ace not get more than X parses
+
 How to compile grammar:
 
 svn checkout http://svn.delph-in.net/erg/tags/2020
