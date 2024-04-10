@@ -59,29 +59,37 @@ def check_group_against_code_criteria(execution_context, handlers, optimized_cri
                                                                             index_predication)
 
     if created_solution_group is None:
-        pipeline_logger.debug(f"No solution group handlers, or none handled it or failed: just do the default behavior")
+        pipeline_logger.debug(f"No solution group handlers, or none handled it: just do the default behavior")
         return group_list, next_best_error_info
 
     elif isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-        pipeline_logger.debug(f"Handler said to skip this group")
+        pipeline_logger.debug(f"Handler said this is not a valid solution group")
         return None, next_best_error_info
 
     else:
-        pipeline_logger.debug(f"Handler said this group was a solution")
+        pipeline_logger.debug(f"Handler said this is a valid solution group")
         return created_solution_group, next_best_error_info
 
 
-# If a handler returns:
-#   None --> it means ignore the handler and continue
-#   [] or () --> it means fail this solution
+# If a handler:
+# 1. yields len([...]) > 0 -> Says the group is a solution, provides a (potentially different) solution group, stop further processing
+# 2. doesn't yield and:
+#   - report_error("formNotUnderstood") then it means the group handler was N/A, ignore the handler and continue trying others
+#   - report_error(any other error): it means fail this solution and stop further processing. We understood and failure with this error is the right answer
+#
+# Why is this different from a predication which simply yields a value for success or returns without yielding for failure?
+#   The solution group has already passed phase 1 and has been checked to meet phase 2 criteria.  The group
+#   handler is designed for actually "doing whatever we should do" with the solution group
+#   If we treated handlers as "Solution Group Interpretations"
 def run_handlers(execution_context, handlers, variable_constraints, group, index_predication):
-    best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
-    created_solution_group = None
+    # Remember the initial error information because we may need to reset it if we run multiple handlers
+    initial_error_info = execution_context.get_error_info()
     state_list = CachedIterable(group)
     if len(handlers) > 0:
         pipeline_logger.debug(f"Running {len(handlers)} solution group handlers")
 
         for is_predication_handler_name in handlers:
+            execution_context.set_error_info(initial_error_info)
             handler_function = is_predication_handler_name[1]
             if is_predication_handler_name[0]:
                 # This is a predication-style solution group handler
@@ -104,25 +112,33 @@ def run_handlers(execution_context, handlers, variable_constraints, group, index
 
             debug_name = is_predication_handler_name[2][0] + "." + is_predication_handler_name[2][1]
             pipeline_logger.debug(f"Running {debug_name} solution group handler")
+            created_solution_group = None
             for next_solution_group in handler_function(*handler_args):
+                assert not (isinstance(next_solution_group, (tuple, list)) and len(next_solution_group) == 0), \
+                    f"yielded value from solution group {debug_name} must be a tuple or list where len() > 0. Was: {str(next_solution_group)}"
                 created_solution_group = next_solution_group
-                if isinstance(created_solution_group, (tuple, list)) and len(created_solution_group) == 0:
-                    # handler said to fail
-                    if best_error_info[0] is None and execution_context.get_error_info()[0] is not None:
-                        best_error_info = execution_context.get_error_info()
-                    break
                 pipeline_logger.debug(f"{debug_name} succeeded")
                 break
 
             # First solution_group handler that yields, wins
             if created_solution_group:
-                pipeline_logger.debug(f"{debug_name} succeeded so no more solution group handlers will be run")
+                pipeline_logger.debug(f"{debug_name} succeeded. No more solution group handlers will be run.")
                 break
-            else:
-                pipeline_logger.debug(f"{debug_name} failed, so trying alternative solution group handlers...")
 
-        pipeline_logger.debug(f"Done trying solution group handlers, best error: {best_error_info}")
-        return created_solution_group, state_list, best_error_info
+            else:
+                if execution_context.has_not_understood_error():
+                    # That handler was N/A for this solution group, keep trying
+                    pipeline_logger.debug(f"{debug_name} reported formNotUnderstood, trying alternative solution group handlers...")
+
+                else:
+                    # Return an empty solution group to indicate failure
+                    # The error context will contain any error generated by the handler
+                    pipeline_logger.debug(f"{debug_name} failed. No more solution group handlers will be run.")
+                    created_solution_group = []
+                    break
+
+        pipeline_logger.debug(f"Done trying solution group handlers, best error: {execution_context.get_error_info()}")
+        return created_solution_group, state_list, execution_context.get_error_info()
 
     else:
         return None, state_list, perplexity.execution.ExecutionContext.blank_error_info()
@@ -319,6 +335,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 # Convert from whatever object to a real list
                 final_group = [x for x in final_group]
                 yield final_group, pending[1], pending[2], pending[3]
+
             else:
                 # Fail (doesn't meet code criteria): don't add, don't yield
                 continue

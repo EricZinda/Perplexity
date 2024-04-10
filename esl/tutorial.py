@@ -1093,8 +1093,6 @@ def unknown(context, state, e_binding, x_binding):
     if operations is not None:
         yield state.record_operations(operations)
 
-    else:
-        context.report_error(["formNotUnderstood", "unknown"])
 
 
 @Predication(vocabulary, names=["unknown"])
@@ -1563,13 +1561,12 @@ def _pay_v_for_object_group(context, state_list, e_introduced_list, x_actor_vari
     wh_variable = is_wh_question(tree_info)
     if wh_variable:
         yield state_list
+
     else:
         # As long as these were valid objects to pay for, just interpret as "give me the bill"
         task = ('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), [(ESLConcept("bill"),)], 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
-        if final_state is None:
-            yield []
-        else:
+        if final_state:
             yield [final_state]
 
 
@@ -1628,8 +1625,13 @@ def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
 # This is its own raw function so it can be called by many different predications and not get checked
 # for verb properties (like sentence_force)
 def want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    # We never support wanting a particular instance of something, so just fail now
+    if x_object_binding.value is not None and not is_concept(x_object_binding.value[0]):
+        return
+
     def criteria_bound(x_actor, x_object):
         if is_user_type(x_actor):
+            # This allows anything the user(s) want to succeed
             return True
 
         elif (x_actor, x_object) in state.all_rel("want"):
@@ -1665,9 +1667,9 @@ def want_group(context, state_list, e_introduced_binding_list, x_actor_variable_
 def want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     current_state = copy.deepcopy(state_list[0])
     if is_concept(x_actor_variable_group.solution_values[0]):
-        # We don't want to deal with conceptual actors, fail this solution group
-        # and wait for the one with real actors
-        yield []
+        # This solution group handler requires non-conceptual actors
+        context.report_error(["formNotUnderstood"])
+        return
 
     # We do have lots of places where we deal with conceptual "wants", such as: "I want the menu", "I'll have a steak"
     # In fact, we *never* deal with wanting a particular instance because that would mean "I want that particular steak right there"
@@ -1689,15 +1691,13 @@ def want_group_helper(context, state_list, e_introduced_binding_list, x_actor_va
             # actor_values = [x.value for x in x_actor_variable_group.solution_values]
             current_state = do_task(current_state.world_state_frame(),
                                     [('satisfy_want', context, variable_group_values_to_list(x_actor_variable_group), variable_group_values_to_list(x_what_variable_group), min_from_variable_group(x_what_variable_group))])
-            if current_state is None:
-                yield []
-            else:
+            if current_state:
                 yield [current_state]
 
-        else:
-            yield []
     else:
-        yield []
+        # This handler doesn't deal with wants of instances, but others might
+        context.report_error(["formNotUnderstood"])
+        return
 
 
 @Predication(vocabulary,
@@ -1728,10 +1728,13 @@ def _check_v_1_group(context, state_list, e_introduced_binding, x_actor_binding,
     actors = variable_group_values_to_list(x_actor_binding)
     if len(actors) == 1 and len(actors[0]) == 1 and actors[0][0] == "restaurant":
         final_state = do_task(current_state.world_state_frame(), [('get_bill', context, [("user",)], min_from_variable_group(x_actor_binding))])
-        if final_state is None:
-            yield []
-        else:
-            yield[final_state]
+        if final_state is not None:
+            yield [final_state]
+
+    else:
+        # This handler requires the check verb to be directed at the restaurant
+        context.report_error(["formNotUnderstood"])
+        return
 
 
 # We do not want to support future propositions like "You will give me a table" even though
@@ -1809,17 +1812,13 @@ def _show_v_cause_group(context, state_list, e_introduced_binding, x_actor_varia
     # Only need to check constraints on x_target_variable_group since it is the only variable that is a concept
     # The player is asking to be shown *instances* so check_concepts = False
     if not check_concept_solution_group_constraints(context, state_list, x_target_variable_group, check_concepts=False):
-        yield []
         return
 
     to_actor_list = variable_group_values_to_list(x_to_actor_variable_group)
     show_list = variable_group_values_to_list(x_target_variable_group)
     current_state = do_task(state_list[0].world_state_frame(),
                             [('satisfy_want', context, to_actor_list, show_list, min_from_variable_group(x_target_variable_group))])
-    if current_state is None:
-        yield []
-
-    else:
+    if current_state:
         yield [current_state]
 
 
@@ -1859,10 +1858,7 @@ def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_objec
 def _seat_v_cause_group(context, state_list, e_introduced_binding, x_actor_variable_group, x_what_variable_group):
     new_state = do_task(state_list[0].world_state_frame(),
                         [('satisfy_want', context, variable_group_values_to_list(x_what_variable_group), [(ESLConcept("table"),)], 1)])
-    if new_state is None:
-        yield []
-
-    else:
+    if new_state:
         yield [new_state]
 
 
@@ -2100,8 +2096,6 @@ def _sit_v_down_future_group(context, state_list, e_list, x_actor_variable_group
     if final_state:
         yield [final_state]
 
-    else:
-        yield []
 
 
 @Predication(vocabulary,
@@ -2210,8 +2204,6 @@ def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_act
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
-        else:
-            yield []
 
 
 @Predication(vocabulary,
@@ -2282,8 +2274,10 @@ def _see_v_1_able_group(context, state_list, e_list, x_actor_variable_group, x_o
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
+
     else:
-        yield []
+        context.report_error(["formNotUnderstood"])
+        return
 
 
 # Scenarios:
@@ -2353,8 +2347,10 @@ def _see_v_1_future_group(context, state_list, e_list, x_actor_variable_group, x
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
+
     else:
-        yield []
+        context.report_error(["formNotUnderstood"])
+        return
 
 
 @Predication(vocabulary,
@@ -2611,6 +2607,7 @@ def _get_v_1_command(context, state, e_introduced_binding, x_actor_binding, x_ob
 def _get_v_1_command_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):
     actor_list = variable_group_values_to_list(x_actor_variable_group)
     if not is_computer_type(actor_list[0]):
+        context.report_error(["formNotUnderstood"])
         return
 
     object_list = variable_group_values_to_list(x_object_variable_group)
@@ -2623,8 +2620,10 @@ def _get_v_1_command_group(context, state_list, e_variable_group, x_actor_variab
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
+
     else:
-        yield []
+        context.report_error(["formNotUnderstood"])
+        return
 
 
 @Predication(vocabulary,
@@ -2641,8 +2640,9 @@ def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variabl
     final_state = do_task(state_list[0].world_state_frame(), [task])
     if final_state:
         yield [final_state]
-    else:
-        yield []
+    # else:
+    #     context.report_error(["formNotUnderstood"])
+    #     return
 
 
 # Works identically to "ordered" since, for non-implied requests like "do you have a menu"
@@ -2738,7 +2738,6 @@ def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list)
             x_obj_value = x_obj_list.solution_values[solution_index].value
             if len(x_obj_value) > 1:
                 context.report_error(["errorText", "One thing at a time, please!", state.get_reprompt()], force=True)
-                yield []
                 return
 
             # Now we are guaranteed to only have one item in x_obj_value
@@ -2755,7 +2754,6 @@ def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list)
                 # thus check_concepts=False
                 # Fail this group if we don't meet the constraints
                 if not check_concept_solution_group_constraints(context, state_list, x_obj_list, check_concepts=False):
-                    yield []
                     return
 
                 # Questions about "Do you have a (concept of a) table/menu/bill?" are really implied requests in a restaurant
@@ -2766,9 +2764,7 @@ def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list)
                 final_state = do_task(state_list[0].world_state_frame(), [task])
                 if final_state:
                     final_states.append(final_state)
-
                 else:
-                    yield []
                     return
 
             else:
@@ -2776,7 +2772,6 @@ def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list)
                 # that the restaurant has this concept, so: succeed
                 # Fail this group if we don't meet the constraints
                 if not check_concept_solution_group_constraints(context, state_list, x_obj_list, check_concepts=True):
-                    yield []
                     return
 
                 final_states.append(state)
@@ -2865,9 +2860,7 @@ def _have_v_1_able_group(context, state_list, e_variable_group, x_actor_variable
         final_state = do_task(state_list[0].world_state_frame(), [task])
         if final_state:
             yield [final_state]
-        else:
-            yield []
-            return
+
     else:
         # Not an implicit request
         yield state_list
@@ -3093,12 +3086,10 @@ def _be_v_id_group(context, state_list, e_introduced_binding_list, x_subject_var
     # If the arguments are concepts constraints need to be checked
     if x_subject_variable_group.solution_values[0].value is not None and is_concept(x_subject_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_subject_variable_group, check_concepts=True):
-            yield []
             return
 
     if x_object_variable_group.solution_values[0].value is not None and is_concept(x_object_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_object_variable_group, check_concepts=True):
-            yield []
             return
 
     yield state_list
@@ -3158,8 +3149,8 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
 def _cost_v_1_group(context, state_list, e_introduced_binding_list, x_act_variable_group, x_obj2_variable_group):
     if is_concept(x_act_variable_group.solution_values[0].value[0]):
         if not check_concept_solution_group_constraints(context, state_list, x_act_variable_group, check_concepts=True):
-            yield []
             return
+
     yield state_list
 
 
@@ -3506,14 +3497,14 @@ def hello_world():
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

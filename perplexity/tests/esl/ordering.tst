@@ -174,7 +174,10 @@
         },
         {
             "Command": "What did we order?",
-            "Expected": "chicken\nsteak",
+            "Expected": [
+                "chicken\nsteak",
+                "steak\nchicken"
+            ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e22dfd49-438f-46a2-98ad-30c4be9da431"
@@ -953,5 +956,5 @@
             "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"
         }
     ],
-    "ElapsedTime": 85.75967
+    "ElapsedTime": 94.26317
 }

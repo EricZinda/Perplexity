@@ -23,11 +23,12 @@ from perplexity.utilities import sentence_force, module_name, import_function_fr
 from perplexity.world_registry import world_information
 
 
-def no_error_priority(error):
-    if error is None:
-        return 0
+def default_error_priority(error):
+    system_priority = perplexity.messages.error_priority(error)
+    if system_priority is not None:
+        return system_priority
     else:
-        return 1
+        return perplexity.messages.error_priority_dict["defaultPriority"]
 
 
 def load_ui(path_and_filename, user_output=None, debug_output=None):
@@ -47,7 +48,7 @@ class UserInterface(object):
                  reset,
                  vocabulary,
                  message_function=perplexity.messages.generate_message,
-                 error_priority_function=no_error_priority,
+                 error_priority_function=default_error_priority,
                  response_function=perplexity.messages.respond_to_mrs_tree,
                  scope_init_function=None,
                  scope_function=None,
@@ -94,7 +95,7 @@ class UserInterface(object):
         self.log_tests = False
         self.new_ui = None
 
-    def load_ui(self, state, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=no_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
+    def load_ui(self, state, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=default_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
         self.reset = reset
         self.vocabulary = vocabulary
         self.message_function = message_function

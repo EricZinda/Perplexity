@@ -213,7 +213,7 @@ class TreeSolver(object):
                     yield state
 
                 else:
-                    # This is a list of predications, so they should
+                    # This is a list of predications, so they should be
                     # treated as a conjunction.
                     # Call each one and pass the state it returns
                     # to the next one, recursively
@@ -623,7 +623,7 @@ class ExecutionContext(object):
 
     def report_error_for_index(self, predication_index, error, force=False, phase=0):
         if not self.has_not_understood_error() and \
-                (force or (not self._error_was_forced and self._error_predication_index < predication_index)):
+                ((error is not None and error[0] == "formNotUnderstood") or force or (not self._error_was_forced and self._error_predication_index < predication_index)):
             self._error = error
             self._error_predication_index = predication_index
             self._error_phase = phase

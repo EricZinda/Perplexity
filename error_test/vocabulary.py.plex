@@ -1,0 +1,33 @@
+{
+    "unknown": {
+        "Phrases": {
+            "no": {
+                "SF": "prop"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop"
+            }
+        ]
+    },
+    "unknown_question": {
+        "Phrases": {
+            "no?": {
+                "SF": "ques"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques"
+            }
+        ]
+    },
+    "unknown_question_group": {
+        "PropertiesFrom": "unknown_question_group"
+    },
+    "_no_a_1": {},
+    "unknown_group": {
+        "PropertiesFrom": "unknown_group"
+    }
+}

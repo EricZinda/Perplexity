@@ -5,6 +5,8 @@ worlds["esl"] = {"WorldModule": "esl.tutorial",
                  "WorldUIFunction": "ui"}
 worlds["example"] = {"WorldModule": "file_system_example.examples",
                      "WorldUIFunction": "Example_ui"}
+worlds["error_test"] = {"WorldModule": "error_test.vocabulary",
+                        "WorldUIFunction": "error_test_ui"}
 
 
 def world_information(key):
