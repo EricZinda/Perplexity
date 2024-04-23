@@ -29,11 +29,14 @@ They could have asked for "a table", and it just so happens that all are for 2, 
 2. When you want to defer listing the potential outcomes of the referring expression. For example, when processing the phrase
 "Do you have (a menu)" we want to check to see if we are talking about "menus" and, if so, treat this as an implied request, 
 and find one (using the referring expression) that is not in use.
-
+    - It could have been "Do you have a thing" where the first instance just happens to be a menu
+   
 Interpretation 1: instance query
 - "Do I have a son?"
 - "Did I order (an instance of) a steak?"
 - "What (instances of) dishes do I have?"
+
+None of those require concepts, instances work for them all.
 
 Interpretation 2: in-scope concepts query
 Analysis:
@@ -43,16 +46,26 @@ Analysis:
 - "Do you have the steak?" -> refers to having an inscope concept of "the steak"
 - "Do you have the table?" -> There is no in-scope concept of a table
 - "which steaks do you (restaurant) have?" -> which in-scope concepts of steaks are there?
-
+    - This is the only one that requires concepts
+  
 Interpretation 3: implied requests
 Analysis:
-    Any "computer have x?" pattern is really an implied request for that thing or sometimes a request for a description of that thing 
-    In all of these, "you" means the restaurant, and they are all implied requests of some kind
-    By the time we get to "have_v" we need to know if the user actually asked for a specific table or "a table" which can't be determined by just looking at the atom
-        Is this really true?
-        I think really we just need to know if there is an inscope concept that is being referred to or not
+    If the user says "Do you have that one menu that is dirty?", they might be asking for all kinds of different reasons.  Not necessarily an implied request.
+    If they instead say "Do you have a menu?", it is probably an implied request.
+        Any "computer have x?" pattern is really an implied request for that thing or sometimes a request for a description of that thing 
+    Note: In both of these, "you" means the restaurant
+    By the time we get to "have_v" we need to know if the user actually asked for a specific menu or "a menu" which can't be determined by just looking at the instance atom
 
-"Do you have steaks?" --> implied request if something is on the menu
+- "What do you have?" --> This is simply a Pragmatics example
+- "What specials do you have?" --> want the list of concepts, not instances
+- "Do you have steaks?" --> implied request if something is on the menu. 
+- "Do you have that one steak that was undercooked?" --> Probably just a yes/no request for a further conversation
+- "Do you have a place we could sit?" --> implied request
+
+Theory:
+- Best theory: Could be when the referring expression obviously refers to a class? and not an instance?
+  - One way to check if something is a class is to see how many instances it returns, which we can only check if we are dealing with concepts
+- Implied request should always happen when there is an inscope concept?
 
 Design:
     If this is a "computer have x?" pattern:
@@ -60,6 +73,10 @@ Design:
     Then, for specific cases like tables, menus, bills, also transition to taking an action
 
 Scenarios:
+    "Give me a menu" --> would work with instances
+    "I want chicken/steak/a salad/etc"
+        As long as a) the instance is something on the menu and b) it is available to be ordered, we should order that specific thing
+
     "I want a table for 2"
         - Need to process the *concept* because we need to interrogate it to see if the concept includes the number of people somehow
             - Otherwise, if we just process instances, we may *happen* to get an instance for 2 that works.  But we really want to know what they wanted.
@@ -75,6 +92,7 @@ Scenarios:
             - "dishes" refers to conceptual dishes
         Design: Any referring expression that resolves to "all food" should mean "get me a menu"
     "Do you have a/the bill?" --> implied bill request
+        "Do you have my bill" -- single instance but is an implied request
         "Do you have the cost of what I ate?"
         Design: Any referring expression that resolves to "the cost of food" should mean "get me the bill"
     "what specials do you have?" --> implied request for description of specials
@@ -114,8 +132,9 @@ Design alternatives:
 Background on referring expressions:
 referring expressions are different than types. A referring expression can generate types
     (done) Need to rename these to "referring expressions"
-
 - Referring Expressions The Nature of Referring and ... https://assets.cambridge.org/97811071/43470/excerpt/9781107143470_excerpt.pdf
 - Best:
   - https://cs.uwaterloo.ca/~david/ijcai19/
   - https://cs.uwaterloo.ca/~david/ijcai19/refexp-tutorial.pdf
+- ‘a computational model of referring must show how the successful use of a referring expression in a given context is due to the solving of a planning problem– given also a goal, various rationality assumptions, and relevant linguistic institutions’ (Kronfeld, 1990: 9)
+  - https://books.google.com/books?hl=en&lr=&id=Xi2kfHdX-ccC&oi=fnd&pg=PR11&dq=kronfeld+1990+philosophy+of+language&ots=mjbiVRt7w_&sig=imkQxAeUjbtsaLqgUSJuDIvkqhM#v=onepage&q=kronfeld%201990%20philosophy%20of%20language&f=false
