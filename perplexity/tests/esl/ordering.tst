@@ -66,14 +66,14 @@
         },
         {
             "Command": "My son needs a vegetarian dish",
-            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: What can I get you?",
+            "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),_a_q(x15,[_dish_n_of(x15,i21), _vegetarian_a_1(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_need_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
         },
         {
             "Command": "My son needs something vegetarian",
-            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: What can I get you?",
+            "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),_some_q(x15,[thing(x15), _vegetarian_a_1(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_need_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "d0be4224-6142-416e-adc7-e30364846d24"
@@ -513,14 +513,14 @@
         },
         {
             "Command": "I will have any meat",
-            "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
+            "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_any_q(x8,_meat_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "9a2a9945-3e16-4725-bf0a-b56918ade68a"
         },
         {
             "Command": "I'll take any meat dish",
-            "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
+            "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything else?",
             "Tree": "udef_q(x14,_meat_n_1(x14),pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8,i19), compound(e13,x8,x14)],_take_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "a9bc7ac2-87d1-4d2d-b8f4-07b73c699cdd"

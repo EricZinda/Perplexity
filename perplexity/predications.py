@@ -32,20 +32,25 @@ def is_concept(o):
 
 
 class Concept(object):
-    def __init__(self, concept_name):
-        self.concept_name = concept_name
+    def __init__(self, sort_of):
+        # This is a set so it is more easily comparable since order doesn't matter
+        self._sort_of_criteria = set([sort_of])
 
     def __repr__(self):
-        return f"Concept({self.concept_name})"
+        return f"Concept({','.join(self._sort_of_criteria)})"
 
     def value_type(self):
         return VariableValueType.concept
 
     # return instances of whatever the concept represents
+    # this is implementation dependent and requires the derived class
+    # to implement it
     def instances(self):
         return None
 
     # return specializations of whatever the concept represents
+    # this is implementation dependent and requires the derived class
+    # to implement it
     def concepts(self):
         return None
 
@@ -126,7 +131,7 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
         if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
             check_count = concept_in_scope_count
             if check_count == 0:
-                context.report_error(["conceptNotFound", value], force=True, phase=2)
+                context.report_error(["conceptNotFound", variable], force=True, phase=2)
                 return False
 
             if check_count < min_size:
@@ -141,7 +146,7 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
         # Since that is what we are looking for
         check_count = instance_count
         if check_count == 0:
-            context.report_error(["conceptNotFound", value], force=True, phase=2)
+            context.report_error(["conceptNotFound", variable], force=True, phase=2)
             return False
 
         if check_count < min_size:

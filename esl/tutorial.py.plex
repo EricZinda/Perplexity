@@ -1916,5 +1916,8 @@
                 "PERF": "-"
             }
         ]
+    },
+    "_be_v_id_order_group": {
+        "PropertiesFrom": "_be_v_id_order_group"
     }
 }

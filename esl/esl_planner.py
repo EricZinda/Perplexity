@@ -6,8 +6,8 @@ from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type,
     AddBillOp, DeleteRelOp, \
     find_unused_item, ResetOrderAndBillOp, object_to_store, \
     find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria, rel_objects, \
-    ResetOrderAndBillForPersonOp
-from perplexity.predications import is_concept
+    ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept
+from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation, ResponseLocation
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
@@ -278,22 +278,21 @@ def order_food_at_table_distributive(state, context, who_group, what_group, what
     return new_tasks
 
 
+# `What` needs to be the string name of a type (not, for example, a concept)
 def order_food_at_table_per_person_per_item(state, context, who, what, what_count_constraint):
     if not isinstance(who, (list, tuple, set)) and not isinstance(what, (list, tuple, set)) and \
             all_are_players([who]) and location_of_type(state, who, "table"):
-        food_instances = [x for x in find_unused_instances_from_concept(context, state, what)]
+        food_instances = [x for x in find_unused_instances_from_concept(context, state, ESLConcept(what))]
         if len(food_instances) < what_count_constraint:
             stop_plan_with_error(state, context, s("Waiter: I'm sorry, we don't have enough {bare *convert_to_english(state, what):} for your order."))
-            # return [('respond', context, s("Waiter: I'm sorry, we don't have enough {bare *convert_to_english(state, what):} for your order."))]
 
         else:
-            store_what = object_to_store(what)
             what_english = s("{Bare *convert_to_english(state, what):}")
-            assert store_what in state.sys["prices"]
-            if (store_what, "user") in state.all_rel("priceUnknownTo"):
+            assert what in state.sys["prices"]
+            if (what, "user") in state.all_rel("priceUnknownTo"):
                 return [('respond', context, f"Son: Wait, let's not order {what_english} before we know how much it costs.")]
 
-            elif state.sys["prices"][store_what] * what_count_constraint + state.bill_total() > 20:
+            elif state.sys["prices"][what] * what_count_constraint + state.bill_total() > 20:
                 return [('respond', context, f"Son: Wait, we already spent ${str(state.bill_total())} so if we get {what_count_constraint} {what_english}, we won't be able to pay for it with $20.")]
 
             else:
@@ -302,7 +301,7 @@ def order_food_at_table_per_person_per_item(state, context, who, what, what_coun
                 for food_instance in food_instances:
                     if sort_of(state, [food_instance], ["dish", "drink"]):
                         new_tasks += [('add_rel', context, who, "ordered", food_instance),
-                                      ('add_bill', context, what.concept_name)]
+                                      ('add_bill', context, what)]
                     else:
                         return
 
@@ -493,9 +492,56 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
         else:
             who_list = group_who[index]
 
-        # TODO: find a better way to determine what "what" is
-        concept = what.concept_name
-        if sort_of(state, concept, "table"):
+        # Now figure out what kind of thing this is by seeing what concepts it entails
+        # entailed_concepts = [x for x in what.concepts(context, state)] + [what]
+        things_we_know = {ESLConcept("table"): ("table", "table"),
+                          ESLConcept("menu"): ("menu", "menu"),
+                          ESLConcept("bill"): ("bill", "bill")}
+
+        # Add all the things you can order
+        for menu_item in rel_subjects(state, "on", "menu"):
+            things_we_know[ESLConcept(menu_item)] = ("menu item", menu_item)
+
+        for menu_item in rel_subjects(state, "specializes", "special"):
+            things_we_know[ESLConcept(menu_item)] = ("menu item", menu_item)
+
+        for menu_item in rel_subjects(state, "specializes", "drink"):
+            things_we_know[ESLConcept(menu_item)] = ("menu item", menu_item)
+
+        # Now see if it is a thing we can give the speaker
+        concept_analysis = {}
+        _, instances_of_concepts = what.instances_of_concepts(context, state, things_we_know.keys())
+        for item in instances_of_concepts.items():
+            concept_category = things_we_know[item[0]][0]
+            concept_name = things_we_know[item[0]][1]
+            if concept_category not in concept_analysis:
+                concept_analysis[concept_category] = {}
+
+            if concept_name not in concept_analysis[concept_category]:
+                concept_analysis[concept_category][concept_name] = 1
+            else:
+                concept_analysis[concept_category][concept_name] += 1
+
+        # If we don't even know what this concept it, fail generally ("I want steel")
+        if len(concept_analysis) == 0:
+            return [('respond', context, s("Host: Sorry, I don't know how to give you that.")),
+                    ('reprompt', context)]
+
+        # If it entails things across the various classes we know ("I want something small" entails "the bill" and various "menu items") fail with a general message
+        if len(concept_analysis) > 1:
+            return [('respond', context, s("Host: Sorry, could you be more specific, that could be several different kinds of thing.")),
+                    ('reprompt', context)]
+
+        # At this point it is exactly one class of thing.
+        # If it entails various concepts within that class ("I want something vegetarian" is only menu items) be more specific in the failure
+        concept_subconcepts = next(iter(concept_analysis.items()))
+        if len(concept_subconcepts[1]) > 1:
+            return [('respond', context, s("Host: Sorry, I'm not sure which one you mean.")),
+                    ('reprompt', context)]
+
+        concept_name = concept_subconcepts[0]
+        subconcept = next(iter(concept_subconcepts[1]))
+        if concept_name == "table":
             if "get_table" not in task_dict:
                 task_dict["get_table"] = [[], []]
             task_dict["get_table"][0].append(who_list)
@@ -503,21 +549,21 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
 
         else:
             if not_at_table:
-                ask_server_about.append(concept)
+                ask_server_about.append(subconcept)
 
             else:
-                if sort_of(state, concept, "menu"):
+                if concept_name == "menu":
                     if "get_menu" not in task_dict:
                         task_dict["get_menu"] = [[]]
                     task_dict["get_menu"][0].append(who_list)
 
-                elif sort_of(state, concept, ["food", "drink"]):
+                elif concept_name == "menu item":
                     if "order_food" not in task_dict:
                         task_dict["order_food"] = [[], []]
                     task_dict["order_food"][0].append(who_list)
-                    task_dict["order_food"][1].append(what)
+                    task_dict["order_food"][1].append(subconcept)
 
-                elif sort_of(state, concept, ["bill", "check"]):
+                elif concept_name == "bill":
                     if "get_bill" not in task_dict:
                         task_dict["get_bill"] = [[]]
                     task_dict["get_bill"][0].append(who_list)

@@ -1,3 +1,14 @@
+## Concepts in Solution Groups
+If a given MRS variable contains a concept:
+Phase 1:
+- The tree is evaluated as it is for instances.  If the predication interpretation succeeds, that tree is considered a solution
+Phase 2:
+- To see if the solution group is a success, any numeric constraints on that variable are assumed to be met
+  - And the solution group handler needs to verify them later
+  - Note that this means if the phrase was "2 boys ate 2 ice creams", the solution group handler needs to handle all  
+  the coll/dist/cuml options, which is the work the solver normally does, and is a ton of work
+  - Note also that it may need to check concepts in variables that aren't part of the verb???
+
 ## Concept Levels
 Conceptually, for any noun predication like `special_n(x)`:
 
@@ -76,6 +87,8 @@ Notes:
                 - a better way to do this is to require the caller to ask about a property of the solution.  I.e. "will any instance or concept that come out of this have the small property?" or "be an instance of steak?"
                     - It is probably true that in the general sense we can't figure it out by inspecting the criteria.  Instead we have to generate instances and induce the answer.
                         - we might be able to inspect the criteria if it is a simple logic
+            - we could call it something like "will be an instance of in some way" or "guaranteed that this object will be true for 'instanceOf type'"
+                - maybe call it "isa"?
         - How do we convert to english if we can't use that?
           - also, if it doesn't return any instances, how can we convert it to english or get a type from it? There is nothing to "duck type"
           - Certainly we could remember the phrase that created the referring expression and use that for english generation
@@ -84,10 +97,17 @@ Notes:
           - No because if that could work, we'd use it in "want" to see the type
           - We at least need a way to "duck type" for things like `compound` that see if the right side is a "menu"
         - But for things like `_have_v_1_present`, we need to know the type of thing the user mentioned, it isn't enough to do "is_concept(y)", right?
+            - Currently, the logic for `have_v_1_present` is: 
+                - make sure the actor is the restaurant
+                - See if the restaurant has a relationship: "has X" where X is a concept.  
+                - while this approach allows for answering "yes" to concepts that have no instances, it also requires that we remember mark both instances and concepts as being "had" by the restaurant.
+                - A better approach might be to see if we `have` even a single instance of the concept?
           - what if the user said "Do you have something small?", there is no "one type" for that
             - We could enumerate all concepts the user "has" and put "all small things" into those buckets?
+            - In general: Allow sending a list of concepts and return which of those the instances were
           - getting instances for use in duck typing does not work if the concept doesn't have any instances in the world yet
             - This seems crucial
+            - But if we can "prove" it based on criteria, etc. that is a workaround
         
 ## be_v_id(subject, object)
 for concepts: every x that specializes concept y should be able to be subject or object and should yield when either is unbound

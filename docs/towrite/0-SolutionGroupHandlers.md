@@ -1,3 +1,20 @@
+Basic approach:
+- decide if you are going to deal with the instance or concept space
+- if instance:
+  - upside is the engine will give you all the solution groups that are valid and you choose
+  - downside is that it could be very slow due to combinatorics
+- if concept:
+  - upside is there will (probably) be way fewer concepts and be faster
+  - downside is you need to check the global criteria yourself.  I.e. "I want steaks" -- you need to understand what
+    the criteria are and what they mean in the scenario
+
+I ordered 2 steaks will generate:
+    - ordered(I, steak) with a global constraint of 2
+I ordered 2 steaks and 2 salads will generate:
+    - ordered(I, steak) 
+    - ordered(I, salad) 
+    - Count the instances of steak that I ordered and ditto for salad and compare to global criteria
+
 ## I want chicken
 Let's go through an example. Here's one MRS and tree for "I want chicken":
 
@@ -123,6 +140,8 @@ So, we do a similar thing: Get the top level concept and see if it generates any
 
 
 ## Solution Group Handlers and Constraints on Concepts
+TODO: Writeup how things get hairy if you truly need to check the solution in the general case because you're basically building the solver.  This would happen if you try to implement be_v_id(order1, [steak]) using the concept of steak.  Because what if the user says 2 steaks? or 2 steaks and 2 salads? a better approach would be to allow it to enumerate instances and do normal solving.  Is this right?  That, really, using concepts in solutions should only happen when you are really trying to deal with the speaker talking about concepts. 
+
 How do concepts work when there is some kind of global criteria on them?  For example, phrases like:
 "I want 2 steaks"
 "I want a few beers"

@@ -2,13 +2,11 @@ import copy
 import json
 import numbers
 import pickle
-
 import esl.esl_planner
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import DisjunctionValue
-from perplexity.state import State, LoadException
-from perplexity.utilities import at_least_one_generator
+from perplexity.state import State
 
 
 def in_scope_initialize(state):
@@ -89,7 +87,9 @@ def concept_disjunctions(state, root_concept, ignore_root=False):
         next_next_level = []
         for next_level_type in next_level:
             if not ignore_root or (ignore_root and lineage > 0):
-                yield DisjunctionValue(lineage, store_to_object(state, next_level_type))
+                object = store_to_object(state, next_level_type)
+                object.level_index = lineage
+                yield DisjunctionValue(lineage, object)
             for item in immediate_specializations(state, next_level_type):
                 next_next_level.append(item)
 
@@ -110,10 +110,14 @@ def concept_disjunctions_reverse(state, root_concept, ignore_root=False):
         next_level = next_next_level
 
     lineage = len(levels)
-    for level in levels[:len(levels) if not ignore_root else len(levels) - 1]:
+    for level_index in range(len(levels) if not ignore_root else len(levels) - 1):
+        level = levels[level_index]
+    # for level in levels[:len(levels) if not ignore_root else len(levels) - 1]:
         lineage -= 1
         for level_type in level:
-            yield DisjunctionValue(lineage, store_to_object(state, level_type))
+            object = store_to_object(state, level_type)
+            object.level_index = len(levels) - level_index - 1
+            yield DisjunctionValue(lineage, object)
 
 
 def immediate_specializations(state, base_type):
@@ -225,6 +229,13 @@ def all_ancestors(state, thing):
                     proc += [i[1]]
                     yield i[1]
         proc_idx += 1
+
+
+def instance_of_or_entails(context, state, thing, concept):
+    if is_concept(thing):
+        return concept.entailed_by(context, state, thing)
+    else:
+        return instance_of_what(state, thing)
 
 
 def instance_of_or_concept_name(state, thing):
@@ -356,6 +367,11 @@ def rel_subjects_objects(state, rel):
         yield item
 
 
+# Yields all objects that are instanceof of specializes `type`
+def rel_sort_of(state, _, type):
+    yield from all_instances_and_spec(state, type)
+
+
 def rel_objects(state, subject, rel):
     for item in state.all_rel(rel):
         if item[0] == subject:
@@ -370,6 +386,10 @@ def rel_subjects(state, rel, object):
 
 def rel_all_instances(state, _, type):
     return all_instances(state, type)
+
+
+def rel_all_specializations(state, _, type):
+    return all_specializations(state, type)
 
 
 def has_type(state, subject, type):
@@ -454,13 +474,16 @@ class ResponseStateOp(object):
 
 
 class ESLConcept(Concept):
-    def __init__(self, concept_name):
-        super().__init__(concept_name)
+    def __init__(self, sort_of, mrs_variable=None):
+        super().__init__(sort_of)
         self.criteria = []
+        self.conjunctions = []
         self._hash = None
+        self.level_index = None
+        self.mrs_variable = mrs_variable
 
     def __repr__(self):
-        return f"ESLConcept({self.concept_name}: {[x for x in self.criteria]} )"
+        return f"ESLConcept({','.join(self._sort_of_criteria)}: {[x for x in self.criteria]} )"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
@@ -468,27 +491,48 @@ class ESLConcept(Concept):
     def __hash__(self):
         if self._hash is None:
             # TODO: Make this more efficient
-            self._hash = hash(self.concept_name)
+            self._hash = hash(tuple(self._sort_of_criteria))
 
         return self._hash
 
     def __eq__(self, other):
         if isinstance(other, ESLConcept) and self.__hash__() == other.__hash__():
-            if self.concept_name != other.concept_name:
+            if self._sort_of_criteria != other._sort_of_criteria:
                 return False
 
             elif len(self.criteria) != len(other.criteria):
                 return False
+
             else:
+                for item in self._sort_of_criteria:
+                    if item not in other._sort_of_criteria:
+                        return False
+
                 for index in range(len(self.criteria)):
                     if self.criteria[index] not in other.criteria:
                         return False
 
                 return True
 
+    # Used to add another concept as a conjunction to this one by simply
+    # combining their sort_of_criteria and criteria
+    def add_conjunction(self, concept):
+        self_copy = self.add_sort_of_criteria_list(concept._sort_of_criteria)
+        return self_copy.add_criteria_list(concept.criteria)
+
     def add_criteria(self, function, arg1, arg2):
+        return self.add_criteria_list([(function, arg1, arg2)])
+
+    def add_criteria_list(self, function_arg1_arg2_triples):
         self_copy = copy.deepcopy(self)
-        self_copy.criteria.append((function, arg1, arg2))
+        self_copy.criteria += [tuple(x) for x in function_arg1_arg2_triples]
+        return self_copy
+
+    def add_sort_of_criteria_list(self, sort_of_criteria_list):
+        self_copy = copy.deepcopy(self)
+        self_copy._sort_of_criteria.update(sort_of_criteria_list)
+        # Needs to update the hash since it is based on sort_of_criteria of the object
+        self_copy._hash = None
         return self_copy
 
     # Pass None to any argument that should be ignored
@@ -502,29 +546,108 @@ class ESLConcept(Concept):
                 continue
             return c
 
+    # Build a list of criteria that can be executed from the sort_of list
+    def sort_to_criteria(self, criteria_function):
+        return [(criteria_function, None, sort) for sort in self._sort_of_criteria]
+
     # return any instances that meet all the criteria in self.criteria
     def instances(self, context, state, potential_instances=None):
-        return self._meets_criteria(context, state, [(rel_subjects, "instanceOf", self.concept_name)] + self.criteria,
+        return self._meets_criteria(context, state, self.sort_to_criteria(rel_all_instances) + self.criteria,
                                     initial_instances=potential_instances)
+
+    def has_instance(self, context, state, instance):
+        return len(self._meets_criteria(context, state, [instance])) > 0
 
     def concepts(self, context, state, potential_concepts=None):
         # get the actual identifiers of all concepts that meet all the criteria
-        raw_concepts = self._meets_criteria(context, state, [(rel_subjects, "specializes", self.concept_name)] + self.criteria, initial_instances=potential_concepts)
+        raw_concepts = self._meets_criteria(context, state, self.sort_to_criteria(rel_all_specializations) +
+                                            self.criteria, initial_instances=potential_concepts)
 
         if len(raw_concepts) == 0:
             # Since the concept generated might be different than what the user said,
             # For example, "table for my son" is interpreted as "table for 1", we need
             # to generate an error that is specific to the *concept*
-            context.report_error(["conceptNotFound", self], force=True)
+            context.report_error(["conceptNotFound", self.mrs_variable if self.mrs_variable is not None else self.single_sort_name()], force=True)
 
         # ... and return them wrapped in a Concept() with the same criteria
-        return [self._replace_concept_name(x) for x in raw_concepts]
+        return [ESLConcept(x) for x in raw_concepts]
 
-    def _replace_concept_name(self, new_concept_name):
-        new_concept = copy.deepcopy(self)
-        new_concept.concept_name = new_concept_name
-        return new_concept
+    def entailed_by(self, context, state, smaller_concept):
+        return smaller_concept.entails(context, state, self)
 
+    def entailed_by_which(self, context, state, smaller_concept_list):
+        entailed_by = []
+        for smaller_concept in smaller_concept_list:
+            if self.entailed_by(context, state, smaller_concept):
+                entailed_by.append(smaller_concept)
+
+        return entailed_by
+
+    # True if larger_concept entails self, meaning that:
+    #   if larger_concept(x) is true then self(x) must be true
+    #
+    # If a concept A entails a concept B, concept A cannot be true without B being true as well
+    # if A is "Concept(small bird)" and B is "Concept(bird)", A entails B since all "small birds" will also be "birds"
+    #
+    # Another word for entailment is "implication" or "consequence". I.e. the truth of A implies the truth of B
+    #
+    # If we can't prove it formally, we will approximate (meaning it may be wrong) using a kind of inductive
+    # reasoning: determine entailment by seeing if all larger_concept instances are also self instances.
+    def entails(self, context, state, larger_concept):
+        # Special case we can prove formally if:
+        # 1. larger concept is really just one criteria: object sortOf concept_name
+        # 2. smaller concept specializes concept_name and doesn't use not
+        # Then:  smaller concept must imply (i.e. entail) larger concept
+        # self specializes larger_concept and there are no "nots" in the criteria
+        larger_concept_sort = larger_concept.single_sort_name()
+        if larger_concept_sort is not None:
+            if larger_concept_sort in self._sort_of_criteria and not self._has_sort_negation():
+                return True
+
+        instances, instances_by_concept = self.instances_of_concepts(context, state, [larger_concept])
+        return len(instances_by_concept) == 1 and len(instances_by_concept[larger_concept]) == len(instances)
+
+    def entails_which(self, context, state, larger_concept_list):
+        instances, instances_by_concept = self.instances_of_concepts(context, state, larger_concept_list)
+        entailed = []
+        instance_count = len(instances)
+        for item in instances_by_concept.items():
+            if instance_count == len(item[1]):
+                entailed.append(item[0])
+
+        return entailed
+
+    # Checks every instance generated by this concept to see if it is also
+    # an instance of any of the concepts in concept_list.
+    # Adds any that are into a dictionary keyed by the concept
+    def instances_of_concepts(self, context, state, concept_list):
+        instances_by_concept = {}
+        all_instances = [x for x in self.instances(context, state)]
+        for concept in concept_list:
+            found_instances = concept.instances(context, state, all_instances)
+            if len(found_instances) > 0:
+                instances_by_concept[concept] = found_instances
+
+        return all_instances, instances_by_concept
+
+    # There is one special case where we can get a "type name" or "concept name" from a concept
+    # without resorting to entailment: when we can prove it is that sort and nothing more or less
+    def single_sort_name(self):
+        if len(self._sort_of_criteria) == 1 and len(self.criteria) == 0:
+            return next(iter(self._sort_of_criteria))
+
+        else:
+            return None
+
+    # Things like "is not a food"
+    def _has_sort_negation(self):
+        # No way to express this yet so easy answer
+        return False
+
+    # Each of the criterion is a triple: (function, arg1, arg2)
+    # `function` is required to:
+    #   - be of the signature: function(state, x, y).  x and y get passed in arg1 and arg2
+    #   - yield values that are true of x and y given the criteria it implements
     def _meets_criteria(self, context, state, final_criteria, initial_instances=None):
         found_cumulative = None if initial_instances is None else initial_instances
         for current_criteria in final_criteria:
@@ -532,6 +655,7 @@ class ESLConcept(Concept):
 
             if current_criteria[0] == noop_criteria:
                 found = found_cumulative
+
             else:
                 for result in current_criteria[0](state, current_criteria[1], current_criteria[2]):
                     if found_cumulative is None or result in found_cumulative:

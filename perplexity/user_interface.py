@@ -793,7 +793,7 @@ def command_resume_test(ui, arg):
 
             else:
                 ui.user_output(f"**** Resuming test: {test_name}")
-                test_iterator = TestIterator(ui.test_manager, test_name)
+                test_iterator = TestIterator(ui.test_manager, test_name, resume=True)
 
         else:
             ui.user_output(f"**** Resuming test folder: {test_folder}")
