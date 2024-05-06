@@ -30,6 +30,13 @@
             "ID": "57d4c78e-29c7-48c6-b4a8-7a5ae33f05d0"
         },
         {
+            "Command": "what are specials",
+            "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
+            "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "57d4c78e-29c7-48c6-b4a8-7a5ae33f05d0"
+        },
+        {
             "Command": "what is vegetarian",
             "Expected": "soup\nsalad\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),_vegetarian_a_1(e2,x3))",

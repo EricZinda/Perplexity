@@ -594,7 +594,7 @@ class ExecutionContext(object):
     # Test if an object is in scope, by default everything is
     def in_scope(self, state, thing):
         if self._in_scope_function is not None:
-            return self._in_scope_function(self._in_scope_initialize_data, state, thing)
+            return self._in_scope_function(self._in_scope_initialize_data, self, state, thing)
         else:
             return True
 

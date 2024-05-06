@@ -1,7 +1,8 @@
 import numbers
 
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, location_of_type, \
-    has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations
+    has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations, \
+    instance_of_or_entails, ESLConcept
 from perplexity.predications import is_concept
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
@@ -18,21 +19,28 @@ def describe_list_analyze(state, context, what_group):
                 "Others": [],
                 "UniqueItems": set()}
 
+    special_concept = ESLConcept("special")
+    food_concept = ESLConcept("food")
+    menu_concept = ESLConcept("menu")
+    bill_concept = ESLConcept("bill")
+
     for item_value in what_group:
         for item in item_value:
             if item not in analysis["UniqueItems"]:
                 analysis["UniqueItems"].add(item)
-                store_object = object_to_store(item)
-                if is_instance(state, store_object):
-                    analysis["Instances"].append(store_object)
-                if sort_of(state, store_object, "special"):
-                    analysis["Specials"].append(store_object)
-                elif sort_of(state, store_object, ["food", "menu"]):
-                    analysis["MenuItems"].append(store_object)
-                elif sort_of(state, store_object, "bill"):
-                    analysis["Bills"].append(store_object)
+                if is_instance(state, item):
+                    analysis["Instances"].append(item)
+
+                if instance_of_or_entails(context, state, item, special_concept):
+                    analysis["Specials"].append(item)
+                elif instance_of_or_entails(context, state, item, food_concept):
+                    analysis["MenuItems"].append(item)
+                elif instance_of_or_entails(context, state, item, menu_concept):
+                    analysis["MenuItems"].append(item)
+                elif instance_of_or_entails(context, state, item, bill_concept):
+                    analysis["MenuItems"].append(item)
                 else:
-                    analysis["Others"].append(store_object)
+                    analysis["Others"].append(item)
 
     return [('describe_analyzed', context, analysis)]
 
@@ -115,16 +123,22 @@ def describe_analyzed_at_table(state, context, analysis):
     for i in analysis.keys():
         if not i == "UniqueItems":
             for j in analysis[i]:
+                # If it is a sortof(thing) and "restaurant" has it, describe it
                 if j in all_instances_and_spec(state, "thing"):
                     if ("restaurant", j) in rel:
                         new_methods.append(('describe_item', context, j))
                 else:
-                    j = object_to_store(j)
-                    if j in all_instances_and_spec(state, "thing"):
-                        if ("restaurant", j) in rel:
-                            new_methods.append(('describe_item', context, j))
+                    # If it is a concept that is had, describe it
+                    if is_concept(j):
+                        sort = j.single_sort_name()
                     else:
-                        new_methods.append(('describe_item', context, j))
+                        sort = j
+
+                    if sort in all_instances_and_spec(state, "thing"):
+                        if ("restaurant", sort) in rel:
+                            new_methods.append(('describe_item', context, sort))
+                    else:
+                        new_methods.append(('describe_item', context, sort))
 
     return new_methods + [('respond_has_more', context, "(among others)", True),
                           ('reprompt', context)]

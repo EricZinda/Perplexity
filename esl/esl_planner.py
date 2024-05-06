@@ -6,7 +6,7 @@ from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type,
     AddBillOp, DeleteRelOp, \
     find_unused_item, ResetOrderAndBillOp, object_to_store, \
     find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria, rel_objects, \
-    ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept
+    ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept, orderable_concepts
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation, ResponseLocation
 from perplexity.set_utilities import Measurement
@@ -499,14 +499,8 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
                           ESLConcept("bill"): ("bill", "bill")}
 
         # Add all the things you can order
-        for menu_item in rel_subjects(state, "on", "menu"):
-            things_we_know[ESLConcept(menu_item)] = ("menu item", menu_item)
-
-        for menu_item in rel_subjects(state, "specializes", "special"):
-            things_we_know[ESLConcept(menu_item)] = ("menu item", menu_item)
-
-        for menu_item in rel_subjects(state, "specializes", "drink"):
-            things_we_know[ESLConcept(menu_item)] = ("menu item", menu_item)
+        for menu_item in orderable_concepts(state):
+            things_we_know[menu_item] = ("menu item", menu_item.single_sort_name())
 
         # Now see if it is a thing we can give the speaker
         concept_analysis = {}

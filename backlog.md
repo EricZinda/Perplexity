@@ -1,3 +1,35 @@
+START HERE:
+    "soup is a vegetarian item" -->
+    - Deal with global constraints on "What are the vegetarian dishes?"
+        - constraints for "the" get put on the various concepts that entail "vegetarian dishes" which isn't licensed by the phrase
+
+(fixed) make "What are the vegetarian dishes" work
+    - Why is x8 getting collective variables? for "what are the vegetarian dishes?".
+        - _be_v_id_order is lift_style
+    - This is a little confusing because thing() is being handled as unbound since it is thing()
+        - really the logic is: arg1 gets set to a thing() and arg2 is compared with it.
+            - it must be the case that arg2 is *not* the general concept ("vegetarian dishes") or the constraints don't work since that is one concept and it is plural
+
+    - Solution group handler needs to handle the different interpretations (listing things, vs. describing what they "are") differently?
+    - Approaches for scenarios like "What are the specials/vegetarian foods"
+        - Option 1:
+            - Basic approach is compare the first arg to the second and make sure it "is" that thing
+            - have the interpretation record what scenario it is
+                - then have the solution group handle them together in the same way if they are all the same case
+                - a lot of work is done in the unbound function, but then has to be thrown away
+
+        - (go this way) Option 2:
+            - compare for equality between left and right args
+            - For "What is X?": Use entailment logic and only succeed with "requests to list things"
+
+            - Handle constraints on the right arg as being on the right arg
+                - TODO: Deal with global constraints
+            - find in-scope concepts by using entailment to compare
+                - "what are specials" --> works
+                - "What are the specials?" works
+                - "what are vegetarian items" --> returns "item" and "thing"
+                - "what are vegetarian items" work
+
 - I will have any meat -> Sorry, I'm not sure which one you mean.
     - pronoun_q(x3,pron(x3),_any_q(x8,_meat_n_1(x8),_have_v_1(e2,x3,x8)))
     - should be: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.
@@ -7,17 +39,9 @@
          are different unfungible choices
 - My son needs a vegetarian dish
     - works now but is very slow
+
 Concept refactor:
     - (done) replace concept_name with simply a criteria that is "sortOf" which is instance or specializes depending on what the caller is asking for
-    - (fixed) "I ordered 1/2/n steaks"
-        - to work, the old code skipped concepts because it matched one value in a variable to one item in the order
-        - Phase 1: See if x *is* y
-        - Phase 2: actually count
-        - Problem is that _be_v_id_group is counting concepts which isn't right
-            - For this scenario it should be counting the instances in X and comparing to the criteria
-    - (fixed) My son needs a vegetarian dish
-        - also, "My son needs something vegetarian"
-
     - see if we can avoid making a replacement method of some kind.  Only allow instances() or concepts() or search_criteria()?
     - replace "search_criteria" with meets_criteria() which also ensures there isn't a "not" in there
     - get rid of object_to_store() since it just uses concept_name which is not correct

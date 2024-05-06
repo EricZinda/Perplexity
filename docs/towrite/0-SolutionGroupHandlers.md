@@ -7,6 +7,9 @@ Basic approach:
   - upside is there will (probably) be way fewer concepts and be faster
   - downside is you need to check the global criteria yourself.  I.e. "I want steaks" -- you need to understand what
     the criteria are and what they mean in the scenario
+    - This is a big downside because it is quite complex
+
+
 
 I ordered 2 steaks will generate:
     - ordered(I, steak) with a global constraint of 2

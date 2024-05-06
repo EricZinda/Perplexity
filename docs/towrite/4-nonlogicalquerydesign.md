@@ -1,7 +1,7 @@
 have_v and order_v are both just about verifying facts in the world, so they should be implemented the same. Many predications will be like these.
 
 ## How "I have the soup" works
-Option 1: First match_all_n() returns all concepts and then all instances.  For concepts, no global constraints are checked, so the concept just gets through to the group_handler.  You can do the work to check if something is an "in scope concept" here if you want.
+Option 1: First, match_all_n() returns all concepts and then all instances.  For concepts, no global constraints are checked, so the concept just gets through to the group_handler.  You can do the work to check if something is an "in scope concept" here if you want.
 
 Option 2: Alternatively, match_all_the_concept_n() is a different interpretation that will return all instances of the "in scope concept" of "soup" if there is one. It removes any "the-type" constraints.  This allows simple fact checking things like "Do I have the soup?" to just work without messing around with concepts.  However, it means you can't know, by the time you get to have_v() whether they are talking about the concept or an instance.
 

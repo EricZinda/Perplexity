@@ -35,7 +35,7 @@ def in_scope_initialize(state):
     return {"ContainedItems": contained_items, "CurrentDirectory": current_directory}
 
 
-def in_scope(initial_data, state, value):
+def in_scope(initial_data, context, state, value):
     # Some tests don't use the file system object so everything is in scope
     if initial_data is None:
         return True
