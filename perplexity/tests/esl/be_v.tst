@@ -9,11 +9,25 @@
             "ID": "a93e332f-00e8-4249-bfa1-95180dbd3a8f"
         },
         {
+            "Command": "What is my son?",
+            "Expected": "son\n\n(among others)",
+            "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_son_n_of(x8,i19), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "6ed7a9ca-6f88-4c1c-9fbc-de93b4d7dd0f"
+        },
+        {
+            "Command": "My son is Johnny",
+            "Expected": "Yes, that is true.",
+            "Tree": "pronoun_q(x9,pron(x9),proper_q(x15,named(Johnny,x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_be_v_id(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "a23b8045-864b-4378-8a6d-a49e826a46c4"
+        },
+        {
             "Command": "a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
-            "ID": "6ed7a9ca-6f88-4c1c-9fbc-de93b4d7dd0f"
+            "ID": "ce35b48f-d9ed-4583-b517-a03922365580"
         },
         {
             "Command": "what are your specials",
@@ -32,9 +46,9 @@
         {
             "Command": "what are specials",
             "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
-            "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
+            "Tree": "which_q(x5,thing(x5),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
-            "ID": "57d4c78e-29c7-48c6-b4a8-7a5ae33f05d0"
+            "ID": "69c689eb-7d14-4b54-a960-f0aff8c36c09"
         },
         {
             "Command": "what is vegetarian",

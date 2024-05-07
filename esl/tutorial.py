@@ -2970,7 +2970,7 @@ def poss_lift_style(context, state, e_introduced_binding, x_object_binding, x_ac
     # This predication doesn't support conceptual actors
     if x_actor_binding.value is None or all([not is_concept(item) for item in x_actor_binding.value]):
         for item in lift_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_objects, object_from_actors):
-            if x_actor_binding is not None and len(x_actor_binding.value) == 1 and \
+            if x_actor_binding is not None and \
                     x_object_binding.value is not None and len(x_object_binding.value) == 1 and is_concept(x_object_binding.value[0]):
                 # Add extra criteria to the concept to represent possession by x_actor
                 x_object = x_object_binding.value[0].add_criteria(rel_objects, x_actor_binding.value[0], "have")
@@ -3299,32 +3299,49 @@ def _be_v_id_much_many_group(context, state_list, e_introduced_binding_list, x_s
     yield state_list
 
 
-# Handles logical propositions "
+# Interpret "Who/What/Where is [x]?" as asking "which instance is [x]"
+# "Who is my son?" --> son1
+# "What is the room with the toilet?" --> bathroom1
+# Require that x_subject is an instance and x_object can be an instance or concept
 @Predication(vocabulary,
              names=["_be_v_id"],
              phrases={
-                 "soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "soup will be a vegetarian dish": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                 "our dishes are specials": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "Which are the open tables?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "Who is my son?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "What is the room with the toilet?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "What is the location of your bathroom?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "My son is my son": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "My soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': ['prop'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
-def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+             properties=[{'SF': ['prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': ['ques'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
+def _be_v_id_instance_concept(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
-        if x_subject in all_instances_and_spec(state, x_object):
-            return True
-
-        elif x_object in all_instances_and_spec(state, x_subject):
-            return True
-
+        if is_concept(x_object):
+            if instance_of_or_entails(context, state, x_subject, x_object):
+                return True
         else:
-            context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
+            if x_subject == x_object:
+                return True
+
+        context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
+        return False
 
     def unbound(x_object):
-        # Since x_object is an instance, something like "what is this thing in front of me?" got said. Something that
-        # generated a very particular instance
-        yield from concept_disjunctions_reverse(state, object_to_store(x_object))
+        if is_concept(x_object):
+            yield from x_object.instances(context, state)
+
+        else:
+            yield x_object
 
     # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
     if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        return
+
+    # Require that the subject is an instance
+    # Only need to check one value since there is never a mix of instances and concepts
+    if x_subject_binding.value is not None and not is_instance(state, x_subject_binding.value[0]):
         return
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
@@ -3333,10 +3350,65 @@ def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_b
 
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
-             properties_from=_be_v_id,
-             handles_interpretation=_be_v_id)
-def _be_v_id_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
-    # If the arguments are concepts constraints need to be checked
+             properties_from=_be_v_id_instance_concept,
+             handles_interpretation=_be_v_id_instance_concept)
+def _be_v_id_instance_concept_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+    # If object is a concept, constraints need to be checked
+    if x_object_variable_group.solution_values[0].value is not None and is_concept(x_object_variable_group.solution_values[0].value[0]):
+        if not check_concept_solution_group_constraints(context, state_list, x_object_variable_group, check_concepts=True):
+            return
+
+    yield state_list
+
+
+# Interpret "Who/What/Where is [x]?" as asking "what does [x] specialize"
+# "Who is my son?" --> a person
+# "What is the room with the toilet?" --> a bathroom
+# Require that x_subject is an concept and x_object is a concept
+@Predication(vocabulary,
+             names=["_be_v_id"],
+             phrases={
+                 "Who is my son?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "What is the room with the toilet?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "What is the location of your bathroom?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': ['prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                         {'SF': ['ques'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
+def _be_v_id_concept_concept(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    def criteria_bound(x_subject, x_object):
+        if x_subject.entails(context, state, x_object):
+            return True
+
+        context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
+        return False
+
+    def unbound(x_object):
+        # The user is asking what sort of thing x_object is.  But x_object might be
+        # a complicated concepts like "People that have different colored eyes" and the base concept
+        # can't be found by examining the type and looking at what the concept specializes (because there might not be an obvious type)
+        # This won't find all the adjectives (i.e. "what is the pork" won't return "smoked"), but that could be added
+        yield from x_object.entails_which_specializations(context, state)
+
+    # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
+    if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        return
+
+    # Require that any bound value is a concept
+    for check_binding in [x_subject_binding, x_object_binding]:
+        if check_binding.value is not None and is_instance(state, check_binding.value[0]):
+            return
+
+    for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
+        yield success_state
+
+
+@Predication(vocabulary,
+             names=["solution_group__be_v_id"],
+             properties_from=_be_v_id_concept_concept,
+             handles_interpretation=_be_v_id_concept_concept)
+def _be_v_id_concept_concept_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+    # If object is a concept, constraints need to be checked
     for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
         if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
             if not check_concept_solution_group_constraints(context, state_list, check_variable_group, check_concepts=True):

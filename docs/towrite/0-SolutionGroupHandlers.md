@@ -1,4 +1,5 @@
 Basic approach:
+- Only handle one interpretation per solution/group handler pair to reduce cognitive load
 - decide if you are going to deal with the instance or concept space
 - if instance:
   - upside is the engine will give you all the solution groups that are valid and you choose

@@ -252,7 +252,7 @@ def instance_of_or_entails(context, state, thing, concept):
     if is_concept(thing):
         return concept.entailed_by(context, state, thing)
     else:
-        return instance_of_what(state, thing)
+        return concept.instances(context, state, potential_instances=[thing])
 
 
 def instance_of_or_concept_name(state, thing):
@@ -575,8 +575,8 @@ class ESLConcept(Concept):
     def has_instance(self, context, state, instance):
         return len(self._meets_criteria(context, state, [instance])) > 0
 
+    # get the actual identifiers of all concepts that meet all the criteria
     def concepts(self, context, state, potential_concepts=None):
-        # get the actual identifiers of all concepts that meet all the criteria
         raw_concepts = self._meets_criteria(context, state, self.sort_to_criteria(rel_all_specializations) +
                                             self.criteria, initial_instances=potential_concepts)
 
@@ -599,6 +599,27 @@ class ESLConcept(Concept):
                 entailed_by.append(smaller_concept)
 
         return entailed_by
+
+    # One way of getting all of the types in the system that this concept "is"
+    # Get all the instances and see what specializations they *all* share
+    def entails_which_specializations(self, context, state):
+        shared_specializations = set()
+        for instance in self.instances(context, state):
+            specializations = set([x for x in all_ancestors(state, instance)])
+            if len(shared_specializations) == 0:
+                shared_specializations = specializations
+
+            else:
+                shared_specializations = shared_specializations & specializations
+                if len(shared_specializations) == 0:
+                    return []
+
+                # Once the intersected set is "thing" it won't ever get bigger than that due to semantics
+                # of set intersection
+                if len(shared_specializations) == 1 and next(iter(shared_specializations)) == "thing":
+                    return shared_specializations
+
+        return shared_specializations
 
     # True if larger_concept entails self, meaning that:
     #   if larger_concept(x) is true then self(x) must be true
@@ -637,7 +658,7 @@ class ESLConcept(Concept):
                 # All instances were also instances of this concept
                 # therefore (inductively), they are entailed
                 entailed.append(item[0])
-                entailed_set.update(item[0])
+                entailed_set.add(item[0])
                 if item[0] in not_entailed_set:
                     not_entailed_set.remove(entailed)
             else:

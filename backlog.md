@@ -1,6 +1,3 @@
-Decide if we want to handle any logical operations for be_v_id besides propositions
-    - Make sure we test various propositions
-
 solution group handler fixes:
 - allow solutions to say "I'm it!" just like groups
 - Have a method to call to say "continue"
@@ -25,6 +22,8 @@ Fix be_v_id to be a good example:
          are different unfungible choices
 - My son needs a vegetarian dish
     - works now but is very slow
+- My soup is a vegetarian dish
+    - very slow
 
 Concept refactor:
     - (done) replace concept_name with simply a criteria that is "sortOf" which is instance or specializes depending on what the caller is asking for
