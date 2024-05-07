@@ -250,11 +250,12 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
 # with just an array of functions in each
 def find_solution_group_handlers(execution_context, this_sentence_force, tree_info):
     handlers = []
-    index_predication = perplexity.tree.find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+    index_predication = perplexity.tree.find_index_predication(tree_info)
     if index_predication is None:
         # The index was not in the tree, which means we are executing a subtree and this
         # means the handlers would not have been run since the index predication is outside the tree
         return handlers, None
+
     for module_function in execution_context.vocabulary.predications("solution_group_" + index_predication.name, index_predication.argument_types(), this_sentence_force):
         handlers.append([True, get_function(module_function), module_function])
 

@@ -612,48 +612,6 @@
     },
     "_be_v_id": {
         "Phrases": {
-            "What are the specials?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "What will be the specials?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How much is the soup?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How much will the soup be?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How many dollars is the soup?": {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "How many dollars will the soup be?": {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
             "soup is a vegetarian dish": {
                 "SF": "prop",
                 "TENSE": "pres",
@@ -670,20 +628,6 @@
             }
         },
         "Properties": [
-            {
-                "SF": "ques",
-                "TENSE": "pres",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            {
-                "SF": "ques",
-                "TENSE": "fut",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
             {
                 "SF": "prop",
                 "TENSE": "pres",
@@ -1919,5 +1863,93 @@
     },
     "_be_v_id_order_group": {
         "PropertiesFrom": "_be_v_id_order_group"
+    },
+    "_be_v_id_list": {
+        "Phrases": {
+            "What are the specials?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "What will be the specials?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_be_v_id_list_group": {
+        "PropertiesFrom": "_be_v_id_list_group"
+    },
+    "_be_v_id_much_many": {
+        "Phrases": {
+            "How much is the soup?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How much will the soup be?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How many dollars is the soup?": {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "How many dollars will the soup be?": {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "ques",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "ques",
+                "TENSE": "fut",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_be_v_id_much_many_group": {
+        "PropertiesFrom": "_be_v_id_much_many_group"
     }
 }

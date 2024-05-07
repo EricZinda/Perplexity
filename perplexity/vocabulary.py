@@ -362,7 +362,18 @@ def check_properties(vocabulary, function_to_decorate, names, metadata, phrases,
     return properties_to_use
 
 
-def Predication(vocabulary, library=None, names=None, arguments=None, phrase_types=None, handles=None, virtual_args=None, matches_lemma_function=None, phrases=None, properties=None, properties_from=None):
+def Predication(vocabulary,
+                library=None,
+                names=None,
+                arguments=None,
+                phrase_types=None,
+                handles=None,
+                virtual_args=None,
+                matches_lemma_function=None,
+                phrases=None,
+                properties=None,
+                properties_from=None,
+                handles_interpretation=None):
     # Work around Python's odd handling of default arguments that are objects
     if handles is None:
         handles = []
@@ -370,6 +381,10 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
         virtual_args = []
     if library is None:
         library = "user"
+    if handles_interpretation is not None and properties_from is not None and handles_interpretation != properties_from:
+        # if handles_interpretation forces this handler to only be called for one interpretation, it doesn't make sense to use
+        # properties from another
+        assert False, f"Predication `properties_from={str(properties_from)}` must be None or match `handles_interpretation={str(handles_interpretation)}`"
 
     # handles = [(Name, EventOption), ...]
     # returns True or False, if False sets an error using report_error
@@ -500,32 +515,51 @@ def Predication(vocabulary, library=None, names=None, arguments=None, phrase_typ
 
                 args = args + new_args
 
+            state = args[system_added_state_arg + extra_arg_in_front_count][0] if is_solution_group else args[system_added_state_arg + extra_arg_in_front_count]
+            tree_info = state.get_binding("tree").value[0]
             if properties_to_use:
                 # Check the properties that the predication can handle vs. what the phrase has
                 # Also collect all properties provided for the verb event
-                state = args[system_added_state_arg][0] if is_solution_group else args[system_added_state_arg]
-                arg0_variable_name = args[system_added_group_arg_count].solution_values[0].variable.name if is_solution_group else args[system_added_arg_count].variable.name
-                tree_info = state.get_binding("tree").value[0]
+                arg0_variable_name = args[system_added_group_arg_count + extra_arg_in_front_count].solution_values[0].variable.name if is_solution_group else args[system_added_arg_count + extra_arg_in_front_count].variable.name
                 phrase_properties = {}
                 assert final_arg_types[0] == "e", f"verb '{function_to_decorate.__module__}.{function_to_decorate.__name__}' doesn't have an event as arg 0"
                 phrase_properties.update(tree_info["Variables"][arg0_variable_name])
                 if missing_properties(properties_to_use, phrase_properties):
-                    args[system_added_context_arg].report_error(["formNotUnderstood", function_to_decorate.__name__])
+                    args[system_added_context_arg + extra_arg_in_front_count].report_error(["formNotUnderstood", function_to_decorate.__name__])
                     return
+
+            # Ensure that this solution group is designed for this interpretation
+            # by comparing the interpretation used for the index_predication and the one
+            # this solution group said it can handle
+            if is_solution_group:
+                if handles_interpretation is not None:
+                    solution_interpretation = state.get_binding("interpretation").value[0]
+                    index_predication = perplexity.tree.find_index_predication(tree_info)
+                    solution_index_interpretation = solution_interpretation[index_predication.index]
+                    if handles_interpretation.__module__ != solution_index_interpretation.module or handles_interpretation.__name__ != solution_index_interpretation.function:
+                            args[system_added_context_arg + extra_arg_in_front_count].report_error(
+                                ["formNotUnderstood", function_to_decorate.__name__])
+                            return
 
             # Make sure the event has a structure that will be properly
             # handled by the predication
-            if is_solution_group or ensure_handles_event(args[system_added_context_arg], args[system_added_state_arg], handles, args[system_added_arg_count]):
+            if is_solution_group or ensure_handles_event(args[system_added_context_arg + extra_arg_in_front_count], args[system_added_state_arg + extra_arg_in_front_count], handles, args[system_added_arg_count + extra_arg_in_front_count]):
                 yield from function_to_decorate(*args, **kwargs)
 
-        # Make sure match_all args are filled in right
+        # Make sure match_all args are filled in properly
         is_match_all = any(name.startswith("match_all_") for name in predication_names)
+        extra_arg_in_front_count = 1 if is_match_all else 0
         valid_match_all = is_match_all and len(predication_names) == 1 and matches_lemma_function is not None
         assert not is_match_all or (is_match_all and valid_match_all)
 
         is_solution_group = any(name.startswith("solution_group") for name in predication_names)
 
-        metadata = PredicationMetadata(function_to_decorate.__module__, function_to_decorate.__name__, library, argument_metadata(function_to_decorate, arguments), is_match_all, matches_lemma_function)
+        metadata = PredicationMetadata(function_to_decorate.__module__,
+                                       function_to_decorate.__name__,
+                                       library,
+                                       argument_metadata(function_to_decorate, arguments),
+                                       is_match_all,
+                                       matches_lemma_function)
         final_arg_types = metadata.arg_types()
         final_phrase_types = phrase_types if phrase_types is not None else phrase_types_from_function(function_to_decorate)
 

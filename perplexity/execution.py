@@ -140,7 +140,9 @@ class TreeSolver(object):
                     else:
                         self._solution_lineages.add(tree_lineage_binding.value[0])
 
-                    yield solution
+                    # Remember which interpretation generated this solution so that we can
+                    # call the right solution group handler later
+                    yield solution.set_x("interpretation", (interpretation, ))
 
             # Fire an error for the last disjunction tree (which might be the whole tree if there were no disjunctions)
             # but only if no solutions were generated
@@ -364,7 +366,6 @@ class TreeSolver(object):
     #   - The same disjunction values must always be together. A disjunction predication can't intermingle the different solution sets.
     #       this allows us to assume that a conjunction has moved on when we encounter a new ID in its position and not have to wait for the
     #       whole set of solutions to be returned and sort them
-
     class MrsTreeLineageGenerator(object):
         def __init__(self, interpretation_solver, state, tree_info, interpretation):
             self.solution_generator = interpretation_solver.solve_tree_interpretation(state, tree_info, interpretation,

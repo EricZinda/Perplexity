@@ -3004,13 +3004,110 @@ def is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
     return False
 
 
-class TaggedValue(object):
-    def __init__(self, value, tag):
-        self.value = value
-        self.tag = tag
+# Handle "what is X?", "where is X?", "who is x?" when it has exactly one unbound argument and one bound concept argument and
+# the concept argument is entailed by at least one menu item
+#
+# Since the bound arg is a concept, we have a choice to make. We need to decide *what kind* of "what is/are ..." question this is:
+#   1. is the person asking us to list the things that are of type x_object? I.e. that specialize it? as in "what are the specials?"
+#   or
+#   2. does "what are your specials?" mean "what property do they all share?" as in "they are vegetarian" or "they are all delicious"?
+#
+# If we are talking about an object which represents a *class* of things on the menu, asking "what" something is almost certainly means
+# "list the classes it represents on the menu!"
+#   "A class of things" means: a concept that will be entailed by at least one other concept. I.e. "what are your light items?"
+#   "what are the cheap choices?"
+#
+# It is probably unusual to ask "What are your vegetarian items" when meaning "what does 'vegetarian item' mean?"
+#
+# Just like above, asking "what is chicken?" could mean "what on the menu includes chicken" or "what is this meat called 'chicken'"
+# This works just like "what are your specials?": see if "[chicken]"  will be entailed by at least one thing on the menu.  If so,
+# it is this case.
+#
+# If our menu contained more complicated items the "what does it mean?" meaning might be used more to get clarification,
+#   as in "what is cardomom?"
+#
+# So, we will interpret anything that is entailed by concepts on the menu to mean "list them"
+#
+# So this means the following would all return a list of things (if we've implemented all the predications):
+# "What is a cheap dish?"
+# "What are things written in text in this room?"
+# "what is edible here?"
+# "what are your small dishes?"
+# "What is vegetarian?
+#
+# These would not match:
+#   "what is my bill?"
+#   "where is a restroom?"
+@Predication(vocabulary,
+             names=["_be_v_id"],
+             phrases={
+                 "What are the specials?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "What will be the specials?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': ['ques'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _be_v_id_list(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    def criteria_bound(x_subject, x_object):
+        # This interpretation only handles unbound arguments
+        if False:
+            yield None
+
+    def unbound(x_object):
+        orderable = orderable_concepts(state)
+        entailed_orderable = x_object.entailed_by_which(context, state, orderable)
+        if len(entailed_orderable) > 0:
+            # The answer to "What is [x]?" where "x" is any concept entailed by at least one menu item
+            # is those menu items
+            yield from entailed_orderable
+            return
+
+    # Don't use this interpretation if we are talking about an "order"
+    if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        return
+
+    # Only handle a single unbound argument
+    subject_unbound = x_subject_binding.value is None
+    object_unbound = x_object_binding.value is None
+    if (subject_unbound and object_unbound) or (not subject_unbound and not object_unbound):
+        return
+
+    # Require that the single unbound argument is a concept
+    # Only need to check one value since there is never a mix of instances and concepts
+    if (not subject_unbound and not is_concept(x_subject_binding.value[0])) or \
+        (not object_unbound and not is_concept(x_object_binding.value[0])):
+        return
+
+    yield from in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound)
 
 
-# This is the implementation for "My order is X" or "What is my order?"
+@Predication(vocabulary,
+             names=["solution_group__be_v_id"],
+             properties_from=_be_v_id_list,
+             handles_interpretation=_be_v_id_list)
+def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+    # Don't use this interpretation if we are talking about an "order"
+    if all([is_be_v_id_order(context,
+                             state,
+                             state.get_binding(x_subject_variable_group.solution_values[0].variable.name),
+                             state.get_binding(x_object_variable_group.solution_values[0].variable.name)) for state in state_list]):
+        context.report_error(["formNotUnderstood"])
+        return
+
+    # Since the arguments are concepts constraints need to be checked
+    for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
+        if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
+            if not check_concept_solution_group_constraints(context, state_list, check_variable_group, check_concepts=True):
+                return
+
+            else:
+                # Now check to make sure these are the most detailed concepts (chicken, soup) and not the higher level ones
+                # (vegetarian, thing) by seeing if there there are any known concepts it is entailed by
+                for concept in check_variable_group.solution_values[0].value[0].concepts(context, state_list[0]):
+                    # There is at least one concept this is entailed by, ignore it
+                    return
+
+    yield state_list
+
+
 @Predication(vocabulary,
              names=["_be_v_id"],
              phrases={
@@ -3063,6 +3160,53 @@ def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_ob
         yield success_state
 
 
+@Predication(vocabulary,
+             names=["solution_group__be_v_id"],
+             properties_from=_be_v_id_order,
+             handles_interpretation=_be_v_id_order)
+def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+    # Since one of the arguments holds concepts, constraints need to be checked
+    # Figure out which argument it is
+    concept_variable_group = None
+    for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
+        if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
+            concept_variable_group = check_variable_group
+            order_variable_group = x_subject_variable_group if x_object_variable_group == check_variable_group else x_object_variable_group
+
+    if not concept_variable_group:
+        # This solution group handler requires conceptual things in an order
+        context.report_error(["formNotUnderstood"])
+        return
+
+    else:
+        # Get the global criteria
+        min = min_from_variable_group(check_variable_group)
+        max = max_from_variable_group(check_variable_group)
+
+        # Figure out the count of things ordered that "are" this concept
+        # Then compare the actual count across the solution group to the global criteria
+        tree_info = state_list[0].get_binding("tree")
+        order = order_variable_group.solution_values[0].value[0]
+        order_foods = sorted([x for x in state_list[0].food_in_order(order)])
+        found_count = 0
+        for food_concept_binding in concept_variable_group.solution_values:
+            for food_concept in food_concept_binding.value:
+                entailed = food_concept.instances(context, state_list[0], order_foods)
+                found_count += len(entailed)
+                for entailed_item in entailed:
+                    order_foods.remove(entailed_item)
+
+        if found_count < min:
+            context.report_error(["phase2LessThan", concept_variable_group.variable_constraints.variable_name, min], force=True, phase=2)
+            return
+
+        elif found_count > max:
+            context.report_error(["phase2MoreThan", concept_variable_group.variable_constraints.variable_name, max], force=True, phase=2)
+            return
+
+        yield state_list
+
+
 def yield_cost_of_subject_into_object(context, state, units, subject_variable, object_variable):
     # Use entailment to check the units so that
     # "How many 'american cash units'" or "How many items of 'green paper used for cash'" would
@@ -3106,120 +3250,39 @@ def yield_cost_of_subject_into_object(context, state, units, subject_variable, o
 @Predication(vocabulary,
              names=["_be_v_id"],
              phrases={
-                 "What are the specials?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "What will be the specials?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "How much is the soup?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "How much will the soup be?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "How many dollars is the soup?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "How many dollars will the soup be?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "soup will be a vegetarian dish": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                 "How many dollars will the soup be?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': ['ques', 'prop'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
-def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+             properties={'SF': ['ques'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _be_v_id_much_many(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         # Just check if this is an object and a measurement, if so, handle it below
         units = measure_units(x_object)
-        if units is not None:
-            return True
-
-        else:
-            if x_subject in all_instances_and_spec(state, x_object):
-                return True
-
-            elif x_object in all_instances_and_spec(state, x_subject):
-                return True
-
-            else:
-                context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
+        return units is not None
 
     def unbound(x_object):
-        # if x_subject is unbound it means the questions is of the form: "what is X", "where is X", "who is x"
-        if is_concept(x_object):
-            # Since x_object is a concept we have a choice to make. We need to decide *what kind* of "what is/are ..." question this is:
-            # 1. is the person asking us to list the things that are of type x_object? I.e. that specialize it? as in "what are the specials?"
-            # or
-            # 2. does "what are your specials?" mean "what property do they all share?" as in "they are vegetarian" or "they are all delicious"?
-            #
-            # If we are talking about an object which represents a *class* of things on the menu, asking "what" they are almost certainly means "list them!"
-            #       "A class of things" means: a concept that will be entailed by at least one other concept
-            #       I.e. "what are your light items?" "what are the cheap choices?"
-            #
-            # It is probably unusual to ask "What are your vegetarian items" when meaning "what does 'vegetarian item' mean?"
-            #
-            # Asking "what is chicken?" could mean "what on the menu includes chicken" or "what is this meat called 'chicken'"
-            # If our menu contained more complicated items the "what does it mean?" meaning might be used more to get clarification,
-            #   as in "what is cardomom?".
-            #
-            # So, we will interpret anything that is entailed by concepts on the menu to mean "list them"
-            #
-            # So this means the following would all return a list of things (if we've implemented all the predications):
-            # "What is a cheap dish?"
-            # "What are things written in text in this room?"
-            # "what is edible here?"
-            # "what are your small dishes?"
-            #
-            # These would not match:
-            #   "what is my bill?"
-            #   "where is a restroom?"
-            orderable = orderable_concepts(state)
-            entailed_orderable = x_object.entailed_by_which(context, state, orderable)
-            if len(entailed_orderable) > 0:
-                # The answer to "What is [x]?" where "x" is any concept entailed by at least one menu item
-                # is those menu items
-                yield from entailed_orderable
-                return
-
-        else:
-            # Since x_object is an instance, something like "what is this thing in front of me?" got said. Something that
-            # generated a very particular instance
-            yield from concept_disjunctions_reverse(state, object_to_store(x_object))
+        if False:
+            yield None
 
     # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
     if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
         return
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
+        # This is a "how much is x" question: we need to measure the value
+        # into the specified variable
         x_object_value = success_state.get_binding(x_object_binding.variable.name).value[0]
         units = measure_units(x_object_value)
-        if units is not None:
-            # This is a "how much is x" question: we need to measure the value
-            # into the specified variable
-            yield from yield_cost_of_subject_into_object(context, success_state, units, x_subject_binding.variable.name, x_object_binding.variable.name)
-
-        else:
-            yield success_state
+        yield from yield_cost_of_subject_into_object(context, success_state, units, x_subject_binding.variable.name, x_object_binding.variable.name)
 
 
-# This is here to remove "there are more" if we are asking about specials...
-# And to check constraints for concepts
-# Scenarios:
-# Which dishes are specials? -> Could be either "which of these dishes is a special" or "which conceptual dishes are specials?"
-#   _which_q(x3,_dish_n_of(x3,i8),udef_q(x9,_special_n_1(x9),_be_v_id(e2,x3,x9)))
-#
-# What are your specials? What are your steaks? What are your tables? -> Almost certainly means "which are the concepts of X?
-#   which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))
-#
-# Which 2 dishes are specials?
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
-             properties_from=_be_v_id)
-def _be_v_id_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
-    # The "my order is ..." or "what is my order" cases are handled elsewhere
-    if all([is_be_v_id_order(context,
-                             state,
-                             state.get_binding(x_subject_variable_group.solution_values[0].variable.name),
-                             state.get_binding(x_object_variable_group.solution_values[0].variable.name)) for state in state_list]):
-        context.report_error(["formNotUnderstood"])
-        return
-
-    # Interpretation of "What are menu items?" as "list the menu items"
-    # Case: "What are the specials/your vegetarian items/etc"
-    # which_q(x3,thing(x3),_the_q(x8,[_dish_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))
-    #   _dish_n_of(x8,i14), _vegetarian_a_1(e13,x8) --> x8 has a constraint of 2..inf
-    #   thing(x3) --> has a constraint of 1..inf
-    # which means
-    # Identified by one or more concept-based solutions that are flagged as "List entailed menu items"
+             properties_from=_be_v_id_much_many,
+             handles_interpretation=_be_v_id_much_many)
+def _be_v_id_much_many_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # If the arguments are concepts constraints need to be checked
     for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
         if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
@@ -3236,61 +3299,50 @@ def _be_v_id_group(context, state_list, e_introduced_binding_list, x_subject_var
     yield state_list
 
 
-# This will run when we have a solution group where subject or object is an order instance and the other argument
-# is a list of concepts that it supposedly "is".  If we got here, the set of concepts was already checked and entails the order
-# for each solution, but we haven't checked the global criteria, which we'll do now.
+# Handles logical propositions "
+@Predication(vocabulary,
+             names=["_be_v_id"],
+             phrases={
+                 "soup is a vegetarian dish": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "soup will be a vegetarian dish": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': ['prop'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _be_v_id(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    def criteria_bound(x_subject, x_object):
+        if x_subject in all_instances_and_spec(state, x_object):
+            return True
+
+        elif x_object in all_instances_and_spec(state, x_subject):
+            return True
+
+        else:
+            context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
+
+    def unbound(x_object):
+        # Since x_object is an instance, something like "what is this thing in front of me?" got said. Something that
+        # generated a very particular instance
+        yield from concept_disjunctions_reverse(state, object_to_store(x_object))
+
+    # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
+    if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        return
+
+    for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
+        yield success_state
+
+
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
-             properties_from=_be_v_id)
-def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
-    # Make sure one of the two arguments is an order instance for all the solutions
-    if not all([is_be_v_id_order(context,
-                                 state,
-                                 state.get_binding(x_subject_variable_group.variable_constraints.variable_name),
-                                 state.get_binding(x_object_variable_group.variable_constraints.variable_name)) for state in state_list]):
-        context.report_error(["formNotUnderstood"])
-        return
-
-    # Since one of the arguments holds concepts, constraints need to be checked
-    # Figure out which argument it is
-    concept_variable_group = None
+             properties_from=_be_v_id,
+             handles_interpretation=_be_v_id)
+def _be_v_id_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+    # If the arguments are concepts constraints need to be checked
     for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
         if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
-            concept_variable_group = check_variable_group
-            order_variable_group = x_subject_variable_group if x_object_variable_group == check_variable_group else x_object_variable_group
+            if not check_concept_solution_group_constraints(context, state_list, check_variable_group, check_concepts=True):
+                return
 
-    if not concept_variable_group:
-        # This solution group handler requires conceptual things in an order
-        context.report_error(["formNotUnderstood"])
-        return
-
-    else:
-        # Get the global criteria
-        min = min_from_variable_group(check_variable_group)
-        max = max_from_variable_group(check_variable_group)
-
-        # Figure out the count of things ordered that "are" this concept
-        # Then compare the actual count across the solution group to the global criteria
-        tree_info = state_list[0].get_binding("tree")
-        order = order_variable_group.solution_values[0].value[0]
-        order_foods = sorted([x for x in state_list[0].food_in_order(order)])
-        found_count = 0
-        for food_concept_binding in concept_variable_group.solution_values:
-            for food_concept in food_concept_binding.value:
-                entailed = food_concept.instances(context, state_list[0], order_foods)
-                found_count += len(entailed)
-                for entailed_item in entailed:
-                    order_foods.remove(entailed_item)
-
-        if found_count < min:
-            context.report_error(["phase2LessThan", concept_variable_group.variable_constraints.variable_name, min], force=True, phase=2)
-            return
-
-        elif found_count > max:
-            context.report_error(["phase2MoreThan", concept_variable_group.variable_constraints.variable_name, max], force=True, phase=2)
-            return
-
-        yield state_list
+    yield state_list
 
 
 @Predication(vocabulary,
