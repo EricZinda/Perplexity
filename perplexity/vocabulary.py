@@ -525,6 +525,7 @@ def Predication(vocabulary,
                 assert final_arg_types[0] == "e", f"verb '{function_to_decorate.__module__}.{function_to_decorate.__name__}' doesn't have an event as arg 0"
                 phrase_properties.update(tree_info["Variables"][arg0_variable_name])
                 if missing_properties(properties_to_use, phrase_properties):
+                    pipeline_logger.debug(f"{function_to_decorate.__name__} --> Form Not Understood: {str(phrase_properties)} is not in {str(properties_to_use)}")
                     args[system_added_context_arg + extra_arg_in_front_count].report_error(["formNotUnderstood", function_to_decorate.__name__])
                     return
 
@@ -537,9 +538,10 @@ def Predication(vocabulary,
                     index_predication = perplexity.tree.find_index_predication(tree_info)
                     solution_index_interpretation = solution_interpretation[index_predication.index]
                     if handles_interpretation.__module__ != solution_index_interpretation.module or handles_interpretation.__name__ != solution_index_interpretation.function:
-                            args[system_added_context_arg + extra_arg_in_front_count].report_error(
-                                ["formNotUnderstood", function_to_decorate.__name__])
-                            return
+                        pipeline_logger.debug(f"{function_to_decorate.__name__} --> solution group handler won't work for this solution")
+                        args[system_added_context_arg + extra_arg_in_front_count].report_error(
+                            ["formNotUnderstood", function_to_decorate.__name__])
+                        return
 
             # Make sure the event has a structure that will be properly
             # handled by the predication

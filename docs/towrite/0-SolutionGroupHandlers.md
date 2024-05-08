@@ -1,4 +1,8 @@
 Basic approach:
+- "What is not soup" is a good example:
+  - which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))
+    - Because it is running under negation, it does not use unbound arguments
+- be_v_id is a good example now
 - Only handle one interpretation per solution/group handler pair to reduce cognitive load
 - decide if you are going to deal with the instance or concept space
 - if instance:

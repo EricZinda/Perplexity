@@ -9,8 +9,18 @@
             "ID": "a93e332f-00e8-4249-bfa1-95180dbd3a8f"
         },
         {
+            "Command": "Soup is a vegetarian item",
+            "Expected": "Yes, that is true.",
+            "Tree": "udef_q(x3,_soup_n_1(x3),_a_q(x8,[_item_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "f0ba7d25-284f-4264-91c7-87eceb97897b"
+        },
+        {
             "Command": "What is my son?",
-            "Expected": "son\n\n(among others)",
+            "Expected": [
+                "son\n\n(among others)",
+                "thing\n\n(among others)"
+            ],
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_son_n_of(x8,i19), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "6ed7a9ca-6f88-4c1c-9fbc-de93b4d7dd0f"
@@ -51,13 +61,6 @@
             "ID": "69c689eb-7d14-4b54-a960-f0aff8c36c09"
         },
         {
-            "Command": "what is vegetarian",
-            "Expected": "soup\nsalad\nWaiter: What can I get you?",
-            "Tree": "which_q(x3,thing(x3),_vegetarian_a_1(e2,x3))",
-            "Enabled": true,
-            "ID": "394d953d-4985-44b5-9145-7d9effa2cda2"
-        },
-        {
             "Command": "what are the vegetarian dishes",
             "Expected": "soup\nsalad\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),_the_q(x8,[_dish_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
@@ -83,7 +86,7 @@
             "Expected": "pork\nsalad\nsteak\nchicken\nsalmon\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))",
             "Enabled": true,
-            "ID": "f0ba7d25-284f-4264-91c7-87eceb97897b"
+            "ID": "29f3e374-7975-43f3-95b6-9c59327ddd34"
         }
     ],
     "ElapsedTime": 4.24451

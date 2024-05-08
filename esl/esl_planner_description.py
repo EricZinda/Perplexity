@@ -194,7 +194,11 @@ def oxford_comma(words):
 
 def convert_to_english(state, what):
     if is_concept(what):
-        return what.concept_name
+        single_sort_name = what.single_sort_name()
+        if single_sort_name is not None:
+            return single_sort_name
+        else:
+            return "something"
 
     if is_type(state, what):
         return what
