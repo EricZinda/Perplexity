@@ -1,4 +1,10 @@
 Basic approach:
+- Have is best example
+  - "What tables do you have?" --> request for more than one table
+  - "What table do you have?" --> just a single table
+  - "What do you have?" --> request for a menu
+  - "Do you have 2 menus?" --> implies one for each of us
+    - Ditto for "Do you have menus", but that could also mean "just one for me"
 - "What is not soup" is a good example:
   - which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))
     - Because it is running under negation, it does not use unbound arguments

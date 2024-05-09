@@ -143,6 +143,8 @@ class TreeSolver(object):
                     # Remember which interpretation generated this solution so that we can
                     # call the right solution group handler later
                     yield solution.set_x("interpretation", (interpretation, ))
+            else:
+                pipeline_logger.debug(f"Tree did not match interpretation properties for: {str(interpretation)}")
 
             # Fire an error for the last disjunction tree (which might be the whole tree if there were no disjunctions)
             # but only if no solutions were generated
@@ -304,6 +306,8 @@ class TreeSolver(object):
                 self.report_error(error.message_object())
 
             if not had_solution:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(f"No solutions from {self._predication_index}: {module_function.module}.{module_function.function}")
                 if self._predication_runtime_settings.get("Disjunction", False):
                     self._lineage_failure_callback(self._context.get_error_info())
 
@@ -408,6 +412,8 @@ class TreeSolver(object):
                 return value
 
             solution = next(self.solution_generator)
+            pipeline_logger.debug(f"MrsTreeLineageGenerator got solution: {str(solution)}")
+
             tree_lineage_binding = solution.get_binding("tree_lineage")
             tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
 

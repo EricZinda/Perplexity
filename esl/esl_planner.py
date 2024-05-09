@@ -6,7 +6,7 @@ from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type,
     AddBillOp, DeleteRelOp, \
     find_unused_item, ResetOrderAndBillOp, object_to_store, \
     find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria, rel_objects, \
-    ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept, orderable_concepts
+    ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept, orderable_concepts, requestable_concepts_by_sort
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation, ResponseLocation
 from perplexity.set_utilities import Measurement
@@ -493,14 +493,7 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
             who_list = group_who[index]
 
         # Now figure out what kind of thing this is by seeing what concepts it entails
-        # entailed_concepts = [x for x in what.concepts(context, state)] + [what]
-        things_we_know = {ESLConcept("table"): ("table", "table"),
-                          ESLConcept("menu"): ("menu", "menu"),
-                          ESLConcept("bill"): ("bill", "bill")}
-
-        # Add all the things you can order
-        for menu_item in orderable_concepts(state):
-            things_we_know[menu_item] = ("menu item", menu_item.single_sort_name())
+        things_we_know = requestable_concepts_by_sort(state)
 
         # Now see if it is a thing we can give the speaker
         concept_analysis = {}
@@ -551,7 +544,7 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
                         task_dict["get_menu"] = [[]]
                     task_dict["get_menu"][0].append(who_list)
 
-                elif concept_name == "menu item":
+                elif concept_name == "dish":
                     if "order_food" not in task_dict:
                         task_dict["order_food"] = [[], []]
                     task_dict["order_food"][0].append(who_list)

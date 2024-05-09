@@ -46,6 +46,18 @@ def user_types():
     yield from ["user", "son1"]
 
 
+def requestable_concepts_by_sort(state):
+    requestable_items = {ESLConcept("table"): ("table", "table"),
+                         ESLConcept("menu"): ("menu", "menu"),
+                         ESLConcept("bill"): ("bill", "bill")}
+
+    # Add all the things you can order
+    for dish in orderable_concepts(state):
+        requestable_items[dish] = ("dish", dish.single_sort_name())
+
+    return requestable_items
+
+
 def orderable_concepts(state):
     things_we_know = []
     for menu_item in rel_subjects(state, "on", "menu"):
@@ -603,23 +615,28 @@ class ESLConcept(Concept):
     # One way of getting all of the types in the system that this concept "is"
     # Get all the instances and see what specializations they *all* share
     def entails_which_specializations(self, context, state):
-        shared_specializations = set()
-        for instance in self.instances(context, state):
-            specializations = set([x for x in all_ancestors(state, instance)])
-            if len(shared_specializations) == 0:
-                shared_specializations = specializations
+        sort = self.single_sort_name()
+        if sort is not None:
+            return [sort]
 
-            else:
-                shared_specializations = shared_specializations & specializations
+        else:
+            shared_specializations = set()
+            for instance in self.instances(context, state):
+                specializations = set([x for x in all_ancestors(state, instance)])
                 if len(shared_specializations) == 0:
-                    return []
+                    shared_specializations = specializations
 
-                # Once the intersected set is "thing" it won't ever get bigger than that due to semantics
-                # of set intersection
-                if len(shared_specializations) == 1 and next(iter(shared_specializations)) == "thing":
-                    return shared_specializations
+                else:
+                    shared_specializations = shared_specializations & specializations
+                    if len(shared_specializations) == 0:
+                        return []
 
-        return shared_specializations
+                    # Once the intersected set is "thing" it won't ever get bigger than that due to semantics
+                    # of set intersection
+                    if len(shared_specializations) == 1 and next(iter(shared_specializations)) == "thing":
+                        return shared_specializations
+
+            return shared_specializations
 
     # True if larger_concept entails self, meaning that:
     #   if larger_concept(x) is true then self(x) must be true

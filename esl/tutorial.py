@@ -1,5 +1,6 @@
 import os
 import sys
+import itertools
 import perplexity.messages
 from esl.esl_planner import do_task
 from esl.esl_planner_description import convert_to_english
@@ -2555,69 +2556,6 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
                                       object_from_actor)
 
 
-# Scenarios:
-#   - "I will have a steak/menu/table." --> restaurant frame special case for requesting
-#   - "I will have a steak/menu/table?" --> Not good english
-#   - "You/they, etc will have x" --> Not good english
-#   - "Will I have a steak/menu/table?" --> Not good english
-#   - "Will you have a table?" --> Not good english
-#   - "What will I have?" --> Not good english
-#   - "Who will have x?" --> Not good english
-@Predication(vocabulary,
-             names=["_have_v_1", "_take_v_1", "_get_v_1"],
-             phrases={
-                 "Let's take|have|get a steak": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "I will take|have|get a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-             },
-             properties=[
-                {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-                ],
-             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)],
-             handles=[("for", EventOption.optional)])
-def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    def both_bound_prediction_function(x_actors, x_objects):
-        nonlocal for_type, x_what_type
-
-        if is_user_type(x_actors):
-            if valid_player_request(context, state, x_objects):
-                if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
-                    for_list = e_introduced_binding.value["for"]["Value"]
-                    result, for_type, x_what_type = for_check(context, state, x_objects, for_list)
-                    return result
-                else:
-                    return True
-            else:
-                return False
-
-        else:
-            # Anything about "you/they will have" is not good english
-            context.report_error(["unexpected", state.get_reprompt()])
-            return False
-
-    def actor_unbound(x_object):
-        # Anything about "what will x have
-        context.report_error(["unexpected", state.get_reprompt()])
-        if False:
-            yield None
-
-    def object_unbound(x_actor):
-        context.report_error(["unexpected", state.get_reprompt()])
-        if False:
-            yield None
-
-    # These get set by each call to lift_style_predication_2
-    for_type = None
-    x_what_type = None
-    for new_state in lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
-                                                both_bound_prediction_function,
-                                                actor_unbound,
-                                                object_unbound):
-        if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
-            for_list = e_introduced_binding.value["for"]["Value"]
-            yield for_update_state(new_state, x_what_type, for_type, x_object_binding, for_list)
-        else:
-            yield new_state
 
 @Predication(vocabulary,
              names=["_get_v_1"],
@@ -2692,12 +2630,81 @@ def _get_v_1_command_group(context, state_list, e_variable_group, x_actor_variab
         return
 
 
+# Handle "I will have a steak/menu/table." as an implied order
+#
+# All the question forms aren't handled:
+#   - "I will have a steak/menu/table?" --> Not good english
+#   - "Will I have a steak/menu/table?" --> Not good english
+#   - "Will you have a table?" --> Not good english
+#   - "What will I have?" --> Not good english
+#   - "Who will have x?" --> Not good english
+@Predication(vocabulary,
+             names=["_have_v_1", "_take_v_1", "_get_v_1"],
+             phrases={
+                 "Let's take|have|get a steak": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "I will take|have|get a steak": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                ],
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)],
+             handles=[("for", EventOption.optional)])
+def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    def both_bound_prediction_function(x_actors, x_objects):
+        nonlocal for_type, x_what_type
+
+        if is_user_type(x_actors):
+            if valid_player_request(context, state, x_objects):
+                if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
+                    # Let's get soup for Johnny"
+                    for_list = e_introduced_binding.value["for"]["Value"]
+                    result, for_type, x_what_type = for_check(context, state, x_objects, for_list)
+                    return result
+
+                else:
+                    return True
+
+            else:
+                return False
+
+        else:
+            # Anything about "you/they will have" is not good english
+            context.report_error(["unexpected", state.get_reprompt()])
+            return False
+
+    def actor_unbound(x_object):
+        # Anything about "what will x have?"
+        context.report_error(["unexpected", state.get_reprompt()])
+        if False:
+            yield None
+
+    def object_unbound(x_actor):
+        # "who will have x?"
+        context.report_error(["unexpected", state.get_reprompt()])
+        if False:
+            yield None
+
+    # These get set by each call to lift_style_predication_2
+    for_type = None
+    x_what_type = None
+    for new_state in lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
+                                                both_bound_prediction_function,
+                                                actor_unbound,
+                                                object_unbound):
+        if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
+            for_list = e_introduced_binding.value["for"]["Value"]
+            yield for_update_state(new_state, x_what_type, for_type, x_object_binding, for_list)
+
+        else:
+            yield new_state
+
+
 @Predication(vocabulary,
              names=["solution_group__have_v_1", "solution_group__take_v_1", "solution_group__get_v_1"],
-             properties_from=_have_v_1_order)
+             properties_from=_have_v_1_order,
+             handles_interpretation=_have_v_1_order)
 def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):
-    # The only valid scenarios for will have are requests, so ...
-    # The planner will only satisfy a want wrt the players
     task = ('satisfy_want',
             context,
             variable_group_values_to_list(x_actor_variable_group),
@@ -2708,142 +2715,169 @@ def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variabl
         yield [final_state]
 
 
-# Works identically to "ordered" since, for non-implied requests like "do you have a menu"
-# We are just checking if facts are true
-# Just purely answers questions about having things in the present tense
-# like have_v_1, BUT: handles some special cases like "do you have a table?"
-# which is really an implied request.
-# Implied requests are always of the form "you" (meaning restaurant) and, because concepts come through first,
-# we will hit these first and interpret them as implied requests
+# Handle phrases of the form "Do you have ..."
+#   Questions like "Do you have a (concept of a) table/menu/bill?" that ask about "having" a thing you could order directly
+#       are implied requests for those things.  Implied requests are always of the form "you" (meaning "the restaurant")
+#       and anything that could have been successfully asked for in the form, "I would like [x]"
+#
+#   Questions like "Do you have specials/meats/vegetarian items?" that entail multiple menu items
+#       are implied requests for a menu
+#
+#   Both can also be of the form "what [x] do you have?"
+#
+# Note that "Do you have a menu?" will eventually try to solve "Do you have menu1?" (i.e. the menu1 instance)
+# which is true and is the next have_v_1 interpretation.  But, because concepts come through first,
+# we will hit this interpretation first and interpret it as an implied request
 @Predication(vocabulary,
              names=["_have_v_1"],
              phrases={
                 "Do you have a table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},          # --> implied table request
-                "Do you have this table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},       # --> fact checking question
                 "What do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},             # --> implied menu request
-                "Do you have a|the menu|bill?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> implied menu request
+                "Do you have a|the menu|bill?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},  # --> implied menu request
                 "What specials do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},    # --> implied request for description of specials
-                "Do I|we have the table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},         # --> ask about the state of the world
-                "Do you have a|the steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},        # --> just asking about the steak, no implied request
                 "Do you have a bill?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},           # --> implied request, kind of
                 "Do you have menus?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},            # --> Could mean "do you have conceptual menus?" or "implied menu request and thus instance check"
-                "Do you have steaks?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},           # --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
-                "We have 2 menus": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}                # --> fact checking question
+                "Do you have steaks?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}            # --> Could mean "do you have more than one preparation of steak" or "Do you have more than one instance of a steak"
              },
-             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
-def _have_v_1_present(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if is_concept(x_actor_binding):
-        context.report_error(["formNotUnderstood", "_have_v_1_present"])
-        return
-
+             properties={'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _have_v_1_request_order(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def bound(x_actor, x_object):
-        # If it is an instance, just answer if x has y
-        if not is_concept(x_object):
-            if rel_check(state, x_actor, "have", x_object):
-                return True
-            else:
-                context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name, state.get_reprompt()])
-                return False
+        # If they are asking if the restaurant "has" anything that they could request,
+        # this is the interpretation
+        if valid_player_request(context, state, [x_object]):
+            return True
 
         else:
-            if x_actor == "restaurant":
-                # "Do you (the restaurant) have (the concept of) x?"
-                # Let the group handler perform the implied request action
-                # or just answer the question, as long as we do have it
-                return rel_check(state, x_actor, "have", x_object.concept_name)
-
-        context.report_error(["verbDoesntApply", convert_to_english(state, x_actor), "have", convert_to_english(state, x_object), state.get_reprompt()])
-        return False
+            context.report_error(["formNotUnderstood", "_have_v_1_request"])
+            return False
 
     def actor_from_object(x_object):
+        # "Who has a steak?" This is a very odd way to ask for a
+        # steak so we assume it isn't a request and thus not handled here
+        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        if False:
+            yield none
+
+    def object_from_actor(x_actor):
+        # "What do you [the restaurant] have?" --> request for a menu
+        # We've already checked in the outer function if actor = restaurant, so ...
+        yield ESLConcept("menu")
+
+    # Must be an instance of an actor with a conceptual object (either can be unbound)
+    if (x_actor_binding.value is not None and is_concept(x_actor_binding)) or (x_object_binding.value is not None and not is_concept(x_object_binding)):
+        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        return
+
+    if (x_actor_binding.value is not None and (len(x_actor_binding.value) > 1 or x_actor_binding.value[0] != "restaurant")):
+        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        return
+
+    requestable_concepts = requestable_concepts_by_sort(state)
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
+                                      object_from_actor)
+
+
+# The solution handler ensures that the actor is "restaurant" and that object is a concept and
+# that the item is requestable
+@Predication(vocabulary,
+             names=["solution_group__have_v_1"],
+             properties_from=_have_v_1_request_order,
+             handles_interpretation=_have_v_1_request_order)
+def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_group, x_object_variable_group):
+    # "Can I have a table/menu/bill?" is really about the instances thus check_concepts=False
+    if not check_concept_solution_group_constraints(context, state_list, x_object_variable_group, check_concepts=False):
+        return
+
+    # If any of the items requested entail more than one menu item, interpret the request as asking for a menu.
+    # For example: "Do you have vegetarian items?" or "Do you have things to drink?"
+    orderable_list = orderable_concepts(state_list[0])
+    final_states = []
+    for x_object_binding in x_object_variable_group.solution_values:
+        x_object_value = x_object_binding.value
+        if len(x_object_value) > 1:
+            # Let's just reduce complexity by not supporting ordering things "together"
+            context.report_error(["errorText", "One thing at a time, please!", state.get_reprompt()], force=True)
+            return
+
+        else:
+            _, bucketed_instances_of_concepts = x_object_value[0].instances_of_concepts(context, state_list[0], orderable_list)
+            if len(bucketed_instances_of_concepts) > 1:
+                task = ('satisfy_want', context, [("user",)], [(ESLConcept("menu"),) ], 1)
+
+            else:
+                min = min_from_variable_group(x_object_variable_group)
+                if min == 2 and x_object_value[0].entails(context, state_list[0], ESLConcept("menu")):
+                    # Something like "Do you have menus? or 2 menus?" was said
+                    # Assume it means we each want one
+                    task = ('satisfy_want', context, [("user",), ("son1",)], [x_object_value, x_object_value], 1)
+
+                else:
+                    task = ('satisfy_want', context, [("user",)], [x_object_value], min_from_variable_group(x_object_variable_group))
+
+            final_state = do_task(state_list[0].world_state_frame(), [task])
+            if final_state:
+                final_states.append(final_state)
+
+            else:
+                return
+
+    yield final_states
+
+
+# This interprets _have_v_1 as simply "does x have y" meaning "have with them", contain, own, etc.
+# Requires that both arguments be instances
+@Predication(vocabulary,
+             names=["_have_v_1"],
+             phrases={
+                "Do you have a kitchen?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Do you have this table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Do I|we have the table?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "Do you have a|the steak?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "We have 2 menus": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I have a son": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _have_v_1_fact_check(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    def bound(x_actor, x_object):
+        if rel_check(state, x_actor, "have", x_object):
+            return True
+
+        else:
+            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name, state.get_reprompt()])
+            return False
+
+    def actor_from_object(x_object):
+        # "who has x"
         found = False
-        for i in rel_subjects(state, "have", object_to_store(x_object)):
+        for i in rel_subjects(state, "have", x_object):
             found = True
-            yield store_to_object(state, i)
+            yield i
 
         if not found:
             context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "has", x_object_binding.variable.name, state.get_reprompt()])
 
     def object_from_actor(x_actor):
+        # "What do I have?"
         found = False
         for i in rel_objects(state, x_actor, "have"):
             found = True
-            yield store_to_object(state, i)
+            yield i
 
         if not found:
             context.report_error(["x_verb_nothing", x_actor_binding.variable.name, "has"])
+
+    # Both arguments must instances
+    if (x_actor_binding.value is not None and is_concept(x_actor_binding)) or (x_object_binding.value is not None and is_concept(x_object_binding)):
+        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        return
 
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
 
-@Predication(vocabulary,
-             names=["solution_group__have_v_1"],
-             properties_from=_have_v_1_present)
-def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list):
-    # The solution predication guarantees that this is either actor and object instances or
-    # actor instance and object concept. We only have to check one solution since they will all be the same
-    first_x_obj = x_obj_list.solution_values[0].value[0]
-    object_concepts = is_concept(first_x_obj)
-
-    if not object_concepts:
-        # This is a "x has y" type statement with instances and these have already been checked
-        yield state_list
-
-    else:
-        # Since this is a concept, the solution handler already checked that the actor is
-        # "restaurant" and that the restaurant "has" the solution group concepts.
-        final_states = []
-        solution_index = -1
-        for state in state_list:
-            solution_index += 1
-            # Deal with the user saying "do you have x and y *together*"
-            x_obj_value = x_obj_list.solution_values[solution_index].value
-            if len(x_obj_value) > 1:
-                context.report_error(["errorText", "One thing at a time, please!", state.get_reprompt()], force=True)
-                return
-
-            # Now we are guaranteed to only have one item in x_obj_value
-            # wh-questions aren't implied requests.  I.e. "which tables do you have?"
-            x_obj = x_obj_value[0]
-            tree_info = state_list[0].get_binding("tree").value[0]
-            wh_variable = is_wh_question(tree_info)
-
-            # Only doing a cursory check to make sure they are talking about things that could
-            # be requests in general. More specific things like "a cheap bill" will be figured out
-            # in the planner and failed if we can't give it
-            if not wh_variable and x_obj.concept_name in ["bill", "table", "menu"]:
-                # "Can I have a table/menu/bill?" is really about the instances
-                # thus check_concepts=False
-                # Fail this group if we don't meet the constraints
-                if not check_concept_solution_group_constraints(context, state_list, x_obj_list, check_concepts=False):
-                    return
-
-                # Questions about "Do you have a (concept of a) table/menu/bill?" are really implied requests in a restaurant
-                # that mean "Can I have a table/menu/bill?"
-                # Note that this is where the concept really gets checked in case they said something like
-                # Do you have a *dirty* menu or something...
-                task = ('satisfy_want', context, [("user",)], [(x_obj,)], 1)
-                final_state = do_task(state_list[0].world_state_frame(), [task])
-                if final_state:
-                    final_states.append(final_state)
-                else:
-                    return
-
-            else:
-                # Not an implied request and the solution predication already confirmed
-                # that the restaurant has this concept, so: succeed
-                # Fail this group if we don't meet the constraints
-                if not check_concept_solution_group_constraints(context, state_list, x_obj_list, check_concepts=True):
-                    return
-
-                final_states.append(state)
-
-        yield final_states
-
-
 # Used only when there is a form of have that means "able to"
-# The regular predication only checks if x is able to have y
+# The solution predication only checks if "x is able to have y" nothing is implied
+# Except: "What can I have?" implies asking for a menu
 @Predication(vocabulary,
              names=["_have_v_1_able", "_get_v_1_able"],
              phrases={
@@ -2856,31 +2890,41 @@ def _have_v_1_present_group(context, state_list, e_list, x_act_list, x_obj_list)
              properties={'SF': 'ques', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
              arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    def both_bound_prediction_function(x_actors, x_objects):
+    def both_bound_prediction_function(x_actor, x_object):
         # Players are able to have any food, a table or a menu
-        if is_user_type(x_actors):
-            return valid_player_request(context, state, x_objects)
+        if is_user_type(x_actor):
+            return valid_player_request(context, state, [x_object])
 
-        # Food is able to have ingredients, restaurant can have food, etc.
-        # Whatever we have modelled
         else:
-            store_actor = object_to_store(x_actors)
-            store_object = object_to_store(x_objects)
+            # "Can the salad have nuts?"
+            # "Can a nut-free salad have nuts?"
+            # Prove via induction any concepts
+            # Because this is "able" as long as one instance has it then it is "able"
+            actor_instances = x_actor.instances(context, state) if is_concept(x_actor) else [x_actor]
+            object_instances = x_object.instances(context, state) if is_concept(x_object) else [x_object]
+            for actor in actor_instances:
+                for object in object_instances:
+                    if rel_check(state, actor, "have", object):
+                        return True
 
-            return rel_check(state, store_actor, "have", store_object)
+            return False
 
-    def actor_unbound(x_objects):
+    def actor_unbound(x_object):
         # What/Who can have x? Comes in unbound because it is reorderable
-        # so we need to return everything that can have x
+        # so we need to return everything that is able to have x
+        # First, see if people can have x
         found = False
-        if valid_player_request(context, state, x_objects):
+        if valid_player_request(context, state, [x_object]):
             found = True
             for item in user_types():
-                yield (item,)
+                yield item
 
-        for item in rel_subjects(state, "have", x_objects):
-            found = True
-            yield (item,)
+        # Now see if anything else can have x via induction
+        object_instances = x_object.instances(context, state) if is_concept(x_object) else [x_object]
+        for object in object_instances:
+            for subject in rel_subjects(state, "have", object):
+                found = True
+                yield subject
 
         if not found:
             context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "have", x_object_binding.variable.name])
@@ -2891,9 +2935,9 @@ def _have_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_obje
         #   - But: this isn't really what they are asking. This is something that is a special phrase in the "restaurant frame" which means: "what is on the menu"
         #     - So it is a special case that we interpret as a request for a menu
         if is_user_type(x_actor):
-            yield (ESLConcept("menu"), )
+            yield ESLConcept("menu")
 
-    yield from lift_style_predication_2(context, state, x_actor_binding, x_object_binding,
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding,
                                         both_bound_prediction_function,
                                         actor_unbound,
                                         object_unbound)

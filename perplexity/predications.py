@@ -550,6 +550,12 @@ def lift_style_predication_2(context, state, binding1, binding2,
 def in_style_predication_2(context, state, binding1, binding2,
                            both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
                            binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+    for func in [binding1_unbound_predication_function,
+                 binding2_unbound_predication_function,
+                 all_unbound_predication_function if all_unbound_predication_function is not None else binding2_unbound_predication_function]:
+        if not inspect.isgenerator(func) and not inspect.isgeneratorfunction(func):
+            assert False, f"function {func.__name__} must be a generator"
+
     def both_bound_set(item1, item2):
         return both_bound_function(item1[0], item2[0])
 

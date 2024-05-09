@@ -38,7 +38,7 @@ def describe_list_analyze(state, context, what_group):
                 elif instance_of_or_entails(context, state, item, menu_concept):
                     analysis["MenuItems"].append(item)
                 elif instance_of_or_entails(context, state, item, bill_concept):
-                    analysis["MenuItems"].append(item)
+                    analysis["Bills"].append(item)
                 else:
                     analysis["Others"].append(item)
 
