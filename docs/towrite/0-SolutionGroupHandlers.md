@@ -1,3 +1,6 @@
+Talk:
+    - interpretation and disjunction
+    - concepts
 Basic approach:
 - Have is best example
   - "What tables do you have?" --> request for more than one table

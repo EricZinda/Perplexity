@@ -1585,7 +1585,7 @@ def _pay_v_for_object(context, state, e_introduced_binding, x_actor_binding, x_o
     def both_bound_prediction_function(x_actor, x_object):
         # Players are able to pay for any food, or the bill
         if is_user_type(x_actor):
-            if valid_player_request(context, state, [x_object], [ESLContext("food"), ESLContext("bill"), ESLContext("check")]):
+            if valid_player_request(context, state, [x_object], [ESLConcept("food"), ESLConcept("bill"), ESLConcept("check")]):
                 return True
             else:
                 context.report_error(["errorText", "You can't pay for that."])
@@ -1594,7 +1594,7 @@ def _pay_v_for_object(context, state, e_introduced_binding, x_actor_binding, x_o
     def actor_unbound(x_object):
         # What/Who can pay for x?
         found = False
-        if valid_player_request(context, state, [x_object], [ESLContext("food"), ESLContext("bill"), ESLContext("check")]):
+        if valid_player_request(context, state, [x_object], [ESLConcept("food"), ESLConcept("bill"), ESLConcept("check")]):
             found = True
             yield from user_types()
 
@@ -2284,7 +2284,7 @@ def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_act
 def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actor, x_object):
         if is_user_type(x_actor):
-            if valid_player_request(context, state, [x_object], [ESLContext("menu")]):
+            if valid_player_request(context, state, [x_object], [ESLConcept("menu")]):
                 return True
             else:
                 context.report_error(["unexpected", state.get_reprompt()])
@@ -2360,7 +2360,7 @@ def _see_v_1_able_group(context, state_list, e_list, x_actor_variable_group, x_o
 def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def both_bound_prediction_function(x_actor, x_object):
         if is_user_type(x_actor):
-            if valid_player_request(context, state, [x_object], [ESLContext("menu")]):
+            if valid_player_request(context, state, [x_object], [ESLConcept("menu")]):
                 return True
             else:
                 context.report_error(["unexpected", state.get_reprompt()])
@@ -2802,7 +2802,17 @@ def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_
         else:
             _, bucketed_instances_of_concepts = x_object_value[0].instances_of_concepts(context, state_list[0], orderable_list)
             if len(bucketed_instances_of_concepts) > 1:
-                task = ('satisfy_want', context, [("user",)], [(ESLConcept("menu"),) ], 1)
+                special_count = 0
+                specials = specials_concepts(state_list[0])
+                for key in bucketed_instances_of_concepts.keys():
+                    if key in specials:
+                        special_count += 1
+
+                if len(specials) == special_count:
+                    # Only asking about specials
+                    task = ('describe', context, [tuple(x for x in bucketed_instances_of_concepts.keys()) ])
+                else:
+                    task = ('satisfy_want', context, [("user",)], [(ESLConcept("menu"),) ], 1)
 
             else:
                 min = min_from_variable_group(x_object_variable_group)

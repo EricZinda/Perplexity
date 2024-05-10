@@ -63,10 +63,17 @@ def orderable_concepts(state):
     for menu_item in rel_subjects(state, "on", "menu"):
         things_we_know.append(ESLConcept(menu_item))
 
-    for menu_item in rel_subjects(state, "specializes", "special"):
-        things_we_know.append(ESLConcept(menu_item))
+    things_we_know += specials_concepts(state)
 
     for menu_item in rel_subjects(state, "specializes", "drink"):
+        things_we_know.append(ESLConcept(menu_item))
+
+    return things_we_know
+
+
+def specials_concepts(state):
+    things_we_know = []
+    for menu_item in rel_subjects(state, "specializes", "special"):
         things_we_know.append(ESLConcept(menu_item))
 
     return things_we_know

@@ -655,14 +655,14 @@
         },
         {
             "Command": "What specials do you have?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"
         },
         {
             "Command": "What are your specials?",
-            "Expected": "soup\nsalad\npork\nWaiter: Can I get you anything else?",
+            "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
@@ -958,5 +958,5 @@
             "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"
         }
     ],
-    "ElapsedTime": 94.26317
+    "ElapsedTime": 225.13832
 }

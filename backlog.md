@@ -1,3 +1,8 @@
+- which dishes are specials -> gives a menu
+    - _which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))
+    - Because:
+        - we describe veggie and meat dishes
+        - Because "meat" covers more than specials, we get a menu
 - allow solution handlers to say "I'm it!" just like groups so the other handlers don't have to run
 - Have a method to call to say "continue" in a solution group handler instead of calling report_error("formNotUnderstood")
 - ESL/be_v fails
