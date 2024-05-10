@@ -669,7 +669,7 @@
         },
         {
             "Command": "Which dishes are specials?",
-            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "082d7d3e-6087-44b3-907b-3b1c6f46348c"

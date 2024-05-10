@@ -2808,7 +2808,7 @@ def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_
                     if key in specials:
                         special_count += 1
 
-                if len(specials) == special_count:
+                if len(specials) >= special_count:
                     # Only asking about specials
                     task = ('describe', context, [tuple(x for x in bucketed_instances_of_concepts.keys()) ])
                 else:
