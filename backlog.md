@@ -1,6 +1,5 @@
 - allow solution handlers to say "I'm it!" just like groups so the other handlers don't have to run
 - Have a method to call to say "continue" in a solution group handler instead of calling report_error("formNotUnderstood")
-
 - ESL/be_v fails
     - "what is not soup" fails now
         -  which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))
@@ -15,14 +14,17 @@
         - "I like any meat" shouldn't pick an arbitrary one
         - 1..inf is correct, but also needs to capture the "any works" as opposed to "a" which might care if there
          are different unfungible choices
-- My son needs a vegetarian dish
-    - works now but is very slow
-- My soup is a vegetarian dish
-    - very slow
+- very slow
+    - My son needs a vegetarian dish
+    - My soup is a vegetarian dish
+    - Which 2 dishes are specials
+    - We'll have one tomato soup and one green salad, please
+
+- How much are the dishes?
 
 Concept refactor:
     - (done) replace concept_name with simply a criteria that is "sortOf" which is instance or specializes depending on what the caller is asking for
-    - see if we can avoid making a replacement method of some kind.  Only allow instances() or concepts() or search_criteria()?
+    - see if we can avoid making a replacement method for `concept_name` of some kind.  Only allow instances() or concepts() or search_criteria()?
     - replace "search_criteria" with meets_criteria() which also ensures there isn't a "not" in there
     - get rid of object_to_store() since it just uses concept_name which is not correct
     - Make the following scenarios work:

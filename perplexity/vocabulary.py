@@ -381,7 +381,10 @@ def Predication(vocabulary,
         virtual_args = []
     if library is None:
         library = "user"
-    if handles_interpretation is not None and properties_from is not None and handles_interpretation != properties_from:
+    if handles_interpretation is not None and not isinstance(handles_interpretation, (list, tuple)):
+        handles_interpretation = (handles_interpretation, )
+
+    if handles_interpretation is not None and properties_from is not None and properties_from not in handles_interpretation:
         # if handles_interpretation forces this handler to only be called for one interpretation, it doesn't make sense to use
         # properties from another
         assert False, f"Predication `properties_from={str(properties_from)}` must be None or match `handles_interpretation={str(handles_interpretation)}`"
@@ -537,10 +540,15 @@ def Predication(vocabulary,
                     solution_interpretation = state.get_binding("interpretation").value[0]
                     index_predication = perplexity.tree.find_index_predication(tree_info)
                     solution_index_interpretation = solution_interpretation[index_predication.index]
-                    if handles_interpretation.__module__ != solution_index_interpretation.module or handles_interpretation.__name__ != solution_index_interpretation.function:
+                    found = False
+                    for handles_item in handles_interpretation:
+                        if handles_item.__module__ == solution_index_interpretation.module and handles_item.__name__ == solution_index_interpretation.function:
+                            found = True
+                            break
+
+                    if not found:
                         pipeline_logger.debug(f"{function_to_decorate.__name__} --> solution group handler won't work for this solution")
-                        args[system_added_context_arg + extra_arg_in_front_count].report_error(
-                            ["formNotUnderstood", function_to_decorate.__name__])
+                        args[system_added_context_arg + extra_arg_in_front_count].report_error(["formNotUnderstood", function_to_decorate.__name__])
                         return
 
             # Make sure the event has a structure that will be properly

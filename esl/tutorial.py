@@ -2703,7 +2703,7 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
 @Predication(vocabulary,
              names=["solution_group__have_v_1", "solution_group__take_v_1", "solution_group__get_v_1"],
              properties_from=_have_v_1_order,
-             handles_interpretation=_have_v_1_order)
+             handles_interpretation=[_have_v_1_order, _start_v_1_order])
 def _have_v_1_order_group(context, state_list, e_variable_group, x_actor_variable_group, x_object_variable_group):
     task = ('satisfy_want',
             context,
@@ -3265,8 +3265,11 @@ def yield_cost_of_subject_into_object(context, state, units, subject_variable, o
             if len(subject_entails_concepts) > 1:
                 yield state.record_operations([RespondOperation("That is more than one thing.")])
                 return False
-            else:
+            elif len(subject_entails_concepts) == 1:
                 entailed_concept = subject_entails_concepts[0]
+
+            else:
+                return
 
         if x_subject_concept is None or entailed_concept == ESLConcept("generic_entity"):
             # Happens for "That will be all, thank you"

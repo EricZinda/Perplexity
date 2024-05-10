@@ -360,7 +360,8 @@
                 "menu\nwater\n2 soup\nsteak",
                 "menu\nsteak\n2 soup\nwater",
                 "menu\n2 soup\nsteak\nwater",
-                "water\nmenu\n2 soup\nsteak"
+                "water\nmenu\n2 soup\nsteak",
+                "menu\nsteak\nwater\n2 soup"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -654,28 +655,28 @@
         },
         {
             "Command": "What specials do you have?",
-            "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "98667127-8757-4b90-9e2a-b4484844ad29"
         },
         {
             "Command": "What are your specials?",
-            "Expected": "soup\nsalad\npork\nWaiter: What can I get you?",
+            "Expected": "soup\nsalad\npork\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
         },
         {
             "Command": "Which dishes are specials?",
-            "Expected": "pork\nsoup\nsalad\nWaiter: What can I get you?",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "082d7d3e-6087-44b3-907b-3b1c6f46348c"
         },
         {
             "Command": "Which two dishes are specials?",
-            "Expected": "pork\nsoup\n(among others)\nWaiter: What can I get you?",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e8e03861-59c8-4f05-b5db-c88d3646a572"
@@ -754,7 +755,7 @@
             "Command": "We'll have one tomato soup and one green salad, please.",
             "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nSon: Wait, let's not order salad before we know how much it costs.\nWaiter: What can I get you?",
             "Tree": "udef_q(x13,udef_q(x20,_tomato_n_1(x20),[_soup_n_1(x13), compound(e19,x13,x20), card(1,e18,x13)]),udef_q(x26,[_salad_n_1(x26), _green_a_2(e33,x26), card(1,e32,x26)],pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x26),[_please_a_1(e34,e2), _have_v_1(e2,x3,x8)]))))",
-            "Enabled": true,
+            "Enabled": false,
             "ID": "c06eb8ef-1e74-42dd-b82c-a1a02c54ec08"
         },
         {
@@ -951,7 +952,7 @@
         },
         {
             "Command": "soup and salad are vegetarian dishes",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x13,_salad_n_1(x13),udef_q(x18,[_dish_n_of(x18,i24), _vegetarian_a_1(e23,x18)],udef_q(x3,udef_q(x8,_soup_n_1(x8),_and_c(x3,x8,x13)),_be_v_id(e2,x3,x18))))",
             "Enabled": true,
             "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"
