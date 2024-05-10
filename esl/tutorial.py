@@ -1843,6 +1843,7 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
     if is_concept(x_actor_binding) or is_concept(x_to_actor_binding):
         context.report_error(["formNotUnderstood", "_show_v_1"])
         return
+
     if not is_computer_type(x_actor_binding.value):
         context.report_error(["dontKnowHow"])
         return
@@ -1851,7 +1852,7 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
         # Do a cursory check to make sure it is some kind of "menu"
         # More detailed check is in the group predication
         if is_user_type(x_actor):
-            if is_concept(x_object) and x_object.concept_name in ["menu"]:
+            if is_concept(x_object) and x_object.entails(context, state, ESLConcept("menu")):
                 return True
 
             else:
@@ -1911,11 +1912,15 @@ def _seat_v_cause(context, state, e_introduced_binding, x_actor_binding, x_objec
         return is_computer_type(x_actor) and is_user_type(x_object)
 
     def wanters_of_obj(x_object):
+        if False:
+            yield None
         # not currently going to support asking who is seating someone
         context.report_error(["formNotUnderstood", "_seat_v_cause"])
         return
 
     def wanted_of_actor(x_actor):
+        if False:
+            yield None
         context.report_error(["formNotUnderstood", "_seat_v_cause"])
         return
 

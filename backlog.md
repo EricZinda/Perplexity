@@ -1,3 +1,4 @@
+- what is the bill --> bill
 - show me the menu -> crashes
 - steak/chicken is a menu item --> very slow now
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
