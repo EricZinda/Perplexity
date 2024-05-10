@@ -66,7 +66,7 @@
         },
         {
             "Command": "I want a vegetarian menu",
-            "Expected": "Host: There isn't such a vegetarian menu here",
+            "Expected": "I'm not sure which vegetarian menu you mean.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_menu_n_1(x8), _vegetarian_a_1(e13,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "98aa8219-aea7-4a10-a917-21bd96368a2d"
@@ -136,14 +136,14 @@
         },
         {
             "Command": "do you have a steak?",
-            "Expected": "Yes.",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "93451d18-612d-427f-bb67-ccea34c7aa58"
         },
         {
             "Command": "do you have the steak?",
-            "Expected": "Yes.",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "ed01aa0e-79b0-4c3d-8443-f9bac852a7d4"

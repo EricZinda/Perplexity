@@ -1,5 +1,7 @@
-- which vegetarian items do you have?
-    - gives a menu
+- show me the menu -> crashes
+- steak/chicken is a menu item --> very slow now
+- which vegetarian/chicken menu items do you have? --> I don't know which you mean
+    - Theory: there are no vegetarian menu items, just specials?
 
 - which dishes are specials -> gives a menu
     - _which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))

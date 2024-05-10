@@ -1862,11 +1862,15 @@ def _show_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
             return
 
     def wanters_of_obj(x_object):
+        if False:
+            yield None
         # not currently going to support asking who is seating someone
         context.report_error(["formNotUnderstood", "_show_v_1"])
         return
 
     def wanted_of_actor(x_actor):
+        if False:
+            yield None
         context.report_error(["formNotUnderstood", "_show_v_1"])
         return
 
