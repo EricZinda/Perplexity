@@ -406,7 +406,7 @@ def get_bill_at_table(state, context, who_group, what_count_constraint):
             if [x for x in state.ordered_but_not_delivered()]:
                 return [('respond', context, "Waiter: Let's finish up this order before we get your bill.")]
 
-            elif state.have_food() and state.sys["responseState"] in ["anticipate_dish", "way_to_pay"]:
+            elif any([x for x in state.have_food()]) and (state.sys["responseState"] in ["anticipate_dish", "way_to_pay"]):
                 return [('respond', context, f"Waiter: Your total is {str(total)} dollars."),
                         ('set_response_state', context, "way_to_pay"),
                         ('reprompt', context)]

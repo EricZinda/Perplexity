@@ -472,7 +472,7 @@
         },
         {
             "Command": "I'd like a table for 3",
-            "Expected": "I'm not sure which table you mean.",
+            "Expected": "I'm not sure which table for 3 thing you mean.",
             "Tree": "_a_q(x11,number_q(x17,card(3,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "17cdb00c-6f14-458d-a810-639281544c82"

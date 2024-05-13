@@ -17,7 +17,7 @@
         },
         {
             "Command": "do you have vegetarian food?",
-            "Expected": "Yes.(there are more)",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_food_n_1(x8), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "0494e3db-dfae-4a1f-aeeb-f08560e495b7"

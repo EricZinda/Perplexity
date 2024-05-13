@@ -3276,41 +3276,42 @@ def yield_cost_of_subject_into_object(context, state, units, subject_variable, o
     # theoretically work
     if units.entailed_by_which(context, state, [ESLConcept("generic_entity"), ESLConcept("dollar")]):
         x_subject_concept = state.get_binding(subject_variable).value[0]
-        entailed_concept = None
-        if x_subject_concept is not None:
-            priced_concepts = [ESLConcept(x) for x in state.sys["prices"].keys()]
-            concepts_we_know = [ESLConcept("generic_entity"), ESLConcept("bill")] + priced_concepts
-            _, subject_entails_concepts = x_subject_concept.entails_which(context, state, concepts_we_know)
-            if len(subject_entails_concepts) > 1:
-                yield state.record_operations([RespondOperation("That is more than one thing.")])
-                return False
-            elif len(subject_entails_concepts) == 1:
-                entailed_concept = subject_entails_concepts[0]
+        if is_concept(x_subject_concept):
+            entailed_concept = None
+            if x_subject_concept is not None:
+                priced_concepts = [ESLConcept(x) for x in state.sys["prices"].keys()]
+                concepts_we_know = [ESLConcept("generic_entity"), ESLConcept("bill")] + priced_concepts
+                _, subject_entails_concepts = x_subject_concept.entails_which(context, state, concepts_we_know)
+                if len(subject_entails_concepts) > 1:
+                    yield state.record_operations([RespondOperation("That is more than one thing.")])
+                    return False
+                elif len(subject_entails_concepts) == 1:
+                    entailed_concept = subject_entails_concepts[0]
 
-            else:
+                else:
+                    return
+
+            if x_subject_concept is None or entailed_concept == ESLConcept("generic_entity"):
+                # Happens for "That will be all, thank you"
                 return
 
-        if x_subject_concept is None or entailed_concept == ESLConcept("generic_entity"):
-            # Happens for "That will be all, thank you"
-            return
+            elif entailed_concept in priced_concepts:
+                concept_name = entailed_concept.single_sort_name()
+                price = Measurement("dollar", state.sys["prices"][concept_name])
 
-        elif entailed_concept in priced_concepts:
-            concept_name = entailed_concept.single_sort_name()
-            price = Measurement("dollar", state.sys["prices"][concept_name])
+                # Remember that we now know the price
+                yield state.set_x(object_variable, (price,)).record_operations([SetKnownPriceOp(concept_name)])
 
-            # Remember that we now know the price
-            yield state.set_x(object_variable, (price,)).record_operations([SetKnownPriceOp(concept_name)])
+            elif entailed_concept == ESLConcept("bill"):
+                total = list(rel_objects(state, "bill1", "valueOf"))
+                if len(total) == 0:
+                    total.append(0)
+                price = Measurement("dollar", total[0])
+                yield state.set_x(object_variable, (price,))
 
-        elif entailed_concept == ESLConcept("bill"):
-            total = list(rel_objects(state, "bill1", "valueOf"))
-            if len(total) == 0:
-                total.append(0)
-            price = Measurement("dollar", total[0])
-            yield state.set_x(object_variable, (price,))
-
-        else:
-            yield state.record_operations([RespondOperation("Haha, it's not for sale.")])
-            return False
+            else:
+                yield state.record_operations([RespondOperation("Haha, it's not for sale.")])
+                return False
 
 
 @Predication(vocabulary,
@@ -3454,7 +3455,8 @@ def _be_v_id_concept_concept(context, state, e_introduced_binding, x_subject_bin
         # a complicated concepts like "People that have different colored eyes" and the base concept
         # can't be found by examining the type and looking at what the concept specializes (because there might not be an obvious type)
         # This won't find all the adjectives (i.e. "what is the pork" won't return "smoked"), but that could be added
-        yield from x_object.entails_which_specializations(context, state)
+        for item in x_object.entails_which_specializations(context, state):
+            yield ESLConcept(item)
 
     # Don't use this interpretation if we are talking about an "order", we have a different implementation for that
     if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
@@ -3462,7 +3464,7 @@ def _be_v_id_concept_concept(context, state, e_introduced_binding, x_subject_bin
 
     # Require that any bound value is a concept
     for check_binding in [x_subject_binding, x_object_binding]:
-        if check_binding.value is not None and is_instance(state, check_binding.value[0]):
+        if check_binding.value is not None and not is_concept(check_binding.value[0]):
             return
 
     for success_state in in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):

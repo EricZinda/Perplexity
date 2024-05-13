@@ -98,6 +98,9 @@ def describe_analyzed_at_table(state, context, analysis):
                         ('reprompt', context)]
         return new_methods
 
+    if len(analysis["Bills"]) > 0:
+        return [('get_bill', context, [('user', )], 1)]
+
     analysis_specials_count = len(analysis["Specials"])
     if analysis_specials_count > 0:
         if not heard_specials:
