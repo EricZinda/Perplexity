@@ -227,24 +227,25 @@ def all_instances(state, thing):
 def all_instances_and_spec(state, thing):
     yield thing
 
-    proc = [thing]
-    proc_idx = 0
-    inst = set()
+    process_list = [thing]
+    process_index = 0
+    instances = set()
 
-    while proc_idx < len(proc):
-        to_process = proc[proc_idx]
-        for i in state.all_rel("specializes"):
-            if i[1] == to_process:
-                if i[0] not in proc:
-                    proc += [i[0]]
-                    yield i[0]
+    while process_index < len(process_list):
+        to_process = process_list[process_index]
+        for subject_object in state.all_rel("specializes"):
+            if subject_object[1] == to_process:
+                if subject_object[0] not in process_list:
+                    process_list += [subject_object[0]]
+                    yield subject_object[0]
 
-        for i in state.all_rel("instanceOf"):
-            if i[1] == to_process:
-                if i[0] not in inst:
-                    yield i[0]
-                    inst.add(i[0])
-        proc_idx += 1
+        for subject_object in state.all_rel("instanceOf"):
+            if subject_object[1] == to_process:
+                if subject_object[0] not in instances:
+                    yield subject_object[0]
+                    instances.add(subject_object[0])
+
+        process_index += 1
 
 
 def all_ancestors(state, thing):
@@ -752,6 +753,9 @@ def load_world_state(file):
     return WorldState(rel, sys)
 
 
+inherited_relationships = {"isAdj"}
+
+
 class WorldState(State):
     def __init__(self, relations, system, name=None, world_state_frame=None):
         super().__init__([])
@@ -821,8 +825,21 @@ class WorldState(State):
     def all_rel(self, rel):
         if rel not in self._rel.keys():
             return
+
         else:
-            yield from [(x[0], x[1]) for x in self._rel[rel]]
+            if rel in inherited_relationships:
+                processed = set()
+                for subject_object in self._rel[rel]:
+                    # If subject is a type yield this relationship on all children
+                    # Add each yielded item into a set so we don't do it again
+                    # All specializations and all instances of them also have this property
+                    for item in all_instances_and_spec(self, subject_object[0]):
+                        if item not in processed:
+                            yield item, subject_object[1]
+                            processed.add(item)
+
+            else:
+                yield from [(x[0], x[1]) for x in self._rel[rel]]
 
     def rel_exists(self, rel):
         return rel in self._rel.keys()
@@ -985,6 +1002,8 @@ class WorldState(State):
         world_state = self.world_state_frame()
         world_state.sys["responseState"] = new_state
 
+    # Just get a unique list of all identifiers used as
+    # subjects or objects
     def get_entities(self):
         entities = set()
         for i in self._rel.keys():

@@ -1278,8 +1278,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             return True
 
         else:
-            store_value = object_to_store(value)
-            noun_lemmas = [store_value] + [x for x in rel_objects(state, "hasSynonym", store_value)]
+            noun_lemmas = [value] + [x for x in rel_objects(state, "hasSynonym", value)]
             if any([sort_of(state, x, noun_type) for x in noun_lemmas]):
                 return True
 
@@ -1299,6 +1298,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             new_x_binding = new_state.get_binding(x_binding.variable.name)
             x = new_x_binding.value[0].add_criteria(rel_sort_of, None, noun_type)
             yield state.set_x(new_x_binding.variable.name, (x,))
+
         else:
             yield new_state
 
@@ -1387,6 +1387,7 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
         if new_x_binding is not None and len(new_x_binding.value) == 1 and is_concept(new_x_binding.value[0]):
             x = new_x_binding.value[0].add_criteria(rel_subjects, "isAdj", adjective_type)
             yield state.set_x(new_x_binding.variable.name, (x,))
+
         else:
             yield new_state
 

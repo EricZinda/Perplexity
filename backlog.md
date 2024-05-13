@@ -1,5 +1,5 @@
 
-- how much is the green salad? -> the green salad is not thing
+
 
 - show me the menu -> crashes
 - steak/chicken is a menu item --> very slow now
