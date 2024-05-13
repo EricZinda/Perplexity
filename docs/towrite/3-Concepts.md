@@ -1,3 +1,5 @@
+Issue: building up a concept sometimes requires changing the binding on a variable.  Is this OK?  See compound() which changes the value of the left side
+
 ## Concepts in Solution Groups
 If a given MRS variable contains a concept:
 Phase 1:

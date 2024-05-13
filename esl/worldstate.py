@@ -311,13 +311,17 @@ def location_of_type(state, who, where_type):
     return True
 
 
-def count_of_instances_and_concepts(context, state, concepts_original):
+def count_of_instances_and_concepts(context, state, variable, concepts_original):
     concepts = concepts_original
     concept_count = len(concepts)
 
     instances = []
     for concept in concepts:
-        instances += list(concept.instances(context, state))
+        this_concept_instances = list(concept.instances(context, state))
+        if len(this_concept_instances) == 0:
+            context.report_error(["noInstancesOfConcept", variable], force=True, phase=2)
+            return None
+        instances += this_concept_instances
     instance_count = len(instances)
 
     scope_data = in_scope_initialize(state)
@@ -620,7 +624,7 @@ class ESLConcept(Concept):
 
         return entailed_by
 
-    # One way of getting all of the types in the system that this concept "is"
+    # One way of getting all the types in the system that this concept "is"
     # Get all the instances and see what specializations they *all* share
     def entails_which_specializations(self, context, state):
         sort = self.single_sort_name()

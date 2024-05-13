@@ -46,22 +46,25 @@ def check_concept_solution_group_constraints(context, state_list, x_what_variabl
     x_what_individuals_set = set()
     for value in x_what_values:
         x_what_individuals_set.update(value)
-    concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = count_of_instances_and_concepts(
-        context, state_list[0], list(x_what_individuals_set))
-    success = concept_meets_constraint(context,
-                                        state_list[0].get_binding("tree").value[0],
-                                        x_what_variable_group.variable_constraints,
-                                        concept_count,
-                                        concept_in_scope_count,
-                                        instance_count,
-                                        instance_in_scope_count,
-                                        check_concepts,
-                                        variable=x_what_variable,
-                                        value=x_what_variable_group.solution_values[0].value[0])
-    if not success:
-        pipeline_logger.debug(f"check_concept_solution_group_constraints failed: {context.error()}")
+    counts = count_of_instances_and_concepts(context, state_list[0], x_what_variable, list(x_what_individuals_set))
+    if counts is None:
+        return False
+    else:
+        concept_count, concept_in_scope_count, instance_count, instance_in_scope_count = counts
+        success = concept_meets_constraint(context,
+                                            state_list[0].get_binding("tree").value[0],
+                                            x_what_variable_group.variable_constraints,
+                                            concept_count,
+                                            concept_in_scope_count,
+                                            instance_count,
+                                            instance_in_scope_count,
+                                            check_concepts,
+                                            variable=x_what_variable,
+                                            value=x_what_variable_group.solution_values[0].value[0])
+        if not success:
+            pipeline_logger.debug(f"check_concept_solution_group_constraints failed: {context.error()}")
 
-    return success
+        return success
 
 def is_past_tense(tree_info):
     return tree_info["Variables"][tree_info["Index"]]["TENSE"] in ["past"]
@@ -751,8 +754,8 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
         if x_left_binding.value[0] == x_right_binding.value[0]:
             yield state
 
-        elif len(x_right_binding.value) == 1 and isinstance(x_right_binding.value[0], str) and x_right_binding.value[
-                0].lower() in greetings():
+        elif len(x_right_binding.value) == 1 and isinstance(x_right_binding.value[0], str) and \
+                x_right_binding.value[0].lower() in greetings():
             # Handle "Hi/Howdy, ...phrase..."
             yield state
 
@@ -765,7 +768,7 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
         #         yield state
 
         elif is_concept(x_right_binding.value[0]):
-            # This clause handles compounds where the item in question is both words like "vegetarian dish", i.e. the
+            # This part handles compounds where the item in question is both words like "vegetarian dish", i.e. the
             # item is vegetarian and is a dish.  Contrast with "bicycle seat" where it is a seat, but not a bicycle.
             # The right side is the first word -- like "vegetarian" in "vegetarian dish"
             # Because it is a concept we require that the left side is also a concept and we merge them into
@@ -773,7 +776,14 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
             if is_concept(x_left_binding.value[0]):
                 new_concept = x_left_binding.value[0].add_conjunction(x_right_binding.value[0])
                 yield state.set_x(x_left_binding.variable.name, (new_concept,))
-                return
+
+                # Handle compounds where the first word is modelled as an adjective, but is a noun.
+                # For example: "tomato soup" has "soup isAdj tomato" not "soup instanceOf tomato"
+                # Note that this two ways of handling above and here are not disjunctions since it is valid
+                # to have a solution group with both approaches
+                for type in x_right_binding.value[0].entails_which_specializations(context, state):
+                    new_adj_concept = x_left_binding.value[0].add_criteria(rel_subjects, "isAdj", type)
+                    yield state.set_x(x_left_binding.variable.name, (new_adj_concept,))
 
             # # Records that predication index X is a disjunction
             # context.set_disjunction()
@@ -1747,12 +1757,8 @@ def want_group_helper(context, state_list, e_introduced_binding_list, x_actor_va
         # (as in "I want a steak" meaning "I want 1 instance of the concept of steak", we tell
         # check_concept_solution_group_constraints to check instances via check_concepts=False
         if check_concept_solution_group_constraints(context, state_list, x_what_variable_group, check_concepts=False):
-            # Even though it is only one thing, they could have said something like "We want steaks" so they really want more than one
-            # Give them the minimum number by adding a card() predication into the concept
-            #   - card(state, c_number, e_binding, x_binding):
-            # args = [x_what_variable_group.variable_constraints.min_size, "e999", first_x_what_binding_value.variable_name]
-            # first_x_what_binding_value = first_x_what_binding_value.add_modifier(TreePredication(0, "card", args, arg_names=["CARG", "ARG0", "ARG1"]))
-            # actor_values = [x.value for x in x_actor_variable_group.solution_values]
+            # Even though it is only one type of thing, they could have said something like "We want steaks"
+            # so they really want more than one instance
             current_state = do_task(current_state.world_state_frame(),
                                     [('satisfy_want',
                                       context,
