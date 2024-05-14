@@ -1,8 +1,5 @@
+->
 
-- The soup is tomato --> soup is not tomato
-
--> I want a green dish and a tomato dish --> never stops?
-- show me the menu -> crashes
 - steak/chicken is a menu item --> very slow now
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
     - Theory: there are no vegetarian menu items, just specials?
@@ -21,6 +18,7 @@
             - _be_v_id_list_group just does a return, but somehow we report a formNotUnderstood error
                 - It is left over from a previous predication
 
+- What is my food? -> never finishes?
 - I will have any meat -> Sorry, I'm not sure which one you mean.
     - pronoun_q(x3,pron(x3),_any_q(x8,_meat_n_1(x8),_have_v_1(e2,x3,x8)))
     - should be: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.

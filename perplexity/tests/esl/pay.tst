@@ -73,7 +73,7 @@
         },
         {
             "Command": "What can I pay?",
-            "Expected": "bill\nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,x5,i16)))",
             "Enabled": true,
             "ID": "efb15731-65f2-46d7-988e-f88c537cfc2f"
@@ -163,5 +163,5 @@
             "ID": "35300d37-33ae-42eb-b8c8-f6945a26647e"
         }
     ],
-    "ElapsedTime": 12.28056
+    "ElapsedTime": 10.94622
 }

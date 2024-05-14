@@ -768,15 +768,7 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
         #         yield state
 
         elif is_concept(x_right_binding.value[0]):
-            # This part handles compounds where the item in question is both words like "vegetarian dish", i.e. the
-            # item is vegetarian and is a dish.  Contrast with "bicycle seat" where it is a seat, but not a bicycle.
-            # The right side is the first word -- like "vegetarian" in "vegetarian dish"
-            # Because it is a concept we require that the left side is also a concept and we merge them into
-            # a single concept by adding their criteria in conjunction
             if is_concept(x_left_binding.value[0]):
-                new_concept = x_left_binding.value[0].add_conjunction(x_right_binding.value[0])
-                yield state.set_x(x_left_binding.variable.name, (new_concept,))
-
                 # Handle compounds where the first word is modelled as an adjective, but is a noun.
                 # For example: "tomato soup" has "soup isAdj tomato" not "soup instanceOf tomato"
                 # Note that this two ways of handling above and here are not disjunctions since it is valid
@@ -784,6 +776,15 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
                 for type in x_right_binding.value[0].entails_which_specializations(context, state):
                     new_adj_concept = x_left_binding.value[0].add_criteria(rel_subjects, "isAdj", type)
                     yield state.set_x(x_left_binding.variable.name, (new_adj_concept,))
+
+                # This part handles compounds where the item in question is both words like "vegetarian dish", i.e. the
+                # item is vegetarian and is a dish.  Contrast with "bicycle seat" where it is a seat, but not a bicycle.
+                # The right side is the first word -- like "vegetarian" in "vegetarian dish"
+                # Because it is a concept we require that the left side is also a concept and we merge them into
+                # a single concept by adding their criteria in conjunction
+                new_concept = x_left_binding.value[0].add_conjunction(x_right_binding.value[0])
+                yield state.set_x(x_left_binding.variable.name, (new_concept,))
+
 
             # # Records that predication index X is a disjunction
             # context.set_disjunction()

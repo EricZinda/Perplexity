@@ -24,28 +24,28 @@
         },
         {
             "Command": "which vegetarian menu items do you have?",
-            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,udef_q(x11,_menu_n_1(x11),[_item_n_of(x5,i16), compound(e10,x5,x11), _vegetarian_a_1(e9,x5)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "37e73c8f-ea36-4f95-8afc-7efa06823a41"
         },
         {
             "Command": "which vegetarian specialities do you have?",
-            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Expected": "soup\nsalad\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,[_speciality_n_1(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "279ea601-fe4b-4d46-a24d-33334fc63dfb"
         },
         {
             "Command": "which vegetarian menu choices do you have?",
-            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,udef_q(x11,_menu_n_1(x11),[_choice_n_of(x5,i16), compound(e10,x5,x11), _vegetarian_a_1(e9,x5)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "bad3cea5-19d2-4c65-868d-a95e425861f6"
         },
         {
             "Command": "which vegetarian mains do you have?",
-            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Expected": "soup\nsalad\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,[_main_n_1(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "b1cad5fa-263e-4a4d-964a-ed03d45e98a6"
@@ -72,5 +72,5 @@
             "ID": "26fc6f0a-7692-4135-8859-c27a1b3e9129"
         }
     ],
-    "ElapsedTime": 3.15217
+    "ElapsedTime": 3.45788
 }
