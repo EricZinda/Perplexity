@@ -1310,6 +1310,11 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             x = new_x_binding.value[0].add_criteria(rel_sort_of, None, noun_type)
             yield state.set_x(new_x_binding.variable.name, (x,))
 
+            # A different way of representing that something "is" something is that it has
+            # that adjective
+            new_adj_concept = new_x_binding.value[0].add_criteria(rel_subjects, "isAdj", type)
+            yield state.set_x(new_x_binding.variable.name, (new_adj_concept,))
+
         else:
             yield new_state
 
@@ -1319,12 +1324,16 @@ def match_all_n_instances(noun_type, context, state, x_binding):
     def bound_variable(value):
         if sort_of(state, value, noun_type):
             return True
+
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
             return False
 
     def unbound_variable_instances():
         for item in all_instances(state, noun_type):
+            yield item
+
+        for item in rel_subjects(state, "isAdj", noun_type):
             yield item
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances)
@@ -1488,7 +1497,7 @@ class PastParticiple:
         def unbound():
             for i in state.all_rel("isAdj"):
                 if object_to_store(i[1]) == self.lemma:
-                    yield i[0]
+                    yield store_to_object(state, i[0])
 
         yield from combinatorial_predication_1(context, state, x_target_binding,
                                                bound,

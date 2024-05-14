@@ -1,4 +1,21 @@
-->
+"I want tomato soup" does not work if I have soup
+    - because compound doesn't work on instances
+                                                                                ┌── _soup_n_1(x8)
+                     ┌────── _tomato_n_1(x14)                               │
+                     │                                          ┌────── and(0,1)
+        udef_q(x14,RSTR,BODY)               ┌────── pron(x3)    │             │
+                          │                 │                   │             └ compound(e13,x8,x14)
+                          └─ pronoun_q(x3,RSTR,BODY)            │
+                                                 └─ udef_q(x8,RSTR,BODY)
+                                                                     └─ _have_v_1(e2,x3,x8)
+
+        Text Tree: udef_q(x14,_tomato_n_1(x14),pronoun_q(x3,pron(x3),udef_q(x8,[_soup_n_1(x8), compound(e13,x8,x14)],_have_v_1(e2,x3,x8))))
+    - Nouns should be looked up by isAdj and sortOf
+
+- "what is grilled?" --> salmon
+    - expected: Oh, I forgot to give you the menu! I'll get you one right away.
+
+- Soup is a vegetarian item --> very slow now
 
 - steak/chicken is a menu item --> very slow now
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean

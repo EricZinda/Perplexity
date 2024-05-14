@@ -126,6 +126,12 @@ def concept_disjunctions(state, root_concept, ignore_root=False):
                 object = store_to_object(state, next_level_type)
                 object.level_index = lineage
                 yield DisjunctionValue(lineage, object)
+
+                # A different way of representing that something "is" something is that it has
+                # that adjective
+                adj_concept = ESLConcept().add_criteria(rel_subjects, "isAdj", type)
+                yield DisjunctionValue(lineage, adj_concept)
+
             for item in immediate_specializations(state, next_level_type):
                 next_next_level.append(item)
 
@@ -515,7 +521,7 @@ class ResponseStateOp(object):
 
 
 class ESLConcept(Concept):
-    def __init__(self, sort_of, mrs_variable=None):
+    def __init__(self, sort_of="thing", mrs_variable=None):
         super().__init__(sort_of)
         self.criteria = []
         self.conjunctions = []

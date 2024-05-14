@@ -107,13 +107,6 @@
             "ID": "ab1a2cce-d9ea-4f9d-917a-268f48cf72c9"
         },
         {
-            "Command": "do you have the grilled salmon",
-            "Expected": "Yes.",
-            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8)))",
-            "Enabled": true,
-            "ID": "00535794-2db5-44cc-9bb8-47c95f1bd988"
-        },
-        {
             "Command": "what is grilled?",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x3,thing(x3),_grill_v_1(e2,i8,x3))",
@@ -149,15 +142,22 @@
             "ID": "81ff3323-9450-4546-9bd0-f07f2156fcab"
         },
         {
+            "Command": "do you have the grilled salmon",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "00535794-2db5-44cc-9bb8-47c95f1bd988"
+        },
+        {
             "Command": "do you have the smoked pork",
-            "Expected": "Yes.",
+            "Expected": "Son: Wait, let's not order pork before we know how much it costs.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_pork_n_1(x8), _smoke_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "356262cd-6d0e-4ea9-8f1d-7cb83a06ef11"
         },
         {
             "Command": "I want the grilled salmon",
-            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Son: Wait, we already spent $12 so if we get 1 salmon, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "07526a10-6eaa-43f9-b1ed-25f12369342a"
@@ -199,14 +199,14 @@
         },
         {
             "Command": "do you have the roasted chicken",
-            "Expected": "Yes.",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_chicken_n_1(x8), _roast_v_cause(e13,i14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "9818d448-e378-4a12-9ab0-828be345f34b"
         },
         {
             "Command": "I want the roasted chicken",
-            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Son: Wait, we already spent $19 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_chicken_n_1(x8), _roast_v_cause(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "a69bd72f-0a97-423e-98e8-2947e8d8d5ab"
@@ -219,5 +219,5 @@
             "ID": "affd8599-3ae9-43f7-bd7b-e53fb3eb7fcb"
         }
     ],
-    "ElapsedTime": 10.0293
+    "ElapsedTime": 13.00937
 }

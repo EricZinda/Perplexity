@@ -118,7 +118,7 @@ class TestFolderIterator(object):
             self.current_test = test_manager.get_session_data("LastTest")
 
     def __iter__(self):
-        for filename in os.listdir(self.test_manager.full_test_path(self.test_folder)):
+        for filename in sorted(os.listdir(self.test_manager.full_test_path(self.test_folder))):
             if filename.lower().endswith(".tst"):
                 self.record_time = not running_under_debugger()
                 self.test_path_and_file = os.path.join(self.test_manager.full_test_path(self.test_folder), filename)
