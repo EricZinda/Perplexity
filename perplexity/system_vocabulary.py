@@ -23,7 +23,11 @@ def rstr_reorderable(context, rstr):
 
 
 # Yield all undetermined, unquantified answers
-def quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, criteria_predication=None, reversed=False):
+def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
+    reversed = rstr_reorderable(context, h_rstr_orig)
+    h_rstr = h_body_orig if reversed else h_rstr_orig
+    h_body = h_rstr_orig if reversed else h_body_orig
+
     variable_name = x_variable_binding.variable.name
     rstr_values = set()
     rstr_values_tree_lineage = ""
@@ -142,11 +146,7 @@ def every_each_q(context, state, x_variable_binding, h_rstr, h_body):
 
 
 @Predication(vocabulary, library="system", names=["which_q", "_which_q"])
-def which_q(context, state, x_variable_binding, h_rstr_orig, h_body_orig):
-    reverse = rstr_reorderable(context, h_rstr_orig)
-    h_rstr = h_body_orig if reverse else h_rstr_orig
-    h_body = h_rstr_orig if reverse else h_body_orig
-
+def which_q(context, state, x_variable_binding, h_rstr, h_body):
     current_predication = context.current_predication()
 
     state = state.set_variable_data(x_variable_binding.variable.name,
@@ -155,7 +155,7 @@ def which_q(context, state, x_variable_binding, h_rstr_orig, h_body_orig):
                                                                 min_size=1,
                                                                 max_size=float('inf')))
 
-    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body, reversed=reverse)
+    yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
 # Examples of "any":

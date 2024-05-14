@@ -1,15 +1,3 @@
-- How much is the tomato soup returns duplicates
-                                                               ┌────── _tomato_n_1(x21)
-                                          ┌────── udef_q(x21,RSTR,BODY)    ┌── _soup_n_1(x3)
-                                          │                         └─ and(0,1)
-                      ┌────── abstr_deg(x1│)                                 └ compound(e20,x3,x21)
-        which_q(x10,RSTR,BODY)            │
-                           └─ _the_q(x3,RSTR,BODY)
-                                               │                                 ┌────── generic_entity(x5)
-                                               │                   ┌ udef_q(x5,RSTR,BODY)
-                                               └─ count(e14,x10,x5,3)                 └─ _be_v_id(e2,x3,x5)
-        Text Tree: which_q(x10,abstr_deg(x10),_the_q(x3,udef_q(x21,_tomato_n_1(x21),[_soup_n_1(x3), compound(e20,x3,x21)]),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))
-
 - Soup is a vegetarian item --> very slow now
     - udef_q(x3,_soup_n_1(x3),_a_q(x8,[_item_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))
     - Tree #0, interpretation #1: 'perplexity.system_vocabulary.generic_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.a_q, __main__.match_all_n_i_concepts,
@@ -23,8 +11,11 @@
             - udef_q(x3,_soup_n_1(x3),_a_q(x8,_item_n_of(x8,i13),_be_v_id(e2,x3,x8)))
             - it is the "thing" problem
             - TODO: give a way for apps to include more predicates in the list
-            - TODO: Soup is an item doesn't work when reversed because it doesn't swap out "item"
-                - instances aren't handled for synonyms
+            - TODO: Soup is an item doesn't work when reversed because it doesn't reverse "item"
+                - Fix: all quantifiers should reverse
+                - because item doesn't get recognized as a synonym
+                - fix check_phrases() too
+            - TODO: instances aren't handled for synonyms
 - steak/chicken is a menu item --> very slow now
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
     - Theory: there are no vegetarian menu items, just specials?
