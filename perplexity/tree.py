@@ -20,7 +20,10 @@ class MrsParser(object):
         self.log_file = log_file
         self.generate_root = generate_root
 
-    def mrss_from_phrase(self, phrase, trace=False):
+    def mrss_from_phrase(self, phrase, synonyms=None, trace=False):
+        if synonyms is None:
+            synonyms = dict()
+
         # Don't print errors to the screen
         if trace:
             f = self.log_file if self.log_file is not None else sys.stderr
@@ -39,6 +42,7 @@ class MrsParser(object):
             mrs.surface = phrase
             mrs_list = []
             for ep in mrs.predications:
+                ep.predicate = synonyms.get(ep.predicate, ep.predicate)
                 arg_types = []
                 for arg_item in ep.args.items():
                     arg_types.append(arg_item[1])

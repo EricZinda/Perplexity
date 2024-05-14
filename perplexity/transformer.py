@@ -1,10 +1,8 @@
 import copy
 import logging
 import re
-
 from delphin.mrs import EP
 import perplexity.tree
-from perplexity.utilities import sentence_force
 
 
 def replace_str_captures(value, captures):

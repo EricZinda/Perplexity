@@ -246,7 +246,7 @@ class UserInterface(object):
 
         # If we have recorded a particular MRS that is normally the best, move it
         # to the front. If this is a conjunct, we have already settled on the MRS so don't bother
-        mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input))
+        mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms))
         if not conjunct_mrs_index and mrs_generator.at_least_one():
             best_parse_index_simple_mrs = simplemrs.dumps([mrs_generator[0]], lnk=False)
             best_parse_index = self.best_parses.get(best_parse_index_simple_mrs, {"Phrase": "none", "MRSIndex": 0})["MRSIndex"]

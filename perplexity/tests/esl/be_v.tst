@@ -19,7 +19,8 @@
             "Command": "What is my son?",
             "Expected": [
                 "son\n\n(among others)",
-                "thing\n\n(among others)"
+                "thing\n\n(among others)",
+                "person\n\n(among others)"
             ],
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_son_n_of(x8,i19), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,

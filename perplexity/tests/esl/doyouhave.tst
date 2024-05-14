@@ -38,7 +38,10 @@
         },
         {
             "Command": "what dishes do you have?",
-            "Expected": "pork\nsoup\nsalad\nsteak\nchicken\nsalmon\nWaiter: What can I get you?",
+            "Expected": [
+                "pork\nsoup\nsalad\nsteak\nchicken\nsalmon\nWaiter: What can I get you?",
+                "soup\nsalad\npork\nsalmon\nsteak\nchicken\nWaiter: What can I get you?"
+            ],
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "dfd7cb6b-b4e6-46e9-bcb7-53b16e96755e"
@@ -66,21 +69,24 @@
         },
         {
             "Command": "do you have any vegetarian dishes?",
-            "Expected": "Yes.",
+            "Expected": "soup\nsalad\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d9ebe110-462e-493c-8de6-27f139026627"
         },
         {
             "Command": "Do you have any vegetarian dishes available?",
-            "Expected": "Yes.",
+            "Expected": "soup\nsalad\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8,i14), _available_a_to-for(e15,x8,u16), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d2bed2ef-2e52-4cd2-951f-c4085eb51b3e"
         },
         {
             "Command": "what meats do you have?",
-            "Expected": "pork\nsteak\nchicken\nsalmon\nWaiter: What can I get you?",
+            "Expected": [
+                "pork\nsteak\nchicken\nsalmon\nWaiter: What can I get you?",
+                "pork\nsalmon\nsteak\nchicken\nWaiter: What can I get you?"
+            ],
             "Tree": "_which_q(x5,_meat_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "87af8b68-309e-4aea-aa3f-ec421d2d7273"

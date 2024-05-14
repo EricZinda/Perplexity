@@ -624,6 +624,8 @@ class Vocabulary(object):
         # which is len(type_list)
         self.next_implementation_id = 0
 
+        self.synonyms = dict()
+
     def metadata(self, delphin_name, arg_types):
         metadata_list = []
         name_key = self.name_key(delphin_name, arg_types, "")

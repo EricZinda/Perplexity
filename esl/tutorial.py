@@ -1277,7 +1277,7 @@ def match_all_a_instances(adjective_type, context, state, e_introduced, x_bindin
 
 
 def handles_noun(state, noun_lemma):
-    noun_lemmas = [noun_lemma] + [x for x in rel_subjects(state, "hasSynonym", noun_lemma)]
+    noun_lemmas = [noun_lemma]
     handles = ["thing"] + list(all_specializations(state, "thing"))
     return any([x in handles for x in noun_lemmas])
 
@@ -1289,7 +1289,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             return True
 
         else:
-            noun_lemmas = [value] + [x for x in rel_objects(state, "hasSynonym", value)]
+            noun_lemmas = [value]
             if any([sort_of(state, x, noun_type) for x in noun_lemmas]):
                 return True
 
@@ -1298,7 +1298,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
                 return False
 
     def unbound_variable_concepts():
-        noun_lemmas = [noun_type] + [x for x in rel_subjects(state, "hasSynonym", noun_type)]
+        noun_lemmas = [noun_type]
         for noun_lemma in noun_lemmas:
             yield from concept_disjunctions(state, noun_lemma)
 
@@ -3685,7 +3685,6 @@ def reset():
                                 })
 
     # Some basic rules:
-    initial_state = initial_state.add_rel("thing", "hasSynonym", "item")
     initial_state = initial_state.add_rel("order", "specializes", "thing")
 
 
@@ -3714,10 +3713,6 @@ def reset():
 
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("dish", "specializes", "food")
-    initial_state = initial_state.add_rel("dish", "hasSynonym", "option")
-    initial_state = initial_state.add_rel("dish", "hasSynonym", "choice")
-    initial_state = initial_state.add_rel("dish", "hasSynonym", "main")
-    initial_state = initial_state.add_rel("dish", "hasSynonym", "speciality")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
     initial_state = initial_state.add_rel("veggie", "specializes", "dish")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
@@ -3891,6 +3886,13 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
     else:
         message = "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
 
+    vocabulary.synonyms = {
+        "_item_n_of": "_thing_n_of-about",
+        "_main_n_1": "_dish_n_of",
+        "_choice_n_of": "_dish_n_of",
+        "_speciality_n_1": "_dish_n_of",
+        "_option_n_1": "_dish_n_of"
+    }
     ui = UserInterface("esl",
                         reset,
                         vocabulary,
@@ -3917,14 +3919,14 @@ pipeline_logger = logging.getLogger('Pipeline')
 
 
 if __name__ == '__main__':
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

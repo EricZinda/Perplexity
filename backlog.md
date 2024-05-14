@@ -1,3 +1,5 @@
+- what is a table for 2? --> no answer?
+
 - Soup is a vegetarian item --> very slow now
     - udef_q(x3,_soup_n_1(x3),_a_q(x8,[_item_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))
     - Tree #0, interpretation #1: 'perplexity.system_vocabulary.generic_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.a_q, __main__.match_all_n_i_concepts,
@@ -10,12 +12,7 @@
         - "Soup is an item/thing" has the same problem
             - udef_q(x3,_soup_n_1(x3),_a_q(x8,_item_n_of(x8,i13),_be_v_id(e2,x3,x8)))
             - it is the "thing" problem
-            - TODO: give a way for apps to include more predicates in the list
-            - TODO: Soup is an item doesn't work when reversed because it doesn't reverse "item"
-                - Fix: all quantifiers should reverse
-                - because item doesn't get recognized as a synonym
-                - fix check_phrases() too
-            - TODO: instances aren't handled for synonyms
+
 - steak/chicken is a menu item --> very slow now
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
     - Theory: there are no vegetarian menu items, just specials?
