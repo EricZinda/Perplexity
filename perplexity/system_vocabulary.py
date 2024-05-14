@@ -18,7 +18,7 @@ def system_vocabulary():
 
 
 def rstr_reorderable(context, rstr):
-    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing", "person"] and \
+    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing", "_thing_n_of-about", "person"] and \
             not context.get_variable_metadata(rstr.args[0]).get("ReferencedUnderNegation", False)
 
 

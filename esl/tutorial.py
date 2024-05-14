@@ -1312,7 +1312,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
 
             # A different way of representing that something "is" something is that it has
             # that adjective
-            new_adj_concept = new_x_binding.value[0].add_criteria(rel_subjects, "isAdj", type)
+            new_adj_concept = new_x_binding.value[0].add_criteria(rel_subjects, "isAdj", noun_type)
             yield state.set_x(new_x_binding.variable.name, (new_adj_concept,))
 
         else:
@@ -3195,7 +3195,7 @@ def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subjec
                  "My order is chicken": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+             arguments=[("e",), ("x", ValueSize.exactly_one), ("x", ValueSize.all)])
 def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         if len(x_subject) == 1 and not is_concept(x_subject[0]) and sort_of(state, x_subject[0], "order"):

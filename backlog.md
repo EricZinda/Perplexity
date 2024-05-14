@@ -1,22 +1,30 @@
-"I want tomato soup" does not work if I have soup
-    - because compound doesn't work on instances
-                                                                                ┌── _soup_n_1(x8)
-                     ┌────── _tomato_n_1(x14)                               │
-                     │                                          ┌────── and(0,1)
-        udef_q(x14,RSTR,BODY)               ┌────── pron(x3)    │             │
-                          │                 │                   │             └ compound(e13,x8,x14)
-                          └─ pronoun_q(x3,RSTR,BODY)            │
-                                                 └─ udef_q(x8,RSTR,BODY)
-                                                                     └─ _have_v_1(e2,x3,x8)
-
-        Text Tree: udef_q(x14,_tomato_n_1(x14),pronoun_q(x3,pron(x3),udef_q(x8,[_soup_n_1(x8), compound(e13,x8,x14)],_have_v_1(e2,x3,x8))))
-    - Nouns should be looked up by isAdj and sortOf
-
-- "what is grilled?" --> salmon
-    - expected: Oh, I forgot to give you the menu! I'll get you one right away.
+- How much is the tomato soup returns duplicates
+                                                               ┌────── _tomato_n_1(x21)
+                                          ┌────── udef_q(x21,RSTR,BODY)    ┌── _soup_n_1(x3)
+                                          │                         └─ and(0,1)
+                      ┌────── abstr_deg(x1│)                                 └ compound(e20,x3,x21)
+        which_q(x10,RSTR,BODY)            │
+                           └─ _the_q(x3,RSTR,BODY)
+                                               │                                 ┌────── generic_entity(x5)
+                                               │                   ┌ udef_q(x5,RSTR,BODY)
+                                               └─ count(e14,x10,x5,3)                 └─ _be_v_id(e2,x3,x5)
+        Text Tree: which_q(x10,abstr_deg(x10),_the_q(x3,udef_q(x21,_tomato_n_1(x21),[_soup_n_1(x3), compound(e20,x3,x21)]),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))
 
 - Soup is a vegetarian item --> very slow now
-
+    - udef_q(x3,_soup_n_1(x3),_a_q(x8,[_item_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))
+    - Tree #0, interpretation #1: 'perplexity.system_vocabulary.generic_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.a_q, __main__.match_all_n_i_concepts,
+        __main__._vegetarian_a_1_concepts, __main__._be_v_id_order'
+    - Theory:
+        - Gets trapped on _be_v_id_order because there are a ton of options but it will never work
+        - Somehow we get past the if not is_be_v_id_order() because an order object gets bound
+            item() can definitely bind to order
+            why is it not processing solutions?
+        - "Soup is an item/thing" has the same problem
+            - udef_q(x3,_soup_n_1(x3),_a_q(x8,_item_n_of(x8,i13),_be_v_id(e2,x3,x8)))
+            - it is the "thing" problem
+            - TODO: give a way for apps to include more predicates in the list
+            - TODO: Soup is an item doesn't work when reversed because it doesn't swap out "item"
+                - instances aren't handled for synonyms
 - steak/chicken is a menu item --> very slow now
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
     - Theory: there are no vegetarian menu items, just specials?

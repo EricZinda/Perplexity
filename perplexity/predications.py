@@ -34,7 +34,7 @@ def is_concept(o):
 class Concept(object):
     def __init__(self, sort_of):
         # This is a set so it is more easily comparable since order doesn't matter
-        self._sort_of_criteria = set([sort_of])
+        self._sort_of_criteria = set([sort_of]) if sort_of is not None else set()
 
     def __repr__(self):
         return f"Concept({','.join(self._sort_of_criteria)})"
