@@ -52,7 +52,7 @@
         },
         {
             "Command": "do you have specials?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_special_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f4c1ab20-f754-4c15-8c2c-af2c647bf722"
@@ -86,7 +86,7 @@
         },
         {
             "Command": "what specials do you have?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\n",
+            "Expected": "Host: If you'd like to hear about our menu items, you'll need to have a seat.",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "1cb0a35e-2a96-4ba5-84d2-59d10c0d82e9"
@@ -156,7 +156,7 @@
         },
         {
             "Command": "do you have the table",
-            "Expected": "I'm not sure which table you mean.",
+            "Expected": "There is more than 1 table",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d08e91ef-3bcd-42b0-a0dc-8c7d1a357a51"

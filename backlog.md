@@ -1,4 +1,4 @@
-- steak/chicken is a menu item --> very slow now
+
 
 - what is a table for 2? --> no answer?
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean

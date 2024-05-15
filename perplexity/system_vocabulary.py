@@ -22,14 +22,15 @@ def rstr_reorderable(context, rstr):
     if isinstance(rstr, list):
         new_rstr = []
         after_rstr =[]
-        reverse = False
         for predicate in rstr:
             if predicate_reorderable(context, predicate):
                 after_rstr.append(predicate)
-                reverse = True
             else:
                 new_rstr.append(predicate)
-        return new_rstr + after_rstr, reverse
+
+        # Don't reverse the RSTR and BODY, just the order of predications in the
+        # conjunction
+        return new_rstr + after_rstr, False
 
     else:
         return rstr, predicate_reorderable(context, rstr)

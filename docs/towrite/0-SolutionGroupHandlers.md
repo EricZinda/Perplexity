@@ -1,6 +1,9 @@
-Talk:
-    - interpretation and disjunction
+Talk: ?Beyond the logical?
     - concepts
+        - entailment
+        - inductive logic
+    - pragmatics
+    - interpretation and disjunction
 Basic approach:
 - Have is best example
   - "What tables do you have?" --> request for more than one table

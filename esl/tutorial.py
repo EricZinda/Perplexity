@@ -759,14 +759,6 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
             # Handle "Hi/Howdy, ...phrase..."
             yield state
 
-        # In theory "menu item" now is handled by the next elif clause where we build a single concept for "menu item"
-        # BUT: it can't do them in conjunction since they aren't both "sort_of" relationships
-        # elif len(x_right_binding.value) == 1 and is_concept(x_right_binding.value[0]) and x_right_binding.value[0].concept_name == "menu":
-        #     # Support "menu item" by interpreting it as a "menu dish"
-        #     # Check to see if the left item is, or specializes "dish"
-        #     if sort_of(state, object_to_store(x_left_binding.value[0]), "dish"):
-        #         yield state
-
         elif is_concept(x_right_binding.value[0]):
             if is_concept(x_left_binding.value[0]):
                 # Handle compounds where the first word is modelled as an adjective, but is a noun.
@@ -801,6 +793,22 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
             # for instance_state in adjective_default_instances(x_right_binding.value[0].concept_name, context, state, x_left_binding):
             #     yield instance_state.set_x("tree_lineage", (f"{tree_lineage}.2",))
 
+    elif x_right_binding.value is not None:
+        # x_left_binding.value is None, so we interpret this as "x thing" or "x item" as in "menu item" or "bicycle thing"
+        # which means "anything having to do with the noun specified" (e.g. "menu" or "bicycle")
+        # But, since we don't really have much modelled to allow that, we'll just special case "menu item"
+        if len(x_right_binding.value) == 1 and is_concept(x_right_binding.value[0]) and x_right_binding.value[0].entails(context, state, ESLConcept("menu")):
+            for dish in most_specific_specializations(state, "dish"):
+                yield state.set_x(x_left_binding.variable.name, (dish,))
+
+
+        # In theory "menu item" now is handled by the next elif clause where we build a single concept for "menu item"
+        # BUT: it can't do them in conjunction since they aren't both "sort_of" relationships
+        # elif len(x_right_binding.value) == 1 and is_concept(x_right_binding.value[0]) and x_right_binding.value[0].concept_name == "menu":
+        #     # Support "menu item" by interpreting it as a "menu dish"
+        #     # Check to see if the left item is, or specializes "dish"
+        #     if sort_of(state, object_to_store(x_left_binding.value[0]), "dish"):
+        #         yield state
 
 # @Predication(vocabulary, names=["_for_x_cause"])
 # def _for_x_cause(context, state, e_introduced, h_left_binding, h_right_binding):

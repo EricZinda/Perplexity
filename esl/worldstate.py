@@ -154,7 +154,6 @@ def concept_disjunctions_reverse(state, root_concept, ignore_root=False):
     lineage = len(levels)
     for level_index in range(len(levels) if not ignore_root else len(levels) - 1):
         level = levels[level_index]
-    # for level in levels[:len(levels) if not ignore_root else len(levels) - 1]:
         lineage -= 1
         for level_type in level:
             object = store_to_object(state, level_type)
@@ -164,6 +163,20 @@ def concept_disjunctions_reverse(state, root_concept, ignore_root=False):
 
 def immediate_specializations(state, base_type):
     yield from rel_subjects(state, "specializes", base_type)
+
+
+def most_specific_specializations(state, base_type):
+    most_specific_lineage = -1
+    for item in concept_disjunctions_reverse(state, base_type):
+        if most_specific_lineage == -1:
+            most_specific_lineage = item.lineage
+
+        if item.lineage == most_specific_lineage:
+            yield item.value
+
+        else:
+            return
+
 
 
 def all_specializations(state, base_type):

@@ -94,14 +94,14 @@
         },
         {
             "Command": "I want a vegetarian dish for Johnny",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything else?",
             "Tree": "proper_q(x16,named(Johnny,x16),pronoun_q(x3,pron(x3),_a_q(x8,[_dish_n_of(x8,i14), _for_p(e15,x8,x16), _vegetarian_a_1(e13,x8)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "da6923a2-db45-44d0-88a8-cf0e842f12c5"
         },
         {
             "Command": "no",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a steak for you.\nWaiter: Here is a soup and soup for Johnny.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a steak for you.\nWaiter: Here is a soup for Johnny.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "5ee8de39-54cf-47b0-8a38-7dff509880c6"
@@ -122,7 +122,7 @@
         },
         {
             "Command": "who ordered soup?",
-            "Expected": "Johnny\n(among others)",
+            "Expected": "Johnny",
             "Tree": "which_q(x3,person(x3),udef_q(x8,_soup_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c78aeda0-1690-4e8f-b7fc-73aa0038c394"
