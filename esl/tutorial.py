@@ -3919,7 +3919,7 @@ pipeline_logger = logging.getLogger('Pipeline')
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")

@@ -657,8 +657,8 @@ def command_show(ui, arg):
 
 
 def command_repeat_system_command(ui, arg):
-    if "last_system_command" in ui.test_manager.session_data:
-        repeat_phrase = ui.test_manager.session_data["last_system_command"]
+    repeat_phrase = ui.test_manager.get_session_data("last_system_command")
+    if repeat_phrase is not None:
         ui.user_input = repeat_phrase
         ui.user_output(f"Repeat: {repeat_phrase}")
         return ui.handle_command(repeat_phrase)
@@ -670,9 +670,14 @@ def command_repeat_system_command(ui, arg):
 
 
 def command_repeat(ui, arg):
-    repeat_phrase = ui.test_manager.session_data["last_phrase"]
-    ui.user_output(f"Repeat: {repeat_phrase}")
-    ui.user_input = repeat_phrase
+    repeat_phrase = ui.test_manager.get_session_data("last_phrase")
+    if repeat_phrase is not None:
+        ui.user_output(f"Repeat: {repeat_phrase}")
+        ui.user_input = repeat_phrase
+
+    else:
+        ui.user_output("No last command to repeat")
+
     return None
 
 

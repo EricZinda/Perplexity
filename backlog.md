@@ -1,6 +1,6 @@
-- /resume command resets tests from the beginning
-- what is a table for 2? --> no answer?
 - steak/chicken is a menu item --> very slow now
+
+- what is a table for 2? --> no answer?
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
     - Theory: there are no vegetarian menu items, just specials?
 
