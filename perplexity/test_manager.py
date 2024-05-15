@@ -65,6 +65,7 @@ class TestIterator(object):
 
     def __iter__(self):
         test_items = self.test["TestItems"]
+        print(f"**** Writing LastTest: {self.test_path_and_file}...\n")
         self.test_manager.record_session_data("LastTest", self.test_path_and_file)
         if not self.resume:
             self.test_manager.record_session_data("LastTestResetIndex", 0)
@@ -133,6 +134,7 @@ class TestFolderIterator(object):
                 self.resume = False
                 testStartTime = time.perf_counter()
                 yield from self.test_iterator
+                self.resume = self.test_iterator.resume
                 elapsed = round(time.perf_counter() - testStartTime, 5)
                 if self.record_time:
                     self.test_manager.update_test_info(self.test_path_and_file, {"ElapsedTime": elapsed})
@@ -152,7 +154,7 @@ class TestManager(object):
         if not os.path.exists(self.test_root_folder):
             os.makedirs(self.test_root_folder)
         self.current_world_name = None
-        self.load_session_data()
+        self._load_session_data()
         self.final_ui = None
 
     def full_test_path(self, test_name):
@@ -480,23 +482,29 @@ class TestManager(object):
 
     # Used to hold arbitrary information about the
     # session, across runs
-    def session_data_path(self):
+    # Session Data is not cached because multiple test managers may be
+    # writing to it
+    def _session_data_path(self):
         return self.full_test_path("session_info.json")
 
-    def load_session_data(self):
-        if os.path.exists(self.session_data_path()):
-            with open(self.session_data_path(), "r") as file:
-                self.session_data = json.loads(file.read())
+    def _load_session_data(self):
+        if os.path.exists(self._session_data_path()):
+            with open(self._session_data_path(), "r") as file:
+                return json.loads(file.read())
         else:
-            self.session_data = {}
+            return {}
 
     def record_session_data(self, key, value):
-        self.session_data[key] = value
-        with open(self.session_data_path(), "w") as file:
-            file.write(json.dumps(self.session_data, indent=4))
+        session_data = self._load_session_data()
+        session_data[key] = value
+
+        with open(self._session_data_path(), "w") as file:
+            file.write(json.dumps(session_data, indent=4))
+            file.flush()
 
     def get_session_data(self, key):
-        return self.session_data.get(key, None)
+        session_data = self._load_session_data()
+        return session_data.get(key, None)
 
 
 logger = logging.getLogger('Testing')

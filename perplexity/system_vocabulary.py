@@ -17,14 +17,32 @@ def system_vocabulary():
     return copy.deepcopy(vocabulary)
 
 
+# Returns the RSTR that should be used and whether or not it should be reversed
 def rstr_reorderable(context, rstr):
-    return isinstance(rstr, TreePredication) and rstr.name in ["place_n", "thing", "_thing_n_of-about", "person"] and \
-            not context.get_variable_metadata(rstr.args[0]).get("ReferencedUnderNegation", False)
+    if isinstance(rstr, list):
+        new_rstr = []
+        after_rstr =[]
+        reverse = False
+        for predicate in rstr:
+            if predicate_reorderable(context, predicate):
+                after_rstr.append(predicate)
+                reverse = True
+            else:
+                new_rstr.append(predicate)
+        return new_rstr + after_rstr, reverse
+
+    else:
+        return rstr, predicate_reorderable(context, rstr)
+
+
+def predicate_reorderable(context, predicate):
+    return isinstance(predicate, TreePredication) and predicate.name in ["place_n", "thing", "_thing_n_of-about", "person"] and \
+            not context.get_variable_metadata(predicate.args[0]).get("ReferencedUnderNegation", False)
 
 
 # Yield all undetermined, unquantified answers
 def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig, criteria_predication=None):
-    reversed = rstr_reorderable(context, h_rstr_orig)
+    h_rstr_orig, reversed = rstr_reorderable(context, h_rstr_orig)
     h_rstr = h_body_orig if reversed else h_rstr_orig
     h_body = h_rstr_orig if reversed else h_body_orig
 

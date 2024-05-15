@@ -1,18 +1,5 @@
+- /resume command resets tests from the beginning
 - what is a table for 2? --> no answer?
-
-- Soup is a vegetarian item --> very slow now
-    - udef_q(x3,_soup_n_1(x3),_a_q(x8,[_item_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))
-    - Tree #0, interpretation #1: 'perplexity.system_vocabulary.generic_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.a_q, __main__.match_all_n_i_concepts,
-        __main__._vegetarian_a_1_concepts, __main__._be_v_id_order'
-    - Theory:
-        - Gets trapped on _be_v_id_order because there are a ton of options but it will never work
-        - Somehow we get past the if not is_be_v_id_order() because an order object gets bound
-            item() can definitely bind to order
-            why is it not processing solutions?
-        - "Soup is an item/thing" has the same problem
-            - udef_q(x3,_soup_n_1(x3),_a_q(x8,_item_n_of(x8,i13),_be_v_id(e2,x3,x8)))
-            - it is the "thing" problem
-
 - steak/chicken is a menu item --> very slow now
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
     - Theory: there are no vegetarian menu items, just specials?

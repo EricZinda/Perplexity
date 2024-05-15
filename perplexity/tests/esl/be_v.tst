@@ -11,7 +11,7 @@
         {
             "Command": "Soup is a vegetarian item",
             "Expected": "Yes, that is true.",
-            "Tree": "udef_q(x3,_soup_n_1(x3),_a_q(x8,[_item_n_of(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
+            "Tree": "udef_q(x3,_soup_n_1(x3),_a_q(x8,[_thing_n_of-about(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f0ba7d25-284f-4264-91c7-87eceb97897b"
         },
