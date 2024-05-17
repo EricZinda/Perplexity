@@ -2,6 +2,7 @@ Talk: ?Beyond the logical?
     - concepts
         - entailment
         - inductive logic
+        - Handling of "not"
     - pragmatics
     - interpretation and disjunction
 Basic approach:
