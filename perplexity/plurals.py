@@ -2,6 +2,7 @@ import enum
 import logging
 from math import inf
 import perplexity.predications
+import perplexity.execution
 from perplexity.set_utilities import count_set, CachedIterable
 import perplexity.tree
 from perplexity.utilities import plural_from_tree_info, parse_predication_name
@@ -113,7 +114,13 @@ def run_handlers(execution_context, handlers, variable_constraints, group, index
             debug_name = is_predication_handler_name[2][0] + "." + is_predication_handler_name[2][1]
             pipeline_logger.debug(f"Running {debug_name} solution group handler")
             created_solution_group = None
-            for next_solution_group in handler_function(*handler_args):
+
+            # Start with a cleared error context so we properly capture any initial errors
+            execution_context.clear_error()
+
+            # Continue to clear the error context every time we are successful so that old errors don't bleed into
+            # the next call
+            for next_solution_group in perplexity.execution.clear_error_when_yield_generator(execution_context, handler_function(*handler_args)):
                 assert not (isinstance(next_solution_group, (tuple, list)) and len(next_solution_group) == 0), \
                     f"yielded value from solution group {debug_name} must be a tuple or list where len() > 0. Was: {str(next_solution_group)}"
                 created_solution_group = next_solution_group

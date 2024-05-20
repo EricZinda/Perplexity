@@ -79,12 +79,12 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig,
                     context.set_variable_execution_data(variable_name, "AllRstrValues", list(rstr_values))
                 yield body_solution
 
-    # If the RSTR actually ran (reversed or not) and returned no values, give a special error
-    # saying that whatever the RSTR was doesn't exist.  Make sure we tell the error to use the value
-    # of the variable *after* the real RSTR so it uses that word in the description and says
-    # "There isn't a <RSTR> in the system"
-    if rstr_ran and len(rstr_values) == 0:
-        context.report_error(["doesntExist", ["AtPredication", h_rstr if reversed else h_body, x_variable_binding.variable.name]], force=True)
+        # If the RSTR actually ran (reversed or not) and returned no values, give a special error
+        # saying that whatever the RSTR was doesn't exist.  Make sure we tell the error to use the value
+        # of the variable *after* the real RSTR so it uses that word in the description and says
+        # "There isn't a <RSTR> in the system"
+        if not context.has_not_understood_error() and rstr_ran and len(rstr_values) == 0:
+            context.report_error(["doesntExist", ["AtPredication", h_rstr if reversed else h_body, x_variable_binding.variable.name]], force=True)
 
 
 @Predication(vocabulary, library="system", names=["_a_q"])

@@ -10,7 +10,7 @@
         },
         {
             "Command": "I want an order of the table",
-            "Expected": "Host: There isn't such an order here",
+            "Expected": "Host: There isn't such a table here",
             "Tree": "_the_q(x13,_table_n_1(x13),pronoun_q(x3,pron(x3),_a_q(x8,_order_n_of(x8,x13),_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
@@ -149,5 +149,5 @@
             "ID": "ed1aa6a9-6682-4412-9960-b5c1b570163f"
         }
     ],
-    "ElapsedTime": 15.3677
+    "ElapsedTime": 10.56258
 }

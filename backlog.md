@@ -10,7 +10,7 @@
         - formNotUnderstood should really just be an indicator to the caller that this predication should have been used. It is as if it doesn't exist
             - legit failures that happen first are covered up by non legit failures
             - the fact that soup is represented by sortOf soup and isAdj soup (and there aren't any isAdj soup) means that the legit failure for "drink is not soup" gets overwritten
-        - idea: check for formNotUnderstood at the execution laer
+        - idea: check for formNotUnderstood at the execution layer
     - Examples:
         - What is not vegetarian?
             - Puts us into a particular interpretation if you run the scopal argument under not (i.e. _be_v_id_list)

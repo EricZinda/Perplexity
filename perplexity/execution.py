@@ -19,6 +19,12 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
+def clear_error_when_yield_generator(context, generator):
+    for next_value in generator:
+        context.clear_error()
+        yield next_value
+
+
 # Generates all the solution groups that can produced by
 # various interpretations of a tree.
 # Each different interpretation results in a new tree_record
@@ -131,7 +137,10 @@ class TreeSolver(object):
             self._context.reset_scope(state)
             self._context.clear_error()
 
+            # See if we should run the tree at all
             if self.tree_matches_interpretation_properties(tree_info, interpretation):
+                # Start out with an empty error context so that the first .call() records the right error
+                self.clear_error()
                 for solution in self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"]):
                     # Remember any disjunction lineages that had a solution
                     tree_lineage_binding = state.get_binding("tree_lineage")
@@ -289,13 +298,15 @@ class TreeSolver(object):
 
             # If a MessageException happens during execution,
             # convert it to an error
+            had_solution = False
             try:
                 # You call a function "pointer" and pass it arguments
                 # that are a list by using "function(*function_args)"
                 # So: this is actually calling our function (which
                 # returns an iterator, and thus we can iterate over it)
-                had_solution = False
-                for next_state in function(*function_args):
+                # If we get a solution (i.e. the function yields), clear the
+                # error so that it doesn't bleed over into the next search for a solution
+                for next_state in clear_error_when_yield_generator(self, function(*function_args)):
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug(f"yielding {predication}, state: {str(next_state)}, phrase_type: [{self._phrase_type}]")
 
@@ -308,6 +319,7 @@ class TreeSolver(object):
             if not had_solution:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(f"No solutions from {self._predication_index}: {module_function.module}.{module_function.function}")
+
                 if self._predication_runtime_settings.get("Disjunction", False):
                     self._lineage_failure_callback(self._context.get_error_info())
 
@@ -571,16 +583,10 @@ class TreeSolver(object):
 class ExecutionContext(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
-
-        blank = self.blank_error_info()
-        self._error = blank[0]
-        self._error_was_forced = blank[1]
-        self._error_predication_index = blank[2]
-        self._error_phase = blank[3]
-
         self._in_scope_initialize_function = None
         self._in_scope_initialize_data = None
         self._in_scope_function = None
+        self.clear_error()
 
     @staticmethod
     def blank_error_info(error=None, was_forced=False, predication_index=-1, phase=0):
@@ -606,7 +612,10 @@ class ExecutionContext(object):
             return True
 
     def get_error_info(self):
-        return self._error, self._error_was_forced, self._error_predication_index, self._error_phase
+        if self._error is not None:
+            return self._error, self._error_was_forced, self._error_predication_index, self._error_phase
+        else:
+            return self._notUnderstood
 
     def set_error_info(self, error_info):
         if error_info is not None:
@@ -616,29 +625,56 @@ class ExecutionContext(object):
             self._error_phase = error_info[3]
 
     def clear_error(self):
-        self._error = None
-        self._error_was_forced = False
-        self._error_predication_index = -1
-        self._error_phase = 0
+        blank = self.blank_error_info()
+        self._error = blank[0]
+        self._error_was_forced = blank[1]
+        self._error_predication_index = blank[2]
+        self._error_phase = blank[3]
+
+        self.clear_not_understood_error()
+
+    def clear_not_understood_error(self):
+        self._notUnderstood = self.blank_error_info()
 
     def has_not_understood_error(self):
         # System errors that indicate the phrase can't be understood can't be replaced
         # since they aren't indicating a logical failure, they are indicating that the system didn't understand
         # predications like neg() need to know if a branch failed due to a real logical failure or not
-        not_understood_failures = ["formNotUnderstood"]
-        return self._error is not None and self._error[0] in not_understood_failures
+        if self._notUnderstood[0] is not None:
+            return self._notUnderstood
 
+    # Error Design: when a predication is called it either:
+    #     - yields a value (success)
+    #         - A success clears the error
+    #     - doesn't yield a value, which stops the generator (failure)
+    #         - If it fails, it can report: nothing, an normal error, or a formNotUnderstood error
+    #             - a forced error is always recorded, and the first error at deepest level is always recorded
+    #                 - Record both the first instance of a regular error and the first instance of formNotUnderstood at the deepest point
+    #     - When returning errors: if we only got formNotUnderstood, that is the error. Otherwise: the first real error is the error
     def report_error_for_index(self, predication_index, error, force=False, phase=0):
-        if not self.has_not_understood_error() and \
-                ((error is not None and error[0] == "formNotUnderstood") or force or (not self._error_was_forced and self._error_predication_index < predication_index)):
-            self._error = error
-            self._error_predication_index = predication_index
-            self._error_phase = phase
-            if force:
-                self._error_was_forced = True
+        if force or self._error_predication_index < predication_index:
+            if error[0] == "formNotUnderstood":
+                # If previous error was not forced
+                if not self._notUnderstood[1]:
+                    self._notUnderstood = [error, force, predication_index, phase]
+
+            else:
+                if not self._error_was_forced:
+                    self._error = error
+                    self._error_predication_index = predication_index
+                    self._error_phase = phase
+                    if force:
+                        self._error_was_forced = True
+
+                    # Since we have a real error, clear out
+                    self.clear_not_understood_error()
 
     def error(self):
-        return [self._error_predication_index, self._error, self._error_phase]
+        if self._error is not None:
+            return [self._error_predication_index, self._error, self._error_phase]
+
+        else:
+            return [self._notUnderstood[2], self._notUnderstood[0], self._notUnderstood[3]]
 
 
 logger = logging.getLogger('Execution')
