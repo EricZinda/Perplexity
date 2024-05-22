@@ -373,7 +373,8 @@ def Predication(vocabulary,
                 phrases=None,
                 properties=None,
                 properties_from=None,
-                handles_interpretation=None):
+                handles_interpretation=None,
+                handles_negation=False):
     # Work around Python's odd handling of default arguments that are objects
     if handles is None:
         handles = []
@@ -531,6 +532,16 @@ def Predication(vocabulary,
                     pipeline_logger.debug(f"{function_to_decorate.__name__} --> Form Not Understood: {str(phrase_properties)} is not in {str(properties_to_use)}")
                     args[system_added_context_arg + extra_arg_in_front_count].report_error(["formNotUnderstood", function_to_decorate.__name__])
                     return
+
+            # Any verb that has set properties must mark itself as "handles negation"
+            # Same is true for any type of solution group
+            if properties_to_use or is_solution_group:
+                # Predications have to be written with negation in mind, so don't call it if it wasn't considered
+                if tree_info.get("NegatedSubtree", False):
+                    if not handles_negation:
+                        pipeline_logger.debug(f"{function_to_decorate.__name__} --> can't be called because it doesn't support negation")
+                        args[system_added_context_arg + extra_arg_in_front_count].report_error(["formNotUnderstood", function_to_decorate.__name__])
+                        return
 
             # Ensure that this solution group is designed for this interpretation
             # by comparing the interpretation used for the index_predication and the one

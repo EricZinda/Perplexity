@@ -1,19 +1,12 @@
-- what is not soup? -> something
-    - which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))
-    - expected: everything in the world that is not soup
-    - What does it mean to be "not soup" for a particular interpretation of "be_v"?
-    - Perhaps we need to handle concepts using "not" like we do with the solver: i.e. let them pass through with some data
-        and have the solution group handler decide what to do?
-    - Perhaps we need to make verbs as "logical" or "safe with not"?
-    - "formNotUnderstood" is leaking between criteria_bound(x_subject, x_object) calls
-        - The only error that matters is the last one recorded before the final failure?
-        - formNotUnderstood should really just be an indicator to the caller that this predication should have been used. It is as if it doesn't exist
-            - legit failures that happen first are covered up by non legit failures
-            - the fact that soup is represented by sortOf soup and isAdj soup (and there aren't any isAdj soup) means that the legit failure for "drink is not soup" gets overwritten
-        - idea: check for formNotUnderstood at the execution layer
-    - Examples:
-        - What is not vegetarian?
-            - Puts us into a particular interpretation if you run the scopal argument under not (i.e. _be_v_id_list)
+
+- How much is your smoked meat? --> doesn't seem to work
+- the soup is smoked -->
+    Yes that is true
+    Because smoke used predicatively needs to check for actual values and just just add isAdj to it
+
+- What is not vegetarian? --> returns vegetarian things
+    - which_q(x3,thing(x3),neg(e8,_vegetarian_a_1(e2,x3)))
+    - because _vegetarian_a_1 run as the verb isn't correct
 
 - what is a table for 2? --> no answer?
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean

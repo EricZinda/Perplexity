@@ -46,7 +46,7 @@ def check_concept_solution_group_constraints(context, state_list, x_what_variabl
     x_what_individuals_set = set()
     for value in x_what_values:
         x_what_individuals_set.update(value)
-    counts = count_of_instances_and_concepts(context, state_list[0], x_what_variable, list(x_what_individuals_set))
+    counts = count_of_instances_and_concepts(context, state_list[0], x_what_variable, list(x_what_individuals_set), not check_concepts)
     if counts is None:
         return False
     else:
@@ -777,6 +777,16 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
                 new_concept = x_left_binding.value[0].add_conjunction(x_right_binding.value[0])
                 yield state.set_x(x_left_binding.variable.name, (new_concept,))
 
+            else:
+                # left binding is an instance and right is a concept.  Make sure that left is an instance of that concept
+                if len(x_left_binding.value) == 1 and len(x_right_binding.value) == 1:
+                    if x_right_binding.value[0].instances(context, state, [x_left_binding.value[0]]):
+                        yield state
+
+                    # or that left has the right side concept as an adjective
+                    elif len(x_left_binding.value) == 1 and len(x_right_binding.value) == 1 and \
+                            rel_check(state, x_left_binding.value[0], "isAdj", x_right_binding.value[0].single_sort_name()):
+                        yield state
 
             # # Records that predication index X is a disjunction
             # context.set_disjunction()
@@ -1215,15 +1225,17 @@ def thing_concepts(context, state, x_binding):
     def bound_variable(value):
         if is_concept(value):
             return True
+
         elif is_type(state, value):
             return True
+
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
             return False
 
-    # Yield each layer of specializations as a disjunction
+    # Yield each layer of specializations as a disjunction starting with the most detailed
     def unbound_variable():
-        yield from concept_disjunctions(state, "thing")
+        yield from concept_disjunctions_reverse(state, "thing")
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
@@ -1318,11 +1330,6 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
             x = new_x_binding.value[0].add_criteria(rel_sort_of, None, noun_type)
             yield state.set_x(new_x_binding.variable.name, (x,))
 
-            # A different way of representing that something "is" something is that it has
-            # that adjective
-            new_adj_concept = new_x_binding.value[0].add_criteria(rel_subjects, "isAdj", noun_type)
-            yield state.set_x(new_x_binding.variable.name, (new_adj_concept,))
-
         else:
             yield new_state
 
@@ -1339,9 +1346,6 @@ def match_all_n_instances(noun_type, context, state, x_binding):
 
     def unbound_variable_instances():
         for item in all_instances(state, noun_type):
-            yield item
-
-        for item in rel_subjects(state, "isAdj", noun_type):
             yield item
 
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances)
@@ -1491,9 +1495,7 @@ class PastParticiple:
     def predicate_function(self, context, state, e_introduced_binding, i_binding, x_target_binding):
         def bound(value):
             if is_concept(value):
-                # We just need to ensure that subject will generate instances or concepts
-                # that have this relation, which means subject implies self.past_participle_concept
-                return value.entailed_by(context, state, self.past_participle_concept)
+                return True
 
             elif (value, self.lemma) in state.all_rel("isAdj"):
                 return True
@@ -1507,10 +1509,17 @@ class PastParticiple:
                 if object_to_store(i[1]) == self.lemma:
                     yield store_to_object(state, i[0])
 
-        yield from combinatorial_predication_1(context, state, x_target_binding,
-                                               bound,
-                                               unbound)
+        for item in combinatorial_predication_1(context, state, x_target_binding,
+                                                bound,
+                                                unbound):
+            if is_concept(x_target_binding.value[0]):
+                if len(x_target_binding.value) == 1:
+                    # Add extra criteria to the concept to represent possession by x_actor
+                    x_object = x_target_binding.value[0].add_criteria(rel_subjects, "isAdj", self.lemma)
+                    yield state.set_x(x_target_binding.variable.name, (x_object,))
 
+            else:
+                yield item
 
 grilled = PastParticiple(["_grill_v_1"], "grilled")
 roasted = PastParticiple(["_roast_v_cause"], "roasted")
@@ -2910,7 +2919,7 @@ def _have_v_1_fact_check(context, state, e_introduced_binding, x_actor_binding, 
         if not found:
             context.report_error(["x_verb_nothing", x_actor_binding.variable.name, "has"])
 
-    # Both arguments must instances
+    # Both arguments must be instances
     if (x_actor_binding.value is not None and is_concept(x_actor_binding)) or (x_object_binding.value is not None and is_concept(x_object_binding)):
         context.report_error(["formNotUnderstood", "_have_v_1_request"])
         return
@@ -3132,15 +3141,28 @@ def is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
                  "What are the specials?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "What will be the specials?": {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': ['ques'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties={'SF': ['ques'], 'TENSE': ['pres', 'fut'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+             handles_negation=True)
 def _be_v_id_list(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
-        # This interpretation only handles unbound arguments
-        if False:
-            yield None
+        # When "not" is used ("what is not vegetarian?"), both arguments will be bound since thing(x) binds every possible
+        # thing into the first argument. To be true, the right side must be orderable, and the left side must entail it
+        entailed_orderable = x_object.entailed_by_which(context, state, orderable)
+        if len(entailed_orderable):
+            if x_subject.entails(context, state, x_object):
+                return True
+            else:
+                # Distinguish between subjects that aren't orderable at all (which don't belong here
+                # thus formNotUnderstood) vs. those that are but just don't entail the object
+                _, entailed = x_subject.entails_which(context, state, orderable)
+                if not entailed:
+                    context.report_error(["formNotUnderstood"])
+                return False
+        else:
+            context.report_error(["formNotUnderstood"])
+            return
 
     def unbound(x_object):
-        orderable = orderable_concepts(state)
         entailed_orderable = x_object.entailed_by_which(context, state, orderable)
         if len(entailed_orderable) > 0:
             # The answer to "What is [x]?" where "x" is any concept entailed by at least one menu item
@@ -3150,27 +3172,32 @@ def _be_v_id_list(context, state, e_introduced_binding, x_subject_binding, x_obj
 
     # Don't use this interpretation if we are talking about an "order"
     if is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        context.report_error(["formNotUnderstood"])
         return
 
-    # Only handle a single unbound argument
+    # object must be bound
     subject_unbound = x_subject_binding.value is None
     object_unbound = x_object_binding.value is None
-    if (subject_unbound and object_unbound) or (not subject_unbound and not object_unbound):
+    if object_unbound:
+        context.report_error(["formNotUnderstood"])
         return
 
     # Require that the single unbound argument is a concept
     # Only need to check one value since there is never a mix of instances and concepts
     if (not subject_unbound and not is_concept(x_subject_binding.value[0])) or \
         (not object_unbound and not is_concept(x_object_binding.value[0])):
+        context.report_error(["formNotUnderstood"])
         return
 
+    orderable = orderable_concepts(state)
     yield from in_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound)
 
 
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
              properties_from=_be_v_id_list,
-             handles_interpretation=_be_v_id_list)
+             handles_interpretation=_be_v_id_list,
+             handles_negation=True)
 def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # Don't use this interpretation if we are talking about an "order"
     if all([is_be_v_id_order(context,
@@ -3241,6 +3268,7 @@ def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_ob
 
     # Only use this interpretation if we are talking about an "order"
     if not is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+        context.report_error(["formNotUnderstood"])
         return
 
     # Use lift_style so that we get everything in the order as a single value, meaning "together"
@@ -3413,6 +3441,9 @@ def _be_v_id_instance_concept(context, state, e_introduced_binding, x_subject_bi
         if is_concept(x_object):
             if instance_of_or_entails(context, state, x_subject, x_object):
                 return True
+            elif rel_check(state, x_subject, "isAdj", x_object.single_sort_name()):
+                return True
+
         else:
             if x_subject == x_object:
                 return True
@@ -3609,7 +3640,9 @@ def _available_a_to_for(context, state, e_introduced_binding, x_object_binding, 
 
 
 # Any successful solution group that is a wh_question will call this
-@Predication(vocabulary, names=["solution_group_wh"])
+@Predication(vocabulary,
+             names=["solution_group_wh"],
+             handles_negation=True)
 def wh_question(context, state_list, binding_list):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list])])
     if current_state is not None:
@@ -3934,7 +3967,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

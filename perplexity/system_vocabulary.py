@@ -317,6 +317,7 @@ def generate_not_error(context, unscoped_referenced_variables):
 # of its scopal arg in order to know if that arg was "true", it isn't enough to know if a particular solution is true
 @Predication(vocabulary, library="system", names=["neg"])
 def neg(context, state, e_introduced_binding, h_scopal):
+    pipeline_logger.debug(f"Neg: {str(state)}")
     # Gather all the bound x variables and their values that are referenced in h_scopal
     referenced_x_variables = gather_referenced_x_variables_from_tree(h_scopal)
 
@@ -337,12 +338,15 @@ def neg(context, state, e_introduced_binding, h_scopal):
     # "which files not in this folder are not large?" would work (and properly count the plural "files")
     new_tree_info = copy.deepcopy(context.tree_info)
     new_tree_info["Tree"] = h_scopal
+    new_tree_info["NegatedSubtree"] = True
     tree_solver = context.create_child_solver()
     subtree_state = state.set_x("tree", (new_tree_info,))
     had_negative_success = False
     had_negative_failure = False
     wh_phrase_variable = perplexity.tree.get_wh_question_variable(state.get_binding("tree").value[0])
-    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info, wh_phrase_variable=wh_phrase_variable):
+
+    # use the same interpretation for the subtree that the main tree used
+    for tree_record in tree_solver.tree_solutions(subtree_state, new_tree_info, interpretation=context._interpretation, wh_phrase_variable=wh_phrase_variable):
         if tree_record["SolutionGroupGenerator"] is not None:
             # There were solutions, so this is true,
             # don't yield it since neg() makes it False

@@ -3,6 +3,8 @@ Talk: ?Beyond the logical?
         - entailment
         - inductive logic
         - Handling of "not"
+            - What does it mean to be "not soup" for a particular interpretation of "be_v" since some are pragmatic and not logical?
+
     - pragmatics
     - interpretation and disjunction
 Basic approach:

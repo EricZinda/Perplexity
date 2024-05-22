@@ -447,8 +447,7 @@ class TreeSolver(object):
     # Yields an interpretation_solver and a generator for solutions for a particular lineage
     # Only does phase1 evaluation on the tree
     def phase1(self, state, tree_info, current_tree_index=None, normalize=False, target_interpretation_index=None, interpretation=None):
-        if current_tree_index is None:
-            current_tree_index = 0
+        current_tree_index_final = 0 if current_tree_index is None else current_tree_index
 
         if interpretation is not None:
             interpretation_list = [interpretation]
@@ -456,16 +455,16 @@ class TreeSolver(object):
             interpretation_list = self._mrs_tree_interpretations(tree_info, normalize)
 
         current_interpretation = -1
-        for interpretation in interpretation_list:
+        for interpretation_dict in interpretation_list:
             current_interpretation += 1
             if pipeline_logger.level == logging.DEBUG:
-                func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation.values()])
+                func_list = ", ".join([f"{x.module}.{x.function}" for x in interpretation_dict.values()])
 
             if target_interpretation_index is not None:
                 if current_interpretation < target_interpretation_index:
                     skipped_interpretation_record = TreeSolver.new_error_tree_record(tree=tree_info["Tree"],
                                                                                      error=ExecutionContext.blank_error(predication_index=0, error=['skipped']),
-                                                                                     tree_index=current_tree_index)
+                                                                                     tree_index=current_tree_index_final)
                     if pipeline_logger.level == logging.DEBUG:
                         pipeline_logger.debug(f"Skipping interpretation #{current_interpretation}: '{func_list}'")
 
@@ -477,10 +476,10 @@ class TreeSolver(object):
                     return
 
             if pipeline_logger.level == logging.DEBUG:
-                pipeline_logger.debug(f"Tree #{current_tree_index}, interpretation #{current_interpretation}: '{func_list}'")
+                pipeline_logger.debug(f"Tree #{current_tree_index_final if current_tree_index is not None else 'unknown'}, interpretation #{current_interpretation if interpretation is None else 'unknown'}: '{func_list}'")
 
             interpretation_solver = TreeSolver.InterpretationSolver(self._context)
-            lineage_generator = TreeSolver.MrsTreeLineageGenerator(interpretation_solver, state, tree_info, interpretation)
+            lineage_generator = TreeSolver.MrsTreeLineageGenerator(interpretation_solver, state, tree_info, interpretation_dict)
             for solutions in lineage_generator:
                 yield interpretation_solver, solutions
 
@@ -492,12 +491,14 @@ class TreeSolver(object):
                        tree_info,
                        response_function=None,
                        message_function=None,
-                       current_tree_index=0,
+                       current_tree_index=None,
                        target_tree_index=None,
                        target_interpretation_index=None,
                        interpretation=None,
                        find_all_solution_groups=True,
                        wh_phrase_variable=None):
+        current_tree_index_recorded = 0 if current_tree_index is None else current_tree_index
+
         this_sentence_force = sentence_force(tree_info["Variables"])
         for context, solutions in self.phase1(state, tree_info,
                                               current_tree_index=current_tree_index,
@@ -509,7 +510,7 @@ class TreeSolver(object):
                 continue
 
             tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"],
-                                                     tree_index=current_tree_index,
+                                                     tree_index=current_tree_index_recorded,
                                                      selected_conjuncts=tree_info.get("SelectedConjuncts", None))
 
             # solution_groups() should return an iterator that iterates *groups*
@@ -528,7 +529,7 @@ class TreeSolver(object):
             else:
                 tree_record["ResponseGenerator"] = None
 
-            tree_record["TreeIndex"] = current_tree_index
+            tree_record["TreeIndex"] = current_tree_index_recorded
             if pipeline_logger.level == logging.DEBUG:
                 pipeline_logger.debug(f"Returning tree_record for '{tree_info['Tree']}'")
 
@@ -642,6 +643,9 @@ class ExecutionContext(object):
         # predications like neg() need to know if a branch failed due to a real logical failure or not
         if self._notUnderstood[0] is not None:
             return self._notUnderstood
+
+    def report_error(self, error, force=False, phase=0):
+        self.report_error_for_index(0, error, force, phase=phase)
 
     # Error Design: when a predication is called it either:
     #     - yields a value (success)

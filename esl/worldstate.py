@@ -1,5 +1,6 @@
 import copy
 import json
+import logging
 import numbers
 import pickle
 import esl.esl_planner
@@ -127,11 +128,6 @@ def concept_disjunctions(state, root_concept, ignore_root=False):
                 object.level_index = lineage
                 yield DisjunctionValue(lineage, object)
 
-                # A different way of representing that something "is" something is that it has
-                # that adjective
-                adj_concept = ESLConcept().add_criteria(rel_subjects, "isAdj", next_level_type)
-                yield DisjunctionValue(lineage, adj_concept)
-
             for item in immediate_specializations(state, next_level_type):
                 next_next_level.append(item)
 
@@ -176,7 +172,6 @@ def most_specific_specializations(state, base_type):
 
         else:
             return
-
 
 
 def all_specializations(state, base_type):
@@ -330,14 +325,16 @@ def location_of_type(state, who, where_type):
     return True
 
 
-def count_of_instances_and_concepts(context, state, variable, concepts_original):
+def count_of_instances_and_concepts(context, state, variable, concepts_original, fail_if_no_instances):
     concepts = concepts_original
     concept_count = len(concepts)
 
     instances = []
     for concept in concepts:
         this_concept_instances = list(concept.instances(context, state))
-        if len(this_concept_instances) == 0:
+        # If we are dealing with instances and one of the concepts generates zero, we don't want to just count the others
+        # and succeed.  I.e. I have two ice creams and bowls should not succeed if there are no bowls
+        if fail_if_no_instances and len(this_concept_instances) == 0:
             context.report_error(["noInstancesOfConcept", variable], force=True, phase=2)
             return None
         instances += this_concept_instances
@@ -1258,3 +1255,6 @@ class WorldState(State):
             return self.user_wants_group(context, args[1], args[2])
         elif args[0] == "user_wants_to_see_group":
             return self.user_wants_to_see_group(context, args[1], args[2])
+
+
+pipeline_logger = logging.getLogger('Pipeline')
