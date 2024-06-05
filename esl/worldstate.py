@@ -446,7 +446,8 @@ def rel_all_instances(state, _, type):
 
 
 def rel_all_specializations(state, _, type):
-    return all_specializations(state, type)
+    yield type
+    yield from all_specializations(state, type)
 
 
 def has_type(state, subject, type):

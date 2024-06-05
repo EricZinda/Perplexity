@@ -9,6 +9,13 @@
             "ID": "8f560020-3575-4937-b66d-353a3fa6e2af"
         },
         {
+            "Command": "The soup is smoked",
+            "Expected": "I'm not sure which thing you mean.",
+            "Tree": "_the_q(x3,_soup_n_1(x3),_smoke_v_1(e2,i8,x3))",
+            "Enabled": true,
+            "ID": "0494e3db-dfae-4a1f-aeeb-f08560e495b7"
+        },
+        {
             "Command": "a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
@@ -20,7 +27,7 @@
             "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_food_n_1(x8), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "0494e3db-dfae-4a1f-aeeb-f08560e495b7"
+            "ID": "fcd8d9d2-e8b1-4e34-9ea9-9a4fa25969be"
         },
         {
             "Command": "/reset",

@@ -1485,19 +1485,49 @@ def _start_v_over_able(context, state, e_introduced_binding, x_who_binding):
             yield final_state
 
 
-class PastParticiple:
+class PastParticipleConcepts:
     def __init__(self, predicate_name_list, lemma):
         self.predicate_name_list = predicate_name_list
         self.lemma = lemma
-        self.past_participle_concept = ESLConcept("thing")
-        self.past_participle_concept = self.past_participle_concept.add_criteria(rel_subjects, "isAdj", lemma)
 
     def predicate_function(self, context, state, e_introduced_binding, i_binding, x_target_binding):
         def bound(value):
             if is_concept(value):
                 return True
 
-            elif (value, self.lemma) in state.all_rel("isAdj"):
+            else:
+                context.report_error(["not_adj", x_target_binding.variable.name, self.lemma, state.get_reprompt()])
+                return False
+
+        def unbound():
+            for i in state.all_rel("isAdj"):
+                if object_to_store(i[1]) == self.lemma and is_type(state, i[0]):
+                    yield store_to_object(state, i[0])
+
+        for item in combinatorial_predication_1(context, state, x_target_binding,
+                                                bound,
+                                                unbound):
+            if len(x_target_binding.value) == 1:
+                # Add extra criteria to the concept to represent possession by x_actor
+                x_object = x_target_binding.value[0].add_criteria(rel_subjects, "isAdj", self.lemma)
+
+                if perplexity.tree.used_predicatively(context, state):
+                    # "The salmon is smoked" interpreted as a concept requires that there is at least one concept of
+                    # "smoked salmom"
+                    if len(x_object.concepts(context, state)) == 0:
+                        return
+
+                yield state.set_x(x_target_binding.variable.name, (x_object,))
+
+
+class PastParticipleInstances:
+    def __init__(self, predicate_name_list, lemma):
+        self.predicate_name_list = predicate_name_list
+        self.lemma = lemma
+
+    def predicate_function(self, context, state, e_introduced_binding, i_binding, x_target_binding):
+        def bound(value):
+            if is_instance(value) and (value, self.lemma) in state.all_rel("isAdj"):
                 return True
 
             else:
@@ -1506,24 +1536,18 @@ class PastParticiple:
 
         def unbound():
             for i in state.all_rel("isAdj"):
-                if object_to_store(i[1]) == self.lemma:
-                    yield store_to_object(state, i[0])
+                if object_to_store(i[1]) == self.lemma and is_instance(state, i[0]):
+                    yield i[0]
 
-        for item in combinatorial_predication_1(context, state, x_target_binding,
+        yield from combinatorial_predication_1(context, state, x_target_binding,
                                                 bound,
-                                                unbound):
-            if is_concept(x_target_binding.value[0]):
-                if len(x_target_binding.value) == 1:
-                    # Add extra criteria to the concept to represent possession by x_actor
-                    x_object = x_target_binding.value[0].add_criteria(rel_subjects, "isAdj", self.lemma)
-                    yield state.set_x(x_target_binding.variable.name, (x_object,))
+                                                unbound)
 
-            else:
-                yield item
 
-grilled = PastParticiple(["_grill_v_1"], "grilled")
-roasted = PastParticiple(["_roast_v_cause"], "roasted")
-smoked = PastParticiple(["_smoke_v_1"], "smoked")
+grilled = PastParticipleConcepts(["_grill_v_1"], "grilled")
+roasted = PastParticipleConcepts(["_roast_v_cause"], "roasted")
+smoked_concepts = PastParticipleConcepts(["_smoke_v_1"], "smoked")
+smoked_instances = PastParticipleInstances(["_smoke_v_1"], "smoked")
 
 
 @Predication(vocabulary,
@@ -1559,7 +1583,7 @@ def _roast_v_1(context, state, e_introduced_binding, i_binding, x_target_binding
 
 
 @Predication(vocabulary,
-             names=smoked.predicate_name_list,
+             names=smoked_concepts.predicate_name_list,
              phrases={
                 "I want the smoked pork": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
                 "Do you have the smoked pork?": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
@@ -1570,7 +1594,7 @@ def _roast_v_1(context, state, e_introduced_binding, i_binding, x_target_binding
              properties=[{'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': 'bool', 'PERF': '-'},
                          {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}])
 def _smoke_v_1(context, state, e_introduced_binding, i_binding, x_target_binding):
-    yield from smoked.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
+    yield from smoked_concepts.predicate_function(context, state, e_introduced_binding, i_binding, x_target_binding)
 
 
 @Predication(vocabulary, names=("_on_p_loc",))
@@ -3702,7 +3726,7 @@ def generate_custom_message(tree_info, error_term):
     if error_constant == "x_verb_nothing":
         return s("{arg1} {*arg2} nothing", tree_info, reverse_pronouns=True)
     if error_constant == "not_adj":
-        return s("{arg3:@error_predicate_index} {'is':<arg3} not {*arg1}." + arg2, tree_info)
+        return s("{arg1:@error_predicate_index} {'is':<arg1} not {*arg2}." + arg3, tree_info)
     if error_constant == "is_not":
         return s("{arg1} is not {arg2}{*arg3}", tree_info)
     if error_constant == "arg_is_not_value_arg":
@@ -3829,6 +3853,13 @@ def reset():
         initial_state = initial_state.add_rel("restaurant", "have", dish_type)
         initial_state = initial_state.add_rel("restaurant", "describes", dish_type)
 
+        if dish_type == "chicken":
+            initial_state = initial_state.add_rel(dish_type, "isAdj", "roasted")
+        if dish_type == "salmon":
+            initial_state = initial_state.add_rel(dish_type, "isAdj", "grilled")
+        if dish_type == "pork":
+            initial_state = initial_state.add_rel(dish_type, "isAdj", "smoked")
+
         # These concepts are "in scope" meaning it is OK to say "the X"
         initial_state = initial_state.add_rel(dish_type, "conceptInScope", "true")
 
@@ -3837,6 +3868,7 @@ def reset():
         else:
             initial_state = initial_state.add_rel(dish_type, "priceUnknownTo", "user")
             initial_state = initial_state.add_rel(dish_type, "specializes", "special")
+
 
         # Create the food instances
         for i in range(3):
@@ -3849,12 +3881,6 @@ def reset():
             # The kitchen is where all the food is
             initial_state = initial_state.add_rel("kitchen1", "contain", food_instance)
             initial_state = initial_state.add_rel("restaurant", "have", food_instance)
-            if dish_type == "chicken":
-                initial_state = initial_state.add_rel(food_instance, "isAdj", "roasted")
-            if dish_type == "salmon":
-                initial_state = initial_state.add_rel(food_instance, "isAdj", "grilled")
-            if dish_type == "pork":
-                initial_state = initial_state.add_rel(food_instance, "isAdj", "smoked")
 
     initial_state = initial_state.add_rel("hi", "hasName", "Hawaii")
     initial_state = initial_state.add_rel("howdy", "hasName", "howdy")
