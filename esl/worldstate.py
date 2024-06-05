@@ -572,6 +572,27 @@ class ESLConcept(Concept):
 
                 return True
 
+    def render_english(self):
+        # We have simplistic logic for converting concepts to english
+        single_sort_name = self.single_sort_name()
+        if single_sort_name is not None:
+            return single_sort_name
+
+        else:
+            words = []
+            for function_arg1_arg2 in self.criteria:
+                if function_arg1_arg2[0] == rel_subjects and function_arg1_arg2[1] == "isAdj":
+                    words.append(function_arg1_arg2[2])
+                else:
+                    # Kind of criteria we don't understand ... abort
+                    return "something"
+            if len(self._sort_of_criteria) == 0:
+                words.append("something")
+            else:
+                words.append(next(iter(self._sort_of_criteria)))
+
+            return " ".join(words)
+
     # Used to add another concept as a conjunction to this one by simply
     # combining their sort_of_criteria and criteria
     def add_conjunction(self, concept):

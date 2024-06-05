@@ -1,5 +1,4 @@
-
-
+"what are your specials" --> Oh, I forgot to give you the menu! I'll get you one right away.
 
 - What is not vegetarian? --> returns vegetarian things
     - which_q(x3,thing(x3),neg(e8,_vegetarian_a_1(e2,x3)))

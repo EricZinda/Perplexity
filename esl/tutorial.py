@@ -1504,12 +1504,15 @@ class PastParticipleConcepts:
                 if object_to_store(i[1]) == self.lemma and is_type(state, i[0]):
                     yield store_to_object(state, i[0])
 
-        for item in combinatorial_predication_1(context, state, x_target_binding,
+        for new_state in combinatorial_predication_1(context, state, x_target_binding,
                                                 bound,
                                                 unbound):
-            if len(x_target_binding.value) == 1:
-                # Add extra criteria to the concept to represent possession by x_actor
-                x_object = x_target_binding.value[0].add_criteria(rel_subjects, "isAdj", self.lemma)
+            new_state_x_target_binding = new_state.get_binding(x_target_binding.variable.name)
+            if len(new_state_x_target_binding.value) == 1:
+                new_value = new_state_x_target_binding.value[0]
+
+                # Add extra criteria to the concept to represent the past participle
+                x_object = new_value.add_criteria(rel_subjects, "isAdj", self.lemma)
 
                 if perplexity.tree.used_predicatively(context, state):
                     # "The salmon is smoked" interpreted as a concept requires that there is at least one concept of

@@ -129,7 +129,7 @@
         },
         {
             "Command": "what is grilled?",
-            "Expected": "salmon\nWaiter: What can I get you?",
+            "Expected": "grilled salmon\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),_grill_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "ca2c198e-4b69-4a1d-a20d-bfa1dd9aa556"
@@ -185,7 +185,7 @@
         },
         {
             "Command": "what is smoked?",
-            "Expected": "pork\nWaiter: Can I get you anything else?",
+            "Expected": "smoked pork\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x3,thing(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "6d0e52f0-86c7-407f-ad67-27a0286b1f62"
@@ -220,7 +220,7 @@
         },
         {
             "Command": "what is roasted?",
-            "Expected": "chicken\nWaiter: Can I get you anything else?",
+            "Expected": "roasted chicken\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x3,thing(x3),_roast_v_cause(e2,i8,x3))",
             "Enabled": true,
             "ID": "affd8599-3ae9-43f7-bd7b-e53fb3eb7fcb"

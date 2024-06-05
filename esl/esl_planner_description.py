@@ -122,26 +122,10 @@ def describe_analyzed_at_table(state, context, analysis):
                                    ('reprompt', context))
                 return new_methods
 
-    rel = list(state.all_rel("have"))
     for i in analysis.keys():
         if not i == "UniqueItems":
             for j in analysis[i]:
-                # If it is a sortof(thing) and "restaurant" has it, describe it
-                if j in all_instances_and_spec(state, "thing"):
-                    if ("restaurant", j) in rel:
-                        new_methods.append(('describe_item', context, j))
-                else:
-                    # If it is a concept that is had, describe it
-                    if is_concept(j):
-                        sort = j.single_sort_name()
-                    else:
-                        sort = j
-
-                    if sort in all_instances_and_spec(state, "thing"):
-                        if ("restaurant", sort) in rel:
-                            new_methods.append(('describe_item', context, sort))
-                    else:
-                        new_methods.append(('describe_item', context, sort))
+                new_methods.append(('describe_item', context, j))
 
     return new_methods + [('respond_has_more', context, "(among others)", True),
                           ('reprompt', context)]
@@ -197,11 +181,7 @@ def oxford_comma(words):
 
 def convert_to_english(state, what):
     if is_concept(what):
-        single_sort_name = what.single_sort_name()
-        if single_sort_name is not None:
-            return single_sort_name
-        else:
-            return "something"
+        return what.render_english()
 
     if is_type(state, what):
         return what
