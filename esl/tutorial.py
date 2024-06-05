@@ -3433,13 +3433,6 @@ def _be_v_id_much_many_group(context, state_list, e_introduced_binding_list, x_s
             if not check_concept_solution_group_constraints(context, state_list, check_variable_group, check_concepts=True):
                 return
 
-            else:
-                # Now check to make sure these are the most detailed concepts (chicken, soup) and not the higher level ones
-                # (vegetarian, thing) by seeing if there there are any known concepts it is entailed by
-                for concept in check_variable_group.solution_values[0].value[0].concepts(context, state_list[0]):
-                    # There is at least one concept this is entailed by, ignore it
-                    return
-
     yield state_list
 
 

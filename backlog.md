@@ -1,10 +1,10 @@
 
 
+
 - What is not vegetarian? --> returns vegetarian things
     - which_q(x3,thing(x3),neg(e8,_vegetarian_a_1(e2,x3)))
     - because _vegetarian_a_1 run as the verb isn't correct
 
-- How much is your smoked meat? --> doesn't seem to work
 
 - what is a table for 2? --> no answer?
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
