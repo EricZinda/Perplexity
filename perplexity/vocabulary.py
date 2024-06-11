@@ -568,7 +568,7 @@ def Predication(vocabulary,
                 yield from function_to_decorate(*args, **kwargs)
 
         # Make sure match_all args are filled in properly
-        is_match_all = any(name.startswith("match_all_") for name in predication_names)
+        is_match_all = any((name.startswith("match_all_") or name.startswith("solution_group_match_all_")) for name in predication_names)
         extra_arg_in_front_count = 1 if is_match_all else 0
         valid_match_all = is_match_all and len(predication_names) == 1 and matches_lemma_function is not None
         assert not is_match_all or (is_match_all and valid_match_all)

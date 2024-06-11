@@ -224,6 +224,13 @@
             "Tree": "which_q(x3,thing(x3),_roast_v_cause(e2,i8,x3))",
             "Enabled": true,
             "ID": "affd8599-3ae9-43f7-bd7b-e53fb3eb7fcb"
+        },
+        {
+            "Command": "what is vegetarian?",
+            "Expected": "soup\nsalad\nWaiter: Can I get you anything else?",
+            "Tree": "which_q(x3,thing(x3),_vegetarian_a_1(e2,x3))",
+            "Enabled": true,
+            "ID": "536f65a4-7a11-4838-92ab-ef6166f9472f"
         }
     ],
     "ElapsedTime": 13.75445

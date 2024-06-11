@@ -2369,5 +2369,11 @@
     },
     "_have_v_1_request_order_group": {
         "PropertiesFrom": "_have_v_1_request_order_group"
+    },
+    "match_all_a_concepts_menu": {},
+    "_vegetarian_a_1_concepts_menu": {},
+    "match_all_n_concepts_menu": {},
+    "_vegetarian_a_1_concepts_menu_group": {
+        "PropertiesFrom": "_vegetarian_a_1_concepts_menu_group"
     }
 }

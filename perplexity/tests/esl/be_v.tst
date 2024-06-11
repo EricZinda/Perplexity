@@ -20,7 +20,8 @@
             "Expected": [
                 "son\nperson\nthing\n",
                 "person\nthing\nson\n",
-                "thing\nson\nperson\n"
+                "thing\nson\nperson\n",
+                "person\nson\nthing\n"
             ],
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_son_n_of(x8,i19), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,

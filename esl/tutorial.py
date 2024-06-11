@@ -16,7 +16,7 @@ from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
     PropertyTransformerProduction, ConjunctionMatchTransformer, ConjunctionProduction
 from perplexity.tree import find_predication_from_introduced, get_wh_question_variable, \
-    gather_scoped_variables_from_tree_at_index, TreePredication
+    gather_scoped_variables_from_tree_at_index, TreePredication, used_predicatively
 from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force
 from perplexity.variable_binding import VariableBinding, VariableData
@@ -1288,7 +1288,8 @@ def handles_adjective(state, adjective_lemma):
 
 @Predication(vocabulary, names=["match_all_a"], matches_lemma_function=handles_adjective)
 def match_all_a_concepts(adjective_type, context, state, e_introduced, x_binding):
-    yield from adjective_default_concepts(adjective_type, context, state, x_binding)
+    if not used_predicatively(context, state):
+        yield from adjective_default_concepts(adjective_type, context, state, x_binding)
 
 
 @Predication(vocabulary, names=["match_all_a"], matches_lemma_function=handles_adjective)
@@ -1300,6 +1301,42 @@ def handles_noun(state, noun_lemma):
     noun_lemmas = [noun_lemma]
     handles = ["thing"] + list(all_specializations(state, "thing"))
     return any([x in handles for x in noun_lemmas])
+
+
+# Succeeds when concepts that "are" type_name (when is_adjective is False) or "isAdj" type_name (when is_adjective is True)
+# are entailed by something that is orderable
+def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding, is_adjective=True):
+    def bound_variable(value):
+        if is_concept(value):
+            return True
+
+        else:
+            noun_lemmas = [value]
+            if any([sort_of(state, x, type_name) for x in noun_lemmas]):
+                return True
+
+            else:
+                context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+                return False
+
+    def unbound_variable_concepts():
+        # Phrases like "What is vegetarian?"
+        if is_adjective:
+            term = ESLConcept()
+            term = adjective.add_criteria(rel_subjects, "isAdj", type_name)
+        else:
+            term = ESLConcept(type_name)
+
+        entailed_orderable = term.entailed_by_which(context, state, orderable)
+        if len(entailed_orderable) > 0:
+            # The answer to "What is [x]?" where "x" is any concept entailed by at least one menu item
+            # is those menu items
+            yield from entailed_orderable
+            return
+
+    orderable = orderable_concepts(state)
+    for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
+        yield new_state
 
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
@@ -1413,15 +1450,12 @@ def adjective_default_concepts(adjective_type, context, state, x_binding):
             if is_concept(item):
                 yield item
 
-    # Then yield a combinatorial value of all types
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
         new_x_binding = new_state.get_binding(x_binding.variable.name)
         if new_x_binding is not None and len(new_x_binding.value) == 1 and is_concept(new_x_binding.value[0]):
             x = new_x_binding.value[0].add_criteria(rel_subjects, "isAdj", adjective_type)
             yield state.set_x(new_x_binding.variable.name, (x,))
 
-        else:
-            yield new_state
 
 
 def adjective_default_instances(adjective_type, context, state, x_binding):
@@ -1451,8 +1485,30 @@ def adjective_default_instances(adjective_type, context, state, x_binding):
 # 'vegetarian food" is modelled as anything that has a "veggie" base class, not
 # things that have a "hasAdj" relationship
 @Predication(vocabulary, names=["_vegetarian_a_1"])
+def _vegetarian_a_1_concepts_menu(context, state, e_introduced_binding, x_target_binding):
+    if used_predicatively(context, state):
+        # If "vegetarian" is used predicatively ('What is vegetarian?') attempt to interpret as
+        # asking about properties of things on the menu
+        yield from match_all_concepts_with_adjective_menu("veggie", context, state, x_target_binding, is_adjective=False)
+
+
+@Predication(vocabulary,
+             names=["solution_group__vegetarian_a_1"],
+             properties_from=_vegetarian_a_1_concepts_menu,
+             handles_interpretation=_vegetarian_a_1_concepts_menu)
+def _vegetarian_a_1_concepts_menu_group(context, state_list, e_introduced_binding_list, x_target_binding_list):
+    # Since the arguments are concepts constraints need to be checked
+    if x_target_binding_list.solution_values[0].value is not None and is_concept(x_target_binding_list.solution_values[0].value[0]):
+        if not check_concept_solution_group_constraints(context, state_list, x_target_binding_list, check_concepts=True):
+            return
+
+    yield state_list
+
+
+@Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_concepts(context, state, e_introduced_binding, x_target_binding):
-    yield from match_all_n_concepts("veggie", context, state, x_target_binding)
+    if not used_predicatively(context, state):
+        yield from match_all_n_concepts("veggie", context, state, x_target_binding)
 
 
 @Predication(vocabulary, names=["_vegetarian_a_1"])
