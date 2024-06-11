@@ -541,7 +541,7 @@ class ESLConcept(Concept):
         self.mrs_variable = mrs_variable
 
     def __repr__(self):
-        return f"ESLConcept({','.join(self._sort_of_criteria)}: {[x for x in self.criteria]} )"
+        return f"{self.level_index}:ESLConcept({','.join(self._sort_of_criteria)}: {[x for x in self.criteria]} )"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
@@ -667,7 +667,7 @@ class ESLConcept(Concept):
     def entails_which_specializations(self, context, state):
         sort = self.single_sort_name()
         if sort is not None:
-            return [sort]
+            return [sort] + [x for x in all_ancestors(state, sort)]
 
         else:
             shared_specializations = set()

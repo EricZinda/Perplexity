@@ -447,7 +447,10 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
             scopal_arg = [scopal_arg]
 
         if isinstance(scopal_arg, list):
-            if isinstance(transformer, ConjunctionMatchTransformer):
+            if isinstance(transformer, AllMatchTransformer):
+                return scopal_arg
+
+            elif isinstance(transformer, ConjunctionMatchTransformer):
                 if transformer.is_root():
                     if transformer.match_tree(transformer_search, scopal_arg, variables, capture, metadata, current_index):
                         new_conjunction = build_production(transformer, variables, capture, current_index)

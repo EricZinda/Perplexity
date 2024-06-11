@@ -63,14 +63,13 @@ def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, err
             if solution_groups is not None:
                 # Build an error term that we can use to call generate_message
                 # to get the response
-                index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
-                wh_variable = wh_predication.introduced_variable()
                 solution_group = next(solution_groups)
-                solution_group_list = list(solution_group)
+                original_solution_group_list = list(solution_group)
 
                 # Run the wh_handlers to give the developer a chance to handle lists of things
+                wh_variable = wh_predication.introduced_variable()
                 wh_handlers = find_wh_group_handlers(vocabulary, sentence_force_type)
-                solution_group_list = run_wh_group_handlers(vocabulary, wh_handlers, wh_variable, solution_group_list)
+                solution_group_list = run_wh_group_handlers(vocabulary, wh_handlers, wh_variable, original_solution_group_list)
 
                 # If any solution in the group has a RespondOperation in it, assume that the response
                 # has been handled by that and just return an empty string
@@ -81,6 +80,7 @@ def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, err
                             yield "", solution_group_list
                             return
 
+                index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
                 yield message_function(tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0]]]), solution_group_list
 
             else:

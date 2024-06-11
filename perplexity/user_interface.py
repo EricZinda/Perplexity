@@ -362,12 +362,36 @@ class UserInterface(object):
                                     # Go through all the responses in this solution group
                                     had_operations = False
                                     response, solution_group = next(tree_record["ResponseGenerator"])
+
                                     # Because this worked, we need to apply any Operations that were added to
                                     # any solution to the current world state.
                                     try:
                                         has_more_func = solution_group_generator.has_at_least_one_more
+
+                                        def unique_wh_values_from_group(group):
+                                            unique_wh_values = set()
+                                            for solution in group:
+                                                unique_wh_values.add(solution.get_binding(wh_phrase_variable).value)
+
+                                            return unique_wh_values
+
+                                        # when the solution group is a wh_question, we only care if the wh variable
+                                        # is different in the different solution groups
+                                        def wh_aware_has_more():
+                                            if wh_phrase_variable is None:
+                                                return solution_group_generator.has_at_least_one_more()
+
+                                            else:
+                                                original_values = unique_wh_values_from_group(solution_group)
+                                                for next_solution_group in solution_group_generator:
+                                                    next_original_values = unique_wh_values_from_group(next_solution_group)
+                                                    if next_original_values != original_values:
+                                                        return True
+
+                                                return False
+
                                         solution_group_solutions = [solution for solution in solution_group]
-                                        operation_responses, new_state = apply_solutions_to_state(self.state, has_more_func, solution_group_solutions)
+                                        operation_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
                                         self.state = new_state
 
                                     except MessageException as error:

@@ -128,7 +128,7 @@ class SolutionMaximalGroupGenerator(object):
             # The ID reflects the lineage, so we can get the
             # parent ID by grabbing the text before the last ":"
             if stats_group.only_instances() and stats_group.merge:
-                colon_index = next_id.rfind(":")
+                colon_index = -1 if next_id is None else next_id.rfind(":")
                 if colon_index == -1:
                     parent_id = ""
                 else:
@@ -148,6 +148,7 @@ class SolutionMaximalGroupGenerator(object):
 
             if existing_solution_group_id == "":
                 # There wasn't an existing solution group to put this in, start tracking this as a new one
+                groups_logger.debug(f"SolutionGroupGenerator: There wasn't an existing solution group for solution, start a new group: {next_group}")
                 self.solution_groups[next_id] = SingleMaximalGroupGenerator(next_id, self, next_group, self.generate_maximal_group)
                 self.unyielded_solution_groups[next_id] = None
 
@@ -155,6 +156,7 @@ class SolutionMaximalGroupGenerator(object):
                 # This is an update to an existing solution group, either a parent or the exact id
                 # Replace the data in the SingleGroupGenerator and update its ID
                 # to the new value so it will properly track the lineage next time
+                groups_logger.debug(f"SolutionGroupGenerator: New solution for existing group: {existing_solution_group_id}, new group id: {next_id}")
                 existing_solution_group = self.solution_groups[existing_solution_group_id]
                 existing_solution_group.group_list = next_group
                 existing_solution_group.group_id = next_id

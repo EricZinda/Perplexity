@@ -143,7 +143,7 @@ class TreeSolver(object):
                 self.clear_error()
                 for solution in self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"]):
                     # Remember any disjunction lineages that had a solution
-                    tree_lineage_binding = state.get_binding("tree_lineage")
+                    tree_lineage_binding = solution.get_binding("tree_lineage")
                     if tree_lineage_binding.value is None:
                         self._solution_lineages.add(None)
                     else:
@@ -424,10 +424,9 @@ class TreeSolver(object):
                 return value
 
             solution = next(self.solution_generator)
-            pipeline_logger.debug(f"MrsTreeLineageGenerator got solution: {str(solution)}")
-
             tree_lineage_binding = solution.get_binding("tree_lineage")
             tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
+            pipeline_logger.debug(f"MrsTreeLineageGenerator got solution for lineage {tree_lineage}: {str(solution)}")
 
             if not self.lineage_failure_fifo.empty():
                 # There was at least one lineage failure during execution of next()

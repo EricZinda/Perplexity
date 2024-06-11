@@ -3202,10 +3202,10 @@ def _be_v_id_list(context, state, e_introduced_binding, x_subject_binding, x_obj
         context.report_error(["formNotUnderstood"])
         return
 
-    # object must be bound
-    subject_unbound = x_subject_binding.value is None
-    object_unbound = x_object_binding.value is None
-    if object_unbound:
+    # one of subject or object must be bound
+    subject_unbound = 1 if x_subject_binding.value is None else 0
+    object_unbound = 1 if x_object_binding.value is None else 0
+    if (subject_unbound + object_unbound) != 1:
         context.report_error(["formNotUnderstood"])
         return
 
@@ -3239,13 +3239,6 @@ def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subjec
         if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
             if not check_concept_solution_group_constraints(context, state_list, check_variable_group, check_concepts=True):
                 return
-
-            else:
-                # Now check to make sure these are the most detailed concepts (chicken, soup) and not the higher level ones
-                # (vegetarian, thing) by seeing if there there are any known concepts it is entailed by
-                for concept in check_variable_group.solution_values[0].value[0].concepts(context, state_list[0]):
-                    # There is at least one concept this is entailed by, ignore it
-                    return
 
     yield state_list
 
@@ -3473,6 +3466,7 @@ def _be_v_id_instance_concept(context, state, e_introduced_binding, x_subject_bi
 
     def unbound(x_object):
         if is_concept(x_object):
+            # yields instances since this interpretation is "instance_concept"
             yield from x_object.instances(context, state)
 
         else:
@@ -3674,7 +3668,9 @@ def wh_question(context, state_list, binding_list):
 
         new_state = current_state.apply_operations(all_operations, True)
 
-        yield (new_state,)
+        # Include all of the solutions even though we only added operations to the first solution
+        # This is so the engine can properly compare this solution group to others and return "(there are more)"
+        yield (new_state,) + tuple(state_list[1:])
 
 
 # Generates all the responses that predications can
@@ -3990,6 +3986,6 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
-    # ShowLogging("Transformer")
+    ShowLogging("Transformer")
 
     hello_world()
