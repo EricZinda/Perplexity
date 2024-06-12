@@ -3265,14 +3265,14 @@ def _be_v_id_list(context, state, e_introduced_binding, x_subject_binding, x_obj
         context.report_error(["formNotUnderstood"])
         return
 
-    # one of subject or object must be bound
-    subject_unbound = 1 if x_subject_binding.value is None else 0
-    object_unbound = 1 if x_object_binding.value is None else 0
-    if (subject_unbound + object_unbound) != 1:
+    # one or both of subject or object must be bound
+    subject_unbound = x_subject_binding.value is None
+    object_unbound = x_object_binding.value is None
+    if subject_unbound and object_unbound:
         context.report_error(["formNotUnderstood"])
         return
 
-    # Require that the single unbound argument is a concept
+    # Require that the any bound arguments are concepts
     # Only need to check one value since there is never a mix of instances and concepts
     if (not subject_unbound and not is_concept(x_subject_binding.value[0])) or \
         (not object_unbound and not is_concept(x_object_binding.value[0])):

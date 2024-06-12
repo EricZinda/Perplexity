@@ -1,5 +1,5 @@
+- what vegetarian meats do you have? --> (1:ESLConcept(pork: [] ),) is not meat 
 
-- what is not soup? --> I don't understand the way you are using: be
 
 - Need to handle other adjectives used predicatively for ordering like "what is cheap?" by
 - what is a table for 2? --> no answer?
