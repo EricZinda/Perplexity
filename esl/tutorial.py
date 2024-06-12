@@ -1307,32 +1307,39 @@ def handles_noun(state, noun_lemma):
 # are entailed by something that is orderable
 def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding, is_adjective=True):
     def bound_variable(value):
-        if is_concept(value):
-            return True
-
-        else:
-            noun_lemmas = [value]
-            if any([sort_of(state, x, type_name) for x in noun_lemmas]):
+        # When "not" is used ("what is not vegetarian?"), the argument will be bound since thing(x) binds every possible
+        # thing into the argument. To be true, x_binding must be a single orderable thing and must entail type_name
+        _, entails_orderable = value.entails_which(context, state, orderable)
+        if len(entails_orderable) == 1:
+            if value.entails(context, state, type_name_concept):
                 return True
 
             else:
-                context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+                context.report_error(["arg_is_not_value_value", x_binding.variable.name, type_name, state.get_reprompt()])
                 return False
+
+        else:
+            context.report_error(["formNotUnderstood"])
+            return
 
     def unbound_variable_concepts():
         # Phrases like "What is vegetarian?"
-        if is_adjective:
-            term = ESLConcept()
-            term = adjective.add_criteria(rel_subjects, "isAdj", type_name)
-        else:
-            term = ESLConcept(type_name)
-
-        entailed_orderable = term.entailed_by_which(context, state, orderable)
+        entailed_orderable = type_name_concept.entailed_by_which(context, state, orderable)
         if len(entailed_orderable) > 0:
             # The answer to "What is [x]?" where "x" is any concept entailed by at least one menu item
             # is those menu items
             yield from entailed_orderable
             return
+
+    if x_binding.value is not None and not is_concept(x_binding.value[0]):
+        context.report_error(["formNotUnderstood"])
+        return
+
+    if is_adjective:
+        type_name_concept = ESLConcept()
+        type_name_concept = adjective.add_criteria(rel_subjects, "isAdj", type_name)
+    else:
+        type_name_concept = ESLConcept(type_name)
 
     orderable = orderable_concepts(state)
     for new_state in combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts):
@@ -3777,8 +3784,8 @@ def generate_custom_message(tree_info, error_term):
         return s("{arg1:@error_predicate_index} {'is':<arg1} not {*arg2}." + arg3, tree_info)
     if error_constant == "is_not":
         return s("{arg1} is not {arg2}{*arg3}", tree_info)
-    if error_constant == "arg_is_not_value_arg":
-        return s("{arg1} is not {*arg2} {arg3}", tree_info)
+    if error_constant == "arg_is_not_value_value":
+        return s("{arg1} is not {*arg2} {*arg3}", tree_info)
     if error_constant == "notOn":
         return f"No. {arg1} is not on {arg2}{arg3}"
     if error_constant == "verbDoesntApplyArg":

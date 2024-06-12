@@ -1,10 +1,6 @@
 
+- what is not soup? --> I don't understand the way you are using: be
 
-- What is not vegetarian? --> returns vegetarian things
-    - which_q(x3,thing(x3),neg(e8,_vegetarian_a_1(e2,x3)))
-    - because _vegetarian_a_1 run as the verb isn't correct
-        - when used predicatively, there should be a group handler that does all the global constraint checking, etc
-        - how do you build a solution group for a match all?
 - Need to handle other adjectives used predicatively for ordering like "what is cheap?" by
 - what is a table for 2? --> no answer?
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean
