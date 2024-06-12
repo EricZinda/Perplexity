@@ -1,6 +1,6 @@
-- what vegetarian meats do you have? --> (1:ESLConcept(pork: [] ),) is not meat 
+- what vegetarian meats do you have? --> (1:ESLConcept(pork: [] ),) is not meat
 
-
+- (with nothing ordered) what is my order? -> No. ('user',) does not have ('order1', 'order2', 'order3')
 - Need to handle other adjectives used predicatively for ordering like "what is cheap?" by
 - what is a table for 2? --> no answer?
 - which vegetarian/chicken menu items do you have? --> I don't know which you mean

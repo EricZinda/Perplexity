@@ -1358,7 +1358,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
                 return True
 
             else:
-                context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+                context.report_error(["arg_is_not_value_value", x_binding.variable.name, noun_type, state.get_reprompt()])
                 return False
 
     def unbound_variable_concepts():
@@ -1385,7 +1385,7 @@ def match_all_n_instances(noun_type, context, state, x_binding):
             return True
 
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["arg_is_not_value_value", x_binding.variable.name, noun_type, state.get_reprompt()])
             return False
 
     def unbound_variable_instances():
@@ -1401,7 +1401,7 @@ def match_all_the_concept_n(noun_type, context, state, x_binding):
         if sort_of(state, value, noun_type):
             return True
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["arg_is_not_value_value", x_binding.variable.name, noun_type, state.get_reprompt()])
             return False
 
     def unbound_variable_instances():

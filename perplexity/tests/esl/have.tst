@@ -64,7 +64,8 @@
                 "bill\norder\nJohnny",
                 "Johnny\norder\nbill",
                 "order\nJohnny\nbill",
-                "order\nbill\nJohnny"
+                "order\nbill\nJohnny",
+                "Johnny\nbill\norder"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -156,7 +157,7 @@
         },
         {
             "Command": "do you have the table",
-            "Expected": "There is more than 1 table",
+            "Expected": "I'm not sure which table you mean.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d08e91ef-3bcd-42b0-a0dc-8c7d1a357a51"

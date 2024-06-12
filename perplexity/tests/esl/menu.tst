@@ -178,7 +178,7 @@
         },
         {
             "Command": "show us 3 menus",
-            "Expected": "That seems like an excessive number of menus ...\n",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ... \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"

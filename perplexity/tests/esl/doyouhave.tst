@@ -93,14 +93,14 @@
         },
         {
             "Command": "what vegetarian meats do you have?",
-            "Expected": "Host: There isn't such a vegetarian meat here",
+            "Expected": "vegetarian meats is not veggie  \nWaiter: What can I get you?",
             "Tree": "_which_q(x5,[_meat_n_1(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ae7abcc5-6e6b-4d44-a0b4-897246bd70b6"
         },
         {
             "Command": "what smoked meat do you have?",
-            "Expected": "pork\nWaiter: What can I get you?",
+            "Expected": "Son: Wait, let's not order pork before we know how much it costs.\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,[_meat_n_1(x5), _smoke_v_1(e9,i10,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "aecd6d6f-fc01-4ad3-8865-00273f7996a8"
