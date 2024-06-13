@@ -1815,6 +1815,13 @@
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            "Chicken is my order": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
         },
         "Properties": [

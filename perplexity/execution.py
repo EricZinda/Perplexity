@@ -141,7 +141,10 @@ class TreeSolver(object):
             if self.tree_matches_interpretation_properties(tree_info, interpretation):
                 # Start out with an empty error context so that the first .call() records the right error
                 self.clear_error()
-                for solution in self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"]):
+
+                # Whenever there is a solution, this means there was not an error, by definition
+                # So: clear it before we yield
+                for solution in clear_error_when_yield_generator(self, self.call(state.set_x("tree", (tree_info,), False), tree_info["Tree"])):
                     # Remember any disjunction lineages that had a solution
                     tree_lineage_binding = solution.get_binding("tree_lineage")
                     if tree_lineage_binding.value is None:
@@ -304,9 +307,7 @@ class TreeSolver(object):
                 # that are a list by using "function(*function_args)"
                 # So: this is actually calling our function (which
                 # returns an iterator, and thus we can iterate over it)
-                # If we get a solution (i.e. the function yields), clear the
-                # error so that it doesn't bleed over into the next search for a solution
-                for next_state in clear_error_when_yield_generator(self, function(*function_args)):
+                for next_state in function(*function_args):
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug(f"yielding {predication}, state: {str(next_state)}, phrase_type: [{self._phrase_type}]")
 

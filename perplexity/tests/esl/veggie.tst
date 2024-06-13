@@ -18,7 +18,7 @@
         {
             "Command": "which vegetarian items do you have?",
             "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
-            "Tree": "_which_q(x5,[_item_n_of(x5,i10), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Tree": "_which_q(x5,[_thing_n_of-about(x5,i10), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e0096011-560c-4806-b093-402709a8419b"
         },

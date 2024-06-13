@@ -2628,10 +2628,12 @@ def _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_obje
             context.report_error(["dontKnowHow"])
 
     def actor_from_object(x_object):
-        pass
+        if False:
+            yield None
 
     def object_from_actor(x_actor):
-        pass
+        if False:
+            yield None
 
     for new_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object, object_from_actor):
         # First figure out who this order belongs to
@@ -3135,7 +3137,9 @@ def poss_lift_style(context, state, e_introduced_binding, x_object_binding, x_ac
                 return True
 
             else:
-                context.report_error(["verbDoesntApply", x_actors, "have", x_objects, state.get_reprompt()])
+                context.report_error(
+                    ["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name,
+                     state.get_reprompt()])
                 return False
 
     def actor_from_objects(x_objects):
@@ -3189,6 +3193,195 @@ def is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
             return True
 
     return False
+
+
+# Discussions about the customers order are about a *particular* order, and thus deal with order instances, not concepts
+# However: the items *in* the order must be concepts
+@Predication(vocabulary,
+             names=["_be_v_id"],
+             phrases={
+                 "What is my order?":   {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "My order is chicken": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "Chicken is my order": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    def criteria_bound(x_subject, x_object):
+        # Either argument could be the order
+        for order_item in [x_subject, x_object]:
+            if len(order_item) == 1 and instance_of_what(state, order_item[0]) == "order":
+                # "My order is X" or "X is my order] --> See if the set of items in x_object entail what was ordered
+                potential_concepts_in_order = x_subject if order_item == x_object else x_object
+                order = order_item[0]
+                order_food_instances = sorted([x for x in state.food_in_order(order)])
+                if len(order_food_instances) > 0:
+                    for food_concept in potential_concepts_in_order:
+                        if not is_concept(food_concept):
+                            return False
+                        found_instances = food_concept.instances(context, state, order_food_instances)
+                        found_type = len(found_instances) > 0
+                        if found_type:
+                            for found_instance in found_instances:
+                                order_food_instances.remove(found_instance)
+
+                        else:
+                            break
+
+                    if found_type and len(order_food_instances) == 0:
+                        return True
+
+                else:
+                    context.report_error(["errorText", "Nothing"])
+
+        if len(x_subject) == 1 and not is_concept(x_subject[0]) and sort_of(state, x_subject[0], "order"):
+            # "My order is X" --> See if the set of items in x_object entail what was ordered
+            order = x_subject[0]
+            order_food_instances = sorted([x for x in state.food_in_order(order)])
+            if len(order_food_instances) > 0:
+                for food_concept in x_object:
+                    if not is_concept(food_concept):
+                        return False
+                    found_instances = food_concept.instances(context, state, order_food_instances)
+                    found_type = len(found_instances) > 0
+                    if found_type:
+                        for found_instance in found_instances:
+                            order_food_instances.remove(found_instance)
+
+                    else:
+                        break
+
+                if found_type and len(order_food_instances) == 0:
+                    return True
+
+            else:
+                context.report_error(["errorText", "Nothing"])
+
+    def unbound(x_object):
+        # The phrase "What is my order?" means "what are the things in my order"
+        order = x_object[0]
+        order_foods = tuple([x for x in state.food_in_order(order)])
+        if len(order_foods) > 0:
+            yield order_foods
+        else:
+            context.report_error(["errorText", "Nothing"])
+
+    # Only use this interpretation if we are talking about an instance of "order"
+    # The other argument will be checked in the bound/unbound functions above
+    has_instance = False
+    for order_binding in [x_subject_binding, x_object_binding]:
+        if order_binding.value is not None and len(order_binding.value) == 1 and not is_concept(order_binding.value[0]) and \
+                instance_of_what(state, order_binding.value[0]) == "order":
+            has_instance = True
+            break
+
+    if not has_instance:
+        context.report_error(["formNotUnderstood"])
+        return
+
+    # Use lift_style so that we get everything in the order as a single value, meaning "together"
+    for success_state in lift_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
+        yield success_state
+
+
+# @Predication(vocabulary,
+#              names=["_be_v_id"],
+#              phrases={
+#                  "What is my order?":   {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+#                  "My order is chicken": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+#              },
+#              properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+#              arguments=[("e",), ("x", ValueSize.exactly_one), ("x", ValueSize.all)])
+# def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+#     def criteria_bound(x_subject, x_object):
+#         if len(x_subject) == 1 and not is_concept(x_subject[0]) and sort_of(state, x_subject[0], "order"):
+#             # "My order is X" --> See if the set of items in x_object entail what was ordered
+#             order = x_subject[0]
+#             order_foods = sorted([x for x in state.food_in_order(order)])
+#             if len(order_foods) > 0:
+#                 for food_concept in x_object:
+#                     if not is_concept(food_concept):
+#                         return False
+#                     entailed = food_concept.instances(context, state, order_foods)
+#                     found_type = len(entailed) > 0
+#                     if found_type:
+#                         for entailed_item in entailed:
+#                             order_foods.remove(entailed_item)
+#
+#                     else:
+#                         break
+#
+#                 if found_type and len(order_foods) == 0:
+#                     return True
+#
+#             else:
+#                 context.report_error(["errorText", "Nothing"])
+#
+#     def unbound(x_object):
+#         # The phrase "What is my order?" means "what are the things in my order"
+#         if len(x_object) == 1 and not is_concept(x_object[0]) and sort_of(state, x_object[0], "order"):
+#             order = x_object[0]
+#             order_foods = tuple([x for x in state.food_in_order(order)])
+#             if len(order_foods) > 0:
+#                 yield order_foods
+#             else:
+#                 context.report_error(["errorText", "Nothing"])
+#
+#     # Only use this interpretation if we are talking about an instance of OR concept of "order"
+#     if not is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
+#         context.report_error(["formNotUnderstood"])
+#         return
+#
+#     # Use lift_style so that we get everything in the order as a single value, meaning "together"
+#     for success_state in lift_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
+#         yield success_state
+
+
+@Predication(vocabulary,
+             names=["solution_group__be_v_id"],
+             properties_from=_be_v_id_order,
+             handles_interpretation=_be_v_id_order)
+def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
+    # Since one of the arguments holds concepts, constraints need to be checked
+    # Figure out which argument it is
+    concept_variable_group = None
+    for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
+        if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
+            concept_variable_group = check_variable_group
+            order_variable_group = x_subject_variable_group if x_object_variable_group == check_variable_group else x_object_variable_group
+
+    if not concept_variable_group:
+        # This solution group handler requires conceptual things in an order
+        context.report_error(["formNotUnderstood"])
+        return
+
+    else:
+        # Get the global criteria
+        min = min_from_variable_group(check_variable_group)
+        max = max_from_variable_group(check_variable_group)
+
+        # Figure out the count of things ordered that "are" this concept
+        # Then compare the actual count across the solution group to the global criteria
+        tree_info = state_list[0].get_binding("tree")
+        order = order_variable_group.solution_values[0].value[0]
+        order_foods = sorted([x for x in state_list[0].food_in_order(order)])
+        found_count = 0
+        for food_concept_binding in concept_variable_group.solution_values:
+            for food_concept in food_concept_binding.value:
+                found_instances = food_concept.instances(context, state_list[0], order_foods)
+                found_count += len(found_instances)
+                for found_instance in found_instances:
+                    order_foods.remove(found_instance)
+
+        if found_count < min:
+            context.report_error(["phase2LessThan", concept_variable_group.variable_constraints.variable_name, min], force=True, phase=2)
+            return
+
+        elif found_count > max:
+            context.report_error(["phase2MoreThan", concept_variable_group.variable_constraints.variable_name, max], force=True, phase=2)
+            return
+
+        yield state_list
 
 
 # Handle "what is X?", "where is X?", "who is x?" when it has exactly one unbound argument and one bound concept argument and
@@ -3304,106 +3497,6 @@ def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subjec
                 return
 
     yield state_list
-
-
-@Predication(vocabulary,
-             names=["_be_v_id"],
-             phrases={
-                 "What is my order?":   {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "My order is chicken": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-             },
-             properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-             arguments=[("e",), ("x", ValueSize.exactly_one), ("x", ValueSize.all)])
-def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
-    def criteria_bound(x_subject, x_object):
-        if len(x_subject) == 1 and not is_concept(x_subject[0]) and sort_of(state, x_subject[0], "order"):
-            # "My order is X" --> See if the set of items in x_object entail what was ordered
-            order = x_subject[0]
-            order_foods = sorted([x for x in state.food_in_order(order)])
-            if len(order_foods) > 0:
-                for food_concept in x_object:
-                    if not is_concept(food_concept):
-                        return False
-                    entailed = food_concept.instances(context, state, order_foods)
-                    found_type = len(entailed) > 0
-                    if found_type:
-                        for entailed_item in entailed:
-                            order_foods.remove(entailed_item)
-
-                    else:
-                        break
-
-                if found_type and len(order_foods) == 0:
-                    return True
-
-            else:
-                context.report_error(["errorText", "Nothing"])
-
-    def unbound(x_object):
-        # The phrase "What is my order?" means "what are the things in my order"
-        if len(x_object) == 1 and not is_concept(x_object[0]) and sort_of(state, x_object[0], "order"):
-            order = x_object[0]
-            order_foods = tuple([x for x in state.food_in_order(order)])
-            if len(order_foods) > 0:
-                yield order_foods
-            else:
-                context.report_error(["errorText", "Nothing"])
-
-    # Only use this interpretation if we are talking about an "order"
-    if not is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
-        context.report_error(["formNotUnderstood"])
-        return
-
-    # Use lift_style so that we get everything in the order as a single value, meaning "together"
-    for success_state in lift_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
-        yield success_state
-
-
-@Predication(vocabulary,
-             names=["solution_group__be_v_id"],
-             properties_from=_be_v_id_order,
-             handles_interpretation=_be_v_id_order)
-def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
-    # Since one of the arguments holds concepts, constraints need to be checked
-    # Figure out which argument it is
-    concept_variable_group = None
-    for check_variable_group in [x_subject_variable_group, x_object_variable_group]:
-        if check_variable_group.solution_values[0].value is not None and is_concept(check_variable_group.solution_values[0].value[0]):
-            concept_variable_group = check_variable_group
-            order_variable_group = x_subject_variable_group if x_object_variable_group == check_variable_group else x_object_variable_group
-
-    if not concept_variable_group:
-        # This solution group handler requires conceptual things in an order
-        context.report_error(["formNotUnderstood"])
-        return
-
-    else:
-        # Get the global criteria
-        min = min_from_variable_group(check_variable_group)
-        max = max_from_variable_group(check_variable_group)
-
-        # Figure out the count of things ordered that "are" this concept
-        # Then compare the actual count across the solution group to the global criteria
-        tree_info = state_list[0].get_binding("tree")
-        order = order_variable_group.solution_values[0].value[0]
-        order_foods = sorted([x for x in state_list[0].food_in_order(order)])
-        found_count = 0
-        for food_concept_binding in concept_variable_group.solution_values:
-            for food_concept in food_concept_binding.value:
-                entailed = food_concept.instances(context, state_list[0], order_foods)
-                found_count += len(entailed)
-                for entailed_item in entailed:
-                    order_foods.remove(entailed_item)
-
-        if found_count < min:
-            context.report_error(["phase2LessThan", concept_variable_group.variable_constraints.variable_name, min], force=True, phase=2)
-            return
-
-        elif found_count > max:
-            context.report_error(["phase2MoreThan", concept_variable_group.variable_constraints.variable_name, max], force=True, phase=2)
-            return
-
-        yield state_list
 
 
 def yield_cost_of_subject_into_object(context, state, units, subject_variable, object_variable):
@@ -3791,7 +3884,7 @@ def generate_custom_message(tree_info, error_term):
     if error_constant == "verbDoesntApplyArg":
         return s("{arg1} {'did':<arg1} not {*arg2} {arg3} {*arg4}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApply":
-        return f"No. {arg1} does not {arg2} {arg3} {arg4}"
+        return f"{arg1} does not {arg2} {arg3} {arg4}"
     else:
         # No custom message, just return the raw error for debugging
         return str(error_term)
