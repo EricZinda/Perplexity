@@ -31,8 +31,8 @@
         },
         {
             "Command": "which vegetarian specialities do you have?",
-            "Expected": "soup\nsalad\nWaiter: Can I get you anything else?",
-            "Tree": "_which_q(x5,[_speciality_n_1(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Tree": "_which_q(x5,[_dish_n_of(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "279ea601-fe4b-4d46-a24d-33334fc63dfb"
         },
@@ -45,8 +45,8 @@
         },
         {
             "Command": "which vegetarian mains do you have?",
-            "Expected": "soup\nsalad\nWaiter: Can I get you anything else?",
-            "Tree": "_which_q(x5,[_main_n_1(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Tree": "_which_q(x5,[_dish_n_of(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "b1cad5fa-263e-4a4d-964a-ed03d45e98a6"
         },

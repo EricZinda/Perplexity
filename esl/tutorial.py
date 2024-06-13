@@ -761,21 +761,25 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
 
         elif is_concept(x_right_binding.value[0]):
             if is_concept(x_left_binding.value[0]):
-                # Handle compounds where the first word is modelled as an adjective, but is a noun.
-                # For example: "tomato soup" has "soup isAdj tomato" not "soup instanceOf tomato"
-                # Note that this two ways of handling above and here are not disjunctions since it is valid
-                # to have a solution group with both approaches
-                for type in x_right_binding.value[0].entails_which_specializations(context, state):
-                    new_adj_concept = x_left_binding.value[0].add_criteria(rel_subjects, "isAdj", type)
-                    yield state.set_x(x_left_binding.variable.name, (new_adj_concept,))
+                if len(x_right_binding.value) == 1 and x_right_binding.value[0].entails(context, state, ESLConcept("menu")):
+                    for dish in most_specific_specializations(state, "dish"):
+                        yield state.set_x(x_left_binding.variable.name, (dish,))
+                else:
+                    # Handle compounds where the first word is modelled as an adjective, but is a noun.
+                    # For example: "tomato soup" has "soup isAdj tomato" not "soup instanceOf tomato"
+                    # Note that this two ways of handling above and here are not disjunctions since it is valid
+                    # to have a solution group with both approaches
+                    for type in x_right_binding.value[0].entails_which_specializations(context, state):
+                        new_adj_concept = x_left_binding.value[0].add_criteria(rel_subjects, "isAdj", type)
+                        yield state.set_x(x_left_binding.variable.name, (new_adj_concept,))
 
-                # This part handles compounds where the item in question is both words like "vegetarian dish", i.e. the
-                # item is vegetarian and is a dish.  Contrast with "bicycle seat" where it is a seat, but not a bicycle.
-                # The right side is the first word -- like "vegetarian" in "vegetarian dish"
-                # Because it is a concept we require that the left side is also a concept and we merge them into
-                # a single concept by adding their criteria in conjunction
-                new_concept = x_left_binding.value[0].add_conjunction(x_right_binding.value[0])
-                yield state.set_x(x_left_binding.variable.name, (new_concept,))
+                    # This part handles compounds where the item in question is both words like "vegetarian dish", i.e. the
+                    # item is vegetarian and is a dish.  Contrast with "bicycle seat" where it is a seat, but not a bicycle.
+                    # The right side is the first word -- like "vegetarian" in "vegetarian dish"
+                    # Because it is a concept we require that the left side is also a concept and we merge them into
+                    # a single concept by adding their criteria in conjunction
+                    new_concept = x_left_binding.value[0].add_conjunction(x_right_binding.value[0])
+                    yield state.set_x(x_left_binding.variable.name, (new_concept,))
 
             else:
                 # left binding is an instance and right is a concept.  Make sure that left is an instance of that concept
@@ -804,7 +808,8 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
             #     yield instance_state.set_x("tree_lineage", (f"{tree_lineage}.2",))
 
     elif x_right_binding.value is not None:
-        # x_left_binding.value is None, so we interpret this as "x thing" or "x item" as in "menu item" or "bicycle thing"
+        # x_left_binding.value is None, which means it was thing() and got reordered,
+        # so we interpret this as "x thing" or "x item" as in "menu item" or "bicycle thing"
         # which means "anything having to do with the noun specified" (e.g. "menu" or "bicycle")
         # But, since we don't really have much modelled to allow that, we'll just special case "menu item"
         if len(x_right_binding.value) == 1 and is_concept(x_right_binding.value[0]) and x_right_binding.value[0].entails(context, state, ESLConcept("menu")):
@@ -2926,7 +2931,7 @@ def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_
     # If any of the items requested entail more than one menu item, interpret the request as asking for a menu.
     # For example: "Do you have vegetarian items?" or "Do you have things to drink?"
     orderable_list = orderable_concepts(state_list[0])
-    final_states = []
+    all_bucketed_instances_of_concepts = dict()
     for x_object_binding in x_object_variable_group.solution_values:
         x_object_value = x_object_binding.value
         if len(x_object_value) > 1:
@@ -2936,37 +2941,47 @@ def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_
 
         else:
             _, bucketed_instances_of_concepts = x_object_value[0].instances_of_concepts(context, state_list[0], orderable_list)
-            if len(bucketed_instances_of_concepts) > 1:
-                special_count = 0
-                specials = specials_concepts(state_list[0])
-                for key in bucketed_instances_of_concepts.keys():
-                    if key in specials:
-                        special_count += 1
+            all_bucketed_instances_of_concepts.update(bucketed_instances_of_concepts)
 
-                if len(specials) >= special_count:
-                    # Only asking about specials
-                    task = ('describe', context, [tuple(x for x in bucketed_instances_of_concepts.keys()) ])
-                else:
-                    task = ('satisfy_want', context, [("user",)], [(ESLConcept("menu"),) ], 1)
+    if len(all_bucketed_instances_of_concepts) > 1:
+        special_count = 0
+        specials = specials_concepts(state_list[0])
+        for key in all_bucketed_instances_of_concepts.keys():
+            if key in specials:
+                special_count += 1
 
+        if len(specials) >= special_count:
+            # Only asking about specials
+            task = ('describe', context, [tuple(x for x in all_bucketed_instances_of_concepts.keys()) ])
+        else:
+            task = ('satisfy_want', context, [("user",)], [(ESLConcept("menu"),) ], 1)
+
+    else:
+        min = min_from_variable_group(x_object_variable_group)
+        if min == 2 and x_object_value[0].entails(context, state_list[0], ESLConcept("menu")):
+            # Something like "Do you have menus? or 2 menus?" was said
+            # Assume it means we each want one
+            task = ('satisfy_want', context, [("user",), ("son1",)], [x_object_value, x_object_value], 1)
+
+        else:
+            task = ('satisfy_want', context, [("user",)], [x_object_value], min_from_variable_group(x_object_variable_group))
+
+    final_state = do_task(state_list[0].world_state_frame(), [task])
+    if final_state:
+        final_states = None
+        for next_state in state_list:
+            if final_states is None:
+                # skip the first one
+                final_states = []
+                continue
             else:
-                min = min_from_variable_group(x_object_variable_group)
-                if min == 2 and x_object_value[0].entails(context, state_list[0], ESLConcept("menu")):
-                    # Something like "Do you have menus? or 2 menus?" was said
-                    # Assume it means we each want one
-                    task = ('satisfy_want', context, [("user",), ("son1",)], [x_object_value, x_object_value], 1)
+                final_states.append(next_state)
 
-                else:
-                    task = ('satisfy_want', context, [("user",)], [x_object_value], min_from_variable_group(x_object_variable_group))
+        final_states.insert(0, final_state)
+        yield final_states
 
-            final_state = do_task(state_list[0].world_state_frame(), [task])
-            if final_state:
-                final_states.append(final_state)
-
-            else:
-                return
-
-    yield final_states
+    else:
+        return
 
 
 # This interprets _have_v_1 as simply "does x have y" meaning "have with them", contain, own, etc.

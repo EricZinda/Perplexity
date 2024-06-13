@@ -1,7 +1,21 @@
+- Somehow the solution group handler does not get the object that will return the maximal group
+    - The only code that gets to use the maximal group is any code that uses tree_record["SolutionGroupGenerator"]
+        which appears to be the message function and scopal functions like count() that deal with solutions
+
+        - Problem is that when you iterate a solution group, you start with the first solution, which might have operations attached, and then
+            asking for the next solution might generate a different answer for the first solution.  In this case we want the answer the solution group gives to the full
+            set, but we are getting the one given to the most minimal set
+            - The problem is that we are treating the solution groups as interchangeable but they are not since they might generate different operations and answers
+            - iterating a solution group should give you the results fom a consistent group
+            - Possible solutions:
+                - Option 1:
+                    - Iterating always gives you the minimal set
+                    - You must ask for maximal, and then it will give you a self-consistent set
+
+- Do you have any [general] vegetarian menu items? --> list items
 
 
-- Which vegetarian menu items do you have --> VERY Slow
-- Reset.tst and be_v.tst are MUCH slower now, though
+- Reset.tst and be_v.tst are MUCH slower now after change: ad024b3, though
 
 - Need to handle other adjectives used predicatively for ordering like "what is cheap?" by
 - what is a table for 2? --> no answer?
