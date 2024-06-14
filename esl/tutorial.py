@@ -605,7 +605,8 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
             measurement_units = None
             for solution_group in tree_record["SolutionGroupGenerator"]:
                 solution_group_list = []
-                for solution_state in solution_group:
+                maximal_group = solution_group.maximal_group_iterator()
+                for solution_state in maximal_group:
                     solution_group_list.append(solution_state)
                     value = solution_state.get_binding(x_item_to_count_binding.variable.name).value
                     if is_concept(value[0]):

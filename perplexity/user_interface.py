@@ -384,7 +384,8 @@ class UserInterface(object):
                                             else:
                                                 original_values = unique_wh_values_from_group(solution_group)
                                                 for next_solution_group in solution_group_generator:
-                                                    next_original_values = unique_wh_values_from_group(next_solution_group)
+                                                    maximal_group = next_solution_group.maximal_group_iterator()
+                                                    next_original_values = unique_wh_values_from_group(maximal_group)
                                                     if next_original_values != original_values:
                                                         return True
 

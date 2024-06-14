@@ -42,23 +42,31 @@ class SingleMaximalGroupGenerator(object):
         if groups_logger.level == logging.DEBUG:
             groups_logger.debug(f"SingleGroupGenerator: Next solution requested for {self.group_id}, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
 
-        while self.last_yielded_index >= len(self.group_list) - 1:
-            # If no variable has a between(N, inf) constraint,
-            # Just stop now and the caller will get a subset solution group for the answer they care about
-            # Note that it may not be *minimal*, might be a subset, and might be maximal.
-            # For example, if it is between(3, 10), we might stop at 4, which is correct, but not maximal
-            # If it does have a between(N, inf) constraint, return them all
-            # This is a performance optimization that really improves the performance of
-            # "a few files are in a folder together"
-            if not self.solution_group_generator.variable_has_inf_max or not self.generate_maximal_group:
-                raise StopIteration
+        if self.last_yielded_index >= len(self.group_list) - 1:
+            raise StopIteration
 
-            # See if we can get more items
-            elif not self.solution_group_generator.next_solution_in_group(self.group_id):
-                raise StopIteration
+        else:
+            self.last_yielded_index += 1
+            return self.group_list[self.last_yielded_index]
 
-        self.last_yielded_index += 1
-        return self.group_list[self.last_yielded_index]
+    # If the caller wants to guarantee they have the maximal solution group, they call this method
+    # and it returns a maximal group for this solution
+    def maximal_group_iterator(self):
+        # If no variable has a between(N, inf) constraint,
+        # Just stop now and the caller will get a subset solution group for the answer they care about
+        # Note that it may not be *minimal*, might be a subset, and might be maximal.
+        # For example, if it is between(3, 10), we might stop at 4, which is correct, but not maximal
+        # If it does have a between(N, inf) constraint, return them all
+        # This is a performance optimization that really improves the performance of
+        # "a few files are in a folder together"
+        if self.solution_group_generator:
+            if self.solution_group_generator.variable_has_inf_max and self.generate_maximal_group:
+                # Find all solutions
+                while self.solution_group_generator.next_solution_in_group(self.group_id):
+                    pass
+
+        return SingleMaximalGroupGenerator(self.group_id, self.solution_group_generator, self.group_list, self.generate_maximal_group)
+
 
 
 # Yields a generator that yields solutions in a minimal solution group as quickly as it is found
@@ -238,7 +246,9 @@ def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_q
             # do that first
             unprocessed_groups = []
             for group in group_generator:
-                unprocessed_groups.append([x for x in group])
+                if get_maximal_solution_group:
+                    group = group.maximal_group_iterator()
+                unprocessed_groups.append(SingleMaximalGroupGenerator(None, None, [x for x in group], False))
             group_generator = unprocessed_groups
             all_solution_groups.append(unprocessed_groups)
 

@@ -64,7 +64,7 @@ def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, err
                 # Build an error term that we can use to call generate_message
                 # to get the response
                 solution_group = next(solution_groups)
-                original_solution_group_list = list(solution_group)
+                original_solution_group_list = list(solution_group.maximal_group_iterator())
 
                 # Run the wh_handlers to give the developer a chance to handle lists of things
                 wh_variable = wh_predication.introduced_variable()

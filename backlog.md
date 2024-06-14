@@ -1,3 +1,6 @@
+Because find_all_solution_groups=True in tree_solutions, it generates lists, not SingleMaximalGroupGenerators
+    - Should probably just mock out a SingleMaximalGroupGenerator
+
 - Somehow the solution group handler does not get the object that will return the maximal group
     - The only code that gets to use the maximal group is any code that uses tree_record["SolutionGroupGenerator"]
         which appears to be the message function and scopal functions like count() that deal with solutions

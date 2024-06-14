@@ -24,8 +24,8 @@
         },
         {
             "Command": "which vegetarian menu items do you have?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
-            "Tree": "_which_q(x5,udef_q(x11,_menu_n_1(x11),[_item_n_of(x5,i16), compound(e10,x5,x11), _vegetarian_a_1(e9,x5)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Tree": "_which_q(x5,udef_q(x11,_menu_n_1(x11),[_thing_n_of-about(x5,i16), compound(e10,x5,x11), _vegetarian_a_1(e9,x5)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "37e73c8f-ea36-4f95-8afc-7efa06823a41"
         },
@@ -38,8 +38,8 @@
         },
         {
             "Command": "which vegetarian menu choices do you have?",
-            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
-            "Tree": "_which_q(x5,udef_q(x11,_menu_n_1(x11),[_choice_n_of(x5,i16), compound(e10,x5,x11), _vegetarian_a_1(e9,x5)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Tree": "_which_q(x5,udef_q(x11,_menu_n_1(x11),[_dish_n_of(x5,i16), compound(e10,x5,x11), _vegetarian_a_1(e9,x5)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "bad3cea5-19d2-4c65-868d-a95e425861f6"
         },
