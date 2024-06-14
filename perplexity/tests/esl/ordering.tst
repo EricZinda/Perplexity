@@ -755,7 +755,7 @@
             "Command": "We'll have one tomato soup and one green salad, please.",
             "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nSon: Wait, let's not order salad before we know how much it costs.\nWaiter: What can I get you?",
             "Tree": "udef_q(x13,udef_q(x20,_tomato_n_1(x20),[_soup_n_1(x13), compound(e19,x13,x20), card(1,e18,x13)]),udef_q(x26,[_salad_n_1(x26), _green_a_2(e33,x26), card(1,e32,x26)],pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x26),[_please_a_1(e34,e2), _have_v_1(e2,x3,x8)]))))",
-            "Enabled": false,
+            "Enabled": true,
             "ID": "c06eb8ef-1e74-42dd-b82c-a1a02c54ec08"
         },
         {
