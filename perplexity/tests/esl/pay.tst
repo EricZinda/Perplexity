@@ -161,6 +161,13 @@
             "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "35300d37-33ae-42eb-b8c8-f6945a26647e"
+        },
+        {
+            "Command": "We'll pay with cash",
+            "Expected": "Ah. Perfect! Have a great rest of your day.",
+            "Tree": "udef_q(x11,_cash_n_1(x11),pronoun_q(x3,pron(x3),[_with_p(e10,e2,x11), _pay_v_for(e2,x3,i8,i9)]))",
+            "Enabled": true,
+            "ID": "5cfabc0b-2add-4936-b68d-273154204a19"
         }
     ],
     "ElapsedTime": 10.69438

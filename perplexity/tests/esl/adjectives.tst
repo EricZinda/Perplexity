@@ -135,6 +135,13 @@
             "ID": "ca2c198e-4b69-4a1d-a20d-bfa1dd9aa556"
         },
         {
+            "Command": "what is green?",
+            "Expected": "salad\nWaiter: What can I get you?",
+            "Tree": "which_q(x3,thing(x3),_green_a_2(e2,x3))",
+            "Enabled": true,
+            "ID": "5ba28507-ebf2-4738-b717-134c14c8cece"
+        },
+        {
             "Command": "the pork is smoked",
             "Expected": "Yes, that is true.",
             "Tree": "_the_q(x3,_pork_n_1(x3),_smoke_v_1(e2,i8,x3))",

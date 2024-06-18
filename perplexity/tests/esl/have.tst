@@ -203,6 +203,20 @@
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(2,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f381604d-5871-4901-b789-faa5d0e83064"
+        },
+        {
+            "Command": "No",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for you.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Tree": "_no_a_1(i6,unknown(e2,u5))",
+            "Enabled": true,
+            "ID": "9192da64-3bda-4261-a479-2bd7517617e9"
+        },
+        {
+            "Command": "Do I have a menu?",
+            "Expected": "Yes.",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "73c3f31c-5793-45a6-a3ac-ebf2cd8d9a6c"
         }
     ],
     "ElapsedTime": 14.81663

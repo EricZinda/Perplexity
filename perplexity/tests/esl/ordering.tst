@@ -86,6 +86,20 @@
             "ID": "0b467c65-c266-45f3-a8bd-9b4ff1dddf6f"
         },
         {
+            "Command": "and how much is the soup?",
+            "Expected": "4 dollars\nWaiter: Can I get you anything else?",
+            "Tree": "which_q(x12,abstr_deg(x12),_the_q(x18,_soup_n_1(x18),count(e16,x12,x7,udef_q(x7,generic_entity(x7),[event_replace(u99,e5,e2), _be_v_id(e5,x18,x7)]))))",
+            "Enabled": true,
+            "ID": "6d40569e-a739-43ef-a0c4-090e7b5f55b6"
+        },
+        {
+            "Command": "I'll have the Grilled Salmon for myself",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x16,pron(x16),pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _for_p(e15,x8,x16), _grill_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "b4ff0fd6-8cac-4ddb-a0b0-5885c7c71d8f"
+        },
+        {
             "Command": "what did we order?",
             "Expected": "Less than 2 people did that.",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",

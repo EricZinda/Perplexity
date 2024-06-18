@@ -1,163 +1,185 @@
-- "I'll just have a menu" --> means: clear the order and just give me a menu
-- "what did we order" --> "less than 2 people did that"
-    - when only one person ordered
-- implement "how many vegetarian dishes are there"
-- implement "how many vegetarian dishes do you have?"
-- "Did I order a steak for my son?" -> There isn't such a son here
-- I have 20 dollars -> you did not have 20 dollar
-- Make "what is the bill?" work
-- How much does the soup and the salad cost? --> I don't know the way you used: cost
-    - Needs to be cost_v_1() but referencing and?
-- table for two crashes
-- table for 1 crashes
-- show us 3 menus -> there are less than 2 "we"
-    - the error for "we usually give on menu per customer" isn't coming through
-    - Because "Phase2LessThan" is forced and overwrites the error
-    - Need to take another look at the way errors get propagated through
-- BUG: We would like the menus/the steaks
-    - match_all_the_concept_n() does not check the plurality of "menus/steaks" to make sure there are conceptually 2 or more
-    - "We want water and menus" - only gives one menu
-    - We'd like to start with some water and menus
-        - /runparse 2, 39
-        - only gives one menu
-- Bug: and how much is the soup -> doesn't work
-- Bug: I'll have the chicken and my son will have the soup and the salad
-    - Crashes with "too many holes"
-- test, "I want my order to be ..."
+Bugs:
+    High Pri:
+        - Hi! Could we have a menu, please? --> crash!
+        - Bug: I'll have the chicken and my son will have the soup and the salad
+            - Crashes with "too many holes"
+            - Shouldn't crash!
+        - Do you have any [general] vegetarian menu items? --> Wait, let's not order soup before we know how much it costs.
+            - should list items
+        - which chicken menu items do you have? --> pork
+                soup
+                salad
+                steak
+                chicken
+                salmon
+        - (ChatGPT) Could we have a vegetarian menu? --> Host: Sorry, I don't know how to give you that.
+        - which dishes are specials -> veggie, meat
+            - _which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))
+        - How much does the soup and the salad cost? --> I don't know the way you used: cost
+            - Needs to be cost_v_1() but referencing and?
+        - "Did I order a steak for my son?" -> I'm not sure what that means.
+        - USER: I don't want the chicken -> yes that is true
+            - That isn't true, there isn't the chicken that isn't the chicken
+
+    Low Pri:
+        - Figure out how to make "I want 2 steaks and 1 salad" work
+            - It only sends 1 steak to order
+        - "I will see menus" --> works, but shouldn't
+        - Make "What is not on the menu?" work properly
+            - it returns everything
+        - I have 20 dollars -> you did not have 20 dollar
+        - I will have any meat -> Sorry, I'm not sure which one you mean.
+            - Also: I will have any meat dish
+            - pronoun_q(x3,pron(x3),_any_q(x8,_meat_n_1(x8),_have_v_1(e2,x3,x8)))
+            - should be: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.
+            - Do referring expression concepts have to capture the quantifier?
+                - "I like any meat" shouldn't pick an arbitrary one
+                - 1..inf is correct, but also needs to capture the "any works" as opposed to "a" which might care if there
+                 are different unfungible choices
+        - Need to handle other adjectives used predicatively for ordering like "what is cheap?" by
+        - what is a table for 2? --> no answer?
+        - What is my food? -> never finishes?
+
+Cleanup:
+    Hi Pri:
+        - Optimization: don't go past the first N% of MRSs because they will never be right
+            - Also: Make ace not get more than X parses
+        - very slow
+            - for my son, Johnny, please get the Roasted Chicken
+                - does it ever work?
+            - Table (then) Just two, my son Johnny and me.
+                - takes forever to get to parse 88,1 which is the first that works
+                - ditto for: We'd like to start with some water and menus
+                    - /runparse 2, 39
+
+            - "My order is chicken and soup" fails properly but takes forever and gives a bad error
+            - My son needs a vegetarian dish
+            - My soup is a vegetarian dish
+            - Which 2 dishes are specials
+            - We'll have one tomato soup and one green salad, please
+            - what are specials -> very slow (but correct)
+            - for my son, Johnny, please get the Roasted Chicken -> takes forever
+            - How much is the soup and the salad? -> Takes forever
+            - We would like the menus -> Takes forever
+                - /runparse 0,5: We would like the menus
+                - every possible combination will fail because the_concept() returns instances and want_v_1() fails for instances
+                BUT: it will take a long time to exhaust all the alternatives since there are a lot to try
+                - If we knew that _steak_n_1(x11) woudl only generate instances and that _want_v_1(e2,x3,x11) required non-instances we could solve this by failing quickly
+
+                                     ┌────── _steak_n_1(x11)
+                    _the_q(x11,RSTR,BODY)               ┌────── pron(x3)
+                                      └─ pronoun_q(x3,RSTR,BODY)
+                                                             └─ _want_v_1(e2,x3,x11)
+
+                    Text Tree: _the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))
+
+                    Interpretation: perplexity.system_vocabulary.the_all_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.generic_q, __main__.pron, __main__._want_v_1
+            - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
+                - takes forever
+                - returns a weird error
+
+    Low Pri:
+        - Do we still need frames with the new concept handling?
+        - lift_style_predication_2
+          - should assert if the predication doesn't allow for > 1 in the set
+        - Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
+        - New Programming Model todo:
+          - Need to recheck constraints if names are changed
+          - Get rid of old metadata that doesn't have a function anymore, e.g. if the developer has it then deletes it
+          - Need to support wh-question examples as a way to filter out those when necessary too
+        - Get rid of reordering
+          - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
+          - But we need a way to optimize somehow, it really is slow
+            - Use the GPU for some parallelization? https://numba.pydata.org/
+          - Timing with reordering:
+            - filesystem: 231.11059
+          - Timing without:
+            - filesystem: 292.00379
+        - Get rid of extra arg in relationships
+        - Can we automatically call count_of_instances_and_concepts() for conceptual stuff? So that we don't have to call it in the group?
+        - redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
+        - Rename lineage something like disjunction
+        - Clean up unused portions of state.handle_world_event()
+        - There should be an exception if lift is called on a function that doesn't have its parameters marked as taking all types of sets
+        - Fix some of the user interface issues:
+            - implement a timeout
+            - do a better response than "I don't understand the way you used X" and other default messages
+                - I don't know the words: plase/nn and I don't know the way you used: for
+        - change all the could/can transforms to use OR so there are less
+        - Need to check if we are dealing properly with "I want 2 steaks and 2 salads".  [2 steaks and 2 salads] comes in as a single variable, with no constraints (it is a conjunction), right? Have we lost the constraints for the conjunct variables?
+            - It does have the requirement that it contains an element of each, but pretty sure we've lost the original constraints
+        - Need to think this through: Disabling RSTR/BODY reversal means that "what can I order?" will always be bound.  I.e. using the unbound method as a proxy for "asking a question" is wrong.
+        - allow solution handlers to say "I'm it!" just like groups so the other handlers don't have to run
+        - Have a method to call to say "continue" in a solution group handler instead of calling report_error("formNotUnderstood")
+        - Performance fix: checkin was cca6733
+            Before allowing rules to continue running over a transformed tree:
+                  Elapsed time: 647.23938
+            After:
+              Elapsed time: 979.71158
+
+New Language:
+    Hi Pri:
+        - table for two please
+            - also: table for two, please
+            - only generate _for_x_cause, unclear what that means
+        - could we see menus? -> I don't understand the way you are using: see
+        - Work through cancelling order language
+            - Can we cancel my X?
+            - I want to cancel my X
+            - I don't want X anymore?
+            - I don't want the X
+            - I want to/Could I cancel my order
+            - start over please
+            - Let's start again
+            - could we reorder?
+            - I don't want X
+
+        - could I sit down?
+        - we want to sit at a table
+        - support "can we be seated?"
+        - can I pay for the bill?
+        - (ChatGPT) Could you recommend a few vegetarian options, then?
+            - Also: Could you please recommend a vegetarian dish for my son?
+        - (chatGPT) How much does the tomato soup and the green salad cost? --> I don't know the way you used: cost
+            - Parse 26
+        - (chatGPT) Johnny and I will both have the Roasted Chicken
+            - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
+        - (ChatGPT) In that case, I'll have chicken
+        - (ChatGPT) Here is 15 dollars
+                 udef_q(x3,[_dollar_n_1(x3,u16), card(15,e15,x3)],def_implicit_q(x4,[place_n(x4), _here_a_1(e9,x4)],loc_nonsp(e2,x3,x4)))
+                 implicit command triggered by an observation
+        - how can I pay the bill?
+        - (ChatGPT) Let's go to a table, please. --> I don't know the words: to
+
+    Low Pri:
+        - We have 0 menus -> No. you does not have something
+        - "who has which dish" doesn't work
+        - I don't have *the* soup works because:
+          - there is more than one soup so negation fails, and thus this works
+        - I don't have soup / I have soup both work when you have ordered soup
+          - because:
+            - for "I don't have soup" the first MRS is the proper interpretation meaning "not(I have soup)"
+              - but it fails since you *do* have soup, so we keep going
+            - the second interpretation of "I don't have soup" means "check each soup and see if you have it" and there are some that you don't have
+              - so it succeeds and we return this one
+          - Same thing will happen with "I don't have a soup"
+          - Posted a question on the forum for this
+        - "how much *is* the soup and salad" is crazy slow and will never work        - I want to sit down?
+        - implement past tense get: "Did I get a steak?"
+        - "I want my order to be chicken" -> I don't know the way you used: want
+        - implement "how many vegetarian dishes are there" -> I don't know the words: measure
+        - implement "how many vegetarian dishes do you have?" -> I don't know the words: measure
+
+        - "I'll just have a menu"
+            - Need to implement "just" means: clear the order and just give me that thing
+        -	And the implied request given by: “My son is a vegetarian”
 
 
-- which dishes are specials -> veggie, meat
-    - _which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))
-- which chicken menu items do you have? --> pork
-        soup
-        salad
-        steak
-        chicken
-        salmon
-- Do you have any [general] vegetarian menu items? --> Wait, let's not order soup before we know how much it costs.
-    - should list items
-- I will have any meat -> Sorry, I'm not sure which one you mean.
-    - Also: I will have any meat dish
-    - pronoun_q(x3,pron(x3),_any_q(x8,_meat_n_1(x8),_have_v_1(e2,x3,x8)))
-    - should be: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.
-    - Do referring expression concepts have to capture the quantifier?
-        - "I like any meat" shouldn't pick an arbitrary one
-        - 1..inf is correct, but also needs to capture the "any works" as opposed to "a" which might care if there
-         are different unfungible choices
-- Need to handle other adjectives used predicatively for ordering like "what is cheap?" by
-- what is a table for 2? --> no answer?
-- What is my food? -> never finishes?
-
-- Clean up unused portions of state.handle_world_event()
-- There should be an exception if lift is called on a function that doesn't have its parameters marked as taking all types of sets
-- Fix some of the user interface issues:
-    - implement a timeout
-    - do a better response than "I don't understand the way you used X" and other default messages
-        - I don't know the words: plase/nn and I don't know the way you used: for
-- change all the could/can transforms to use OR so there are less
-- Need to check if we are dealing properly with "I want 2 steaks and 2 salads".  [2 steaks and 2 salads] comes in as a single variable, with no constraints (it is a conjunction), right? Have we lost the constraints for the conjunct variables?
-    - It does have the requirement that it contains an element of each, but pretty sure we've lost the original constraints
-- Need to think this through: Disabling RSTR/BODY reversal means that "what can I order?" will always be bound.  I.e. using the unbound method as a proxy for "asking a question" is wrong.
-- allow solution handlers to say "I'm it!" just like groups so the other handlers don't have to run
-- Have a method to call to say "continue" in a solution group handler instead of calling report_error("formNotUnderstood")
-- Optimization: don't go past the first N% of MRSs because they will never be right
-    - Also: Make ace not get more than X parses
-- Performance fix: checkin was cca6733
-    Before allowing rules to continue running over a transformed tree:
-          Elapsed time: 647.23938
-    After:
-      Elapsed time: 979.71158
-
-- Work through cancelling order language
-    - Can we cancel my X?
-    - I want to cancel my X
-    - I don't want X anymore?
-    - I want to/Could I cancel my order
-    - start over please
-    - Let's start again
-    - could we reorder?
-    - I don't want X
-o	USER: I don't want the chicken
-    o	That isn't true, there isn't the chicken that isn't the chicken
--	And the implied request given by: “My son is a vegetarian”
-
-
-- very slow
-    - Table (then) Just two, my son Johnny and me.
-        - takes forever to get to parse 88,1 which is the first that works
-        - ditto for: We'd like to start with some water and menus
-            - /runparse 2, 39
-
-    - "My order is chicken and soup" fails properly but takes forever and gives a bad error
-    - My son needs a vegetarian dish
-    - My soup is a vegetarian dish
-    - Which 2 dishes are specials
-    - We'll have one tomato soup and one green salad, please
-    - what are specials -> very slow (but correct)
-    - for my son, Johnny, please get the Roasted Chicken -> takes forever
-    - How much is the soup and the salad? -> Takes forever
-    - We would like the menus -> Takes forever
-        - /runparse 0,5: We would like the menus
-        - every possible combination will fail because the_concept() returns instances and want_v_1() fails for instances
-        BUT: it will take a long time to exhaust all the alternatives since there are a lot to try
-        - If we knew that _steak_n_1(x11) woudl only generate instances and that _want_v_1(e2,x3,x11) required non-instances we could solve this by failing quickly
-
-                             ┌────── _steak_n_1(x11)
-            _the_q(x11,RSTR,BODY)               ┌────── pron(x3)
-                              └─ pronoun_q(x3,RSTR,BODY)
-                                                     └─ _want_v_1(e2,x3,x11)
-
-            Text Tree: _the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))
-
-            Interpretation: perplexity.system_vocabulary.the_all_q, __main__.match_all_n_concepts, perplexity.system_vocabulary.generic_q, __main__.pron, __main__._want_v_1
-    - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
-        - takes forever
-        - returns a weird error
-
-
-
-- could we see menus? -> I don't understand the way you are using: see
-- what is green? --> crashes
-- table for two please
-    - also: table for two, please
-    - only generate _for_x_cause, unclear what that means
 - ChatGPT scenario:
   - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 15 dollars in cash.
   I am the waiter, you are the customer.  Interact with me only saying one sentence at a time and waiting for my response. Make the phrases very simple. OK?
-  - Make these work:
-    - How much does the tomato soup and the green salad cost? --> I don't know the way you used: cost
-        - Parse 26
-    - How much does the soup and salad cost?
-    - Could you recommend a few vegetarian options, then?
-    -  Hi! Could we have the vegetarian menu, please?
-        - Fails
-    - Could we have the vegetarian menu, please? --> There isn't such a vegetarian menu here
-        - should talk about vegetarian items
-    - How much is the soup and the salad? --> takes forever
-    - I'll have the Grilled Salmon for myself, and for my son, Johnny, please get the Roasted Chicken.
-    - Could you please recommend a vegetarian dish for my son?
-    - Let's go to a table, please.
-    - In that case, Johnny and I will both have the Roasted Chicken.
-        - Unclear how to deal with "will both have": https://delphinqa.ling.washington.edu/t/what-is-the-common-mrs-between-we-both-will-have-soup-we-will-both-have-soup-meaning-2-of-us-will-have-soup/1011
-    - We'll pay with cash, here is 15 dollars.
-        First make each conjunct work:
-        - (done) We'll pay with cash
-        - Here is 15 dollars
-             udef_q(x3,[_dollar_n_1(x3,u16), card(15,e15,x3)],def_implicit_q(x4,[place_n(x4), _here_a_1(e9,x4)],loc_nonsp(e2,x3,x4)))
-             implicit command triggered by an observation
 
-- Implementations like "_pay_v_for" support a lot of different properties.  They may allow constructions that are unexpected.  How to check for this?
-  - The system makes sure that the examples listed work, but doesn't ensure that other examples don't...
-- support "can we be seated?"
-- make "how can I pay the bill?" work
-- make "can I pay for the bill" work
-- make "we want to sit at a table" work
-- What do I have --> your card
-  - should also say your son
-- New Programming Model todo:
-  - Need to recheck constraints if names are changed
-  - Get rid of old metadata that doesn't have a function anymore, e.g. if the developer has it then deletes it
-  - Need to support wh-question examples as a way to filter out those when necessary too
+
 - Example33_reset: a few files are in a folder together
   - crazy slow now
   - _a_q(x10,[_folder_n_of(x10,i15), _together_p(e16,x10)],udef_q(x3,[_file_n_of(x3,i9), _a+few_a_1(e8,x3)],_in_p_loc(e2,x3,x10)))
@@ -188,94 +210,15 @@ o	USER: I don't want the chicken
             - you could say that that set is out of the rotation
             - We'd have to collect all the solutions
 
-Code cleanup:
-- SingleGroupGenerator assumes that, if it gets a new group with the same lineage, that there will be *more* records in it
-    - and furthermore that the records that we already returned are still there
-    - Neither is true anymore because the group handler can completely swap out one set of solutions for an arbitrary different set
-- Get rid of reordering
-  - If you get rid of reordering, then you don't have to worry about unbound in most predications which is nice
-  - But we need a way to optimize somehow, it really is slow
-    - Use the GPU for some parallelization? https://numba.pydata.org/
-  - Timing with reordering:
-    - filesystem: 231.11059
-  - Timing without:
-    - filesystem: 292.00379
-- Get rid of extra arg in relationships
-- Finish removing combinatorics since it simply fails for a lot of cases and complicates the code
-- redo all the noun() type predications to properly return notathing and look like match_all_n_concepts
-- Rename lineage something like disjunction
-- Alternative Implementation for have_v_1_present and _order_v_1_past
-  - There should be one function for have_present() that are straight fact checking routines, that allows the system to just run the query
-    - Anything that needs special handling should go to another routine and be treated as a disjunction (i.e. alternative interpretation)
-      - I.e. things like implied requests
-- Do we still need frames with the new concept handling?
-- lift_style_predication_2
-  - should assert if the predication doesn't allow for > 1 in the set
 
-Lower Pri:
-- We have 0 menus -> No. you does not have something
-- "who has which dish" doesn't work
-- I don't have *the* soup works because:
-  - there is more than one soup so negation fails, and thus this works
-- I don't have soup / I have soup both work when you have ordered soup
-  - because:
-    - for "I don't have soup" the first MRS is the proper interpretation meaning "not(I have soup)"
-      - but it fails since you *do* have soup, so we keep going
-    - the second interpretation of "I don't have soup" means "check each soup and see if you have it" and there are some that you don't have
-      - so it succeeds and we return this one
-  - Same thing will happen with "I don't have a soup"
-  - Posted a question on the forum for this
-- "how much *is* the soup and salad" is crazy slow and will never work
-
-- I want to sit down?
-- could I sit down?
-- "I will see menus" --> works, but shouldn't
-- implement future tense get
-  - Will I get a menu?
-- Make "I take a steak" or "I get a steak" say "Did you mean X"
-- "Do I/my son have a menu?" doesn't work
-- "What did I order?" --> Make work for debugging
-- implement past tense get: "Did I get a steak?"
-- Can we automatically call count_of_instances_and_concepts() for conceptual stuff? So that we don't have to call it in the group?
-- Make "how much are your dishes" work
-- Verbs should declare what tenses they deal with, if none, they should default to present only
-- Figure out how to make "I want 2 steaks and 1 salad" work
-  - it only sends "2 steaks" to want so that is all that gets checked
-- Get the bill working
-- Make "What is not on the menu?" work properly
-- Fix ontology.  Right now there are instances on the menu, for example
 - Handle concepts with extra information "bill for the food" failing if we don't know it
-- I'd like 2 steaks at the front door -> doesn't work
 - Not issues: For Example23
   - large files are not in this folder -> Yes, that is true.
     - Interpreted as not(large files in this folder)
-- Not able to update tests for /runparse 0,1 to the actual response that happened
-- Need to be able to run code on the solution group
-  - not() is going to require special processing
 - Bug: It looks like collective only checks for one value???
     - whole_group_unique_individuals.update(binding_value) never adds a set of individuals to the set
-- Build a backend to use for ESL Scenarios
 - make fallback generation more robust
   - at least getting form of words right
-- Test plurals:
-  - each:
-    - the folders have 1 file each
-- 
-- Dealing with all the duplication of items and combinatorics seems like a waste. Seems like there must be a better way that involves symbolics. For example
-  - We want a steak
-  - If there are 10 steaks, then want_v_1 will get called 20 times (10 for each person). Whereas if "steak" was symbolic it would only get called twice
-
-
-- NEED TO UPDATE DOCS FOR VERBS TO MAKE ALL THIS CLEAR:
-  - "I want ham" is a proposition that we want to interpret as a command
-  - For a verb: Succeeding means it "worked" and should add an operation to change the state
-    - it is not modelled as world state as in "I want a burger = True"
-    - Really think about a phrase as setting up all the various variables so that the verb can be called
-      - Really it just means: this is the proper interpretation, but it might be an error, in which case it can do a RespondOperation
-    - delegate to "give me" *as one alternative* if it works, great!
-      - If: it is a proposition and IF pron(I) and IF arguments are bound: There is something concrete they want, next determine how to deal with it
-          - in the doorway: "I want a table" -> give me a table, "I want a place to sit", "I want to eat " (different want_v), I want a burger" -> "Do you want take-out?"
-
 - Switch the code to use the term "scope-resolved MRS" instead of "well-formed tree" or "scope-resolved tree"
 - 3 files are in a folder together -> There is more than a folder together
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
@@ -290,28 +233,6 @@ Lower Pri:
 - Will usability: error_priority_function should have a perplexity default that is not "no prioritization". Should at least deprioritize "I don't know word x"
 - CARG arguments for things like "polite": "please, could I have a table" in the MRS the argument is first, but in the tree it is last
   - same thing for card(e,x,c) becoming card(c,e,x)
-  
-- How to deal with "I want a strawberry" when we know about strawberries but there aren't any
-  - Do we need different messages based on the state of the world? For example, in the doorway: ""
-  - create an object called "CanonicalInstance()" if we are talking about a think "in principle" like "I'd like to order a strawberry"?
-  - How to think about it:
-    - In a given context, whether something exists or not might elicit a different response, thus a different error
-    - We could let verbs handle whether an item is a "canonicalinstance()" or not
-
-- How to answer "what is on the menu?" or "what items are on the menu?" with "we have a lovely selection of ..." 
-  - Conceptually this means: read the menu
-  - Unbound "what" can trigger an action that adds operations to the results
-    - Need a way to insert the beginning "We have a lovely section of " and then the list: x, y, z all from the on_p predication
-      - And each one will be a different solution. The user could have said "what are 2 things on the menu?" -> which probably shouldn't have "we have a lovely selection of..." in it
-        - But: the on_p predication can't tell
-        - Maybe there is a RespondCommand if the whole set is used, and another for a subset?
-        - Or there is some kind of global event that gets called to decide the pre and postamble?
-          - Could it be a "solution group" event?
-  - The question "is fish on the menu" should be answered with "yes"
-  - Look at what we did in adventure.pl with querySetAnswer()
-    - Possibly we need different predications for attributive vs. predicative? Or index?
-- Add chat_gpt code so we can play with using it for nouns
-
 - Docs: Need to write a section on predication design
   - Objects should be implemented purely and independently so that the magic of language and logic "just work"
   
@@ -406,9 +327,4 @@ Plurals work
                   - And then let "quoting" create a representation that puts them into "classes"
                     - "quoting" has to be special case code per predication because conversion into a canonical form is per predication and not directly determinable from arguments. For example "copy the file above folderx" has above(folderx) but the copying should happen in the folder above it
   - also copy x in y (the same scenario)
-
-  - Support for prepositions
-    - show declaring verbs that understand prepositions
-  - Theory: We don't need to choose different variations of the index of the phrase based on "comm", "ques", etc
-    - Except: if we want to use abductive logic to make "The door is open" not evaluated as a question, but as a desire to make that true and then make it true in the system
 
