@@ -1872,8 +1872,6 @@ def want_group_helper(context, state_list, e_introduced_binding_list, x_actor_va
     # x_what_variable_group.solution_values[0].value can be None if it is scoped under negation
     if x_what_variable_group.solution_values[0].value is not None and is_concept(x_what_variable_group.solution_values[0].value[0]):
         concept = x_what_variable_group.solution_values[0].value[0]
-        if concept.level_index != 0:
-            return
 
         # Check to make sure the constraints are valid for this concept.
         # Because in "I want x", 'x' is always a concept, but the constraint is on the instances

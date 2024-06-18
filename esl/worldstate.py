@@ -125,7 +125,6 @@ def concept_disjunctions(state, root_concept, ignore_root=False):
         for next_level_type in next_level:
             if not ignore_root or (ignore_root and lineage > 0):
                 object = store_to_object(state, next_level_type)
-                object.level_index = lineage
                 yield DisjunctionValue(lineage, object)
 
             for item in immediate_specializations(state, next_level_type):
@@ -153,7 +152,6 @@ def concept_disjunctions_reverse(state, root_concept, ignore_root=False):
         lineage -= 1
         for level_type in level:
             object = store_to_object(state, level_type)
-            object.level_index = len(levels) - level_index - 1
             yield DisjunctionValue(lineage, object)
 
 
@@ -537,11 +535,10 @@ class ESLConcept(Concept):
         self.criteria = []
         self.conjunctions = []
         self._hash = None
-        self.level_index = None
         self.mrs_variable = mrs_variable
 
     def __repr__(self):
-        return f"{self.level_index}:ESLConcept({','.join(self._sort_of_criteria)}: {[x for x in self.criteria]} )"
+        return f"ESLConcept({','.join(self._sort_of_criteria)}: {[x for x in self.criteria]} )"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal

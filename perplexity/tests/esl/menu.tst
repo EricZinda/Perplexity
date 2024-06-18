@@ -149,11 +149,18 @@
             "ID": "ed01aa0e-79b0-4c3d-8443-f9bac852a7d4"
         },
         {
+            "Command": "which chicken menu items do you have?",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
+            "Tree": "_which_q(x5,udef_q(x10,udef_q(x16,_chicken_n_1(x16),[_menu_n_1(x10), compound(e15,x10,x16)]),[_thing_n_of-about(x5,i21), compound(e9,x5,x10)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "3abc1ec5-890e-4d20-83fd-58479d75bf6a"
+        },
+        {
             "Command": "show me the menu",
             "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x9,pron(x9),_the_q(x8,_menu_n_1(x8),pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
-            "ID": "3abc1ec5-890e-4d20-83fd-58479d75bf6a"
+            "ID": "37589356-dc72-4d63-a595-4792436fa15a"
         },
         {
             "Command": "show me 2 menus",

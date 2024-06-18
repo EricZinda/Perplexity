@@ -500,6 +500,13 @@
             "ID": "76c09b78-40f9-4d01-ab0f-c7b9bd8946d9"
         },
         {
+            "Command": "I will have a steak",
+            "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "a319309e-f16c-48ee-8bfe-7d32324e1216"
+        },
+        {
             "Command": "I'll start with a steak",
             "Expected": "Son: Wait, we already spent $20 so if we get 1 steak, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
             "Tree": "_a_q(x9,_steak_n_1(x9),pronoun_q(x3,pron(x3),[_with_p(e8,e2,x9), _start_v_1(e2,x3)]))",
@@ -820,6 +827,13 @@
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_salad_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "5d7616ff-0fe6-482a-a57b-67ea07f9cf72"
+        },
+        {
+            "Command": "How much are the dishes?",
+            "Expected": "10 dollars\n7 dollars\n12 dollars\n8 dollars\n4 dollars\n3 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_dish_n_of(x3,i20),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "b4244624-885e-478c-9b76-7d2105388a57"
         },
         {
             "Command": "I would like the salad",
