@@ -20,7 +20,7 @@ class MrsParser(object):
         self.log_file = log_file
         self.generate_root = generate_root
 
-    def mrss_from_phrase(self, phrase, synonyms=None, trace=False):
+    def mrss_from_phrase(self, phrase, synonyms=None, trace=False, one_time_max_parses=None):
         if synonyms is None:
             synonyms = dict()
 
@@ -31,10 +31,14 @@ class MrsParser(object):
             f = open(os.devnull, 'w')
 
         # Create an instance of the ACE parser and ask to give <= 100 MRS documents
-        cmd_args = [] if self.max_parses is None else ['-n', str(self.max_parses)]
+        current_max_parses = one_time_max_parses if one_time_max_parses is not None else self.max_parses
+        cmd_args = [] if current_max_parses is None else ['-n', str(current_max_parses)]
         with ace.ACEParser(self.erg_file(), cmdargs=cmd_args, stderr=f) as parser:
             ace_response = parser.interact(phrase)
-            pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
+            if current_max_parses is None or current_max_parses > len(ace_response['results']):
+                pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
+            else:
+                pipeline_logger.debug(f"{len(ace_response['results'])} parses (there may be more but that's the max) for {phrase}")
 
         for parse_index in range(0, len(ace_response.results())):
             # Keep track of the original phrase on the object

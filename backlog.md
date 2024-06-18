@@ -42,8 +42,6 @@ Bugs:
 
 Cleanup:
     Hi Pri:
-        - Optimization: don't go past the first N% of MRSs because they will never be right
-            - Also: Make ace not get more than X parses
         - very slow
             - for my son, Johnny, please get the Roasted Chicken
                 - does it ever work?

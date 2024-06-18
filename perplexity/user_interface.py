@@ -62,6 +62,7 @@ class UserInterface(object):
         self.best_parses_file = best_parses_file
         self.autocorrect_file = get_autocorrect(world_name)
         self.max_holes = 14
+        self.generate_all_parses = False
 
         if best_parses_file is not None and os.path.exists(best_parses_file):
             with open(best_parses_file) as json_file:
@@ -91,7 +92,8 @@ class UserInterface(object):
         self.run_tree_index = None
         self.show_all_answers = False
         self.run_all_parses = False
-        self.mrs_parser = MrsParser(self.max_holes)
+        # Only do the first 5 parses because quality falls off fast
+        self.mrs_parser = MrsParser(self.max_holes, max_parses=5)
         self.log_tests = False
         self.new_ui = None
 
@@ -246,14 +248,24 @@ class UserInterface(object):
 
         # If we have recorded a particular MRS that is normally the best, move it
         # to the front. If this is a conjunct, we have already settled on the MRS so don't bother
-        mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms))
+        # Use 10000 to mean "get all parses". That should cover most phrases
+        current_max_parses = 10000 if self.generate_all_parses else None
+        mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms, one_time_max_parses=current_max_parses))
         if not conjunct_mrs_index and mrs_generator.at_least_one():
             best_parse_index_simple_mrs = simplemrs.dumps([mrs_generator[0]], lnk=False)
             best_parse_index = self.best_parses.get(best_parse_index_simple_mrs, {"Phrase": "none", "MRSIndex": 0})["MRSIndex"]
             if best_parse_index > 0:
                 try:
+                    target_parse = mrs_generator[best_parse_index]
+
+                except IndexError:
+                    # We don't get all parses the first time through for performance reasons, try again
+                    mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms, one_time_max_parses=best_parse_index + 1))
+                    target_parse = mrs_generator[best_parse_index]
+
+                try:
                     # Move the best MRS to be first and remove it from its previous position
-                    mrs_generator.cached_values.insert(0, mrs_generator[best_parse_index])
+                    mrs_generator.cached_values.insert(0, target_parse)
                     mrs_generator.cached_values.pop(best_parse_index + 1)
                     pipeline_logger.debug(f"Starting with best parse MRS: {best_parse_index}")
 
@@ -662,6 +674,13 @@ def command_run_all_parses(ui, arg):
     return True
 
 
+def command_generate_all_parses(ui, arg):
+    turn_on = bool(arg) if len(arg) > 0 else True
+    ui.user_output(f"Generate all parses is now {turn_on}")
+    ui.generate_all_parses = turn_on
+    return True
+
+
 def command_show(ui, arg):
     parts = arg.split(",")
     all = False
@@ -1034,6 +1053,9 @@ command_data = {
     "soln": {"Function": command_soln, "Category": "Parsing",
              "Description": "Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else toggles the current setting",
              "Example": "/soln or /soln all"},
+    "genall": {"Function": command_generate_all_parses, "Category": "Parsing",
+                  "Description": "Generates all parses (normally only the first 5 are generated)",
+                  "Example": "/genall 1 OR /genall True"},
     "runall": {"Function": command_run_all_parses, "Category": "Parsing",
                   "Description": "Runs all parses, doesn't stop after success",
                   "Example": "/runall 1 OR /runall True"},

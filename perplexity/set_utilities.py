@@ -68,6 +68,7 @@ class CachedIterable(object):
             except StopIteration:
                 return True
 
+
 class Measurement(object):
     def __init__(self, measurement_type, count):
         self.measurement_type = measurement_type
