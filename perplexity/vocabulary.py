@@ -759,6 +759,8 @@ class Vocabulary(object):
             if isinstance(predication, list):
                 new_conjunction = []
                 for item in predication:
+                    if isinstance(item, list):
+                        foo = 5
                     if item.introduced_variable() not in remove_introduced_variables:
                         new_conjunction.append(item)
                 return new_conjunction

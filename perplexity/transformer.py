@@ -473,7 +473,10 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
                     if not isinstance(new_predication, list):
                         new_predication.index = current_index[0]
                         current_index[0] += 1
-                    new_conjunction.append(new_predication)
+                        new_conjunction.append(new_predication)
+                    else:
+                        new_conjunction += new_predication
+
                 return new_conjunction
 
             else:

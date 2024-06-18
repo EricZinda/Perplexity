@@ -147,8 +147,8 @@ class UserInterface(object):
             self.user_output()
 
     # If the phrase is an implicit or explicit conjunction -- basically more than
-    # one phrase put together -- run the interaction loop N times, once for each conjunct
-    # collects, and then returns a list of interaction records that represent each of the conjuncts
+    # one phrase put together -- run the interaction loop N times, once for each conjunct.
+    # Collect, and then return a list of interaction records that represent each of the conjuncts
     def interact_once_across_conjunctions(self, force_input=None):
         interaction_records = []
         next_conjuncts = None
@@ -259,7 +259,7 @@ class UserInterface(object):
                     target_parse = mrs_generator[best_parse_index]
 
                 except IndexError:
-                    # We don't get all parses the first time through for performance reasons, try again
+                    # We don't get all parses the first time through for performance reasons, try again but with all of them
                     mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms, one_time_max_parses=best_parse_index + 1))
                     target_parse = mrs_generator[best_parse_index]
 
