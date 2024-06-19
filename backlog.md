@@ -2,6 +2,7 @@ Bugs:
     High Pri:
         - Hi! Could we have a menu, please? --> Doesn't remember the successful parse (8) because the first half of the conjunct fails
             - Shouldn't we not run the second half if the first fails?
+            - The first half (#1) fails because it is a question and unknown is not set up for questions
         orig
             pronoun_q(x14,pron(x14),_a_q(x20,_menu_n_1(x20),proper_q(
                 x6,

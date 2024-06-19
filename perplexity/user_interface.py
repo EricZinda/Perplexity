@@ -164,21 +164,23 @@ class UserInterface(object):
             next_ui = self.new_ui if self.new_ui else self
             record = self.chosen_interpretation_record()
             if record is not None:
-                if "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None:
-                    assert len(record["SelectedConjuncts"]) == 1
-                    if record["SelectedConjuncts"][0] == 1:
-                        # We've processed all the conjuncts
-                        break
+                if record["SolutionGroupGenerator"] is not None:
+                    # There were solutions, so keep going with conjuncts
+                    if "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None:
+                        assert len(record["SelectedConjuncts"]) == 1
+                        if record["SelectedConjuncts"][0] == 1:
+                            # We've processed all the conjuncts
+                            break
+
+                        else:
+                            force_input = self.user_input
+                            next_conjuncts = [1]
+                            conjunct_mrs_index = self.interaction_record["ChosenMrsIndex"]
+                            conjunct_tree_index = self.interaction_record["Mrss"][self.interaction_record["ChosenMrsIndex"]]["Interpretations"][self.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
 
                     else:
-                        force_input = self.user_input
-                        next_conjuncts = [1]
-                        conjunct_mrs_index = self.interaction_record["ChosenMrsIndex"]
-                        conjunct_tree_index = self.interaction_record["Mrss"][self.interaction_record["ChosenMrsIndex"]]["Interpretations"][self.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
-
-                else:
-                    # No conjuncts to process
-                    break
+                        # No conjuncts to process
+                        break
             else:
                 break
 
