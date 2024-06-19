@@ -1,12 +1,13 @@
 Bugs:
     High Pri:
-
         - which chicken menu items do you have? --> pork
                 soup
                 salad
                 steak
                 chicken
                 salmon
+                '_which_q(x5,udef_q(x10,udef_q(x16,_chicken_n_1(x16),[_menu_n_1(x10), compound(e15,x10,x16)]),[_thing_n_of-about(x5,i21), compound(e9,x5,x10)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))'
+                Theory: the problem is that one iterpretation is "chicken menu" (items) and another is "chicken" (menu items), we want the later.  It may just take a long time to get there?
         - (ChatGPT) Could we have a vegetarian menu? --> Host: Sorry, I don't know how to give you that.
         - which dishes are specials -> veggie, meat
             - _which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))
