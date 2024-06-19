@@ -113,11 +113,6 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - table for two please
-            - also: table for two, please
-            - only generate _for_x_cause, unclear what that means
-            - Theory: suspect this might fix it: https://delphinqa.ling.washington.edu/t/hi-table-for-2-please-missing-parse-with-discourse-greet-and-please-a/1017/4
-        - could we see menus? -> I don't understand the way you are using: see
         - Work through cancelling order language
             - Can we cancel my X?
             - I want to cancel my X
@@ -128,7 +123,11 @@ New Language:
             - Let's start again
             - could we reorder?
             - I don't want X
-
+        - table for two please
+            - also: table for two, please
+            - only generate _for_x_cause, unclear what that means
+            - Theory: suspect this might fix it: https://delphinqa.ling.washington.edu/t/hi-table-for-2-please-missing-parse-with-discourse-greet-and-please-a/1017/4
+            - Need to try the daily grammar
         - could I sit down?
         - we want to sit at a table
         - support "can we be seated?"

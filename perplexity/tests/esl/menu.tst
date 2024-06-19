@@ -177,11 +177,18 @@
             "ID": "94dafbfe-00ea-4830-ab9b-e3069733741c"
         },
         {
+            "Command": "could we see menus?",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: You already ordered a menu for Johnny\nWaiter: Can I get you anything else?",
+            "Tree": "udef_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _see_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "ec1ad85b-ce21-4f93-a7e7-c67a616fb8e8"
+        },
+        {
             "Command": "that will be all, thanks",
             "Expected": "Johnny: Dad! I\u2019m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren\u2019t on the menu? \nYou tell the waiter to ignore what you just ordered.\nWaiter: What can I get you?",
             "Tree": "_thanks_a_1(i15,no_standalone(e2))",
             "Enabled": true,
-            "ID": "ec1ad85b-ce21-4f93-a7e7-c67a616fb8e8"
+            "ID": "4e977eb7-06e3-42e4-9c00-a7ad22602325"
         },
         {
             "Command": "show us 3 menus",
