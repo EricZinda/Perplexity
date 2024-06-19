@@ -79,4 +79,12 @@ Once everything in installed, to begin a session of Perplexity development you n
 ## Next Step: Hello World
 Now that you've got Perplexity installed, the next step is to [create the minimal "Hello World" application](https://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo014HelloWorld).
 
-Last update: 2023-08-04 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo012Install.md)]{% endraw %}
+## Compile a Grammar
+On the (very rare) chance you will need to compile an ERG grammar, here are the steps:
+
+1. Decide which version you want, in this case we'll use 2020.  Replace 2020 below with the version you select
+2. svn checkout http://svn.delph-in.net/erg/tags/2020
+3. cd 2020/ace
+4. ace -G grammar.dat -g ./config.tdl
+
+Last update: 2024-06-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo012Install.md)]{% endraw %}
