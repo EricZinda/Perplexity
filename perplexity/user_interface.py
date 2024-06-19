@@ -18,6 +18,7 @@ from perplexity.test_manager import TestManager, TestIterator, TestFolderIterato
 from perplexity.transformer import TransformerMatch
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
     MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable
+from perplexity.tree_algorithm_zinda2020 import TooComplicatedError
 from perplexity.user_state import GetStateDirectoryName
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator
 from perplexity.world_registry import world_information
@@ -315,159 +316,170 @@ class UserInterface(object):
                 # Loop through all the "official" DELPH-IN trees using the official predications
                 tree_generated = False
                 tree_index = -1
-                for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
-                    tree_generated = True
-                    tree_info_orig = {"Index": mrs.index,
-                                      "Variables": mrs.variables,
-                                      "Tree": tree_orig,
-                                      "MRS": self.mrs_parser.mrs_to_string(mrs)}
+                try:
+                    for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
+                        tree_generated = True
+                        tree_info_orig = {"Index": mrs.index,
+                                          "Variables": mrs.variables,
+                                          "Tree": tree_orig,
+                                          "MRS": self.mrs_parser.mrs_to_string(mrs)}
 
-                    # Now loop through any tree modifications that have been built for this application
-                    for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0, conjunct_index_list=next_conjuncts):
-                        # At this point we have locked down which predications should be used and that won't change
-                        # However: there might be multiple interpretations of these predications as well as disjunctions
-                        # that cause various solution sets to be created. Each will be in its own tree_record
-                        tree_index += 1
-                        target_tree_index = conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index
-                        if target_tree_index is not None:
-                            if tree_index < target_tree_index:
-                                error_text = f"MRS #{mrs_index}, Tree #{tree_index}: Skipping"
-                                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=error_text)
-                                mrs_record["Interpretations"].append(tree_record)
-                                pipeline_logger.debug(error_text)
-                                continue
+                        # Now loop through any tree modifications that have been built for this application
+                        for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0, conjunct_index_list=next_conjuncts):
+                            # At this point we have locked down which predications should be used and that won't change
+                            # However: there might be multiple interpretations of these predications as well as disjunctions
+                            # that cause various solution sets to be created. Each will be in its own tree_record
+                            tree_index += 1
+                            target_tree_index = conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index
+                            if target_tree_index is not None:
+                                if tree_index < target_tree_index:
+                                    error_text = f"MRS #{mrs_index}, Tree #{tree_index}: Skipping"
+                                    tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=error_text)
+                                    mrs_record["Interpretations"].append(tree_record)
+                                    pipeline_logger.debug(error_text)
+                                    continue
 
-                            elif tree_index > target_tree_index:
-                                pipeline_logger.debug(f"MRS #{mrs_index}, Tree #{tree_index}: Skipping all trees beyond index #{tree_index}")
-                                break
+                                elif tree_index > target_tree_index:
+                                    pipeline_logger.debug(f"MRS #{mrs_index}, Tree #{tree_index}: Skipping all trees beyond index #{tree_index}")
+                                    break
 
-                        # Make sure the contingent words were removed by a transformer
-                        if len(contingent) > 0:
-                            if tree_contains_predication(tree_info["Tree"], [x[0] for x in contingent]):
-                                # It is still there, fail this tree
-                                error_text = f"MRS #{mrs_index}, Tree #{tree_index}: One or more of these words not transformed out of tree: {[x[0] for x in contingent]}"
-                                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=error_text)
-                                mrs_record["Interpretations"].append(tree_record)
-                                pipeline_logger.debug(error_text)
-                                continue
+                            # Make sure the contingent words were removed by a transformer
+                            if len(contingent) > 0:
+                                if tree_contains_predication(tree_info["Tree"], [x[0] for x in contingent]):
+                                    # It is still there, fail this tree
+                                    error_text = f"MRS #{mrs_index}, Tree #{tree_index}: One or more of these words not transformed out of tree: {[x[0] for x in contingent]}"
+                                    tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"], tree_index=tree_index, error=error_text)
+                                    mrs_record["Interpretations"].append(tree_record)
+                                    pipeline_logger.debug(error_text)
+                                    continue
 
-                        pipeline_logger.debug(f"MRS #{mrs_index}, Tree #{tree_index}: {tree_info['Tree']}")
+                            pipeline_logger.debug(f"MRS #{mrs_index}, Tree #{tree_index}: {tree_info['Tree']}")
 
-                        # Try the state from each frame that is available
-                        # Used to loop through different frames, for now this is turned off
-                        # until we decide if is necessary again since it is expensive
-                        # was: for frame_state in self.state.frames():
-                        wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
-                        for frame_state in [self.state]:
-                            pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
+                            # Try the state from each frame that is available
+                            # Used to loop through different frames, for now this is turned off
+                            # until we decide if is necessary again since it is expensive
+                            # was: for frame_state in self.state.frames():
+                            wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
+                            for frame_state in [self.state]:
+                                pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
 
-                            tree_solver = TreeSolver.create_top_level_solver(self.vocabulary, self.scope_function, self.scope_init_function)
-                            for tree_record in tree_solver.tree_solutions(frame_state,
-                                                                          tree_info,
-                                                                          self.response_function,
-                                                                          self.message_function,
-                                                                          current_tree_index=tree_index,
-                                                                          target_tree_index=conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index,
-                                                                          find_all_solution_groups=self.show_all_answers,
-                                                                          wh_phrase_variable=wh_phrase_variable):
-                                mrs_record["Interpretations"].append(tree_record)
+                                tree_solver = TreeSolver.create_top_level_solver(self.vocabulary, self.scope_function, self.scope_init_function)
+                                for tree_record in tree_solver.tree_solutions(frame_state,
+                                                                              tree_info,
+                                                                              self.response_function,
+                                                                              self.message_function,
+                                                                              current_tree_index=tree_index,
+                                                                              target_tree_index=conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index,
+                                                                              find_all_solution_groups=self.show_all_answers,
+                                                                              wh_phrase_variable=wh_phrase_variable):
+                                    mrs_record["Interpretations"].append(tree_record)
 
-                                solution_group_generator = tree_record["SolutionGroupGenerator"]
-                                if solution_group_generator is not None:
-                                    # There were solutions, so this is our answer.
-                                    # Return it and stop looking
-                                    self.evaluate_best_response(has_solution_group=True)
+                                    solution_group_generator = tree_record["SolutionGroupGenerator"]
+                                    if solution_group_generator is not None:
+                                        # There were solutions, so this is our answer.
+                                        # Return it and stop looking
+                                        self.evaluate_best_response(has_solution_group=True)
 
-                                    # If it was not the first MRS parse (and it isn't a conjunct), record it as the best alternative so that we start there next time
-                                    if not conjunct_mrs_index and mrs_index != 0:
-                                        self.best_parses[best_parse_index_simple_mrs] = {"Phrase": self.user_input,
-                                                                                         "MRSIndex": mrs_index}
-                                        self.save_best_parses()
+                                        # If it was not the first MRS parse (and it isn't a conjunct), record it as the best alternative so that we start there next time
+                                        if not conjunct_mrs_index and mrs_index != 0:
+                                            self.best_parses[best_parse_index_simple_mrs] = {"Phrase": self.user_input,
+                                                                                             "MRSIndex": mrs_index}
+                                            self.save_best_parses()
 
-                                    # Go through all the responses in this solution group
-                                    had_operations = False
-                                    response, solution_group = next(tree_record["ResponseGenerator"])
+                                        # Go through all the responses in this solution group
+                                        had_operations = False
+                                        response, solution_group = next(tree_record["ResponseGenerator"])
 
-                                    # Because this worked, we need to apply any Operations that were added to
-                                    # any solution to the current world state.
-                                    try:
-                                        has_more_func = solution_group_generator.has_at_least_one_more
+                                        # Because this worked, we need to apply any Operations that were added to
+                                        # any solution to the current world state.
+                                        try:
+                                            has_more_func = solution_group_generator.has_at_least_one_more
 
-                                        def unique_wh_values_from_group(group):
-                                            unique_wh_values = set()
-                                            for solution in group:
-                                                unique_wh_values.add(solution.get_binding(wh_phrase_variable).value)
+                                            def unique_wh_values_from_group(group):
+                                                unique_wh_values = set()
+                                                for solution in group:
+                                                    unique_wh_values.add(solution.get_binding(wh_phrase_variable).value)
 
-                                            return unique_wh_values
+                                                return unique_wh_values
 
-                                        # when the solution group is a wh_question, we only care if the wh variable
-                                        # is different in the different solution groups
-                                        def wh_aware_has_more():
-                                            if wh_phrase_variable is None:
-                                                return solution_group_generator.has_at_least_one_more()
+                                            # when the solution group is a wh_question, we only care if the wh variable
+                                            # is different in the different solution groups
+                                            def wh_aware_has_more():
+                                                if wh_phrase_variable is None:
+                                                    return solution_group_generator.has_at_least_one_more()
+
+                                                else:
+                                                    original_values = unique_wh_values_from_group(solution_group)
+                                                    for next_solution_group in solution_group_generator:
+                                                        maximal_group = next_solution_group.maximal_group_iterator()
+                                                        next_original_values = unique_wh_values_from_group(maximal_group)
+                                                        if next_original_values != original_values:
+                                                            return True
+
+                                                    return False
+
+                                            solution_group_solutions = [solution for solution in solution_group]
+                                            operation_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
+                                            self.state = new_state
+
+                                        except MessageException as error:
+                                            response = self.response_function(self.vocabulary, self.message_function, tree_info, [], [0, error.message_object()])
+                                            tree_record["ResponseMessage"] += f"\n{str(response)}"
+                                            operation_responses = []
+
+                                        if len(operation_responses) > 0:
+                                            had_operations = True
+                                            operation_responses.sort(key=lambda tup: tup[0])
+                                            response = "\n".join(item[1] for item in operation_responses)
+
+                                        elif response is None:
+                                            this_sentence_force = sentence_force(tree_info["Variables"])
+                                            if this_sentence_force == "comm":
+                                                # Only give a "Done!" message if it was a command and there were no responses given
+                                                response = "Done!"
+
+                                            elif this_sentence_force == "prop" or this_sentence_force == "prop-or-ques":
+                                                response = "Yes, that is true."
 
                                             else:
-                                                original_values = unique_wh_values_from_group(solution_group)
-                                                for next_solution_group in solution_group_generator:
-                                                    maximal_group = next_solution_group.maximal_group_iterator()
-                                                    next_original_values = unique_wh_values_from_group(maximal_group)
-                                                    if next_original_values != original_values:
-                                                        return True
+                                                response = "(no response)"
 
-                                                return False
+                                        tree_record["ResponseMessage"] += response
+                                        self.user_output(response)
 
-                                        solution_group_solutions = [solution for solution in solution_group]
-                                        operation_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
-                                        self.state = new_state
+                                        # Only show if the developer didn't provide a custom message
+                                        if not had_operations:
+                                            more_message = self.generate_more_message(tree_info, solution_group_generator)
+                                            if more_message is not None:
+                                                tree_record["ResponseMessage"] += more_message
+                                                self.user_output(more_message)
 
-                                    except MessageException as error:
-                                        response = self.response_function(self.vocabulary, self.message_function, tree_info, [], [0, error.message_object()])
-                                        tree_record["ResponseMessage"] += f"\n{str(response)}"
-                                        operation_responses = []
+                                        if not self.run_all_parses:
+                                            return
 
-                                    if len(operation_responses) > 0:
-                                        had_operations = True
-                                        operation_responses.sort(key=lambda tup: tup[0])
-                                        response = "\n".join(item[1] for item in operation_responses)
+                                    else:
+                                        # This failed, remember it if it is the "best" failure
+                                        # which we currently define as the first one
+                                        self.evaluate_best_response(has_solution_group=False)
 
-                                    elif response is None:
-                                        this_sentence_force = sentence_force(tree_info["Variables"])
-                                        if this_sentence_force == "comm":
-                                            # Only give a "Done!" message if it was a command and there were no responses given
-                                            response = "Done!"
+                        alternate_tree_generated = tree_index > -1
+                        if len(contingent) > 0 and not alternate_tree_generated:
+                            unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
+                            tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
+                                                                           response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
+                                                                           tree_index=tree_index)
+                            mrs_record["Interpretations"].append(tree_record)
+                            self.evaluate_best_response(has_solution_group=False)
 
-                                        elif this_sentence_force == "prop" or this_sentence_force == "prop-or-ques":
-                                            response = "Yes, that is true."
-
-                                        else:
-                                            response = "(no response)"
-
-                                    tree_record["ResponseMessage"] += response
-                                    self.user_output(response)
-
-                                    # Only show if the developer didn't provide a custom message
-                                    if not had_operations:
-                                        more_message = self.generate_more_message(tree_info, solution_group_generator)
-                                        if more_message is not None:
-                                            tree_record["ResponseMessage"] += more_message
-                                            self.user_output(more_message)
-
-                                    if not self.run_all_parses:
-                                        return
-
-                                else:
-                                    # This failed, remember it if it is the "best" failure
-                                    # which we currently define as the first one
-                                    self.evaluate_best_response(has_solution_group=False)
-
-                    alternate_tree_generated = tree_index > -1
-                    if len(contingent) > 0 and not alternate_tree_generated:
-                        unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
-                        tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
-                                                                       response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
-                                                                       tree_index=tree_index)
-                        mrs_record["Interpretations"].append(tree_record)
-                        self.evaluate_best_response(has_solution_group=False)
+                except TooComplicatedError:
+                    too_complicated_error = ExecutionContext.blank_error(predication_index=0, error=["tooComplicated"])
+                    tree_record = TreeSolver.new_error_tree_record(error=too_complicated_error,
+                                                                   response_generator=self.response_function(self.vocabulary,
+                                                                                                             self.message_function, None, [],
+                                                                                                             too_complicated_error),
+                                                                   tree_index=tree_index)
+                    mrs_record["Interpretations"].append(tree_record)
+                    self.evaluate_best_response(has_solution_group=False)
 
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_interpretation_record()

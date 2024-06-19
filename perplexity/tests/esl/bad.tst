@@ -9,11 +9,18 @@
             "ID": "69c95107-36db-4bca-b2b2-ee7d0a2a1a0e"
         },
         {
+            "Command": "I'll have the chicken and my son will have the soup and the salad",
+            "Expected": "That was too complicated for me to understand ...",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+        },
+        {
             "Command": "I want an order of the table",
             "Expected": "Host: There isn't such a table here",
             "Tree": "_the_q(x13,_table_n_1(x13),pronoun_q(x3,pron(x3),_a_q(x8,_order_n_of(x8,x13),_want_v_1(e2,x3,x8))))",
             "Enabled": true,
-            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+            "ID": "410c600c-dc36-4030-bab1-27896a1acf0e"
         },
         {
             "Command": "Can I take a table?",

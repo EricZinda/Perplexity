@@ -1,18 +1,5 @@
 Bugs:
     High Pri:
-        - (fixed) hi and hi! Generate the same MRS so find the same best parse but hi doesn't have as many parses so it fails
-        - (fixed) that will be all, thank you. fails now
-            - thank you is what fails
-                MRS #4, Tree #0: pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_thank_v_1(e2,x3,x8)))
-
-        - (fixed) .plex files get corrupted
-            - use os.replace
-                https://docs.python.org/3/library/os.html#os.replace
-                https://stackoverflow.com/questions/7433057/is-rename-without-fsync-safe
-
-        - Bug: I'll have the chicken and my son will have the soup and the salad
-            - Crashes with "too many holes"
-            - Shouldn't crash!
         - Do you have any [general] vegetarian menu items? --> Wait, let's not order soup before we know how much it costs.
             - should list items
         - which chicken menu items do you have? --> pork

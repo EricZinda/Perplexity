@@ -187,6 +187,9 @@ def generate_message(tree_info, error_term):
     elif error_constant == "errorText":
         return error_arguments[1]
 
+    elif error_constant == "tooComplicated":
+        return "That was too complicated for me to understand ..."
+
     elif error_constant == "formNotUnderstood":
         predication = predication_from_index(tree_info, error_predicate_index)
         parsed_predicate = parse_predication_name(predication.name)
@@ -337,6 +340,9 @@ error_priority_dict = {
     # Lots of misinterpretations can generate this, so make it lower than default
     "doesntExist": 920,
     "defaultPriority": 1000,
+    # Happens if there are too many holes to generate a tree
+    # We want this to be the error shown if it is one of the first parses
+    "tooComplicated": 1000,
     # Indicates we understood the phrase, but trying to accomplish it generated a failure. It should
     # be a very high priority message
     "understoodFailureMessage": 1200,
