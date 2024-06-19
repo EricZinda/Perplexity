@@ -30,6 +30,13 @@
             "ID": "37e73c8f-ea36-4f95-8afc-7efa06823a41"
         },
         {
+            "Command": "Do you have any vegetarian menu items?",
+            "Expected": "soup\nsalad\nWaiter: What can I get you?",
+            "Tree": "udef_q(x15,_menu_n_1(x15),pronoun_q(x3,pron(x3),_any_q(x8,[_thing_n_of-about(x8,i20), compound(e14,x8,x15), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "752fedfb-9214-4995-835a-586ad105e629"
+        },
+        {
             "Command": "which vegetarian specialities do you have?",
             "Expected": "soup\nsalad\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,[_dish_n_of(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
@@ -72,5 +79,5 @@
             "ID": "26fc6f0a-7692-4135-8859-c27a1b3e9129"
         }
     ],
-    "ElapsedTime": 6.70232
+    "ElapsedTime": 7.47484
 }

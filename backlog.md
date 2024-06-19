@@ -1,7 +1,6 @@
 Bugs:
     High Pri:
-        - Do you have any [general] vegetarian menu items? --> Wait, let's not order soup before we know how much it costs.
-            - should list items
+
         - which chicken menu items do you have? --> pork
                 soup
                 salad

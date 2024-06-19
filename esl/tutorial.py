@@ -820,23 +820,7 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
         # which means "anything having to do with the noun specified" (e.g. "menu" or "bicycle")
         # But, since we don't really have much modelled to allow that, we'll just special case "menu item"
         if len(x_right_binding.value) == 1 and is_concept(x_right_binding.value[0]) and x_right_binding.value[0].entails(context, state, ESLConcept("menu")):
-            for dish in most_specific_specializations(state, "dish"):
-                yield state.set_x(x_left_binding.variable.name, (dish,))
-
-
-        # In theory "menu item" now is handled by the next elif clause where we build a single concept for "menu item"
-        # BUT: it can't do them in conjunction since they aren't both "sort_of" relationships
-        # elif len(x_right_binding.value) == 1 and is_concept(x_right_binding.value[0]) and x_right_binding.value[0].concept_name == "menu":
-        #     # Support "menu item" by interpreting it as a "menu dish"
-        #     # Check to see if the left item is, or specializes "dish"
-        #     if sort_of(state, object_to_store(x_left_binding.value[0]), "dish"):
-        #         yield state
-
-# @Predication(vocabulary, names=["_for_x_cause"])
-# def _for_x_cause(context, state, e_introduced, h_left_binding, h_right_binding):
-#     if isinstance(h_left_binding, TreePredication) and h_left_binding.name == "greet":
-#         for solution in context.call(state, h_right_binding):
-#             yield solution
+            yield state.set_x(x_left_binding.variable.name, (ESLConcept("dish"),))
 
 
 @Predication(vocabulary, names=["_can_v_modal"])
