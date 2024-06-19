@@ -251,25 +251,36 @@ class UserInterface(object):
         # If we have recorded a particular MRS that is normally the best, move it
         # to the front. If this is a conjunct, we have already settled on the MRS so don't bother
         # Use 10000 to mean "get all parses". That should cover most phrases
-        current_max_parses = 10000 if self.generate_all_parses else None
+        current_max_parses = (conjunct_mrs_index + 1) if conjunct_mrs_index is not None else None
+        current_max_parses = 10000 if self.generate_all_parses else current_max_parses
         mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms, one_time_max_parses=current_max_parses))
         if not conjunct_mrs_index and mrs_generator.at_least_one():
             best_parse_index_simple_mrs = simplemrs.dumps([mrs_generator[0]], lnk=False)
             best_parse_index = self.best_parses.get(best_parse_index_simple_mrs, {"Phrase": "none", "MRSIndex": 0})["MRSIndex"]
             if best_parse_index > 0:
-                try:
-                    target_parse = mrs_generator[best_parse_index]
+                all_parses = None
+                target_parse = None
+                while target_parse is None:
+                    target_parse = mrs_generator.get_from_index(best_parse_index, raise_if_none=False)
+                    if target_parse is None:
+                        if all_parses is None:
+                            # We don't get all parses the first time through for performance reasons, try again but with all of them
+                            all_parses = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms,
+                                                           one_time_max_parses=best_parse_index + 1))
+                            mrs_generator = all_parses
 
-                except IndexError:
-                    # We don't get all parses the first time through for performance reasons, try again but with all of them
-                    mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms, one_time_max_parses=best_parse_index + 1))
-                    target_parse = mrs_generator[best_parse_index]
+                        else:
+                            break
+
+                    else:
+                        break
 
                 try:
-                    # Move the best MRS to be first and remove it from its previous position
-                    mrs_generator.cached_values.insert(0, target_parse)
-                    mrs_generator.cached_values.pop(best_parse_index + 1)
-                    pipeline_logger.debug(f"Starting with best parse MRS: {best_parse_index}")
+                    if target_parse:
+                        # Move the best MRS to be first and remove it from its previous position
+                        mrs_generator.cached_values.insert(0, target_parse)
+                        mrs_generator.cached_values.pop(best_parse_index + 1)
+                        pipeline_logger.debug(f"Starting with best parse MRS: {best_parse_index}")
 
                 except StopIteration:
                     # The best parse doesn't exist anymore, clear this out

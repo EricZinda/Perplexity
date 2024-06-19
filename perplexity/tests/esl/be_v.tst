@@ -22,7 +22,8 @@
                 "person\nthing\nson\n",
                 "thing\nson\nperson\n",
                 "person\nson\nthing\n",
-                "thing\nperson\nson\n"
+                "thing\nperson\nson\n",
+                "son\nthing\nperson\n"
             ],
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_son_n_of(x8,i19), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
@@ -92,5 +93,5 @@
             "ID": "29f3e374-7975-43f3-95b6-9c59327ddd34"
         }
     ],
-    "ElapsedTime": 50.06286
+    "ElapsedTime": 49.33048
 }

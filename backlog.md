@@ -1,26 +1,15 @@
 Bugs:
     High Pri:
-        - Hi! Could we have a menu, please? --> Doesn't remember the successful parse (8) because the first half of the conjunct fails
-            - Shouldn't we not run the second half if the first fails?
-            - The first half (#1) fails because it is a question and unknown is not set up for questions
-        orig
-            pronoun_q(x14,pron(x14),_a_q(x20,_menu_n_1(x20),proper_q(
-                x6,
-                named(Hawaii,x6),
-                [_please_a_1(e25,e5), implicit_conj(e2,e4,e5), _could_v_modal(e5,_have_v_1(e19,x14,x20)), unknown(e4,x6)])))
+        - (fixed) hi and hi! Generate the same MRS so find the same best parse but hi doesn't have as many parses so it fails
+        - (fixed) that will be all, thank you. fails now
+            - thank you is what fails
+                MRS #4, Tree #0: pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_thank_v_1(e2,x3,x8)))
 
-        #1
-            pronoun_q(x14,pron(x14),_a_q(x20,_menu_n_1(x20),proper_q(
-                x6,
-                named(Hawaii,x6),
-                [_please_a_1(e25,e5), event_replace(u99,e5,e19), unknown(e4,x6)])))
+        - (fixed) .plex files get corrupted
+            - use os.replace
+                https://docs.python.org/3/library/os.html#os.replace
+                https://stackoverflow.com/questions/7433057/is-rename-without-fsync-safe
 
-        #2
-            pronoun_q(x14,pron(x14),_a_q(x20,_menu_n_1(x20),proper_q(
-                x6,
-                named(Hawaii,x6),
-                [_please_a_1(e25,e5), event_replace(u99,e5,e19), _have_v_1_able(e5,x14,x20)])))
-        - .plex files get corrupted
         - Bug: I'll have the chicken and my son will have the soup and the salad
             - Crashes with "too many holes"
             - Shouldn't crash!

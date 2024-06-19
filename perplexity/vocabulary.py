@@ -172,11 +172,21 @@ def expand_properties(original_properties):
         return final_properties
 
 
+def store_atomically(path, data):
+    tmppath = path + ".tmp"
+    with open(tmppath, "w") as output:
+        output.write(data)
+        output.flush()
+        # https://stackoverflow.com/questions/7433057/is-rename-without-fsync-safe
+        os.fsync(output.fileno())
+
+    os.replace(tmppath, path)
+
+
 def put_saved_metadata(decorated_function, metadata):
     all_metadata = get_all_metadata_from_function_file(decorated_function)
     all_metadata[decorated_function.__name__] = metadata
-    with open(meta_file_path(decorated_function), "w") as file:
-        file.write(json.dumps(all_metadata, indent=4))
+    store_atomically(meta_file_path(decorated_function), json.dumps(all_metadata, indent=4))
 
 
 def get_saved_metadata(decorated_function):

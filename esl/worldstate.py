@@ -1258,6 +1258,8 @@ class WorldState(State):
             return self.no(context)
         elif args[0] == "yes":
             return self.yes()
+        elif args[0] == "greeting":
+            return [RespondOperation("Hello!")]
         elif args[0] == "unknown":
             # User said something that wasn't a full sentence that generated an
             # unknown() predication
@@ -1270,8 +1272,6 @@ class WorldState(State):
             who_list = [binding.value for binding in args[1].solution_values]
             what_list = [binding.value for binding in args[2].solution_values]
             return self.find_plan(context, [('satisfy_want', context, who_list, what_list)])
-
-            return self.user_wants_group(context, args[1], args[2])
         elif args[0] == "user_wants_to_see_group":
             return self.user_wants_to_see_group(context, args[1], args[2])
 

@@ -38,7 +38,7 @@ class CachedIterable(object):
         except StopIteration:
             raise IndexError
 
-    def get_from_index(self, index):
+    def get_from_index(self, index, raise_if_none=True):
         try:
             while index >= len(self.cached_values):
                 if self.done:
@@ -47,7 +47,11 @@ class CachedIterable(object):
 
         except StopIteration:
             self.done = True
-            raise
+            if raise_if_none:
+                raise
+
+            else:
+                return None
 
         return self.cached_values[index]
 

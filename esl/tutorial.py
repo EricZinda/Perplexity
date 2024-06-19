@@ -584,6 +584,12 @@ def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2):
         yield state.record_operations([RespondOperation(f"You are welcome! {state.get_reprompt()}")])
 
 
+@Predication(vocabulary, names=["_thank+you_v_1"])
+def _thankyou_v_1(context, state, e_binding, x_target):
+    if x_target.value is not None and len(x_target.value) == 1 and is_computer_type(x_target.value):
+        yield state.record_operations([RespondOperation(f"You are welcome! {state.get_reprompt()}")])
+
+
 @Predication(vocabulary, names=["count"])
 def count(context, state, e_binding, x_total_count_binding, x_item_to_count_binding, h_scopal_binding):
     scoped_variables, unscoped_variables = gather_scoped_variables_from_tree_at_index(state.get_binding("tree").value[0]["Tree"], context.current_predication_index())
@@ -1150,22 +1156,25 @@ def _dollar_n_1(context, state, x_binding, u_unused):
 
 @Predication(vocabulary,
              names=["unknown"],
-             phrases={
-                "Hi, table for two, please": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "a table for 2": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                "a table for 2, please!": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "2": {'SF': 'prop-or-ques'},
-                "Johnny and me": {'SF': 'prop-or-ques'},
-                "yes": {'SF': 'prop-or-ques'},
-                "You too.": {'SF': 'prop'}
-             },
-             properties=[{'SF': 'prop-or-ques'},
-                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative'},
-                         {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                         {'SF': 'prop'}],
+             # phrases={
+             #    "table for two?": {'SF': 'ques'},
+             #    "Hi, table for two, please": {'SF': 'prop'},
+             #    "a table for 2": {'SF': 'prop'},
+             #    "a table for 2, please!": {'SF': 'prop'},
+             #    "2": {'SF': 'prop-or-ques'},
+             #    "Johnny and me": {'SF': 'prop'},
+             #    "yes": {'SF': 'prop-or-ques'},
+             #    "You too.": {'SF': 'prop'}
+             # },
+             # properties=[{'SF': 'ques'},
+             #             {'SF': 'prop-or-ques'},
+             #             {'SF': 'prop'}],
              arguments=[("e",), ("x", ValueSize.all)])
 def unknown(context, state, e_binding, x_binding):
-    operations = state.handle_world_event(context, ["unknown", x_binding.value])
+    if x_binding.value is not None and len(x_binding.value) == 1 and x_binding.value[0] in greetings():
+        operations = state.handle_world_event(context, ("greeting", ))
+    else:
+        operations = state.handle_world_event(context, ["unknown", x_binding.value])
     if operations is not None:
         yield state.record_operations(operations)
 

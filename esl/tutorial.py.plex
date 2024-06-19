@@ -752,61 +752,7 @@
     "_credit_n_1": {},
     "_dollar_n_1_measure": {},
     "_dollar_n_1": {},
-    "unknown": {
-        "Phrases": {
-            "Hi, table for two, please": {
-                "SF": "prop",
-                "TENSE": "untensed",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "a table for 2": {
-                "SF": "prop",
-                "TENSE": "untensed",
-                "MOOD": "indicative"
-            },
-            "a table for 2, please!": {
-                "SF": "prop",
-                "TENSE": "untensed",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            "2": {
-                "SF": "prop-or-ques"
-            },
-            "Johnny and me": {
-                "SF": "prop-or-ques"
-            },
-            "yes": {
-                "SF": "prop-or-ques"
-            },
-            "You too.": {
-                "SF": "prop"
-            }
-        },
-        "Properties": [
-            {
-                "SF": "prop-or-ques"
-            },
-            {
-                "SF": "prop",
-                "TENSE": "untensed",
-                "MOOD": "indicative"
-            },
-            {
-                "SF": "prop",
-                "TENSE": "untensed",
-                "MOOD": "indicative",
-                "PROG": "-",
-                "PERF": "-"
-            },
-            {
-                "SF": "prop"
-            }
-        ]
-    },
+    "unknown": {},
     "unknown_group": {},
     "unknown_eu": {},
     "_yes_a_1": {},
@@ -2382,5 +2328,6 @@
     "match_all_n_concepts_menu": {},
     "_vegetarian_a_1_concepts_menu_group": {
         "PropertiesFrom": "_vegetarian_a_1_concepts_menu_group"
-    }
+    },
+    "_thankyou_v_1": {}
 }

@@ -347,7 +347,7 @@
         {
             "Command": "just two",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x4,card(2,x4,i11),[_just_a_1(e5,e2), unknown(e2,x4)])",
+            "Tree": "[number_q(x4,card(2,x4,i12),unknown(e2,x4)), _just_x_deg(e6,u7)]",
             "Enabled": true,
             "ID": "ce3be103-f9d0-45b2-a430-270082aa498c"
         },
@@ -571,7 +571,7 @@
         {
             "Command": "just two",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x4,card(2,x4,i11),[_just_a_1(e5,e2), unknown(e2,x4)])",
+            "Tree": "[number_q(x4,card(2,x4,i12),unknown(e2,x4)), _just_x_deg(e6,u7)]",
             "Enabled": true,
             "ID": "a41bab5a-8931-44e4-9411-1712805f649e"
         },
