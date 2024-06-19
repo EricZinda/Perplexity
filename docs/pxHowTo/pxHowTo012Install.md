@@ -86,5 +86,6 @@ On the (very rare) chance you will need to compile an ERG grammar, here are the 
 
 1. Decide which version you want, in this case we'll use 2020.  Replace 2020 below with the version you select
 2. svn checkout http://svn.delph-in.net/erg/tags/2020
+   2a. To get the latest (but no commitment on quality) grammar: http://svn.delph-in.net/erg/trunk
 3. cd 2020/ace
 4. ace -G grammar.dat -g ./config.tdl

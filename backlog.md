@@ -116,6 +116,7 @@ New Language:
         - table for two please
             - also: table for two, please
             - only generate _for_x_cause, unclear what that means
+            - Theory: suspect this might fix it: https://delphinqa.ling.washington.edu/t/hi-table-for-2-please-missing-parse-with-discourse-greet-and-please-a/1017/4
         - could we see menus? -> I don't understand the way you are using: see
         - Work through cancelling order language
             - Can we cancel my X?
