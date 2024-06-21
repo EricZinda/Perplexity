@@ -653,7 +653,7 @@ def cancel_group_group(state, context, group_who, group_what, what_size_constrai
         if not found_what:
             item = convert_to_english(state, what)
             tasks += [('respond', context,
-                         s("Host: Sorry, I don't believe you've ordered {a *item:}."))]
+                         s("Host: Sorry, I don't believe I have that order."))]
 
         # Couldn't cancel everything so ...
         if remaining_cancel > 0:

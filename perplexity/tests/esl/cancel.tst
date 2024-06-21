@@ -283,7 +283,7 @@
         },
         {
             "Command": "can you cancel a soup",
-            "Expected": "Host: Sorry, I don't believe you've ordered a soup.\nWaiter: What can I get you?",
+            "Expected": "Host: Sorry, I don't believe I have that order.\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "df5c1b8d-5c1d-4b6a-b30d-913c162e20d1"
