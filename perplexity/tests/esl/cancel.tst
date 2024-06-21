@@ -23,6 +23,76 @@
             "ID": "3d1735d4-763b-4148-b063-780f0de7e401"
         },
         {
+            "Command": "I want to cancel my steak",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_steak_n_1(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),_cancel_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "0107b0e2-625c-4c01-b47b-e802004a11f5"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "13667943-2221-41b5-8a75-dee41004150a"
+        },
+        {
+            "Command": "I want to cancel my order",
+            "Expected": "Waiter: I have removed the order for you.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),_cancel_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "3ab1c245-e533-420c-8ed4-d7be5b53d32d"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "887df412-8936-4667-b69b-cf460fe3602d"
+        },
+        {
+            "Command": "Could I cancel my steak",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_steak_n_1(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "2b0c3bc3-8baf-449c-a4e5-521dcde2c82f"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "b3026e92-63a3-470e-b5d6-622f96ea3e22"
+        },
+        {
+            "Command": "Could I cancel my order",
+            "Expected": "Waiter: I have removed the order for you.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "3d021e94-e8a1-472b-807b-8d8192084a75"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "54b932f5-9c94-498c-bc75-f380da341614"
+        },
+        {
+            "Command": "table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "212d0c08-4aa3-42f7-bf62-54797dde7bc9"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "deaa1e2b-f78b-436e-b2ac-1ae6bb861278"
+        },
+        {
             "Command": "Can you cancel the steak?",
             "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
             "Tree": "_the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",

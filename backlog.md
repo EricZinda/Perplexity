@@ -115,19 +115,15 @@ Cleanup:
 New Language:
     Hi Pri:
         - Test:
+            I'd like to cancel my drink order
             can we cancel my food?
             Could you cancel the steak I ordered earlier?
-            I'd like to cancel my drink order
             Can you please take the soup off my order
             can you cancel the pizza I requested
 
         - Work through cancelling order language
             - Issues:
                 - "cancel the order for me" --> "for me" isn't implemented as possessive
-
-            - I want to cancel my X
-            - Could I cancel my order
-
             - can you remove the salad from my order
             - I don't want X
             - I don't want X anymore

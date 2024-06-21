@@ -2607,6 +2607,13 @@ def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x
 
 
 @Predication(vocabulary,
+             names=["solution_group__cancel_v_1_request"],
+             properties_from=_cancel_v_1_request)
+def _cancel_v_1_request_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+    yield from cancel_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)
+
+
+@Predication(vocabulary,
              names=["_cancel_v_1_able"],
              phrases={
                  "Could I cancel my order?":  {'SF': 'ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
@@ -2616,33 +2623,6 @@ def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x
 def _cancel_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     yield from _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
 
-
-# def _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-#     def bound(x_actor, x_object):
-#         # We support "Can/Could I/we/you cancel my/Johnnys order"
-#         if (is_user_type(x_actor) or is_computer_type(x_actor)) and not is_concept(x_object) and sort_of(state, x_object, "order"):
-#             return True
-#
-#         else:
-#             context.report_error(["dontKnowHow"])
-#
-#     def actor_from_object(x_object):
-#         if False:
-#             yield None
-#
-#     def object_from_actor(x_actor):
-#         if False:
-#             yield None
-#
-#     for new_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object, object_from_actor):
-#         # First figure out who this order belongs to
-#         order = new_state.get_binding(x_object_binding.variable.name).value[0]
-#         owner_list = [x for x in rel_subjects(state, "have", object_to_store(order))]
-#         owners = owner_list[0]
-#         names = [convert_to_english(state, owners)] if not isinstance(owners, tuple) else [convert_to_english(state, owner) for owner in owners]
-#
-#         yield new_state.record_operations([ResetOrderAndBillForPersonOp(owners),
-#                                            RespondOperation(f"Waiter: No problem! Let me know what {' and '.join(names)} would like instead.")])
 
 
 # "Cancel the steak"

@@ -2346,5 +2346,8 @@
     "_thankyou_v_1": {},
     "_cancel_v_1_able_group": {
         "PropertiesFrom": "_cancel_v_1_able_group"
+    },
+    "_cancel_v_1_request_group": {
+        "PropertiesFrom": "_cancel_v_1_request_group"
     }
 }
