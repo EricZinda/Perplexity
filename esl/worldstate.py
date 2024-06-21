@@ -427,6 +427,15 @@ def rel_sort_of(state, _, type):
     yield from all_instances_and_spec(state, type)
 
 
+def rel_entailed_by(state, _, type):
+    yield from all_instances_and_spec(state, type)
+
+
+def rel_object_with_rel(state, _, rel):
+    for item in state.all_rel(rel):
+        yield item[1]
+
+
 def rel_objects(state, subject, rel):
     for item in state.all_rel(rel):
         if item[0] == subject:

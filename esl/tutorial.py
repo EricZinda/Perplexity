@@ -771,6 +771,15 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
                 if len(x_right_binding.value) == 1 and x_right_binding.value[0].entails(context, state, ESLConcept("menu")):
                     for dish in most_specific_specializations(state, "dish"):
                         yield state.set_x(x_left_binding.variable.name, (dish,))
+
+                if len(x_left_binding.value) == 1 and x_left_binding.value[0].single_sort_name() == "order" and \
+                    len(x_right_binding.value) == 1 and len(x_right_binding.value[0].entailed_by_which(context, state, orderable_concepts(state))) > 0:
+                    # "steak order" or "food order" or "grilled item order" should all convert to a concept object that yields something that is
+                    # in an order
+                    item = x_right_binding.value[0]
+                    new_item = item.add_criteria(rel_object_with_rel, None, "ordered")
+                    yield state.set_x(x_left_binding.variable.name, (new_item,))
+
                 else:
                     # Handle compounds where the first word is modelled as an adjective, but is a noun.
                     # For example: "tomato soup" has "soup isAdj tomato" not "soup instanceOf tomato"
