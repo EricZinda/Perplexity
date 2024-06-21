@@ -874,7 +874,7 @@ class WorldState(State):
         world_state._rel = new_relation
 
     def all_rel(self, rel):
-        if rel not in self._rel.keys():
+        if not self.rel_exists(rel):
             return
 
         else:
@@ -889,11 +889,18 @@ class WorldState(State):
                             yield item, subject_object[1]
                             processed.add(item)
 
+            elif rel == "possess":
+                # The "possess" relationship happens with poss(), i.e. "my steak"
+                # Note that it is not just "anything I have" since
+                # "cancel my steak" refers to a steak I don't have
+                yield from self.all_rel("have")
+                yield from self.ordered_but_not_delivered()
+
             else:
                 yield from [(x[0], x[1]) for x in self._rel[rel]]
 
     def rel_exists(self, rel):
-        return rel in self._rel.keys()
+        return rel in self._rel.keys() or rel == "possess"
 
     # ******* Base Operations ********
 

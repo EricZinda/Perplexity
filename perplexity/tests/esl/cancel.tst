@@ -168,6 +168,41 @@
             "Tree": "_the_q(x11,[_thing_n_of-about(x11,i18), _grill_v_1(e16,i17,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "8bced605-d89d-42ce-854a-0ba4b5679c4f"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "436d4b39-b0b2-499c-a4a3-42bca3736caf"
+        },
+        {
+            "Command": "can I cancel my steak?",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_steak_n_1(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "72f079b4-2e31-4cfd-9909-939303bc9bdf"
+        },
+        {
+            "Command": "how much is soup",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),udef_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "7b20bd4d-64a6-4f7a-b552-3a69d9f7b3c7"
+        },
+        {
+            "Command": "my son wants soup",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "5c47a154-cf8d-4855-9f39-8e3a52714e1a"
+        },
+        {
+            "Command": "can I cancel my son's soup'",
+            "Expected": "Waiter: I have removed a soup from the order for Johnny.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x13,pronoun_q(x18,pron(x18),[_son_n_of(x13,i23), poss(e17,x13,x18)]),def_explicit_q(x11,[_soup_n_1(x11), poss(e28,x11,x13)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)])))",
+            "Enabled": true,
+            "ID": "dc3ddfbd-85a7-4de8-afe5-bc7e4a29e3eb"
         }
     ]
 }

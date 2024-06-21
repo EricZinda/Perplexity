@@ -41,7 +41,7 @@
         },
         {
             "Command": "Can I cancel my order?",
-            "Expected": "Waiter: No problem! Let me know what you would like instead.",
+            "Expected": "Waiter: I have removed the order for you.\nWaiter: Can I get you anything else?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "27599b97-ed77-4328-aae2-47cd93688319"

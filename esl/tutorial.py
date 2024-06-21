@@ -3241,7 +3241,7 @@ def poss_lift_style(context, state, e_introduced_binding, x_object_binding, x_ac
             if x_actor_binding is not None and \
                     x_object_binding.value is not None and len(x_object_binding.value) == 1 and is_concept(x_object_binding.value[0]):
                 # Add extra criteria to the concept to represent possession by x_actor
-                x_object = x_object_binding.value[0].add_criteria(rel_objects, x_actor_binding.value[0], "have")
+                x_object = x_object_binding.value[0].add_criteria(rel_objects, x_actor_binding.value[0], "possess")
                 yield state.set_x(x_object_binding.variable.name, (x_object, ))
 
             else:

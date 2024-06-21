@@ -114,23 +114,29 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - Work through cancelling order language
-            - Implementation
-                - Check the concepts being cancelled against the orders
-                - Issues:
-                    - "my steak" --> things in the order don't have a possessive yet
-                    - "cancel the order for me" --> for me isn't implemented as possessive
-            - Update cancel_v to handle items, should be the same logic as for "want_v"
-                - Can we cancel my X?
-                - I want to cancel my X
+        - Test:
+            can we cancel my food?
+            Could you cancel the steak I ordered earlier?
+            I'd like to cancel my drink order
+            Can you please take the soup off my order
+            can you cancel the pizza I requested
 
+        - Work through cancelling order language
+            - Issues:
+                - "cancel the order for me" --> "for me" isn't implemented as possessive
+
+            - I want to cancel my X
+            - Could I cancel my order
+
+            - can you remove the salad from my order
             - I don't want X
             - I don't want X anymore
             - I don't want the X
-            - I want to/Could I cancel my order
             - start over please
             - Let's start again
             - could we reorder?
+            - could we redo my order?
+
         - table for two please
             - also: table for two, please
             - only generate _for_x_cause, unclear what that means
