@@ -115,7 +115,6 @@ Cleanup:
 New Language:
     Hi Pri:
         - Test:
-            I'd like to cancel my drink order
             can we cancel my food?
             Could you cancel the steak I ordered earlier?
             Can you please take the soup off my order

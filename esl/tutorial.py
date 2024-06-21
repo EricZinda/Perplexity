@@ -2602,9 +2602,10 @@ def get_take_see_v_present_transitive_bad_english(context, state, e_introduced_b
 @Predication(vocabulary,
              names=["_cancel_v_1_request"],
              phrases={
-                 "I want to cancel my order":  {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                 "I want to cancel my order":  {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "I'd like to cancel my steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties={'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if x_actor_binding.value is not None and len(x_actor_binding.value) == 1 and x_actor_binding.value[0] == "restaurant":
         # Don't support "You want to cancel my order"
