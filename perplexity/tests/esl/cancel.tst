@@ -23,11 +23,39 @@
             "ID": "3d1735d4-763b-4148-b063-780f0de7e401"
         },
         {
-            "Command": "Can we cancel my food?",
-            "Expected": "Waiter: I have removed a steak from the order for you.\nHost: Sorry, I don't believe I have that order.\nWaiter: What can I get you?",
-            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_food_n_1(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Command": "I don't want steak",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "0107b0e2-625c-4c01-b47b-e802004a11f5"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "8bd78b76-0fb6-4401-8b7d-a70abea6ad53"
+        },
+        {
+            "Command": "table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "94d3ad53-f6b5-4ffb-a808-4579a7eef114"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "604f2afa-1fff-4516-b145-519dc36c4306"
+        },
+        {
+            "Command": "Can we cancel my food?",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: Sorry, I don't believe I have that order.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_food_n_1(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "4290a110-2531-4102-bf1d-c32fcf5d8678"
         },
         {
             "Command": "/reset",
@@ -304,14 +332,14 @@
         },
         {
             "Command": "can you cancel 2 soups",
-            "Expected": "Waiter: I have removed a soup from the order for Johnny.\nHost: Sorry, I don't believe you've ordered 1 of the soup you want to cancel.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I have removed a soup from the order for Johnny.\nWaiter: Sorry, I don't believe you've ordered 1 of the soup you want to cancel.\nWaiter: What can I get you?",
             "Tree": "udef_q(x11,[_soup_n_1(x11), card(2,e17,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "b43f0b8c-c373-4b88-8b54-4cfafd73873c"
         },
         {
             "Command": "can you cancel a soup",
-            "Expected": "Host: Sorry, I don't believe I have that order.\nWaiter: What can I get you?",
+            "Expected": "Waiter: Sorry, I don't believe I have that order.\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "df5c1b8d-5c1d-4b6a-b30d-913c162e20d1"
@@ -346,28 +374,28 @@
         },
         {
             "Command": "can I cancel the order?",
-            "Expected": "Waiter: I have removed the order for you.\nHost: Sorry, I don't believe there is an order for Johnny.\nHost: Sorry, I don't believe there is an order for you and Johnny together.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I have removed the order for you.\nWaiter: Sorry, I don't believe there is an order for Johnny.\nWaiter: Sorry, I don't believe there is an order for you and Johnny together.\nWaiter: What can I get you?",
             "Tree": "_the_q(x11,_order_n_of(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "76824b9c-a62c-45e7-89b7-08dec4c49371"
         },
         {
             "Command": "Can I cancel my order",
-            "Expected": "Host: Sorry, I don't believe there is an order for you.\nWaiter: What can I get you?",
+            "Expected": "Waiter: Sorry, I don't believe there is an order for you.\nWaiter: What can I get you?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "fbc708f0-b68e-478d-8f0a-150d448dc3b3"
         },
         {
             "Command": "Can I cancel our order",
-            "Expected": "Host: Sorry, I don't believe there is an order for you.\nHost: Sorry, I don't believe there is an order for Johnny.\nWaiter: What can I get you?",
+            "Expected": "Waiter: Sorry, I don't believe there is an order for you.\nWaiter: Sorry, I don't believe there is an order for Johnny.\nWaiter: What can I get you?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "679084ad-c7f3-42bd-b1fa-a97a12e6d66b"
         },
         {
             "Command": "Can I cancel the order for me",
-            "Expected": "WRONG Host: Sorry, I don't believe there is an order for you.\nHost: Sorry, I don't believe there is an order for Johnny.\nHost: Sorry, I don't believe there is an order for you and Johnny together.\nWaiter: What can I get you?",
+            "Expected": "WRONG Waiter: Sorry, I don't believe there is an order for you.\nWaiter: Sorry, I don't believe there is an order for Johnny.\nWaiter: Sorry, I don't believe there is an order for you and Johnny together.\nWaiter: What can I get you?",
             "Tree": "_the_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "342daede-7db9-493b-9481-3be490fbfbeb"

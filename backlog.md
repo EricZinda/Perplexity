@@ -115,18 +115,18 @@ Cleanup:
 New Language:
     Hi Pri:
         - Test:
-            can we cancel my food?
             Could you cancel the steak I ordered earlier?
             Can you please take the soup off my order
             can you cancel the pizza I requested
 
         - Work through cancelling order language
+            - I don't want X
+                -> translate neg(e2,_want_v_1(e10,x3,x11)) to _cancel_v_1
+
             - Issues:
                 - "cancel the order for me" --> "for me" isn't implemented as possessive
             - can you remove the salad from my order
-            - I don't want X
             - I don't want X anymore
-            - I don't want the X
             - start over please
             - Let's start again
             - could we reorder?

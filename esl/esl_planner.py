@@ -627,7 +627,7 @@ def cancel_group_group(state, context, group_who, group_what, what_size_constrai
                         # there was no order
                         person_name = convert_to_english(state, order_person)
                         tasks += [('respond', context,
-                                     s("Host: Sorry, I don't believe there is an order for {*person_name:}."))]
+                                     s("Waiter: Sorry, I don't believe there is an order for {*person_name:}."))]
 
             continue
 
@@ -653,13 +653,13 @@ def cancel_group_group(state, context, group_who, group_what, what_size_constrai
         if not found_what:
             item = convert_to_english(state, what)
             tasks += [('respond', context,
-                         s("Host: Sorry, I don't believe I have that order."))]
+                         s("Waiter: Sorry, I don't believe I have that order."))]
 
         # Couldn't cancel everything so ...
         if remaining_cancel > 0:
             item = convert_to_english(state, what)
             if what_size_constraint > remaining_cancel:
-                tasks.append(('respond', context, s("Host: Sorry, I don't believe you've ordered {*remaining_cancel:} of {the *item:} you want to cancel.")))
+                tasks.append(('respond', context, s("Waiter: Sorry, I don't believe you've ordered {*remaining_cancel:} of {the *item:} you want to cancel.")))
             else:
                 # already given a message for this case
                 pass

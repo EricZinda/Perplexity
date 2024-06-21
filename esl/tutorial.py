@@ -355,6 +355,33 @@ def can_to_able_transitive_transformer_indir_obj():
                             removed=["_can_v_modal", target], production=production)
 
 
+
+
+
+# ******** Transforms "I don't want x" to "I cancel x" ************
+# Convert:
+#            ┌────── _salad_n_1(x11)
+# _a_q(x11,RSTR,BODY)               ┌────── pron(x3)
+#                 └─ pronoun_q(x3,RSTR,BODY)         ┌─ _want_v_1(e10,x3,x11)
+#                                        └─ neg(e2,ARG1)
+#
+@Transform(vocabulary)
+def dont_want_to_cancel_transformer():
+    production = TransformerProduction(name="_cancel_v_1", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+
+    target_predication = TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", "x"], args_capture=["target_e", "x1", "x2"])
+    target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+
+    return TransformerMatch(name_pattern="neg",
+                            args_pattern=["e", target],
+                            args_capture=["e1", None],
+                            removed=["neg", "want_v_1"],
+                            production=conjuct_production)
+
+
+
 # can i pay the bill
 @Transform(vocabulary)
 def can_pay_object_transformer():
@@ -2603,9 +2630,10 @@ def get_take_see_v_present_transitive_bad_english(context, state, e_introduced_b
 @Predication(vocabulary,
              names=["_cancel_v_1"],
              phrases={
+                 "I don't want a salad": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                  "Cancel my steak": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties={'SF': ['comm', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _cancel_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     yield from _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
 

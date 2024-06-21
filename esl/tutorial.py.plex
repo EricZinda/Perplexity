@@ -2366,6 +2366,13 @@
     },
     "_cancel_v_1": {
         "Phrases": {
+            "I don't want a salad": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "Cancel my steak": {
                 "SF": "comm",
                 "TENSE": "pres",
@@ -2377,6 +2384,13 @@
         "Properties": [
             {
                 "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
                 "TENSE": "pres",
                 "MOOD": "indicative",
                 "PROG": "-",
