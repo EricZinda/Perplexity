@@ -120,13 +120,10 @@ New Language:
             can you cancel the pizza I requested
 
         - Work through cancelling order language
-            - I don't want X
-                -> translate neg(e2,_want_v_1(e10,x3,x11)) to _cancel_v_1
-
+            - I don't want X anymore
             - Issues:
                 - "cancel the order for me" --> "for me" isn't implemented as possessive
             - can you remove the salad from my order
-            - I don't want X anymore
             - start over please
             - Let's start again
             - could we reorder?

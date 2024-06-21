@@ -2169,6 +2169,11 @@ def def_implicit_q(context, state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
+@Predication(vocabulary, names=["_anymore_a_1"])
+def _anymore_a_1(context, state, e_introduced_binding, e_binding):
+    yield state
+
+
 @Predication(vocabulary, names=["_just_a_1"])
 def _just_a_1(context, state, e_introduced_binding, e_binding):
     yield state

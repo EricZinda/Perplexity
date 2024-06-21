@@ -23,9 +23,9 @@
             "ID": "3d1735d4-763b-4148-b063-780f0de7e401"
         },
         {
-            "Command": "I don't want steak",
+            "Command": "I don't want steak anymore",
             "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
-            "Tree": "udef_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1(e2,x3,x11)]))",
+            "Tree": "udef_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),[_anymore_a_1(e16,e10), event_replace(u99,e2,e10), _cancel_v_1(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "0107b0e2-625c-4c01-b47b-e802004a11f5"
         },
