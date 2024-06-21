@@ -2363,5 +2363,28 @@
     },
     "_cancel_v_1_request_group": {
         "PropertiesFrom": "_cancel_v_1_request_group"
+    },
+    "_cancel_v_1": {
+        "Phrases": {
+            "Cancel my steak": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_cancel_v_1_group": {
+        "PropertiesFrom": "_cancel_v_1_group"
     }
 }

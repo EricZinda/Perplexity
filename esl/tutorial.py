@@ -2599,6 +2599,24 @@ def get_take_see_v_present_transitive_bad_english(context, state, e_introduced_b
     if False:
         yield None
 
+
+@Predication(vocabulary,
+             names=["_cancel_v_1"],
+             phrases={
+                 "Cancel my steak": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _cancel_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    yield from _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
+
+
+@Predication(vocabulary,
+             names=["solution_group__cancel_v_1"],
+             properties_from=_cancel_v_1)
+def _cancel_v_1_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+    yield from cancel_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)
+
+
 @Predication(vocabulary,
              names=["_cancel_v_1_request"],
              phrases={
