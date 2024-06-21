@@ -171,7 +171,9 @@ task_methods.append(['describe_item', describe_item_list, describe_item])
 def oxford_comma(words):
     if isinstance(words, str):
         return words
-    if len(words) == 1:
+    if len(words) == 0:
+        return ""
+    elif len(words) == 1:
         return words[0]
     elif len(words) == 2:
         return '{} and {}'.format(words[0], words[1])
@@ -180,6 +182,15 @@ def oxford_comma(words):
 
 
 def convert_to_english(state, what):
+    if isinstance(what, (tuple, list)):
+        items = [convert_to_english_item(state, item) for item in what]
+        return f"{oxford_comma(items)} together"
+
+    else:
+        return convert_to_english_item(state, what)
+
+
+def convert_to_english_item(state, what):
     if is_concept(what):
         return what.render_english()
 

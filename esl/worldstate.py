@@ -502,6 +502,15 @@ class SetKnownPriceOp(object):
         state.mutate_remove_unknown_price(self.toAdd)
 
 
+class CancelOrderItemOp(object):
+    def __init__(self, person, item):
+        self.person = person
+        self.item = item
+
+    def apply_to(self, state):
+        state.mutate_clear_item_from_order(self.person, self.item)
+
+
 class ResetOrderAndBillOp(object):
     def apply_to(self, state):
         state.mutate_clear_last_order()
@@ -648,6 +657,9 @@ class ESLConcept(Concept):
         # ... and return them wrapped in a Concept() with the same criteria
         return [ESLConcept(x) for x in raw_concepts]
 
+    def mutually_entailed(self, context, state, equivalent_concept):
+        return self.entailed_by(context, state, equivalent_concept) and equivalent_concept.entailed_by(context, state, self)
+
     def entailed_by(self, context, state, smaller_concept):
         return smaller_concept.entails(context, state, self)
 
@@ -694,7 +706,7 @@ class ESLConcept(Concept):
     # Another word for entailment is "implication" or "consequence". I.e. the truth of A implies the truth of B
     #
     # If we can't prove it formally, we will approximate (meaning it may be wrong) using a kind of inductive
-    # reasoning: determine entailment by seeing if all larger_concept instances are also self instances.
+    # reasoning: determine entailment by seeing if all these instances are also larger_concept instances
     def entails(self, context, state, larger_concept):
         # Special case we can prove formally if:
         # 1. larger concept is really just one criteria: object sortOf concept_name
@@ -1019,6 +1031,17 @@ class WorldState(State):
                 new_relation["valueOf"][i] = (addition + new_relation["valueOf"][i][0], "bill1")
         world_state._rel = new_relation
 
+    def mutate_clear_item_from_order(self, person, item):
+        world_state = self.world_state_frame()
+        new_relation = copy.deepcopy(world_state._rel)
+        subtract = 0
+        new_relation["ordered"].remove((person, item, None))
+        order_type = instance_of_what(self, item)
+        if order_type in self.sys["prices"]:
+            subtract += self.sys["prices"][order_type]
+        world_state._rel = new_relation
+        self.mutate_add_bill(-subtract)
+
     def mutate_clear_last_order(self, for_person=None):
         if for_person is not None and not isinstance(for_person, (list, tuple)):
             for_person = (for_person, )
@@ -1087,13 +1110,14 @@ class WorldState(State):
             if sort_of(self, who_item[1], ["food"]):
                 yield who_item
 
-    def ordered_but_not_delivered(self):
+    def ordered_but_not_delivered(self, for_person=None):
         for who_item in self.all_rel("ordered"):
             if who_item[1] in rel_objects(self, who_item[0], "have"):
                 # They already got this item
                 continue
             else:
-                yield who_item
+                if for_person is None or who_item[0] == for_person:
+                    yield who_item
 
     def only_ordered_not_delivered_water_or_menus(self):
         has_items = False

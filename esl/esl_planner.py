@@ -6,7 +6,8 @@ from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type,
     AddBillOp, DeleteRelOp, \
     find_unused_item, ResetOrderAndBillOp, object_to_store, \
     find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria, rel_objects, \
-    ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept, orderable_concepts, requestable_concepts_by_sort
+    ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept, orderable_concepts, requestable_concepts_by_sort, \
+    CancelOrderItemOp, rel_all_instances
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation, ResponseLocation
 from perplexity.set_utilities import Measurement
@@ -585,6 +586,104 @@ def satisfy_want_fail(state, context, who, what, min_size):
 gtpyhop.declare_task_methods('satisfy_want', satisfy_want_group_group, satisfy_want_fail)
 
 
+def cancel_group_group(state, context, group_who, group_what, what_size_constraint):
+    # This will be actual instances that were ordered
+    who_ordereditems = state.ordered_but_not_delivered()
+
+    tasks = []
+    canceled_by_person = {}
+    for index in range(len(group_what)):
+        what_list = group_what[index]
+        if len(what_list) > 1:
+            # Since it is unclear what cancelling them "together" means, we force each solution to have only one "what"
+            # If any has more than one we halt and let the system give us a different solution group
+            return
+
+        # At this point, "what" is a single concept
+        what = what_list[0]
+        remaining_cancel = what_size_constraint
+
+        # If "Can I cancel x for somebody" or "my x" we need to fixup the "who" to be "somebody"
+        # Note that "somebody" could be "my son and me", i.e. more than one person
+        target_criteria = what.find_criteria(noop_criteria, "targetPossession", None)
+        if target_criteria is not None:
+            who_list = target_criteria[2]
+        else:
+            who_list = group_who[index]
+
+        # See if the customer wants to cancel any of the orders
+        orders_to_cancel = what.instances(context, state, rel_all_instances(state, None, "order"))
+        if len(orders_to_cancel) > 0:
+            for order in orders_to_cancel:
+                person = [item for item in rel_subjects(state, "have", order)]
+                if len(person) == 1:
+                    order_person = person[0]
+                    if len([item for item in state.ordered_but_not_delivered(for_person=order_person)]) > 0:
+                        if order_person not in canceled_by_person:
+                            canceled_by_person[order_person] = []
+                        canceled_by_person[order_person].append(order)
+                        tasks.append(('reset_order_and_bill_for_person', context, order_person))
+                    else:
+                        # there was no order
+                        person_name = convert_to_english(state, order_person)
+                        tasks += [('respond', context,
+                                     s("Host: Sorry, I don't believe there is an order for {*person_name:}."))]
+
+            continue
+
+        # If we have a "who" for an item, then we need to cancel that item for them
+        # if there is no "who" it could be anyone
+        found_what = False
+        for who_ordereditem in who_ordereditems:
+            # If what they said references this instance, cancel it
+            if what.instances(context, state, [who_ordereditem[1]]):
+                # Remember what we've canceled, organized by person so we can
+                # tell the customer
+                if who_ordereditem[0] not in canceled_by_person:
+                    canceled_by_person[who_ordereditem[0]] = []
+                canceled_by_person[who_ordereditem[0]].append(who_ordereditem[1])
+
+                # Now actually cancel it
+                tasks.append(('cancel_order_item', context, who_ordereditem[0], who_ordereditem[1]))
+                found_what = True
+                remaining_cancel -= 1
+                if remaining_cancel == 0:
+                    break
+
+        if not found_what:
+            item = convert_to_english(state, what)
+            tasks += [('respond', context,
+                         s("Host: Sorry, I don't believe you've ordered {a *item:}."))]
+
+        # Couldn't cancel everything so ...
+        if remaining_cancel > 0:
+            item = convert_to_english(state, what)
+            if what_size_constraint > remaining_cancel:
+                tasks.append(('respond', context, s("Host: Sorry, I don't believe you've ordered {*remaining_cancel:} of {the *item:} you want to cancel.")))
+            else:
+                # already given a message for this case
+                pass
+
+    if len(canceled_by_person) > 0:
+        final = []
+        for key_value in canceled_by_person.items():
+            person = convert_to_english(state, key_value[0])
+            if sort_of(state, key_value[1], "order"):
+                final.append(s("the order for {*person:}"))
+            else:
+                items = oxford_comma([convert_to_english(state, item) for item in key_value[1]])
+                final.append(s("{a *items:} from the order for {*person:}"))
+
+        final_text = oxford_comma(final)
+        tasks.insert(0, ('respond', context,
+                         s("Waiter: I have removed {*final_text}.")))
+
+    return tasks + [('reprompt', context)]
+
+
+gtpyhop.declare_task_methods('cancel', cancel_group_group)
+
+
 ###############################################################################
 # Actions: Update state to a new value
 def respond(state, context, message):
@@ -617,6 +716,10 @@ def add_bill(state, context, wanted):
     return state.apply_operations([AddBillOp(wanted)])
 
 
+def cancel_order_item(state, context, for_person, item):
+    return state.apply_operations([CancelOrderItemOp(for_person, item)])
+
+
 def reset_order_and_bill(state, context):
     return state.apply_operations([ResetOrderAndBillOp()])
 
@@ -640,7 +743,7 @@ def add_plan_local(state, context, name, value):
     return state.apply_operations([SetXOperation("plan_locals", (next_current, ))])
 
 
-gtpyhop.declare_actions(respond, respond_location, respond_has_more, add_rel, delete_rel, set_response_state, add_bill, reset_order_and_bill, reset_order_and_bill_for_person, reprompt, add_plan_local)
+gtpyhop.declare_actions(respond, respond_location, respond_has_more, add_rel, delete_rel, set_response_state, add_bill, cancel_order_item, reset_order_and_bill, reset_order_and_bill_for_person, reprompt, add_plan_local)
 
 add_declarations(gtpyhop)
 

@@ -2617,10 +2617,42 @@ def _cancel_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_ob
     yield from _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
 
 
+# def _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+#     def bound(x_actor, x_object):
+#         # We support "Can/Could I/we/you cancel my/Johnnys order"
+#         if (is_user_type(x_actor) or is_computer_type(x_actor)) and not is_concept(x_object) and sort_of(state, x_object, "order"):
+#             return True
+#
+#         else:
+#             context.report_error(["dontKnowHow"])
+#
+#     def actor_from_object(x_object):
+#         if False:
+#             yield None
+#
+#     def object_from_actor(x_actor):
+#         if False:
+#             yield None
+#
+#     for new_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object, object_from_actor):
+#         # First figure out who this order belongs to
+#         order = new_state.get_binding(x_object_binding.variable.name).value[0]
+#         owner_list = [x for x in rel_subjects(state, "have", object_to_store(order))]
+#         owners = owner_list[0]
+#         names = [convert_to_english(state, owners)] if not isinstance(owners, tuple) else [convert_to_english(state, owner) for owner in owners]
+#
+#         yield new_state.record_operations([ResetOrderAndBillForPersonOp(owners),
+#                                            RespondOperation(f"Waiter: No problem! Let me know what {' and '.join(names)} would like instead.")])
+
+
+# "Cancel the steak"
+# "Cancel the order" --> means cancel both orders
+# "Cancel my steak"
+# "Cancel our steaks"
 def _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def bound(x_actor, x_object):
-        # We support "Can/Could I/we/you cancel my/Johnnys order"
-        if (is_user_type(x_actor) or is_computer_type(x_actor)) and not is_concept(x_object) and sort_of(state, x_object, "order"):
+        # We support "Can/Could I/we/you cancel my/Johnnys [order | thing you can order]"
+        if (is_user_type(x_actor) or is_computer_type(x_actor)) and is_concept(x_object) and x_object.entails_which(context, state, cancellable):
             return True
 
         else:
@@ -2634,15 +2666,51 @@ def _cancel_helper(context, state, e_introduced_binding, x_actor_binding, x_obje
         if False:
             yield None
 
-    for new_state in in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object, object_from_actor):
-        # First figure out who this order belongs to
-        order = new_state.get_binding(x_object_binding.variable.name).value[0]
-        owner_list = [x for x in rel_subjects(state, "have", object_to_store(order))]
-        owners = owner_list[0]
-        names = [convert_to_english(state, owners)] if not isinstance(owners, tuple) else [convert_to_english(state, owner) for owner in owners]
+    cancellable = orderable_concepts(state) + [ESLConcept("order")]
+    yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object, object_from_actor)
 
-        yield new_state.record_operations([ResetOrderAndBillForPersonOp(owners),
-                                           RespondOperation(f"Waiter: No problem! Let me know what {' and '.join(names)} would like instead.")])
+
+@Predication(vocabulary,
+             names=["solution_group__cancel_v_1_able"],
+             properties_from=_cancel_v_1_able)
+def _cancel_v_1_able_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+    yield from cancel_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)
+
+
+def cancel_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+    current_state = copy.deepcopy(state_list[0])
+    if is_concept(x_actor_variable_group.solution_values[0]):
+        # This solution group handler requires non-conceptual actors
+        context.report_error(["formNotUnderstood"])
+        return
+
+    # In fact, we *never* deal with cancelling a particular instance because that would mean "I don't wnat that particular steak right there"
+    # and we don't support that
+    # These are concepts. Only need to check the first because:
+    # If one item in the group is a concept, they all are
+    # x_what_variable_group.solution_values[0].value can be None if it is scoped under negation
+    if x_what_variable_group.solution_values[0].value is not None and is_concept(x_what_variable_group.solution_values[0].value[0]):
+        concept = x_what_variable_group.solution_values[0].value[0]
+
+        # Checking to make sure the constraints are valid for this concept
+        # is done in the planner
+        # Even though it is only one type of thing, they could have said something like "We want steaks"
+        # so they really want more than one instance
+        what_list = variable_group_values_to_list(x_what_variable_group)
+        actor_list = [[None]] * len(what_list)
+        current_state = do_task(current_state.world_state_frame(),
+                                [('cancel',
+                                  context,
+                                  actor_list,
+                                  what_list,
+                                  min_from_variable_group(x_what_variable_group))])
+        if current_state:
+            yield [current_state]
+
+    else:
+        # This handler doesn't deal with wants of instances, but others might
+        context.report_error(["formNotUnderstood"])
+        return
 
 
 @Predication(vocabulary,

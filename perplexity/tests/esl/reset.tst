@@ -48,7 +48,7 @@
         },
         {
             "Command": "Could I cancel my order?",
-            "Expected": "Waiter: No problem! Let me know what you would like instead.",
+            "Expected": "Host: Sorry, I don't believe there is an order for you.\nWaiter: Can I get you anything else?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "e9ee1777-a400-43fe-a45c-6071f430831b"
@@ -72,7 +72,7 @@
         },
         {
             "Command": "Can Johnny cancel Johnny's order?",
-            "Expected": "Waiter: No problem! Let me know what Johnny would like instead.",
+            "Expected": "Waiter: I have removed the order for Johnny.\nWaiter: What can I get you?",
             "Tree": "proper_q(x14,named(Johnny,x14),def_explicit_q(x12,[_order_n_of(x12), poss(e23,x12,x14)],proper_q(x3,named(Johnny,x3),[event_replace(u99,e2,e11), _cancel_v_1_able(e2,x3,x12)])))",
             "Enabled": true,
             "ID": "cb96f3e5-22db-4d92-b848-10ba1ce864ad"
@@ -100,7 +100,7 @@
         },
         {
             "Command": "Can you cancel our order?",
-            "Expected": "Waiter: No problem! Let me know what you and Johnny would like instead.",
+            "Expected": "Waiter: I have removed the order for you and the order for Johnny.\nWaiter: What can I get you?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "1e6e3c7e-0959-4bac-93d6-bd5c19b6f7b6"
@@ -114,7 +114,7 @@
         },
         {
             "Command": "Can Johnny cancel his order?",
-            "Expected": "Waiter: No problem! Let me know what Johnny would like instead.",
+            "Expected": "Host: Sorry, I don't believe there is an order for Johnny.\nWaiter: What can I get you?",
             "Tree": "def_explicit_q(x12,pronoun_q(x18,pron(x18),[_order_n_of(x12), poss(e17,x12,x18)]),proper_q(x3,named(Johnny,x3),[event_replace(u99,e2,e11), _cancel_v_1_able(e2,x3,x12)]))",
             "Enabled": true,
             "ID": "8979dc57-2c4a-4a77-bbc2-6340ba4a94c6"

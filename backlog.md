@@ -16,7 +16,8 @@ Bugs:
         - "Did I order a steak for my son?" -> I'm not sure what that means.
         - USER: I don't want the chicken -> yes that is true
             - That isn't true, there isn't the chicken that isn't the chicken
-
+        - what is the green thing/what is the green item
+            - don't work
     Low Pri:
         - Figure out how to make "I want 2 steaks and 1 salad" work
             - It only sends 1 steak to order
@@ -114,15 +115,22 @@ Cleanup:
 New Language:
     Hi Pri:
         - Work through cancelling order language
-            - Can we cancel my X?
-            - I want to cancel my X
-            - I don't want X anymore?
+            - Implementation
+                - Check the concepts being cancelled against the orders
+                - Issues:
+                    - "my steak" --> things in the order don't have a possessive yet
+                    - "cancel the order for me" --> for me isn't implemented as possessive
+            - Update cancel_v to handle items, should be the same logic as for "want_v"
+                - Can we cancel my X?
+                - I want to cancel my X
+
+            - I don't want X
+            - I don't want X anymore
             - I don't want the X
             - I want to/Could I cancel my order
             - start over please
             - Let's start again
             - could we reorder?
-            - I don't want X
         - table for two please
             - also: table for two, please
             - only generate _for_x_cause, unclear what that means

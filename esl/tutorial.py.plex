@@ -2343,5 +2343,8 @@
     "_vegetarian_a_1_concepts_menu_group": {
         "PropertiesFrom": "_vegetarian_a_1_concepts_menu_group"
     },
-    "_thankyou_v_1": {}
+    "_thankyou_v_1": {},
+    "_cancel_v_1_able_group": {
+        "PropertiesFrom": "_cancel_v_1_able_group"
+    }
 }

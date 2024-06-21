@@ -1,0 +1,173 @@
+{
+    "WorldName": "esl",
+    "TestItems": [
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "8f560020-3575-4937-b66d-353a3fa6e2af"
+        },
+        {
+            "Command": "table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "05414b48-6673-4def-8422-ac616ab9cf7c"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "3d1735d4-763b-4148-b063-780f0de7e401"
+        },
+        {
+            "Command": "Can you cancel the steak?",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
+            "Tree": "_the_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "96b53b1a-cfb2-40ae-bee4-25c4db214349"
+        },
+        {
+            "Command": "I ordered a steak",
+            "Expected": "you did not order a steak  \nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "3e4874e5-bf9c-4597-83b0-7aafafd0a21e"
+        },
+        {
+            "Command": "how much is soup?",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),udef_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "61d2c9e6-64e1-42a3-9914-7b44f37bec2c"
+        },
+        {
+            "Command": "my son wants soup",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "6bf6d2c3-ee55-4a9d-9f9f-354195fa57e4"
+        },
+        {
+            "Command": "can you cancel the soup for my son?",
+            "Expected": "Waiter: I have removed a soup from the order for Johnny.\nWaiter: What can I get you?",
+            "Tree": "_the_q(x11,def_explicit_q(x17,pronoun_q(x23,pron(x23),[_son_n_of(x17,i28), poss(e22,x17,x23)]),[_soup_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "7965167a-13e6-415c-8454-c618823d580b"
+        },
+        {
+            "Command": "we want soups",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "fc0a369b-1ccc-48e5-a417-7c050872c042"
+        },
+        {
+            "Command": "can you cancel the soups?",
+            "Expected": "Waiter: I have removed a soup from the order for you and a soup from the order for Johnny.\nWaiter: What can I get you?",
+            "Tree": "_the_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "83f3ef6a-cb89-4f5b-bdfc-dd8122f5e3d1"
+        },
+        {
+            "Command": "we want soups",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "1a0f577d-8d9e-4ef1-bb23-799b6d2a6f58"
+        },
+        {
+            "Command": "can you cancel a soup?",
+            "Expected": "Waiter: I have removed a soup from the order for you.\nWaiter: Can I get you anything else?",
+            "Tree": "_a_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "a78d6fee-afb5-4075-ac52-69c2cf5543ba"
+        },
+        {
+            "Command": "can you cancel 2 soups",
+            "Expected": "Waiter: I have removed a soup from the order for Johnny.\nHost: Sorry, I don't believe you've ordered 1 of the soup you want to cancel.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x11,[_soup_n_1(x11), card(2,e17,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "b43f0b8c-c373-4b88-8b54-4cfafd73873c"
+        },
+        {
+            "Command": "can you cancel a soup",
+            "Expected": "Host: Sorry, I don't believe you've ordered a soup.\nWaiter: What can I get you?",
+            "Tree": "_a_q(x11,_soup_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "df5c1b8d-5c1d-4b6a-b30d-913c162e20d1"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "d12cda31-cf7b-4187-986e-afe4f626450d"
+        },
+        {
+            "Command": "my son wants soup",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "ab0fa8c7-e4d4-46dd-9cdc-7da1e23a49d6"
+        },
+        {
+            "Command": "can you cancel the steak and the soup",
+            "Expected": "Waiter: I have removed a steak from the order for you and a soup from the order for Johnny.\nWaiter: What can I get you?",
+            "Tree": "udef_q(x11,_the_q(x16,_steak_n_1(x16),_the_q(x21,_soup_n_1(x21),_and_c(x11,x16,x21))),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "7dded3de-5d55-4ebb-a5eb-435e78a02406"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "6a3fd744-8f7e-44c9-b622-29ed557f1b83"
+        },
+        {
+            "Command": "can I cancel the order?",
+            "Expected": "Waiter: I have removed the order for you.\nHost: Sorry, I don't believe there is an order for Johnny.\nHost: Sorry, I don't believe there is an order for you and Johnny together.\nWaiter: What can I get you?",
+            "Tree": "_the_q(x11,_order_n_of(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "76824b9c-a62c-45e7-89b7-08dec4c49371"
+        },
+        {
+            "Command": "Can I cancel my order",
+            "Expected": "Host: Sorry, I don't believe there is an order for you.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "fbc708f0-b68e-478d-8f0a-150d448dc3b3"
+        },
+        {
+            "Command": "Can I cancel our order",
+            "Expected": "Host: Sorry, I don't believe there is an order for you.\nHost: Sorry, I don't believe there is an order for Johnny.\nWaiter: What can I get you?",
+            "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "679084ad-c7f3-42bd-b1fa-a97a12e6d66b"
+        },
+        {
+            "Command": "Can I cancel the order for me",
+            "Expected": "WRONG Host: Sorry, I don't believe there is an order for you.\nHost: Sorry, I don't believe there is an order for Johnny.\nHost: Sorry, I don't believe there is an order for you and Johnny together.\nWaiter: What can I get you?",
+            "Tree": "_the_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "342daede-7db9-493b-9481-3be490fbfbeb"
+        },
+        {
+            "Command": "I want salmon",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_salmon_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "95391939-c921-495c-96cb-fa2577b61de4"
+        },
+        {
+            "Command": "can I cancel the grilled item?",
+            "Expected": "Waiter: I have removed a salmon from the order for you.\nWaiter: What can I get you?",
+            "Tree": "_the_q(x11,[_thing_n_of-about(x11,i18), _grill_v_1(e16,i17,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "8bced605-d89d-42ce-854a-0ba4b5679c4f"
+        }
+    ]
+}
