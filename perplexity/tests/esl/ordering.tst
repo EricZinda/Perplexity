@@ -429,7 +429,7 @@
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "you did not order a steak  \nWaiter: What can I get you?",
+            "Expected": "a steak is not ordered. \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "13ce708f-ec2a-41f8-b2dd-416711a3b810"
@@ -481,7 +481,7 @@
         },
         {
             "Command": "I ordered the steak",
-            "Expected": "Yes, that is true.(there are more)",
+            "Expected": "Yes, that is true.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "10f63f95-11f4-48d0-b722-94c8bc3e5d53"
@@ -974,7 +974,7 @@
         },
         {
             "Command": "I ordered 3 steaks",
-            "Expected": "you did not order 3 steak  \nWaiter: What can I get you?",
+            "Expected": "3 steak are not ordered. \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(3,e14,x8)],_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "326fcaba-7595-4143-9309-9142c06b5607"

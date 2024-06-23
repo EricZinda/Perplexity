@@ -116,6 +116,11 @@ New Language:
     Hi Pri:
         - Test:
             Could you cancel the steak I ordered earlier?
+                Requires implementing:
+                        ┌──── more_comp(e29,e28)
+                        │ ┌── time_n(x23)
+               ── and(0,1,2)
+                           └ _early_a_1(e28,x23)
             Can you please take the soup off my order
             can you cancel the pizza I requested
 

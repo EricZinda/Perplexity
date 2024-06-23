@@ -10,7 +10,7 @@
         },
         {
             "Command": "The soup is smoked",
-            "Expected": "I'm not sure which thing you mean.",
+            "Expected": "the soup is not smoked.",
             "Tree": "_the_q(x3,_soup_n_1(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "0494e3db-dfae-4a1f-aeeb-f08560e495b7"
