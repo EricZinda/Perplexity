@@ -2421,5 +2421,25 @@
                 "PERF": "-"
             }
         ]
+    },
+    "_requested_v_1_attributive": {
+        "Phrases": {
+            "The steak I requested is rare": {
+                "SF": "prop",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
     }
 }

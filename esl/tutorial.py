@@ -1656,6 +1656,17 @@ ordered_concepts_attributive = PastParticipleConcepts(["_order_v_1"], "ordered",
 
 
 @Predication(vocabulary,
+             names=["_request_v_1"],
+             phrases={
+                "The steak I requested is rare": {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             )
+def _requested_v_1_attributive(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
+    yield from ordered_concepts_attributive.predicate_function(context, state, e_introduced_binding, x_actor_binding, x_target_binding)
+
+
+@Predication(vocabulary,
              names=ordered_concepts_attributive.predicate_name_list,
              phrases={
                 "The steak I ordered is rare": {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}

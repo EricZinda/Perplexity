@@ -30,6 +30,20 @@
             "ID": "03c23b2b-5df1-4747-be7f-20524c7710db"
         },
         {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "74716e8b-bc7b-4aca-9197-0485f52689a6"
+        },
+        {
+            "Command": "Cancel the steak I requested",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x14,pron(x14),pronoun_q(x3,pron(x3),_the_q(x8,[_steak_n_1(x8), _request_v_1(e18,x14,x8)],_cancel_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "f785d958-1cb8-46e7-856d-6974c678d731"
+        },
+        {
             "Command": "/reset",
             "Expected": "",
             "Tree": "None",
