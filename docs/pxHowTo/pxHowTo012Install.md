@@ -89,3 +89,5 @@ On the (very rare) chance you will need to compile an ERG grammar, here are the 
    2a. To get the latest (but no commitment on quality) grammar: http://svn.delph-in.net/erg/trunk
 3. cd 2020/ace
 4. ace -G grammar.dat -g ./config.tdl
+5. The grammar file will be called 'grammar.dat' in the 2020/ace folder
+

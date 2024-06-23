@@ -1,5 +1,8 @@
 Bugs:
     High Pri:
+        - Could we have a table for two, please? doesn't work
+        - Just some water for now, please doesn't work
+        - Not right now, thank you. We'll look at the menu first. doesn't work
         - which chicken menu items do you have? --> pork
                 soup
                 salad

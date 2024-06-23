@@ -864,6 +864,27 @@ def test_can_v_modal(context, state, e_binding, h_target_binding):
     if False:
         yield None
 
+
+@Predication(vocabulary, names=["basic_numbered_hour"])
+def basic_numbered_hour(context, state, c_count, x_binding):
+    def bound_variable(value):
+        if value == c_value:
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield c_value
+
+    if isinstance(c_count, numbers.Number) or (isinstance(c_count, str) and c_count.isnumeric()):
+        c_value = int(c_count)
+        yield from combinatorial_predication_1(context, state,
+                                               x_binding,
+                                               bound_variable,
+                                               unbound_variable)
+
+
 @Predication(vocabulary, names=["_for_p"])
 def _for_p_event(context, state, e_binding, e_target_binding, x_for_binding):
     yield state.add_to_e(e_target_binding.variable.name, "for", {"Value": x_for_binding.value, "Originator": context.current_predication_index()})

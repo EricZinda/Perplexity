@@ -9,11 +9,18 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
-            "Command": "I need a table for 2",
+            "Command": "Could we have a table for two, please?",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x14,card(2,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_need_v_1(e2,x3,x8))))",
+            "Tree": "_a_q(x11,def_implicit_q(x17,basic_numbered_hour(2,x17),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),[_please_a_1(e23,e10), event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
+        },
+        {
+            "Command": "I need a table for 2",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "number_q(x14,card(2,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_need_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "a3857ac3-6002-477d-8e28-dcbed11f60e6"
         },
         {
             "Command": "/new esl.tutorial.reset",
