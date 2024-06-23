@@ -120,7 +120,17 @@ New Language:
             can you cancel the pizza I requested
 
         - Work through cancelling order language
-            - I don't want X anymore
+            - Basically ignore anything like "x I ordered" "x I requested"
+                                                                                   ┌── _steak_n_1(x8)
+                            ┌────── pron(x14)                                      │
+                            │                                          ┌────── and(0,1)
+            pronoun_q(x14,RSTR,BODY)               ┌────── pron(x3)    │             │
+                                 │                 │                   │             └ _order_v_1(e18,x14,x8)
+                                 └─ pronoun_q(x3,RSTR,BODY)            │
+                                                        └─ _the_q(x8,RSTR,BODY)
+                                                                            └─ _cancel_v_1(e2,x3,x8)
+
+            Fix "cancel the steak I ordered" -- it gets to the planner but the concept doesn't worke
             - Issues:
                 - "cancel the order for me" --> "for me" isn't implemented as possessive
             - can you remove the salad from my order

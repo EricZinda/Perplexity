@@ -23,6 +23,34 @@
             "ID": "3d1735d4-763b-4148-b063-780f0de7e401"
         },
         {
+            "Command": "Cancel the steak I ordered",
+            "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x14,pron(x14),pronoun_q(x3,pron(x3),_the_q(x8,[_steak_n_1(x8), _order_v_1(e18,x14,x8)],_cancel_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "03c23b2b-5df1-4747-be7f-20524c7710db"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "7873e315-fd55-452a-855b-70bc576689f4"
+        },
+        {
+            "Command": "table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "683377f6-2ddb-418a-8025-1e78b5366e29"
+        },
+        {
+            "Command": "I want steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "148065bc-4eae-42ed-b59b-962d1800c61d"
+        },
+        {
             "Command": "I don't want steak anymore",
             "Expected": "Waiter: I have removed a steak from the order for you.\nWaiter: What can I get you?",
             "Tree": "udef_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),[_anymore_a_1(e16,e10), event_replace(u99,e2,e10), _cancel_v_1(e2,x3,x11)]))",
@@ -276,7 +304,7 @@
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "you did not order a steak  \nWaiter: What can I get you?",
+            "Expected": "a steak is not ordered. \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "3e4874e5-bf9c-4597-83b0-7aafafd0a21e"

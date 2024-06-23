@@ -2401,5 +2401,25 @@
     "_cancel_v_1_group": {
         "PropertiesFrom": "_cancel_v_1_group"
     },
-    "_anymore_a_1": {}
+    "_anymore_a_1": {},
+    "_ordered_v_1_attributive": {
+        "Phrases": {
+            "The steak I ordered is rare": {
+                "SF": "prop",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "past",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    }
 }

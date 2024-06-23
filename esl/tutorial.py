@@ -804,7 +804,7 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
                     # "steak order" or "food order" or "grilled item order" should all convert to a concept object that yields something that is
                     # in an order
                     item = x_right_binding.value[0]
-                    new_item = item.add_criteria(rel_object_with_rel, None, "ordered")
+                    new_item = item.add_criteria(rel_object_with_rel, "ordered", None)
                     yield state.set_x(x_left_binding.variable.name, (new_item,))
 
                 else:
@@ -1584,11 +1584,14 @@ def _start_v_over_able(context, state, e_introduced_binding, x_who_binding):
 
 
 class PastParticipleConcepts:
-    def __init__(self, predicate_name_list, lemma):
+    def __init__(self, predicate_name_list, lemma, function=None, arg1=None, arg2=None):
         self.predicate_name_list = predicate_name_list
         self.lemma = lemma
+        self.function = function if function is not None else rel_subjects
+        self.arg1 = arg1 if arg1 is not None else "isAdj"
+        self.arg2 = arg2 if arg2 is not None else self.lemma
 
-    def predicate_function(self, context, state, e_introduced_binding, i_binding, x_target_binding):
+    def predicate_function(self, context, state, e_introduced_binding, x_actor_binding, x_target_binding):
         def bound(value):
             if is_concept(value):
                 return True
@@ -1598,9 +1601,9 @@ class PastParticipleConcepts:
                 return False
 
         def unbound():
-            for i in state.all_rel("isAdj"):
-                if object_to_store(i[1]) == self.lemma and is_type(state, i[0]):
-                    yield store_to_object(state, i[0])
+            for i in self.function(state, self.arg1, self.arg2):
+                if is_type(state, i):
+                    yield store_to_object(state, i)
 
         for new_state in combinatorial_predication_1(context, state, x_target_binding,
                                                 bound,
@@ -1610,12 +1613,12 @@ class PastParticipleConcepts:
                 new_value = new_state_x_target_binding.value[0]
 
                 # Add extra criteria to the concept to represent the past participle
-                x_object = new_value.add_criteria(rel_subjects, "isAdj", self.lemma)
+                x_object = new_value.add_criteria(self.function, self.arg1, self.arg2)
 
-                if perplexity.tree.used_predicatively(context, state):
-                    # "The salmon is smoked" interpreted as a concept requires that there is at least one concept of
+                if used_predicatively(context, state):
+                    # "The salmon is smoked" interpreted as a concept requires that there is at least one instance of
                     # "smoked salmom"
-                    if len(x_object.concepts(context, state)) == 0:
+                    if len(x_object.instances(context, state)) == 0:
                         return
 
                 yield state.set_x(x_target_binding.variable.name, (x_object,))
@@ -1649,6 +1652,18 @@ grilled = PastParticipleConcepts(["_grill_v_1"], "grilled")
 roasted = PastParticipleConcepts(["_roast_v_cause"], "roasted")
 smoked_concepts = PastParticipleConcepts(["_smoke_v_1"], "smoked")
 smoked_instances = PastParticipleInstances(["_smoke_v_1"], "smoked")
+ordered_concepts_attributive = PastParticipleConcepts(["_order_v_1"], "ordered", rel_object_with_rel, "ordered", None)
+
+
+@Predication(vocabulary,
+             names=ordered_concepts_attributive.predicate_name_list,
+             phrases={
+                "The steak I ordered is rare": {'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'prop', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             )
+def _ordered_v_1_attributive(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
+    yield from ordered_concepts_attributive.predicate_function(context, state, e_introduced_binding, x_actor_binding, x_target_binding)
 
 
 @Predication(vocabulary,
@@ -2763,7 +2778,9 @@ def cancel_group_helper(context, state_list, e_introduced_binding_list, x_actor_
              },
              properties={'SF': ['ques', 'prop'], 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    if is_concept(x_actor_binding) or is_concept(x_object_binding):
+    predicately = used_predicatively(context, state)
+    if not predicately or (used_predicatively(context, state) and (is_concept(x_actor_binding) or is_concept(x_object_binding))):
+        # Must be used predicately and when used as a predicate these must be instances
         context.report_error(["formNotUnderstood", "_order_v_1_past"])
         return
 

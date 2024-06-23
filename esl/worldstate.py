@@ -431,7 +431,7 @@ def rel_entailed_by(state, _, type):
     yield from all_instances_and_spec(state, type)
 
 
-def rel_object_with_rel(state, _, rel):
+def rel_object_with_rel(state, rel, _):
     for item in state.all_rel(rel):
         yield item[1]
 
