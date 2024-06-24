@@ -182,6 +182,10 @@ class UserInterface(object):
                     else:
                         # No conjuncts to process
                         break
+                else:
+                    # No solutions, break
+                    break
+
             else:
                 break
 

@@ -24,7 +24,7 @@
         },
         {
             "Command": "no",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a water for you.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a water for you.\nWaiter: What can I get you?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "985e2f29-ef3e-4051-9286-1ccce5ccb417"
@@ -52,7 +52,7 @@
         },
         {
             "Command": "no",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a water for Johnny.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a water for Johnny.\nWaiter: What can I get you?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "69804b85-8e4b-4272-b056-313fade47006"

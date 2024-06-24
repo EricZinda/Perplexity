@@ -3,7 +3,7 @@
   "Phrase": "What can I pay?",
   "MRSIndex": 1
  },
- "timestamp": "f6317e0c-6be9-469a-9257-3b8582eb770b",
+ "timestamp": "f786edac-72c4-4a49-95bd-eac4efeb443b",
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: h8 ] [ _pay_v_for LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: i11 ARG3: i12 ] [ _with_p LBL: h9 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x14 [ x PERS: 3 NUM: sg GEND: n IND: - ] ] [ udef_q LBL: h15 ARG0: x14 RSTR: h16 BODY: h17 ] [ _cash_n_1 LBL: h18 ARG0: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h8 qeq h9 h16 qeq h18 > ]": {
   "Phrase": "I want to pay with cash",
   "MRSIndex": 1
@@ -183,5 +183,9 @@
  "[ TOP: h0 INDEX: e2 [ e SF: prop-or-ques ] RELS: < [ unknown LBL: h4 ARG: x5 [ x PERS: 3 NUM: sg IND: + ] ARG0: e2 ] [ udef_q LBL: h6 ARG0: x5 RSTR: h7 BODY: h8 ] [ greet LBL: h9 ARG0: i11 CARG: \"hi\" ] [ discourse LBL: h12 ARG0: e13 [ e SF: prop ] ARG1: h4 ARG2: h9 ] [ _table_n_1 LBL: h14 ARG0: x5 ] [ _for_p LBL: h14 ARG0: e15 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x5 ARG2: x16 [ x PERS: 3 NUM: sg ] ] [ number_q LBL: h17 ARG0: x16 RSTR: h18 BODY: h19 ] [ card LBL: h20 ARG0: x16 ARG1: i22 CARG: \"2\" ] > HCONS: < h0 qeq h1 h7 qeq h14 h18 qeq h20 > ]": {
   "Phrase": "Hi, table for 2",
   "MRSIndex": 3
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 2 IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _have_v_prd LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: sg ] ARG3: h9 ] [ thing LBL: h10 ARG0: x8 ] [ _any_q LBL: h11 ARG0: x8 RSTR: h12 BODY: h13 ] [ _vegetarian_a_1 LBL: h14 ARG0: e15 [ e SF: prop TENSE: untensed MOOD: indicative ] ARG1: x8 ] > HCONS: < h0 qeq h1 h6 qeq h4 h9 qeq h14 h12 qeq h10 > ]": {
+  "Phrase": "do you have anything vegetarian?",
+  "MRSIndex": 1
  }
 }

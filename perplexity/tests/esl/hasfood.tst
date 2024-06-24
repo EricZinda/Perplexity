@@ -66,7 +66,7 @@
         },
         {
             "Command": "no",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a soup for you.\nWaiter: Here is a soup for Johnny.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a soup for you.\nWaiter: Here is a soup for Johnny.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "93a49803-1e03-4f25-9aee-2efcd87e1fa0"
@@ -93,5 +93,5 @@
             "ID": "ea373e12-c8aa-4509-b489-bfaa87c1c6b5"
         }
     ],
-    "ElapsedTime": 9.43758
+    "ElapsedTime": 9.55459
 }

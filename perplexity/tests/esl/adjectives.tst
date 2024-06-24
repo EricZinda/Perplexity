@@ -66,7 +66,7 @@
         },
         {
             "Command": "no",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a salad and soup for you.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a salad and soup for you.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "b5596cde-1097-4c46-9101-bb5534463c3b"
@@ -122,7 +122,7 @@
         },
         {
             "Command": "no",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "587635f9-4727-49de-9aaf-ffed4a6fa579"
@@ -240,5 +240,5 @@
             "ID": "536f65a4-7a11-4838-92ab-ef6166f9472f"
         }
     ],
-    "ElapsedTime": 13.36972
+    "ElapsedTime": 14.67545
 }

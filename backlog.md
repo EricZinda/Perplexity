@@ -1,5 +1,10 @@
+
+
 Bugs:
     High Pri:
+        - how about vegetarian soup? --> I don't know the words: generic_verb, how+about
+            - Need a better error message
+        - "I took too long to understand that, try again" ... need a better message
         - Could we have a table for two, please? doesn't work
         - Just some water for now, please doesn't work
         - Not right now, thank you. We'll look at the menu first. doesn't work
@@ -43,6 +48,8 @@ Bugs:
 Cleanup:
     Hi Pri:
         - very slow
+            - how about a vegetarian soup?
+                also: how about a soup
             - for my son, Johnny, please get the Roasted Chicken
                 - does it ever work?
             - Table (then) Just two, my son Johnny and me.
@@ -117,6 +124,10 @@ Cleanup:
 
 New Language:
     Hi Pri:
+        - could I get a soup? is very slow when you don't know the cost
+        - I don't want anything else.  is very slow
+        - Waiter: What can I get you? --> ?:nothing
+        - how about a soup? --> I don't know the words: generic_verb, how+about
         - Test:
             Could you cancel the steak I ordered earlier?
                 Requires implementing:

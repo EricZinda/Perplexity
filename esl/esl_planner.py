@@ -319,7 +319,7 @@ gtpyhop.declare_task_methods('order_food', order_food_at_entrance, order_food_at
 
 # Go and get all the things that were asked for
 def go_away_and_come_back(state, context):
-    tasks = [("respond", context, "Waiter: I'll be right back!\nA few minutes go by and the robot returns.")]
+    tasks = [("respond", context, "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.")]
 
     # If they ordered something, they now have it
     order_dict = {}

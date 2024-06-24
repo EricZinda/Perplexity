@@ -24,7 +24,7 @@
         },
         {
             "Command": "that will be all",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
             "Tree": "no_standalone(e2)",
             "Enabled": true,
             "ID": "4ee29d7a-4ec4-45ae-be8e-d0735a4718c2"
@@ -38,7 +38,7 @@
         },
         {
             "Command": "that will be all, thank you.",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the robot returns.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x16,pron(x16),[no_standalone(e9)])",
             "Enabled": true,
             "ID": "3eb18b1a-240f-4fea-957b-4e9c98bcbdce"
@@ -282,5 +282,5 @@
             "ID": "fcbf99da-9fa7-4f11-8b24-02f83fd8f4b4"
         }
     ],
-    "ElapsedTime": 30.02049
+    "ElapsedTime": 30.83015
 }

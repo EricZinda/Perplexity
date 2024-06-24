@@ -285,7 +285,7 @@ def SendMessageGetResponse(workItem):
         # We timed out. Note that the worker will continue processing the message, however.
         # If it times out, the worker crashed or is really slow.
         log.critical(f"Timed out waiting for worker: {requestID}")
-        requestObject["Reply"] = "I took too long to understand that. Please try again."
+        requestObject["Reply"] = "Could you try a different wording? That will take me a while to think through."
 
     return requestObject
 
