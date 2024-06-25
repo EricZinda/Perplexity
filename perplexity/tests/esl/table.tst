@@ -114,11 +114,18 @@
             "ID": "13882ec7-3e70-4025-96b7-e5e00b974eb2"
         },
         {
-            "Command": "Hi, could I have a table for 2, please?",
+            "Command": "Hi, I want a table for 2, please?",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x16,number_q(x22,card(2,x22,i28),[_table_n_1(x16), _for_p(e21,x16,x22)]),[_please_a_1(e29,e15), event_replace(u99,e8,e15), _have_v_1_able(e8,x3,x16)]))",
             "Enabled": true,
             "ID": "1fad1ba9-a1c9-43c8-af00-48b7b20cc0d7"
+        },
+        {
+            "Command": "Hi, could I have a table for 2, please?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x16,number_q(x22,card(2,x22,i28),[_table_n_1(x16), _for_p(e21,x16,x22)]),[_please_a_1(e29,e15), event_replace(u99,e8,e15), _have_v_1_able(e8,x3,x16)]))",
+            "Enabled": true,
+            "ID": "5a528908-6309-4d4d-b8e5-b945d5587d7e"
         },
         {
             "Command": "/new esl.tutorial.reset",

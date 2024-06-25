@@ -1,11 +1,11 @@
 import numbers
-
 from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations, \
     instance_of_or_entails, ESLConcept
 from perplexity.predications import is_concept
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
+
 
 task_methods = []
 
@@ -192,6 +192,25 @@ def convert_to_english(state, what):
 
     else:
         return convert_to_english_item(state, what)
+
+
+def convert_to_english_list(state, what_list):
+    english_count = {}
+    for what in what_list:
+        english = convert_to_english(state, what)
+        if english not in english_count:
+            english_count[english] = 1
+        else:
+            english_count[english] += 1
+
+    english_items = []
+    for item in english_count.items():
+        if item[1] == 1:
+            english_items.append(item[0])
+        else:
+            english_items.append(f"{item[1]} {item[0]}")
+
+    return oxford_comma(english_items)
 
 
 def convert_to_english_item(state, what):

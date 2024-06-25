@@ -4,9 +4,11 @@ import logging
 import numbers
 import pickle
 import esl.esl_planner
+import esl.esl_planner_description
 from perplexity.predications import is_concept, Concept
 from perplexity.response import RespondOperation, get_reprompt_operation
 from perplexity.set_utilities import DisjunctionValue
+from perplexity.sstring import s
 from perplexity.state import State
 
 
@@ -1095,8 +1097,32 @@ class WorldState(State):
         if self.sys["responseState"] == "anticipate_party_size":
             return prefix + "Host: How many in your party?"
         if self.sys["responseState"] == "anticipate_dish":
-            if [item for item in self.ordered_but_not_delivered()]:
-                return prefix + "Waiter: Can I get you anything else?"
+            ordered = dict()
+            for item in self.ordered_but_not_delivered():
+                # Add the person that ordered it
+                if item[0] not in ordered:
+                    ordered[item[0]] = {}
+
+                # Add the item
+                english = esl.esl_planner_description.convert_to_english(self, item[1])
+                if english not in ordered[item[0]]:
+                    ordered[item[0]][english] = 1
+                else:
+                    ordered[item[0]][english] += 1
+
+            if ordered:
+                response_list = []
+                for item in ordered.items():
+                    english_description_list = []
+                    for english_count in item[1].items():
+                        if english_count[1] == 1:
+                            english_description_list.append(s("{a *english_count[0]:sg}"))
+                        else:
+                            english_description_list.append(s(str(english_count[1]) + " {bare *english_count[0]:pl}"))
+
+                    response_list.append(f"{esl.esl_planner_description.oxford_comma(english_description_list)} for {esl.esl_planner_description.convert_to_english(self, item[0])}")
+
+                return prefix + f"Waiter: Can I get you anything besides {esl.esl_planner_description.oxford_comma(response_list)}?"
             else:
                 return prefix + "Waiter: What can I get you?"
         if self.sys["responseState"] == "way_to_pay":

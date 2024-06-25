@@ -12,7 +12,7 @@ class LoadException(Exception):
 def apply_solutions_to_state(state, has_more_func, solutions, record_operations=False):
     # Collect all the operations that were done
     responses = []
-    last_phrase_responses = []
+    last_phrase_response_operations = []
     all_operations = []
     has_more = None
     for solution in solutions:
@@ -22,13 +22,18 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
                     # Only call the has_more_func if we will use it since it requires finding
                     # a second solution which could be expensive
                     has_more = has_more_func()
-                response_string = operation.response_string(has_more=has_more)
-                if response_string is not None and response_string not in responses:
-                    if operation.show_if_last_phrase:
-                        if response_string not in last_phrase_responses:
-                            last_phrase_responses.append(response_string)
-                    else:
+
+                if not operation.show_if_last_phrase:
+                    response_string = operation.response_string(state=state, has_more=has_more)
+                    if response_string is not None and response_string not in responses:
                         responses.append(response_string)
+
+                else:
+                    # This is an operation that is only meant to be shown if it is part of the last
+                    # phrase in a series. Such as "No. I'll take something else.  Thank you."
+                    # The caller has to decide if it is the last phrase or not, we just collect them here
+                    last_phrase_response_operations.append(operation)
+
             else:
                 all_operations.append(operation)
 
@@ -37,6 +42,19 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
         pipeline_logger.debug("State changes:\n" + "\n".join([("   " + str(x) if x is not None else "   None") for x in all_operations]))
         pipeline_logger.debug("\n".join([("   " + str(x) if x is not None else "   None") for x in responses]))
     new_state = state.apply_operations(all_operations, record_operations)
+
+    # Now that we have the final state, get the string for the last operations if there is one
+    last_phrase_responses = []
+    if last_phrase_response_operations:
+        for operation in last_phrase_response_operations:
+            if operation.show_if_has_more and has_more is None:
+                # Only call the has_more_func if we will use it since it requires finding
+                # a second solution which could be expensive
+                has_more = has_more_func()
+            response_string = operation.response_string(state=new_state, has_more=has_more)
+            if response_string not in last_phrase_responses:
+                last_phrase_responses.append(response_string)
+
     return responses, last_phrase_responses, new_state
 
 

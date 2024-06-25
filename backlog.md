@@ -2,14 +2,11 @@ Upload to itch.io:
 - https://htmleditor.io/
 - https://onlinetools.com/image/convert-image-to-data-uri
 
-- Need to update the M1 grammar to 2024
+- Need to update the ubuntu and M1 grammar to 2024
 
-- Hi, I want a table for 2, please --> Yes, that is true.
-    - Need to transform
-- Waiter: Can I get you anything else?
-    --> should be: besides a blank and a blank?
-    - Should always repeat the current state at the end
-        "That's all for now" --> "I don't know the words: that"
+
+- Should always repeat the current state at the end
+    "That's all for now" --> "I don't know the words: that"
 
 - Need more context up front
     - say single sentences (or maybe split them up?)
