@@ -2,8 +2,10 @@ Upload to itch.io:
 - https://htmleditor.io/
 - https://onlinetools.com/image/convert-image-to-data-uri
 
-- Need to update the other grammars as well
+- Need to update the M1 grammar to 2024
 
+- Hi, I want a table for 2, please --> Yes, that is true.
+    - Need to transform
 - Waiter: Can I get you anything else?
     --> should be: besides a blank and a blank?
     - Should always repeat the current state at the end

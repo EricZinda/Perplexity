@@ -3,7 +3,7 @@
   "Phrase": "What can I pay?",
   "MRSIndex": 1
  },
- "timestamp": "7648e3c7-d250-45b3-85b1-45d7423f47f6",
+ "timestamp": "dc88bef4-6fb4-44d1-bf96-e9fcae39b51d",
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: h8 ] [ _pay_v_for LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: i11 ARG3: i12 ] [ _with_p LBL: h9 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x14 [ x PERS: 3 NUM: sg GEND: n IND: - ] ] [ udef_q LBL: h15 ARG0: x14 RSTR: h16 BODY: h17 ] [ _cash_n_1 LBL: h18 ARG0: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h8 qeq h9 h16 qeq h18 > ]": {
   "Phrase": "I want to pay with cash",
   "MRSIndex": 1
@@ -203,5 +203,9 @@
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: tensed MOOD: indicative ] RELS: < [ implicit_conj LBL: h1 ARG0: e2 ARG1: e4 [ e SF: prop-or-ques TENSE: tensed MOOD: indicative ] ARG2: e5 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ] [ unknown LBL: h1 ARG: u6 ARG0: e4 ] [ greet LBL: h7 ARG0: i9 CARG: \"hi\" ] [ discourse LBL: h1 ARG0: i10 ARG1: h7 ARG2: h11 ] [ pron LBL: h12 ARG0: x13 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h14 ARG0: x13 RSTR: h15 BODY: h16 ] [ _want_v_1 LBL: h1 ARG0: e5 ARG1: x13 ARG2: x17 [ x PERS: 3 NUM: sg IND: + ] ] [ _a_q LBL: h18 ARG0: x17 RSTR: h19 BODY: h20 ] [ _table_n_1 LBL: h21 ARG0: x17 ] > HCONS: < h0 qeq h1 h15 qeq h12 h19 qeq h21 > ]": {
   "Phrase": "Hi! I want a table",
   "MRSIndex": 1
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: prop-or-ques ] RELS: < [ unknown LBL: h4 ARG: x5 [ x PERS: 3 NUM: sg IND: + ] ARG0: e2 ] [ udef_q LBL: h6 ARG0: x5 RSTR: h7 BODY: h8 ] [ greet LBL: h9 ARG0: i11 CARG: \"hi\" ] [ discourse LBL: h12 ARG0: e13 [ e SF: prop ] ARG1: h4 ARG2: h9 ] [ _table_n_1 LBL: h14 ARG0: x5 ] [ _for_p LBL: h14 ARG0: e15 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x5 ARG2: x16 [ x PERS: 3 NUM: sg IND: + ] ] [ basic_numbered_hour LBL: h17 ARG0: x16 CARG: \"2\" ] [ def_implicit_q LBL: h19 ARG0: x16 RSTR: h20 BODY: h21 ] > HCONS: < h0 qeq h1 h7 qeq h14 h20 qeq h17 > ]": {
+  "Phrase": "Hi, table for two",
+  "MRSIndex": 3
  }
 }
