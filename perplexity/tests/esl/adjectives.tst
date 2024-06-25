@@ -60,7 +60,7 @@
         {
             "Command": "I want a green dish and a tomato dish, please!",
             "Expected": "Waiter: salad is an excellent choice!\nWaiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
-            "Tree": "_a_q(x13,[_dish_n_of(x13,i18), _green_a_2(e17,x13)],_a_q(x20,udef_q(x26,_tomato_n_1(x26),[_dish_n_of(x20,i31), compound(e25,x20,x26)]),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x20),[_please_a_1(e32,e2), _want_v_1(e2,x3,x8)]))))",
+            "Tree": "_please_a_1(i33,udef_q(x9,_a_q(x14,[_dish_n_of(x14,i19), _green_a_2(e18,x14)],_a_q(x21,udef_q(x27,_tomato_n_1(x27),[_dish_n_of(x21,i32), compound(e26,x21,x27)]),_and_c(x9,x14,x21))),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x9))))",
             "Enabled": true,
             "ID": "59291b86-c54a-4f8b-b8da-d380d7fed0e4"
         },
@@ -240,5 +240,5 @@
             "ID": "536f65a4-7a11-4838-92ab-ef6166f9472f"
         }
     ],
-    "ElapsedTime": 13.76895
+    "ElapsedTime": 13.80754
 }

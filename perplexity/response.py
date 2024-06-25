@@ -30,9 +30,12 @@ class RespondOperation(object):
             return self.response_location, self._response
 
 
-def get_reprompt_operation(state):
+def get_reprompt_operation(state, use_blank_response=False):
     reprompt_text = state.get_reprompt(return_first=False)
     if reprompt_text is None or reprompt_text == "":
-        return NoopOperation()
+        if not use_blank_response:
+            return NoopOperation()
+        else:
+            return RespondOperation("", location=ResponseLocation.last, show_if_last_phrase=True)
     else:
         return RespondOperation(reprompt_text, location=ResponseLocation.last, show_if_last_phrase=True)

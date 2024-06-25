@@ -573,7 +573,7 @@
         {
             "Command": "Let's go with two orders of the Steak, please",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
-            "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[_please_a_1(e22,e2), _want_v_1(e2,x5,x10)]))",
+            "Tree": "_please_a_1(i23,udef_q(x11,_the_q(x18,_steak_n_1(x18),[_order_n_of(x11,x18), card(2,e17,x11)]),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x11))))",
             "Enabled": true,
             "ID": "be43e6b3-7a3f-4a03-8c31-9827b586a766"
         },

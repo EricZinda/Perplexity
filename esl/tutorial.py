@@ -768,7 +768,8 @@ def _okay_a_1(context, state, i_binding, h_binding):
         # Phrases like "OK." and "all right." will generate:
         # _all+right_a_1(i6,unknown(e2,u5))
         # No need to even respond
-        yield state.record_operations([RespondOperation("")])
+        # Make sure there is an empty string response so that we don't say "That is correct"
+        yield state.record_operations([get_reprompt_operation(state, use_blank_response=True)])
 
     else:
         yield from context.call(state, h_binding)
@@ -1236,6 +1237,18 @@ def unknown_eu(context, state, e_binding, u_binding):
 
 def greetings():
     return ["hello", "hi", "howdy"]
+
+
+@Predication(vocabulary, names=["greet"])
+def greet(context, state, c_arg, i_unused):
+    yield state
+
+
+@Predication(vocabulary, names=["discourse"])
+def discourse(context, state, i_unused, h_left_binding, h_right_binding):
+    if isinstance(h_left_binding, TreePredication) and h_left_binding.name == "greet":
+        for solution in context.call(state, h_right_binding):
+            yield solution
 
 
 @Predication(vocabulary, names=["appos"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
@@ -2230,6 +2243,11 @@ def _just_a_1(context, state, e_introduced_binding, x_binding):
 @Predication(vocabulary, names=["_just_x_deg"])
 def _just_x_deg(context, state, e_introduced_binding, u_binding):
     yield state
+
+
+@Predication(vocabulary, names=["_please_a_1"])
+def _please_a_1_scopal(context, state, i_binding, h_binding):
+    yield from context.call(state, h_binding)
 
 
 @Predication(vocabulary, names=["_please_a_1"])
@@ -4297,7 +4315,7 @@ pipeline_logger = logging.getLogger('Pipeline')
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")

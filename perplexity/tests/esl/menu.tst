@@ -30,6 +30,13 @@
             "ID": "4ee29d7a-4ec4-45ae-be8e-d0735a4718c2"
         },
         {
+            "Command": "ok.",
+            "Expected": "\nWaiter: What can I get you?",
+            "Tree": "_okay_a_1(i6,unknown(e2,u5))",
+            "Enabled": true,
+            "ID": "2ba8f361-0a88-48e9-b7fe-d65d53b8f399"
+        },
+        {
             "Command": "My son wants the menu",
             "Expected": "Waiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x9,pron(x9),_the_q(x15,_menu_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
@@ -275,5 +282,5 @@
             "ID": "fcbf99da-9fa7-4f11-8b24-02f83fd8f4b4"
         }
     ],
-    "ElapsedTime": 29.60522
+    "ElapsedTime": 31.17143
 }

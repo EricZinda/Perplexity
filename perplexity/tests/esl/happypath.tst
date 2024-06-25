@@ -18,7 +18,7 @@
         {
             "Command": "2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "def_implicit_q(x4,basic_numbered_hour(2,x4),unknown(e2,x4))",
+            "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
             "Enabled": true,
             "ID": "1e36dc11-2a7d-440e-9274-09c1b25561ea"
         },

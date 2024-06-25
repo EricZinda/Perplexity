@@ -25,7 +25,8 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
                 response_string = operation.response_string(has_more=has_more)
                 if response_string is not None and response_string not in responses:
                     if operation.show_if_last_phrase:
-                        last_phrase_responses.append(response_string)
+                        if response_string not in last_phrase_responses:
+                            last_phrase_responses.append(response_string)
                     else:
                         responses.append(response_string)
             else:

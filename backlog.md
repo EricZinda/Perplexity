@@ -2,14 +2,7 @@ Upload to itch.io:
 - https://htmleditor.io/
 - https://onlinetools.com/image/convert-image-to-data-uri
 
-- the phrase "'" crashes
-- table for two, please --> doesn't work
-- Will have lots of this due to phrases like "hi! I would love ...":
-                        ┌─ unknown(e2,u5)
-    _all+right_a_1(i6,ARG1)
-
-- BUT: if it is just ignored, we need to say "how can I help you?" or whatever state we're in.
-
+- Need to update the other grammars as well
 
 - Waiter: Can I get you anything else?
     --> should be: besides a blank and a blank?
