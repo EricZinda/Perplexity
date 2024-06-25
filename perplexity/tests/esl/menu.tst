@@ -38,8 +38,8 @@
         },
         {
             "Command": "that will be all, thank you.",
-            "Expected": "You are welcome!<end>You are welcome!\nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x16,pron(x16),[_thank_v_1(e10,x5,x16)])<end>pronoun_q(x16,pron(x16),[_thank_v_1(e10,x5,x16)])",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n<end>You are welcome!\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x16,pron(x16),[no_standalone(e9)])<end>pronoun_q(x16,pron(x16),[_thank_v_1(e10,x5,x16)])",
             "Enabled": true,
             "ID": "3eb18b1a-240f-4fea-957b-4e9c98bcbdce"
         },

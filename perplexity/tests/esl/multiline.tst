@@ -24,7 +24,7 @@
         },
         {
             "Command": "Ok.  I will order the Steak.  My son will have the green salad please.",
-            "Expected": "Yes, that is true.<end>I don't understand the way you are using: order<end>Son: Wait, let's not order salad before we know how much it costs.\nWaiter: What can I get you?",
+            "Expected": "<end>I don't understand the way you are using: order<end>Son: Wait, let's not order salad before we know how much it costs.\nWaiter: What can I get you?",
             "Tree": "_okay_a_1(i6,unknown(e2,u5))<end>pronoun_q(x3,pron(x3),_the_q(x8,named(Steak,x8),_order_v_1(e2,x3,x8)))<end>pronoun_q(x9,pron(x9),_the_q(x15,[_salad_n_1(x15), _green_a_2(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],[_please_a_1(e21,e2), _have_v_1(e2,x3,x15)])))",
             "Enabled": true,
             "ID": "6e8f8d80-4670-407d-8254-235a6ae5de1d"

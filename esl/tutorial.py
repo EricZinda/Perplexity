@@ -764,7 +764,14 @@ def generic_entity(context, state, x_binding):
 
 @Predication(vocabulary, names=["_okay_a_1", "_all+right_a_1"])
 def _okay_a_1(context, state, i_binding, h_binding):
-    yield from context.call(state, h_binding)
+    if isinstance(h_binding, TreePredication) and h_binding.name == "unknown" and h_binding.argument_types() == ["e", "u"]:
+        # Phrases like "OK." and "all right." will generate:
+        # _all+right_a_1(i6,unknown(e2,u5))
+        # No need to even respond
+        yield state.record_operations([RespondOperation("")])
+
+    else:
+        yield from context.call(state, h_binding)
 
 
 @Predication(vocabulary, names=["abstr_deg"])
@@ -1222,7 +1229,6 @@ def unknown(context, state, e_binding, x_binding):
         yield state.record_operations(operations)
 
 
-
 @Predication(vocabulary, names=["unknown"])
 def unknown_eu(context, state, e_binding, u_binding):
     yield state
@@ -1230,18 +1236,6 @@ def unknown_eu(context, state, e_binding, u_binding):
 
 def greetings():
     return ["hello", "hi", "howdy"]
-#
-#
-# @Predication(vocabulary, names=["greet"])
-# def greet(context, state, c_arg, i_unused):
-#     yield state
-#
-#
-# @Predication(vocabulary, names=["discourse"])
-# def discourse(context, state, i_unused, h_left_binding, h_right_binding):
-#     if isinstance(h_left_binding, TreePredication) and h_left_binding.name == "greet":
-#         for solution in context.call(state, h_right_binding):
-#             yield solution
 
 
 @Predication(vocabulary, names=["appos"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
