@@ -1,4 +1,5 @@
 {
+    "hi": {"initial word": "Hi"},
     "hello": {"initial word": "Hi"},
     "good morning": {"initial word": "Hi"},
     "how's your morning": {"initial word": "Hi"},

@@ -201,6 +201,9 @@ class UserInterface(object):
 
         else:
             # This was a phrase not a command (or a command that pushed a phrase through the system)
+            # Do any corrections or fixup on the text
+            self.user_input = self.autocorrect(self.user_input)
+            self.interaction_record["UserInput"] = self.user_input
             sentences = split_into_sentences(self.user_input)
             for sentence in sentences:
                 next_conjuncts = None
@@ -208,10 +211,10 @@ class UserInterface(object):
                 conjunct_tree_index = None
 
                 while True:
-                    self.interact_once(force_input=sentence,
-                                       conjunct_mrs_index=conjunct_mrs_index,
-                                       conjunct_tree_index=conjunct_tree_index,
-                                       next_conjuncts=next_conjuncts)
+                    self._interact_once(force_input=sentence,
+                                        conjunct_mrs_index=conjunct_mrs_index,
+                                        conjunct_tree_index=conjunct_tree_index,
+                                        next_conjuncts=next_conjuncts)
                     interaction_records.append(self.interaction_record)
 
                     next_ui = self.new_ui if self.new_ui else next_ui
@@ -266,23 +269,20 @@ class UserInterface(object):
     # If a phrase is an implicit or explicit conjunction, interact_once will treat it like different sentences and only
     # evaluate one at a time. It can be called again with conjunct_mrs_index, conjunct_tree_index, and next_conjuncts set
     # to evaluate the non default conjuncts
-    def interact_once(self, force_input, conjunct_mrs_index=None, conjunct_tree_index=None, next_conjuncts=None):
+    def _interact_once(self, force_input, conjunct_mrs_index=None, conjunct_tree_index=None, next_conjuncts=None):
         if conjunct_mrs_index is not None:
             pipeline_logger.debug(f"Interact Once: force_input='{force_input}', conjunct_mrs_index={conjunct_mrs_index}, conjunct_tree_index={conjunct_tree_index}, next_conjuncts={next_conjuncts}")
 
         assert force_input is not None
 
         # At this point on we are processing a phrase
-        # Do any corrections or fixup on the text
-        self.user_input = self.autocorrect(force_input)
-        self.interaction_record["UserInput"] = self.user_input
 
         # If we have recorded a particular MRS that is normally the best, move it
         # to the front. If this is a conjunct, we have already settled on the MRS so don't bother
         # Use 10000 to mean "get all parses". That should cover most phrases
         current_max_parses = (conjunct_mrs_index + 1) if conjunct_mrs_index is not None else None
         current_max_parses = 10000 if self.generate_all_parses else current_max_parses
-        mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms, one_time_max_parses=current_max_parses))
+        mrs_generator = CachedIterable(self.mrs_parser.mrss_from_phrase(force_input, synonyms=self.vocabulary.synonyms, one_time_max_parses=current_max_parses))
         if not conjunct_mrs_index and mrs_generator.at_least_one():
             best_parse_index_simple_mrs = simplemrs.dumps([mrs_generator[0]], lnk=False)
             best_parse_index = self.best_parses.get(best_parse_index_simple_mrs, {"Phrase": "none", "MRSIndex": 0})["MRSIndex"]
@@ -294,7 +294,7 @@ class UserInterface(object):
                     if target_parse is None:
                         if all_parses is None:
                             # We don't get all parses the first time through for performance reasons, try again but with all of them
-                            all_parses = CachedIterable(self.mrs_parser.mrss_from_phrase(self.user_input, synonyms=self.vocabulary.synonyms,
+                            all_parses = CachedIterable(self.mrs_parser.mrss_from_phrase(force_input, synonyms=self.vocabulary.synonyms,
                                                            one_time_max_parses=best_parse_index + 1))
                             mrs_generator = all_parses
 
@@ -411,7 +411,7 @@ class UserInterface(object):
 
                                         # If it was not the first MRS parse (and it isn't a conjunct), record it as the best alternative so that we start there next time
                                         if not conjunct_mrs_index and mrs_index != 0:
-                                            self.best_parses[best_parse_index_simple_mrs] = {"Phrase": self.user_input,
+                                            self.best_parses[best_parse_index_simple_mrs] = {"Phrase": force_input,
                                                                                              "MRSIndex": mrs_index}
                                             self.save_best_parses()
 
@@ -547,6 +547,7 @@ class UserInterface(object):
     def convert_slashes_until(self, stop_char, start_index, phrase):
         new_phrase = ""
         index = start_index
+        found_stop_char = False
         while index < len(phrase):
             test_char = phrase[index]
             index += 1
@@ -554,6 +555,7 @@ class UserInterface(object):
             if test_char == "/":
                 new_phrase += "\\>"
             elif test_char == stop_char:
+                found_stop_char = True
                 break
             else:
                 new_phrase += test_char
@@ -561,7 +563,7 @@ class UserInterface(object):
         if new_phrase.strip() == "\\>":
             new_phrase = "\\>root111"
 
-        return index, new_phrase + stop_char
+        return index, new_phrase + (stop_char if found_stop_char else "")
 
     def autocorrect(self, phrase):
         final_phrase = ""

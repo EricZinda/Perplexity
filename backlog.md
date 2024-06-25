@@ -2,15 +2,16 @@ Upload to itch.io:
 - https://htmleditor.io/
 - https://onlinetools.com/image/convert-image-to-data-uri
 
-
+- the phrase "'" crashes
 - table for two, please --> doesn't work
+- Will have lots of this due to phrases like "hi! I would love ...":
+                        ┌─ unknown(e2,u5)
+    _all+right_a_1(i6,ARG1)
+- BUT: if it is just ignored, we need to say "how can I help you?" or whatever state we're in.
+
 - Automatically break up sentences that have a period?
     - DO THIS NEXT: get rid of get_reprompt() everywhere and replace with esl.esl_planner.get_reprompt_operation(state)
     - Design
-        Will have lots of this:
-                                ┌─ unknown(e2,u5)
-            _all+right_a_1(i6,ARG1)
-        - BUT: if it is just ignored, we need to say "how can I help you?" or whatever state we're in.
     - USER: Ok.  I will order the Steak.  My son will have the green salad please.
     - hello. table for two, please
     - I would like a hamburger.  My son would like something vegetarian.
