@@ -149,7 +149,7 @@ class UserInterface(object):
     # Convert any input that was multiple sentences into multiple interactions
     # Then: If the phrase is an implicit or explicit conjunction -- basically more than
     #       one phrase put together -- run the interaction loop N times, once for each conjunct.
-    # Collect, and then return a list of interaction records that represent each all of the interactions for the
+    # Collect, and then return a list of interaction records that represent each all the interactions for the
     #       sentences and their conjuncts
     def interact_once_across_conjunctions(self, force_input=None):
         interaction_records = []
@@ -174,6 +174,7 @@ class UserInterface(object):
             # if True, it was entirely handled and didn't have text to further process
             return []
 
+        # Create an interaction record in case this is a command
         self.interaction_record = {"UserInput": self.user_input,
                                    "Mrss": [],
                                    "ChosenMrsIndex": None,
@@ -203,7 +204,6 @@ class UserInterface(object):
             # This was a phrase not a command (or a command that pushed a phrase through the system)
             # Do any corrections or fixup on the text
             self.user_input = self.autocorrect(self.user_input)
-            self.interaction_record["UserInput"] = self.user_input
             sentences = split_into_sentences(self.user_input)
             for sentence in sentences:
                 next_conjuncts = None
@@ -211,10 +211,18 @@ class UserInterface(object):
                 conjunct_tree_index = None
 
                 while True:
+                    # Create a new interaction record for this sentence
+                    self.user_input = sentence
+                    self.interaction_record = {"UserInput": self.user_input,
+                                               "Mrss": [],
+                                               "ChosenMrsIndex": None,
+                                               "ChosenInterpretationIndex": None}
+
                     self._interact_once(force_input=sentence,
                                         conjunct_mrs_index=conjunct_mrs_index,
                                         conjunct_tree_index=conjunct_tree_index,
                                         next_conjuncts=next_conjuncts)
+
                     interaction_records.append(self.interaction_record)
 
                     next_ui = self.new_ui if self.new_ui else next_ui

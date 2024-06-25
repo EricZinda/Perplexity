@@ -2,6 +2,7 @@ Upload to itch.io:
 - https://htmleditor.io/
 - https://onlinetools.com/image/convert-image-to-data-uri
 
+- OK --> Yes, that is true.
 - the phrase "'" crashes
 - table for two, please --> doesn't work
 - Will have lots of this due to phrases like "hi! I would love ...":
