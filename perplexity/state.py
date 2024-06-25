@@ -12,6 +12,7 @@ class LoadException(Exception):
 def apply_solutions_to_state(state, has_more_func, solutions, record_operations=False):
     # Collect all the operations that were done
     responses = []
+    last_phrase_responses = []
     all_operations = []
     has_more = None
     for solution in solutions:
@@ -23,7 +24,10 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
                     has_more = has_more_func()
                 response_string = operation.response_string(has_more=has_more)
                 if response_string is not None and response_string not in responses:
-                    responses.append(response_string)
+                    if operation.show_if_last_phrase:
+                        last_phrase_responses.append(response_string)
+                    else:
+                        responses.append(response_string)
             else:
                 all_operations.append(operation)
 
@@ -32,7 +36,7 @@ def apply_solutions_to_state(state, has_more_func, solutions, record_operations=
         pipeline_logger.debug("State changes:\n" + "\n".join([("   " + str(x) if x is not None else "   None") for x in all_operations]))
         pipeline_logger.debug("\n".join([("   " + str(x) if x is not None else "   None") for x in responses]))
     new_state = state.apply_operations(all_operations, record_operations)
-    return responses, new_state
+    return responses, last_phrase_responses, new_state
 
 
 class SetXOperation(object):

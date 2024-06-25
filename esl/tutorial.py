@@ -608,13 +608,15 @@ def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2):
 
     # x_binding_1.value can be None if a transform removes a generic_entity() that sets its value
     if (single_value_is_generic_entity_concept or x_binding_1.value is None) and is_computer_type(x_binding_2.value):
-        yield state.record_operations([RespondOperation(f"You are welcome! {state.get_reprompt()}")])
+        yield state.record_operations([RespondOperation(f"You are welcome!"),
+                                       esl.esl_planner.get_reprompt_operation(state)])
 
 
 @Predication(vocabulary, names=["_thank+you_v_1"])
 def _thankyou_v_1(context, state, e_binding, x_target):
     if x_target.value is not None and len(x_target.value) == 1 and is_computer_type(x_target.value):
-        yield state.record_operations([RespondOperation(f"You are welcome! {state.get_reprompt()}")])
+        yield state.record_operations([RespondOperation(f"You are welcome!"),
+                                       esl.esl_planner.get_reprompt_operation(state)])
 
 
 @Predication(vocabulary, names=["count"])
@@ -4308,7 +4310,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
-    ShowLogging("Transformer")
+    # ShowLogging("SolutionGroups")
+    # ShowLogging("Transformer")
 
     hello_world()

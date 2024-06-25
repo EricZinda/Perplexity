@@ -24,7 +24,7 @@
         },
         {
             "Command": "what specials do you have?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything else?",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "cb23e458-9d38-437c-9600-1a35ca7e89ff"
@@ -38,7 +38,7 @@
         },
         {
             "Command": "can i sit down?",
-            "Expected": "Host: How many in your party?",
+            "Expected": "Yes.\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _sit_v_down_able(e2,x3)])",
             "Enabled": true,
             "ID": "18ac5796-4c38-4731-869d-2937736ac2b4"

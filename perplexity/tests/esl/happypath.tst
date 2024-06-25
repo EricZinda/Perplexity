@@ -10,7 +10,7 @@
         },
         {
             "Command": "seat me",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_seat_v_cause(e2,x3,x8)))",
             "Enabled": true,
             "ID": "af81b14e-44fb-4f87-b8bb-8f01f09352f5"
@@ -59,7 +59,7 @@
         },
         {
             "Command": "what vegetarian dishes do you have?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,[_dish_n_of(x5,i10), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "4bb9d864-d8bd-47da-b1ff-707b78fa81af"

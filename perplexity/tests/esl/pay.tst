@@ -24,7 +24,7 @@
         },
         {
             "Command": "what are your specials",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "fe730c00-298a-44ce-8deb-328151b37118"
@@ -59,7 +59,7 @@
         },
         {
             "Command": "Can I pay the bill",
-            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_bill_n_of(x11,i17),pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,x11,i12)))",
             "Enabled": true,
             "ID": "76892157-de31-423b-9717-632e623b2316"
@@ -80,14 +80,14 @@
         },
         {
             "Command": "I want to pay the bill",
-            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_bill_n_of(x11,i17),pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,x11,i12)))",
             "Enabled": true,
             "ID": "42f554ad-0208-4bef-aad8-7171f8e5cbdd"
         },
         {
             "Command": "can I get the check?",
-            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_check_n_of(x11,i16),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _get_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "d059492d-e95d-4ec7-a6bb-15d25f2d7601"
@@ -101,7 +101,7 @@
         },
         {
             "Command": "I want to pay with a card",
-            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card. \nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e2,x14), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "5b476cfb-4422-484b-a983-61ead97e2fbe"
@@ -115,7 +115,7 @@
         },
         {
             "Command": "can I pay with a card?",
-            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card. \nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "54deedbd-3254-4d86-8f1d-6c86a4032bea"
@@ -143,7 +143,7 @@
         },
         {
             "Command": "I want to pay the bill with a card",
-            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card. \nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_bill_n_of(x11,i18),_a_q(x20,_card_n_1(x20),pronoun_q(x3,pron(x3),[_with_p(e19,e2,x20), _pay_v_for_request(e2,x11,i12,i13)])))",
             "Enabled": true,
             "ID": "1743ad85-9bd8-4c96-afa5-b25443b3521f"
@@ -157,7 +157,7 @@
         },
         {
             "Command": "could I pay with a card?",
-            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card. \nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "You reach into your pocket and realize you don\u2019t have a credit card.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_a_q(x14,_card_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "35300d37-33ae-42eb-b8c8-f6945a26647e"

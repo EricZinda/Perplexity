@@ -9,7 +9,7 @@ from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type,
     ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept, orderable_concepts, requestable_concepts_by_sort, \
     CancelOrderItemOp, rel_all_instances
 from perplexity.predications import is_concept, Concept
-from perplexity.response import RespondOperation, ResponseLocation
+from perplexity.response import RespondOperation, ResponseLocation, NoopOperation, get_reprompt_operation
 from perplexity.set_utilities import Measurement
 from perplexity.sstring import s
 from perplexity.state import SetXOperation
@@ -729,7 +729,7 @@ def reset_order_and_bill_for_person(state, context, for_person):
 
 
 def reprompt(state, context):
-    return state.apply_operations([RespondOperation(state.get_reprompt(return_first=False), location=ResponseLocation.last)])
+    return state.apply_operations([get_reprompt_operation(state)])
 
 
 def add_plan_local(state, context, name, value):

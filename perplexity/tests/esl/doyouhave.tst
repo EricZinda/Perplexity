@@ -31,7 +31,7 @@
         },
         {
             "Command": "what specials do you have?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ddb396d5-8fc8-4994-8137-c9a13dd26db0"
@@ -113,5 +113,5 @@
             "ID": "5d63f5ce-6532-40a0-8118-e42cd923740a"
         }
     ],
-    "ElapsedTime": 8.0174
+    "ElapsedTime": 8.11145
 }

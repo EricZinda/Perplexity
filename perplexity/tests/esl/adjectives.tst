@@ -24,7 +24,7 @@
         },
         {
             "Command": "do you have vegetarian food?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_food_n_1(x8), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "fcd8d9d2-e8b1-4e34-9ea9-9a4fa25969be"
@@ -185,7 +185,7 @@
         },
         {
             "Command": "what is smoked?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything else?",
             "Tree": "which_q(x3,thing(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "7190456b-3675-4585-a9c2-b95e7f7e0760"
@@ -240,5 +240,5 @@
             "ID": "536f65a4-7a11-4838-92ab-ef6166f9472f"
         }
     ],
-    "ElapsedTime": 14.67545
+    "ElapsedTime": 15.22934
 }

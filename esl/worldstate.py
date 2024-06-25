@@ -5,7 +5,7 @@ import numbers
 import pickle
 import esl.esl_planner
 from perplexity.predications import is_concept, Concept
-from perplexity.response import RespondOperation
+from perplexity.response import RespondOperation, get_reprompt_operation
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.state import State
 
@@ -1160,35 +1160,37 @@ class WorldState(State):
 
         for i in wanted_tuple:
             if i not in foods:
-                return [RespondOperation("Hey, one thing at a time please..." + self.get_reprompt())]
+                return [RespondOperation("Hey, one thing at a time please..."),
+                        get_reprompt_operation(self)]
 
         userKnowsPrices = True
         for i in wanted_tuple:
             if (instance_of_what(self, i), "user") in self.all_rel("priceUnknownTo"):
-                return [RespondOperation(
-                    "Son: Wait, let's not order anything before we know how much it costs." + self.get_reprompt())]
+                return [RespondOperation("Son: Wait, let's not order anything before we know how much it costs."),
+                        get_reprompt_operation(self)]
         total_price = 0
 
         for i in wanted_tuple:
             total_price += self.sys["prices"][instance_of_what(self, i)]
 
         if total_price + self.bill_total() > 20:
-            return [RespondOperation(
-                "Son: Wait, we've spent $" + str(self.bill_total()) + " and all that food costs $" + str(
-                    total_price) + " so if we get all that, we won't be able to pay for it with $20." + self.get_reprompt())]
+            return [RespondOperation("Son: Wait, we've spent $" + str(self.bill_total()) + " and all that food costs $" + str(
+                    total_price) + " so if we get all that, we won't be able to pay for it with $20."),
+                    get_reprompt_operation(self)]
 
         for i in wanted_tuple:
             if "ordered" in self.rel.keys():
                 if ("user", i) in self.all_rel("ordered"):
-                    return [RespondOperation(
-                        "Sorry, you got the last " + i + " . We don't have any more." + self.get_reprompt())]
+                    return [RespondOperation("Sorry, you got the last " + i + " . We don't have any more."),
+                            get_reprompt_operation(self)]
         for i in wanted_tuple:
             if wanted_tuple.count(i) > 1:
-                return [
-                    RespondOperation("Sorry, we only have one" + i + ". Please try again." + self.get_reprompt())]
+                return [RespondOperation("Sorry, we only have one" + i + ". Please try again."),
+                        get_reprompt_operation(self)]
 
-        toReturn = [RespondOperation("Excellent Choices! Can I get you anything else?"),
-                    ResponseStateOp("anticipate_dish")]
+        toReturn = [RespondOperation("Excellent Choices!"),
+                    ResponseStateOp("anticipate_dish"),
+                    get_reprompt_operation(self)]
         for i in wanted_tuple:
             toReturn += [AddRelOp(("user", "ordered", i)), AddBillOp(i)]
         return toReturn
@@ -1222,9 +1224,11 @@ class WorldState(State):
         if wanted == "menu1":
             return self.user_wants("menu1")
         elif wanted == "table1":
-            return [RespondOperation("All our tables are nice. Trust me on this one" + self.get_reprompt())]
+            return [RespondOperation("All our tables are nice. Trust me on this one"),
+                    get_reprompt_operation(self)]
         else:
-            return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
+            return [RespondOperation("Sorry, I can't show you that."),
+                    get_reprompt_operation(self)]
 
     def user_wants_to_see_group(self, context, actor_list, wanted_list):
         all_menu = True
@@ -1235,7 +1239,8 @@ class WorldState(State):
         if all_menu:
             return self.handle_world_event(context, ["user_wants", "menu1"])
         else:
-            return [RespondOperation("Sorry, I can't show you that." + self.get_reprompt())]
+            return [RespondOperation("Sorry, I can't show you that."),
+                            get_reprompt_operation(self)]
 
     def no(self, context):
         return self.find_plan(context, [('complete_order', context)])
@@ -1244,7 +1249,8 @@ class WorldState(State):
         if self.sys["responseState"] in ["anticipate_dish"]:
             return [RespondOperation("Ok, what?"), ResponseStateOp("anticipate_dish")]
         else:
-            return [RespondOperation("Host: Hmm. I didn't understand what you said." + self.get_reprompt())]
+            return [RespondOperation("Host: Hmm. I didn't understand what you said."),
+                    get_reprompt_operation(self)]
 
     # This should always be the answer to a question since it is a partial sentence that generated
     # an unknown() predication in the MRS for the verb
@@ -1256,9 +1262,11 @@ class WorldState(State):
                 if x in ["cash"]:
                     return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
                 elif x in ["card", "card, credit"]:
-                    return [RespondOperation("You reach into your pocket and realize you don’t have a credit card." + self.get_reprompt())]
+                    return [RespondOperation("You reach into your pocket and realize you don’t have a credit card."),
+                            get_reprompt_operation(self)]
                 else:
-                    return [RespondOperation("Waiter: Hmm. I didn't understand what you said." + self.get_reprompt())]
+                    return [RespondOperation("Waiter: Hmm. I didn't understand what you said."),
+                            get_reprompt_operation(self)]
 
         elif self.sys["responseState"] in ["anticipate_dish", "initial"]:
             return self.handle_world_event(context, ["user_wants", x])

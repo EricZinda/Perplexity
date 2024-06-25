@@ -1,13 +1,74 @@
+Upload to itch.io:
+- https://htmleditor.io/
+- https://onlinetools.com/image/convert-image-to-data-uri
+
+
+- table for two, please --> doesn't work
+- Automatically break up sentences that have a period?
+    - DO THIS NEXT: get rid of get_reprompt() everywhere and replace with esl.esl_planner.get_reprompt_operation(state)
+    - Design
+        Will have lots of this:
+                                ┌─ unknown(e2,u5)
+            _all+right_a_1(i6,ARG1)
+        - BUT: if it is just ignored, we need to say "how can I help you?" or whatever state we're in.
+    - USER: Ok.  I will order the Steak.  My son will have the green salad please.
+    - hello. table for two, please
+    - I would like a hamburger.  My son would like something vegetarian.
+        - Even though the first fails, the second should work?
+
+- Waiter: Can I get you anything else?
+    --> should be: besides a blank and a blank?
+    - Should always repeat the current state at the end
+        "That's all for now" --> "I don't know the words: that"
+
+
+- Need more context up front
+    - say single sentences (or maybe split them up?)
+
+
+- "for now" should be ignored
+
+- we'd both like waters to drink please.
+    - ignore "both"
+
+- Implement all alternatives of "no"
+    - implement: that's all for now
+    - USER: thats it.
+
+- I don't know the words: hamburger
+    - Use chatgpt to give a better error
+
+- USER: Can we get the check please?
+    Waiter: Your total is 13 dollars.
+    Waiter: So, do you want to pay with cash or card?
+
+    --------------- 2024-06-24 20:57:23.918845 - ip-10-0-0-247.ec2.internal@129: Interface:REST-, AfterInteractionData: eWc2ZGh1c3VmNGdseHRnMWJrYw==-205723918826.backup
+    USER: cash
+    Ah. Perfect! Have a great rest of your day.
+
+    --------------- 2024-06-24 20:57:28.667659 - ip-10-0-0-247.ec2.internal@129: Interface:REST-, AfterInteractionData: eWc2ZGh1c3VmNGdseHRnMWJrYw==-205728667637.backup
+    USER: thank you!  you too!
+    You are welcome!
+    Waiter: So, do you want to pay with cash or card?
+    Waiter: Hmm. I didn't understand what you said.
+    Waiter: So, do you want to pay with cash or card?
+
+- USER: I will order the steak. I don't understand the way you are using: order
+
+- Card, please --> I don't know the way you used: polite
+
+- How much are each of the specials? --> I don't know the words: part_of
+- implement: what do you have to eat?
+
+
+- fix: OK --> that is true
+- USER: perfect. --> I don't know the words: perfect
+- implement: let's start again
+
 
 
 Bugs:
     High Pri:
-        - how about vegetarian soup? --> I don't know the words: generic_verb, how+about
-            - Need a better error message
-        - "I took too long to understand that, try again" ... need a better message
-        - Could we have a table for two, please? doesn't work
-        - Just some water for now, please doesn't work
-        - Not right now, thank you. We'll look at the menu first. doesn't work
         - which chicken menu items do you have? --> pork
                 soup
                 salad
@@ -124,6 +185,10 @@ Cleanup:
 
 New Language:
     Hi Pri:
+        - how about vegetarian soup? --> I don't know the words: generic_verb, how+about
+            - Need a better error message
+        - Just some water for now, please --> doesn't work
+        - Not right now, thank you. We'll look at the menu first. doesn't work
         - could I get a soup? is very slow when you don't know the cost
         - I don't want anything else.  is very slow
         - Waiter: What can I get you? --> ?:nothing

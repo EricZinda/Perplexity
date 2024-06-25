@@ -56,19 +56,22 @@ def describe_analyzed_at_entrance(state, context, analysis):
 
     new_methods = []
     if len(analysis["Specials"]) > 0 or len(analysis["MenuItems"]) > 0:
-        new_methods.append(('respond', context, "Host: If you'd like to hear about our menu items, you'll need to have a seat." + state.get_reprompt()))
+        new_methods += [('respond', context, "Host: If you'd like to hear about our menu items, you'll need to have a seat."),
+                        ('reprompt', context)]
 
     elif len(analysis["Bills"]) > 0:
-        new_methods.append(('respond', context, "Waiter: Let's talk about the bill once you've finished eating." + state.get_reprompt()))
+        new_methods += [('respond', context, "Waiter: Let's talk about the bill once you've finished eating."),
+                        ('reprompt', context)]
 
     else:
         for item in analysis["Others"]:
             if isinstance(item, Measurement) and item.measurement_type == "dollar":
-                new_methods.append(('respond', context, "Host: Let's talk about prices once you've been seated." + state.get_reprompt()))
+                new_methods += [('respond', context, "Host: Let's talk about prices once you've been seated."),
+                                ('reprompt', context)]
 
             else:
                 new_methods.insert(0, ('describe_item', context, item))
-                new_methods.append(('respond', context, state.get_reprompt()))
+                new_methods.append(('reprompt', context))
 
     return new_methods
 
@@ -106,7 +109,8 @@ def describe_analyzed_at_table(state, context, analysis):
         if not heard_specials:
             # If we are being ask to describe any specials and the user hasn't heard of them yet,
             # give the special, detailed description
-            new_methods.append(('respond', context, "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork." + state.get_reprompt()))
+            new_methods += [('respond', context, "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork."),
+                            ('reprompt', context)]
             new_methods.append(('delete_rel', context, "user", "heardSpecials", "false"))
             new_methods.append(('add_rel', context, "user", "heardSpecials", "true"))
             return new_methods

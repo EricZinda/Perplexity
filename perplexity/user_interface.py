@@ -5,10 +5,8 @@ import os
 import pickle
 import sys
 import uuid
-
 import perplexity.messages
 from delphin.codecs import simplemrs
-
 from perplexity.autocorrect import autocorrect, get_autocorrect
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
@@ -20,7 +18,8 @@ from perplexity.tree import find_predications, find_predications_with_arg_types,
     MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable
 from perplexity.tree_algorithm_zinda2020 import TooComplicatedError
 from perplexity.user_state import GetStateDirectoryName
-from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator
+from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
+    split_into_sentences
 from perplexity.world_registry import world_information
 
 
@@ -145,49 +144,112 @@ class UserInterface(object):
                     # The user gave a command to load a new UI
                     return self.new_ui
 
-            self.user_output()
+            output = self.user_output()
 
-    # If the phrase is an implicit or explicit conjunction -- basically more than
-    # one phrase put together -- run the interaction loop N times, once for each conjunct.
-    # Collect, and then return a list of interaction records that represent each of the conjuncts
+    # Convert any input that was multiple sentences into multiple interactions
+    # Then: If the phrase is an implicit or explicit conjunction -- basically more than
+    #       one phrase put together -- run the interaction loop N times, once for each conjunct.
+    # Collect, and then return a list of interaction records that represent each all of the interactions for the
+    #       sentences and their conjuncts
     def interact_once_across_conjunctions(self, force_input=None):
         interaction_records = []
-        next_conjuncts = None
-        conjunct_mrs_index = None
-        conjunct_tree_index = None
-        while True:
-            self.interact_once(force_input=force_input,
-                               conjunct_mrs_index=conjunct_mrs_index,
-                               conjunct_tree_index=conjunct_tree_index,
-                               next_conjuncts=next_conjuncts)
+        next_ui = self
+
+        if force_input is None:
+            # input() pauses the program and waits for the user to
+            # type input and hit enter, and then returns it
+            self.user_input = str(input("? "))
+        else:
+            self.user_input = force_input
+
+        command_result = self.handle_command(self.user_input)
+        if command_result is not None:
+            # If not None it was a system command
+            self.test_manager.record_session_data("last_system_command", self.user_input)
+
+        else:
+            self.test_manager.record_session_data("last_phrase", self.user_input)
+
+        if command_result is True:
+            # if True, it was entirely handled and didn't have text to further process
+            return []
+
+        self.interaction_record = {"UserInput": self.user_input,
+                                   "Mrss": [],
+                                   "ChosenMrsIndex": None,
+                                   "ChosenInterpretationIndex": None}
+
+        if command_result is not None:
+            # If not None it was a system command
+            mrs_record = self.new_mrs_record()
+            self.interaction_record["Mrss"].append(mrs_record)
+            tree_record = TreeSolver.new_error_tree_record(response_generator=[command_result])
+            mrs_record["Interpretations"].append(tree_record)
+            self.interaction_record["ChosenMrsIndex"] = 0
+            self.interaction_record["ChosenInterpretationIndex"] = 0
+            self.user_output(command_result)
+
+        # self.records is a list if we are recording commands
+        if isinstance(self.records, list):
+            self.records.append(self.interaction_record)
+            self.user_output(f"Recorded ({len(self.records)} items).")
+
+        last_phrase_response = ""
+        if command_result is not None:
+            # If not None it was a system command so the interaction is done
             interaction_records.append(self.interaction_record)
 
-            next_ui = self.new_ui if self.new_ui else self
-            record = self.chosen_interpretation_record()
-            if record is not None:
-                if record["SolutionGroupGenerator"] is not None:
-                    # There were solutions, so keep going with conjuncts
-                    if "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None:
-                        assert len(record["SelectedConjuncts"]) == 1
-                        if record["SelectedConjuncts"][0] == 1:
-                            # We've processed all the conjuncts
-                            break
+        else:
+            # This was a phrase not a command (or a command that pushed a phrase through the system)
+            sentences = split_into_sentences(self.user_input)
+            for sentence in sentences:
+                next_conjuncts = None
+                conjunct_mrs_index = None
+                conjunct_tree_index = None
+
+                while True:
+                    self.interact_once(force_input=sentence,
+                                       conjunct_mrs_index=conjunct_mrs_index,
+                                       conjunct_tree_index=conjunct_tree_index,
+                                       next_conjuncts=next_conjuncts)
+                    interaction_records.append(self.interaction_record)
+
+                    next_ui = self.new_ui if self.new_ui else next_ui
+                    record = self.chosen_interpretation_record()
+                    if record is not None:
+                        # There was a parse (whether successful or not)
+                        if record["SolutionGroupGenerator"] is not None:
+                            if "LastPhraseResponse" in record:
+                                last_phrase_response = record["LastPhraseResponse"]
+
+                            # There were solutions, so keep going with conjuncts
+                            if "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None:
+                                assert len(record["SelectedConjuncts"]) == 1
+                                if record["SelectedConjuncts"][0] == 1:
+                                    # We've processed all the conjuncts
+                                    break
+
+                                else:
+                                    # Do it again with the next conjunct
+                                    next_conjuncts = [1]
+                                    conjunct_mrs_index = self.interaction_record["ChosenMrsIndex"]
+                                    conjunct_tree_index = self.interaction_record["Mrss"][self.interaction_record["ChosenMrsIndex"]]["Interpretations"][self.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
+
+                            else:
+                                # No conjuncts to process
+                                break
 
                         else:
-                            force_input = self.user_input
-                            next_conjuncts = [1]
-                            conjunct_mrs_index = self.interaction_record["ChosenMrsIndex"]
-                            conjunct_tree_index = self.interaction_record["Mrss"][self.interaction_record["ChosenMrsIndex"]]["Interpretations"][self.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
+                            # No solutions, break
+                            break
 
                     else:
-                        # No conjuncts to process
+                        # No parse, break
                         break
-                else:
-                    # No solutions, break
-                    break
 
-            else:
-                break
+        # Print out the "last phrase" if there is one
+        if last_phrase_response != "":
+            self.user_output(last_phrase_response)
 
         if self is not next_ui:
             # The user gave a command to load a new UI
@@ -204,53 +266,15 @@ class UserInterface(object):
     # If a phrase is an implicit or explicit conjunction, interact_once will treat it like different sentences and only
     # evaluate one at a time. It can be called again with conjunct_mrs_index, conjunct_tree_index, and next_conjuncts set
     # to evaluate the non default conjuncts
-    def interact_once(self, force_input=None, conjunct_mrs_index=None, conjunct_tree_index=None, next_conjuncts=None):
+    def interact_once(self, force_input, conjunct_mrs_index=None, conjunct_tree_index=None, next_conjuncts=None):
         if conjunct_mrs_index is not None:
             pipeline_logger.debug(f"Interact Once: force_input='{force_input}', conjunct_mrs_index={conjunct_mrs_index}, conjunct_tree_index={conjunct_tree_index}, next_conjuncts={next_conjuncts}")
 
-        if force_input is None:
-            # input() pauses the program and waits for the user to
-            # type input and hit enter, and then returns it
-            self.user_input = str(input("? "))
+        assert force_input is not None
 
-        else:
-            self.user_input = force_input
-
-        command_result = self.handle_command(self.user_input)
-        if command_result is not None:
-            self.test_manager.record_session_data("last_system_command", self.user_input)
-
-        if command_result is True:
-            return
-
-        self.interaction_record = {"UserInput": self.user_input,
-                                   "Mrss": [],
-                                   "ChosenMrsIndex": None,
-                                   "ChosenInterpretationIndex": None}
-
-        if command_result is not None:
-            self.test_manager.record_session_data("last_system_command", self.user_input)
-            mrs_record = self.new_mrs_record()
-            self.interaction_record["Mrss"].append(mrs_record)
-            tree_record = TreeSolver.new_error_tree_record(response_generator=[command_result])
-            mrs_record["Interpretations"].append(tree_record)
-            self.interaction_record["ChosenMrsIndex"] = 0
-            self.interaction_record["ChosenInterpretationIndex"] = 0
-            self.user_output(command_result)
-
-        else:
-            self.test_manager.record_session_data("last_phrase", self.user_input)
-
-        # self.records is a list if we are recording commands
-        if isinstance(self.records, list):
-            self.records.append(self.interaction_record)
-            self.user_output(f"Recorded ({len(self.records)} items).")
-
-        if command_result is not None:
-            return
-
+        # At this point on we are processing a phrase
         # Do any corrections or fixup on the text
-        self.user_input = self.autocorrect(self.user_input)
+        self.user_input = self.autocorrect(force_input)
         self.interaction_record["UserInput"] = self.user_input
 
         # If we have recorded a particular MRS that is normally the best, move it
@@ -301,6 +325,7 @@ class UserInterface(object):
                 mrs_record = self.new_mrs_record(mrs=mrs)
                 self.interaction_record["Mrss"].append(mrs_record)
                 continue
+
             if conjunct_mrs_index is not None and conjunct_mrs_index != mrs_index:
                 continue
 
@@ -423,20 +448,21 @@ class UserInterface(object):
                                                     return False
 
                                             solution_group_solutions = [solution for solution in solution_group]
-                                            operation_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
+                                            operation_responses, last_phrase_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
                                             self.state = new_state
 
                                         except MessageException as error:
                                             response = self.response_function(self.vocabulary, self.message_function, tree_info, [], [0, error.message_object()])
                                             tree_record["ResponseMessage"] += f"\n{str(response)}"
                                             operation_responses = []
+                                            last_phrase_responses = []
 
                                         if len(operation_responses) > 0:
                                             had_operations = True
                                             operation_responses.sort(key=lambda tup: tup[0])
                                             response = "\n".join(item[1] for item in operation_responses)
 
-                                        elif response is None:
+                                        elif response is None and len(last_phrase_responses) == 0:
                                             this_sentence_force = sentence_force(tree_info["Variables"])
                                             if this_sentence_force == "comm":
                                                 # Only give a "Done!" message if it was a command and there were no responses given
@@ -448,8 +474,12 @@ class UserInterface(object):
                                             else:
                                                 response = "(no response)"
 
-                                        tree_record["ResponseMessage"] += response
-                                        self.user_output(response)
+                                        # These only get showed if this is the last phrase in the whole user utterance
+                                        last_phrase_responses.sort(key=lambda tup: tup[0])
+                                        tree_record["LastPhraseResponse"] = "\n".join(item[1] for item in last_phrase_responses)
+                                        tree_record["ResponseMessage"] += response if response is not None else ""
+                                        if response is not None:
+                                            self.user_output(response)
 
                                         # Only show if the developer didn't provide a custom message
                                         if not had_operations:

@@ -10,7 +10,7 @@
         },
         {
             "Command": "what do you have?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "4c77d27e-6a16-4ca3-84d6-bee985bb5ced"

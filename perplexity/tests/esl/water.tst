@@ -73,7 +73,7 @@
         },
         {
             "Command": "I want water",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a water when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a water when you have a table.",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_water_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f1d009bf-72a4-44ea-8b32-1c743a4e3127"

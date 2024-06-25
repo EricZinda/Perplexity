@@ -143,56 +143,56 @@
         },
         {
             "Command": "Do you have a table?",
-            "Expected": "Host: How many in your party?",
+            "Expected": "Yes.\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "46c5774e-2bce-4015-ac80-768a09a28d80"
         },
         {
             "Command": "I will have a table",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "51920fb5-d90b-419c-beee-483c9525d2a2"
         },
         {
             "Command": "I will sit down",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_sit_v_down(e2,x3))",
             "Enabled": true,
             "ID": "9cf12d44-d1bb-4c9a-bde8-915f7f8e0747"
         },
         {
             "Command": "I would like to sit",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e13), _sit_v_1_request(e2,x3)])",
             "Enabled": true,
             "ID": "e57230ed-8ed0-4367-ab6d-d3ee17138dc5"
         },
         {
             "Command": "I would love to sit",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e13), _sit_v_1_request(e2,x3)])",
             "Enabled": true,
             "ID": "c2877e87-aaec-4dc5-8af5-e23d9581ecf3"
         },
         {
             "Command": "Can I sit?",
-            "Expected": "Host: How many in your party?",
+            "Expected": "Yes.\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _sit_v_1_able(e2,x3)])",
             "Enabled": true,
             "ID": "efc994a2-94b6-481e-9f75-c09efc44d352"
         },
         {
             "Command": "give me a table",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x9,pron(x9),_a_q(x8,_table_n_1(x8),pronoun_q(x3,pron(x3),_give_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "4fb8afbc-08b7-4fa4-8a91-00cd6094a63d"
         },
         {
             "Command": "will you give me a table?",
-            "Expected": "Host: How many in your party?",
+            "Expected": "Yes.\nHost: How many in your party?",
             "Tree": "pronoun_q(x9,pron(x9),_a_q(x8,_table_n_1(x8),pronoun_q(x3,pron(x3),_give_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "887398ed-4865-411d-a59f-251fc53b4002"
@@ -276,7 +276,7 @@
         },
         {
             "Command": "What can I have?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e15), _have_v_1_able(e2,x3,x5)]))",
             "Enabled": true,
             "ID": "324c870d-e826-4cdb-a4da-a209a1af334d"
@@ -304,7 +304,7 @@
         },
         {
             "Command": "a table",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "b37ddc44-76f4-41e4-9073-9d1760ae43c1"
@@ -325,7 +325,7 @@
         },
         {
             "Command": "a table",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "9b7614f6-b920-4508-9157-3981dc72b265"
@@ -346,7 +346,7 @@
         },
         {
             "Command": "a table",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "c03122f5-b566-4c9f-bdb8-03f6f46f3c55"
@@ -367,7 +367,7 @@
         },
         {
             "Command": "a table",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "_a_q(x4,_table_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "df1281d1-2be5-46d6-961d-1727f66546c3"
@@ -437,7 +437,7 @@
         },
         {
             "Command": "I'd like a steak",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a steak when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a steak when you have a table.",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "0b2e3855-cca5-4e43-8532-621909cc3094"
@@ -507,7 +507,7 @@
         },
         {
             "Command": "I want a table",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "048a8073-5351-43db-8e7c-b103a7722a7f"
@@ -542,7 +542,7 @@
         },
         {
             "Command": "seat me",
-            "Expected": "Host: How many in your party?",
+            "Expected": "\nHost: How many in your party?",
             "Tree": "pronoun_q(x8,pron(x8),pronoun_q(x3,pron(x3),_seat_v_cause(e2,x3,x8)))",
             "Enabled": true,
             "ID": "8037fad3-b057-44f7-98d4-6a6a801bdb87"
@@ -556,7 +556,7 @@
         },
         {
             "Command": "can you seat me?",
-            "Expected": "Host: How many in your party?",
+            "Expected": "Yes.\nHost: How many in your party?",
             "Tree": "pronoun_q(x11,pron(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _seat_v_cause_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "6504baec-0698-4d3e-a222-bd73c653588e"
@@ -570,7 +570,7 @@
         },
         {
             "Command": "may i have a table?",
-            "Expected": "Host: How many in your party?",
+            "Expected": "Yes.\nHost: How many in your party?",
             "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_have_v_1_able(e2,x3,x11)))",
             "Enabled": true,
             "ID": "e0f65cc6-7f59-4532-9409-5a1baf503bb9"

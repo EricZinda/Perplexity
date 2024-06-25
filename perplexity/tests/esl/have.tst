@@ -52,7 +52,7 @@
         },
         {
             "Command": "do you have specials?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything else?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_special_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f4c1ab20-f754-4c15-8c2c-af2c647bf722"
@@ -80,7 +80,7 @@
         },
         {
             "Command": "what do you have?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "16d05530-68d8-4d9a-85da-e17e918b1ac9"
@@ -94,28 +94,28 @@
         },
         {
             "Command": "do you have the menu?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "187818d5-ec88-45e4-8076-b0edacf380a6"
         },
         {
             "Command": "do you have the bill?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a bill when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a bill when you have a table.",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_bill_n_of(x8,i13),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "5f3e6faf-3774-43b0-a186-eeb07b6a9be5"
         },
         {
             "Command": "do you have a bill?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a bill when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a bill when you have a table.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_bill_n_of(x8,i13),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c89788d2-274d-4547-8eba-67cfd08c89ea"
         },
         {
             "Command": "do you have steaks?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a steak when you have a table.\n",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a steak when you have a table.",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "3b0cc457-bd68-46c2-812c-26e4ae55b3b2"
@@ -129,7 +129,7 @@
         },
         {
             "Command": "what has steaks?",
-            "Expected": "restaurant\n",
+            "Expected": "restaurant",
             "Tree": "which_q(x3,thing(x3),udef_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "ba7fbf08-8c07-4316-ae1f-2fa1a21c91c1"
@@ -143,7 +143,7 @@
         },
         {
             "Command": "do you have a table?",
-            "Expected": "Host: How many in your party?",
+            "Expected": "Yes.\nHost: How many in your party?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "b1192b76-dc74-437d-aeac-811d21e7b0b6"
@@ -219,5 +219,5 @@
             "ID": "73c3f31c-5793-45a6-a3ac-ebf2cd8d9a6c"
         }
     ],
-    "ElapsedTime": 15.61656
+    "ElapsedTime": 15.29148
 }

@@ -670,7 +670,7 @@
         },
         {
             "Command": "What are the specials?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),_the_q(x8,_special_n_1(x8),_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "169a1146-bc00-4e1c-936c-cc2b903e3f46"
@@ -987,5 +987,5 @@
             "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"
         }
     ],
-    "ElapsedTime": 276.47801
+    "ElapsedTime": 145.79974
 }

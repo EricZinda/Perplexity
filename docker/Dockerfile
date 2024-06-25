@@ -26,8 +26,8 @@
 # 4. Others can then run your project using the instructions above for running an image
 #
 # Pushing to AWS:
-#   docker tag p8y:latest 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v6
-#   docker push 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v6
+#   docker tag p8y:latest 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v7
+#   docker push 864551525312.dkr.ecr.us-east-1.amazonaws.com/p8y:v7
 #
 # Run a shell on an image
 #   docker run -it imagename /bin/bash

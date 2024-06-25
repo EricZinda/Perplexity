@@ -175,10 +175,10 @@ class TestManager(object):
         print("\n**** Begin Testing...\n")
         testItemStartTime = time.perf_counter()
         test_ui = None
-        conjunct_input = None
-        conjunct_mrs_index = None
-        conjunct_tree_index = None
-        next_conjuncts = None
+        # conjunct_input = None
+        # conjunct_mrs_index = None
+        # conjunct_tree_index = None
+        # next_conjuncts = None
         for test_item in test_iterator:
             if test_iterator.world_name != self.current_world_name or test_ui is None:
                 # World changed, load the new world
@@ -192,56 +192,28 @@ class TestManager(object):
                     self.current_world_name = test_iterator.world_name
 
             try:
-                if test_item['Command'] in ["/next_conjunct"]:
-                    # This is a test item meant to test the next conjuct of a phrase that includes a conjunction
-                    print(f"\nTest: Next conjunct of: '{conjunct_input}'")
-                    if next_conjuncts is None:
-                        # There is no conjuct to be "next"
-                        result = "There is no conjuct to be 'next''"
-                        interaction_response = ""
-                        interaction_tree = None
+                print(f"\nTest: {test_item['Command']}")
 
-                    else:
-                        test_ui.interact_once(force_input=conjunct_input,
-                                              conjunct_mrs_index=conjunct_mrs_index,
-                                              conjunct_tree_index=conjunct_tree_index,
-                                              next_conjuncts=next_conjuncts)
+                itemStartTime = time.perf_counter()
+                interaction_records = test_ui.interact_once_across_conjunctions(test_item["Command"])
+                elapsed = round(time.perf_counter() - itemStartTime, 5)
+                logger.debug(f"Test timing: {elapsed}")
 
-                        interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator,
-                                                                                                            test_item,
-                                                                                                            test_ui.interaction_record)
-                        # Assume there are only ever 2 conjunctions and end now
-                        conjunct_mrs_index = None
-                        conjunct_tree_index = None
-                        next_conjuncts = None
+                # We currently only support testing the second conjunct of the last phrase in an interaction
+                record = test_ui.chosen_interpretation_record()
+                conjunct_input = test_ui.user_input
+                if record is not None and "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None and record["SelectedConjuncts"][0] == 1:
+                    # This phrase generated conjuncts, remember them
+                    next_conjuncts = [1]
+                    conjunct_mrs_index = test_ui.interaction_record["ChosenMrsIndex"]
+                    conjunct_tree_index = test_ui.interaction_record["Mrss"][test_ui.interaction_record["ChosenMrsIndex"]]["Interpretations"][test_ui.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
 
                 else:
-                    if next_conjuncts is not None:
-                        # There are unhandled conjuncts from the previous statement
-                        print(f"**** HALTING: There are unhandled conjuncts from the previous statement. Please add tests with a command of '/next_conjunct' to handle them")
-                        break
+                    conjunct_mrs_index = None
+                    conjunct_tree_index = None
+                    next_conjuncts = None
 
-                    print(f"\nTest: {test_item['Command']}")
-
-                    itemStartTime = time.perf_counter()
-                    test_ui.interact_once(test_item["Command"])
-                    elapsed = round(time.perf_counter() - itemStartTime, 5)
-                    logger.debug(f"Test timing: {elapsed}")
-
-                    record = test_ui.chosen_interpretation_record()
-                    conjunct_input = test_ui.user_input
-                    if record is not None and "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None and record["SelectedConjuncts"][0] == 0:
-                        # This phrase generated conjuncts, remember them
-                        next_conjuncts = [1]
-                        conjunct_mrs_index = test_ui.interaction_record["ChosenMrsIndex"]
-                        conjunct_tree_index = test_ui.interaction_record["Mrss"][test_ui.interaction_record["ChosenMrsIndex"]]["Interpretations"][test_ui.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
-
-                    else:
-                        conjunct_mrs_index = None
-                        conjunct_tree_index = None
-                        next_conjuncts = None
-
-                    interaction_response, interaction_tree, result = self.get_result_from_interaction(test_iterator, test_item, test_ui.interaction_record)
+                interaction_response, interaction_tree, result = self.get_result_from_interaction_records(test_iterator, test_item, interaction_records)
 
             except Exception as error:
                 print(f"**** HALTING: Exception in test run: {error}")
@@ -348,13 +320,30 @@ class TestManager(object):
             else:
                 print(f"'{answer}' is not a valid option")
 
-    def get_result_from_interaction(self, test_iterator, test_item, interaction_mrs_record):
+    def get_result_from_interaction_records(self, test_iterator, test_item, interaction_records):
+        interaction_responses = []
+        interaction_trees = []
+        last_phrase_response = ""
+        for interaction_mrs_record in interaction_records:
+            interaction_response, interaction_tree, last_phrase_response = self.get_result_from_single_record(test_iterator, test_item, interaction_mrs_record)
+            interaction_responses.append(interaction_response)
+            interaction_trees.append(interaction_tree)
+
+        interaction_responses_string = "<end>".join([str(x) for x in interaction_responses])
+        if last_phrase_response != "":
+            interaction_responses_string += "\n" + last_phrase_response
+        interaction_trees_string = "<end>".join([str(x) for x in interaction_trees])
+        return interaction_responses_string, interaction_trees_string, self.get_prompt(test_iterator, test_item, interaction_responses_string, interaction_trees_string)
+
+    def get_result_from_single_record(self, test_iterator, test_item, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
         chosen_interpretation_index = interaction_mrs_record["ChosenInterpretationIndex"]
-        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Interpretations"][chosen_interpretation_index] if chosen_mrs_index is not None and chosen_interpretation_index is not None else None
+        interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Interpretations"][
+            chosen_interpretation_index] if chosen_mrs_index is not None and chosen_interpretation_index is not None else None
         interaction_response = interaction_record["ResponseMessage"] if interaction_record is not None else None
         interaction_tree = interaction_record["Tree"] if interaction_record is not None else None
-        return interaction_response, interaction_tree, self.get_prompt(test_iterator, test_item, interaction_response, interaction_tree)
+        last_phrase_response = interaction_record["LastPhraseResponse"] if "LastPhraseResponse" in interaction_record else ""
+        return interaction_response, interaction_tree, last_phrase_response
 
     def get_prompt(self, test_iterator, test_item, interaction_response, interaction_tree):
         prompt = None

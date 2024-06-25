@@ -18,12 +18,12 @@
         {
             "Command": "What is my son?",
             "Expected": [
-                "son\nperson\nthing\n",
-                "person\nthing\nson\n",
-                "thing\nson\nperson\n",
-                "person\nson\nthing\n",
-                "thing\nperson\nson\n",
-                "son\nthing\nperson\n"
+                "son\nperson\nthing",
+                "person\nthing\nson",
+                "thing\nson\nperson",
+                "person\nson\nthing",
+                "thing\nperson\nson",
+                "son\nthing\nperson"
             ],
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_son_n_of(x8,i19), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
@@ -45,7 +45,7 @@
         },
         {
             "Command": "what are your specials",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork. \nWaiter: What can I get you?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "6ecd843f-4675-4ed9-8e10-1e06055609b8"

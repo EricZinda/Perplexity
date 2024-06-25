@@ -3,7 +3,7 @@
   "Phrase": "What can I pay?",
   "MRSIndex": 1
  },
- "timestamp": "f786edac-72c4-4a49-95bd-eac4efeb443b",
+ "timestamp": "81a5bd46-c5f2-4b6b-8276-e8e261725bf1",
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: h8 ] [ _pay_v_for LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: i11 ARG3: i12 ] [ _with_p LBL: h9 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x14 [ x PERS: 3 NUM: sg GEND: n IND: - ] ] [ udef_q LBL: h15 ARG0: x14 RSTR: h16 BODY: h17 ] [ _cash_n_1 LBL: h18 ARG0: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h8 qeq h9 h16 qeq h18 > ]": {
   "Phrase": "I want to pay with cash",
   "MRSIndex": 1
@@ -186,6 +186,18 @@
  },
  "[ TOP: h0 INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 2 IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _have_v_prd LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: sg ] ARG3: h9 ] [ thing LBL: h10 ARG0: x8 ] [ _any_q LBL: h11 ARG0: x8 RSTR: h12 BODY: h13 ] [ _vegetarian_a_1 LBL: h14 ARG0: e15 [ e SF: prop TENSE: untensed MOOD: indicative ] ARG1: x8 ] > HCONS: < h0 qeq h1 h6 qeq h4 h9 qeq h14 h12 qeq h10 > ]": {
   "Phrase": "do you have anything vegetarian?",
+  "MRSIndex": 1
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: prop-or-ques ] RELS: < [ unknown LBL: h1 ARG: u4 ARG0: e2 ] [ _okay_a_accept LBL: h1 ARG0: e5 [ e SF: prop ] ARG1: u4 ] > HCONS: < h0 qeq h1 > ]": {
+  "Phrase": "ok",
+  "MRSIndex": 2
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: prop ] RELS: < [ unknown LBL: h1 ARG: x4 [ x PERS: 3 NUM: pl IND: + ] ARG0: e2 ] [ udef_q LBL: h5 ARG0: x4 RSTR: h6 BODY: h7 ] [ _thanks_n_1 LBL: h8 ARG0: x4 ] > HCONS: < h0 qeq h1 h6 qeq h8 > ]": {
+  "Phrase": "thanks",
+  "MRSIndex": 1
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: prop ] RELS: < [ unknown LBL: h1 ARG: x4 [ x PERS: 3 NUM: sg IND: + ] ARG0: e2 ] [ udef_q LBL: h5 ARG0: x4 RSTR: h6 BODY: h7 ] [ _okay_n_1 LBL: h8 ARG0: x4 ] > HCONS: < h0 qeq h1 h6 qeq h8 > ]": {
+  "Phrase": "Ok.",
   "MRSIndex": 1
  }
 }
