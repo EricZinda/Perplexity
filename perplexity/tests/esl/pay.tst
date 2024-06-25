@@ -59,7 +59,7 @@
         },
         {
             "Command": "Can I pay the bill",
-            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?\nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_bill_n_of(x11,i17),pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,x11,i12)))",
             "Enabled": true,
             "ID": "76892157-de31-423b-9717-632e623b2316"
@@ -80,14 +80,14 @@
         },
         {
             "Command": "I want to pay the bill",
-            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?\nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_bill_n_of(x11,i17),pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,x11,i12)))",
             "Enabled": true,
             "ID": "42f554ad-0208-4bef-aad8-7171f8e5cbdd"
         },
         {
             "Command": "can I get the check?",
-            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?\nWaiter: So, do you want to pay with cash or card?",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_check_n_of(x11,i16),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _get_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "d059492d-e95d-4ec7-a6bb-15d25f2d7601"
