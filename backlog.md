@@ -4,7 +4,6 @@ Upload to itch.io:
 
 - Need to update the ubuntu and M1 grammar to 2024
 
-
 - Should always repeat the current state at the end
     "That's all for now" --> "I don't know the words: that"
 

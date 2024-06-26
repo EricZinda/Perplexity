@@ -17,7 +17,7 @@
         },
         {
             "Command": "what do you have?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ea3f7879-3ea3-4231-8648-c87f3ff20592"

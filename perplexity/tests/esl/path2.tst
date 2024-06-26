@@ -17,14 +17,14 @@
         },
         {
             "Command": "what do you have?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "569947bf-6700-4565-aec0-7b0f83c677fb"
         },
         {
             "Command": "what specials do you have?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "cb23e458-9d38-437c-9600-1a35ca7e89ff"

@@ -17,21 +17,21 @@
         },
         {
             "Command": "Can we get menus?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
             "Tree": "udef_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _get_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "2e777252-fd2c-4b4a-bce6-d29ceaa60eef"
         },
         {
             "Command": "I'll take a table for 2",
-            "Expected": "Waiter: Um... You're at a table.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
             "Tree": "number_q(x14,card(2,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_take_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "aa481f07-57c0-4d49-8138-a6748fbad2d1"
         },
         {
             "Command": "we will take menus",
-            "Expected": "Waiter: You already ordered a menu for you\nWaiter: You already ordered a menu for Johnny\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: You already ordered a menu for Johnny\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_menu_n_1(x8),_take_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "8548f60e-cfe8-4cdd-b92d-6c95465ca488"

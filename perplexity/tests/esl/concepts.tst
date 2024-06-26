@@ -83,7 +83,7 @@
         },
         {
             "Command": "I want the salmon",
-            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_salmon_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "0331458f-c733-4545-a0aa-fc8510f068df"

@@ -17,14 +17,14 @@
         },
         {
             "Command": "my son wants steak",
-            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a steak for Johnny?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_steak_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "4aba975f-b500-41e8-91e9-840acb6f3987"
         },
         {
             "Command": "I want chicken",
-            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a steak for Johnny and a chicken for you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_chicken_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "fdacf2bb-8a92-4f6a-999e-79bf25c8b802"
@@ -41,21 +41,21 @@
         },
         {
             "Command": "Can I cancel my order?",
-            "Expected": "Waiter: I have removed the order for you.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: I have removed the order for you.\nWaiter: Can I get you anything besides a steak for Johnny?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "27599b97-ed77-4328-aae2-47cd93688319"
         },
         {
             "Command": "Could I cancel my order?",
-            "Expected": "Waiter: Sorry, I don't believe there is an order for you.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Sorry, I don't believe there is an order for you.\nWaiter: Can I get you anything besides a steak for Johnny?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "e9ee1777-a400-43fe-a45c-6071f430831b"
         },
         {
             "Command": "My son wants chicken",
-            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a steak and a chicken for Johnny?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_chicken_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "824f3e0b-6635-4443-9d28-cfd5a236ab1e"
@@ -86,14 +86,14 @@
         },
         {
             "Command": "I want steak",
-            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "5fa55642-7820-4bad-a0e1-7039ea015eb9"
         },
         {
             "Command": "Johnny wants chicken",
-            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a steak for you and a chicken for Johnny?",
             "Tree": "udef_q(x9,_chicken_n_1(x9),proper_q(x3,named(Johnny,x3),_want_v_1(e2,x3,x9)))",
             "Enabled": true,
             "ID": "e6ab7fca-6cd7-41c5-9ffc-7e5b3c12fc52"
@@ -149,14 +149,14 @@
         },
         {
             "Command": "my son wants soup",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a soup for Johnny?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "c34d8395-d3a2-45d8-8564-e17f9e14f693"
         },
         {
             "Command": "I want chicken",
-            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a soup for Johnny and a chicken for you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_chicken_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "5865b8ea-3730-4e7e-9f0c-ad8fcd9efd0a"
@@ -194,7 +194,7 @@
         },
         {
             "Command": "my son wants soup",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a chicken for you and a soup for Johnny?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "cd90a597-6821-45fb-b65c-564157c4597c"
@@ -222,14 +222,14 @@
         },
         {
             "Command": "my son wants soup",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a soup for Johnny?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "8df1861a-c314-4cf0-baec-47b6e5afcab9"
         },
         {
             "Command": "I want chicken",
-            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a soup for Johnny and a chicken for you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_chicken_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d84c6a2c-4283-454e-80f1-612d9a3d65c9"

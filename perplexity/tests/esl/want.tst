@@ -31,21 +31,21 @@
         },
         {
             "Command": "I want a menu and a steak",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a menu and a steak for you?",
             "Tree": "_a_q(x13,_menu_n_1(x13),_a_q(x18,_steak_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
             "Enabled": true,
             "ID": "71afb0e0-c566-4cb5-9994-9e03132f67f8"
         },
         {
             "Command": "no",
-            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything else?",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a menu and a steak for you?",
             "Tree": "_no_a_1(i6,unknown(e2,u5))",
             "Enabled": true,
             "ID": "007f54d8-0657-48b8-8960-0dc13f7e38b0"
         },
         {
             "Command": "I want a steak",
-            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "60f8e4b6-a722-40f3-b40d-770b0b47ab51"
@@ -80,7 +80,7 @@
         },
         {
             "Command": "I want a menu",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d4b8b989-70b3-4489-9cbb-7d4c75d40363"
@@ -94,7 +94,7 @@
         },
         {
             "Command": "I want a menu for Johnny",
-            "Expected": "Waiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for Johnny?",
             "Tree": "proper_q(x14,named(Johnny,x14),pronoun_q(x3,pron(x3),_a_q(x8,[_menu_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "168c1644-2145-497f-96ae-e60e532e771c"
@@ -129,7 +129,7 @@
         },
         {
             "Command": "I want a table and a water",
-            "Expected": "Waiter: Um... You're at a table.\nWaiter: water is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: water is an excellent choice!\nWaiter: Can I get you anything besides a water for you?",
             "Tree": "_a_q(x13,_table_n_1(x13),_a_q(x18,_water_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
             "Enabled": true,
             "ID": "c88fe13b-4291-4f37-a0fd-1658cb18c699"

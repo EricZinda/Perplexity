@@ -1096,7 +1096,8 @@ class WorldState(State):
         prefix = " \n" if return_first else ""
         if self.sys["responseState"] == "anticipate_party_size":
             return prefix + "Host: How many in your party?"
-        if self.sys["responseState"] == "anticipate_dish":
+
+        elif self.sys["responseState"] == "anticipate_dish":
             ordered = dict()
             for item in self.ordered_but_not_delivered():
                 # Add the person that ordered it
@@ -1107,6 +1108,7 @@ class WorldState(State):
                 english = esl.esl_planner_description.convert_to_english(self, item[1])
                 if english not in ordered[item[0]]:
                     ordered[item[0]][english] = 1
+
                 else:
                     ordered[item[0]][english] += 1
 
@@ -1123,12 +1125,16 @@ class WorldState(State):
                     response_list.append(f"{esl.esl_planner_description.oxford_comma(english_description_list)} for {esl.esl_planner_description.convert_to_english(self, item[0])}")
 
                 return prefix + f"Waiter: Can I get you anything besides {esl.esl_planner_description.oxford_comma(response_list)}?"
+
             else:
                 return prefix + "Waiter: What can I get you?"
-        if self.sys["responseState"] == "way_to_pay":
+
+        elif self.sys["responseState"] == "way_to_pay":
             return prefix + "Waiter: So, do you want to pay with cash or card?"
-        if self.sys["responseState"] in ["initial"]:
-            return ""
+
+        elif self.sys["responseState"] in ["initial"]:
+            return "How can I help you today?"
+
         assert False, f"Unknown state {self.sys['responseState']}"
 
     def food_in_order(self, order):

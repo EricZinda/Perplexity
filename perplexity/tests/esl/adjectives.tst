@@ -59,7 +59,7 @@
         },
         {
             "Command": "I want a green dish and a tomato dish, please!",
-            "Expected": "Waiter: salad is an excellent choice!\nWaiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: salad is an excellent choice!\nWaiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a salad and a soup for you?",
             "Tree": "_a_q(x13,[_dish_n_of(x13,i18), _green_a_2(e17,x13)],_a_q(x20,udef_q(x26,_tomato_n_1(x26),[_dish_n_of(x20,i31), compound(e25,x20,x26)]),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x20),[_please_a_1(e32,e2), _want_v_1(e2,x3,x8)]))))",
             "Enabled": true,
             "ID": "59291b86-c54a-4f8b-b8da-d380d7fed0e4"
@@ -115,7 +115,7 @@
         },
         {
             "Command": "what is grilled?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "which_q(x3,thing(x3),_grill_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "8ffbcbd5-8527-4e9c-8351-d8c413e3eb04"
@@ -157,42 +157,42 @@
         },
         {
             "Command": "do you have the grilled salmon",
-            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "00535794-2db5-44cc-9bb8-47c95f1bd988"
         },
         {
             "Command": "do you have the smoked pork",
-            "Expected": "Son: Wait, let's not order pork before we know how much it costs.\nWaiter: Can I get you anything else?",
+            "Expected": "Son: Wait, let's not order pork before we know how much it costs.\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_pork_n_1(x8), _smoke_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "356262cd-6d0e-4ea9-8f1d-7cb83a06ef11"
         },
         {
             "Command": "I want the grilled salmon",
-            "Expected": "Son: Wait, we already spent $12 so if we get 1 salmon, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
+            "Expected": "Son: Wait, we already spent $12 so if we get 1 salmon, we won't be able to pay for it with $20.\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "07526a10-6eaa-43f9-b1ed-25f12369342a"
         },
         {
             "Command": "I want the smoked pork",
-            "Expected": "Son: Wait, let's not order pork before we know how much it costs.\nWaiter: Can I get you anything else?",
+            "Expected": "Son: Wait, let's not order pork before we know how much it costs.\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_pork_n_1(x8), _smoke_v_1(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "9b022abb-9691-4bc6-8993-e8d8fbee0952"
         },
         {
             "Command": "what is smoked?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "which_q(x3,thing(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "7190456b-3675-4585-a9c2-b95e7f7e0760"
         },
         {
             "Command": "what is smoked?",
-            "Expected": "smoked pork\nWaiter: Can I get you anything else?",
+            "Expected": "smoked pork\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "which_q(x3,thing(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "6d0e52f0-86c7-407f-ad67-27a0286b1f62"
@@ -213,28 +213,28 @@
         },
         {
             "Command": "do you have the roasted chicken",
-            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a salmon and a chicken for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_chicken_n_1(x8), _roast_v_cause(e13,i14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "9818d448-e378-4a12-9ab0-828be345f34b"
         },
         {
             "Command": "I want the roasted chicken",
-            "Expected": "Son: Wait, we already spent $19 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything else?",
+            "Expected": "Son: Wait, we already spent $19 so if we get 1 chicken, we won't be able to pay for it with $20.\nWaiter: Can I get you anything besides a salmon and a chicken for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_chicken_n_1(x8), _roast_v_cause(e13,i14,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "a69bd72f-0a97-423e-98e8-2947e8d8d5ab"
         },
         {
             "Command": "what is roasted?",
-            "Expected": "roasted chicken\nWaiter: Can I get you anything else?",
+            "Expected": "roasted chicken\nWaiter: Can I get you anything besides a salmon and a chicken for you?",
             "Tree": "which_q(x3,thing(x3),_roast_v_cause(e2,i8,x3))",
             "Enabled": true,
             "ID": "affd8599-3ae9-43f7-bd7b-e53fb3eb7fcb"
         },
         {
             "Command": "what is vegetarian?",
-            "Expected": "soup\nsalad\nWaiter: Can I get you anything else?",
+            "Expected": "soup\nsalad\nWaiter: Can I get you anything besides a salmon and a chicken for you?",
             "Tree": "which_q(x3,thing(x3),_vegetarian_a_1(e2,x3))",
             "Enabled": true,
             "ID": "536f65a4-7a11-4838-92ab-ef6166f9472f"

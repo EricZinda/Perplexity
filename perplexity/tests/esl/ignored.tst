@@ -31,7 +31,7 @@
         },
         {
             "Command": "ok, can we have a menu?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
             "Tree": "_okay_a_1(i4,_a_q(x14,_menu_n_1(x14),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e13), _have_v_1_able(e2,x3,x14)])))",
             "Enabled": true,
             "ID": "cf3d3f38-e5fc-47a2-adac-8f11cd307446"

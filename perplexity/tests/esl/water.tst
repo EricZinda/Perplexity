@@ -17,7 +17,7 @@
         },
         {
             "Command": "I want water",
-            "Expected": "Waiter: water is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: water is an excellent choice!\nWaiter: Can I get you anything besides a water for you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_water_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "19372455-ad78-4391-be80-e6cd47a34971"
@@ -45,7 +45,7 @@
         },
         {
             "Command": "I want water for my son",
-            "Expected": "Waiter: water is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: water is an excellent choice!\nWaiter: Can I get you anything besides a water for Johnny?",
             "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),udef_q(x8,[_water_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "a5a101ba-c8f4-4e98-ae9c-f49ef5924726"
@@ -87,7 +87,7 @@
         },
         {
             "Command": "I want water and a menu",
-            "Expected": "Waiter: water is an excellent choice!\nWaiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: water is an excellent choice!\nWaiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a water and a menu for you?",
             "Tree": "udef_q(x13,_water_n_1(x13),_a_q(x18,_menu_n_1(x18),pronoun_q(x3,pron(x3),udef_q(x8,_and_c(x8,x13,x18),_want_v_1(e2,x3,x8)))))",
             "Enabled": true,
             "ID": "fb5fb222-b8d0-4558-b3e5-26edf1e9366c"

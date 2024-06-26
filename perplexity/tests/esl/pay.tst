@@ -17,35 +17,35 @@
         },
         {
             "Command": "can I have the menu",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "0103f25f-496a-4f74-a051-2c6bc984fed5"
         },
         {
             "Command": "what are your specials",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
             "ID": "fe730c00-298a-44ce-8deb-328151b37118"
         },
         {
             "Command": "how much is the salad",
-            "Expected": "3 dollars\nWaiter: Can I get you anything else?",
+            "Expected": "3 dollars\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_salad_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "c0e0a372-60d8-4d43-8462-550acc3ae5e2"
         },
         {
             "Command": "my son wants the salad",
-            "Expected": "Waiter: salad is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: salad is an excellent choice!\nWaiter: Can I get you anything besides a menu for you and a salad for Johnny?",
             "Tree": "pronoun_q(x9,pron(x9),_the_q(x15,_salad_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "563a8c08-9e38-4b8b-b057-80fd366d873a"
         },
         {
             "Command": "I want the steak",
-            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a menu and a steak for you and a salad for Johnny?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "23b571c9-6022-4fb7-a85c-8b693d85bf8b"

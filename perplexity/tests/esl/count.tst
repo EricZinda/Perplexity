@@ -38,49 +38,49 @@
         },
         {
             "Command": "I want a soup",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a soup for you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d76232c5-713c-4697-8943-abf8c3a1a90d"
         },
         {
             "Command": "how many soups did I order",
-            "Expected": "1\nWaiter: Can I get you anything else?",
+            "Expected": "1\nWaiter: Can I get you anything besides a soup for you?",
             "Tree": "which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),count(e14,x9,x5,udef_q(x5,_soup_n_1(x5),_order_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "249bb4ea-e6d6-43e0-8b47-89b4707b7837"
         },
         {
             "Command": "I want a soup",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides 2 soups for you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "46ea576a-5aea-4374-b2d8-2fd7816447f0"
         },
         {
             "Command": "how many soups did I order",
-            "Expected": "2\nWaiter: Can I get you anything else?",
+            "Expected": "2\nWaiter: Can I get you anything besides 2 soups for you?",
             "Tree": "which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),count(e14,x9,x5,udef_q(x5,_soup_n_1(x5),_order_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "594dff55-c9c3-4521-966c-ab306fd3bc41"
         },
         {
             "Command": "how much soup did I order",
-            "Expected": "2\nWaiter: Can I get you anything else?",
+            "Expected": "2\nWaiter: Can I get you anything besides 2 soups for you?",
             "Tree": "which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),count(e14,x9,x5,udef_q(x5,_soup_n_1(x5),_order_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "ef6b5235-1124-4bbd-8bd5-a4a9526e569d"
         },
         {
             "Command": "My son wants the soup",
-            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything else?",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides 2 soups for you and a soup for Johnny?",
             "Tree": "pronoun_q(x9,pron(x9),_the_q(x15,_soup_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "6d59232b-488b-4855-bcb8-e495df42f9d7"
         },
         {
             "Command": "how much soup did my son order",
-            "Expected": "1\nWaiter: Can I get you anything else?",
+            "Expected": "1\nWaiter: Can I get you anything besides 2 soups for you and a soup for Johnny?",
             "Tree": "which_q(x9,abstr_deg(x9),def_explicit_q(x3,pronoun_q(x21,pron(x21),[_son_n_of(x3,i26), poss(e20,x3,x21)]),count(e14,x9,x5,udef_q(x5,_soup_n_1(x5),_order_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "c5732829-03b9-42d6-9f2b-d2f325fc2ccc"
