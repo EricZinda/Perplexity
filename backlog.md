@@ -2,6 +2,7 @@ Upload to itch.io:
 - https://htmleditor.io/
 - https://onlinetools.com/image/convert-image-to-data-uri
 
+
 - Need to update the ubuntu and M1 grammar to 2024
 
 
@@ -84,6 +85,7 @@ Cleanup:
                 - returns a weird error
 
     Low Pri:
+        - Conjunctions can't be root transformers
         - Do we still need frames with the new concept handling?
         - lift_style_predication_2
           - should assert if the predication doesn't allow for > 1 in the set
@@ -124,6 +126,28 @@ Cleanup:
 
 New Language:
     Hi Pri:
+        - nothing, we're ready for the check/bill --> Sorry, did you mean to say something?
+            "I'm ready for" --> "I want"
+                                    ┌────── _bill_n_of(x9,i14)
+            _the_q(x9,RSTR,BODY)               ┌────── pron(x3)
+                             └─ pronoun_q(x3,RSTR,BODY)    ┌── _for_p(e8,e2,x9)
+                                                    └─ and(0,1)
+                                                             └ _ready_a_1(e2,x3)
+
+            Text Tree: _the_q(x9,_bill_n_of(x9,i14),pronoun_q(x3,pron(x3),[_for_p(e8,e2,x9), _ready_a_1(e2,x3)]))
+
+        - Waiter: What can I get you?
+            USER: nothing
+            I don't know the words: nothing
+            Waiter: What can I get you?
+        - we're ready to pay
+            I don't know the words: ready
+        USER: can we pay?
+            I don't understand the way you are using: pay
+        - thanks! --> Yes, that is true.
+
+        - How much are each of the vegetarian options?
+        - we're good. thanks! --> Should be no
         - I don't know the words: hamburger
             - Use chatgpt to give a better error
         - Card, please --> I don't know the way you used: polite
@@ -134,7 +158,21 @@ New Language:
         - how about a soup? --> I don't know the words: generic_verb, how+about
         - we'd both like waters to drink please --> doesn't work
         - what do you have to eat?
+        - what do you guys have?
+        - what do you guys serve?
+        - what is vegetarian on the menu
+        - I wont get the steak --> Yes, that is true.
+        - Remove the steak --> I don't know the words: remove
+        - Actually I won't have the steak --> I don't know the words: actual
+        - ignore what I ordered
+        - USER: what other options are on the menu
+            No. ESLConcept(dish: [(<function rel_subjects at 0x7f01fdc05a60>, 'isAdj', 'other')] ) is not on ESLConcept(menu: [] )
+            Waiter: What can I get you?
+            Waiter: What can I get you?
         - Not right now, thank you. --> doesn't work
+            - not right now
+        - what do you have on your menu? --> doesn't work
+            what vegetarian items do you have on your menu?
         - could I get a soup? is very slow when you don't know the cost
         - I don't want anything else.  is very slow
         - Work through cancelling order language

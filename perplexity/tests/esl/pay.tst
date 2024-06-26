@@ -58,11 +58,18 @@
             "ID": "1261d537-a6c5-4a04-87dc-3e5552eeb4d0"
         },
         {
+            "Command": "I'm ready for the bill",
+            "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
+            "Tree": "_the_q(x9,_bill_n_of(x9,i14),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x9)))",
+            "Enabled": true,
+            "ID": "76892157-de31-423b-9717-632e623b2316"
+        },
+        {
             "Command": "Can I pay the bill",
             "Expected": "Waiter: Your total is 13 dollars.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "_the_q(x11,_bill_n_of(x11,i17),pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,x11,i12)))",
             "Enabled": true,
-            "ID": "76892157-de31-423b-9717-632e623b2316"
+            "ID": "f45f8cdf-ae81-4832-83a6-94041d5c09cd"
         },
         {
             "Command": "Who can pay the bill",

@@ -72,6 +72,13 @@
             "ID": "6fa3c9a9-ea4c-4318-b5ed-fc9ef0de6d67"
         },
         {
+            "Command": "Nope that's it",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "_the_q(x14,_moment_n_1(x14),no_standalone(e2))",
+            "Enabled": true,
+            "ID": "6fa3c9a9-ea4c-4318-b5ed-fc9ef0de6d67"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

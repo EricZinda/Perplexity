@@ -35,4 +35,4 @@ Ideas:
                 that next node must match or it fails
             If it fails, the transformer runs against the tree from the place right after where it activated
         The node where the tranformer was activated gets replaced *entirely* by the replacement node
-        to match a conjunction it needs to be called out specifically as and(h)
+        To match a conjunction it needs to be called out specifically as a conjunction

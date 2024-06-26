@@ -123,6 +123,32 @@ def max_from_variable_group(variable_group):
 
 # **** Transforms ****
 
+# Ready for x --> want x
+#           ┌────── _table_n_1(x9)
+# _a_q(x9,RSTR,BODY)               ┌────── pron(x3)
+#                └─ pronoun_q(x3,RSTR,BODY)    ┌── _for_p(e8,e2,x9)
+#                                       └─ and(0,1)
+#                                                └ _ready_a_1(e2,x3)
+@Transform(vocabulary)
+def ready_for_to_want_transformer():
+    production_want_verb = TransformerProduction(name="_want_v_1", args={"ARG0": "$e_original", "ARG1": "$x_actor", "ARG2": "$x_target"})
+    conjuct_production = ConjunctionProduction(conjunction_list=[production_want_verb, "$extra_conjuncts"])
+    quantifier_production = TransformerProduction(name="$quantifier_name", args={"ARG0": "$x_quantifier", "ARG1": "$rstr_quantifier", "ARG2": conjuct_production})
+
+    target_ready_predication = TransformerMatch(name_pattern="_ready_a_1", args_pattern=["e", "x"], args_capture=["e_original", "x_actor"])
+    target_for_predication = TransformerMatch(name_pattern="_for_p", args_pattern=["e", "e", "x"], args_capture=[None, None, "x_target"])
+    target_conjunction = ConjunctionMatchTransformer([target_for_predication, target_ready_predication],
+                                                     extra_conjuncts_capture="extra_conjuncts")
+
+    return TransformerMatch(name_pattern="*",
+                             name_capture="quantifier_name",
+                             args_pattern=["x", "h", target_conjunction],
+                             args_capture=["x_quantifier", "rstr_quantifier", None],
+                             removed=["_ready_a_1", "_for_p"],
+                             production=quantifier_production)
+
+
+
 # Convert "and <phrase>?" to "<phrase>"
 # as in "and I'll take the steak"
 @Transform(vocabulary)
