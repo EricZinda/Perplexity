@@ -66,8 +66,8 @@
         },
         {
             "Command": "perfect",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for you.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "def_implicit_q(x10,[time_n(x10), _now_a_1(e15,x10)],_no_a_1(i7,[_for_p(e9,e2,x10), unknown(e2,u5)]))",
+            "Expected": "\nWaiter: What can I get you?",
+            "Tree": "[_perfect_a_1(e5,u4), unknown(e2,u4)]",
             "Enabled": true,
             "ID": "0ec0db9a-43f5-4e32-b381-51246200830a"
         }
