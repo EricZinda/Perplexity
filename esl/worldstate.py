@@ -1133,7 +1133,7 @@ class WorldState(State):
             return prefix + "Waiter: So, do you want to pay with cash or card?"
 
         elif self.sys["responseState"] in ["initial"]:
-            return "How can I help you today?"
+            return prefix + "Host: How can I help you today?"
 
         assert False, f"Unknown state {self.sys['responseState']}"
 
