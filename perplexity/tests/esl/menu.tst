@@ -23,8 +23,15 @@
             "ID": "bc1ce7b9-3611-48fa-9baf-5288edde5c55"
         },
         {
+            "Command": "We'd both like a menu",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
+            "Tree": "_a_q(x12,_menu_n_1(x12),pronoun_q(x3,pron(x3),[_both_a_1(i9,e2), _want_v_1(e2,x3,x12)]))",
+            "Enabled": true,
+            "ID": "d30b2343-955a-4d2f-ade5-736c1cf2ff73"
+        },
+        {
             "Command": "that will be all",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for you.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
             "Tree": "no_standalone(e2)",
             "Enabled": true,
             "ID": "4ee29d7a-4ec4-45ae-be8e-d0735a4718c2"
@@ -38,14 +45,14 @@
         },
         {
             "Command": "My son wants the menu",
-            "Expected": "Waiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for Johnny?",
+            "Expected": "Waiter: Oh, I already gave Johnny a menu. You can see that there is a menu in front of Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),_the_q(x15,_menu_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "4ecab638-357a-43e6-b768-421b52437bdb"
         },
         {
             "Command": "that will be all, thank you.",
-            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n<end>You are welcome!\nWaiter: What can I get you?",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.<end>You are welcome!\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x16,pron(x16),[no_standalone(e9)])<end>pronoun_q(x16,pron(x16),[_thank_v_1(e10,x5,x16)])",
             "Enabled": true,
             "ID": "3eb18b1a-240f-4fea-957b-4e9c98bcbdce"

@@ -5,10 +5,10 @@ Upload to itch.io:
 - Need to update the ubuntu and M1 grammar to 2024
 
 
+- we'd both like waters to drink please. --> ignore "both"
 
-
-- we'd both like waters to drink please.
-    - ignore "both"
+- USER: perfect. --> I don't know the words: perfect
+- implement: let's start again
 
 - Implement all alternatives of "no"
     - implement: that's all for now
@@ -27,8 +27,7 @@ Upload to itch.io:
 - implement: what do you have to eat?
 
 
-- USER: perfect. --> I don't know the words: perfect
-- implement: let's start again
+
 
 Bugs:
     High Pri:

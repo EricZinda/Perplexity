@@ -2268,6 +2268,11 @@ def _just_x_deg(context, state, e_introduced_binding, u_binding):
     yield state
 
 
+@Predication(vocabulary, names=["_both_a_1"])
+def _both_a_1(context, state, i_binding, e_binding):
+    yield state
+
+
 @Predication(vocabulary, names=["_please_a_1"])
 def _please_a_1_scopal(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)

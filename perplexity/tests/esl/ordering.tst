@@ -30,6 +30,13 @@
             "ID": "00b573f9-37b5-4d1a-8741-6a76ccb75288"
         },
         {
+            "Command": "We would both like menus",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "udef_q(x12,_menu_n_1(x12),pronoun_q(x3,pron(x3),[_both_a_1(i9,e2), _want_v_1(e2,x3,x12)]))",
+            "Enabled": true,
+            "ID": "9358572e-164d-4d4b-83f7-88bfd18e80a0"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
@@ -404,7 +411,8 @@
                 "menu\n2 soup\nsteak\nwater",
                 "water\nmenu\n2 soup\nsteak",
                 "menu\nsteak\nwater\n2 soup",
-                "steak\nmenu\nwater\n2 soup"
+                "steak\nmenu\nwater\n2 soup",
+                "water\nsteak\nmenu\n2 soup"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
