@@ -101,7 +101,7 @@
         },
         {
             "Command": "cash",
-            "Expected": "Ah. Perfect! Have a great rest of your day.",
+            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n\nHost: Hi! How can I help you?",
             "Tree": "udef_q(x4,_cash_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "1b243ee9-08a0-4942-bc6f-d09ddd2e1856"
