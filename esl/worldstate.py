@@ -6,7 +6,7 @@ import pickle
 import esl.esl_planner
 import esl.esl_planner_description
 from perplexity.predications import is_concept, Concept
-from perplexity.response import RespondOperation, get_reprompt_operation
+from perplexity.response import RespondOperation, get_reprompt_operation, ResetOperation
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.sstring import s
 from perplexity.state import State
@@ -1094,7 +1094,11 @@ class WorldState(State):
 
     def get_reprompt(self, return_first=True):
         prefix = " \n" if return_first else ""
-        if self.sys["responseState"] == "anticipate_party_size":
+
+        if self.sys["responseState"] in ["initial"]:
+            return prefix + "Host: How can I help you today?"
+
+        elif self.sys["responseState"] == "anticipate_party_size":
             return prefix + "Host: How many in your party?"
 
         elif self.sys["responseState"] == "anticipate_dish":
@@ -1131,9 +1135,6 @@ class WorldState(State):
 
         elif self.sys["responseState"] == "way_to_pay":
             return prefix + "Waiter: So, do you want to pay with cash or card?"
-
-        elif self.sys["responseState"] in ["initial"]:
-            return prefix + "Host: How can I help you today?"
 
         assert False, f"Unknown state {self.sys['responseState']}"
 
@@ -1292,10 +1293,14 @@ class WorldState(State):
             if len(x) == 1:
                 x = x[0]
                 if x in ["cash"]:
-                    return [RespondOperation("Ah. Perfect! Have a great rest of your day.")]
+                    return [RespondOperation("Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n"),
+                            RespondOperation("Host: Hi! How can I help you?"),
+                            ResetOperation()]
+
                 elif x in ["card", "card, credit"]:
                     return [RespondOperation("You reach into your pocket and realize you don’t have a credit card."),
                             get_reprompt_operation(self)]
+
                 else:
                     return [RespondOperation("Waiter: Hmm. I didn't understand what you said."),
                             get_reprompt_operation(self)]

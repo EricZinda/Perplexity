@@ -4,13 +4,14 @@ Upload to itch.io:
 
 - Need to update the ubuntu and M1 grammar to 2024
 
+- USER: I will order the steak. I don't understand the way you are using: order
+
 - Should always repeat the current state at the end of an error
     "That's all for now" --> "I don't know the words: that"
     - Need to pass state to error handler
 
 - "for the moment" should be ignored
-    - also at the moment
-
+    - also "at the moment"
 
 - we'd both like waters to drink please.
     - ignore "both"
@@ -22,34 +23,14 @@ Upload to itch.io:
 - I don't know the words: hamburger
     - Use chatgpt to give a better error
 
-- USER: Can we get the check please?
-    Waiter: Your total is 13 dollars.
-    Waiter: So, do you want to pay with cash or card?
-
-    --------------- 2024-06-24 20:57:23.918845 - ip-10-0-0-247.ec2.internal@129: Interface:REST-, AfterInteractionData: eWc2ZGh1c3VmNGdseHRnMWJrYw==-205723918826.backup
-    USER: cash
-    Ah. Perfect! Have a great rest of your day.
-
-    --------------- 2024-06-24 20:57:28.667659 - ip-10-0-0-247.ec2.internal@129: Interface:REST-, AfterInteractionData: eWc2ZGh1c3VmNGdseHRnMWJrYw==-205728667637.backup
-    USER: thank you!  you too!
-    You are welcome!
-    Waiter: So, do you want to pay with cash or card?
-    Waiter: Hmm. I didn't understand what you said.
-    Waiter: So, do you want to pay with cash or card?
-
-- USER: I will order the steak. I don't understand the way you are using: order
-
 - Card, please --> I don't know the way you used: polite
 
 - How much are each of the specials? --> I don't know the words: part_of
 - implement: what do you have to eat?
 
 
-- fix: OK --> that is true
 - USER: perfect. --> I don't know the words: perfect
 - implement: let's start again
-
-
 
 Bugs:
     High Pri:

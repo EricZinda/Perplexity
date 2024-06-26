@@ -10,6 +10,7 @@ from delphin.codecs import simplemrs
 from perplexity.autocorrect import autocorrect, get_autocorrect
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
+from perplexity.response import ResetOperation
 from perplexity.set_utilities import CachedIterable
 from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
@@ -458,6 +459,15 @@ class UserInterface(object):
                                             solution_group_solutions = [solution for solution in solution_group]
                                             operation_responses, last_phrase_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
                                             self.state = new_state
+                                            did_reset = False
+                                            for solution in solution_group_solutions:
+                                                for operation in solution.get_operations():
+                                                    if isinstance(operation, ResetOperation):
+                                                        self.state = self.reset()
+                                                        did_reset = True
+                                                        break
+                                                if did_reset:
+                                                    break
 
                                         except MessageException as error:
                                             response = self.response_function(self.vocabulary, self.message_function, tree_info, [], [0, error.message_object()])

@@ -7,6 +7,12 @@ class ResponseLocation(enum.IntEnum):
     last = 2
 
 
+# The UserInterface class looks for this operation and performs a reset if found
+class ResetOperation(object):
+    def apply_to(self, state):
+        pass
+
+
 class NoopOperation(object):
     def apply_to(self, state):
         pass
