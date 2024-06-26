@@ -10,28 +10,28 @@
         },
         {
             "Command": "what do you have?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\nHost: How can I help you today?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "4c77d27e-6a16-4ca3-84d6-bee985bb5ced"
         },
         {
             "Command": "what is meat?",
-            "Expected": "Host: If you'd like to hear about our menu items, you'll need to have a seat.",
+            "Expected": "Host: If you'd like to hear about our menu items, you'll need to have a seat.\nHost: How can I help you today?",
             "Tree": "which_q(x5,thing(x5),udef_q(x3,_meat_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "65845078-909d-44bc-b3b8-44e37abfeadf"
         },
         {
             "Command": "what is the bill?",
-            "Expected": "Waiter: Let's talk about the bill once you've finished eating.",
+            "Expected": "Waiter: Let's talk about the bill once you've finished eating.\nHost: How can I help you today?",
             "Tree": "which_q(x3,thing(x3),_the_q(x8,_bill_n_of(x8,i13),_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d6b53f06-71c4-4ffb-9152-5e41635d1197"
         },
         {
             "Command": "how much is the soup?",
-            "Expected": "Host: Let's talk about prices once you've been seated.",
+            "Expected": "Host: Let's talk about prices once you've been seated.\nHost: How can I help you today?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "36d590b3-0f4d-4bc2-958e-33fc650e9a12"

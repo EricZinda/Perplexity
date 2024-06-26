@@ -290,7 +290,7 @@
         },
         {
             "Command": "What can I have?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\nHost: How can I help you today?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e15), _have_v_1_able(e2,x3,x5)]))",
             "Enabled": true,
             "ID": "324c870d-e826-4cdb-a4da-a209a1af334d"
@@ -423,7 +423,7 @@
         },
         {
             "Command": "We want tables",
-            "Expected": "Johnny: Hey, let's sit together alright?",
+            "Expected": "Johnny: Hey, let's sit together alright?\n \nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35492138-e4fb-4a43-8bb8-994924f6c1f9"
@@ -451,7 +451,7 @@
         },
         {
             "Command": "I'd like a steak",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a steak when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a steak when you have a table.\nHost: How can I help you today?",
             "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "0b2e3855-cca5-4e43-8532-621909cc3094"
@@ -465,7 +465,7 @@
         },
         {
             "Command": "I'd like a table for 1",
-            "Expected": "Johnny: Hey! That's not enough seats!",
+            "Expected": "Johnny: Hey! That's not enough seats!\n \nHost: How can I help you today?",
             "Tree": "_a_q(x11,number_q(x17,card(1,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"

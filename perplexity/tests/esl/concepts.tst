@@ -24,7 +24,7 @@
         },
         {
             "Command": "I want a table for my son",
-            "Expected": "Johnny: Hey! That's not enough seats!",
+            "Expected": "Johnny: Hey! That's not enough seats!\n \nHost: How can I help you today?",
             "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "8ebb4a5c-69c6-4877-8109-472977c306ce"

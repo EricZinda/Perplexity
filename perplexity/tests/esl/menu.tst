@@ -73,35 +73,35 @@
         },
         {
             "Command": "Can I see a menu?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\nHost: How can I help you today?",
             "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _see_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "ed0e789c-6ba1-4e91-98fd-a9bea2f02e27"
         },
         {
             "Command": "Do you have a menu?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "9a11bb68-b6a7-4ae5-87da-ce2853e821a9"
         },
         {
             "Command": "Do you have the menu?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "22a6851e-3314-4bc9-8067-ed352aceb570"
         },
         {
             "Command": "We will see a menu",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_see_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "8fd795d7-6127-4186-b87b-67680e2c551e"
         },
         {
             "Command": "Could we have a menu?",
-            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.",
+            "Expected": "Host: Sorry, you'll need to talk to your waiter about a menu when you have a table.\nHost: How can I help you today?",
             "Tree": "_a_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "4a0fe26c-88b6-4386-8e7b-af607075c4f6"
@@ -164,7 +164,7 @@
         },
         {
             "Command": "show me 2 menus",
-            "Expected": "Waiter: Our policy is to give one menu to every customer ... \nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...\n \nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(2,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "cde58b5d-7df0-4173-a792-d2379fdf4716"
@@ -192,7 +192,7 @@
         },
         {
             "Command": "show us 3 menus",
-            "Expected": "Waiter: Our policy is to give one menu to every customer ... \nWaiter: What can I get you?",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...\n \nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"
