@@ -4,11 +4,7 @@ Upload to itch.io:
 
 - Need to update the ubuntu and M1 grammar to 2024
 
-- USER: perfect. --> I don't know the words: perfect
-
-- "for the moment" should be ignored
-    - also "at the moment"
-
+- "at the moment" should be ignored
 
 - I don't know the words: hamburger
     - Use chatgpt to give a better error
@@ -143,6 +139,8 @@ New Language:
     Hi Pri:
         - how about vegetarian soup? --> I don't know the words: generic_verb, how+about
             - Need a better error message
+        - we'd both like waters to drink please --> doesn't work
+        - what do you have to eat?
         - Just some water for now, please --> doesn't work
         - Not right now, thank you. We'll look at the menu first. doesn't work
         - could I get a soup? is very slow when you don't know the cost

@@ -51,6 +51,20 @@
             "ID": "e5661a8d-6376-418b-9f44-6a28a543592b"
         },
         {
+            "Command": "That's all for the moment",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "_the_q(x14,_moment_n_1(x14),no_standalone(e2))",
+            "Enabled": true,
+            "ID": "f71ee648-63ac-4243-91ca-aa941a4cbef4"
+        },
+        {
+            "Command": "That's it for the moment",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "_the_q(x14,_moment_n_1(x14),no_standalone(e2))",
+            "Enabled": true,
+            "ID": "6fa3c9a9-ea4c-4318-b5ed-fc9ef0de6d67"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",

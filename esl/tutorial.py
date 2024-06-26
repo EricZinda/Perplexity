@@ -1164,6 +1164,17 @@ def _cash_n_1(context, state, x_bind):
     yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
+@Predication(vocabulary, names=["_moment_n_1"])
+def _card_n_1(context, state, x_bind):
+    def bound(val):
+        return val == "moment"
+
+    def unbound():
+        yield "moment"
+
+    yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
+
+
 @Predication(vocabulary, names=["_card_n_1"])
 def _card_n_1(context, state, x_bind):
     def bound(val):
