@@ -897,7 +897,10 @@ def basic_numbered_hour(context, state, c_count, x_binding):
 
 @Predication(vocabulary, names=["_for_p"])
 def _for_p_event(context, state, e_binding, e_target_binding, x_for_binding):
-    yield state.add_to_e(e_target_binding.variable.name, "for", {"Value": x_for_binding.value, "Originator": context.current_predication_index()})
+    if x_for_binding.value is not None and len(x_for_binding.value) == 1 and x_for_binding.value[0] == "now":
+        yield state
+    else:
+        yield state.add_to_e(e_target_binding.variable.name, "for", {"Value": x_for_binding.value, "Originator": context.current_predication_index()})
 
 
 # Checks to make sure a "for" construct is valid, and determines what kind of "for" construct it is
@@ -931,6 +934,9 @@ def for_check(context, state, x_what_list, x_for_list):
                                 ['errorText', f"{convert_to_english(state, what)} is not for {convert_to_english(state, x_for_list[0])}.",
                                  state.get_reprompt()])
                             return False, for_type, x_what_type
+
+        elif item == "now":
+            return True, "ignore", "ignore"
 
         elif is_user_type(item):
             # if 'for' refers to an instance of a person (checked by is_user_type) like "Table for my son and I",
@@ -988,7 +994,7 @@ def for_check(context, state, x_what_list, x_for_list):
 # Returns an updated version of the solution state that has x_what_binding
 # updated to include the information that x_for_binding added to it
 def for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_list):
-    if x_what_type == perplexity.predications.VariableValueType.instance:
+    if x_what_type == perplexity.predications.VariableValueType.instance or for_type == "ignore":
         # Already fully checked above
         return solution
 
@@ -2181,6 +2187,22 @@ def loc_nonsp_eex(context, state, e_introduced_binding, e_binding, x_loc_binding
     yield state
 
 
+@Predication(vocabulary, names=["_now_a_1"])
+def _now_a_1(context, state, e_introduced_binding, x_binding):
+    def bound_variable(value):
+        if value in ["now"]:
+            return True
+
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            return False
+
+    def unbound_variable():
+        yield "now"
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
+
+
 @Predication(vocabulary, names=["_today_a_1"])
 def _today_a_1(context, state, e_introduced_binding, x_binding):
     def bound_variable(value):
@@ -2200,13 +2222,14 @@ def _today_a_1(context, state, e_introduced_binding, x_binding):
 @Predication(vocabulary, names=["time_n"])
 def time_n(context, state, x_binding):
     def bound_variable(value):
-        if value in ["today", "yesterday", "tomorrow"]:
+        if value in ["now", "today", "yesterday", "tomorrow"]:
             return True
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
             return False
 
     def unbound_variable():
+        yield "now"
         yield "today"
         yield "yesterday"
         yield "tomorrow"

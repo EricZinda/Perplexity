@@ -18,12 +18,12 @@
         {
             "Command": "What is my son?",
             "Expected": [
-                "son\nperson\nthing",
-                "person\nthing\nson",
-                "thing\nson\nperson",
-                "person\nson\nthing",
-                "thing\nperson\nson",
-                "son\nthing\nperson"
+                "son\nperson\nthing\nHow can I help you today?",
+                "person\nthing\nson\nHow can I help you today?",
+                "thing\nson\nperson\nHow can I help you today?",
+                "person\nson\nthing\nHow can I help you today?",
+                "thing\nperson\nson\nHow can I help you today?",
+                "son\nthing\nperson\nHow can I help you today?"
             ],
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_son_n_of(x8,i19), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,

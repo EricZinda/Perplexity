@@ -4,13 +4,13 @@ Upload to itch.io:
 
 - Need to update the ubuntu and M1 grammar to 2024
 
-- Should always repeat the current state at the end
+- Should always repeat the current state at the end of an error
     "That's all for now" --> "I don't know the words: that"
+    - Need to pass state to error handler
 
-- Need more context up front
-    - say single sentences (or maybe split them up?)
+- "for the moment" should be ignored
+    - also at the moment
 
-- "for now" should be ignored
 
 - we'd both like waters to drink please.
     - ignore "both"
