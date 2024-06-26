@@ -74,9 +74,16 @@
         {
             "Command": "Nope that's it",
             "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
-            "Tree": "_the_q(x14,_moment_n_1(x14),no_standalone(e2))",
+            "Tree": "_nope_a_1(i4,no_standalone(e2))",
             "Enabled": true,
-            "ID": "6fa3c9a9-ea4c-4318-b5ed-fc9ef0de6d67"
+            "ID": "2fd65857-702b-4285-97d0-89b08decca67"
+        },
+        {
+            "Command": "Nothing",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "udef_q(x4,_nothing_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "21060508-e9a9-4a0d-aaf9-44785556b7de"
         },
         {
             "Command": "/new esl.tutorial.reset",

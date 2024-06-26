@@ -1305,7 +1305,10 @@ class WorldState(State):
                             get_reprompt_operation(self)]
 
         elif self.sys["responseState"] in ["anticipate_dish", "initial"]:
-            return self.handle_world_event(context, ["user_wants", x])
+            if x == ("nothing", ):
+                return self.handle_world_event(context, ["no"])
+            else:
+                return self.handle_world_event(context, ["user_wants", x])
 
         elif self.sys["responseState"] in ["anticipate_party_size"]:
             if is_user_type(x):

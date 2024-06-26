@@ -1179,6 +1179,19 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
         else:
             yield new_state
 
+
+
+@Predication(vocabulary, names=["_nothing_n_1"])
+def _nothing_n_1(context, state, x_bind):
+    def bound(val):
+        return val == "nothing"
+
+    def unbound():
+        yield "nothing"
+
+    yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
+
+
 @Predication(vocabulary, names=["_cash_n_1"])
 def _cash_n_1(context, state, x_bind):
     def bound(val):

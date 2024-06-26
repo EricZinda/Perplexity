@@ -126,20 +126,6 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - nothing, we're ready for the check/bill --> Sorry, did you mean to say something?
-            "I'm ready for" --> "I want"
-                                    ┌────── _bill_n_of(x9,i14)
-            _the_q(x9,RSTR,BODY)               ┌────── pron(x3)
-                             └─ pronoun_q(x3,RSTR,BODY)    ┌── _for_p(e8,e2,x9)
-                                                    └─ and(0,1)
-                                                             └ _ready_a_1(e2,x3)
-
-            Text Tree: _the_q(x9,_bill_n_of(x9,i14),pronoun_q(x3,pron(x3),[_for_p(e8,e2,x9), _ready_a_1(e2,x3)]))
-
-        - Waiter: What can I get you?
-            USER: nothing
-            I don't know the words: nothing
-            Waiter: What can I get you?
         - we're ready to pay
             I don't know the words: ready
         USER: can we pay?
