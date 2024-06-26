@@ -3,7 +3,7 @@
   "Phrase": "What can I pay?",
   "MRSIndex": 1
  },
- "timestamp": "d381bf2b-e315-43fe-a54a-add28f079925",
+ "timestamp": "473f6cd3-f5c7-4f93-86df-afcf60b9d04f",
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: h8 ] [ _pay_v_for LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: i11 ARG3: i12 ] [ _with_p LBL: h9 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x14 [ x PERS: 3 NUM: sg GEND: n IND: - ] ] [ udef_q LBL: h15 ARG0: x14 RSTR: h16 BODY: h17 ] [ _cash_n_1 LBL: h18 ARG0: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h8 qeq h9 h16 qeq h18 > ]": {
   "Phrase": "I want to pay with cash",
   "MRSIndex": 1
@@ -214,6 +214,10 @@
  },
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: sg IND: + ] ] [ _a_q LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ] [ _menu_n_1 LBL: h12 ARG0: x8 ] [ _for_p LBL: h12 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x8 ARG2: x14 [ x PERS: 3 NUM: sg ] ] [ time_n LBL: h15 ARG0: x14 ] [ def_implicit_q LBL: h16 ARG0: x14 RSTR: h17 BODY: h18 ] [ _now_a_1 LBL: h15 ARG0: e19 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h10 qeq h12 h17 qeq h15 > ]": {
   "Phrase": "I want a menu for now",
+  "MRSIndex": 1
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: fut MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _order_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: sg IND: + ] ] [ _the_q LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ] [ named LBL: h12 ARG0: x8 CARG: \"Steak\" ] > HCONS: < h0 qeq h1 h6 qeq h4 h10 qeq h12 > ]": {
+  "Phrase": "I will order the Steak.",
   "MRSIndex": 1
  }
 }

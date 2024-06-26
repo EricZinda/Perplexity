@@ -56,7 +56,8 @@ class UserInterface(object):
                  loaded_state=None,
                  user_output=None,
                  debug_output=None,
-                 best_parses_file=None):
+                 best_parses_file=None,
+                 events=None):
 
         self.user_output = print if user_output is None else user_output
         self.debug_output = print if debug_output is None else debug_output
@@ -97,6 +98,7 @@ class UserInterface(object):
         self.mrs_parser = MrsParser(self.max_holes, max_parses=5)
         self.log_tests = False
         self.new_ui = None
+        self.events = events
 
     def load_ui(self, state, reset, vocabulary, message_function=perplexity.messages.generate_message, error_priority_function=default_error_priority, response_function=perplexity.messages.respond_to_mrs_tree, scope_init_function=None, scope_function=None):
         self.reset = reset
@@ -263,6 +265,8 @@ class UserInterface(object):
         if last_phrase_response != "":
             self.user_output(last_phrase_response)
 
+        if self.events is not None:
+            self.events.interaction_end(self, interaction_records, last_phrase_response)
         if self is not next_ui:
             # The user gave a command to load a new UI
             self.new_ui = next_ui
@@ -459,6 +463,8 @@ class UserInterface(object):
                                             solution_group_solutions = [solution for solution in solution_group]
                                             operation_responses, last_phrase_responses, new_state = apply_solutions_to_state(self.state, wh_aware_has_more, solution_group_solutions)
                                             self.state = new_state
+
+                                            # Now deal with any resets that have been registered
                                             did_reset = False
                                             for solution in solution_group_solutions:
                                                 for operation in solution.get_operations():

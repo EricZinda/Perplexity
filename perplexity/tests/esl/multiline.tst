@@ -24,21 +24,21 @@
         },
         {
             "Command": "Ok.  I will order the Steak.  My son will have the green salad please.",
-            "Expected": "<end>I don't understand the way you are using: order<end>Son: Wait, let's not order salad before we know how much it costs.\nWaiter: What can I get you?",
-            "Tree": "_okay_a_1(i6,unknown(e2,u5))<end>pronoun_q(x3,pron(x3),_the_q(x8,named(Steak,x8),_order_v_1(e2,x3,x8)))<end>pronoun_q(x9,pron(x9),_the_q(x15,[_salad_n_1(x15), _green_a_2(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],[_please_a_1(e21,e2), _have_v_1(e2,x3,x15)])))",
+            "Expected": "<end>Waiter: steak is an excellent choice!<end>Son: Wait, let's not order salad before we know how much it costs.\nWaiter: Can I get you anything besides a steak for you?",
+            "Tree": "_okay_a_1(i6,unknown(e2,u5))<end>pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))<end>pronoun_q(x9,pron(x9),_the_q(x15,[_salad_n_1(x15), _green_a_2(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],[_please_a_1(e21,e2), _have_v_1(e2,x3,x15)])))",
             "Enabled": true,
             "ID": "6e8f8d80-4670-407d-8254-235a6ae5de1d"
         },
         {
             "Command": "I'll have the grilled salmon, please. Do you have any vegetarian options?",
-            "Expected": "Waiter: salmon is an excellent choice!<end>Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything besides a salmon for you?",
+            "Expected": "Son: Wait, we already spent $10 so if we get 1 salmon, we won't be able to pay for it with $20.<end>Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],[_please_a_1(e15,e2), _have_v_1(e2,x3,x8)]))<end>pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "03be4d95-80c7-4970-9ae9-d9525820fcd8"
         },
         {
             "Command": "I would like a hamburger.  My son would like something vegetarian.",
-            "Expected": "I don't know the words: hamburger<end>Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything besides a salmon for you?",
+            "Expected": "I don't know the words: hamburger<end>Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "None<end>pronoun_q(x9,pron(x9),_some_q(x18,[thing(x18), _vegetarian_a_1(e23,x18)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x18))))",
             "Enabled": true,
             "ID": "dbc9df4c-0f8b-461b-8414-ab9c8c9210a7"

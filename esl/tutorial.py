@@ -4308,6 +4308,11 @@ error_priority_dict = {
     "success": 10000000
 }
 
+class EslEvents(object):
+    def interaction_end(self, ui, interaction_records, last_phrase_response):
+        if last_phrase_response == "":
+            ui.user_output(ui.state.get_reprompt())
+
 
 def ui(loading_info=None, file=None, user_output=None, debug_output=None):
     scriptPath = os.path.dirname(os.path.realpath(__file__))
@@ -4342,7 +4347,8 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
                         loaded_state=loaded_state,
                         user_output=user_output,
                         debug_output=debug_output,
-                        best_parses_file=best_parses_file)
+                        best_parses_file=best_parses_file,
+                        events=EslEvents())
 
     ui.user_output(message)
     return ui
