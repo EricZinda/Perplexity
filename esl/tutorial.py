@@ -123,8 +123,8 @@ def max_from_variable_group(variable_group):
 
 # **** Transforms ****
 
-# # Convert "and <phrase>?" to "<phrase>"
-# # as in "and I'll take the steak"
+# Convert "and <phrase>?" to "<phrase>"
+# as in "and I'll take the steak"
 @Transform(vocabulary)
 def and_with_single_phrase_transformer():
     target_and_predication = TransformerMatch(name_pattern="_and_c", args_pattern=["e", "u", "e"], args_capture=["e_original", None, "e_target"])
@@ -145,7 +145,74 @@ def and_with_single_phrase_transformer():
                              production=quantifier_production)
 
 
-# Convert "That will be all" to "no"
+
+#     - USER: thats it.
+#         - pronoun_q(x8,pron(x8),_that_q_dem(x3,generic_entity(x3),_be_v_id(e2,x3,x8)))
+#         - pronoun_q(x8,pron(x8),_that_q_dem(x3,generic_entity(x3),def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],[_for_p(e13,e2,x14), _be_v_id(e2,x3,x8)])))
+@Transform(vocabulary)
+def thats_it_transformer():
+    no_standalone_production = TransformerProduction(name="no_standalone", args={"ARG0": "$target_e"})
+    conjunction_production = ConjunctionProduction(conjunction_list=[no_standalone_production])
+
+    be_exx_match = TransformerMatch(name_pattern="_be_v_id",
+                                    args_pattern=["e", "x", "x"],
+                                    args_capture=["target_e", None, None])
+    conjunction_be_match = ConjunctionMatchTransformer(transformer_list=[be_exx_match], extra_conjuncts_capture="$extra_conjuncts")
+
+    generic_entity_match = TransformerMatch(name_pattern="generic_entity",
+                                   args_pattern=["x"])
+
+    that_match = TransformerMatch(name_pattern="_that_q_dem",
+                     args_pattern=["x", generic_entity_match, conjunction_be_match])
+
+    pron_match = TransformerMatch(name_pattern="pron",
+                                   args_pattern=["x"])
+
+    pronoun_q_match = TransformerMatch(name_pattern="pronoun_q",
+                     args_pattern=["x", pron_match, that_match],
+                     removed=["pronoun_q", "_be_v_id", "_that_q_dem"],
+                     production=conjunction_production)
+
+    return pronoun_q_match
+
+
+#                           │                                                   ┌── generic_entity(x8)
+#                           │                                       ┌────── and(0,1)
+#                           │                   ┌────── generic_enti│y(x3)        │
+#                           │                   │                   │             └ _for_p(e13,x8,x14)
+#                           └─ _that_q_dem(x3,RSTR,BODY)            │
+#                                                    └─ _all_q(x8,RSTR,BODY)
+#                                                                        └─ _be_v_id(e2,x3,x8)
+# Convert "That's all for now"/ to "no"
+# Transform: def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],_that_q_dem(x3,generic_entity(x3),_all_q(x8,[generic_entity(x8), _for_p(e13,x8,x14)],_be_v_id(e2,x3,x8))))
+# to: _no_a(e, x)
+@Transform(vocabulary)
+def that_will_be_all_now_transformer():
+    no_standalone_production = TransformerProduction(name="no_standalone", args={"ARG0": "$target_e"})
+    conjunction_production = ConjunctionProduction(conjunction_list=[no_standalone_production])
+
+    be_exx_match = TransformerMatch(name_pattern="_be_v_id",
+                                    args_pattern=["e", "x", "x"],
+                                    args_capture=["target_e", None, None])
+    conjunction_be_match = ConjunctionMatchTransformer(transformer_list=[be_exx_match], extra_conjuncts_capture="$extra_conjuncts")
+    generic_entity_match_2 = TransformerMatch(name_pattern="generic_entity",
+                                   args_pattern=["x"])
+    conjunction_generic_entity_match = ConjunctionMatchTransformer(transformer_list=[generic_entity_match_2], extra_conjuncts_capture="$extra_conjuncts2")
+    all_match = TransformerMatch(name_pattern="_all_q",
+                     args_pattern=["x", conjunction_generic_entity_match, conjunction_be_match],
+                     removed=["_be_v_id"])
+
+    generic_entity_match = TransformerMatch(name_pattern="generic_entity",
+                                   args_pattern=["x"])
+
+    all_match = TransformerMatch(name_pattern="_that_q_dem",
+                     args_pattern=["x", generic_entity_match, all_match],
+                     removed=["_be_v_id", "_that_q_dem", "_all_q"],
+                     production=conjunction_production)
+
+    return all_match
+
+# Convert "That will be all"/ to "no"
 # Transform: _all_q(x9,generic_entity(x9),udef_q(x5,generic_entity(x5),_be_v_id(e2,x5,x9)))
 # to: _no_a(e, x)
 @Transform(vocabulary)
@@ -4384,6 +4451,6 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
-    # ShowLogging("Transformer")
+    ShowLogging("Transformer")
 
     hello_world()

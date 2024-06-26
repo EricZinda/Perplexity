@@ -37,6 +37,20 @@
             "ID": "9358572e-164d-4d4b-83f7-88bfd18e80a0"
         },
         {
+            "Command": "That's all",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "no_standalone(e2)",
+            "Enabled": true,
+            "ID": "c5149153-9c2e-4fd7-bc50-1e4bde3d1020"
+        },
+        {
+            "Command": "That's it",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "no_standalone(e2)",
+            "Enabled": true,
+            "ID": "e5661a8d-6376-418b-9f44-6a28a543592b"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
@@ -84,6 +98,20 @@
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_order_n_of(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
             "Enabled": true,
             "ID": "9468312e-4b6f-40ea-ba76-2c6e6f7d0e45"
+        },
+        {
+            "Command": "That's all for now",
+            "Expected": "Johnny: Dad! I\u2019m vegetarian, remember?? Why did you only order meat? \nMaybe they have some other dishes that aren\u2019t on the menu? \nYou tell the waiter to ignore what you just ordered.\nWaiter: What can I get you?",
+            "Tree": "def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],no_standalone(e2))",
+            "Enabled": true,
+            "ID": "b45a8499-47d3-4ef3-8813-915fe3cdda42"
+        },
+        {
+            "Command": "That's it for now",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: What can I get you?",
+            "Tree": "def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],no_standalone(e2))",
+            "Enabled": true,
+            "ID": "d6042a80-ea0d-4290-8e85-b09c16eb7b44"
         },
         {
             "Command": "/new esl.tutorial.reset",

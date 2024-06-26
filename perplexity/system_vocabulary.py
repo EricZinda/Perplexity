@@ -133,7 +133,7 @@ def the_all_q(context, state, x_variable_binding, h_rstr, h_body):
 
 
 # Interpretation of "the" which means "the one in scope"
-@Predication(vocabulary, library="system", names=["_the_q", "_this_q_dem"])
+@Predication(vocabulary, library="system", names=["_the_q", "_this_q_dem", "_that_q_dem"])
 def the_in_scope_q(context, state, x_variable_binding, h_rstr, h_body):
     # Set the constraint to be 1, inf but this is just temporary. When the constraints are optimized,
     # whatever the determiner constraint gets set to will replace these

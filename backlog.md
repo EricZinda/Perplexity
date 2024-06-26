@@ -6,18 +6,14 @@ Upload to itch.io:
 
 - USER: perfect. --> I don't know the words: perfect
 
-- implement: let's start again
-
-- Implement all alternatives of "no"
-    - implement: that's all for now
-    - USER: thats it.
-
 - "for the moment" should be ignored
     - also "at the moment"
 
 
 - I don't know the words: hamburger
     - Use chatgpt to give a better error
+
+- implement: let's start again
 
 - Card, please --> I don't know the way you used: polite
 
