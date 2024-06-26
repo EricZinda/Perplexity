@@ -4,14 +4,10 @@ Upload to itch.io:
 
 - Need to update the ubuntu and M1 grammar to 2024
 
-- USER: I will order the steak. I don't understand the way you are using: order
 
 - Should always repeat the current state at the end of an error
     "That's all for now" --> "I don't know the words: that"
     - Need to pass state to error handler
-
-- "for the moment" should be ignored
-    - also "at the moment"
 
 - we'd both like waters to drink please.
     - ignore "both"
@@ -19,6 +15,10 @@ Upload to itch.io:
 - Implement all alternatives of "no"
     - implement: that's all for now
     - USER: thats it.
+
+- "for the moment" should be ignored
+    - also "at the moment"
+
 
 - I don't know the words: hamburger
     - Use chatgpt to give a better error

@@ -6,7 +6,7 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
-            "ID": "6a3cc4d3-60e5-48e4-a624-f63883ff0403"
+            "ID": "91a85b2d-3b81-4954-85d0-9786ac6cb8d0"
         },
         {
             "Command": "a table for 2",
@@ -14,6 +14,34 @@
             "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
             "ID": "e679d41e-af04-4f80-8192-5cbf08eb33af"
+        },
+        {
+            "Command": "I will order the steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a steak for you?",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "fb104052-8d82-44ab-bd0f-e4f4e54ca565"
+        },
+        {
+            "Command": "We will order two waters",
+            "Expected": "Waiter: water is an excellent choice!\nWaiter: Can I get you anything besides a steak and a water for you and a water for Johnny?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_water_n_1(x8), card(2,e14,x8)],_order_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "00b573f9-37b5-4d1a-8741-6a76ccb75288"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "6a3cc4d3-60e5-48e4-a624-f63883ff0403"
+        },
+        {
+            "Command": "a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "9eebc75d-729a-4cda-b623-176f2fb007a3"
         },
         {
             "Command": "what is my order?",
@@ -55,14 +83,14 @@
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
-            "ID": "91a85b2d-3b81-4954-85d0-9786ac6cb8d0"
+            "ID": "a21cd75d-2110-475e-b315-5ca0cbf00d37"
         },
         {
             "Command": "a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
-            "ID": "fb104052-8d82-44ab-bd0f-e4f4e54ca565"
+            "ID": "e64275f7-3d17-4b44-a40a-10600fddfdee"
         },
         {
             "Command": "My son needs a vegetarian dish",

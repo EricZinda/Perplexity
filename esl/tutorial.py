@@ -2838,6 +2838,26 @@ def cancel_group_helper(context, state_list, e_introduced_binding_list, x_actor_
         return
 
 
+
+# Translates to "I want X"
+@Predication(vocabulary,
+             names=["_order_v_1"],
+             phrases={
+                "I will order a steak":  {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+def _order_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    yield from want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
+
+
+@Predication(vocabulary,
+             names=["solution_group__order_v_1"],
+             properties_from=_order_v_1_future)
+def _order_v_1_future_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+    yield from want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)
+
+
+
 @Predication(vocabulary,
              names=["_order_v_1"],
              phrases={
