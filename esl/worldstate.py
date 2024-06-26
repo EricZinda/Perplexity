@@ -1294,7 +1294,6 @@ class WorldState(State):
                 x = x[0]
                 if x in ["cash"]:
                     return [RespondOperation("Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n"),
-                            RespondOperation("Host: Hi! How can I help you?"),
                             ResetOperation()]
 
                 elif x in ["card", "card, credit"]:

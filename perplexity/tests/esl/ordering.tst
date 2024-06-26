@@ -30,36 +30,43 @@
             "ID": "00b573f9-37b5-4d1a-8741-6a76ccb75288"
         },
         {
+            "Command": "Just some water for now, please",
+            "Expected": "Waiter: water is an excellent choice!\nWaiter: Can I get you anything besides a steak and 2 waters for you and a water for Johnny?",
+            "Tree": "def_implicit_q(x12,[time_n(x12), _now_a_1(e17,x12)],[_some_q(x4,[_water_n_1(x4), _for_p(e11,x4,x12)],[_please_a_1(e18,e2), unknown(e2,x4)]), _just_x_deg(e6,u7)])",
+            "Enabled": true,
+            "ID": "edaf4c2e-7031-4467-af1d-58f9faf90b9a"
+        },
+        {
             "Command": "We would both like menus",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
             "Tree": "udef_q(x12,_menu_n_1(x12),pronoun_q(x3,pron(x3),[_both_a_1(i9,e2), _want_v_1(e2,x3,x12)]))",
             "Enabled": true,
             "ID": "9358572e-164d-4d4b-83f7-88bfd18e80a0"
         },
         {
             "Command": "That's all",
-            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
             "Tree": "no_standalone(e2)",
             "Enabled": true,
             "ID": "c5149153-9c2e-4fd7-bc50-1e4bde3d1020"
         },
         {
             "Command": "That's it",
-            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
             "Tree": "no_standalone(e2)",
             "Enabled": true,
             "ID": "e5661a8d-6376-418b-9f44-6a28a543592b"
         },
         {
             "Command": "That's all for the moment",
-            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
             "Tree": "_the_q(x14,_moment_n_1(x14),no_standalone(e2))",
             "Enabled": true,
             "ID": "f71ee648-63ac-4243-91ca-aa941a4cbef4"
         },
         {
             "Command": "That's it for the moment",
-            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, a water, and a menu for you and a water and a menu for Johnny?",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
             "Tree": "_the_q(x14,_moment_n_1(x14),no_standalone(e2))",
             "Enabled": true,
             "ID": "6fa3c9a9-ea4c-4318-b5ed-fc9ef0de6d67"

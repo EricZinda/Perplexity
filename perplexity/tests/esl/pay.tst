@@ -129,7 +129,7 @@
         },
         {
             "Command": "I want to pay with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n\nHost: Hi! How can I help you?",
+            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
             "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e2,x14), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "03831612-cfaa-4d2f-b5c7-c0e6a5dfc7aa"
@@ -178,7 +178,7 @@
         },
         {
             "Command": "can I pay with cash?",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n\nHost: Hi! How can I help you?",
+            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
             "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "e5ae3021-f61e-44c2-88c9-985e50ab51b4"
@@ -227,7 +227,7 @@
         },
         {
             "Command": "I will pay with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n\nHost: Hi! How can I help you?",
+            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
             "Tree": "udef_q(x11,_cash_n_1(x11),pronoun_q(x3,pron(x3),[_with_p(e10,e2,x11), _pay_v_for(e2,x3,i8,i9)]))",
             "Enabled": true,
             "ID": "af9bf474-7a7b-43e1-a979-6773dd735457"
@@ -276,7 +276,7 @@
         },
         {
             "Command": "I want to pay the bill with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n\nHost: Hi! How can I help you?",
+            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
             "Tree": "_the_q(x11,_bill_n_of(x11,i18),udef_q(x20,_cash_n_1(x20),pronoun_q(x3,pron(x3),[_with_p(e19,e2,x20), _pay_v_for_request(e2,x11,i12,i13)])))",
             "Enabled": true,
             "ID": "64e3beac-7292-47e7-840b-7b29471546c5"
@@ -325,7 +325,7 @@
         },
         {
             "Command": "could I pay with cash?",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n\nHost: Hi! How can I help you?",
+            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
             "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "0d2939c4-874d-43a6-86ab-91767ac33a20"
@@ -374,7 +374,7 @@
         },
         {
             "Command": "We'll pay with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n\nHost: Hi! How can I help you?",
+            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
             "Tree": "udef_q(x11,_cash_n_1(x11),pronoun_q(x3,pron(x3),[_with_p(e10,e2,x11), _pay_v_for(e2,x3,i8,i9)]))",
             "Enabled": true,
             "ID": "5cfabc0b-2add-4936-b68d-273154204a19"

@@ -4,20 +4,6 @@ Upload to itch.io:
 
 - Need to update the ubuntu and M1 grammar to 2024
 
-- "at the moment" should be ignored
-
-- I don't know the words: hamburger
-    - Use chatgpt to give a better error
-
-- implement: let's start again
-
-- Card, please --> I don't know the way you used: polite
-
-- How much are each of the specials? --> I don't know the words: part_of
-- implement: what do you have to eat?
-
-
-
 
 Bugs:
     High Pri:
@@ -60,6 +46,7 @@ Bugs:
 
 Cleanup:
     Hi Pri:
+        - Tests don't properly record output from events (like restarting the game)
         - very slow
             - how about a vegetarian soup?
                 also: how about a soup
@@ -137,17 +124,20 @@ Cleanup:
 
 New Language:
     Hi Pri:
+        - I don't know the words: hamburger
+            - Use chatgpt to give a better error
+        - Card, please --> I don't know the way you used: polite
+        - How much are each of the specials? --> I don't know the words: part_of
+        - implement: let's start again
         - how about vegetarian soup? --> I don't know the words: generic_verb, how+about
             - Need a better error message
+        - how about a soup? --> I don't know the words: generic_verb, how+about
         - we'd both like waters to drink please --> doesn't work
         - what do you have to eat?
-        - Just some water for now, please --> doesn't work
-        - Not right now, thank you. We'll look at the menu first. doesn't work
+        - Not right now, thank you. --> doesn't work
         - could I get a soup? is very slow when you don't know the cost
         - I don't want anything else.  is very slow
-        - Waiter: What can I get you? --> ?:nothing
-        - how about a soup? --> I don't know the words: generic_verb, how+about
-        - Test:
+        - Work through cancelling order language
             Could you cancel the steak I ordered earlier?
                 Requires implementing:
                         ┌──── more_comp(e29,e28)
@@ -155,11 +145,7 @@ New Language:
                ── and(0,1,2)
                            └ _early_a_1(e28,x23)
             Can you please take the soup off my order
-            can you cancel the pizza I requested
-
-        - Work through cancelling order language
-            - Issues:
-                - "cancel the order for me" --> "for me" isn't implemented as possessive
+            - "cancel the order for me" --> "for me" isn't implemented as possessive
             - can you remove the salad from my order
             - start over please
             - Let's start again
@@ -187,6 +173,7 @@ New Language:
                  implicit command triggered by an observation
         - how can I pay the bill?
         - (ChatGPT) Let's go to a table, please. --> I don't know the words: to
+        - "at the moment" should be ignored
 
     Low Pri:
         - We have 0 menus -> No. you does not have something
