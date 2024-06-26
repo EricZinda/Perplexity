@@ -4,10 +4,8 @@ Upload to itch.io:
 
 - Need to update the ubuntu and M1 grammar to 2024
 
-
-- we'd both like waters to drink please. --> ignore "both"
-
 - USER: perfect. --> I don't know the words: perfect
+
 - implement: let's start again
 
 - Implement all alternatives of "no"

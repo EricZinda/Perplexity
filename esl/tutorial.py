@@ -762,6 +762,13 @@ def generic_entity(context, state, x_binding):
     yield from combinatorial_predication_1(context, state, x_binding, bound, unbound)
 
 
+# "perfect."
+@Predication(vocabulary, names=["_perfect_a_1"])
+def _perfect_a_1(context, state, e_binding, u_binding):
+    # Make sure there is an empty string response so that we don't say "That is correct"
+    yield state.record_operations([get_reprompt_operation(state, use_blank_response=True)])
+
+
 @Predication(vocabulary, names=["_okay_a_1", "_all+right_a_1"])
 def _okay_a_1(context, state, i_binding, h_binding):
     if isinstance(h_binding, TreePredication) and h_binding.name == "unknown" and h_binding.argument_types() == ["e", "u"]:

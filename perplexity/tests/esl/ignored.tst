@@ -56,6 +56,20 @@
             "Tree": "def_implicit_q(x10,[time_n(x10), _now_a_1(e15,x10)],_no_a_1(i7,[_for_p(e9,e2,x10), unknown(e2,u5)]))",
             "Enabled": true,
             "ID": "be5c1696-486a-442f-835e-40e10fdd6641"
+        },
+        {
+            "Command": "OK",
+            "Expected": "\nWaiter: What can I get you?",
+            "Tree": "_okay_a_1(i6,unknown(e2,u5))",
+            "Enabled": true,
+            "ID": "5820f7bb-5471-4621-b015-2395b08a1cf7"
+        },
+        {
+            "Command": "perfect",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a menu for you.\nWaiter: Here is a menu for Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Tree": "def_implicit_q(x10,[time_n(x10), _now_a_1(e15,x10)],_no_a_1(i7,[_for_p(e9,e2,x10), unknown(e2,u5)]))",
+            "Enabled": true,
+            "ID": "0ec0db9a-43f5-4e32-b381-51246200830a"
         }
     ],
     "ElapsedTime": 1.53873
