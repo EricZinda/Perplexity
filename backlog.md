@@ -127,12 +127,29 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - thanks! --> Yes, that is true.
-
-        - How much are each of the vegetarian options?
-        - we're good. thanks! --> Should be no
         - I don't know the words: hamburger
             - Use chatgpt to give a better error
+        - hello! I'd like to get a table for two please --> would, like
+        - How much for a salad
+            -- I don't know the words: measure
+        - USER: I will have the steak, and my son will have the chicken
+            I don't know the way you used: and
+        - USER: Tomato soup and a green salad sounds great for my son
+            I don't know the words: green
+        - Just a couple waters thanks --> Sorry, I don't know how to give you that.
+        - a couple glasses of water -> Sorry, I don't know how to give you that.
+        USER: Get my son three salads
+            - I'm not sure what that means.
+        - How much for salad
+            I don't know the words: measure
+
+        - that would be it, thanks
+        - And are there any other non meat options --> yes
+            - did this really work??
+        - USER: How much do the meals cost?
+            - I don't know the words: meal
+        - How much are each of the vegetarian options?
+        - we're good. thanks! --> Should be no
         - Card, please --> I don't know the way you used: polite
         - How much are each of the specials? --> I don't know the words: part_of
         - implement: let's start again
