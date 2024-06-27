@@ -123,6 +123,49 @@ def max_from_variable_group(variable_group):
 
 # **** Transforms ****
 
+# Ready to pay/pay the bill --> _pay_v_for_request
+#
+#                ┌────── pron(x3)
+# pronoun_q(x3,RSTR,BODY)                   ┌─ _pay_v_for(e10,x3,i11,i12)
+#                     └─ _ready_a_1(e2,x3,ARG2)
+#
+# Text Tree: pronoun_q(x3,pron(x3),_ready_a_1(e2,x3,_pay_v_for(e10,x3,i11,i12)))
+#
+#              ┌────── _bill_n_of(x12,i17)
+# _the_q(x12,RSTR,BODY)               ┌────── pron(x3)
+#                   └─ pronoun_q(x3,RSTR,BODY)                   ┌─ _pay_v_for(e10,x3,i11,x12)
+#                                          └─ _ready_a_1(e2,x3,ARG2)
+#
+# Text Tree: _the_q(x12,_bill_n_of(x12,i17),pronoun_q(x3,pron(x3),_ready_a_1(e2,x3,_pay_v_for(e10,x3,i11,x12))))
+#
+@Transform(vocabulary)
+def ready_to_pay_to_pay_for_transformer():
+    # production = TransformerProduction(name="$|name|_able", args={"ARG0": "$e1", "ARG1": "$x1"})
+    # production_event_replace = TransformerProduction(name="event_replace", args={"ARG0": "u99", "ARG1": "$e1", "ARG2": "$target_e"})
+    # conjuct_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production_event_replace, production])
+
+
+    production_verb = TransformerProduction(name="$name", args={"ARG0": "$e_target"}, args_rest="$verb_rest_args")
+    production = TransformerProduction(name="_want_v_1", args={"ARG0": "$e_ready", "ARG1": "$x_actor", "ARG2": production_verb})
+
+    # target_predication = TransformerMatch(name_pattern="", name_capture="name", args_pattern=["e", "x"], args_capture=["target_e", "x1"])
+    # target = ConjunctionMatchTransformer([target_predication], extra_conjuncts_capture="extra_conjuncts")
+    target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "**"],
+                              args_capture=["e_target"],
+                              args_rest_capture="verb_rest_args")
+
+    return TransformerMatch(name_pattern="_ready_a_1",
+                            args_pattern=["e", "x", target],
+                            args_capture=["e_ready", "x_actor", None],
+                            removed=["_ready_a_1"],
+                            production=production)
+
+
+
+
+
+
+
 # Ready for x --> want x
 #           ┌────── _table_n_1(x9)
 # _a_q(x9,RSTR,BODY)               ┌────── pron(x3)
@@ -591,6 +634,26 @@ def may_paytype_transformer():
                             removed=["_may_v_modal", target], production=production)
 
 
+
+
+
+
+# Convert "I want to x y" to "I x_request y"
+@Transform(vocabulary)
+def want_removal_transitive_transformer():
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1"}, args_rest="$verb_rest_args")
+
+    target = TransformerMatch(name_pattern="*",
+                              name_capture="name",
+                              args_pattern=["e", "**"],
+                              args_rest_capture="verb_rest_args")
+
+    return TransformerMatch(name_pattern="_want_v_1",
+                            args_pattern=["e", "x", target],
+                            args_capture=["e1", None, None],
+                            removed=["_want_v_1", target],
+                            production=production)
+
 # Convert "I want to x y" to "I x_request y"
 @Transform(vocabulary)
 def want_removal_transitive_transformer():
@@ -617,6 +680,11 @@ def want_removal_intransitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
                             removed=["_want_v_1", target], production=production)
+
+
+
+
+
 
 
 # Convert "I want to pay with x" to "I pay_for_request"
@@ -1982,6 +2050,7 @@ def _pay_v_for_object_group(context, state_list, e_introduced_list, x_actor_vari
 @Predication(vocabulary,
              names=["_pay_v_for", "_pay_v_for_request"],
              phrases={
+                "We're ready to pay": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I want to pay with cash": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I will pay with cash": {'SF': 'prop', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "Can I pay with cash": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
@@ -1991,26 +2060,35 @@ def _pay_v_for_object_group(context, state_list, e_introduced_list, x_actor_vari
                          {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                          {'SF': 'ques', 'TENSE': 'past', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}],
-             handles=[("With", EventOption.required)])
+             handles=[("With", EventOption.optional)])
 def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1, i_binding2):
-    if not state.sys["responseState"] == "way_to_pay":
-        yield do_task(state, [("respond", context, "It's not time to pay yet.")])
-        return
+    if state.sys["responseState"] != "way_to_pay":
+        way_to_pay_state = state.record_operations(state.handle_world_event(context, ["user_wants", (ESLConcept("bill"),)]))
+        if way_to_pay_state.sys["responseState"] != "way_to_pay":
+            yield way_to_pay_state
+            return
+    else:
+        way_to_pay_state = state
 
-    if "With" in e_introduced_binding.value:
+    if e_introduced_binding.value is not None and "With" in e_introduced_binding.value:
         if is_concept(e_introduced_binding.value["With"]["Value"]):
-            values = [x for x in e_introduced_binding.value["With"]["Value"].instances(context, state)]
+            values = [x for x in e_introduced_binding.value["With"]["Value"].instances(context, way_to_pay_state)]
             if len(values) == 0:
-                yield do_task(state, [("respond", context, "You don't have one of those.")])
+                yield do_task(way_to_pay_state, [("respond", context, "You don't have one of those.")])
                 return
         else:
             values = [e_introduced_binding.value["With"]["Value"]]
 
         if not any(x in ["cash", "card"] for x in values):
-            yield do_task(state, [("respond", context, "You can't pay with that.")])
+            yield do_task(way_to_pay_state, [("respond", context, "You can't pay with that.")])
             return
 
-    yield state.record_operations(state.handle_world_event(context, ["unknown", (e_introduced_binding.value["With"]["Value"], )]))
+        yield way_to_pay_state.record_operations(
+            way_to_pay_state.handle_world_event(context, ["unknown", (e_introduced_binding.value["With"]["Value"],)]))
+
+    else:
+        yield way_to_pay_state
+        return
 
 
 @Predication(vocabulary,

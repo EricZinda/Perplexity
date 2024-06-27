@@ -83,6 +83,7 @@ Cleanup:
             - /runparse 0, "a table for 2 and 4" --> There is more than a table for 2 thin, 4 thin (all together)
                 - takes forever
                 - returns a weird error
+        - Make transformers more understandable and debuggable
 
     Low Pri:
         - Conjunctions can't be root transformers
@@ -126,12 +127,7 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - we're ready to pay
-            I don't know the words: ready
-        USER: can we pay?
-            I don't understand the way you are using: pay
         - thanks! --> Yes, that is true.
-
         - How much are each of the vegetarian options?
         - we're good. thanks! --> Should be no
         - I don't know the words: hamburger

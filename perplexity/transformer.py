@@ -343,11 +343,14 @@ class TransformerMatch(object):
                 if len(self.args_pattern) == len(scopal_arg.args) or \
                         (len(self.args_pattern) < len(scopal_arg.args) and self.args_pattern[-1] == "**"):
                     for arg_index in range(len(scopal_arg.args)):
+                        is_arg_rest = False
                         if arg_index > len(self.args_pattern) - 1:
                             pattern = "*"
+                            is_arg_rest = True
                         else:
                             if self.args_pattern[arg_index] == "**":
                                 pattern = "*"
+                                is_arg_rest = True
                             else:
                                 pattern = self.args_pattern[arg_index]
 
@@ -371,7 +374,7 @@ class TransformerMatch(object):
 
                             if match_wh == "+" and is_wh or match_wh == "-" and not is_wh or match_wh is None:
                                 # We have a match
-                                if arg_index > len(self.args_capture) - 1:
+                                if is_arg_rest:
                                     if self.args_rest_capture:
                                         if self.args_rest_capture not in local_capture:
                                             local_capture[self.args_rest_capture] = {}

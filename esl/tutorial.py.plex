@@ -235,6 +235,13 @@
     },
     "_pay_v_for": {
         "Phrases": {
+            "We're ready to pay": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             "I want to pay with cash": {
                 "SF": "prop",
                 "TENSE": "pres",
