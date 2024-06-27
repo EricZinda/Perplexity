@@ -24,8 +24,8 @@
         },
         {
             "Command": "table for two, please",
-            "Expected": "WRONG NEEDS NEW GRAMMAR: I don't know the way you used: for",
-            "Tree": "None",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "_please_a_1(i17,def_implicit_q(x11,basic_numbered_hour(2,x11),udef_q(x5,[_table_n_1(x5), _for_p(e10,x5,x11)],unknown(e2,x5))))",
             "Enabled": true,
             "ID": "ef997ec5-4d75-4d77-ac29-d63d475bfa5d"
         },
@@ -102,7 +102,7 @@
         {
             "Command": "hello, table for 2, please",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "proper_q(x4,named(Hawaii,x4),number_q(x17,card(2,x17,i23),udef_q(x6,[_table_n_1(x6), _for_p(e16,x6,x17)],[_please_a_1(e24,e2), appos(e5,x4,x6), unknown(e2,x4)])))",
+            "Tree": "discourse(i2,greet(hi,i6),_please_a_1(i23,udef_q(x10,number_q(x16,card(2,x16,i22),[_table_n_1(x10), _for_p(e15,x10,x16)]),unknown(e9,x10))))",
             "Enabled": true,
             "ID": "19f0bc45-2a55-4c94-b775-eca3afd7979c"
         },
@@ -116,7 +116,7 @@
         {
             "Command": "Hi, I want a table for 2, please?",
             "Expected": "I don't understand the way you are using: want",
-            "Tree": "_a_q(x13,number_q(x19,card(2,x19,i25),[_table_n_1(x13), _for_p(e18,x13,x19)]),pronoun_q(x3,pron(x3),[_please_a_1(e26,e12), _want_v_1(e12,x3,x13)]))",
+            "Tree": "discourse(i2,greet(hi,i6),_please_a_1(i27,_a_q(x14,number_q(x20,card(2,x20,i26),[_table_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_want_v_1(e13,x3,x14)))))",
             "Enabled": true,
             "ID": "1fad1ba9-a1c9-43c8-af00-48b7b20cc0d7"
         },
@@ -242,7 +242,7 @@
         {
             "Command": "Let's get a table for two, please",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "_a_q(x9,number_q(x15,card(2,x15,i21),[_table_n_1(x9), _for_p(e14,x9,x15)]),pronoun_q(x5,pron(x5),[_please_a_1(e22,e2), _get_v_1(e2,x5,x9)]))",
+            "Tree": "_please_a_1(i22,_a_q(x10,def_implicit_q(x16,basic_numbered_hour(2,x16),[_table_n_1(x10), _for_p(e15,x10,x16)]),pronoun_q(x5,pron(x5),_get_v_1(e2,x5,x10))))",
             "Enabled": true,
             "ID": "d230cfe4-dc43-4d40-848b-c23b185eb602"
         },
@@ -606,7 +606,7 @@
         {
             "Command": "A table for two, please!",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],[_please_a_1(e17,e2), unknown(e2,x4)]))",
+            "Tree": "_please_a_1(i17,def_implicit_q(x11,basic_numbered_hour(2,x11),_a_q(x5,[_table_n_1(x5), _for_p(e10,x5,x11)],unknown(e2,x5))))",
             "Enabled": true,
             "ID": "e8bd5597-ff18-4f78-b784-9ca3cd615e93"
         }

@@ -95,7 +95,7 @@
         {
             "Command": "check, please",
             "Expected": "Waiter: Your total is 14 dollars.\nWaiter: So, do you want to pay with cash or card?",
-            "Tree": "pronoun_q(x3,pron(x3),[_please_a_1(e9,e2), _check_v_1(e2,x3,i8)])",
+            "Tree": "_please_a_1(i11,udef_q(x5,_check_n_of(x5,i10),unknown(e2,x5)))",
             "Enabled": true,
             "ID": "1108248a-eb0f-42cf-88d3-c93baa41a049"
         },

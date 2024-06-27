@@ -32,7 +32,7 @@
         {
             "Command": "Just some water for now, please",
             "Expected": "Waiter: water is an excellent choice!\nWaiter: Can I get you anything besides a steak and 2 waters for you and a water for Johnny?",
-            "Tree": "def_implicit_q(x12,[time_n(x12), _now_a_1(e17,x12)],[_some_q(x4,[_water_n_1(x4), _for_p(e11,x4,x12)],[_please_a_1(e18,e2), unknown(e2,x4)]), _just_x_deg(e6,u7)])",
+            "Tree": "_please_a_1(i19,def_implicit_q(x13,[time_n(x13), _now_a_1(e18,x13)],[_some_q(x5,[_water_n_1(x5), _for_p(e12,x5,x13)],unknown(e2,x5)), _just_x_deg(e7,u8)]))",
             "Enabled": true,
             "ID": "edaf4c2e-7031-4467-af1d-58f9faf90b9a"
         },
@@ -672,7 +672,7 @@
         {
             "Command": "Let's go with two orders of the Steak, please",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides 2 steaks for you?",
-            "Tree": "udef_q(x10,_the_q(x17,_steak_n_1(x17),[_order_n_of(x10,x17), card(2,e16,x10)]),pronoun_q(x5,pron(x5),[_please_a_1(e22,e2), _want_v_1(e2,x5,x10)]))",
+            "Tree": "_please_a_1(i23,udef_q(x11,_the_q(x18,_steak_n_1(x18),[_order_n_of(x11,x18), card(2,e17,x11)]),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x11))))",
             "Enabled": true,
             "ID": "be43e6b3-7a3f-4a03-8c31-9827b586a766"
         },

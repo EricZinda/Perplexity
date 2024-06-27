@@ -25,14 +25,14 @@
         {
             "Command": "Ok.  I will order the Steak.  My son will have the green salad please.",
             "Expected": "<end>Waiter: steak is an excellent choice!<end>Son: Wait, let's not order salad before we know how much it costs.\nWaiter: Can I get you anything besides a steak for you?",
-            "Tree": "_okay_a_1(i6,unknown(e2,u5))<end>pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))<end>pronoun_q(x9,pron(x9),_the_q(x15,[_salad_n_1(x15), _green_a_2(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],[_please_a_1(e21,e2), _have_v_1(e2,x3,x15)])))",
+            "Tree": "_okay_a_1(i6,unknown(e2,u5))<end>pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))<end>_please_a_1(i22,pronoun_q(x9,pron(x9),_the_q(x16,[_salad_n_1(x16), _green_a_2(e21,x16)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_have_v_1(e2,x3,x16)))))",
             "Enabled": true,
             "ID": "6e8f8d80-4670-407d-8254-235a6ae5de1d"
         },
         {
             "Command": "I'll have the grilled salmon, please. Do you have any vegetarian options?",
             "Expected": "Son: Wait, we already spent $10 so if we get 1 salmon, we won't be able to pay for it with $20.<end>Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: Can I get you anything besides a steak for you?",
-            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _grill_v_1(e13,i14,x8)],[_please_a_1(e15,e2), _have_v_1(e2,x3,x8)]))<end>pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
+            "Tree": "_please_a_1(i16,_the_q(x9,[_salmon_n_1(x9), _grill_v_1(e14,i15,x9)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x9))))<end>pronoun_q(x3,pron(x3),_any_q(x8,[_dish_n_of(x8), _vegetarian_a_1(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "03be4d95-80c7-4970-9ae9-d9525820fcd8"
         },
