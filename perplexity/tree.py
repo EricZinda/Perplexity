@@ -138,7 +138,7 @@ class MrsParser(object):
 
     def erg_file(self):
         if sys.platform == "linux":
-            ergFile = "erg-2023-ubuntu-perplexity.dat"
+            ergFile = "erg-2024-daily-ubuntu-perplexity.dat"
 
         elif sys.platform == "darwin":
             # Mac returns darwin for both M1 and Intel silicon, need to dig deeper
@@ -150,10 +150,10 @@ class MrsParser(object):
 
             else:
                 # Intel silicon
-                ergFile = "erg-2023-osx-perplexity.dat"
+                ergFile = "erg-2024-daily-osx-perplexity.dat"
 
         else:
-            ergFile = "erg-2023-ubuntu-perplexity.dat"
+            ergFile = "erg-2024-daily-ubuntu-perplexity.dat"
 
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 
