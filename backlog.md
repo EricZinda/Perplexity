@@ -47,6 +47,7 @@ Bugs:
 
 Cleanup:
     Hi Pri:
+        - Stop processing after some time and give the best answer so far
         - Tests don't properly record output from events (like restarting the game)
         - very slow
             - how about a vegetarian soup?
@@ -127,9 +128,14 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - I don't know the words: hamburger
-            - Use chatgpt to give a better error
-        - hello! I'd like to get a table for two please --> would, like
+        - I'd like to get two menus
+            Waiter: Our policy is to give one menu to every customer ...
+            Waiter: What can I get you?
+            Waiter: What can I get you?
+        -  Hi, I'd love to have a table for 2, please
+            - Runs this: discourse(i2,greet(hi,i6),_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e13,x3,x20)))))
+                and discourse is the index
+
         - How much for a salad
             -- I don't know the words: measure
         - USER: I will have the steak, and my son will have the chicken
@@ -143,6 +149,8 @@ New Language:
         - How much for salad
             I don't know the words: measure
 
+        - I don't know the words: hamburger
+            - Use chatgpt to give a better error
         - that would be it, thanks
         - And are there any other non meat options --> yes
             - did this really work??

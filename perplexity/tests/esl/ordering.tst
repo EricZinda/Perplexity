@@ -44,6 +44,13 @@
             "ID": "9358572e-164d-4d4b-83f7-88bfd18e80a0"
         },
         {
+            "Command": "I'd like to order a menu for johnny",
+            "Expected": "Waiter: You already ordered a menu for Johnny\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
+            "Tree": "_a_q(x14,proper_q(x20,named(Johnny,x20),[_menu_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_order_v_1_request(e2,x3,x14)))",
+            "Enabled": true,
+            "ID": "14a455aa-94e6-46d5-9fb6-b93b72188a9b"
+        },
+        {
             "Command": "That's all",
             "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
             "Tree": "no_standalone(e2)",

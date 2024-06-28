@@ -161,11 +161,6 @@ def ready_to_pay_to_pay_for_transformer():
                             production=production)
 
 
-
-
-
-
-
 # Ready for x --> want x
 #           ┌────── _table_n_1(x9)
 # _a_q(x9,RSTR,BODY)               ┌────── pron(x3)
@@ -215,9 +210,9 @@ def and_with_single_phrase_transformer():
 
 
 
-#     - USER: thats it.
-#         - pronoun_q(x8,pron(x8),_that_q_dem(x3,generic_entity(x3),_be_v_id(e2,x3,x8)))
-#         - pronoun_q(x8,pron(x8),_that_q_dem(x3,generic_entity(x3),def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],[_for_p(e13,e2,x14), _be_v_id(e2,x3,x8)])))
+# thats it.
+# - pronoun_q(x8,pron(x8),_that_q_dem(x3,generic_entity(x3),_be_v_id(e2,x3,x8)))
+# - pronoun_q(x8,pron(x8),_that_q_dem(x3,generic_entity(x3),def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],[_for_p(e13,e2,x14), _be_v_id(e2,x3,x8)])))
 @Transform(vocabulary)
 def thats_it_transformer():
     no_standalone_production = TransformerProduction(name="no_standalone", args={"ARG0": "$target_e"})
@@ -634,10 +629,6 @@ def may_paytype_transformer():
                             removed=["_may_v_modal", target], production=production)
 
 
-
-
-
-
 # Convert "I want to x y" to "I x_request y"
 @Transform(vocabulary)
 def want_removal_transitive_transformer():
@@ -680,11 +671,6 @@ def want_removal_intransitive_transformer():
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x"], args_capture=[None, "x1"])
     return TransformerMatch(name_pattern="_want_v_1", args_pattern=["e", "x", target], args_capture=["e1", None, None],
                             removed=["_want_v_1", target], production=production)
-
-
-
-
-
 
 
 # Convert "I want to pay with x" to "I pay_for_request"
@@ -2092,13 +2078,16 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
 
 
 @Predication(vocabulary,
-             names=["_want_v_1", "_need_v_1"],
+             names=["_want_v_1", "_need_v_1", "_get_v_1_request", "_have_v_1_request", "_order_v_1_request"],
              phrases={
                 "we'd like a table for 2": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I want a steak": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I'd like a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I need a steak": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "My son would like a salad": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                "My son would like a salad": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I'd like to get a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I'd like to have a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I'd like to order a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
                 {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
@@ -2144,7 +2133,8 @@ def want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_obj
 
 
 @Predication(vocabulary,
-             names=["solution_group__want_v_1", "solution_group__need_v_1"],
+             names=["solution_group__want_v_1", "solution_group__need_v_1", "solution_group__get_v_1_request", "solution_group__have_v_1_request",
+                    "solution_group__order_v_1_request"],
              properties_from=_want_v_1)
 def want_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
     yield from want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)
@@ -3304,13 +3294,13 @@ def _have_v_1_request_order(context, state, e_introduced_binding, x_actor_bindin
             return True
 
         else:
-            context.report_error(["formNotUnderstood", "_have_v_1_request"])
+            context.report_error(["formNotUnderstood", "_have_v_1_request_order"])
             return False
 
     def actor_from_object(x_object):
         # "Who has a steak?" This is a very odd way to ask for a
         # steak so we assume it isn't a request and thus not handled here
-        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        context.report_error(["formNotUnderstood", "_have_v_1_request_order"])
         if False:
             yield none
 
@@ -3321,11 +3311,11 @@ def _have_v_1_request_order(context, state, e_introduced_binding, x_actor_bindin
 
     # Must be an instance of an actor with a conceptual object (either can be unbound)
     if (x_actor_binding.value is not None and is_concept(x_actor_binding)) or (x_object_binding.value is not None and not is_concept(x_object_binding)):
-        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        context.report_error(["formNotUnderstood", "_have_v_1_request_order"])
         return
 
     if (x_actor_binding.value is not None and (len(x_actor_binding.value) > 1 or x_actor_binding.value[0] != "restaurant")):
-        context.report_error(["formNotUnderstood", "_have_v_1_request"])
+        context.report_error(["formNotUnderstood", "_have_v_1_request_order"])
         return
 
     requestable_concepts = requestable_concepts_by_sort(state)

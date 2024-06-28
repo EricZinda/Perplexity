@@ -817,6 +817,27 @@
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            "I'd like to get a steak": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I'd like to have a steak": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "I'd like to order a steak": {
+                "SF": "prop",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
         },
         "Properties": [
