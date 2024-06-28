@@ -128,26 +128,39 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - I'd like to get two menus
-            Waiter: Our policy is to give one menu to every customer ...
-            Waiter: What can I get you?
-            Waiter: What can I get you?
-        -  Hi, I'd love to have a table for 2, please
-            - Runs this: discourse(i2,greet(hi,i6),_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e13,x3,x20)))))
-                and discourse is the index
-
-        - How much for a salad
-            -- I don't know the words: measure
-        - USER: I will have the steak, and my son will have the chicken
-            I don't know the way you used: and
-        - USER: Tomato soup and a green salad sounds great for my son
-            I don't know the words: green
         - Just a couple waters thanks --> Sorry, I don't know how to give you that.
         - a couple glasses of water -> Sorry, I don't know how to give you that.
         USER: Get my son three salads
             - I'm not sure what that means.
         - How much for salad
             I don't know the words: measure
+        - How much for a salad
+            -- I don't know the words: measure
+        - USER: Tomato soup and a green salad sounds great for my son
+            I don't know the words: green
+
+        - implement: let's start again
+        - I wont get the steak --> Yes, that is true.
+        - Remove the steak --> I don't know the words: remove
+        - Actually I won't have the steak --> I don't know the words: actual
+        - ignore what I ordered
+
+        - what do you have to eat?
+        - what do you guys have?
+        - what do you guys serve?
+
+        - we're good. thanks! --> Should be no
+        - not right now
+        - I don't want anything else.  is very slow
+        - Not right now, thank you. --> doesn't work
+            - not right now
+
+        -  Hi, I'd love to have a table for 2, please
+            - Runs this: discourse(i2,greet(hi,i6),_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e13,x3,x20)))))
+                and discourse is the index, so it just says "yes"
+        - USER: I will have the steak, and my son will have the chicken
+            I don't know the way you used: and
+            because it is _and_c(e, e, e) and we don't know that one,  The index goes to and_c
 
         - I don't know the words: hamburger
             - Use chatgpt to give a better error
@@ -157,32 +170,21 @@ New Language:
         - USER: How much do the meals cost?
             - I don't know the words: meal
         - How much are each of the vegetarian options?
-        - we're good. thanks! --> Should be no
         - Card, please --> I don't know the way you used: polite
         - How much are each of the specials? --> I don't know the words: part_of
-        - implement: let's start again
         - how about vegetarian soup? --> I don't know the words: generic_verb, how+about
             - Need a better error message
         - how about a soup? --> I don't know the words: generic_verb, how+about
         - we'd both like waters to drink please --> doesn't work
-        - what do you have to eat?
-        - what do you guys have?
-        - what do you guys serve?
         - what is vegetarian on the menu
-        - I wont get the steak --> Yes, that is true.
-        - Remove the steak --> I don't know the words: remove
-        - Actually I won't have the steak --> I don't know the words: actual
-        - ignore what I ordered
         - USER: what other options are on the menu
             No. ESLConcept(dish: [(<function rel_subjects at 0x7f01fdc05a60>, 'isAdj', 'other')] ) is not on ESLConcept(menu: [] )
             Waiter: What can I get you?
             Waiter: What can I get you?
-        - Not right now, thank you. --> doesn't work
-            - not right now
         - what do you have on your menu? --> doesn't work
             what vegetarian items do you have on your menu?
         - could I get a soup? is very slow when you don't know the cost
-        - I don't want anything else.  is very slow
+
         - Work through cancelling order language
             Could you cancel the steak I ordered earlier?
                 Requires implementing:
@@ -222,6 +224,10 @@ New Language:
         - "at the moment" should be ignored
 
     Low Pri:
+        - I'd like to get two menus
+            Waiter: Our policy is to give one menu to every customer ...
+            Waiter: What can I get you?
+            Waiter: What can I get you?
         - We have 0 menus -> No. you does not have something
         - "who has which dish" doesn't work
         - I don't have *the* soup works because:
