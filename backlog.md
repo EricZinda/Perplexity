@@ -128,8 +128,6 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - Give the word from the sentence when we don't know the word
-            Just need to add the extra data on and use in the error
         - USER: table for two thank you -->  I don't know the way you used: for
         - ? I'd like a table
             Host: How many in your party?

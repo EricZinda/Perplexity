@@ -16,7 +16,7 @@ from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.transformer import TransformerMatch
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
-    MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable
+    MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable, surface_word_from_mrs_predication
 from perplexity.tree_algorithm_zinda2020 import TooComplicatedError
 from perplexity.user_state import GetStateDirectoryName
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
@@ -734,7 +734,8 @@ class UserInterface(object):
                                           phrase_type,
                                           # Record if at least one form is understood for
                                           # better error messages
-                                          self.vocabulary.version_exists(predication.predicate)))
+                                          self.vocabulary.version_exists(predication.predicate),
+                                          surface_word_from_mrs_predication(mrs, predication)))
 
                 else:
                     # If there aren't any implementations for this predication, or they are all match_all and don't implement it...
@@ -744,7 +745,8 @@ class UserInterface(object):
                                           phrase_type,
                                           # Record if at least one form is understood for
                                           # better error messages
-                                          self.vocabulary.version_exists(predication.predicate)))
+                                          self.vocabulary.version_exists(predication.predicate),
+                                          surface_word_from_mrs_predication(mrs, predication)))
 
         if len(unknown_words) > 0:
             pipeline_logger.debug(f"Unknown predications: {unknown_words}")

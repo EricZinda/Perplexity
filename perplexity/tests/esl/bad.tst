@@ -9,11 +9,18 @@
             "ID": "69c95107-36db-4bca-b2b2-ee7d0a2a1a0e"
         },
         {
+            "Command": "leving",
+            "Expected": "I don't know the words: leving",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+        },
+        {
             "Command": "I'll have the chicken and my son will have the soup and the salad",
             "Expected": "That was too complicated for me to understand ...",
             "Tree": "None",
             "Enabled": true,
-            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+            "ID": "eede2168-d1a4-4c4b-af7a-d3aa58ddc989"
         },
         {
             "Command": "I want an order of the table",

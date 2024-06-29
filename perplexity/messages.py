@@ -257,9 +257,9 @@ def generate_message(tree_info, error_term):
         for unknown_predication in error_arguments[1]:
             parsed_predicate = parse_predication_name(unknown_predication[0])
             if unknown_predication[3]:
-                lemmas_form_known.append(parsed_predicate["Lemma"])
+                lemmas_form_known.append(unknown_predication[4])
             else:
-                lemmas_unknown.append(parsed_predicate["Lemma"])
+                lemmas_unknown.append(unknown_predication[4])
 
         answers = []
         if len(lemmas_unknown) > 0:

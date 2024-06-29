@@ -7,6 +7,7 @@ import sys
 from collections import defaultdict
 from delphin import ace
 from delphin.codecs.simplemrs import encode
+from delphin.lnk import LnkMixin
 from delphin.predicate import split
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name, sentence_force
@@ -159,6 +160,14 @@ class MrsParser(object):
 
 
 _tree_predication_context = contextvars.ContextVar('TreePredication', default=False)
+
+
+def surface_word_from_mrs_predication(mrs, predication):
+    wordLnk = LnkMixin(predication.lnk)
+    if wordLnk.cfrom != -1:
+        return mrs.surface[wordLnk.cfrom: wordLnk.cto]
+    else:
+        return "unknown"
 
 
 class TreePredication(object):
