@@ -838,9 +838,23 @@
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            "I want a table thank you": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
         },
         "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
             {
                 "SF": "prop",
                 "TENSE": "pres",
@@ -2498,5 +2512,6 @@
     },
     "_both_a_1": {},
     "_perfect_a_1": {},
-    "_nothing_n_1": {}
+    "_nothing_n_1": {},
+    "_thank_v_for": {}
 }

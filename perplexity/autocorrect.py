@@ -3,6 +3,8 @@ import logging
 import os
 import re
 
+from perplexity import world_registry
+
 
 def autocorrect(autocorrect_file, phrase):
     phrase = phrase.strip()
@@ -59,7 +61,9 @@ def get_autocorrect(world_name):
     with open(get_cased_path(scriptPath, f"sharedautocorrect.txt")) as file:
         autocorrect = json.loads(file.read())
 
-    autocorrectPath = get_cased_path(scriptPath, f"{world_name}autocorrect.txt")
+    world_path = world_registry.world_path(world_name)
+
+    autocorrectPath = get_cased_path(world_path, f"{world_name}autocorrect.txt")
     if os.path.exists(autocorrectPath):
         pipeline_logger.debug(f"Loading autocorrect: {autocorrectPath}")
         with open(autocorrectPath) as file:

@@ -128,7 +128,6 @@ Cleanup:
 
 New Language:
     Hi Pri:
-        - USER: table for two thank you -->  I don't know the way you used: for
         - ? I'd like a table
             Host: How many in your party?
 

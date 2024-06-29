@@ -629,6 +629,29 @@ def may_paytype_transformer():
                             removed=["_may_v_modal", target], production=production)
 
 
+# Convert "I want a table for two, thank you"
+# to: I want a table for two
+# By removing _thank_v_1 because the index points to it and that makes things tricky
+#                    ┌────── pron(x5)
+# └─ pronoun_q(x27,RSTR,BODY)                       ┌─ pronoun_q(x5,RSTR,BODY)
+#                        └─ _thank_v_1(e2,x3,x27,ARG3)                    └─ _want_v_1(e10,x5,x11)
+# Index e2, Tree:_a_q:0(x11,def_implicit_q:1(x17,basic_numbered_hour:2(2,x17),[_table_n_1:3(x11), _for_p:4(e16,x11,x17)]),pronoun_q:5(x3,pron:6(x3),pronoun_q:7(x27,pron:8(x27),pronoun_q:9(x5,pron:10(x5),_want_v_1:11(e2,x5,x11)))))
+@Transform(vocabulary)
+def want_removal_transitive_transformer():
+    production = TransformerProduction(name="$name", args={"ARG0": "$e1"}, args_rest="$verb_rest_args")
+
+    target = TransformerMatch(name_pattern="*",
+                              name_capture="name",
+                              args_pattern=["e", "**"],
+                              args_rest_capture="verb_rest_args")
+
+    return TransformerMatch(name_pattern="_thank_v_1",
+                            args_pattern=["e", "x", "x", target],
+                            args_capture=["e1", None, None, None],
+                            removed=["_want_v_1", target],
+                            production=production)
+
+
 # Convert "I want to x y" to "I x_request y"
 @Transform(vocabulary)
 def want_removal_transitive_transformer():
@@ -759,12 +782,23 @@ def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2):
                                        esl.esl_planner.get_reprompt_operation(state)])
 
 
+# @Predication(vocabulary, names=["_thank_v_1"])
+# def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2, h_for_what):
+#     yield from context.call(state, h_for_what)
+
+
 @Predication(vocabulary, names=["_thank+you_v_1"])
 def _thankyou_v_1(context, state, e_binding, x_target):
     if x_target.value is not None and len(x_target.value) == 1 and is_computer_type(x_target.value):
         yield state.record_operations([RespondOperation(f"You are welcome!"),
                                        esl.esl_planner.get_reprompt_operation(state)])
 
+
+# @Predication(vocabulary, names=["_thank_v_for"])
+# def _thank_v_for(context, state, e_binding, i_unused1, x_target, i_unused2):
+#     if x_target.value is not None and len(x_target.value) == 1 and is_user_type(x_target.value):
+#         yield state.record_operations([RespondOperation(f"You are welcome!"),
+#                                        esl.esl_planner.get_reprompt_operation(state)])
 
 @Predication(vocabulary, names=["count"])
 def count(context, state, e_binding, x_total_count_binding, x_item_to_count_binding, h_scopal_binding):
@@ -2087,9 +2121,11 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
                 "My son would like a salad": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I'd like to get a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I'd like to have a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "I'd like to order a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                "I'd like to order a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I want a table thank you": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
+                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ],
              arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
@@ -4563,7 +4599,7 @@ pipeline_logger = logging.getLogger('Pipeline')
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")

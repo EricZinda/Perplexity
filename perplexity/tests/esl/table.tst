@@ -16,11 +16,18 @@
             "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
         },
         {
+            "Command": "table for two thank you",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "_a_q(x11,def_implicit_q(x17,basic_numbered_hour(2,x17),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),pronoun_q(x27,pron(x27),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x11)))))",
+            "Enabled": true,
+            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+        },
+        {
             "Command": "I want to get a table",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,_table_n_1(x11),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+            "ID": "fdf993fb-5782-4c9c-8cd4-70f4408f93ad"
         },
         {
             "Command": "Could I get a table?",

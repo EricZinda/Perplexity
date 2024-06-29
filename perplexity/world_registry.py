@@ -1,3 +1,6 @@
+import inspect
+import os
+
 from perplexity.utilities import import_function_from_names
 
 worlds = dict()
@@ -11,6 +14,11 @@ worlds["error_test"] = {"WorldModule": "error_test.vocabulary",
 
 def world_information(key):
     return worlds.get(key, None)
+
+
+def world_path(key):
+    return os.path.dirname(inspect.getfile(
+        import_function_from_names(world_information(key)["WorldModule"], world_information(key)["WorldUIFunction"])))
 
 
 def ui_from_world_name(world_name, user_output=None, debug_output=None):
