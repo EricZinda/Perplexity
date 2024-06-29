@@ -31,7 +31,7 @@
         },
         {
             "Command": "how many soups did I order",
-            "Expected": "you did not order soup  \nWaiter: What can I get you?",
+            "Expected": "you did not order soup",
             "Tree": "which_q(x9,abstr_deg(x9),pronoun_q(x3,pron(x3),count(e14,x9,x5,udef_q(x5,_soup_n_1(x5),_order_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "cf08e533-f93d-4add-b484-0cc653537a10"

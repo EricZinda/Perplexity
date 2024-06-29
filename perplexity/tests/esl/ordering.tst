@@ -535,7 +535,7 @@
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "a steak is not ordered. \nWaiter: What can I get you?",
+            "Expected": "a steak is not ordered.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "13ce708f-ec2a-41f8-b2dd-416711a3b810"
@@ -1080,7 +1080,7 @@
         },
         {
             "Command": "I ordered 3 steaks",
-            "Expected": "3 steak are not ordered. \nWaiter: What can I get you?",
+            "Expected": "3 steak are not ordered.",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(3,e14,x8)],_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "326fcaba-7595-4143-9309-9142c06b5607"

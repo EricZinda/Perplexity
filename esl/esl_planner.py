@@ -756,7 +756,7 @@ class ExitNowException(Exception):
 # But there might be alternatives that can work, use this. It stops the planner immediately
 # but records a high priority error so that, if nothing else works, that error will get shown
 def stop_plan_with_error(state, context, error_text):
-    context.report_error(["understoodFailureMessage", error_text + "\n" + state.get_reprompt()], force=True)
+    context.report_error(["understoodFailureMessage", error_text], force=True)
     raise ExitNowException()
 
 

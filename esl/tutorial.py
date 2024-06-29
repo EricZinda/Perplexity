@@ -858,7 +858,7 @@ def pron(context, state, x_who_binding):
         if person == 1 and is_user_type(value):
             return True
         else:
-            context.report_error(["dontKnowActor", x_who_binding.variable.name, state.get_reprompt()])
+            context.report_error(["dontKnowActor", x_who_binding.variable.name])
 
     def unbound_variable():
         if person == 3:
@@ -885,7 +885,7 @@ def generic_entity_measure(context, state, x_binding):
             return True
 
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound():
@@ -900,7 +900,7 @@ def generic_entity(context, state, x_binding):
         if val == ESLConcept("generic_entity"):
             return True
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound():
@@ -935,7 +935,7 @@ def abstr_deg(context, state, x_binding):
         if val == ESLConcept("degree"):
             return True
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound():
@@ -1076,7 +1076,7 @@ def for_check(context, state, x_what_list, x_for_list):
             # We support "Table for 2" or "steak for N" but nothing
             # else with this construction. "table for 2 and 4" doesn't make sense
             if len(x_for_list) > 1:
-                context.report_error(["unexpected", state.get_reprompt()])
+                context.report_error(["unexpected"])
                 return False, for_type, x_what_type
 
             if x_what_type == perplexity.predications.VariableValueType.instance:
@@ -1107,7 +1107,7 @@ def for_check(context, state, x_what_list, x_for_list):
                 # the people in "for" must have it *together*, so we check if they, together, have it
                 if (x_for_list, x_what_list) not in state.all_rel("have"):
                     context.report_error(
-                        ['errorText', f"Host: That is not for both {'and'.join(x_what_list)}.", state.get_reprompt()])
+                        ['errorText', f"Host: That is not for both {'and'.join(x_what_list)}."])
                     return False, for_type, x_what_type
 
         elif is_concept(item) and item.entails(context, state, ESLConcept("course")):
@@ -1117,23 +1117,23 @@ def for_check(context, state, x_what_list, x_for_list):
 
             # We'll accept "I want the steak for my appetizer" but not for two courses
             if len(x_for_list) > 1:
-                context.report_error(["unexpected", state.get_reprompt()])
+                context.report_error(["unexpected"])
                 return False, for_type, x_what_type
 
             food_concept = ESLConcept("food")
             if not all(what.entails(food_concept) for what in x_what_list):
-                context.report_error(["unexpected", state.get_reprompt()])
+                context.report_error(["unexpected"])
                 return False, for_type, x_what_type
 
             else:
                 return False
 
         if len(for_types) > 1:
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return False, for_type, x_what_type
 
         elif len(for_types) == 0:
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return False, for_type, x_what_type
 
         else:
@@ -1228,7 +1228,7 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
                     yield new_state
                 else:
                     context.report_error(
-                        ['errorText', "Host: No that is not true", state.get_reprompt()])
+                        ['errorText', "Host: No that is not true"])
 
         else:
             yield new_state
@@ -1365,7 +1365,7 @@ def _dollar_n_1_measure(context, state, x_binding, u_unused):
             return True
 
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound():
@@ -1380,7 +1380,7 @@ def _dollar_n_1(context, state, x_binding, u_unused):
         if val == "dollar":
             return True
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound():
@@ -1479,7 +1479,7 @@ def thing_concepts(context, state, x_binding):
             return True
 
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     # Yield each layer of specializations as a disjunction starting with the most detailed
@@ -1495,7 +1495,7 @@ def thing_instances(context, state, x_binding):
         if not is_concept(value) and is_instance(state, value):
             return True
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -1564,7 +1564,7 @@ def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding,
                 return True
 
             else:
-                context.report_error(["arg_is_not_value_value", x_binding.variable.name, type_name, state.get_reprompt()])
+                context.report_error(["arg_is_not_value", x_binding.variable.name, type_name])
                 return False
 
         else:
@@ -1607,7 +1607,7 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
                 return True
 
             else:
-                context.report_error(["arg_is_not_value_value", x_binding.variable.name, noun_type, state.get_reprompt()])
+                context.report_error(["arg_is_not_value", x_binding.variable.name, noun_type])
                 return False
 
     def unbound_variable_concepts():
@@ -1634,7 +1634,7 @@ def match_all_n_instances(noun_type, context, state, x_binding):
             return True
 
         else:
-            context.report_error(["arg_is_not_value_value", x_binding.variable.name, noun_type, state.get_reprompt()])
+            context.report_error(["arg_is_not_value", x_binding.variable.name, noun_type])
             return False
 
     def unbound_variable_instances():
@@ -1650,7 +1650,7 @@ def match_all_the_concept_n(noun_type, context, state, x_binding):
         if sort_of(state, value, noun_type):
             return True
         else:
-            context.report_error(["arg_is_not_value_value", x_binding.variable.name, noun_type, state.get_reprompt()])
+            context.report_error(["arg_is_not_value", x_binding.variable.name, noun_type])
             return False
 
     def unbound_variable_instances():
@@ -1727,7 +1727,7 @@ def adjective_default_instances(adjective_type, context, state, x_binding):
                         return True
 
                 if not has_match:
-                    context.report_error(["notAThing", x_binding.value, x_binding.variable.name, state.get_reprompt()])
+                    context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
                     return False
 
     def unbound_variable_instances():
@@ -1811,7 +1811,7 @@ class PastParticipleConcepts:
                 return True
 
             else:
-                context.report_error(["not_adj", x_target_binding.variable.name, self.lemma, state.get_reprompt()])
+                context.report_error(["not_adj", x_target_binding.variable.name, self.lemma])
                 return False
 
         def unbound():
@@ -1944,7 +1944,7 @@ def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
         if (item1, item2) in state.all_rel("on"):
             return True
         else:
-            context.report_error(["notOn", item1, item2, state.get_reprompt()])
+            context.report_error(["notOn", x_actor_binding.variable.name, x_location_binding.variable.name])
 
     def all_item1_on_item2(item2):
         for i in state.all_rel("on"):
@@ -2113,7 +2113,7 @@ def want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_obj
                 return True
 
         else:
-            context.report_error(["notwant", "want", x_actor, state.get_reprompt()])
+            context.report_error(["notwant", "want", x_actor])
             return False
 
     def wanters_of_obj(x_object):
@@ -2386,7 +2386,7 @@ def _now_a_1(context, state, e_introduced_binding, x_binding):
             return True
 
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -2402,7 +2402,7 @@ def _today_a_1(context, state, e_introduced_binding, x_binding):
             return True
 
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -2417,7 +2417,7 @@ def time_n(context, state, x_binding):
         if value in ["now", "today", "yesterday", "tomorrow"]:
             return True
         else:
-            context.report_error(["notAThing", x_binding.value, x_binding.variable.name,state.get_reprompt()])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -2581,7 +2581,7 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
             return True
 
         else:
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return
 
     def unbound():
@@ -2602,7 +2602,7 @@ def _sit_v_down_future(context, state, e_introduced_binding, x_actor_binding):
                 {'SF': 'ques', 'TENSE': 'fut', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ])
 def _sit_v_down_future_bad_english(context, state, e_introduced_binding, x_actor_binding):
-    context.report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected"])
     if False:
         yield None
 
@@ -2636,7 +2636,7 @@ def _sit_v_present_intransitive_bad_english(context, state, e_introduced_binding
         context.report_error(["formNotUnderstood", "invalid_present_intransitive"])
         return
 
-    context.report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected"])
     if False:
         yield None
 
@@ -2668,7 +2668,7 @@ def _sit_v_down_able(context, state, e_binding, x_actor_binding):
             return True
 
         else:
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return
 
     def unbound():
@@ -2698,7 +2698,7 @@ def _sit_v_down_request(context, state, e_binding, x_actor_binding):
             return True
 
         else:
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return
 
     def unbound():
@@ -2741,22 +2741,22 @@ def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_objec
             if valid_player_request(context, state, [x_object], [ESLConcept("menu")]):
                 return True
             else:
-                context.report_error(["unexpected", state.get_reprompt()])
+                context.report_error(["unexpected"])
                 return False
 
         else:
             # Anything about "you/they will have" is not good english
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return False
 
     def actor_unbound(x_object):
         # Anything about "what will x have
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
     def object_unbound(x_actor):
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
@@ -2777,7 +2777,7 @@ def _see_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_objec
 def _see_v_1_able_bad_english(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if False:
         yield None
-    context.report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected"])
     return
 
 
@@ -2817,22 +2817,22 @@ def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_obj
             if valid_player_request(context, state, [x_object], [ESLConcept("menu")]):
                 return True
             else:
-                context.report_error(["unexpected", state.get_reprompt()])
+                context.report_error(["unexpected"])
                 return False
 
         else:
             # Anything about "you/they will have" is not good english
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return False
 
     def actor_unbound(x_object):
         # Anything about "what will x have
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
     def object_unbound(x_actor):
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
@@ -2851,7 +2851,7 @@ def _see_v_1_future(context, state, e_introduced_binding, x_actor_binding, x_obj
 def _see_v_1_future_bad_english(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if False:
         yield None
-    context.report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected"])
 
 
 @Predication(vocabulary,
@@ -2884,7 +2884,7 @@ def _see_v_1_future_group(context, state_list, e_list, x_actor_variable_group, x
                 {'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ])
 def _take_v_1_able(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
-    context.report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected"])
     if False:
         yield None
 
@@ -2908,7 +2908,7 @@ def get_take_see_v_present_transitive_bad_english(context, state, e_introduced_b
     if not is_present_tense(state.get_binding("tree").value[0]):
         context.report_error(["formNotUnderstood", "invalid_present_transitive"])
         return
-    context.report_error(["unexpected", state.get_reprompt()])
+    context.report_error(["unexpected"])
     if False:
         yield None
 
@@ -2941,7 +2941,7 @@ def _cancel_v_1_group(context, state_list, e_introduced_binding_list, x_actor_va
 def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if x_actor_binding.value is not None and len(x_actor_binding.value) == 1 and x_actor_binding.value[0] == "restaurant":
         # Don't support "You want to cancel my order"
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         return
 
     # All other combinations are OK
@@ -3075,7 +3075,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             return True
 
         else:
-            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name, state.get_reprompt()])
+            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "order", x_object_binding.variable.name])
             return False
 
     def actor_from_object(x_object):
@@ -3086,7 +3086,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             yield store_to_object(state, i)
 
         if not found:
-            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "ordered", x_object_binding.variable.name, state.get_reprompt()])
+            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "ordered", x_object_binding.variable.name])
 
     def object_from_actor(x_actor):
         # "what did I order?"
@@ -3096,7 +3096,7 @@ def _order_v_1_past(context, state, e_introduced_binding, x_actor_binding, x_obj
             yield store_to_object(state, i)
 
         if not found:
-            context.report_error(["x_verb_nothing", x_actor_binding.variable.name, "ordered", state.get_reprompt()])
+            context.report_error(["x_verb_nothing", x_actor_binding.variable.name, "ordered"])
 
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
@@ -3127,13 +3127,13 @@ def _get_v_1_command(context, state, e_introduced_binding, x_actor_binding, x_ob
 
     def actor_unbound(x_object):
         # Anything about "Who gets x?"
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
     def object_unbound(x_actor):
         # "What can you get?"
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
@@ -3216,18 +3216,18 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
 
         else:
             # Anything about "you/they will have" is not good english
-            context.report_error(["unexpected", state.get_reprompt()])
+            context.report_error(["unexpected"])
             return False
 
     def actor_unbound(x_object):
         # Anything about "what will x have?"
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
     def object_unbound(x_actor):
         # "who will have x?"
-        context.report_error(["unexpected", state.get_reprompt()])
+        context.report_error(["unexpected"])
         if False:
             yield None
 
@@ -3342,7 +3342,7 @@ def _have_v_1_request_order_group(context, state_list, e_list, x_actor_variable_
         x_object_value = x_object_binding.value
         if len(x_object_value) > 1:
             # Let's just reduce complexity by not supporting ordering things "together"
-            context.report_error(["errorText", "One thing at a time, please!", state.get_reprompt()], force=True)
+            context.report_error(["errorText", "One thing at a time, please!"], force=True)
             return
 
         else:
@@ -3409,7 +3409,7 @@ def _have_v_1_fact_check(context, state, e_introduced_binding, x_actor_binding, 
             return True
 
         else:
-            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name, state.get_reprompt()])
+            context.report_error(["verbDoesntApplyArg", x_actor_binding.variable.name, "have", x_object_binding.variable.name])
             return False
 
     def actor_from_object(x_object):
@@ -3420,7 +3420,7 @@ def _have_v_1_fact_check(context, state, e_introduced_binding, x_actor_binding, 
             yield i
 
         if not found:
-            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "has", x_object_binding.variable.name, state.get_reprompt()])
+            context.report_error(["nothing_verb_x", x_actor_binding.variable.name, "has", x_object_binding.variable.name])
 
     def object_from_actor(x_actor):
         # "What do I have?"
@@ -4038,7 +4038,7 @@ def _be_v_id_instance_concept(context, state, e_introduced_binding, x_subject_bi
             if x_subject == x_object:
                 return True
 
-        context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
+        context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name])
         return False
 
     def unbound(x_object):
@@ -4094,7 +4094,7 @@ def _be_v_id_concept_concept(context, state, e_introduced_binding, x_subject_bin
         if x_subject.entails(context, state, x_object):
             return True
 
-        context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name, state.get_reprompt()])
+        context.report_error(["is_not", x_subject_binding.variable.name, x_object_binding.variable.name])
         return False
 
     def unbound(x_object):
@@ -4144,7 +4144,7 @@ def _be_v_id_concept_concept_group(context, state_list, e_introduced_binding_lis
 def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     def criteria_bound(x_actor, x_object):
         if not isinstance(x_object, Measurement):
-            context.report_error(["Have not dealt with declarative cost", state.get_reprompt()])
+            context.report_error(["Have not dealt with declarative cost"])
             yield False
 
         else:
@@ -4289,23 +4289,25 @@ def generate_custom_message(tree_info, error_term):
         # english_for_delphin_variable() converts a variable name like 'x3' into the english words
         # that it represented in the MRS
         arg2 = english_for_delphin_variable(error_predicate_index, arg2, tree_info)
-        return f"{arg1} is not {arg2}{arg3}"
+        return f"{arg1} is not {arg2}"
     if error_constant == "nothing_verb_x":
         return s("No {arg1} {*arg2} {a arg3}", tree_info, reverse_pronouns=True)
     if error_constant == "x_verb_nothing":
         return s("{arg1} {*arg2} nothing", tree_info, reverse_pronouns=True)
     if error_constant == "not_adj":
-        return s("{arg1:@error_predicate_index} {'is':<arg1} not {*arg2}." + arg3, tree_info)
+        return s("{arg1:@error_predicate_index} {'is':<arg1} not {*arg2}.", tree_info)
     if error_constant == "is_not":
-        return s("{arg1} is not {arg2}{*arg3}", tree_info)
-    if error_constant == "arg_is_not_value_value":
-        return s("{arg1} is not {*arg2} {*arg3}", tree_info)
+        return s("{arg1} is not {arg2}", tree_info)
+    if error_constant == "arg_is_not_value":
+        return s("{arg1} is not {*arg2}", tree_info)
     if error_constant == "notOn":
-        return f"No. {arg1} is not on {arg2}{arg3}"
+        return s("{arg1} is not on {arg2}", tree_info)
+    if error_constant == "notWant":
+        return f"{arg1} does not want {arg2}"
     if error_constant == "verbDoesntApplyArg":
-        return s("{arg1} {'did':<arg1} not {*arg2} {arg3} {*arg4}", tree_info, reverse_pronouns=True)
+        return s("{arg1} {'do':<arg1} not {*arg2} {arg3}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApply":
-        return f"{arg1} does not {arg2} {arg3} {arg4}"
+        return f"{arg1} does not {arg2} {arg3}"
     else:
         # No custom message, just return the raw error for debugging
         return str(error_term)
@@ -4561,7 +4563,7 @@ pipeline_logger = logging.getLogger('Pipeline')
 
 
 if __name__ == '__main__':
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
@@ -4569,6 +4571,6 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     # ShowLogging("SolutionGroups")
-    ShowLogging("Transformer")
+    # ShowLogging("Transformer")
 
     hello_world()

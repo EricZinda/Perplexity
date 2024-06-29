@@ -465,7 +465,7 @@
         },
         {
             "Command": "We want tables",
-            "Expected": "Johnny: Hey, let's sit together alright?\n \nHost: How can I help you today?",
+            "Expected": "Johnny: Hey, let's sit together alright?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35492138-e4fb-4a43-8bb8-994924f6c1f9"
@@ -507,7 +507,7 @@
         },
         {
             "Command": "I'd like a table for 1",
-            "Expected": "Johnny: Hey! That's not enough seats!\n \nHost: How can I help you today?",
+            "Expected": "Johnny: Hey! That's not enough seats!",
             "Tree": "_a_q(x11,number_q(x17,card(1,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"

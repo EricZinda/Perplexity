@@ -171,7 +171,7 @@
         },
         {
             "Command": "show me 2 menus",
-            "Expected": "Waiter: Our policy is to give one menu to every customer ...\n \nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(2,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "cde58b5d-7df0-4173-a792-d2379fdf4716"
@@ -199,21 +199,21 @@
         },
         {
             "Command": "show us 3 menus",
-            "Expected": "Waiter: Our policy is to give one menu to every customer ...\n \nWaiter: What can I get you?",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"
         },
         {
             "Command": "we have 2 menus",
-            "Expected": "you did not have 2 menu  \nWaiter: What can I get you?",
+            "Expected": "you did not have 2 menu",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(2,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4dd1ccc3-2b8d-4c5e-8048-cfef07a8d1d4"
         },
         {
             "Command": "we have 3 menus",
-            "Expected": "you did not have 3 menu  \nWaiter: What can I get you?",
+            "Expected": "you did not have 3 menu",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(3,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "28216fc8-69b6-40cb-a699-27c8460b77f9"

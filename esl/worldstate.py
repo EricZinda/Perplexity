@@ -665,7 +665,7 @@ class ESLConcept(Concept):
             # to generate an error that is specific to the *concept*
             context.report_error(["conceptNotFound", self.mrs_variable if self.mrs_variable is not None else self.single_sort_name()], force=True)
 
-        # ... and return them wrapped in a Concept() with the same criteria
+        # ... and return them wrapped in a Concept()
         return [ESLConcept(x) for x in raw_concepts]
 
     def mutually_entailed(self, context, state, equivalent_concept):

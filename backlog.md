@@ -128,6 +128,55 @@ Cleanup:
 
 New Language:
     Hi Pri:
+        - Give the word from the sentence when we don't know the word
+            Just need to add the extra data on and use in the error
+        - USER: table for two thank you -->  I don't know the way you used: for
+        - ? I'd like a table
+            Host: How many in your party?
+
+            ? we have 2
+            you did not have 2 thing
+            Host: How many in your party?
+
+        - USER: table for two people -> I don't know the words: people
+        - USER: and salmon
+            I don't know the words: salmon
+        - USER: i would like to order a meal for me and my son -> I don't know the words: meal
+            - maybe just synonym for dish??
+             One regular meal for me, and one vegetarian meal.
+                I don't know the words: meal, meal
+
+        - USER: Nothing, thank you.
+            I don't know the words: addressee
+        - USER: Thank you, that is all for now
+            I don't know the way you used: all
+        - USER: We are fine, thank you
+            ('user',) is not we
+        - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.
+            - Should be: You’re in the lobby of a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy food for both of you. You have 20 dollars in cash.
+        - USER: I'm good
+            I don't know the words: good
+        - USER: We're okay
+            I don't know the way you used: okay
+        - Errors of unknown words should say the actual word
+
+        - USER: what do you have on the menu?
+            I don't know the way you used: on
+        - USER: menu options --> Waiter: steak is an excellent choice!
+        - USER: do you have any vegan food -> I don't know the words: vegan
+            Should say "Dad I'm a vegetarian!"
+        - USER: Can i order? -> I don't know the way you used: order
+        - USER: I would like to order lunch ->  I don't know the words: lunch
+            - also dinner, breakfast
+        -  14 people ->  I don't know the words: people
+        - USER: table
+            Host: How many in your party?
+            USER: 14
+            Host: Sorry, I don't know how to give you that.
+            - SHould be: too many!
+        - If you get N failures in a row, give help?
+        - USER: how much does water cost -> There are less than 1 thing
+        - USER: another water -> I don't know the words: another
         - Just a couple waters thanks --> Sorry, I don't know how to give you that.
         - a couple glasses of water -> Sorry, I don't know how to give you that.
         USER: Get my son three salads
@@ -136,6 +185,9 @@ New Language:
             I don't know the words: measure
         - How much for a salad
             -- I don't know the words: measure
+
+        - what do u have here? -> I don't know the words: place
+            -
         - USER: Tomato soup and a green salad sounds great for my son
             I don't know the words: green
 
@@ -224,6 +276,8 @@ New Language:
         - "at the moment" should be ignored
 
     Low Pri:
+        - Convert plz to please
+        - Convert u to you
         - I'd like to get two menus
             Waiter: Our policy is to give one menu to every customer ...
             Waiter: What can I get you?

@@ -38,7 +38,7 @@
         },
         {
             "Command": "my son has water",
-            "Expected": "son did not have water  \nWaiter: What can I get you?",
+            "Expected": "son did not have water",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_water_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_have_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "cb15454a-2a0f-4080-a4f2-654ad1524068"

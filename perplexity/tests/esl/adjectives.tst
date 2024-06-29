@@ -10,7 +10,7 @@
         },
         {
             "Command": "The soup is smoked",
-            "Expected": "the soup is not smoked. \nHost: How can I help you today?",
+            "Expected": "the soup is not smoked.",
             "Tree": "_the_q(x3,_soup_n_1(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "0494e3db-dfae-4a1f-aeeb-f08560e495b7"
@@ -240,5 +240,5 @@
             "ID": "536f65a4-7a11-4838-92ab-ef6166f9472f"
         }
     ],
-    "ElapsedTime": 14.05443
+    "ElapsedTime": 13.62653
 }
