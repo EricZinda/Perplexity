@@ -9,6 +9,27 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
+            "Command": "table for one person",
+            "Expected": "There is more than 1 person",
+            "Tree": "udef_q(x10,[_person_n_1(x10), card(1,e16,x10)],udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+        },
+        {
+            "Command": "table for two people",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "udef_q(x14,[_people_n_of(x14,i21), card(2,e20,x14)],pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "c75ac28d-0ec8-4c56-9bf6-eb8a8622295a"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "b643bb69-ca1d-40cb-88c0-c19239d49cd2"
+        },
+        {
             "Command": "I'd like to get a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "_a_q(x14,number_q(x20,card(2,x20,i26),[_table_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x14)))",
@@ -20,7 +41,7 @@
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,def_implicit_q(x17,basic_numbered_hour(2,x17),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),pronoun_q(x27,pron(x27),pronoun_q(x5,pron(x5),_want_v_1(e2,x5,x11)))))",
             "Enabled": true,
-            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+            "ID": "5302221c-2a99-49a4-b802-9598614799e1"
         },
         {
             "Command": "I want to get a table",
@@ -74,7 +95,7 @@
         {
             "Command": "table for two, please",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "_please_a_1(i17,def_implicit_q(x11,basic_numbered_hour(2,x11),udef_q(x5,[_table_n_1(x5), _for_p(e10,x5,x11)],unknown(e2,x5))))",
+            "Tree": "_please_a_1(i21,_a_q(x9,def_implicit_q(x15,basic_numbered_hour(2,x15),[_table_n_1(x9), _for_p(e14,x9,x15)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x9))))",
             "Enabled": true,
             "ID": "ef997ec5-4d75-4d77-ac29-d63d475bfa5d"
         },
@@ -578,7 +599,7 @@
         {
             "Command": "2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
+            "Tree": "def_implicit_q(x4,basic_numbered_hour(2,x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "d078a2ea-e17c-44c5-9110-2600cea1e097"
         },

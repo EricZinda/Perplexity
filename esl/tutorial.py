@@ -1088,7 +1088,7 @@ def _for_p_event(context, state, e_binding, e_target_binding, x_for_binding):
     if x_for_binding.value is not None and len(x_for_binding.value) == 1 and x_for_binding.value[0] == "now":
         yield state
     else:
-        yield state.add_to_e(e_target_binding.variable.name, "for", {"Value": x_for_binding.value, "Originator": context.current_predication_index()})
+        yield state.add_to_e(e_target_binding.variable.name, "for", {"Value": x_for_binding.value, "Binding": x_for_binding, "Originator": context.current_predication_index()})
 
 
 # Checks to make sure a "for" construct is valid, and determines what kind of "for" construct it is
@@ -1102,7 +1102,18 @@ def for_check(context, state, x_what_list, x_for_list):
     for_type = None
 
     for item in x_for_list:
-        if isinstance(item, numbers.Number):
+        if is_concept(item) and item.entails(context, state, ESLConcept("person")):
+            # if 'for' is a number of people like:
+            # "Table for 2 people"
+            for_types.add("to the extent or amount of")
+
+            # We support "Table for 2 people" or "steak for 2 people" but nothing
+            # else with this construction. "table for 2 and 4" doesn't make sense
+            if len(x_for_list) > 1:
+                context.report_error(["unexpected"])
+                return False, for_type, x_what_type
+
+        elif isinstance(item, numbers.Number):
             # if 'for' is a number like: "Table for 2" or "walk for a mile" it means "to the extent or amount of"
             #       If x is an instance, this effectively means "has the capacity of" and it just needs to be check if it has that capacity
             for_types.add("to the extent or amount of")
@@ -1181,7 +1192,7 @@ def for_check(context, state, x_what_list, x_for_list):
 #
 # Returns an updated version of the solution state that has x_what_binding
 # updated to include the information that x_for_binding added to it
-def for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_list):
+def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x_for_binding, x_for_list):
     if x_what_type == perplexity.predications.VariableValueType.instance or for_type == "ignore":
         # Already fully checked above
         return solution
@@ -1190,11 +1201,18 @@ def for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_list
         # Add the appropriate "for" information to the concepts
         x_what_values = x_what_binding.value
         if for_type == "to the extent or amount of":
-            # x_for_list was already checked to make sure it was only one number
             x_for_value = x_for_list[0]
+            amount_value = None
+            if is_concept(x_for_value):
+                # We've already checked that it entails person
+                for_variable_constraints = perplexity.solution_groups.constraints_for_variable(context, solution, x_for_binding.variable.name)
+                amount_value = for_variable_constraints.min_size if for_variable_constraints is not None else 1
+
+            else:
+                amount_value = x_for_value
 
             # x_what_binding could be multiple like "a steak and a salad for 2"
-            modified_values = [value.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", x_for_value) for value
+            modified_values = [value.add_criteria(rel_subjects_greater_or_equal, "maxCapacity", amount_value) for value
                                in x_what_values]
 
         elif for_type == "intended to belong to":
@@ -1251,7 +1269,7 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
                                              both_bound_function,
                                              x_what_unbound,
                                              x_for_unbound):
-        new_state = for_update_state(solution, x_what_type, for_type, x_what_binding, x_for_binding.value)
+        new_state = for_update_state(context, solution, x_what_type, for_type, x_what_binding, x_for_binding, x_for_binding.value)
 
         if perplexity.tree.used_predicatively(context, state):
             # "This steak is for 2" or "This steak is for my son"
@@ -1280,6 +1298,18 @@ def _nothing_n_1(context, state, x_bind):
     yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
 
 
+
+@Predication(vocabulary, names=["_people_n_of"])
+def _people_n_of_concept(context, state, x_bind, i_unused):
+    def bound(val):
+        return val == ESLConcept("person")
+
+    def unbound():
+        yield ESLConcept("person")
+
+    yield from combinatorial_predication_1(context, state, x_bind, bound, unbound)
+
+
 @Predication(vocabulary, names=["_cash_n_1"])
 def _cash_n_1(context, state, x_bind):
     def bound(val):
@@ -1292,7 +1322,7 @@ def _cash_n_1(context, state, x_bind):
 
 
 @Predication(vocabulary, names=["_moment_n_1"])
-def _card_n_1(context, state, x_bind):
+def _moment_n_1(context, state, x_bind):
     def bound(val):
         return val == "moment"
 
@@ -3182,7 +3212,8 @@ def _get_v_1_command(context, state, e_introduced_binding, x_actor_binding, x_ob
                                             object_unbound):
         if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
             for_list = e_introduced_binding.value["for"]["Value"]
-            yield for_update_state(new_state, x_what_type, for_type, x_object_binding, for_list)
+            for_binding = e_introduced_binding.value["for"]["Binding"]
+            yield for_update_state(context, new_state, x_what_type, for_type, x_object_binding, for_binding, for_list)
         else:
             yield new_state
 
@@ -3276,7 +3307,8 @@ def _have_v_1_order(context, state, e_introduced_binding, x_actor_binding, x_obj
                                                 object_unbound):
         if e_introduced_binding.value is not None and "for" in e_introduced_binding.value:
             for_list = e_introduced_binding.value["for"]["Value"]
-            yield for_update_state(new_state, x_what_type, for_type, x_object_binding, for_list)
+            for_binding = e_introduced_binding.value["for"]["Binding"]
+            yield for_update_state(context, new_state, x_what_type, for_type, x_object_binding, for_binding, for_list)
 
         else:
             yield new_state

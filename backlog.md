@@ -4,7 +4,7 @@ Upload to itch.io:
 
 
 - Need to update the ubuntu and M1 grammar to 2024
-
+- Concept can't properly represent "table for a person" because quantifiers don't add anything...Is that OK?
 
 Bugs:
     High Pri:
@@ -135,7 +135,6 @@ New Language:
             you did not have 2 thing
             Host: How many in your party?
 
-        - USER: table for two people -> I don't know the words: people
         - USER: and salmon
             I don't know the words: salmon
         - USER: i would like to order a meal for me and my son -> I don't know the words: meal

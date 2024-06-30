@@ -11,7 +11,7 @@
         {
             "Command": "table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Tree": "def_implicit_q(x14,basic_numbered_hour(2,x14),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "e3ce792d-b076-4fc4-b91d-7e13976d58f6"
         },
@@ -206,14 +206,14 @@
         },
         {
             "Command": "we have 2 menus",
-            "Expected": "you did not have 2 menu",
+            "Expected": "you do not have 2 menu",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(2,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4dd1ccc3-2b8d-4c5e-8048-cfef07a8d1d4"
         },
         {
             "Command": "we have 3 menus",
-            "Expected": "you did not have 3 menu",
+            "Expected": "you do not have 3 menu",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(3,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "28216fc8-69b6-40cb-a699-27c8460b77f9"
