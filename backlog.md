@@ -127,6 +127,9 @@ Cleanup:
               Elapsed time: 979.71158
 
 New Language:
+    Add test: What isn't on the menu?
+        - this works, test it!
+
     Hi Pri:
         - ? I'd like a table
             Host: How many in your party?
@@ -135,35 +138,92 @@ New Language:
             you did not have 2 thing
             Host: How many in your party?
 
+        - Add better setting information up front
+        - USER: Nothing, thank you.
+            I don't know the words: addressee
         - USER: and salmon
             I don't know the words: salmon
         - USER: i would like to order a meal for me and my son -> I don't know the words: meal
             - maybe just synonym for dish??
              One regular meal for me, and one vegetarian meal.
                 I don't know the words: meal, meal
-
-        - USER: Nothing, thank you.
-            I don't know the words: addressee
         - USER: Thank you, that is all for now
             I don't know the way you used: all
         - USER: We are fine, thank you
             ('user',) is not we
-        - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.
-            - Should be: You’re in the lobby of a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy food for both of you. You have 20 dollars in cash.
         - USER: I'm good
             I don't know the words: good
         - USER: We're okay
             I don't know the way you used: okay
-        - Errors of unknown words should say the actual word
-
-        - USER: what do you have on the menu?
-            I don't know the way you used: on
-        - USER: menu options --> Waiter: steak is an excellent choice!
-        - USER: do you have any vegan food -> I don't know the words: vegan
-            Should say "Dad I'm a vegetarian!"
         - USER: Can i order? -> I don't know the way you used: order
         - USER: I would like to order lunch ->  I don't know the words: lunch
             - also dinner, breakfast
+        - If you order food that we don't have it should say "just get something on the menu"
+        - i want you to give me a menu
+            I don't know the words: in+order+to and I don't know the way you used: give
+        - USER: my son wants lunch
+            I don't know the words: lunch
+        - USER: vegan
+            I don't know the words: vegan
+            Seems like should just be a syn for vegetarian here since the dishes are the same
+        - lunch, meal come up a lot
+        - USER: a party of 2
+            I don't know the words: party
+        - USER: Tomato soup, green salad, and roasted chicken
+            Waiter: soup is an excellent choice!
+            Son: Wait, let's not order salad before we know how much it costs.
+            chicken is not roasted.
+            Waiter: Can I get you anything besides 2 soups for you?
+            Waiter: Can I get you anything besides 2 soups for you?
+
+         -   Waiter: What can I get you?
+            USER: vegetables
+            I don't know the words: vegetable
+            Waiter: What can I get you?
+        - USER: Oh one of the chicken too
+            I don't know the words: one
+        - USER: I would like to pay cash please
+            I don't know the words: would, like and I don't know the way you used: pay
+        - USER: what do you have on the menu?
+            I don't know the way you used: on
+        - USER: do you have any vegan food -> I don't know the words: vegan
+            Should say "Dad I'm a vegetarian!"
+
+        - USER: my son does not eat vegetables
+            I don't know the words: vegetable
+            - Also:My son is vegetarian
+            - Also: USER: my son does not eat meat
+        - USER: is there a vegetarian option
+            Yes.
+            Waiter: Can I get you anything besides a salmon for you?
+        - Waiter: What can I get you?
+            USER: Nothing
+            Waiter: I'll be right back!
+            A few minutes go by and the waiter returns.
+            Waiter: What can I get you?
+            - should not have gone back!
+        - USER: I'm good
+            I don't know the words: good
+        - ? I'd like a table
+            Host: How many in your party?
+
+            ? we have 2
+            you did not have 2 thing
+            Host: How many in your party?
+        - USER: table for two people -> I don't know the words: people
+
+        - ?:vegetables
+            I don't know the words: vegetable
+        - USER: I want a green thing
+            Sorry, did you mean to say something?
+            also: USER: I'd like a green thing
+                I don't know the words: 'd, like
+
+        - You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.
+            - Should be: You’re in the lobby of a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy food for both of you. You have 20 dollars in cash.
+
+        - USER: menu options --> Waiter: steak is an excellent choice!
+
         -  14 people ->  I don't know the words: people
         - USER: table
             Host: How many in your party?
