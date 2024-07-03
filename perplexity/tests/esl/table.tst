@@ -74,7 +74,7 @@
         {
             "Command": "table for two, please",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "_please_a_1(i17,def_implicit_q(x11,basic_numbered_hour(2,x11),udef_q(x5,[_table_n_1(x5), _for_p(e10,x5,x11)],unknown(e2,x5))))",
+            "Tree": "_please_a_1(i21,_a_q(x9,def_implicit_q(x15,basic_numbered_hour(2,x15),[_table_n_1(x9), _for_p(e14,x9,x15)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x9))))",
             "Enabled": true,
             "ID": "ef997ec5-4d75-4d77-ac29-d63d475bfa5d"
         },

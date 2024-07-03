@@ -10,7 +10,7 @@
         },
         {
             "Command": "oh, good point, I suppose. How much are each of the specials?",
-            "Expected": "I don't know the words: point<end>I don't know the words: part_of",
+            "Expected": "I don't know the words: point<end>I don't know the words: each",
             "Tree": "None<end>None",
             "Enabled": true,
             "ID": "f6f8047d-e0bf-4326-8988-26aa6302f802"

@@ -11,7 +11,7 @@
         {
             "Command": "table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Tree": "def_implicit_q(x14,basic_numbered_hour(2,x14),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "184bd202-1809-467b-8498-34860434b626"
         },
@@ -38,7 +38,7 @@
         },
         {
             "Command": "my son has water",
-            "Expected": "son did not have water",
+            "Expected": "son do not have water",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_water_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_have_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "cb15454a-2a0f-4080-a4f2-654ad1524068"
@@ -81,7 +81,7 @@
         {
             "Command": "table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x10,card(2,x10,i16),udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Tree": "def_implicit_q(x14,basic_numbered_hour(2,x14),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "38cda81d-5f7c-4f82-b2a8-d673e0bbae22"
         },
