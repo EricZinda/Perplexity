@@ -51,6 +51,7 @@ def user_types():
 
 def requestable_concepts_by_sort(state):
     requestable_items = {ESLConcept("table"): ("table", "table"),
+                         ESLConcept("meal"): ("meal", "meal"),
                          ESLConcept("menu"): ("menu", "menu"),
                          ESLConcept("bill"): ("bill", "bill")}
 

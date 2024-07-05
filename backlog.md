@@ -131,6 +131,12 @@ New Language:
         - this works, test it!
 
     Hi Pri:
+        - what do you have for lunch?
+        - USER: vegan
+            I don't know the words: vegan
+            Seems like should just be a syn for vegetarian here since the dishes are the same
+        - lunch, meal come up a lot
+
         - ? I'd like a table
             Host: How many in your party?
 
@@ -138,15 +144,8 @@ New Language:
             you did not have 2 thing
             Host: How many in your party?
 
-        - (done) Add better setting information up front
         - USER: Nothing, thank you.
             I don't know the words: addressee
-        - USER: and salmon
-            I don't know the words: salmon
-        - USER: i would like to order a meal for me and my son -> I don't know the words: meal
-            - maybe just synonym for dish??
-             One regular meal for me, and one vegetarian meal.
-                I don't know the words: meal, meal
         - USER: Thank you, that is all for now
             I don't know the way you used: all
         - USER: We are fine, thank you
@@ -155,18 +154,21 @@ New Language:
             I don't know the words: good
         - USER: We're okay
             I don't know the way you used: okay
+
+        - USER: and salmon
+            I don't know the words: salmon
+        - USER: i would like to order a meal for me and my son -> I don't know the words: meal
+            - maybe just synonym for dish??
+             One regular meal for me, and one vegetarian meal.
+                I don't know the words: meal, meal
+        - please order me chicken
+            Doen't work
         - USER: Can i order? -> I don't know the way you used: order
         - USER: I would like to order lunch ->  I don't know the words: lunch
             - also dinner, breakfast
         - If you order food that we don't have it should say "just get something on the menu"
         - i want you to give me a menu
             I don't know the words: in+order+to and I don't know the way you used: give
-        - USER: my son wants lunch
-            I don't know the words: lunch
-        - USER: vegan
-            I don't know the words: vegan
-            Seems like should just be a syn for vegetarian here since the dishes are the same
-        - lunch, meal come up a lot
         - USER: a party of 2
             I don't know the words: party
         - USER: Tomato soup, green salad, and roasted chicken

@@ -99,7 +99,13 @@ def is_request_from_tree(tree_info):
 def valid_player_request(context, state, x_objects, valid_concepts=None):
     # Things players can request
     if valid_concepts is None:
-        valid_concepts = [ESLConcept("food"), ESLConcept("drink"), ESLConcept("table"), ESLConcept("menu"), ESLConcept("bill"), ESLConcept("check")]
+        valid_concepts = [ESLConcept("food"),
+                          ESLConcept("drink"),
+                          ESLConcept("table"),
+                          ESLConcept("menu"),
+                          ESLConcept("bill"),
+                          ESLConcept("meal"),
+                          ESLConcept("check")]
 
     for x_object in x_objects:
         found = False
@@ -3411,7 +3417,6 @@ def _have_v_1_request_order(context, state, e_introduced_binding, x_actor_bindin
         context.report_error(["formNotUnderstood", "_have_v_1_request_order"])
         return
 
-    requestable_concepts = requestable_concepts_by_sort(state)
     yield from in_style_predication_2(context, state, x_actor_binding, x_object_binding, bound, actor_from_object,
                                       object_from_actor)
 
@@ -4440,6 +4445,11 @@ def reset():
     initial_state = initial_state.add_rel("drink", "specializes", "thing")
     initial_state = initial_state.add_rel("water", "specializes", "drink")
 
+    initial_state = initial_state.add_rel("meal", "specializes", "thing")
+    initial_state = initial_state.add_rel("meal1", "instanceOf", "meal")
+    initial_state = initial_state.add_rel("meal2", "instanceOf", "meal")
+    initial_state = initial_state.add_rel("meal3", "instanceOf", "meal")
+
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("dish", "specializes", "food")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
@@ -4622,8 +4632,15 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
     else:
         message = "(Note: This game is designed to practice English: type in actual sentences you'd say in real life. If you get stuck, ask yourself what you would really say in the real world and type that.)\n\n" + "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
 
+    # initial_state = initial_state.add_rel("lunch", "specializes", "meal")
+    # initial_state = initial_state.add_rel("dinner", "specializes", "meal")
+    # initial_state = initial_state.add_rel("breakfast", "specializes", "meal")
+
     vocabulary.synonyms = {
         "_item_n_of": "_thing_n_of-about",
+        "_lunch_n_1": "_meal_n_1",
+        "_dinner_n_1": "_meal_n_1",
+        "_breakfast_n_1": "_meal_n_1",
         "_main_n_1": "_dish_n_of",
         "_choice_n_of": "_dish_n_of",
         "_speciality_n_1": "_dish_n_of",

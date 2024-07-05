@@ -44,11 +44,32 @@
             "ID": "2ba8f361-0a88-48e9-b7fe-d65d53b8f399"
         },
         {
+            "Command": "Do you have lunch?",
+            "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "4ecab638-357a-43e6-b768-421b52437bdb"
+        },
+        {
+            "Command": "We'd like to get lunch",
+            "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\nWaiter: Oh, I already gave Johnny a menu. You can see that there is a menu in front of Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Tree": "udef_q(x14,_meal_n_1(x14),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x14)))",
+            "Enabled": true,
+            "ID": "5c5c0922-48a6-4624-86f1-c8c208447029"
+        },
+        {
+            "Command": "Could we have lunch?",
+            "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\nWaiter: Oh, I already gave Johnny a menu. You can see that there is a menu in front of Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
+            "Tree": "udef_q(x11,_meal_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "c58523c4-4d4b-48e1-a384-5e0f76db6166"
+        },
+        {
             "Command": "My son wants the menu",
             "Expected": "Waiter: Oh, I already gave Johnny a menu. You can see that there is a menu in front of Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),_the_q(x15,_menu_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
-            "ID": "4ecab638-357a-43e6-b768-421b52437bdb"
+            "ID": "8f673224-8186-4d58-8b0f-2c285ec4891c"
         },
         {
             "Command": "that will be all, thank you.",

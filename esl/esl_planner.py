@@ -529,18 +529,21 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
 
         concept_name = concept_subconcepts[0]
         subconcept = next(iter(concept_subconcepts[1]))
-        if concept_name == "table":
+        if concept_name == "table" or (concept_name == "meal" and not_at_table):
             if "get_table" not in task_dict:
                 task_dict["get_table"] = [[], []]
             task_dict["get_table"][0].append(who_list)
-            task_dict["get_table"][1].append(what)
+            if concept_name == "meal":
+                task_dict["get_table"][1].append(ESLConcept("table"))
+            else:
+                task_dict["get_table"][1].append(what)
 
         else:
             if not_at_table:
                 ask_server_about.append(subconcept)
 
             else:
-                if concept_name == "menu":
+                if concept_name == "menu" or concept_name == "meal":
                     if "get_menu" not in task_dict:
                         task_dict["get_menu"] = [[]]
                     task_dict["get_menu"][0].append(who_list)

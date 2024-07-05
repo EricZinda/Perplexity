@@ -9,11 +9,46 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
+            "Command": "I want lunch",
+            "Expected": "\nHost: How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+        },
+        {
+            "Command": "we want lunch",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "baab19f5-1eb9-4df2-8b46-555e8a1fde49"
+        },
+        {
+            "Command": "we want a meal",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "6e93c706-5346-40ae-be78-b6dde3ad0557"
+        },
+        {
+            "Command": "Do you have lunch?",
+            "Expected": "\nHost: How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "fd41a40e-696d-4f3c-bd73-bfbd465cdac0"
+        },
+        {
             "Command": "table for one person",
             "Expected": "There is more than 1 person",
             "Tree": "udef_q(x10,[_person_n_1(x10), card(1,e16,x10)],udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
-            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+            "ID": "d606e7bf-0fc4-4278-a598-6249659f3de6"
         },
         {
             "Command": "table for two people",
