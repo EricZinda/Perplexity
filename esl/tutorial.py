@@ -4620,7 +4620,7 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
         message = ""
 
     else:
-        message = "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
+        message = "(Note: This game is designed to practice English: type in actual sentences you'd say in real life. If you get stuck, ask yourself what you would really say in the real world and type that.)\n\n" + "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
 
     vocabulary.synonyms = {
         "_item_n_of": "_thing_n_of-about",
