@@ -138,7 +138,7 @@ New Language:
             you did not have 2 thing
             Host: How many in your party?
 
-        - Add better setting information up front
+        - (done) Add better setting information up front
         - USER: Nothing, thank you.
             I don't know the words: addressee
         - USER: and salmon
