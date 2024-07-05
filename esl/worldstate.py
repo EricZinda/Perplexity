@@ -83,7 +83,7 @@ def specials_concepts(state):
 
 
 def is_user_type(val):
-    if not isinstance(val, tuple):
+    if not isinstance(val, (tuple, list, set)):
         return val in user_types()
 
     else:

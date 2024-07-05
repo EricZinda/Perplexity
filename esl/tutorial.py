@@ -1105,11 +1105,12 @@ def for_check(context, state, x_what_list, x_for_list):
         if is_concept(item) and item.entails(context, state, ESLConcept("person")):
             # if 'for' is a number of people like:
             # "Table for 2 people"
-            for_types.add("to the extent or amount of")
+            for_types.add("intended to belong to")
 
+            # Make sure the people are only the customers
             # We support "Table for 2 people" or "steak for 2 people" but nothing
             # else with this construction. "table for 2 and 4" doesn't make sense
-            if len(x_for_list) > 1:
+            if not is_user_type(item.instances(context, state)) or len(x_for_list) > 1:
                 context.report_error(["unexpected"])
                 return False, for_type, x_what_type
 
@@ -1204,7 +1205,7 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
             x_for_value = x_for_list[0]
             amount_value = None
             if is_concept(x_for_value):
-                # We've already checked that it entails person
+                # We've already checked that it entails person and that it is a user type
                 for_variable_constraints = perplexity.solution_groups.constraints_for_variable(context, solution, x_for_binding.variable.name)
                 amount_value = for_variable_constraints.min_size if for_variable_constraints is not None else 1
 
@@ -1216,10 +1217,34 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
                                in x_what_values]
 
         elif for_type == "intended to belong to":
-            if sort_of(solution, x_what_values, "table"):
+            if sort_of(solution, x_what_values, "table") or \
+                    (len(x_what_values) == 1 and x_what_values[0].entails(context, solution, ESLConcept("table"))):
                 # If "what" is a table, we've already made sure there is only one above
                 # and we assume they are talking about "capacity" not ownership so:
-                modified_values = [x_what_values[0].add_criteria(rel_subjects, "maxCapacity", len(x_for_list))]
+                tree_info = solution.get_binding("tree").value[0]
+                wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
+                this_sentence_force = sentence_force(tree_info["Variables"])
+                declared_criteria_list = [data for data in declared_determiner_infos(context, solution)]
+                optimized_criteria_list = list(
+                    optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_phrase_variable))
+                for_predication = find_predication_from_introduced(tree_info["Tree"], x_for_binding.variable.name)
+                found_constraint = None
+                for arg_index in range(len(for_predication.args)):
+                    arg = for_predication.args[arg_index]
+                    found_constraint = None
+                    for constraint in optimized_criteria_list:
+                        if constraint.variable_name == arg:
+                            found_constraint = constraint
+                            break
+                    if found_constraint is not None:
+                        size = found_constraint.min_size
+                        break
+
+                if found_constraint is None:
+                    modified_values = [x_what_values[0].add_criteria(rel_subjects_greater_or_equal, "maxCapacity", len(x_for_list))]
+                else:
+                    modified_values = [x_what_values[0].add_criteria(rel_subjects_greater_or_equal, "maxCapacity", size)]
+
 
             else:
                 # Anything else gets "targetPossession" as a criteria to indicate what is desired
