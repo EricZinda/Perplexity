@@ -131,6 +131,12 @@ New Language:
         - this works, test it!
 
     Hi Pri:
+        - USER: what does the soup cost
+            soup : 4 dollars
+            - Doesn't record that you found out
+
+        - USER: How much for the green salad?
+            I don't know the words: How
         - what do you have for lunch?
         - USER: vegan
             I don't know the words: vegan

@@ -1573,6 +1573,9 @@ def thing_concepts(context, state, x_binding):
         elif is_type(state, value):
             return True
 
+        elif len(x_binding.value) == 1 and isinstance(x_binding.value[0], Measurement):
+            return True
+
         else:
             context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
@@ -4266,12 +4269,14 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
                 yield "Ah. It's not for sale."
 
             else:
-                entailed_concept_name = actor_entails_concepts[0].single_sort_name()
-                yield entailed_concept_name + " : " + str(state.sys["prices"][entailed_concept_name]) + " dollars"
+                # entailed_concept_name = actor_entails_concepts[0].single_sort_name()
+                yield Measurement(ESLConcept("dollar"), None)
+                # yield entailed_concept_name + " : " + str(state.sys["prices"][entailed_concept_name]) + " dollars"
+
         else:
             concept_item = instance_of_what(state, x_actor)
             if concept_item in state.sys["prices"].keys():
-                yield concept_item + " : " + str(state.sys["prices"][concept_item]) + " dollars"
+                yield Measurement(ESLConcept("dollar"), None)
 
             else:
                 yield "Ah. It's not for sale."
@@ -4282,9 +4287,15 @@ def _cost_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_bi
         if units is not None:
             # This is a "how much is x" question: we need to measure the value
             # into the specified variable
-            yield from yield_cost_of_subject_into_object(context, success_state, units, x_actor_binding.variable.name, x_object_binding.variable.name)
+            yield from yield_cost_of_subject_into_object(context, success_state, units, x_actor_binding.variable.name,                          x_object_binding.variable.name)
 
         else:
+            # concept_name = entailed_concept.single_sort_name()
+            # price = Measurement("dollar", state.sys["prices"][concept_name])
+            #
+            # # Remember that we now know the price
+            # yield state.set_x(object_variable, (price,)).record_operations([SetKnownPriceOp(concept_name)])
+
             yield success_state
 
 

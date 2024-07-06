@@ -31,10 +31,10 @@
         },
         {
             "Command": "Do you have lunch?",
-            "Expected": "\nHost: How many in your party?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+            "ID": "cb2667bd-33df-4997-b699-d81f8e831c09"
         },
         {
             "Command": "/new esl.tutorial.reset",
@@ -634,7 +634,7 @@
         {
             "Command": "2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "number_q(x4,card(2,x4,i10),unknown(e2,x4))",
+            "Tree": "def_implicit_q(x4,basic_numbered_hour(2,x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "d078a2ea-e17c-44c5-9110-2600cea1e097"
         },

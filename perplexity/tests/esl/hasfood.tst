@@ -16,18 +16,32 @@
             "ID": "773a6c5f-70a1-4900-9af0-b4e5d0620b3c"
         },
         {
-            "Command": "what specials do you have?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
-            "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
-            "Enabled": true,
-            "ID": "f5b87a2d-d97a-4ec5-a017-858a64d4f2c1"
-        },
-        {
-            "Command": "how much is the soup?",
+            "Command": "What does the soup cost?",
             "Expected": "4 dollars\nWaiter: What can I get you?",
-            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Tree": "which_q(x5,thing(x5),_the_q(x3,_soup_n_1(x3),_cost_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "88f8b6e9-7601-46e1-9bb1-d91301a52faa"
+        },
+        {
+            "Command": "I want the soup",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a soup for you?",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "1746a509-05db-475b-b0ed-619fed5432bf"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "9ce32c15-1cb4-4ab4-8a0a-43208883659c"
+        },
+        {
+            "Command": "I'd like a table for 2'",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "3b66ebac-1293-42d8-bdb0-13cab45ed78d"
         },
         {
             "Command": "how much will the soup be?",
@@ -41,7 +55,42 @@
             "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a soup for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "1746a509-05db-475b-b0ed-619fed5432bf"
+            "ID": "b9af4eb0-4d26-481a-82e4-9b97c1631251"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "cb184f9e-d501-4d10-a88f-9c73b274def9"
+        },
+        {
+            "Command": "I'd like a table for 2'",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "_a_q(x11,number_q(x17,card(2,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "a0b9e7aa-64c2-4c2c-8623-0b6195d9653f"
+        },
+        {
+            "Command": "what specials do you have?",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
+            "Tree": "_which_q(x5,_special_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "f5b87a2d-d97a-4ec5-a017-858a64d4f2c1"
+        },
+        {
+            "Command": "how much is the soup?",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_soup_n_1(x3),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "9fb0166e-c701-48d9-b056-c53a827981c3"
+        },
+        {
+            "Command": "I want the soup",
+            "Expected": "Waiter: soup is an excellent choice!\nWaiter: Can I get you anything besides a soup for you?",
+            "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "e101dd32-e6b0-4c97-bdb6-282a28f39dfa"
         },
         {
             "Command": "my son wants the soup",
