@@ -706,14 +706,14 @@
         },
         {
             "Command": "What do the steak and the soup cost?",
-            "Expected": "steak : 10 dollars\nsoup : 4 dollars\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Expected": "10 dollars\n4 dollars\nWaiter: Can I get you anything besides 2 steaks for you?",
             "Tree": "which_q(x5,thing(x5),_the_q(x13,_steak_n_1(x13),_the_q(x18,_soup_n_1(x18),udef_q(x3,_and_c(x3,x13,x18),_cost_v_1(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "988a743e-3192-46a0-8d3c-e20eaf3cfb4d"
         },
         {
             "Command": "What will the steak cost?",
-            "Expected": "steak : 10 dollars\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Expected": "10 dollars\nWaiter: Can I get you anything besides 2 steaks for you?",
             "Tree": "which_q(x5,thing(x5),_the_q(x3,_steak_n_1(x3),_cost_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "a723cb98-7894-4702-a56d-4850d0c8f5c4"
