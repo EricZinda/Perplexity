@@ -460,7 +460,8 @@ def divide_size(group_who, orig_min_size):
 def satisfy_want_group_group(state, context, group_who, group_what, what_size_constraint):
     # Only need to check the first item since they will all be concepts or instances
     # Since that is the way solution groups work
-    if not isinstance(group_who, (list, tuple, set)) or not isinstance(group_what, (list, tuple, set)) or not is_concept(group_what[0][0]):
+    if not isinstance(group_who, (list, tuple, set)) or not isinstance(group_what, (list, tuple, set)) \
+            or not is_concept(group_what[0][0]):
         return
 
     # Iterate through each group_who / group_what pair

@@ -397,7 +397,9 @@ def how_many_transformer(noun_match, noun_production):
     much_many_match = TransformerMatch(name_pattern="much-many_a", args_pattern=["e", "x"])
 
     # conjunction
-    conjunction_match = ConjunctionMatchTransformer(transformer_list=[noun_match, measure_match, much_many_match])
+    if not isinstance(noun_match, list):
+        noun_match = [noun_match]
+    conjunction_match = ConjunctionMatchTransformer(transformer_list=noun_match + [measure_match, much_many_match], extra_conjuncts_capture="extra_conjuncts")
 
     return TransformerMatch(name_pattern="udef_q",
                             args_pattern=["x", conjunction_match, "*"],
@@ -405,6 +407,52 @@ def how_many_transformer(noun_match, noun_production):
                             properties_production=underspecify_plurality_production,
                             production=count_production,
                             removed=["measure", "much-many_a"])
+
+
+# How much for the x?
+# which_q(x10,abstr_deg(x10),_the_q(x17,_soup_n_1(x17),
+#   udef_q(x4,[measure(e14,e15,x10), generic_entity(x4), _for_p(e16,x4,x17), much-many_a(e15,x4)],unknown(e2,x4))))
+#
+# - measure(e14,e15,x10), much-many_a(e15,x4), generic_entity(x4), _for_p(e16,x4,x17), is the key to this
+#   x17 is soup
+#   x4 is much-many_a(generic_entity(x4)) --> i.e. how much of a generic amount
+#       This could also be dollar() or any other measure
+#   x10 should hold the value of "how much for x at the end
+#   convert to generic_entity(x4), measure_units_for_item(count, measure, noun)
+#   and use a special unknown_ignore() so we don't think the user just said a single word
+@Transform(vocabulary)
+def how_many_for_e_x_x_transformer():
+    measure_units_for_item_production = TransformerProduction(name="measure_units_for_item", args={"ARG0": "$count", "ARG1": "$measure", "ARG2": "$noun_variable"})
+    conjunction_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", measure_units_for_item_production])
+    unknown_ignore_production = TransformerProduction(name="unknown+ignore", args={"ARG0": "$unknown_event", "ARG1": "$unknown_variable"})
+    udef_production = TransformerProduction(name="udef_q", args={"ARG0": "$noun_variable", "ARG1": conjunction_production, "ARG2": unknown_ignore_production})
+
+    # Current grammar detects "how much for the soup" (with no punctuation) as a command which gives the response "yes!" (which is wrong)
+    # Convert it to a question
+    sf_fixup_production = PropertyTransformerProduction({"$unknown_event": {"SF": "ques"}})
+
+    # measure(e14,e15,x9)
+    measure_match = TransformerMatch(name_pattern="measure", args_pattern=["e", "e", "x"], args_capture=["measure_event", None, "count"])
+
+    # much-many_a(e15,x5)
+    much_many_match = TransformerMatch(name_pattern="much-many_a", args_pattern=["e", "x"], args_capture=[None,  "measure"])
+
+    # _for_p(e16,x4,x17)
+    for_match = TransformerMatch(name_pattern="_for_p", args_pattern=["e", "x", "x"], args_capture=["for_event", "for_arg1", "noun_variable"])
+
+    # unknown(e2,x4)
+    unknown_match = TransformerMatch(name_pattern="unknown", args_pattern=["e", "x"], args_capture=["unknown_event", "unknown_variable"])
+
+    # generic_entity(x4) --> We leave this one so we know what units to use, it is part of the
+    #   extra_conjuncts_capture="extra_conjuncts"
+    conjunction_match = ConjunctionMatchTransformer(transformer_list=[measure_match, much_many_match, for_match], extra_conjuncts_capture="extra_conjuncts")
+
+    return TransformerMatch(name_pattern="udef_q",
+                            args_pattern=["x", conjunction_match, unknown_match],
+                            args_capture=[None, None, "udef_body"],
+                            properties_production=sf_fixup_production,
+                            production=udef_production,
+                            removed=["measure", "much-many_a", "_for_p", "unknown"])
 
 
 @Transform(vocabulary)
@@ -2540,6 +2588,11 @@ def def_implicit_q(context, state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
+@Predication(vocabulary, names=["unknown+ignore"])
+def unknown_ignore(context, state, e_introduced_binding, x_binding):
+    yield state
+
+
 @Predication(vocabulary, names=["_anymore_a_1"])
 def _anymore_a_1(context, state, e_introduced_binding, e_binding):
     yield state
@@ -4019,6 +4072,18 @@ def _be_v_id_list_group(context, state_list, e_introduced_binding_list, x_subjec
                 return
 
     yield state_list
+
+
+@Predication(vocabulary, names=["measure_units_for_item"])
+def measure_units_for_item(context, state, x_count, x_measure, x_item):
+    if any([x is None for x in [x_measure.value, x_item.value]]):
+        context.report_error(["formNotUnderstood"])
+        return
+    if len(x_measure.value) != 1 or not isinstance(x_measure.value[0], Measurement) or not is_concept(x_measure.value[0].measurement_type):
+        context.report_error(["formNotUnderstood"])
+        return
+
+    yield from yield_cost_of_subject_into_object(context, state, x_measure.value[0].measurement_type, x_item.variable.name, x_count.variable.name)
 
 
 def yield_cost_of_subject_into_object(context, state, units, subject_variable, object_variable):

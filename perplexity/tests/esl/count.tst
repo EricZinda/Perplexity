@@ -16,6 +16,41 @@
             "ID": "c2423433-1298-439a-abec-63e1ba72e8c8"
         },
         {
+            "Command": "how much for the soup",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x17,_soup_n_1(x17),udef_q(x17,[generic_entity(x4), measure_units_for_item(x10,x4,x17)],unknown+ignore(e2,x4))))",
+            "Enabled": true,
+            "ID": "7e61911f-1791-48c4-b672-af28a9d24c79"
+        },
+        {
+            "Command": "how many dollars for the soup",
+            "Expected": "4 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x9,abstr_deg(x9),_the_q(x18,_soup_n_1(x18),udef_q(x18,[_dollar_n_1(x4,u16), measure_units_for_item(x9,x4,x18)],unknown+ignore(e2,x4))))",
+            "Enabled": true,
+            "ID": "43d1eca7-5359-44e7-8cac-0a2ae90ee185"
+        },
+        {
+            "Command": "how many dollars for the green salad",
+            "Expected": "3 dollars\nWaiter: What can I get you?",
+            "Tree": "which_q(x9,abstr_deg(x9),_the_q(x18,[_salad_n_1(x18), _green_a_2(e23,x18)],udef_q(x18,[_dollar_n_1(x4,u16), measure_units_for_item(x9,x4,x18)],unknown+ignore(e2,x4))))",
+            "Enabled": true,
+            "ID": "7cf00339-08de-49fd-8bed-1671e93ddb76"
+        },
+        {
+            "Command": "/reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "88f2f8d8-37f9-471a-92ec-838a3d3b3082"
+        },
+        {
+            "Command": "a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "20bc795f-a7f3-4c86-bfe0-1973ddddc313"
+        },
+        {
             "Command": "what are your specials?",
             "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
