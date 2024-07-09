@@ -37,6 +37,13 @@
             "ID": "cf3d3f38-e5fc-47a2-adac-8f11cd307446"
         },
         {
+            "Command": "well, can we have a table?",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
+            "Tree": "_well_a_1(i4,_a_q(x14,_table_n_1(x14),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e13), _have_v_1_able(e2,x3,x14)])))",
+            "Enabled": true,
+            "ID": "0015b724-bede-48ff-87ce-6b4b7df82564"
+        },
+        {
             "Command": "a table for two for now",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
             "Tree": "def_implicit_q(x10,basic_numbered_hour(2,x10),def_implicit_q(x17,[time_n(x17), _now_a_1(e22,x17)],_a_q(x4,[_table_n_1(x4), _for_p(e16,x4,x17), _for_p(e9,x4,x10)],unknown(e2,x4))))",

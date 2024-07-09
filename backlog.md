@@ -166,15 +166,10 @@ New Language:
             I don't know the words: would, like and I don't know the way you used: pay
         - USER: what do you have on the menu?
             I don't know the way you used: on
-        - USER: do you have any vegan food -> I don't know the words: vegan
-            Should say "Dad I'm a vegetarian!"
-
         - what do you have for lunch?
         - (at the door) USER: Please bring our menus --> I don't know the way you used: bring
         - we're here for lunch --> I don't know the words: here, lunch
         - USER: Can i order? -> I don't know the way you used: order
-        - lunch, meal come up a lot
-
         -  Salads please --> Can I get you anything besides a salad for you?
             - Only ordered 1!
             - Same here:

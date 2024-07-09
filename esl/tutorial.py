@@ -2620,6 +2620,11 @@ def _both_a_1(context, state, i_binding, e_binding):
     yield state
 
 
+@Predication(vocabulary, names=["_well_a_1"])
+def _well_a_1(context, state, i_introduced_binding, h_binding):
+    yield from context.call(state, h_binding)
+
+
 @Predication(vocabulary, names=["_please_a_1"])
 def _please_a_1_scopal(context, state, i_binding, h_binding):
     yield from context.call(state, h_binding)
@@ -2628,7 +2633,6 @@ def _please_a_1_scopal(context, state, i_binding, h_binding):
 @Predication(vocabulary, names=["_please_a_1"])
 def _please_a_1(context, state, e_introduced_binding, e_binding):
     yield state
-
 
 @Predication(vocabulary, names=["_too_a_also"])
 def _too_a_also(context, state, e_introduced_binding, x_binding):
