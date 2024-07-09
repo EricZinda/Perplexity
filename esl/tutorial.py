@@ -4605,6 +4605,7 @@ def reset():
 
         if dish_type == "chicken":
             initial_state = initial_state.add_rel(dish_type, "isAdj", "roasted")
+            initial_state = initial_state.add_rel(dish_type, "isAdj", "roast")
         if dish_type == "salmon":
             initial_state = initial_state.add_rel(dish_type, "isAdj", "grilled")
         if dish_type == "pork":
@@ -4656,12 +4657,10 @@ def reset():
     initial_state = initial_state.add_rel("user", "instanceOf", "person")
     initial_state = initial_state.add_rel("user", "hasName", "you")
     initial_state = initial_state.add_rel("user", "have", "son1")
-    # initial_state = initial_state.add_rel("user", "have", "card")
     initial_state = initial_state.add_rel("user", "heardSpecials", "false")
 
-    initial_state = initial_state.add_rel("chicken", "isAdj", "roasted")
-    initial_state = initial_state.add_rel("salmon", "isAdj", "grilled")
-    initial_state = initial_state.add_rel("pork", "isAdj", "smoked")
+    initial_state = initial_state.add_rel("adjective", "specializes", "thing")
+    initial_state = initial_state.add_rel("roast", "specializes", "adjective")
 
     return initial_state
 
@@ -4749,6 +4748,17 @@ pipeline_logger = logging.getLogger('Pipeline')
 
 
 if __name__ == '__main__':
+
+    test_state = reset()
+
+    # for item in test_state.all_rel("isAdj"):
+    #     if item[1] == "roast":
+    #         print(item)
+    #
+    # concept = ESLConcept("chicken")
+    # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
+    # print(concept.instances(None, test_state))
+
     ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")

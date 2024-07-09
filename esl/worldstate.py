@@ -898,8 +898,9 @@ class WorldState(State):
                     # All specializations and all instances of them also have this property
                     for item in all_instances_and_spec(self, subject_object[0]):
                         if item not in processed:
-                            yield item, subject_object[1]
-                            processed.add(item)
+                            item_object = (item, subject_object[1])
+                            yield item_object
+                            processed.add(item_object)
 
             elif rel == "possess":
                 # The "possess" relationship happens with poss(), i.e. "my steak"
@@ -1365,3 +1366,6 @@ class WorldState(State):
 
 
 pipeline_logger = logging.getLogger('Pipeline')
+
+if __name__ == '__main__':
+    pass

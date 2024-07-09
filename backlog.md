@@ -131,14 +131,49 @@ New Language:
         - this works, test it!
 
     Hi Pri:
-        - USER: How much for the x? --> I don't know the words: How
-            Also test: how many x for the y?
+        - USER: Tomato soup, green salad, and roasted chicken
+            Waiter: soup is an excellent choice!
+            Son: Wait, let's not order salad before we know how much it costs.
+            chicken is not roasted.
+            Waiter: Can I get you anything besides 2 soups for you?
+            Waiter: Can I get you anything besides 2 soups for you?
 
-        - what do you have for lunch?
+
+        - USER: and salmon
+            I don't know the words: salmon
+
+        - Tomato soup for Johnny and the steak for me, please. --> Host: That is not for both steak0.
+        - USER: Well, a menu, to start, would be wonderful. --> I don't know the words: Well
+            - a menu to start doesn't work either
+        - USER: can I order chicken? -> I don't understand the way you are using: order
+
         - USER: vegan
             I don't know the words: vegan
             Seems like should just be a syn for vegetarian here since the dishes are the same
+        - USER: What are the daily specials?
+            ('soup0',) is not the special
+        - USER: I would like to pay cash please
+            I don't know the words: would, like and I don't know the way you used: pay
+        - USER: what do you have on the menu?
+            I don't know the way you used: on
+        - USER: do you have any vegan food -> I don't know the words: vegan
+            Should say "Dad I'm a vegetarian!"
+
+        - what do you have for lunch?
+        - (at the door) USER: Please bring our menus --> I don't know the way you used: bring
+        - we're here for lunch --> I don't know the words: here, lunch
+        - USER: Can i order? -> I don't know the way you used: order
         - lunch, meal come up a lot
+
+        -  Salads please --> Can I get you anything besides a salad for you?
+            - Only ordered 1!
+            - Same here:
+                USER: Two waters, please.
+                Waiter: water is an excellent choice!
+                Waiter: Can I get you anything besides a steak and a water for you and a salad for Johnny?
+        - Do we have silverware? --> Sorry, did you mean to say something?
+        - i want you to give me a menu
+            I don't know the words: in+order+to and I don't know the way you used: give
 
         - ? I'd like a table
             Host: How many in your party?
@@ -147,52 +182,69 @@ New Language:
             you did not have 2 thing
             Host: How many in your party?
 
-        - USER: Nothing, thank you.
-            I don't know the words: addressee
-        - USER: Thank you, that is all for now
-            I don't know the way you used: all
-        - USER: We are fine, thank you
-            ('user',) is not we
-        - USER: I'm good
-            I don't know the words: good
-        - USER: We're okay
-            I don't know the way you used: okay
+        - Saying "no"
+            - USER: Nothing, thank you.
+                I don't know the words: addressee
+            - USER: Thank you, that is all for now
+                I don't know the way you used: all
+            - USER: We are fine, thank you
+                ('user',) is not we
+            - USER: I'm good
+                I don't know the words: good
+            - USER: We're okay
+                I don't know the way you used: okay
+            - USER: I'm good
+                I don't know the words: good
+            - USER: Not yet.
+                I don't know the words: Not yet
+            - USER: Nothing else, thank you.
+                I don't know the words: thank you and I don't know the way you used: Nothing
 
-        - USER: and salmon
-            I don't know the words: salmon
+
+
+        - USER: What is the price for each special? -> I don't know the words: price
+            - need to implement price
         - USER: i would like to order a meal for me and my son -> I don't know the words: meal
             - maybe just synonym for dish??
              One regular meal for me, and one vegetarian meal.
                 I don't know the words: meal, meal
         - please order me chicken
             Doen't work
-        - USER: Can i order? -> I don't know the way you used: order
+        - USER: I'll have the steak and Johnny will have the green salad.
+            I don't know the way you used: and
         - USER: I would like to order lunch ->  I don't know the words: lunch
             - also dinner, breakfast
         - If you order food that we don't have it should say "just get something on the menu"
-        - i want you to give me a menu
-            I don't know the words: in+order+to and I don't know the way you used: give
         - USER: a party of 2
             I don't know the words: party
-        - USER: Tomato soup, green salad, and roasted chicken
-            Waiter: soup is an excellent choice!
-            Son: Wait, let's not order salad before we know how much it costs.
-            chicken is not roasted.
-            Waiter: Can I get you anything besides 2 soups for you?
-            Waiter: Can I get you anything besides 2 soups for you?
+        - USER: Can I get 2 of them please? --> I don't know the words: 2
+            - 1) bad error
+            - 2) need to implement pronouns
+        -  order tomato soup --> Host: Sorry, I don't know how to give you that.
+        - Lots of people ask Johnny what he would like:
+            - Anything that addresses johnny should give a particular message?
+            - Johnny, what would you like? --> I don't know the words: Johnny,
+            - USER: johnny, what do you want?
+            - my son will tell you what he wants
+        - we'd like dessert -> I don't know the words: dessert
+        - Need to tell them that we don't have a menu yet
+            USER: read menu
+            I don't know the words: read
 
+            Waiter: Can I get you anything besides a water and a menu for you and a menu for Johnny?
+
+            --------------- 2024-07-08 19:30:44.944773 - ip-10-0-0-198.ec2.internal@25: Interface:REST-, AfterInteractionData: dDVvMmJkMWh3aGNseWRkbTc2eQ==-193044944749.backup
+            USER: I'm unable to read. would you please read me the menu?
+            I don't know the words: unable
+            I don't know the words: would, read
+
+            Waiter: Can I get you anything besides a water and a menu for you and a menu for Johnny?
          -   Waiter: What can I get you?
             USER: vegetables
             I don't know the words: vegetable
             Waiter: What can I get you?
         - USER: Oh one of the chicken too
             I don't know the words: one
-        - USER: I would like to pay cash please
-            I don't know the words: would, like and I don't know the way you used: pay
-        - USER: what do you have on the menu?
-            I don't know the way you used: on
-        - USER: do you have any vegan food -> I don't know the words: vegan
-            Should say "Dad I'm a vegetarian!"
 
         - USER: my son does not eat vegetables
             I don't know the words: vegetable
@@ -207,16 +259,24 @@ New Language:
             A few minutes go by and the waiter returns.
             Waiter: What can I get you?
             - should not have gone back!
-        - USER: I'm good
-            I don't know the words: good
+
         - ? I'd like a table
             Host: How many in your party?
 
             ? we have 2
             you did not have 2 thing
             Host: How many in your party?
+        - USER: We need a minute to decide.
+            I don't know the words: minute
+
         - USER: table for two people -> I don't know the words: people
 
+        - If the commands are all one word, give a message about full sentences
+        - Come up with a better ending, right now it just loops and there is not satisfying end
+            - goodbye
+            - quit
+            - end
+            - etc.
         - ?:vegetables
             I don't know the words: vegetable
         - USER: I want a green thing
@@ -246,8 +306,21 @@ New Language:
             I don't know the words: measure
         - How much for a salad
             -- I don't know the words: measure
-
+        - USER: order soup -> Host: Sorry, I don't know how to give you that.
+            - should somehow say something about rudeness?
         - what do u have here? -> I don't know the words: place
+        - what do you have to eat?
+        - what do you guys have?
+        - what do you guys serve?
+
+        - ways to say no
+            - we're good. thanks! --> Should be no
+            - not right now
+            - I don't want anything else.  is very slow
+            - Not right now, thank you. --> doesn't work
+                - not right now
+            USER: no that's everything
+                I don't know the way you used: everything
             -
         - USER: Tomato soup and a green salad sounds great for my son
             I don't know the words: green
@@ -257,16 +330,6 @@ New Language:
         - Remove the steak --> I don't know the words: remove
         - Actually I won't have the steak --> I don't know the words: actual
         - ignore what I ordered
-
-        - what do you have to eat?
-        - what do you guys have?
-        - what do you guys serve?
-
-        - we're good. thanks! --> Should be no
-        - not right now
-        - I don't want anything else.  is very slow
-        - Not right now, thank you. --> doesn't work
-            - not right now
 
         -  Hi, I'd love to have a table for 2, please
             - Runs this: discourse(i2,greet(hi,i6),_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e13,x3,x20)))))

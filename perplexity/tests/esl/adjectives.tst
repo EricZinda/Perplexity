@@ -30,6 +30,41 @@
             "ID": "fcd8d9d2-e8b1-4e34-9ea9-9a4fa25969be"
         },
         {
+            "Command": "Do you have roast chicken?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a chicken for you?",
+            "Tree": "udef_q(x14,_roast_n_1(x14),pronoun_q(x3,pron(x3),udef_q(x8,[_chicken_n_1(x8), compound(e13,x8,x14)],_have_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "7e984dbb-882c-4efb-876f-4656edbae9bd"
+        },
+        {
+            "Command": "How much is the green salad?",
+            "Expected": "3 dollars\nWaiter: Can I get you anything besides a chicken for you?",
+            "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,[_salad_n_1(x3), _green_a_2(e20,x3)],count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
+            "Enabled": true,
+            "ID": "6e5dfbbd-df99-4b8d-ad9a-2961393c69fe"
+        },
+        {
+            "Command": "Give my son a salad, please",
+            "Expected": "Waiter: salad is an excellent choice!\nWaiter: Can I get you anything besides a chicken for you and a salad for Johnny?",
+            "Tree": "_please_a_1(i26,def_explicit_q(x10,pronoun_q(x16,pron(x16),[_son_n_of(x10,i21), poss(e15,x10,x16)]),_a_q(x9,_salad_n_1(x9),pronoun_q(x3,pron(x3),_give_v_1(e2,x3,x9,x10)))))",
+            "Enabled": true,
+            "ID": "303b6e06-f064-4ea5-8ce0-af05408810a3"
+        },
+        {
+            "Command": "No",
+            "Expected": "Waiter: I'll be right back!\nA few minutes go by and the waiter returns.\nWaiter: Here is a chicken for you.\nWaiter: Here is a salad for Johnny.\nThe food is good, but nothing extraordinary.\nWaiter: What can I get you?",
+            "Tree": "_no_a_1(i6,unknown(e2,u5))",
+            "Enabled": true,
+            "ID": "05b678f9-1b6a-423d-9880-9da106b7a165"
+        },
+        {
+            "Command": "I have roast chicken",
+            "Expected": "Yes, that is true.",
+            "Tree": "udef_q(x14,_roast_n_1(x14),pronoun_q(x3,pron(x3),udef_q(x8,[_chicken_n_1(x8), compound(e13,x8,x14)],_have_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "c9ec4dad-55bc-4a0e-b6e9-8b0f4509850a"
+        },
+        {
             "Command": "/reset",
             "Expected": "",
             "Tree": "None",
