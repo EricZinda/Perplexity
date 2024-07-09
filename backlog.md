@@ -161,9 +161,6 @@ New Language:
             - a menu to start doesn't work either
         - USER: can I order chicken? -> I don't understand the way you are using: order
 
-        - USER: vegan
-            I don't know the words: vegan
-            Seems like should just be a syn for vegetarian here since the dishes are the same
         - USER: What are the daily specials?
             ('soup0',) is not the special
         - USER: I would like to pay cash please

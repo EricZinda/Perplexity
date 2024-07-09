@@ -1,4 +1,6 @@
 {
+    "vegan": {"word": "vegetarian"},
+    "Vegan": {"word": "Vegetarian"},
     "table for two": {"initial word": "I want a table for two"},
     "Table for two": {"initial word": "I want a table for two"},
     "table for 2": {"initial word": "I want a table for two"},
