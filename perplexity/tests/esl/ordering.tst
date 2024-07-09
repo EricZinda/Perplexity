@@ -206,8 +206,8 @@
         },
         {
             "Command": "and salmon",
-            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything besides a chicken and a salmon for you?",
-            "Tree": "pronoun_q(x16,pron(x16),pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _for_p(e15,x8,x16), _grill_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8))))",
+            "Expected": "Son: Wait, we already spent $19 so if we get 1 salmon, we won't be able to pay for it with $20.\nWaiter: Can I get you anything besides a chicken and a salmon for you?",
+            "Tree": "udef_q(x10,_salmon_n_1(x10),udef_q(x4,generic_entity(x4),[_and_c(x4,u9,x10), unknown(e2,x4)]))",
             "Enabled": true,
             "ID": "e0e2cf41-859b-4724-a6ab-f0ed316ece07"
         },

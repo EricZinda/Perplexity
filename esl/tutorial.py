@@ -1957,8 +1957,8 @@ class PastParticipleConcepts:
                 return True
 
             else:
-                context.report_error(["formNotUnderstood", "PastParticipleConcepts"])
-                # context.report_error(["not_adj", x_target_binding.variable.name, self.lemma])
+                # context.report_error(["formNotUnderstood", "PastParticipleConcepts"])
+                context.report_error(["not_adj", x_target_binding.variable.name, self.lemma])
                 return False
 
         def unbound():
@@ -1996,8 +1996,8 @@ class PastParticipleInstances:
                 return True
 
             else:
-                context.report_error(["formNotUnderstood", "PastParticipleInstances"])
-                # context.report_error(["not_adj", self.lemma,state.get_reprompt()])
+                # context.report_error(["formNotUnderstood", "PastParticipleInstances"])
+                context.report_error(["not_adj", self.lemma,state.get_reprompt()])
                 return False
 
         def unbound():

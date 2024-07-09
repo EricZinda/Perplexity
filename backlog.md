@@ -157,7 +157,8 @@ New Language:
 
 
         - Tomato soup for Johnny and the steak for me, please. --> Host: That is not for both steak0.
-        - USER: Well, a menu, to start, would be wonderful. --> I don't know the words: Well
+        - USER: a menu, to start
+        - USER: Well, a menu, to start, would be wonderful/nice/awesome. --> I don't know the words: Well
             - a menu to start doesn't work either
         - USER: can I order chicken? -> I don't understand the way you are using: order
         - USER: What are the daily specials?
@@ -204,9 +205,6 @@ New Language:
                 I don't know the words: Not yet
             - USER: Nothing else, thank you.
                 I don't know the words: thank you and I don't know the way you used: Nothing
-
-
-
         - USER: What is the price for each special? -> I don't know the words: price
             - need to implement price
         - USER: i would like to order a meal for me and my son -> I don't know the words: meal
