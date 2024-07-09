@@ -160,7 +160,6 @@ New Language:
         - USER: Well, a menu, to start, would be wonderful. --> I don't know the words: Well
             - a menu to start doesn't work either
         - USER: can I order chicken? -> I don't understand the way you are using: order
-
         - USER: What are the daily specials?
             ('soup0',) is not the special
         - USER: I would like to pay cash please
