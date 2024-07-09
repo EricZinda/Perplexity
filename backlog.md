@@ -127,9 +127,7 @@ Cleanup:
               Elapsed time: 979.71158
 
 New Language:
-    Add test: What isn't on the menu?
-        - this works, test it!
-
+    Don't try different scoping trees that are equivalent
     Hi Pri:
         - USER: Tomato soup, green salad, and roasted chicken
             Waiter: soup is an excellent choice!
@@ -137,10 +135,26 @@ New Language:
             chicken is not roasted.
             Waiter: Can I get you anything besides 2 soups for you?
             Waiter: Can I get you anything besides 2 soups for you?
+            We never get a solution group with x4 set to distributive or collective values for all 3 items
+                - suspect an and_c problem
+                                                                               ┌── _salad_n_1(x25)
+                                                                   ┌────── and(0,1)
+                                                                   │             └ _green_a_2(e29,x25)
+                                              ┌────── udef_q(x25,RSTR,BODY)
+                                              │                         │                           ┌── _chicken_n_1(x31)
+                                              │                         │               ┌────── and(0,1)
+                                              │                         │               │             └ _roast_v_cause(e36,i37,x31)
+                                              │                         └─ udef_q(x31,RSTR,BODY)
+                         ┌────── _tomato_n_1(x│4)                                            │
+            udef_q(x14,RSTR,BODY)             │                                              │
+                              │               │                                              └─ _and_c(x20,x25,x31)
+                              └─ udef_q(x20,RSTR,BODY)
+                                                   │                                  ┌────── compound(e13,x9,x14)
+                                                   │              ┌────── udef_q(x9,RSTR,BODY)
+                                                   │              │                        └─ implicit_conj(x4,x9,x20)
+                                                   └─ udef_q(x4,RSTR,BODY)
+                                                                       └─ unknown(e2,x4)
 
-
-        - USER: and salmon
-            I don't know the words: salmon
 
         - Tomato soup for Johnny and the steak for me, please. --> Host: That is not for both steak0.
         - USER: Well, a menu, to start, would be wonderful. --> I don't know the words: Well

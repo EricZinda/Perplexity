@@ -205,6 +205,13 @@
             "ID": "b4ff0fd6-8cac-4ddb-a0b0-5885c7c71d8f"
         },
         {
+            "Command": "and salmon",
+            "Expected": "Waiter: salmon is an excellent choice!\nWaiter: Can I get you anything besides a chicken and a salmon for you?",
+            "Tree": "pronoun_q(x16,pron(x16),pronoun_q(x3,pron(x3),_the_q(x8,[_salmon_n_1(x8), _for_p(e15,x8,x16), _grill_v_1(e13,i14,x8)],_have_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "e0e2cf41-859b-4724-a6ab-f0ed316ece07"
+        },
+        {
             "Command": "what did we order?",
             "Expected": "Less than 2 people did that.",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",

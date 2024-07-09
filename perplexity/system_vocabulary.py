@@ -254,6 +254,12 @@ def and_c(context, state, x_binding_introduced, x_binding_first, x_binding_secon
                                                       required_values=required_values))
 
 
+# "and salmon" said just by itself should just be transparent
+@Predication(vocabulary, library="system", names=["_and_c"])
+def and_c(context, state, x_binding_introduced, u_binding_first, x_binding_second):
+    yield state.set_x(x_binding_introduced.variable.name, x_binding_second.value)
+
+
 # This is never actually called, but is here so the system knows that
 # it understands implicit_conj. Instead of calling this, the system actually removes it
 # and calls each conjunct independently
