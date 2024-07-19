@@ -36,6 +36,9 @@
 #   docker container exec -it containername /bin/bash
 FROM inductorsoftware/p8ybase:latest
 
+# Install OpenAI for experimental predications
+RUN /usr/src/Python-3.8.0/python -m pip install openai
+
 # Set up gunicorn
 COPY ./hosting/* /
 RUN chmod uog+x /gunicorndocker

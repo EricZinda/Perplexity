@@ -1,15 +1,9 @@
-Upload to itch.io:
-- Need a tool that processes a log, records the phrases and whether they have been seen before and counts them,
-    - allows for ordering the
-- https://htmleditor.io/
-- https://onlinetools.com/image/convert-image-to-data-uri
 
 
-- Need to update the ubuntu and M1 grammar to 2024
-- Concept can't properly represent "table for a person" because quantifiers don't add anything...Is that OK?
 
 Bugs:
     High Pri:
+        - Concept can't properly represent "table for a person" because quantifiers don't add anything...Is that OK?
         - which chicken menu items do you have? --> pork
                 soup
                 salad
@@ -49,6 +43,7 @@ Bugs:
 
 Cleanup:
     Hi Pri:
+        - Need a tool that processes a log, records the phrases and whether they have been seen before and counts them,
         - Stop processing after some time and give the best answer so far
         - Tests don't properly record output from events (like restarting the game)
         - very slow
@@ -131,6 +126,8 @@ Cleanup:
 New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
+        - Deal with open ended food
+            - (fixed) Have a way to limit asking chatGPT somehow
         - Figure out what happened here
             --------------- 2024-07-14 22:59:51.468067 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-225951468041.backup
             USER: We are hungry!
