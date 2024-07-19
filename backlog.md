@@ -1,4 +1,6 @@
 Upload to itch.io:
+- Need a tool that processes a log, records the phrases and whether they have been seen before and counts them,
+    - allows for ordering the
 - https://htmleditor.io/
 - https://onlinetools.com/image/convert-image-to-data-uri
 
@@ -129,6 +131,42 @@ Cleanup:
 New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
+        - Figure out what happened here
+            --------------- 2024-07-14 22:59:51.468067 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-225951468041.backup
+            USER: We are hungry!
+            ('user',) is not we
+
+            Host: How can I help you today?
+
+            --------------- 2024-07-14 23:00:03.570115 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-230003570091.backup
+            USER: Want food
+            [4, ['notwant', 'want', ('restaurant',)], 0]
+
+            Host: How can I help you today?
+
+            --------------- 2024-07-14 23:05:57.968165 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-230557968143.backup
+            USER: Eat now
+            ('today',) is not thing
+
+            Host: How can I help you today?
+
+        - USER: Could i have a table for two please.
+            Sorry, did you mean to say something?
+            Host: How can I help you today?
+
+        - Need a cleaner ending that isn't so open ended since it just causes failures
+        - USER: What are the daily specials?
+            ('soup0',) is not the special
+            USER: cash is fine.
+                ('cash',) is not cash
+                Waiter: So, do you want to pay with cash or card?
+
+        - USER: Are there any vegetarian options?
+            Yes.
+            Waiter: What can I get you?
+            - Also: USER: is there a vegetarian menu
+                Yes.
+                Waiter: What can I get you?
         - USER: Tomato soup, green salad, and roasted chicken
             Waiter: soup is an excellent choice!
             Son: Wait, let's not order salad before we know how much it costs.
@@ -161,14 +199,27 @@ New Language:
         - USER: Well, a menu, to start, would be wonderful/nice/awesome. --> I don't know the words: Well
             - a menu to start doesn't work either
         - USER: can I order chicken? -> I don't understand the way you are using: order
-        - USER: What are the daily specials?
-            ('soup0',) is not the special
+
+
+        - USER: how much would a salad cost
+            I don't know the words: how, how
+            Waiter: What can I get you?
         - USER: I would like to pay cash please
             I don't know the words: would, like and I don't know the way you used: pay
         - USER: what do you have on the menu?
             I don't know the way you used: on
         - what do you have for lunch?
+        ?:my son is vegan
+            my son is not veggie
+            Waiter: What can I get you?
+            - also: My son Jimmy is vegetarian.
+        - USER: My son Jimmy is vegetarian. Are there any options for him to eat?
+            I don't know the words: My
+            I don't know the words: eat
         - (at the door) USER: Please bring our menus --> I don't know the way you used: bring
+        -   USER: Menus, and two hot waters.
+                Waiter: Oh, I forgot to give you the menu! I'll get you one right away.
+                Host: Sorry, I don't know how to give you that.
         - we're here for lunch --> I don't know the words: here, lunch
         - USER: Can i order? -> I don't know the way you used: order
         -  Salads please --> Can I get you anything besides a salad for you?
@@ -178,6 +229,14 @@ New Language:
                 Waiter: water is an excellent choice!
                 Waiter: Can I get you anything besides a steak and a water for you and a salad for Johnny?
         - Do we have silverware? --> Sorry, did you mean to say something?
+        - USER: can you get me a fork and a spoon?
+            I don't know the words: fork, spoon
+            Waiter: Can I get you anything besides a menu and a water for you?
+            - USER: I would like a napkin
+                I don't know the words: napkin
+                Waiter: Can I get you anything besides a menu and a water for you?
+            - Can we model these as simple things the user has that you can't really do much with?
+
         - i want you to give me a menu
             I don't know the words: in+order+to and I don't know the way you used: give
 
@@ -205,12 +264,29 @@ New Language:
                 I don't know the words: Not yet
             - USER: Nothing else, thank you.
                 I don't know the words: thank you and I don't know the way you used: Nothing
+        - what do you have to eat?
+            USER: What do you have to drink?
+                I don't know the words: to
+                Waiter: What can I get you?
+        - USER: What do you have for a vegetarian?
+            I don't know the way you used: vegetarian
+            Waiter: What can I get you?
+        - USER: I would like something to drink.
+            I don't know the words: would, like, drink
+            Waiter: Can I get you anything besides a menu for you?
+        - USER: We need utensils and napkins.
+            I don't know the words: utensils, napkins
+            Waiter: Can I get you anything besides a soup and a salad for you?
         - USER: What is the price for each special? -> I don't know the words: price
             - need to implement price
         - USER: i would like to order a meal for me and my son -> I don't know the words: meal
             - maybe just synonym for dish??
              One regular meal for me, and one vegetarian meal.
                 I don't know the words: meal, meal
+        - USER: I would be happy with the steak but my son is a vegetarian.
+            I don't know the way you used: vegetarian
+            Waiter: Can I get you anything besides a menu and a water for you?
+            - Handle "but" like and???
         - please order me chicken
             Doen't work
         - USER: I'll have the steak and Johnny will have the green salad.
@@ -224,12 +300,22 @@ New Language:
             - 1) bad error
             - 2) need to implement pronouns
         -  order tomato soup --> Host: Sorry, I don't know how to give you that.
+        - USER: Two waters to drink
+            I don't know the words: to
+        - USER: are there any non-meat dishes?
+            Yes.
+            Waiter: Can I get you anything besides a menu and a water for you?
+
         - Lots of people ask Johnny what he would like:
             - Anything that addresses johnny should give a particular message?
             - Johnny, what would you like? --> I don't know the words: Johnny,
             - USER: johnny, what do you want?
             - my son will tell you what he wants
         - we'd like dessert -> I don't know the words: dessert
+        - USER: can I order a salad and a grilled salmon
+            I don't understand the way you are using: order
+            Waiter: What can I get you?
+
         - Need to tell them that we don't have a menu yet
             USER: read menu
             I don't know the words: read
@@ -248,7 +334,17 @@ New Language:
             Waiter: What can I get you?
         - USER: Oh one of the chicken too
             I don't know the words: one
-
+        - USER: Yes, what vegetarian dishes do you have?
+            Ok, what?
+            Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.
+            Waiter: Can I get you anything besides a water for you?
+            - "Yes" triggers "OK, what?"
+        - USER: Water please, and menu
+            Sorry, did you mean to say something?
+            - Need a better response for when something doesn't parse
+            - Another example: USER: Tomato soup for my son, and do you have something from chicken for me?
+                Sorry, did you mean to say something?
+                Waiter: Can I get you anything besides a water for you?
         - USER: my son does not eat vegetables
             I don't know the words: vegetable
             - Also:My son is vegetarian
@@ -292,7 +388,45 @@ New Language:
 
         - USER: menu options --> Waiter: steak is an excellent choice!
 
+        - USER: Free appetizer?
+            I don't know the words: appetizer
+            Waiter: Can I get you anything besides a menu for you?
+            - We should at least know the word
+        - USER: Johnny, what would you like to drink?
+            I don't know the words: Johnny,
+            Waiter: Can I get you anything besides a menu for you?
+            - Also: USER: talk to johnny
+                I don't know the words: talk
+                Waiter: Can I get you anything besides a water for you?
+
+            - This is not true, we *do* know the words
+            - Also: Need to notice when they are talking to another person
+        - USER: How about another table?
+            I don't know the words: How about, another
+            Waiter: Can I get you anything besides a menu for you?
+            - "How About" should be ignored
+            - "Another should not"
+        - USER: May I have a vegetarian menu?
+            Host: Sorry, I don't know how to give you that.
+            Waiter: What can I get you?
+            - Should tell the specials
+        - USER: Could I get another menu, please?
+            I don't know the words: another
+            Waiter: Can I get you anything besides a water for you?
+        - USER: just get the water.
+            I don't know the way you used: just
+            Waiter: Can I get you anything besides a menu and a water for you?
+        - If you have two waters: USER: I don't want water!
+            Waiter: I have removed a water from the order for you.
+            Waiter: Can I get you anything besides a menu and a water for you?
+            - only removes one!
+        - USER: Do you have any drinks other than water?
+            I don't know the words: other than
+            Waiter: Can I get you anything besides a menu and 3 waters for you?
         -  14 people ->  I don't know the words: people
+        - USER: Get the kid a tomato soup.
+            I don't know the words: kid
+            Waiter: Can I get you anything besides a water and a salmon for you?
         - USER: table
             Host: How many in your party?
             USER: 14
@@ -305,6 +439,10 @@ New Language:
         - a couple glasses of water -> Sorry, I don't know how to give you that.
         USER: Get my son three salads
             - I'm not sure what that means.
+        USER: Give soup to son
+            Sorry, did you mean to say something?
+            Waiter: Can I get you anything besides a water and a salmon for you?
+            - Still need to detect "computerese" and deal with it
         - How much for salad
             I don't know the words: measure
         - How much for a salad
@@ -312,10 +450,9 @@ New Language:
         - USER: order soup -> Host: Sorry, I don't know how to give you that.
             - should somehow say something about rudeness?
         - what do u have here? -> I don't know the words: place
-        - what do you have to eat?
+
         - what do you guys have?
         - what do you guys serve?
-
         - ways to say no
             - we're good. thanks! --> Should be no
             - not right now
@@ -324,16 +461,37 @@ New Language:
                 - not right now
             USER: no that's everything
                 I don't know the way you used: everything
-            -
+            USER: Nothing else, thank you.
+I                don't know the words: thank you and I don't know the way you used: Nothing
+            -USER: Give us a minute.
+                I don't know the words: minute
+
         - USER: Tomato soup and a green salad sounds great for my son
             I don't know the words: green
-
+        - USER: Do you have anything with vegetables?
+            I don't know the words: vegetables
+            Waiter: Can I get you anything besides a water for you?
+            - This is a failure case that wouldn't normally happen if the rest worked
+        -USER: What do you have to drink?
+            I don't know the words: to
+            Waiter: Can I get you anything besides a water for you?
         - implement: let's start again
+        - Yzl6OXRhZjg3c2tseW0yN2NuZg==-213801551568.backup
+        - USER: Two of the salmon, please.
+            I don't know the words: of
+            Waiter: Can I get you anything besides a water for you?
+        --------------- 2024-07-14 21:38:47.471504 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: Yzl6OXRhZjg3c2tseW0yN2NuZg==-213847471481.backup
+        - USER: tomato soup for son
+            Host: Sorry, I don't know how to give you that.
+            Waiter: Can I get you anything besides a water and a salmon for you?
+            - Unclear h
         - I wont get the steak --> Yes, that is true.
         - Remove the steak --> I don't know the words: remove
         - Actually I won't have the steak --> I don't know the words: actual
         - ignore what I ordered
-
+        - USER: Can you read the menu for me?
+            I don't know the words: read
+            Waiter: Can I get you anything besides a menu and a water for you?
         -  Hi, I'd love to have a table for 2, please
             - Runs this: discourse(i2,greet(hi,i6),_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e13,x3,x20)))))
                 and discourse is the index, so it just says "yes"
@@ -341,6 +499,12 @@ New Language:
             I don't know the way you used: and
             because it is _and_c(e, e, e) and we don't know that one,  The index goes to and_c
 
+        - USER: what vegetarian options can you offer
+            I don't know the words: offer
+            Waiter: What can I get you?
+            - Also: USER: what vegetarian options can you cook
+                I don't know the words: cook
+                Waiter: What can I get you?
         - I don't know the words: hamburger
             - Use chatgpt to give a better error
         - that would be it, thanks
@@ -353,6 +517,17 @@ New Language:
         - How much are each of the specials? --> I don't know the words: part_of
         - how about vegetarian soup? --> I don't know the words: generic_verb, how+about
             - Need a better error message
+        - USER: Is there another menu
+            I don't know the words: another
+            Waiter: What can I get you?
+        - USER: can i see the menu again
+            Host: Sorry, I don't know how to give you that.
+            Waiter: What can I get you?
+            - again should be a NOOP
+        - USER: is there salad
+            Yes.
+            Waiter: What can I get you?
+        - Also: Read the menu
         - how about a soup? --> I don't know the words: generic_verb, how+about
         - we'd both like waters to drink please --> doesn't work
         - what is vegetarian on the menu
@@ -390,6 +565,10 @@ New Language:
         - can I pay for the bill?
         - (ChatGPT) Could you recommend a few vegetarian options, then?
             - Also: Could you please recommend a vegetarian dish for my son?
+            USER: What's good to eat here? What do you recommend?
+                I don't know the words: here
+                I don't know the words: recommend
+                Waiter: Can I get you anything besides a menu and a water for you?
         - (chatGPT) How much does the tomato soup and the green salad cost? --> I don't know the way you used: cost
             - Parse 26
         - (chatGPT) Johnny and I will both have the Roasted Chicken
