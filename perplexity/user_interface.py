@@ -193,15 +193,15 @@ class UserInterface(object):
             self.interaction_record["ChosenInterpretationIndex"] = 0
             self.user_output(command_result)
 
-        # self.records is a list if we are recording commands
-        if isinstance(self.records, list):
-            self.records.append(self.interaction_record)
-            self.user_output(f"Recorded ({len(self.records)} items).")
-
         last_phrase_response = ""
         if command_result is not None:
             # If not None it was a system command so the interaction is done
             interaction_records.append(self.interaction_record)
+
+            # self.records is a list if we are recording commands
+            if isinstance(self.records, list):
+                self.records.append(self.interaction_record)
+                self.user_output(f"Recorded ({len(self.records)} items).")
 
         else:
             # This was a phrase not a command (or a command that pushed a phrase through the system)
@@ -227,6 +227,11 @@ class UserInterface(object):
                                         next_conjuncts=next_conjuncts)
 
                     interaction_records.append(self.interaction_record)
+
+                    # self.records is a list if we are recording commands
+                    if isinstance(self.records, list):
+                        self.records.append(self.interaction_record)
+                        self.user_output(f"Recorded ({len(self.records)} items).")
 
                     next_ui = self.new_ui if self.new_ui else next_ui
                     record = self.chosen_interpretation_record()

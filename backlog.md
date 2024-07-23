@@ -127,7 +127,19 @@ New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
         - Deal with open ended food
-            - (fixed) Have a way to limit asking chatGPT somehow
+            - Performance seems much slower now
+            - Scenarios:
+                - (fixed) "I want tea"
+                - "tea"
+                - "do you have tea?"
+                    - valid_player_request() must return true, and then satisfy_want() needs to handle things with no instances
+            - Create a virtual model where:
+                - return True for handles_noun for all words
+                    - fail in match_all_n_concepts if it isn't a food
+                - Every noun that is food specializes "food" and drink specializes "drink"
+                    - Do we cache these?
+
+                - However! They are not on the menu, we have zero of them, they are not a dish
         - Figure out what happened here
             --------------- 2024-07-14 22:59:51.468067 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-225951468041.backup
             USER: We are hungry!

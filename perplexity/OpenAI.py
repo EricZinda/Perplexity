@@ -28,13 +28,11 @@ def StartOpenAIBooleanRequest(user_id, predication, phrase, cache_answers=True):
 def BooleanCompletionApproach(user_id, phrase):
     prompt = "Answer just yes or no: " + phrase
     return client.chat.completions.create(
-                    model="gpt-3.5-turbo-0125",
+                    model="gpt-4o",
                     messages=[
-                        {"role": "system", "content": "Answer only with the word 'yes' or the word 'no'"},
+                        {"role": "system", "content": "You are a intelligent assistant. Answer only with the word 'yes' or the word 'no'"},
                         {"role": "user", "content": prompt}
                     ],
-                    temperature=0,
-                    n=1,
                     user=user_id
     )
 
@@ -44,7 +42,7 @@ def BooleanCompletionApproachResponseCleaner(response):
         response = response.strip()
 
         if "\n" in response:
-            pipelineLogger.debug(f"GPT: incorrect format, ignoring: {response}")
+            pipelineLogger.debug(f"GPT: incorrect format{response}, ignoring: {response}")
             return None
 
         if response.lower() in ["yes", "true"]:
@@ -92,7 +90,7 @@ def IsOpenAIRequestComplete(response_thread):
 def CompleteOpenAIRequest(response_thread, wait=False):
     if wait and isinstance(wait, int):
         response_thread["Thread"].join(wait)
-        
+
     else:
         response_thread["Thread"].join()
 
@@ -226,12 +224,37 @@ client = openai.OpenAI()
 
 
 if __name__ == '__main__':
+    # from openai import OpenAI
+    # import os
+    # models = client.models.list()
+    # print(models.data)
+
+
     ShowLogging("Pipeline")
     user_id = "test"
-    request_info = StartOpenAIBooleanRequest(user_id, "is_food_or_drink_predication", "Is coffee a food or a drink?")
+    request_info = StartOpenAIBooleanRequest(user_id,
+                                             "is_food_or_drink_predication",
+                                             "Is an apple either a food or a drink?",
+                                             cache_answers=False)
 
     # Give OpenAI 10 seconds to respond (might be too long for production use, just a test)
     print(CompleteOpenAIRequest(request_info, wait=10))
+
+    # phrase ="Is a hamburger either a food or drink?"
+    # user_id = "tets"
+    # prompt = "Answer just yes or no: " + phrase
+    # result = client.chat.completions.create(
+    #                 model="gpt-4o",
+    #                 messages=[
+    #                     {"role": "system", "content": "You are a intelligent assistant."},
+    #                     {"role": "user", "content": prompt}
+    #                 ],
+    #                 # temperature=1,
+    #                 # n=1,
+    #                 user=user_id
+    # )
+    #
+    # print(result)
 
 
 

@@ -18,16 +18,73 @@ from perplexity.transformer import TransformerMatch, TransformerProduction, Prop
 from perplexity.tree import find_predication_from_introduced, get_wh_question_variable, \
     gather_scoped_variables_from_tree_at_index, TreePredication, used_predicatively
 from perplexity.user_interface import UserInterface
-from perplexity.utilities import ShowLogging, sentence_force
+from perplexity.utilities import ShowLogging, sentence_force, parse_predication_name
 from perplexity.variable_binding import VariableBinding, VariableData
 from perplexity.vocabulary import Predication, EventOption, Transform, ValueSize
 from esl.worldstate import *
 import logging
+import perplexity.OpenAI
+
 
 vocabulary = system_vocabulary()
 
 
 # ******** Helpers ************
+def count_of_instances_and_concepts(context, state, variable, concepts_original, fail_if_no_instances):
+    concepts = concepts_original
+    concept_count = len(concepts)
+
+    instances = []
+    for concept in concepts:
+        this_concept_instances = list(concept.instances(context, state))
+        # If we are dealing with instances and one of the concepts generates zero, we don't want to just count the others
+        # and succeed.  I.e. I have two ice creams and bowls should not succeed if there are no bowls
+        if fail_if_no_instances and len(this_concept_instances) == 0:
+            concept_english = concept.render_english()
+            if "something" not in concept_english:
+                # If we can render this concept as a real word (not just "something"), ask
+                # chatgpt if it is food
+                request_info = perplexity.OpenAI.StartOpenAIBooleanRequest("test",
+                                                         "is_food_or_drink_predication",
+                                                         f"Is {concept_english} either a food or a drink?")
+                result = perplexity.OpenAI.CompleteOpenAIRequest(request_info, wait=5)
+                if result == "true":
+                    # It is, so report a nicer error than "I don't know that word"
+                    context.report_error(["dontHaveThatFood", variable], force=True, phase=2)
+
+                else:
+                    # It is not. If it is a word we actually know, report a special error for that.
+                    # Otherwise just say we don't know it
+                    noun_predication = find_predication_from_introduced(state.get_binding("tree").value[0]["Tree"], variable)
+                    parsed_name = parse_predication_name(noun_predication.name)
+
+                    if understood_noun(state, parsed_name["Lemma"]):
+                        context.report_error(["noInstancesOfConcept", variable], force=True, phase=2)
+
+                    else:
+                        # This is a word that we legitimately don't know
+                        context.report_error(["unknownWords", [(noun_predication.name, None, None, False, parsed_name['Lemma'])]],
+                                             force=True, phase=2)
+
+            return None
+
+        instances += this_concept_instances
+    instance_count = len(instances)
+
+    scope_data = in_scope_initialize(state)
+    instance_in_scope_count = 0
+    for instance in instances:
+        if in_scope(scope_data, context, state, instance):
+            instance_in_scope_count += 1
+
+    concept_in_scope_count = 0
+    for concept in concepts:
+        if in_scope(scope_data, context, state, concept):
+            concept_in_scope_count += 1
+
+    return concept_count, concept_in_scope_count, instance_count, instance_in_scope_count
+
+
 def variable_group_values_to_list(variable_group):
     return [binding.value for binding in variable_group.solution_values]
 
@@ -1693,6 +1750,11 @@ def match_all_a_instances(adjective_type, context, state, e_introduced, x_bindin
 
 
 def handles_noun(state, noun_lemma):
+    return True
+
+
+# Returns True if it is a lemma we have modelled in the system
+def understood_noun(state, noun_lemma):
     noun_lemmas = [noun_lemma]
     handles = ["thing"] + list(all_specializations(state, "thing"))
     return any([x in handles for x in noun_lemmas])
@@ -3699,7 +3761,6 @@ def _have_v_1_able_group(context, state_list, e_variable_group, x_actor_variable
         yield state_list
 
 
-
 @Predication(vocabulary, names=["poss"],
              arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def poss_lift_style(context, state, e_introduced_binding, x_object_binding, x_actor_binding):
@@ -4463,6 +4524,9 @@ def generate_custom_message(tree_info, error_term):
         if system_message is not None:
             return system_message
 
+    if error_constant == "dontHaveThatFood":
+        return s("I'm sorry, we don't serve that here. Get the menu to see what is available.", tree_info)
+
     if error_constant == "dontKnowHow":
         return "I don't know how to do that."
     if error_constant == "notAThing":
@@ -4772,7 +4836,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

@@ -326,35 +326,6 @@ def location_of_type(state, who, where_type):
     return True
 
 
-def count_of_instances_and_concepts(context, state, variable, concepts_original, fail_if_no_instances):
-    concepts = concepts_original
-    concept_count = len(concepts)
-
-    instances = []
-    for concept in concepts:
-        this_concept_instances = list(concept.instances(context, state))
-        # If we are dealing with instances and one of the concepts generates zero, we don't want to just count the others
-        # and succeed.  I.e. I have two ice creams and bowls should not succeed if there are no bowls
-        if fail_if_no_instances and len(this_concept_instances) == 0:
-            context.report_error(["noInstancesOfConcept", variable], force=True, phase=2)
-            return None
-        instances += this_concept_instances
-    instance_count = len(instances)
-
-    scope_data = in_scope_initialize(state)
-    instance_in_scope_count = 0
-    for instance in instances:
-        if in_scope(scope_data, context, state, instance):
-            instance_in_scope_count += 1
-
-    concept_in_scope_count = 0
-    for concept in concepts:
-        if in_scope(scope_data, context, state, concept):
-            concept_in_scope_count += 1
-
-    return concept_count, concept_in_scope_count, instance_count, instance_in_scope_count
-
-
 def object_to_store(o):
     return o.concept_name if is_concept(o) else o
 
