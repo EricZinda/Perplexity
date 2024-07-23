@@ -132,7 +132,9 @@ New Language:
                 - (fixed) "I want tea"
                 - "tea"
                 - "do you have tea?"
-                    - valid_player_request() must return true, and then satisfy_want() needs to handle things with no instances
+                    - valid_player_request() must return true, and then the count_of_instances_and_concepts() routine will
+                        handle it like "I want tea"
+
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food
