@@ -1821,8 +1821,8 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
 
     def unbound_variable_concepts():
         nonlocal record_new_food
-        has_specializations = perplexity.utilities.at_least_one_generator(all_specializations(state, noun_type))
-        if not has_specializations:
+        specializes_something = perplexity.utilities.at_least_one_generator(rel_objects(state, noun_type, "specializes"))
+        if not specializes_something:
             # This is a word we don't natively know, so check to see if it is a food or drink
             request_info = perplexity.OpenAI.StartOpenAIBooleanRequest("test",
                                                                        "is_food_or_drink_predication",

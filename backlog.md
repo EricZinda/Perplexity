@@ -140,6 +140,13 @@ New Language:
                             - the predication that should handle that is: _have_v_1_fact_check
                                 - But fact check requires instances and this doesn't have any so it never gets there
                                 - So, update _have_v_1_request_order to give a better error
+                    - "I'll take any meat dish" -> We don't carry that
+                        - satisfy_want is called with: ESLConcept(dish: [(<function rel_subjects at 0x7fee6bfe3c10>, 'isAdj', 'meat')] )
+                        - which is accepted as an orderable thing since it entails "Food" (this is new, it didn't use to work)
+                        - which has no instances since things aren't modelled with isAdj meat
+                        - Need to raise an error instead of succeeding and reporting text, when we get no instances.  That way, alternatives will be tried.
+                     - Ordering water now counts as a full meal?
+                        - regression
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food
