@@ -698,8 +698,10 @@ class ESLConcept(Concept):
         # self specializes larger_concept and there are no "nots" in the criteria
         larger_concept_sort = larger_concept.single_sort_name()
         if larger_concept_sort is not None:
-            if larger_concept_sort in self._sort_of_criteria and not self._has_sort_negation():
-                return True
+            if not self._has_sort_negation():
+                for criteria in self._sort_of_criteria:
+                    if sort_of(state, criteria, larger_concept_sort):
+                        return True
 
         instances, instances_by_concept = self.instances_of_concepts(context, state, [larger_concept])
         return len(instances_by_concept) == 1 and len(instances_by_concept[larger_concept]) == len(instances)

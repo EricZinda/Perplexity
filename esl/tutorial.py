@@ -1805,6 +1805,7 @@ def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding,
 
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_concepts(noun_type, context, state, x_binding):
+    record_new_food = False
     def bound_variable(value):
         if is_concept(value):
             return True
@@ -1819,6 +1820,20 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
                 return False
 
     def unbound_variable_concepts():
+        nonlocal record_new_food
+        has_specializations = perplexity.utilities.at_least_one_generator(all_specializations(state, noun_type))
+        if not has_specializations:
+            # This is a word we don't natively know, so check to see if it is a food or drink
+            request_info = perplexity.OpenAI.StartOpenAIBooleanRequest("test",
+                                                                       "is_food_or_drink_predication",
+                                                                       f"Is {noun_type} either a food or a drink?")
+            result = perplexity.OpenAI.CompleteOpenAIRequest(request_info, wait=5)
+            if result == "true":
+                # It is, so remember it in the fact database
+                # We have to do it in the outside function because this function can only yield objects
+                # it can't yield a whole new state object
+                record_new_food = True
+
         noun_lemmas = [noun_type]
         for noun_lemma in noun_lemmas:
             yield from concept_disjunctions(state, noun_lemma)
@@ -1829,9 +1844,18 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
         if x_binding.value is not None and len(x_binding.value) == 1 and is_concept(x_binding.value[0]):
             new_x_binding = new_state.get_binding(x_binding.variable.name)
             x = new_x_binding.value[0].add_criteria(rel_sort_of, None, noun_type)
+
+            if record_new_food:
+                operation = AddRelOp((noun_type, "specializes", "food"))
+                state = state.apply_operations([operation])
+
             yield state.set_x(new_x_binding.variable.name, (x,))
 
         else:
+            if record_new_food:
+                operation = AddRelOp((noun_type, "specializes", "food"))
+                new_state = new_state.apply_operations([operation])
+
             yield new_state
 
 
@@ -3517,7 +3541,10 @@ def _have_v_1_request_order(context, state, e_introduced_binding, x_actor_bindin
             return True
 
         else:
-            context.report_error(["formNotUnderstood", "_have_v_1_request_order"])
+            # Because x_object is a concept (which is checked in the outer function),
+            # This really is the function to handle it, none of the others are appropriate
+            # and given that it isn't a valid thing to ask for
+            context.report_error(["dontHaveInstances"])
             return False
 
     def actor_from_object(x_object):
@@ -4526,6 +4553,9 @@ def generate_custom_message(tree_info, error_term):
 
     if error_constant == "dontHaveThatFood":
         return s("I'm sorry, we don't serve that here. Get the menu to see what is available.", tree_info)
+    if error_constant == "dontHaveInstances":
+        # Happens if the user asks "Do you have x?" for any noun that isn't requestable.  I.e. "Do you have a bathroom?"
+        return "I'm sorry, I'm not sure if we have that."
 
     if error_constant == "dontKnowHow":
         return "I don't know how to do that."

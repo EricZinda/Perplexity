@@ -131,10 +131,14 @@ New Language:
             - Scenarios:
                 - (fixed) "I want tea"
                 - "tea"
-                - "do you have tea?"
+                - (fixed) "do you have tea?"
                     - valid_player_request() must return true, and then the count_of_instances_and_concepts() routine will
                         handle it like "I want tea"
-
+                    - "Do you have x" where x is a noun that is not a food should return something better than: "I don't understand the way you are using: have"
+                        - what is happening is: we have a concept with no instances
+                            - the predication that should handle that is: _have_v_1_fact_check
+                                - But fact check requires instances and this doesn't have any so it never gets there
+                                - So, update _have_v_1_request_order to give a better error
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food

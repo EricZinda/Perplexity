@@ -4,5 +4,6 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is tablecloth either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is vegetarian menu either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is chicken thing either a food or a drink": "true",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is hamburger either a food or a drink": "true"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is hamburger either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is mouse either a food or a drink": "false"
 }
