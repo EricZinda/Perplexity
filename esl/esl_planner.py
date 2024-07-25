@@ -513,8 +513,12 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
 
         # If we don't even know what this concept it, fail generally ("I want steel")
         if len(concept_analysis) == 0:
-            return [('respond', context, s("Host: Sorry, I don't know how to give you that.")),
-                    ('reprompt', context)]
+            if is_concept(what) and ESLConcept("food").entailed_by(context, state, what):
+                return [('respond', context, s("Host: I'm sorry, we don't serve that here. Get the menu to see what is available.")),
+                        ('reprompt', context)]
+            else:
+                return [('respond', context, s("Host: Sorry, I don't think we have that here.")),
+                        ('reprompt', context)]
 
         # If it entails things across the various classes we know ("I want something small" entails "the bill" and various "menu items") fail with a general message
         if len(concept_analysis) > 1:

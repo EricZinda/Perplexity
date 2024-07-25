@@ -130,7 +130,8 @@ New Language:
             - Performance seems much slower now
             - Scenarios:
                 - (fixed) "I want tea"
-                - "tea"
+                - (fixed) "tea"
+                    - satisfy_want needs to deal better with concepts that we don't have
                 - (fixed) "do you have tea?"
                     - valid_player_request() must return true, and then the count_of_instances_and_concepts() routine will
                         handle it like "I want tea"
