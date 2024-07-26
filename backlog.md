@@ -149,6 +149,13 @@ New Language:
                         - regression
                     - (fixed) "sandwich for lunch" was missing test, was broken
                         - ESLConcept("lunch").entails(context, state, ESLConcept("course")) is failing
+                    - (fixed) "vegetables" --> Host: I'm sorry, we don't serve that here. Get the menu to see what is available.
+                        - add vegetables as a class of thing?
+                        - Model ingredients?
+                            - Add concepts that could be ingredients and mark them as ingredients
+                            - allow concepts to have other concepts and answer it properly in _have_v_1_fact_check
+                        - (go this way) Just give an error message that doesn't say "we don't have it".  Something like "you can't order that here", which is true for "vegetables"
+
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food
@@ -156,6 +163,14 @@ New Language:
                     - Do we cache these?
 
                 - However! They are not on the menu, we have zero of them, they are not a dish
+        - object_to_store is broken now but is being used
+        - 1 order of water doesn't work
+
+        - order meal --> I don't think we have that here
+            - Need to implement the rude "order x"
+            - this is being interpreted as "order of meal"
+            - I want to order a meal --> You already ordered a menu for you
+                - that works
         - Figure out what happened here
             --------------- 2024-07-14 22:59:51.468067 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-225951468041.backup
             USER: We are hungry!

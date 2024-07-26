@@ -4550,7 +4550,7 @@ def generate_custom_message(tree_info, error_term):
             return system_message
 
     if error_constant == "dontHaveThatFood":
-        return s("I'm sorry, we don't serve that here. Get the menu to see what is available.", tree_info)
+        return s("Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.", tree_info)
     if error_constant == "dontHaveInstances":
         # Happens if the user asks "Do you have x?" for any noun that isn't requestable.  I.e. "Do you have a bathroom?"
         return "I'm sorry, I'm not sure if we have that."
@@ -4853,7 +4853,7 @@ if __name__ == '__main__':
     # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
     # print(concept.instances(None, test_state))
 
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")

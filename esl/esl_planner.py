@@ -514,7 +514,7 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
         # If we don't even know what this concept it, fail generally ("I want steel")
         if len(concept_analysis) == 0:
             if is_concept(what) and ESLConcept("food").entailed_by(context, state, what):
-                stop_plan_with_error(state, context, s("Host: I'm sorry, we don't serve that here. Get the menu to see what is available."))
+                stop_plan_with_error(state, context, s("Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available."))
             else:
                 stop_plan_with_error(state, context, s("Host: Sorry, I don't think we have that here."))
 

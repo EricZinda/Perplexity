@@ -2,15 +2,29 @@
     "WorldName": "esl",
     "TestItems": [
         {
-            "Command": "I want tea",
-            "Expected": "I'm sorry, we don't serve that here. Get the menu to see what is available.",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_tea_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Command": "vegetables",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "udef_q(x4,_vegetable_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
         },
         {
+            "Command": "Do you have vegetables?",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_vegetable_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "daa8edf2-50aa-485f-b9a5-a37613fbae31"
+        },
+        {
+            "Command": "I want tea",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_tea_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "9d773aa2-d575-438e-9ce8-d2c385ce18bd"
+        },
+        {
             "Command": "I want a burger",
-            "Expected": "I'm sorry, we don't serve that here. Get the menu to see what is available.",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_burger_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "84e97d62-1194-45c1-ade3-35bbbdf85736"
@@ -24,7 +38,7 @@
         },
         {
             "Command": "Do you have tea?",
-            "Expected": "I'm sorry, we don't serve that here. Get the menu to see what is available.",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_tea_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "a3841484-fb33-4893-9ae9-0959e1e69ba2"
@@ -38,7 +52,7 @@
         },
         {
             "Command": "tea",
-            "Expected": "Host: I'm sorry, we don't serve that here. Get the menu to see what is available.",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
             "Tree": "udef_q(x4,_tea_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "e1a2d88b-6308-4888-93d1-32d59f2f114d"
@@ -52,10 +66,10 @@
         },
         {
             "Command": "I want a sandwich for lunch",
-            "Expected": "Host: Sorry, I don't think we have that here.",
-            "Tree": "udef_q(x4,_mouse_n_1(x4),unknown(e2,x4))",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "udef_q(x14,_meal_n_1(x14),pronoun_q(x3,pron(x3),_a_q(x8,[_sandwich_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
-            "ID": "8c86dff9-b254-43ff-967d-635307a6d7e0"
+            "ID": "77afc584-776a-4a60-982f-d19758609532"
         }
     ],
     "ElapsedTime": 7.70442

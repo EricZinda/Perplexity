@@ -11,5 +11,9 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is nail either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is moment either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is sandwich either a food or a drink": "true",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is time either a food or a drink": "false"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is time either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is coffee either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is wine either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is bread either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is vegetable either a food or a drink": "true"
 }
