@@ -168,6 +168,7 @@ New Language:
         - 1 order of water doesn't work
 
         - order meal --> I don't think we have that here
+            - order vegetarian --> Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.
             - Need to implement the rude "order x"
             - this is being interpreted as "order of meal"
             - I want to order a meal --> You already ordered a menu for you
