@@ -1203,31 +1203,6 @@ class WorldState(State):
             toReturn += [AddRelOp(("user", "ordered", i)), AddBillOp(i)]
         return toReturn
 
-    def user_wants_group(self, context, users, wanted):
-        allTables = True  # if multiple actors (son and user) want table, we don't need two tables
-        allMenus = True
-        allTableRequests = True
-
-        for i in wanted:
-            if not sort_of(self, i.value[0], "table"):
-                allTables = False
-            if not sort_of(self, i.value[0], "menu"):
-                allMenus = False
-            if not i.value[0][0] == "{":
-                allTableRequests = False
-            else:
-                if not json.loads(i.value[0])["structure"] == "noun_for":
-                    allTableRequests = False
-        if allTables:
-            return self.handle_world_event(context, ["user_wants", "table1"])
-        if allMenus:
-            return self.handle_world_event(context, ["user_wants", "menu1"])
-        elif allTableRequests:
-            return self.handle_world_event(context, ["user_wants", wanted[0].value[0]])
-        else:
-            unpack = lambda x: x.value[0]
-            return self.handle_world_event(context, ["user_wants_multiple", [unpack(j) for j in wanted]])
-
     def user_wants_to_see(self, wanted):
         if wanted == "menu1":
             return self.user_wants("menu1")
@@ -1237,18 +1212,6 @@ class WorldState(State):
         else:
             return [RespondOperation("Sorry, I can't show you that."),
                     get_reprompt_operation(self)]
-
-    def user_wants_to_see_group(self, context, actor_list, wanted_list):
-        all_menu = True
-        for i in wanted_list:
-            if not sort_of(self, i.value[0], "menu"):
-                all_menu = False
-                break
-        if all_menu:
-            return self.handle_world_event(context, ["user_wants", "menu1"])
-        else:
-            return [RespondOperation("Sorry, I can't show you that."),
-                            get_reprompt_operation(self)]
 
     def no(self, context):
         return self.find_plan(context, [('complete_order', context)])
@@ -1334,8 +1297,6 @@ class WorldState(State):
             who_list = [binding.value for binding in args[1].solution_values]
             what_list = [binding.value for binding in args[2].solution_values]
             return self.find_plan(context, [('satisfy_want', context, who_list, what_list)])
-        elif args[0] == "user_wants_to_see_group":
-            return self.user_wants_to_see_group(context, args[1], args[2])
 
 
 pipeline_logger = logging.getLogger('Pipeline')

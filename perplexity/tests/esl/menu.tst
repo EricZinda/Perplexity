@@ -269,8 +269,8 @@
         },
         {
             "Command": "2",
-            "Expected": "Host: Sorry, I don't know how to give you that.\nWaiter: What can I get you?",
-            "Tree": "udef_q(x4,[generic_entity(x4), card(2,e10,x4)],unknown(e2,x4))",
+            "Expected": "Waiter: Sorry, I'm not sure what to do about that.",
+            "Tree": "def_implicit_q(x4,basic_numbered_hour(2,x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "9dd7913d-e27e-4750-9204-6dc50b87c258"
         },

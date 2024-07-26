@@ -38,14 +38,14 @@
         },
         {
             "Command": "tea",
-            "Expected": "Host: I'm sorry, we don't serve that here. Get the menu to see what is available.\nHost: How can I help you today?",
+            "Expected": "Host: I'm sorry, we don't serve that here. Get the menu to see what is available.",
             "Tree": "udef_q(x4,_tea_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "e1a2d88b-6308-4888-93d1-32d59f2f114d"
         },
         {
             "Command": "mouse",
-            "Expected": "Host: Sorry, I don't think we have that here.\nHost: How can I help you today?",
+            "Expected": "Host: Sorry, I don't think we have that here.",
             "Tree": "udef_q(x4,_mouse_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "f0d534fd-51be-4227-a571-0380025a04af"
