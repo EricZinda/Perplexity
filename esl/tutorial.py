@@ -1968,14 +1968,14 @@ def adjective_default_instances(adjective_type, context, state, x_binding):
     yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_instances)
 
 
-# 'vegetarian food" is modelled as anything that has a "veggie" base class, not
+# 'vegetarian food" is modelled as anything that has a "vegetarian" base class, not
 # things that have a "hasAdj" relationship
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_concepts_menu(context, state, e_introduced_binding, x_target_binding):
     if used_predicatively(context, state):
         # If "vegetarian" is used predicatively ('What is vegetarian?') attempt to interpret as
         # asking about properties of things on the menu
-        yield from match_all_concepts_with_adjective_menu("veggie", context, state, x_target_binding, is_adjective=False)
+        yield from match_all_concepts_with_adjective_menu("vegetarian", context, state, x_target_binding, is_adjective=False)
 
 
 @Predication(vocabulary,
@@ -1994,12 +1994,12 @@ def _vegetarian_a_1_concepts_menu_group(context, state_list, e_introduced_bindin
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_concepts(context, state, e_introduced_binding, x_target_binding):
     if not used_predicatively(context, state):
-        yield from match_all_n_concepts("veggie", context, state, x_target_binding)
+        yield from match_all_n_concepts("vegetarian", context, state, x_target_binding)
 
 
 @Predication(vocabulary, names=["_vegetarian_a_1"])
 def _vegetarian_a_1_instances(context, state, e_introduced_binding, x_target_binding):
-    yield from match_all_n_instances("veggie", context, state, x_target_binding)
+    yield from match_all_n_instances("vegetarian", context, state, x_target_binding)
 
 
 
@@ -4627,7 +4627,7 @@ def reset():
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("dish", "specializes", "food")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
-    initial_state = initial_state.add_rel("veggie", "specializes", "dish")
+    initial_state = initial_state.add_rel("vegetarian", "specializes", "dish")
     initial_state = initial_state.add_rel("special", "specializes", "dish")
 
     initial_state = initial_state.add_rel("steak", "specializes", "meat")
@@ -4635,11 +4635,11 @@ def reset():
     initial_state = initial_state.add_rel("salmon", "specializes", "meat")
     initial_state = initial_state.add_rel("pork", "specializes", "meat")
 
-    initial_state = initial_state.add_rel("soup", "specializes", "veggie")
+    initial_state = initial_state.add_rel("soup", "specializes", "vegetarian")
     initial_state = initial_state.add_rel("tomato", "specializes", "food")
     initial_state = initial_state.add_rel("soup", "isAdj", "tomato")
 
-    initial_state = initial_state.add_rel("salad", "specializes", "veggie")
+    initial_state = initial_state.add_rel("salad", "specializes", "vegetarian")
     initial_state = initial_state.add_rel("green", "specializes", "thing")
     initial_state = initial_state.add_rel("salad", "isAdj", "green")
 
@@ -4656,7 +4656,7 @@ def reset():
     initial_state = initial_state.add_rel("restaurant", "have", "food")
     initial_state = initial_state.add_rel("restaurant", "have", "dish")
     initial_state = initial_state.add_rel("restaurant", "have", "meat")
-    initial_state = initial_state.add_rel("restaurant", "have", "veggie")
+    initial_state = initial_state.add_rel("restaurant", "have", "vegetarian")
     initial_state = initial_state.add_rel("restaurant", "have", "bill1")
     initial_state = initial_state.add_rel("restaurant", "describes", "menu")
     initial_state = initial_state.add_rel("restaurant", "describes", "bill")

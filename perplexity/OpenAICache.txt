@@ -15,5 +15,10 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is coffee either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is wine either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is bread either a food or a drink": "true",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is vegetable either a food or a drink": "true"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is vegetable either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is ice either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is cream either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is ice+cream either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is i+c+e either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is thing either a food or a drink": "false"
 }

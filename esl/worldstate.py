@@ -1153,7 +1153,7 @@ class WorldState(State):
         return has_items
 
     def user_ordered_veg(self):
-        veggies = list(all_instances_and_spec(self, "veggie"))
+        veggies = list(all_instances_and_spec(self, "vegetarian"))
         if self.rel_exists("ordered"):
             for i in self.all_rel("ordered"):
                 if i[0] in ["user", "son1"]:

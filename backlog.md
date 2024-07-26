@@ -140,22 +140,23 @@ New Language:
                             - the predication that should handle that is: _have_v_1_fact_check
                                 - But fact check requires instances and this doesn't have any so it never gets there
                                 - So, update _have_v_1_request_order to give a better error
-                    - "I'll take any meat dish" -> We don't carry that
-                        - satisfy_want is called with: ESLConcept(dish: [(<function rel_subjects at 0x7fee6bfe3c10>, 'isAdj', 'meat')] )
-                        - which is accepted as an orderable thing since it entails "Food" (this is new, it didn't use to work)
-                        - which has no instances since things aren't modelled with isAdj meat
-                        - Need to raise an error instead of succeeding and reporting text, when we get no instances.  That way, alternatives will be tried.
-                    - (fixed) Ordering water now counts as a full meal?
-                        - regression
-                    - (fixed) "sandwich for lunch" was missing test, was broken
-                        - ESLConcept("lunch").entails(context, state, ESLConcept("course")) is failing
-                    - (fixed) "vegetables" --> Host: I'm sorry, we don't serve that here. Get the menu to see what is available.
-                        - add vegetables as a class of thing?
-                        - Model ingredients?
-                            - Add concepts that could be ingredients and mark them as ingredients
-                            - allow concepts to have other concepts and answer it properly in _have_v_1_fact_check
-                        - (go this way) Just give an error message that doesn't say "we don't have it".  Something like "you can't order that here", which is true for "vegetables"
-
+                - (fixed) "I'll take any meat dish" -> We don't carry that
+                    - satisfy_want is called with: ESLConcept(dish: [(<function rel_subjects at 0x7fee6bfe3c10>, 'isAdj', 'meat')] )
+                    - which is accepted as an orderable thing since it entails "Food" (this is new, it didn't use to work)
+                    - which has no instances since things aren't modelled with isAdj meat
+                    - Need to raise an error instead of succeeding and reporting text, when we get no instances.  That way, alternatives will be tried.
+                - (fixed) Ordering water now counts as a full meal?
+                    - regression
+                - (fixed) "sandwich for lunch" was missing test, was broken
+                    - ESLConcept("lunch").entails(context, state, ESLConcept("course")) is failing
+                - (fixed) "vegetables" --> Host: I'm sorry, we don't serve that here. Get the menu to see what is available.
+                    - add vegetables as a class of thing?
+                    - Model ingredients?
+                        - Add concepts that could be ingredients and mark them as ingredients
+                        - allow concepts to have other concepts and answer it properly in _have_v_1_fact_check
+                    - (go this way) Just give an error message that doesn't say "we don't have it".  Something like "you can't order that here", which is true for "vegetables"
+                - (fixed) "vegetarian" --> Sorry, I don't think we have that here.
+                    - Need to model "vegetarian" as itself instead of "veggie"
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food

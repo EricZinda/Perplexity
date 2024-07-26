@@ -2,6 +2,13 @@
     "WorldName": "esl",
     "TestItems": [
         {
+            "Command": "ice cream",
+            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "udef_q(x4,_vegetable_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
+        },
+        {
             "Command": "vegetables",
             "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
             "Tree": "udef_q(x4,_vegetable_n_1(x4),unknown(e2,x4))",
