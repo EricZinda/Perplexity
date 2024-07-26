@@ -145,9 +145,10 @@ New Language:
                         - which is accepted as an orderable thing since it entails "Food" (this is new, it didn't use to work)
                         - which has no instances since things aren't modelled with isAdj meat
                         - Need to raise an error instead of succeeding and reporting text, when we get no instances.  That way, alternatives will be tried.
-                     - Ordering water now counts as a full meal?
+                    - (fixed) Ordering water now counts as a full meal?
                         - regression
-
+                    - (fixed) "sandwich for lunch" was missing test, was broken
+                        - ESLConcept("lunch").entails(context, state, ESLConcept("course")) is failing
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food

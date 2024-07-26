@@ -127,7 +127,7 @@ def ResponseThread(user_id, predication, approachFunc, approachResponseCleaner, 
 
             if cachedValue is not None:
                 response.append(cachedValue)
-                CaptureDebug(user_id, f"GPT: cached value: {cachedValue}")
+                CaptureDebug(user_id, f"GPT: cached value for {phrase}: {cachedValue}")
                 return
 
             if IsServiceDown():

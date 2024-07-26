@@ -49,6 +49,13 @@
             "Tree": "udef_q(x4,_mouse_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "f0d534fd-51be-4227-a571-0380025a04af"
+        },
+        {
+            "Command": "I want a sandwich for lunch",
+            "Expected": "Host: Sorry, I don't think we have that here.",
+            "Tree": "udef_q(x4,_mouse_n_1(x4),unknown(e2,x4))",
+            "Enabled": true,
+            "ID": "f0d534fd-51be-4227-a571-0380025a04af"
         }
     ],
     "ElapsedTime": 7.70442

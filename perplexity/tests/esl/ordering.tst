@@ -114,9 +114,9 @@
             "ID": "e3c26e28-39e7-47cc-bfb2-cba28f48cb1f"
         },
         {
-            "Command": "I want 2 steaks",
+            "Command": "I want 2 steaks for lunch",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides 2 steaks for you?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), card(2,e14,x8)],_want_v_1(e2,x3,x8)))",
+            "Tree": "udef_q(x16,_meal_n_1(x16),pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), _for_p(e15,x8,x16), card(2,e14,x8)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "53c1ba1a-7f52-4c70-b852-8e4fcf397e0a"
         },

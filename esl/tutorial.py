@@ -1267,7 +1267,7 @@ def for_check(context, state, x_what_list, x_for_list):
                         ['errorText', f"Host: That is not for both {'and'.join(x_what_list)}."])
                     return False, for_type, x_what_type
 
-        elif is_concept(item) and item.entails(context, state, ESLConcept("course")):
+        elif is_concept(item) and item.entails(context, state, ESLConcept("meal")):
             # if 'for' refers to a course like "steak for my main course|dinner" it means "in order to obtain, gain, or acquire" (as in "a suit for alimony")
             #       If x is an instance, this effectively means "can be used for" which is true as long as the "for" is "main course/dinner/appetizer/etc"
             for_types.add("in order to obtain")
@@ -1278,12 +1278,10 @@ def for_check(context, state, x_what_list, x_for_list):
                 return False, for_type, x_what_type
 
             food_concept = ESLConcept("food")
-            if not all(what.entails(food_concept) for what in x_what_list):
+            if not all(what.entails(context, state, food_concept) for what in x_what_list):
                 context.report_error(["unexpected"])
                 return False, for_type, x_what_type
 
-            else:
-                return False
 
         if len(for_types) > 1:
             context.report_error(["unexpected"])
@@ -4806,10 +4804,6 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
 
     else:
         message = "(Note: This game is designed to practice English: type in actual sentences you'd say in real life. If you get stuck, ask yourself what you would really say in the real world and type that.)\n\n" + "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
-
-    # initial_state = initial_state.add_rel("lunch", "specializes", "meal")
-    # initial_state = initial_state.add_rel("dinner", "specializes", "meal")
-    # initial_state = initial_state.add_rel("breakfast", "specializes", "meal")
 
     vocabulary.synonyms = {
         "_item_n_of": "_thing_n_of-about",
