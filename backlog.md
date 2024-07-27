@@ -157,7 +157,7 @@ New Language:
                     - (go this way) Just give an error message that doesn't say "we don't have it".  Something like "you can't order that here", which is true for "vegetables"
                 - (fixed) "vegetarian" --> Sorry, I don't think we have that here.
                     - Need to model "vegetarian" as itself instead of "veggie"
-                - one vegetarian meal --> Host: Sorry, I don't think we have that here.
+                - (fixed) one vegetarian meal --> Host: Sorry, I don't think we have that here.
                     - ? salad is a vegetarian meal --> salad is not a vegetarian meal
 
             - Create a virtual model where:
