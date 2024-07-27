@@ -4,13 +4,13 @@
         {
             "Command": "ice cream",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
-            "Tree": "udef_q(x4,_vegetable_n_1(x4),unknown(e2,x4))",
+            "Tree": "udef_q(x10,_ice_n_1(x10),udef_q(x4,[_cream_n_1(x4), compound(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
             "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
         },
         {
             "Command": "vegetables",
-            "Expected": "Host: You can't order that here. Take a look at the menu to see what is available.",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
             "Tree": "udef_q(x4,_vegetable_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "25520d94-b33f-4e5a-8cd6-82b2011e94a6"
