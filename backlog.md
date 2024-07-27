@@ -157,6 +157,9 @@ New Language:
                     - (go this way) Just give an error message that doesn't say "we don't have it".  Something like "you can't order that here", which is true for "vegetables"
                 - (fixed) "vegetarian" --> Sorry, I don't think we have that here.
                     - Need to model "vegetarian" as itself instead of "veggie"
+                - one vegetarian meal --> Host: Sorry, I don't think we have that here.
+                    - ? salad is a vegetarian meal --> salad is not a vegetarian meal
+
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food
@@ -166,7 +169,6 @@ New Language:
                 - However! They are not on the menu, we have zero of them, they are not a dish
         - object_to_store is broken now but is being used
         - 1 order of water doesn't work
-
         - order meal --> I don't think we have that here
             - order vegetarian --> Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.
             - Need to implement the rude "order x"

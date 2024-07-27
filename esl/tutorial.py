@@ -4619,11 +4619,6 @@ def reset():
     initial_state = initial_state.add_rel("drink", "specializes", "thing")
     initial_state = initial_state.add_rel("water", "specializes", "drink")
 
-    initial_state = initial_state.add_rel("meal", "specializes", "thing")
-    initial_state = initial_state.add_rel("meal1", "instanceOf", "meal")
-    initial_state = initial_state.add_rel("meal2", "instanceOf", "meal")
-    initial_state = initial_state.add_rel("meal3", "instanceOf", "meal")
-
     initial_state = initial_state.add_rel("food", "specializes", "thing")
     initial_state = initial_state.add_rel("dish", "specializes", "food")
     initial_state = initial_state.add_rel("meat", "specializes", "dish")
@@ -4807,9 +4802,10 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
 
     vocabulary.synonyms = {
         "_item_n_of": "_thing_n_of-about",
-        "_lunch_n_1": "_meal_n_1",
-        "_dinner_n_1": "_meal_n_1",
-        "_breakfast_n_1": "_meal_n_1",
+        "_meal_n_1": "_dish_n_of",
+        "_lunch_n_1": "_dish_n_of",
+        "_dinner_n_1": "_dish_n_of",
+        "_breakfast_n_1": "_dish_n_of",
         "_main_n_1": "_dish_n_of",
         "_choice_n_of": "_dish_n_of",
         "_speciality_n_1": "_dish_n_of",

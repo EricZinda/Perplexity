@@ -26,5 +26,8 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is table meal either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is thing meal either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is some meal either a food or a drink": "true",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is meal either a food or a drink": "true"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is meal either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is lemonade either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is soda either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is sauce either a food or a drink": "true"
 }

@@ -177,6 +177,13 @@
             "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
         },
         {
+            "Command": "a vegetarian meal",
+            "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x15,[_dish_n_of(x15,i21), _vegetarian_a_1(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_need_v_1(e2,x3,x15))))",
+            "Enabled": true,
+            "ID": "b20fd1cc-05ca-409d-810a-ab9284c0f9f7"
+        },
+        {
             "Command": "My son needs something vegetarian",
             "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),_some_q(x15,[thing(x15), _vegetarian_a_1(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_need_v_1(e2,x3,x15))))",
