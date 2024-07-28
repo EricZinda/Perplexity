@@ -4,6 +4,7 @@ import logging
 import os
 import pickle
 import sys
+import time
 import uuid
 import perplexity.messages
 from delphin.codecs import simplemrs
@@ -57,13 +58,15 @@ class UserInterface(object):
                  user_output=None,
                  debug_output=None,
                  best_parses_file=None,
-                 events=None):
+                 events=None,
+                 timeout=None):
 
         self.user_output = print if user_output is None else user_output
         self.debug_output = print if debug_output is None else debug_output
         self.best_parses_file = best_parses_file
         self.autocorrect_file = get_autocorrect(world_name)
         self.max_holes = 14
+        self.timeout = 12 if timeout is None else timeout
         self.generate_all_parses = False
 
         if best_parses_file is not None and os.path.exists(best_parses_file):
@@ -149,6 +152,14 @@ class UserInterface(object):
 
             output = self.user_output()
 
+    def has_timed_out(self):
+        if self.interaction_record is not None and time.perf_counter() - self.interaction_record["StartTime"] > self.timeout:
+            pipeline_logger.debug(f"Timed out.")
+            return True
+
+        else:
+            return False
+
     # Convert any input that was multiple sentences into multiple interactions
     # Then: If the phrase is an implicit or explicit conjunction -- basically more than
     #       one phrase put together -- run the interaction loop N times, once for each conjunct.
@@ -219,7 +230,8 @@ class UserInterface(object):
                     self.interaction_record = {"UserInput": self.user_input,
                                                "Mrss": [],
                                                "ChosenMrsIndex": None,
-                                               "ChosenInterpretationIndex": None}
+                                               "ChosenInterpretationIndex": None,
+                                               "StartTime": time.perf_counter()}
 
                     self._interact_once(force_input=sentence,
                                         conjunct_mrs_index=conjunct_mrs_index,
@@ -272,6 +284,7 @@ class UserInterface(object):
 
         if self.events is not None:
             self.events.interaction_end(self, interaction_records, last_phrase_response)
+
         if self is not next_ui:
             # The user gave a command to load a new UI
             self.new_ui = next_ui
@@ -338,6 +351,9 @@ class UserInterface(object):
         # generated from it...
         mrs_index = -1
         for mrs in mrs_generator:
+            if self.has_timed_out():
+                break
+
             mrs_index += 1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 mrs_record = self.new_mrs_record(mrs=mrs)
@@ -365,6 +381,9 @@ class UserInterface(object):
                 tree_index = -1
                 try:
                     for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
+                        if self.has_timed_out():
+                            break
+
                         tree_generated = True
                         tree_info_orig = {"Index": mrs.index,
                                           "Variables": mrs.variables,
@@ -373,6 +392,9 @@ class UserInterface(object):
 
                         # Now loop through any tree modifications that have been built for this application
                         for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0, conjunct_index_list=next_conjuncts):
+                            if self.has_timed_out():
+                                break
+
                             # At this point we have locked down which predications should be used and that won't change
                             # However: there might be multiple interpretations of these predications as well as disjunctions
                             # that cause various solution sets to be created. Each will be in its own tree_record
@@ -408,6 +430,9 @@ class UserInterface(object):
                             # was: for frame_state in self.state.frames():
                             wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
                             for frame_state in [self.state]:
+                                if self.has_timed_out():
+                                    break
+
                                 pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
 
                                 tree_solver = TreeSolver.create_top_level_solver(self.vocabulary, self.scope_function, self.scope_init_function)
@@ -524,6 +549,9 @@ class UserInterface(object):
                                         # This failed, remember it if it is the "best" failure
                                         # which we currently define as the first one
                                         self.evaluate_best_response(has_solution_group=False)
+
+                                    if self.has_timed_out():
+                                        break
 
                         alternate_tree_generated = tree_index > -1
                         if len(contingent) > 0 and not alternate_tree_generated:

@@ -14,8 +14,6 @@ import time
 import traceback
 import urllib
 import uuid
-from pathlib import Path
-
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from AWSState import CloudState, CloudLog
@@ -623,6 +621,7 @@ def RunGameIteration(cachedUser, perfDict, rawStatePath, dataInfo, startGame, st
                 path = GetStateDirectoryName(userID)
                 path_to_state = os.path.join(path, "state.p8y")
                 ui = load_ui(path_to_state, user_output=funcOut, debug_output=funcDebug)
+                ui.timeout = perplexityMaxParseTimeout
                 perfDict["LoadGameTime"] = time.perf_counter() - loadGameStart
 
             except LoadException as exception:
@@ -642,8 +641,7 @@ def RunGameIteration(cachedUser, perfDict, rawStatePath, dataInfo, startGame, st
         if os.path.exists(path_to_state):
             os.remove(path_to_state)
         ui = ui_from_world_name(startGame, user_output=funcOut, debug_output=funcDebug)
-        # Send welcome
-        # ui.TurnFinished(True)
+        ui.timeout = perplexityMaxParseTimeout
 
     else:
         if "NewSession" in currentWorkItem and currentWorkItem["NewSession"] is True:

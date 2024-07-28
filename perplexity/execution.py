@@ -496,7 +496,8 @@ class TreeSolver(object):
                        target_interpretation_index=None,
                        interpretation=None,
                        find_all_solution_groups=True,
-                       wh_phrase_variable=None):
+                       wh_phrase_variable=None,
+                       start_time=None):
         current_tree_index_recorded = 0 if current_tree_index is None else current_tree_index
 
         this_sentence_force = sentence_force(tree_info["Variables"])
