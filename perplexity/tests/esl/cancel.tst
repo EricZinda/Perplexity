@@ -458,7 +458,7 @@
         },
         {
             "Command": "Can I cancel our order",
-            "Expected": "Waiter: Sorry, I don't believe there is an order for you.\nWaiter: Sorry, I don't believe there is an order for Johnny.\nWaiter: What can I get you?",
+            "Expected": "Waiter: Sorry, I don't believe there is an order for you.\nWaiter: What can I get you?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "679084ad-c7f3-42bd-b1fa-a97a12e6d66b"

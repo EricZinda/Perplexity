@@ -1,5 +1,9 @@
 
 
+Big Improvements:
+    - Get a better tree morpher
+    - Improve debug performance
+    - better tree manipulations
 
 Bugs:
     High Pri:
@@ -126,40 +130,63 @@ Cleanup:
 New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
+        - USER: I would like to order vegetarian dish
+            Sorry, did you mean to say something?
+            Generate a better error
         - Deal with open ended food
             - Performance seems much slower now
             - Scenarios:
-                - (fixed) "I want tea"
-                - (fixed) "tea"
-                    - satisfy_want needs to deal better with concepts that we don't have
-                - (fixed) "do you have tea?"
-                    - valid_player_request() must return true, and then the count_of_instances_and_concepts() routine will
-                        handle it like "I want tea"
-                    - "Do you have x" where x is a noun that is not a food should return something better than: "I don't understand the way you are using: have"
-                        - what is happening is: we have a concept with no instances
-                            - the predication that should handle that is: _have_v_1_fact_check
-                                - But fact check requires instances and this doesn't have any so it never gets there
-                                - So, update _have_v_1_request_order to give a better error
-                - (fixed) "I'll take any meat dish" -> We don't carry that
-                    - satisfy_want is called with: ESLConcept(dish: [(<function rel_subjects at 0x7fee6bfe3c10>, 'isAdj', 'meat')] )
-                    - which is accepted as an orderable thing since it entails "Food" (this is new, it didn't use to work)
-                    - which has no instances since things aren't modelled with isAdj meat
-                    - Need to raise an error instead of succeeding and reporting text, when we get no instances.  That way, alternatives will be tried.
-                - (fixed) Ordering water now counts as a full meal?
-                    - regression
-                - (fixed) "sandwich for lunch" was missing test, was broken
-                    - ESLConcept("lunch").entails(context, state, ESLConcept("course")) is failing
-                - (fixed) "vegetables" --> Host: I'm sorry, we don't serve that here. Get the menu to see what is available.
-                    - add vegetables as a class of thing?
-                    - Model ingredients?
-                        - Add concepts that could be ingredients and mark them as ingredients
-                        - allow concepts to have other concepts and answer it properly in _have_v_1_fact_check
-                    - (go this way) Just give an error message that doesn't say "we don't have it".  Something like "you can't order that here", which is true for "vegetables"
-                - (fixed) "vegetarian" --> Sorry, I don't think we have that here.
-                    - Need to model "vegetarian" as itself instead of "veggie"
-                - (fixed) one vegetarian meal --> Host: Sorry, I don't think we have that here.
-                    - ? salad is a vegetarian meal --> salad is not a vegetarian meal
-
+- (fixed) "I want tea"
+- (fixed) "tea"
+    - satisfy_want needs to deal better with concepts that we don't have
+- (fixed) "do you have tea?"
+    - valid_player_request() must return true, and then the count_of_instances_and_concepts() routine will
+        handle it like "I want tea"
+    - "Do you have x" where x is a noun that is not a food should return something better than: "I don't understand the way you are using: have"
+        - what is happening is: we have a concept with no instances
+            - the predication that should handle that is: _have_v_1_fact_check
+                - But fact check requires instances and this doesn't have any so it never gets there
+                - So, update _have_v_1_request_order to give a better error
+- (fixed) "I'll take any meat dish" -> We don't carry that
+    - satisfy_want is called with: ESLConcept(dish: [(<function rel_subjects at 0x7fee6bfe3c10>, 'isAdj', 'meat')] )
+    - which is accepted as an orderable thing since it entails "Food" (this is new, it didn't use to work)
+    - which has no instances since things aren't modelled with isAdj meat
+    - Need to raise an error instead of succeeding and reporting text, when we get no instances.  That way, alternatives will be tried.
+- (fixed) Ordering water now counts as a full meal?
+    - regression
+- (fixed) "sandwich for lunch" was missing test, was broken
+    - ESLConcept("lunch").entails(context, state, ESLConcept("course")) is failing
+- (fixed) "vegetables" --> Host: I'm sorry, we don't serve that here. Get the menu to see what is available.
+    - add vegetables as a class of thing?
+    - Model ingredients?
+        - Add concepts that could be ingredients and mark them as ingredients
+        - allow concepts to have other concepts and answer it properly in _have_v_1_fact_check
+    - (go this way) Just give an error message that doesn't say "we don't have it".  Something like "you can't order that here", which is true for "vegetables"
+- (fixed) "vegetarian" --> Sorry, I don't think we have that here.
+    - Need to model "vegetarian" as itself instead of "veggie"
+- (fixed) one vegetarian meal --> Host: Sorry, I don't think we have that here.
+    - ? salad is a vegetarian meal --> salad is not a vegetarian meal
+- I want a sandwich for lunch is broken
+    It happened when we got rid of meal as a real item (that didn't do anything):
+            "_lunch_n_1": "_meal_n_1",
+            "_dinner_n_1": "_meal_n_1",
+            "_breakfast_n_1": "_meal_n_1",
+    And converted it all to dish:
+            "_meal_n_1": "_dish_n_of",
+            "_lunch_n_1": "_dish_n_of",
+            "_dinner_n_1": "_dish_n_of",
+            "_breakfast_n_1": "_dish_n_of",
+    And then "dish" returns every single thing in the restaurant, which is fine except that we try to do it in all combinations
+        - implement a timeout
+    do you have chicken? Now goes to a table because this entails chicken and meal
+    Having trouble distinguishing "meal" from "chicken" since one derives from the other
+- (fixed) We'd like to get lunch (from the table) takes you back to the table
+- (fixed) We want lunch: takes forever.  Because it starts with just one person and only adds the other after all of the options are exhausted
+    - Resolve smaller options first?
+    - Don't keep adding options when clearly only one will work (lunch). Need to have a concept count
+        - Fixed but it still doesn't work: still times out
+- (fixed) "We want a meal" should get a menu at the table?
+- (fixed) That's it for now --> really slow
             - Create a virtual model where:
                 - return True for handles_noun for all words
                     - fail in match_all_n_concepts if it isn't a food
@@ -252,6 +279,9 @@ New Language:
             I don't know the words: would, like and I don't know the way you used: pay
         - USER: what do you have on the menu?
             I don't know the way you used: on
+        - Can I cancel our order?
+            - just responds to order for user
+            - because nobody makes sure the variable for poss() has multiple items in the solution
         - what do you have for lunch?
         ?:my son is vegan
             my son is not veggie

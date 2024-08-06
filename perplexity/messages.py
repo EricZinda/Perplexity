@@ -190,6 +190,12 @@ def generate_message(tree_info, error_term):
     elif error_constant == "tooComplicated":
         return "That was too complicated for me to understand ..."
 
+    elif error_constant == "tooComplicatedTimeout":
+        return "Sorry, could you rephrase that? It was a little hard to work out."
+
+    elif error_constant == "noParse":
+        return "Sorry, could you rephrase that?"
+
     elif error_constant == "formNotUnderstood":
         predication = predication_from_index(tree_info, error_predicate_index)
         parsed_predicate = parse_predication_name(predication.name)

@@ -4,23 +4,23 @@
         {
             "Command": "Can I have hot sauce",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
-            "Tree": "udef_q(x4,_vegetable_n_1(x4),unknown(e2,x4))",
+            "Tree": "udef_q(x11,[_sauce_n_1(x11), _hot_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
         },
         {
             "Command": "my son wants a lemonade",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
-            "Tree": "udef_q(x4,_vegetable_n_1(x4),unknown(e2,x4))",
+            "Tree": "pronoun_q(x9,pron(x9),_a_q(x15,_lemonade_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x15))))",
             "Enabled": true,
-            "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
+            "ID": "bef3d47b-f2d8-4353-a9fd-46c6c4bd9c42"
         },
         {
             "Command": "ice cream",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
             "Tree": "udef_q(x10,_ice_n_1(x10),udef_q(x4,[_cream_n_1(x4), compound(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
-            "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
+            "ID": "2961cd4d-c302-41d8-84d9-264f69ad0a7b"
         },
         {
             "Command": "vegetables",
@@ -88,10 +88,10 @@
         {
             "Command": "I want a sandwich for lunch",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
-            "Tree": "udef_q(x14,_meal_n_1(x14),pronoun_q(x3,pron(x3),_a_q(x8,[_sandwich_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
+            "Tree": "udef_q(x14,_dish_n_of(x14),pronoun_q(x3,pron(x3),_a_q(x8,[_sandwich_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "77afc584-776a-4a60-982f-d19758609532"
         }
     ],
-    "ElapsedTime": 7.70442
+    "ElapsedTime": 36.41272
 }

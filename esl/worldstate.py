@@ -49,9 +49,12 @@ def user_types():
     yield from ["user", "son1"]
 
 
+# Base level things that can be requested
+# If the user requests "lunch" ("I want lunch") it will be a single "meal" category
+# any specific food like "chicken" will be both that food and the meal category
 def requestable_concepts_by_sort(state):
+    # {ConceptOfThingThatCanBeRequested: (category, subcategory)}
     requestable_items = {ESLConcept("table"): ("table", "table"),
-                         ESLConcept("meal"): ("meal", "meal"),
                          ESLConcept("menu"): ("menu", "menu"),
                          ESLConcept("bill"): ("bill", "bill")}
 

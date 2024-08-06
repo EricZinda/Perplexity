@@ -161,7 +161,7 @@ def valid_player_request(context, state, x_objects, valid_concepts=None):
                           ESLConcept("table"),
                           ESLConcept("menu"),
                           ESLConcept("bill"),
-                          ESLConcept("meal"),
+                          ESLConcept("dish"),
                           ESLConcept("check")]
 
     for x_object in x_objects:
@@ -289,18 +289,10 @@ def thats_it_transformer():
     generic_entity_match = TransformerMatch(name_pattern="generic_entity",
                                    args_pattern=["x"])
 
-    that_match = TransformerMatch(name_pattern="_that_q_dem",
-                     args_pattern=["x", generic_entity_match, conjunction_be_match])
-
-    pron_match = TransformerMatch(name_pattern="pron",
-                                   args_pattern=["x"])
-
-    pronoun_q_match = TransformerMatch(name_pattern="pronoun_q",
-                     args_pattern=["x", pron_match, that_match],
-                     removed=["pronoun_q", "_be_v_id", "_that_q_dem"],
-                     production=conjunction_production)
-
-    return pronoun_q_match
+    return TransformerMatch(name_pattern="_that_q_dem",
+                            args_pattern=["x", generic_entity_match, conjunction_be_match],
+                            removed=["_be_v_id", "_that_q_dem"],
+                            production=conjunction_production)
 
 
 #                           │                                                   ┌── generic_entity(x8)
@@ -1267,7 +1259,7 @@ def for_check(context, state, x_what_list, x_for_list):
                         ['errorText', f"Host: That is not for both {'and'.join(x_what_list)}."])
                     return False, for_type, x_what_type
 
-        elif is_concept(item) and item.entails(context, state, ESLConcept("meal")):
+        elif is_concept(item) and item.entails(context, state, ESLConcept("dish")):
             # if 'for' refers to a course like "steak for my main course|dinner" it means "in order to obtain, gain, or acquire" (as in "a suit for alimony")
             #       If x is an instance, this effectively means "can be used for" which is true as long as the "for" is "main course/dinner/appetizer/etc"
             for_types.add("in order to obtain")
@@ -1376,10 +1368,26 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
 #   - equivalent to son's steak
 # So: if "what" is an instance we can see if it meets any of those scenarios in the both_bound_function
 # if it is a concept, criteria gets added to it below since we can't modify the values of arguments in the both_bound_function
+@Predication(vocabulary, names=["_for_p"])
+def _for_p_in_style(context, state, e_binding, x_what_binding, x_for_binding):
+    if not(x_for_binding.value is not None and is_user_type(x_for_binding.value)):
+        yield from _for_p_helper(in_style_predication_2, context, state, e_binding, x_what_binding, x_for_binding)
+
+
+# Only bother doing lift style for scenarios where we need things "together" as in "for my son and I"
 @Predication(vocabulary, names=["_for_p"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
-def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
+def _for_p_lift_style(context, state, e_binding, x_what_binding, x_for_binding):
+    if x_for_binding.value is not None and is_user_type(x_for_binding.value):
+        yield from _for_p_helper(lift_style_predication_2, context, state, e_binding, x_what_binding, x_for_binding)
+
+
+def _for_p_helper(predication_function, context, state, e_binding, x_what_binding, x_for_binding):
     def both_bound_function(x_what, x_for):
         nonlocal for_type, x_what_type
+        if not isinstance(x_what, tuple):
+            x_what = (x_what, )
+        if not isinstance(x_for, tuple):
+            x_for = (x_for, )
         result, for_type, x_what_type = for_check(context, state, x_what, x_for)
         return result
 
@@ -1399,7 +1407,7 @@ def _for_p(context, state, e_binding, x_what_binding, x_for_binding):
 
     # Make this lift_style so that "for my son and I" gets properly interpreted as "together"
     # at least as an alternative
-    for solution in lift_style_predication_2(context, state, x_what_binding, x_for_binding,
+    for solution in predication_function(context, state, x_what_binding, x_for_binding,
                                              both_bound_function,
                                              x_what_unbound,
                                              x_for_unbound):
@@ -1653,12 +1661,13 @@ def appos(context, state, e_binding, x_left_binding, x_right_binding):
 
 @Predication(vocabulary, names=["_yes_a_1", "_yup_a_1", "_sure_a_1", "_yeah_a_1"])
 def _yes_a_1(context, state, i_binding, h_binding):
-    yield state.record_operations(state.handle_world_event(context, ["yes"]))
-
+    for final_state in context.call(state, h_binding):
+        yield state.record_operations(state.handle_world_event(context, ["yes"]))
 
 @Predication(vocabulary, names=["_no_a_1", "_nope_a_1"])
 def _no_a_1(context, state, i_binding, h_binding):
-    yield state.record_operations(state.handle_world_event(context, ["no"]))
+    for final_state in context.call(state, h_binding):
+        yield final_state.record_operations(state.handle_world_event(context, ["no"]))
 
 
 # This is not a DELPH-IN predication. It is generated by transforms to phrases like "that will be all"
@@ -4856,7 +4865,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

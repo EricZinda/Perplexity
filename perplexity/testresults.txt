@@ -1,1 +1,8 @@
-{"FolderName": "esl", "TestName": "table", "TestID": "e300aab3-42ec-4e9a-9881-dba6b7fe84a5", "UserInput": "Hi, I'd love to have a table for 2, please", "InteractionResponse": "Yes, that is true.", "InteractionTree": "discourse(i2,greet(hi,i6),_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e13,x3,x20)))))"}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "082d7d3e-6087-44b3-907b-3b1c6f46348c", "UserInput": "What are your specials?", "InteractionResponse": "", "InteractionTree": ""}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "c2877f26-4c57-48b8-8e5f-f7809e671537", "UserInput": "Which two dishes are specials?", "InteractionResponse": "", "InteractionTree": ""}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "b4244624-885e-478c-9b76-7d2105388a57", "UserInput": "How much is the salad?", "InteractionResponse": "", "InteractionTree": ""}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "a28bfe6b-38b2-42e3-9726-52fe0bf3909d", "UserInput": "How much are the dishes?", "InteractionResponse": "", "InteractionTree": ""}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "aba36868-59d9-48ab-bff0-123bf1d37386", "UserInput": "I ordered the soup", "InteractionResponse": "", "InteractionTree": ""}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "e98f4773-fb13-45aa-8275-78b24b1c16fb", "UserInput": "How much are the dishes?", "InteractionResponse": "", "InteractionTree": ""}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "29f7481f-d6de-4e6d-a96d-b253cdc300b3", "UserInput": "I ordered 3 steaks", "InteractionResponse": "", "InteractionTree": ""}
+{"FolderName": "esl", "TestName": "ordering", "TestID": "d2cc5ff0-91ef-4b7a-887a-29cb8adac9a5", "UserInput": "soup and salad are vegetarian dishes", "InteractionResponse": "", "InteractionTree": ""}

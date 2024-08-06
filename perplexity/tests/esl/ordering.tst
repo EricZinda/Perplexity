@@ -60,7 +60,7 @@
         {
             "Command": "That's it",
             "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
-            "Tree": "no_standalone(e2)",
+            "Tree": "pronoun_q(x8,pron(x8),no_standalone(e2))",
             "Enabled": true,
             "ID": "e5661a8d-6376-418b-9f44-6a28a543592b"
         },
@@ -74,14 +74,14 @@
         {
             "Command": "That's it for the moment",
             "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
-            "Tree": "_the_q(x14,_moment_n_1(x14),no_standalone(e2))",
+            "Tree": "pronoun_q(x8,pron(x8),_the_q(x14,_moment_n_1(x14),no_standalone(e2)))",
             "Enabled": true,
             "ID": "6fa3c9a9-ea4c-4318-b5ed-fc9ef0de6d67"
         },
         {
             "Command": "Nope that's it",
             "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: Can I get you anything besides a steak, 2 waters, and a menu for you and a water and a menu for Johnny?",
-            "Tree": "_nope_a_1(i4,no_standalone(e2))",
+            "Tree": "_nope_a_1(i4,pronoun_q(x11,pron(x11),no_standalone(e2)))",
             "Enabled": true,
             "ID": "2fd65857-702b-4285-97d0-89b08decca67"
         },
@@ -116,7 +116,7 @@
         {
             "Command": "I want 2 steaks for lunch",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides 2 steaks for you?",
-            "Tree": "udef_q(x16,_meal_n_1(x16),pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), _for_p(e15,x8,x16), card(2,e14,x8)],_want_v_1(e2,x3,x8))))",
+            "Tree": "udef_q(x16,_dish_n_of(x16),pronoun_q(x3,pron(x3),udef_q(x8,[_steak_n_1(x8), _for_p(e15,x8,x16), card(2,e14,x8)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "53c1ba1a-7f52-4c70-b852-8e4fcf397e0a"
         },
@@ -151,7 +151,7 @@
         {
             "Command": "That's it for now",
             "Expected": "You realize that you'll need at least two dishes for the two of you.\nWaiter: What can I get you?",
-            "Tree": "def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],no_standalone(e2))",
+            "Tree": "pronoun_q(x8,pron(x8),def_implicit_q(x14,[time_n(x14), _now_a_1(e19,x14)],no_standalone(e2)))",
             "Enabled": true,
             "ID": "d6042a80-ea0d-4290-8e85-b09c16eb7b44"
         },
@@ -170,6 +170,13 @@
             "ID": "e64275f7-3d17-4b44-a40a-10600fddfdee"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "082d7d3e-6087-44b3-907b-3b1c6f46348c"
+        },
+        {
             "Command": "My son needs a vegetarian dish",
             "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),_a_q(x15,[_dish_n_of(x15,i21), _vegetarian_a_1(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_need_v_1(e2,x3,x15))))",
@@ -177,9 +184,16 @@
             "ID": "a7408b9b-7dc9-4d73-9006-0d37d4ffff0d"
         },
         {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "370f3289-cd51-4997-b346-4ac878ca28f7"
+        },
+        {
             "Command": "a vegetarian meal",
             "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x9,pron(x9),_a_q(x15,[_dish_n_of(x15,i21), _vegetarian_a_1(e20,x15)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_need_v_1(e2,x3,x15))))",
+            "Tree": "_a_q(x4,[_dish_n_of(x4), _vegetarian_a_1(e9,x4)],unknown(e2,x4))",
             "Enabled": true,
             "ID": "b20fd1cc-05ca-409d-810a-ab9284c0f9f7"
         },
@@ -810,11 +824,18 @@
             "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "02b1c558-1064-4bd4-9fa3-afb3828ff5f7"
+        },
+        {
             "Command": "Which dishes are specials?",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
-            "ID": "082d7d3e-6087-44b3-907b-3b1c6f46348c"
+            "ID": "a8713a17-5c05-4028-8c03-1602d9c014f0"
         },
         {
             "Command": "Which two dishes are specials?",
@@ -822,6 +843,13 @@
             "Tree": "_which_q(x5,[_dish_n_of(x5,i11), card(2,e10,x5)],udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e8e03861-59c8-4f05-b5db-c88d3646a572"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "c2877f26-4c57-48b8-8e5f-f7809e671537"
         },
         {
             "Command": "/new esl.tutorial.reset",
@@ -964,11 +992,25 @@
             "ID": "5d7616ff-0fe6-482a-a57b-67ea07f9cf72"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "b4244624-885e-478c-9b76-7d2105388a57"
+        },
+        {
             "Command": "How much are the dishes?",
             "Expected": "10 dollars\n7 dollars\n12 dollars\n8 dollars\n4 dollars\n3 dollars\nWaiter: What can I get you?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_dish_n_of(x3,i20),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
-            "ID": "b4244624-885e-478c-9b76-7d2105388a57"
+            "ID": "ae8dcc8e-316b-4754-8b00-81078a5f2c4b"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "a28bfe6b-38b2-42e3-9726-52fe0bf3909d"
         },
         {
             "Command": "I would like the salad",
@@ -1009,11 +1051,25 @@
             "ID": "c3b2b4ed-9938-468a-8567-250e7833d15f"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "aba36868-59d9-48ab-bff0-123bf1d37386"
+        },
+        {
             "Command": "How much are the dishes?",
             "Expected": "10 dollars\n7 dollars\n12 dollars\n8 dollars\n4 dollars\n3 dollars\nWaiter: Can I get you anything besides a salad and a soup for you?",
             "Tree": "which_q(x10,abstr_deg(x10),_the_q(x3,_dish_n_of(x3,i20),count(e14,x10,x5,udef_q(x5,generic_entity(x5),_be_v_id(e2,x3,x5)))))",
             "Enabled": true,
             "ID": "e13e91ec-7395-4c36-a509-3296ec3d427c"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "e98f4773-fb13-45aa-8275-78b24b1c16fb"
         },
         {
             "Command": "How much are the specials?",
@@ -1100,11 +1156,25 @@
             "ID": "326fcaba-7595-4143-9309-9142c06b5607"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "29f7481f-d6de-4e6d-a96d-b253cdc300b3"
+        },
+        {
             "Command": "soup and salad are vegetarian dishes",
             "Expected": "Yes, that is true.(there are more)",
             "Tree": "udef_q(x13,_salad_n_1(x13),udef_q(x18,[_dish_n_of(x18,i24), _vegetarian_a_1(e23,x18)],udef_q(x3,udef_q(x8,_soup_n_1(x8),_and_c(x3,x8,x13)),_be_v_id(e2,x3,x18))))",
             "Enabled": true,
             "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "d2cc5ff0-91ef-4b7a-887a-29cb8adac9a5"
         }
     ],
     "ElapsedTime": 538.4753

@@ -499,17 +499,22 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
 
         # Now see if it is a thing we can give the speaker
         concept_analysis = {}
-        _, instances_of_concepts = what.instances_of_concepts(context, state, things_we_know.keys())
-        for item in instances_of_concepts.items():
-            concept_category = things_we_know[item[0]][0]
-            concept_name = things_we_know[item[0]][1]
-            if concept_category not in concept_analysis:
-                concept_analysis[concept_category] = {}
+        if ESLConcept("dish").entails(context, state, what):
+            # This is something like "I want lunch", i.e. a high level representation of a meal
+            concept_analysis = {"meal": {"dish": 1}}
 
-            if concept_name not in concept_analysis[concept_category]:
-                concept_analysis[concept_category][concept_name] = 1
-            else:
-                concept_analysis[concept_category][concept_name] += 1
+        else:
+            _, instances_of_concepts = what.instances_of_concepts(context, state, things_we_know.keys())
+            for item in instances_of_concepts.items():
+                concept_category = things_we_know[item[0]][0]
+                concept_name = things_we_know[item[0]][1]
+                if concept_category not in concept_analysis:
+                    concept_analysis[concept_category] = {}
+
+                if concept_name not in concept_analysis[concept_category]:
+                    concept_analysis[concept_category][concept_name] = 1
+                else:
+                    concept_analysis[concept_category][concept_name] += 1
 
         # If we don't even know what this concept it, fail generally ("I want steel")
         if len(concept_analysis) == 0:
@@ -549,7 +554,8 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
                 if concept_name == "menu" or concept_name == "meal":
                     if "get_menu" not in task_dict:
                         task_dict["get_menu"] = [[]]
-                    task_dict["get_menu"][0].append(who_list)
+
+                    task_dict["get_menu"][0].extend([(x, ) for x in who_list])
 
                 elif concept_name == "dish":
                     if "order_food" not in task_dict:

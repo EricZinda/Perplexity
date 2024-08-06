@@ -479,6 +479,7 @@ class VariableStats(object):
         if any([x not in self.whole_group_unique_individuals for x in binding_value]):
             new_individuals = True
             self.whole_group_unique_individuals.update(binding_value)
+
         else:
             new_individuals = False
 
@@ -512,9 +513,18 @@ class VariableStats(object):
 
         # Now we actually compare this variable to the previous value to see what kind of plural type this might be
         if not is_instance_solution:
-            # If this variable is not an instance, we assume it meets the numeric criteria
+            # If this variable is not an instance, do the one sanity check we can do: if there are more concepts
+            # than the criteria allows, it can't possibly work
+
+            # Otherwise: we assume it meets the numeric criteria
             # and allow the group handler to finalize the decision
-            self.current_state = required_values_state
+            sanity_check = variable_criteria.meets_criteria(execution_context,
+                                                                     self.whole_group_unique_individuals)
+            if sanity_check in [CriteriaResult.fail_one, CriteriaResult.fail_all]:
+                self.current_state = sanity_check
+            else:
+                self.current_state = required_values_state
+
             return new_individuals, self.current_state
 
         else:

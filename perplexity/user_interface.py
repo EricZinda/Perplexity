@@ -66,7 +66,7 @@ class UserInterface(object):
         self.best_parses_file = best_parses_file
         self.autocorrect_file = get_autocorrect(world_name)
         self.max_holes = 14
-        self.timeout = 12 if timeout is None else timeout
+        self.timeout = 15 if timeout is None else timeout
         self.generate_all_parses = False
 
         if best_parses_file is not None and os.path.exists(best_parses_file):
@@ -350,10 +350,8 @@ class UserInterface(object):
         # Loop through each MRS and each tree that can be
         # generated from it...
         mrs_index = -1
+        tree_index = -1
         for mrs in mrs_generator:
-            if self.has_timed_out():
-                break
-
             mrs_index += 1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
                 mrs_record = self.new_mrs_record(mrs=mrs)
@@ -367,6 +365,10 @@ class UserInterface(object):
             mrs_record = self.new_mrs_record(mrs=mrs, unknown_words=unknown)
             self.interaction_record["Mrss"].append(mrs_record)
 
+            tree_index = -1
+            if self.has_timed_out():
+                break
+
             if len(mrs_record["UnknownWords"]) > 0:
                 unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", mrs_record["UnknownWords"]])
                 tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
@@ -378,7 +380,6 @@ class UserInterface(object):
             else:
                 # Loop through all the "official" DELPH-IN trees using the official predications
                 tree_generated = False
-                tree_index = -1
                 try:
                     for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
                         if self.has_timed_out():
@@ -575,18 +576,27 @@ class UserInterface(object):
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_interpretation_record()
         if chosen_record is None:
-            self.user_output("Sorry, did you mean to say something?")
+            error = ["tooComplicatedTimeout"] if self.has_timed_out() else ["noParse"]
+            no_chosen_record_error = ExecutionContext.blank_error(predication_index=0, error=error)
+            tree_record = TreeSolver.new_error_tree_record(error=no_chosen_record_error,
+                                                           response_generator=self.response_function(self.vocabulary,
+                                                                                                     self.message_function,
+                                                                                                     None, [],
+                                                                                                     no_chosen_record_error),
+                                                           tree_index=tree_index)
+            mrs_record["Interpretations"].append(tree_record)
+            self.evaluate_best_response(has_solution_group=False)
+            chosen_record = self.chosen_interpretation_record()
 
+        if isinstance(chosen_record["ResponseGenerator"], list) and len(chosen_record["ResponseGenerator"]) == 0:
+            response = None
         else:
-            if isinstance(chosen_record["ResponseGenerator"], list) and len(chosen_record["ResponseGenerator"]) == 0:
-                response = None
-            else:
-                response, _ = next(chosen_record["ResponseGenerator"])
+            response, _ = next(chosen_record["ResponseGenerator"])
 
-            if response is None:
-                response = "(no error specified)"
-            chosen_record["ResponseMessage"] += response
-            self.user_output(response)
+        if response is None:
+            response = "(no error specified)"
+        chosen_record["ResponseMessage"] += response
+        self.user_output(response)
 
     def generate_more_message(self, tree, solution_groups):
         if solution_groups is None:
@@ -1010,6 +1020,16 @@ def command_load(ui, arg):
     return True
 
 
+def command_timeout(ui, arg):
+    if arg is None or arg == "":
+        ui.timeout = 9999
+    else:
+        ui.timeout = int(arg)
+
+    ui.user_output(f"Timeout is now: {ui.timeout}")
+    return True
+
+
 def command_help(ui, arg):
     helpText = "\nCommands start with /:\n"
 
@@ -1167,6 +1187,9 @@ command_data = {
     "load": {"Function": command_load, "Category": "General",
              "Description": "Loads the current world state from the ./data/default directory. If given a path, loads from that path instead.",
              "Example": "/load"},
+    "timeout": {"Function": command_timeout, "Category": "General",
+                "Description": "Sets timeout time for a given phrase",
+                "Example": "/timeout or /timeout 20"},
     "show": {"Function": command_show, "Category": "Parsing",
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first trees",
              "Example": "/show or /show all or /show all, 1"},

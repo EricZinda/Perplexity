@@ -100,21 +100,21 @@
         },
         {
             "Command": "Can you cancel our order?",
-            "Expected": "Waiter: I have removed the order for you and the order for Johnny.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I have removed the order for you.\nWaiter: Can I get you anything besides a chicken for Johnny?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _cancel_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "1e6e3c7e-0959-4bac-93d6-bd5c19b6f7b6"
         },
         {
             "Command": "What is our order?",
-            "Expected": "Nothing",
+            "Expected": "chicken",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_order_n_of(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
             "Enabled": true,
             "ID": "eab39e04-d9a1-4a84-ab47-8a955355e66c"
         },
         {
             "Command": "Can Johnny cancel his order?",
-            "Expected": "Waiter: Sorry, I don't believe there is an order for Johnny.\nWaiter: What can I get you?",
+            "Expected": "Waiter: I have removed the order for Johnny.\nWaiter: What can I get you?",
             "Tree": "def_explicit_q(x12,pronoun_q(x18,pron(x18),[_order_n_of(x12), poss(e17,x12,x18)]),proper_q(x3,named(Johnny,x3),[event_replace(u99,e2,e11), _cancel_v_1_able(e2,x3,x12)]))",
             "Enabled": true,
             "ID": "8979dc57-2c4a-4a77-bbc2-6340ba4a94c6"
@@ -277,5 +277,5 @@
             "ID": "f037ab19-ceb5-4acd-972e-15dcadada49e"
         }
     ],
-    "ElapsedTime": 207.21009
+    "ElapsedTime": 91.0012
 }

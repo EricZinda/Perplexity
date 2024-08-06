@@ -73,11 +73,18 @@
             "ID": "117e2681-5df1-4694-8c3e-d32c36b73f8e"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "1fca3d70-25aa-47ee-9bee-c8966287c24f"
+        },
+        {
             "Command": "what is not soup",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))",
             "Enabled": true,
-            "ID": "1fca3d70-25aa-47ee-9bee-c8966287c24f"
+            "ID": "bc356b43-7b4e-445b-9dda-395f67999af3"
         },
         {
             "Command": "no",
@@ -92,6 +99,13 @@
             "Tree": "which_q(x3,thing(x3),neg(e10,udef_q(x9,_soup_n_1(x9),_be_v_id(e2,x3,x9))))",
             "Enabled": true,
             "ID": "29f3e374-7975-43f3-95b6-9c59327ddd34"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "102a0dfc-fe89-419d-bdd9-6e99158897ac"
         }
     ],
     "ElapsedTime": 133.69767

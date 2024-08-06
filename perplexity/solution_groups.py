@@ -19,6 +19,8 @@ def constraints_for_variable(context, state, variable_name):
             found_constraint = constraint
             break
 
+    groups_logger.debug(f"Constraints: {found_constraint}")
+
     return found_constraint
 
 # Used to create new GroupVariableValues() when predications need to create them at runtime
@@ -410,6 +412,8 @@ def optimize_determiner_infos(determiner_info_list_orig, this_sentence_force, wh
 
     # First combine the determiners into 1 if possible
     determiner_info_list = reduce_determiner_infos(determiner_info_list, this_sentence_force, wh_question_variable)
+
+    groups_logger.debug(f"Constraints: {determiner_info_list}")
 
     return determiner_info_list
 

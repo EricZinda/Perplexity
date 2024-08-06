@@ -11,28 +11,42 @@
         {
             "Command": "I want lunch",
             "Expected": "\nHost: How many in your party?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_dish_n_of(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "c797ea82-b742-4754-aeeb-828d3177f394"
+        },
+        {
             "Command": "we want lunch",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_dish_n_of(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "baab19f5-1eb9-4df2-8b46-555e8a1fde49"
+            "ID": "cb4da6ea-2249-4ad6-b36f-d3fd37268c6a"
         },
         {
             "Command": "we want a meal",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
-            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_meal_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_dish_n_of(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "6e93c706-5346-40ae-be78-b6dde3ad0557"
         },
         {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "ce0d0d74-e6d8-481d-a4d6-360228e1da01"
+        },
+        {
             "Command": "Do you have lunch?",
             "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_dish_n_of(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "cb2667bd-33df-4997-b699-d81f8e831c09"
         },
@@ -506,11 +520,18 @@
             "ID": "bf913033-2a48-41ff-bb83-c0299a893193"
         },
         {
+            "Command": "/timeout 30",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "569f6ea4-c643-4d90-9eca-eed604923296"
+        },
+        {
             "Command": "I'd like a table for my son and me",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,udef_q(x17,def_explicit_q(x22,pronoun_q(x27,pron(x27),[_son_n_of(x22,i32), poss(e26,x22,x27)]),pronoun_q(x34,pron(x34),_and_c(x17,x22,x34))),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
-            "ID": "569f6ea4-c643-4d90-9eca-eed604923296"
+            "ID": "ca8d7772-e10f-467e-ba50-51984f95a7bf"
         },
         {
             "Command": "I'd like a table for Johnny and me",
@@ -518,6 +539,13 @@
             "Tree": "_a_q(x11,udef_q(x17,proper_q(x22,named(Johnny,x22),pronoun_q(x28,pron(x28),_and_c(x17,x22,x28))),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "5e581819-0549-4c62-9d1e-b2bca7ab4d2b"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "83539c86-3a83-4eca-b36a-a7a08fc25b97"
         },
         {
             "Command": "/new esl.tutorial.reset",

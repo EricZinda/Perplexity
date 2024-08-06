@@ -42,7 +42,7 @@ def BooleanCompletionApproachResponseCleaner(response):
         response = response.strip()
 
         if "\n" in response:
-            pipelineLogger.debug(f"GPT: incorrect format{response}, ignoring: {response}")
+            gptLogger.debug(f"GPT: incorrect format{response}, ignoring: {response}")
             return None
 
         if response.lower() in ["yes", "true"]:
@@ -52,11 +52,11 @@ def BooleanCompletionApproachResponseCleaner(response):
             return "false"
 
         else:
-            pipelineLogger.debug(f"GPT: incorrect format, ignoring: {response}")
+            gptLogger.debug(f"GPT: incorrect format, ignoring: {response}")
             return None
 
     else:
-        pipelineLogger.debug(f"GPT: returned nothing, ignoring: {response}")
+        gptLogger.debug(f"GPT: returned nothing, ignoring: {response}")
         return None
 
 
@@ -72,7 +72,7 @@ def BooleanValidateResponse(approachResponseCleaner, phrase, response):
         replacement = replacement[0:-1]
 
     if phrase.lower() == replacement.lower():
-        pipelineLogger.debug(f"GPT: AI returned same string.")
+        gptLogger.debug(f"GPT: AI returned same string.")
         return False
 
     else:
@@ -111,7 +111,7 @@ def ResponseThread(user_id, predication, approachFunc, approachResponseCleaner, 
     global openAICacheMutex
     global latestFailures
 
-    pipelineLogger.debug(f"GPT: using user: {user_id}")
+    gptLogger.debug(f"GPT: using user: {user_id}")
 
     cacheKey = f"{approachFunc.__name__}({predication}): {StripPunctuation(phrase)}"
     try:
@@ -172,7 +172,7 @@ def StripPunctuation(phrase):
 
 
 def CaptureDebug(user_id, msg):
-    pipelineLogger.debug(msg)
+    gptLogger.debug(msg)
 
 
 def IntentionallyFailGPT(value):
@@ -202,7 +202,7 @@ def IsServiceDown():
     return len(latestFailures) > failureCountLimit
 
 
-pipelineLogger = logging.getLogger('Pipeline')
+gptLogger = logging.getLogger('ChatGPT')
 intentionallyFail = False
 openAICacheMutex = threading.Lock()
 

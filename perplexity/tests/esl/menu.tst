@@ -45,36 +45,36 @@
         },
         {
             "Command": "Do you have lunch?",
-            "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_meal_n_1(x8),_have_v_1(e2,x3,x8)))",
+            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_dish_n_of(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4ecab638-357a-43e6-b768-421b52437bdb"
         },
         {
             "Command": "We'd like to get lunch",
             "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\nWaiter: Oh, I already gave Johnny a menu. You can see that there is a menu in front of Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "udef_q(x14,_meal_n_1(x14),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x14)))",
+            "Tree": "udef_q(x14,_dish_n_of(x14),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x14)))",
             "Enabled": true,
             "ID": "5c5c0922-48a6-4624-86f1-c8c208447029"
         },
         {
             "Command": "I would like to get some lunch",
             "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "_some_q(x14,_meal_n_1(x14),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x14)))",
+            "Tree": "_some_q(x14,_dish_n_of(x14),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x14)))",
             "Enabled": true,
             "ID": "bcded24c-1553-41a5-8d2c-8a4ed64e7593"
         },
         {
             "Command": "I would like to order lunch",
             "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "udef_q(x14,_meal_n_1(x14),pronoun_q(x3,pron(x3),_order_v_1_request(e2,x3,x14)))",
+            "Tree": "udef_q(x14,_dish_n_of(x14),pronoun_q(x3,pron(x3),_order_v_1_request(e2,x3,x14)))",
             "Enabled": true,
             "ID": "bef48dc6-b626-4c92-9214-e8e73dda9ff1"
         },
         {
             "Command": "Could we have lunch?",
             "Expected": "Waiter: Oh, I already gave you a menu. You can see that there is a menu in front of you.\nWaiter: Oh, I already gave Johnny a menu. You can see that there is a menu in front of Johnny.\n\nThe menu says:\nSteak -- $10\nRoasted Chicken -- $7\nGrilled Salmon -- $12\n\nWaiter: What can I get you?",
-            "Tree": "udef_q(x11,_meal_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
+            "Tree": "udef_q(x11,_dish_n_of(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "c58523c4-4d4b-48e1-a384-5e0f76db6166"
         },
@@ -101,7 +101,7 @@
         },
         {
             "Command": "What isn't on the menu?",
-            "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
+            "Expected": "WRONG: pork\nsoup\nsalad\nsteak\nchicken\nsalmon\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),neg(e2,_the_q(x11,_menu_n_1(x11),_on_p_loc(e10,x3,x11))))",
             "Enabled": true,
             "ID": "cd3a359d-3058-4020-8b8e-58b7f48fea10"
