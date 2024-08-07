@@ -38,7 +38,7 @@
         },
         {
             "Command": "I would like a hamburger.  My son would like something vegetarian.",
-            "Expected": "I'm sorry, we don't serve that here. Get the menu to see what is available.<end>Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything besides a steak for you?",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.<end>Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "_a_q(x11,_hamburger_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))<end>pronoun_q(x9,pron(x9),_some_q(x18,[thing(x18), _vegetarian_a_1(e23,x18)],def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_want_v_1(e2,x3,x18))))",
             "Enabled": true,
             "ID": "dbc9df4c-0f8b-461b-8414-ab9c8c9210a7"

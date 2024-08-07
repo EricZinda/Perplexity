@@ -93,11 +93,25 @@
             "ID": "a035f8a2-2719-4aed-a601-b96f384c8353"
         },
         {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "da6923a2-db45-44d0-88a8-cf0e842f12c5"
+        },
+        {
             "Command": "I want a vegetarian dish for Johnny",
             "Expected": "Host: Sorry, I'm not sure which one you mean.\nWaiter: Can I get you anything besides a steak for you and a soup for Johnny?",
             "Tree": "proper_q(x16,named(Johnny,x16),pronoun_q(x3,pron(x3),_a_q(x8,[_dish_n_of(x8,i14), _for_p(e15,x8,x16), _vegetarian_a_1(e13,x8)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
-            "ID": "da6923a2-db45-44d0-88a8-cf0e842f12c5"
+            "ID": "4dfed0f9-2a16-497b-84f8-1c058055d68f"
+        },
+        {
+            "Command": "/timeout 15",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "69dee467-abd6-4d0b-9498-561bf596f83b"
         },
         {
             "Command": "no",
