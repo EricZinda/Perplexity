@@ -16,6 +16,13 @@
             "ID": "e3ce792d-b076-4fc4-b91d-7e13976d58f6"
         },
         {
+            "Command": "Could we have a vegetarian menu?",
+            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
+            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "bc1ce7b9-3611-48fa-9baf-5288edde5c55"
+        },
+        {
             "Command": "I want a menu",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_want_v_1(e2,x3,x8)))",
