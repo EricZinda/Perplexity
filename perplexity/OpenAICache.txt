@@ -41,5 +41,8 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is vegetarian pork either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is will either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is card either a food or a drink": "false",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is chicken menu either a food or a drink": "true"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is chicken menu either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is strawberry either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is juice either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is milk either a food or a drink": "true"
 }

@@ -130,6 +130,8 @@ New Language:
     Hi Pri:
         - Deal with open ended food
             - START HERE NEXT: Are there other scenarios that need to be tested?
+                - anything that calls satisfy_want or want_group_helper
+                handle_world_event(self, context, "user_wants")
 
         - object_to_store is broken now but is being used
         - 1 order of water doesn't work

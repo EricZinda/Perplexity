@@ -2,11 +2,32 @@
     "WorldName": "esl",
     "TestItems": [
         {
+            "Command": "Can I have a strawberry?",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "_a_q(x11,_strawberry_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
+        },
+        {
+            "Command": "Do you have coke?",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "udef_q(x11,[_sauce_n_1(x11), _hot_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
+            "Enabled": true,
+            "ID": "f0f571f6-0201-413a-a12d-ccc0d10bb50e"
+        },
+        {
+            "Command": "I'll take milk",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_milk_n_1(x8),_take_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "3f8d7bdb-0f04-4d10-9348-98d5c5230572"
+        },
+        {
             "Command": "Can I have hot sauce",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
             "Tree": "udef_q(x11,[_sauce_n_1(x11), _hot_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
-            "ID": "4f16594d-476c-4026-b82c-ea859bf4a489"
+            "ID": "757ef0fd-e385-4314-915e-0a4e4754d995"
         },
         {
             "Command": "my son wants a lemonade",

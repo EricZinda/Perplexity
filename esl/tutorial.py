@@ -2969,7 +2969,6 @@ def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_act
 
     else:
         # 'satisfy_want' understands ("user", "son") want (table) as meaning they want a table *together*
-        #
         actors = variable_group_values_to_list(x_actor_variable_group)
         task = ('satisfy_want', context, actors, [(ESLConcept("table"),)] * len(actors), 1)
         final_state = do_task(state_list[0].world_state_frame(), [task])
@@ -4859,13 +4858,14 @@ if __name__ == '__main__':
     # print(concept.instances(None, test_state))
 
     ShowLogging("Pipeline")
+    ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()
