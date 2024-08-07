@@ -2,7 +2,6 @@
 
 Big Improvements:
     - Get a better tree morpher
-    - Improve debug performance
     - better tree manipulations
 
 Bugs:

@@ -209,6 +209,32 @@ def get_all_metadata_from_function_file(decorated_function):
     return cached_files[python_meta_file]
 
 
+cached_function_file_times = {}
+cached_meta_file_times = {}
+
+
+def metadata_changed(decorated_function):
+    function_file = os.path.abspath(inspect.getfile(decorated_function))
+    if function_file not in cached_function_file_times:
+        function_file_time = os.path.getmtime(function_file)
+        cached_function_file_times[function_file] = function_file_time
+    else:
+        function_file_time = cached_function_file_times[function_file]
+
+    python_meta_file = function_file + ".plex"
+    if os.path.exists(python_meta_file):
+        if python_meta_file not in cached_meta_file_times:
+            meta_modification_time = os.path.getmtime(python_meta_file)
+            cached_meta_file_times[python_meta_file] = meta_modification_time
+        else:
+            meta_modification_time = cached_meta_file_times[python_meta_file]
+
+        return meta_modification_time <= function_file_time
+
+    else:
+        return True
+
+
 def meta_file_path(decorated_function):
     return os.path.abspath(inspect.getfile(decorated_function)) + ".plex"
 
@@ -501,13 +527,15 @@ def Predication(vocabulary,
 
         # Compare properties metadata with the cached version, if they are the same
         # don't bother checking again
-        metadata = get_saved_metadata(function_to_decorate)
-        check_declaration = metadata.get("Phrases", []) != phrases or metadata.get("Properties", []) != properties or metadata.get("PropertiesFrom") != (properties_from.__name__ if properties_from is not None else None)
-        if check_declaration:
-            properties_to_use = check_properties(vocabulary, function_to_decorate, names, metadata, phrases, properties, properties_from)
-            put_saved_metadata(function_to_decorate, metadata)
+        properties_to_use = None
+        if metadata_changed(function_to_decorate):
+            metadata = get_saved_metadata(function_to_decorate)
+            check_declaration = metadata.get("Phrases", []) != phrases or metadata.get("Properties", []) != properties or metadata.get("PropertiesFrom") != (properties_from.__name__ if properties_from is not None else None)
+            if check_declaration:
+                properties_to_use = check_properties(vocabulary, function_to_decorate, names, metadata, phrases, properties, properties_from)
+                put_saved_metadata(function_to_decorate, metadata)
 
-        else:
+        if not properties_to_use:
             properties_to_use = expand_properties(properties)
 
         # Attach properties to the function object as one way to make
@@ -644,7 +672,6 @@ class Vocabulary(object):
         # Give each module_function a unique number to identify it
         # which is len(type_list)
         self.next_implementation_id = 0
-
         self.synonyms = dict()
 
     def metadata(self, delphin_name, arg_types):
