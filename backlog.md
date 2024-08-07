@@ -128,9 +128,6 @@ Cleanup:
 New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
-        - USER: I would like to order vegetarian dish
-            Sorry, did you mean to say something?
-            Generate a better error
         - Deal with open ended food
             - START HERE NEXT: Are there other scenarios that need to be tested?
 

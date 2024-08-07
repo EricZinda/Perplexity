@@ -351,6 +351,7 @@ class UserInterface(object):
         # generated from it...
         mrs_index = -1
         tree_index = -1
+        mrs_record = None
         for mrs in mrs_generator:
             mrs_index += 1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
@@ -584,6 +585,10 @@ class UserInterface(object):
                                                                                                      None, [],
                                                                                                      no_chosen_record_error),
                                                            tree_index=tree_index)
+            if mrs_record is None:
+                mrs_record = self.new_mrs_record()
+                self.interaction_record["Mrss"].append(mrs_record)
+
             mrs_record["Interpretations"].append(tree_record)
             self.evaluate_best_response(has_solution_group=False)
             chosen_record = self.chosen_interpretation_record()

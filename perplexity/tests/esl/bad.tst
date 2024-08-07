@@ -9,11 +9,18 @@
             "ID": "69c95107-36db-4bca-b2b2-ee7d0a2a1a0e"
         },
         {
+            "Command": "I would like to order vegetarian dish",
+            "Expected": "Sorry, could you rephrase that?",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+        },
+        {
             "Command": "leving",
             "Expected": "I don't know the words: leving",
             "Tree": "None",
             "Enabled": true,
-            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+            "ID": "034639aa-773d-4d01-8d2d-cf1f8ace15b8"
         },
         {
             "Command": "I'll have the chicken and my son will have the soup and the salad",
