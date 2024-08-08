@@ -4,7 +4,7 @@ from esl import gtpyhop
 from esl.esl_planner_description import add_declarations, convert_to_english, oxford_comma
 from esl.worldstate import sort_of, AddRelOp, ResponseStateOp, location_of_type, has_type, \
     AddBillOp, DeleteRelOp, \
-    find_unused_item, ResetOrderAndBillOp, object_to_store, \
+    find_unused_item, ResetOrderAndBillOp, \
     find_unused_instances_from_concept, rel_subjects_greater_or_equal, noop_criteria, rel_objects, \
     ResetOrderAndBillForPersonOp, rel_subjects, ESLConcept, orderable_concepts, requestable_concepts_by_sort, \
     CancelOrderItemOp, rel_all_instances

@@ -1,6 +1,6 @@
 import numbers
-from esl.worldstate import instance_of_what, sort_of, rel_check, object_to_store, location_of_type, \
-    has_item_of_type, is_type, is_instance, rel_objects, all_instances_and_spec, all_specializations, \
+from esl.worldstate import instance_of_what, rel_check, location_of_type, \
+    has_item_of_type, is_type, is_instance, rel_objects, all_specializations, \
     instance_of_or_entails, ESLConcept
 from perplexity.predications import is_concept
 from perplexity.set_utilities import Measurement

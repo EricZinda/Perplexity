@@ -128,13 +128,10 @@ Cleanup:
 New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
-        - Deal with open ended food
-            - START HERE NEXT: Are there other scenarios that need to be tested?
-                - anything that calls satisfy_want or want_group_helper
-                handle_world_event(self, context, "user_wants")
-
-        - object_to_store is broken now but is being used
+        - veggies -->  I don't know the words: veggies
         - 1 order of water doesn't work
+        - my son's order is a glass of water --> nothing
+            -even when he just ordered it
         - order meal --> I don't think we have that here
             - order vegetarian --> Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.
             - Need to implement the rude "order x"

@@ -293,13 +293,6 @@ def instance_of_or_entails(context, state, thing, concept):
         return concept.instances(context, state, potential_instances=[thing])
 
 
-def instance_of_or_concept_name(state, thing):
-    if is_concept(thing):
-        return thing.concept_name
-    else:
-        return instance_of_what(state, thing)
-
-
 def instance_of_what(state, thing):
     for i in state.all_rel("instanceOf"):
         if i[0] == thing:
@@ -327,10 +320,6 @@ def location_of_type(state, who, where_type):
             return False
 
     return True
-
-
-def object_to_store(o):
-    return o.concept_name if is_concept(o) else o
 
 
 def store_to_object(state, s):
@@ -938,34 +927,6 @@ class WorldState(State):
             newState._world_state_frame =self._world_state_frame.add_to_e(event_name, key, value)
             return newState
 
-    def frames(self):
-        # Start with just the in scope frame
-        in_scope = in_scope_initialize(self)
-
-        # Concept of "thing" isn't declared anywhere but is always in scope
-        # Nothing has "user" but they are always in scope
-        everything_in_scope = set(["thing", "user"])
-        everything_in_scope.update(in_scope["InScopeInstances"])
-        everything_in_scope.update([x.concept_name for x in in_scope["InScopeConcepts"]])
-
-        # All generic concepts are always in scope
-        everything_in_scope.update(x[0] for x in self.all_rel("specializes"))
-
-        # Now include all relations any of these in scope things have
-        new_rels = {}
-        for item in self._rel.items():
-            if item[0] not in new_rels:
-                new_rels[item[0]] = []
-
-            for relation in item[1]:
-                if relation[0] in everything_in_scope and (relation[1] == "true" or relation[1] in everything_in_scope):
-                    new_rels[item[0]] += [relation]
-
-        yield WorldState(new_rels, copy.deepcopy(self.sys), "in_scope", self)
-
-        # Then yield everything
-        yield self
-
     def world_state_frame(self):
         if self._world_state_frame is None:
             return self
@@ -1118,7 +1079,7 @@ class WorldState(State):
 
     def food_in_order(self, order):
         # First figure out who this order belongs to
-        owner_list = [x for x in rel_subjects(self, "have", object_to_store(order))]
+        owner_list = [x for x in rel_subjects(self, "have", order)]
         owners = owner_list[0]
         if not isinstance(owners, (tuple, list)):
             owners = (owners, )

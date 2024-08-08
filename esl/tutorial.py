@@ -877,17 +877,12 @@ def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2):
     single_value_is_generic_entity_concept = x_binding_1.value is not None and \
                                              len(x_binding_1.value) == 1 and \
                                              is_concept(x_binding_1.value[0]) and \
-                                             x_binding_1.value[0].concept_name == "generic_entity"
+                                             x_binding_1.value[0].single_sort_name() == "generic_entity"
 
     # x_binding_1.value can be None if a transform removes a generic_entity() that sets its value
     if (single_value_is_generic_entity_concept or x_binding_1.value is None) and is_computer_type(x_binding_2.value):
         yield state.record_operations([RespondOperation(f"You are welcome!"),
                                        esl.esl_planner.get_reprompt_operation(state)])
-
-
-# @Predication(vocabulary, names=["_thank_v_1"])
-# def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2, h_for_what):
-#     yield from context.call(state, h_for_what)
 
 
 @Predication(vocabulary, names=["_thank+you_v_1"])
@@ -1135,21 +1130,6 @@ def compound(context, state, e_binding, x_left_binding, x_right_binding):
                     elif len(x_left_binding.value) == 1 and len(x_right_binding.value) == 1 and \
                             rel_check(state, x_left_binding.value[0], "isAdj", x_right_binding.value[0].single_sort_name()):
                         yield state
-
-            # # Records that predication index X is a disjunction
-            # context.set_disjunction()
-            #
-            # # Since these are *alternative* interpretations, they need to be in different lineages
-            # # just like if there were separate predication implementations yielding them
-            # interpretation_id = 0
-            # tree_lineage_binding = state.get_binding("tree_lineage")
-            # tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-            #
-            # for concept_state in adjective_default_concepts(x_right_binding.value[0].concept_name, context, state, x_left_binding):
-            #     yield concept_state.set_x("tree_lineage", (f"{tree_lineage}.1",))
-            #
-            # for instance_state in adjective_default_instances(x_right_binding.value[0].concept_name, context, state, x_left_binding):
-            #     yield instance_state.set_x("tree_lineage", (f"{tree_lineage}.2",))
 
     elif x_right_binding.value is not None:
         # x_left_binding.value is None, which means it was thing() and got reordered,
@@ -1533,7 +1513,9 @@ def _order_n_of(context, state, x_order_binding, x_of_what_binding):
 @Predication(vocabulary, names=["_glass_n_of"])
 def _glass_n_of(context, state, x_glass_binding, x_of_what_binding):
     def both_bound(order, of_what):
-        return sort_of(state, object_to_store(order), [object_to_store(of_what)])
+        # Unclear how to get this called
+        if False:
+            yield None
 
     def of_what_bound(of_what):
         if instance_of_or_entails(context, state, of_what, ESLConcept("water")):
@@ -2095,7 +2077,7 @@ class PastParticipleInstances:
 
         def unbound():
             for i in state.all_rel("isAdj"):
-                if object_to_store(i[1]) == self.lemma and is_instance(state, i[0]):
+                if i[1] == self.lemma and is_instance(state, i[0]):
                     yield i[0]
 
         yield from combinatorial_predication_1(context, state, x_target_binding,
@@ -2189,8 +2171,8 @@ def on_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
 
     def all_item1_on_item2(item2):
         for i in state.all_rel("on"):
-            if i[1] == object_to_store(item2):
-                yield store_to_object(state,i[0])
+            if i[1] == item2:
+                yield store_to_object(state, i[0])
 
     def all_item2_containing_item1(item1):
         for i in state.all_rel("on"):
@@ -4858,7 +4840,7 @@ if __name__ == '__main__':
     # print(concept.instances(None, test_state))
 
     ShowLogging("Pipeline")
-    ShowLogging("ChatGPT")
+    # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
     # ShowLogging("Generation")

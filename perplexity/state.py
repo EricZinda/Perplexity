@@ -97,9 +97,6 @@ class State(object):
     def __repr__(self):
         return ", ".join([str(variable_item[1]) for variable_item in self.variables.items() if variable_item[0] != 'tree'])
 
-    def frames(self):
-        yield self
-
     def world_state_frame(self):
         return self
 
