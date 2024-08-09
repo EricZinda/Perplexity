@@ -45,11 +45,18 @@
             "ID": "ce35b48f-d9ed-4583-b517-a03922365580"
         },
         {
+            "Command": "what are the daily specials",
+            "Expected": "the special are not daily.",
+            "Tree": "which_q(x3,thing(x3),_the_q(x8,[_special_n_1(x8), _daily_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "6ecd843f-4675-4ed9-8e10-1e06055609b8"
+        },
+        {
             "Command": "what are your specials",
             "Expected": "Waiter: Ah, I forgot to tell you about our specials. Today we have tomato soup, green salad, and smoked pork.\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),pronoun_q(x14,pron(x14),def_explicit_q(x8,[_special_n_1(x8), poss(e13,x8,x14)],_be_v_id(e2,x3,x8))))",
             "Enabled": true,
-            "ID": "6ecd843f-4675-4ed9-8e10-1e06055609b8"
+            "ID": "a14af68b-ad04-4d36-b287-6e2f9f5f5bcc"
         },
         {
             "Command": "what are your specials",

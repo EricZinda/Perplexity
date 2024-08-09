@@ -129,22 +129,13 @@ New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
 - Figure out what happened here
-        - Support
-            "I want to eat"
-            "I want to eat lunch"
-
-        - Figure out what happened here
-            --------------- 2024-07-14 23:05:57.968165 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-230557968143.backup
-            - USER: Could i have a table for two please.
-                Sorry, did you mean to say something?
-                Host: How can I help you today?
-
         - Need a cleaner ending that isn't so open ended since it just causes failures
-        - USER: What are the daily specials?
-            ('soup0',) is not the special
-            USER: cash is fine.
-                ('cash',) is not cash
-                Waiter: So, do you want to pay with cash or card?
+        USER: cash is fine.
+            ('cash',) is not cash
+            Waiter: So, do you want to pay with cash or card?
+            - Issue 1: (fixed) bad error message
+            - Issue 2: now it says cash is not fine
+                Waiter: What can I get you?
 
         - USER: Are there any vegetarian options?
             Yes.

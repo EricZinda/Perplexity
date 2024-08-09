@@ -9,11 +9,18 @@
             "ID": "69c95107-36db-4bca-b2b2-ee7d0a2a1a0e"
         },
         {
+            "Command": "Could i have a table for two please.",
+            "Expected": "Sorry, could you rephrase that?",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+        },
+        {
             "Command": "eat now",
             "Expected": "I'm not sure what that means.",
             "Tree": "def_implicit_q(x10,[time_n(x10), _now_a_1(e15,x10)],pronoun_q(x3,pron(x3),[loc_nonsp(e9,e2,x10), _eat_v_1(e2,x3,i8)]))",
             "Enabled": true,
-            "ID": "1bab67c2-65c4-47f9-8ad9-8b5b7747be02"
+            "ID": "cabcc762-37f2-4e67-a738-bb0d3120727b"
         },
         {
             "Command": "I would like to order vegetarian dish",
