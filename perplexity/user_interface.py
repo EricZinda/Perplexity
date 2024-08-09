@@ -373,7 +373,7 @@ class UserInterface(object):
             if len(mrs_record["UnknownWords"]) > 0:
                 unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", mrs_record["UnknownWords"]])
                 tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
-                                                               response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
+                                                               response_generator=self.response_function(self.state, self.vocabulary, self.message_function, None, [], unknown_words_error),
                                                                tree_index=0)
                 mrs_record["Interpretations"].append(tree_record)
                 self.evaluate_best_response(has_solution_group=False)
@@ -508,7 +508,7 @@ class UserInterface(object):
                                                     break
 
                                         except MessageException as error:
-                                            response = self.response_function(self.vocabulary, self.message_function, tree_info, [], [0, error.message_object()])
+                                            response = self.response_function(self.state, self.vocabulary, self.message_function, tree_info, [], [0, error.message_object()])
                                             tree_record["ResponseMessage"] += f"\n{str(response)}"
                                             operation_responses = []
                                             last_phrase_responses = []
@@ -559,7 +559,7 @@ class UserInterface(object):
                         if len(contingent) > 0 and not alternate_tree_generated:
                             unknown_words_error = ExecutionContext.blank_error(predication_index=0, error=["unknownWords", contingent])
                             tree_record = TreeSolver.new_error_tree_record(error=unknown_words_error,
-                                                                           response_generator=self.response_function(self.vocabulary, self.message_function, None, [], unknown_words_error),
+                                                                           response_generator=self.response_function(self.state, self.vocabulary, self.message_function, None, [], unknown_words_error),
                                                                            tree_index=tree_index)
                             mrs_record["Interpretations"].append(tree_record)
                             self.evaluate_best_response(has_solution_group=False)
@@ -567,7 +567,7 @@ class UserInterface(object):
                 except TooComplicatedError:
                     too_complicated_error = ExecutionContext.blank_error(predication_index=0, error=["tooComplicated"])
                     tree_record = TreeSolver.new_error_tree_record(error=too_complicated_error,
-                                                                   response_generator=self.response_function(self.vocabulary,
+                                                                   response_generator=self.response_function(self.state, self.vocabulary,
                                                                                                              self.message_function, None, [],
                                                                                                              too_complicated_error),
                                                                    tree_index=tree_index)
@@ -580,7 +580,7 @@ class UserInterface(object):
             error = ["tooComplicatedTimeout"] if self.has_timed_out() else ["noParse"]
             no_chosen_record_error = ExecutionContext.blank_error(predication_index=0, error=error)
             tree_record = TreeSolver.new_error_tree_record(error=no_chosen_record_error,
-                                                           response_generator=self.response_function(self.vocabulary,
+                                                           response_generator=self.response_function(self.state, self.vocabulary,
                                                                                                      self.message_function,
                                                                                                      None, [],
                                                                                                      no_chosen_record_error),

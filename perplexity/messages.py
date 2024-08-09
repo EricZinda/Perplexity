@@ -14,11 +14,11 @@ from perplexity.utilities import parse_predication_name, sentence_force, get_fun
 # BUT: It will only ever be called once
 # yields: response, solution_group that generated the response if it called next(solution_groups) to get one
 # May also call next(solution_groups) to see if there is more than one solution group
-def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, error):
+def respond_to_mrs_tree(state, vocabulary, message_function, tree, solution_groups, error):
     # Tree can be None if we didn't have one of the
     # words in the vocabulary
     if tree is None:
-        message = message_function(None, error)
+        message = message_function(state, None, error)
         yield message, None
         return
 
@@ -32,7 +32,7 @@ def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, err
             return
 
         else:
-            message = message_function(tree, error)
+            message = message_function(state, tree, error)
             yield message, None
             return
 
@@ -51,7 +51,7 @@ def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, err
                 return
 
             else:
-                message = message_function(tree, error)
+                message = message_function(state, tree, error)
                 yield message, None
                 return
 
@@ -81,10 +81,10 @@ def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, err
                             return
 
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
-                yield message_function(tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0]]]), solution_group_list
+                yield message_function(state, tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0]]]), solution_group_list
 
             else:
-                message = message_function(tree, error)
+                message = message_function(state, tree, error)
                 yield message, None
                 return
 
@@ -95,7 +95,7 @@ def respond_to_mrs_tree(vocabulary, message_function, tree, solution_groups, err
             yield None, next(solution_groups)
 
         else:
-            message = message_function(tree, error)
+            message = message_function(state, tree, error)
             yield message, None
 
 

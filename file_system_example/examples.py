@@ -18,7 +18,7 @@ from perplexity.utilities import ShowLogging
 def solve_and_respond(state, mrs):
     context = ExecutionContext(vocabulary)
     solutions = list(context.solve_mrs_tree(state, mrs))
-    return respond_to_mrs_tree(mrs, solutions, context.error())
+    return respond_to_mrs_tree(state, mrs, solutions, context.error())
 
 
 ##########################

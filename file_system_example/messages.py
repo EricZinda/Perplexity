@@ -11,7 +11,7 @@ from perplexity.utilities import parse_predication_name, sentence_force, at_leas
 
 # Generates all the responses that predications can
 # return when an error occurs
-def generate_message(tree_info, error_term):
+def generate_message(state, tree_info, error_term):
     # See if the system can handle converting the error
     # to a message first
     system_message = perplexity.messages.generate_message(tree_info, error_term)

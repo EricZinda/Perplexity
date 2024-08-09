@@ -177,6 +177,13 @@
             "ID": "5ba28507-ebf2-4738-b717-134c14c8cece"
         },
         {
+            "Command": "The salad is green",
+            "Expected": "Yes, that is true.(there are more)",
+            "Tree": "_the_q(x3,_salad_n_1(x3),_green_a_2(e2,x3))",
+            "Enabled": true,
+            "ID": "4faf6454-f0e9-42d0-8230-62df482171fe"
+        },
+        {
             "Command": "the pork is smoked",
             "Expected": "Yes, that is true.",
             "Tree": "_the_q(x3,_pork_n_1(x3),_smoke_v_1(e2,i8,x3))",

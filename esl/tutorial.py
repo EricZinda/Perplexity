@@ -3,7 +3,7 @@ import sys
 import itertools
 import perplexity.messages
 from esl.esl_planner import do_task
-from esl.esl_planner_description import convert_to_english
+from esl.esl_planner_description import convert_to_english, convert_to_english_list
 from perplexity.generation import english_for_delphin_variable
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication, GroupVariableValues
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
@@ -1729,7 +1729,10 @@ def handles_adjective(state, adjective_lemma):
 
 @Predication(vocabulary, names=["match_all_a"], matches_lemma_function=handles_adjective)
 def match_all_a_concepts(adjective_type, context, state, e_introduced, x_binding):
-    if not used_predicatively(context, state):
+    if used_predicatively(context, state):
+        yield from adjective_default_predicative_concepts(adjective_type, context, state, x_binding)
+
+    else:
         yield from adjective_default_concepts(adjective_type, context, state, x_binding)
 
 
@@ -1916,6 +1919,28 @@ def the_q(context, state, x_variable_binding, h_rstr, h_body):
     yield from quantifier_raw(context, state, x_variable_binding, h_rstr, h_body)
 
 
+def adjective_default_predicative_concepts(adjective_type, context, state, x_binding):
+    def bound_variable(value):
+        if rel_check(state, value, "isAdj", adjective_type):
+            return True
+
+        else:
+            # Give an "I did not know that!" error if the user makes a statement about themselves
+            # because we really don't know anything about them
+            if is_user_type(value):
+                context.report_error(["not_adj_about_player", value, adjective_type, "adjective_default_predicative_concepts"])
+            else:
+                context.report_error(["arg_is_not_value", x_binding.variable.name, adjective_type])
+
+    def unbound_variable_concepts():
+        # Phrases like "What is a green food?"
+        for item in rel_subjects(state, "isAdj", adjective_type):
+            if is_concept(item):
+                yield item
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable_concepts)
+
+
 def adjective_default_concepts(adjective_type, context, state, x_binding):
     def bound_variable(value):
         if is_concept(value):
@@ -1948,7 +1973,7 @@ def adjective_default_instances(adjective_type, context, state, x_binding):
                         return True
 
                 if not has_match:
-                    context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
+                    context.report_error(["not_adj", x_binding.variable.name, adjective_type])
                     return False
 
     def unbound_variable_instances():
@@ -4508,7 +4533,7 @@ def wh_question(context, state_list, binding_list):
 
 # Generates all the responses that predications can
 # return when an error occurs
-def generate_custom_message(tree_info, error_term):
+def generate_custom_message(state, tree_info, error_term):
     # error_term is of the form: [index, error] where "error" is another
     # list like: ["name", arg1, arg2, ...]. The first item is the error
     # constant (i.e. its name). What the args mean depends on the error
@@ -4550,18 +4575,20 @@ def generate_custom_message(tree_info, error_term):
     if error_constant == "notAThing":
         # english_for_delphin_variable() converts a variable name like 'x3' into the english words
         # that it represented in the MRS
-        arg2 = english_for_delphin_variable(error_predicate_index, arg2, tree_info)
-        return f"{arg1} is not {arg2}"
+        arg1 = convert_to_english_list(state, arg1)
+        return s("{*arg1} {'is':<arg1} not {arg2:@error_predicate_index}.", tree_info)
     if error_constant == "nothing_verb_x":
         return s("No {arg1} {*arg2} {a arg3}", tree_info, reverse_pronouns=True)
     if error_constant == "x_verb_nothing":
         return s("{arg1} {*arg2} nothing", tree_info, reverse_pronouns=True)
+    if error_constant == "not_adj_about_player":
+        return s("Ahh. I did not know that!")
     if error_constant == "not_adj":
-        return s("{arg1:@error_predicate_index} {'is':<arg1} not {*arg2}.", tree_info)
+        return s("{arg1:@error_predicate_index} {'is':<arg1} not {*arg2}.", tree_info, reverse_pronouns=True)
     if error_constant == "is_not":
-        return s("{arg1} is not {arg2}", tree_info)
+        return s("{arg1} is not {arg2}", tree_info, reverse_pronouns=True)
     if error_constant == "arg_is_not_value":
-        return s("{arg1} is not {*arg2}", tree_info)
+        return s("{arg1} {'is':<arg1} not {*arg2}", tree_info, reverse_pronouns=True)
     if error_constant == "notOn":
         return s("{arg1} is not on {arg2}", tree_info)
     if error_constant == "notWant":
@@ -4843,11 +4870,11 @@ if __name__ == '__main__':
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
-    # ShowLogging("Generation")
+    ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()
