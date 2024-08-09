@@ -2537,6 +2537,13 @@
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            "I want to eat": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
         },
         "Properties": [
@@ -2546,10 +2553,47 @@
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
             }
         ]
     },
     "_eat_v_1_command_group": {
         "PropertiesFrom": "_eat_v_1_command_group"
+    },
+    "_eat_v_1_request": {
+        "Phrases": {
+            "I want to eat": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "we want to eat lunch": {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_eat_v_1_request_group": {
+        "PropertiesFrom": "_eat_v_1_request_group"
     }
 }

@@ -2984,13 +2984,15 @@ def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_act
 
 
 @Predication(vocabulary,
-             names=["_eat_v_1"],
+             names=["_eat_v_1", "_eat_v_1_request"],
              phrases={
                 "eat now": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "let's eat": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                "let's eat": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I want to eat": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
-                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ],
              arguments=[("e",), ("x", ValueSize.all), ("i", ValueSize.exactly_one)]
              )
@@ -3011,7 +3013,7 @@ def _eat_v_1_command(context, state, e_introduced_binding, x_actor_binding, i_un
 
 
 @Predication(vocabulary,
-             names=["solution_group__eat_v_1"],
+             names=["solution_group__eat_v_1", "solution_group__eat_v_1_request"],
              properties_from=_eat_v_1_command)
 def _eat_v_1_command_group(context, state_list, e_list, x_actor_variable_group, i_unused_variable_group):
     # The only valid scenario is "let's eat" so ...
@@ -3030,6 +3032,31 @@ def _eat_v_1_command_group(context, state_list, e_list, x_actor_variable_group, 
         context.report_error(["formNotUnderstood"])
         return
 
+
+@Predication(vocabulary,
+             names=["_eat_v_1_request"],
+             phrases={
+                 "I want to eat":  {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "we want to eat lunch": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ])
+def _eat_v_1_request(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
+    if x_actor_binding.value is not None and len(x_actor_binding.value) == 1 and x_actor_binding.value[0] == "restaurant":
+        # Don't support "You want to eat"
+        context.report_error(["unexpected"])
+        return
+
+    # All other combinations are OK
+    yield from want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_object_binding)
+
+
+@Predication(vocabulary,
+             names=["solution_group__eat_v_1_request"],
+             properties_from=_eat_v_1_request)
+def _eat_v_1_request_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group):
+    yield from want_group_helper(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_what_variable_group)
 
 
 @Predication(vocabulary,

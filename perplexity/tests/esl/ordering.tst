@@ -16,11 +16,39 @@
             "ID": "e679d41e-af04-4f80-8192-5cbf08eb33af"
         },
         {
+            "Command": "I want to eat a steak",
+            "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a steak for you?",
+            "Tree": "_a_q(x11,_steak_n_1(x11),pronoun_q(x3,pron(x3),_eat_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "fb104052-8d82-44ab-bd0f-e4f4e54ca565"
+        },
+        {
+            "Command": "my son wants to eat soup",
+            "Expected": "Son: Wait, let's not order soup before we know how much it costs.\nWaiter: Can I get you anything besides a steak for you?",
+            "Tree": "pronoun_q(x9,pron(x9),udef_q(x18,_soup_n_1(x18),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_eat_v_1_request(e2,x3,x18))))",
+            "Enabled": true,
+            "ID": "59241cdb-9064-4e87-b1c4-79267672615a"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "c1681d6a-53da-4ae5-8b4e-2f1e29313a11"
+        },
+        {
+            "Command": "a table for 2",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "number_q(x10,card(2,x10,i16),_a_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
+            "Enabled": true,
+            "ID": "66a31486-44bc-4082-b8b8-315966971c33"
+        },
+        {
             "Command": "I will order the steak",
             "Expected": "Waiter: steak is an excellent choice!\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "fb104052-8d82-44ab-bd0f-e4f4e54ca565"
+            "ID": "dceb55ad-1632-4ba6-b201-020e04e26113"
         },
         {
             "Command": "We will order two waters",

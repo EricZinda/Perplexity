@@ -17,8 +17,8 @@
         },
         {
             "Command": "Could we have a vegetarian menu?",
-            "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
-            "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Expected": "WRONG: Host: Sorry, I don't think we have that here.",
+            "Tree": "_a_q(x11,[_menu_n_1(x11), _vegetarian_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "bc1ce7b9-3611-48fa-9baf-5288edde5c55"
         },
@@ -30,8 +30,22 @@
             "ID": "b500d164-d028-4510-9938-18d6fd2bf267"
         },
         {
-            "Command": "We'd both like a menu",
+            "Command": "I want to eat lunch",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything besides a menu for you?",
+            "Tree": "udef_q(x11,_dish_n_of(x11),pronoun_q(x3,pron(x3),_eat_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "db7bdc29-02fb-41fb-a0a8-269f2c0da6d7"
+        },
+        {
+            "Command": "we want to eat lunch",
             "Expected": "Waiter: You already ordered a menu for you\nWaiter: Oh, I forgot to give Johnny the menu! I'll get Johnny one right away.\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
+            "Tree": "udef_q(x11,_dish_n_of(x11),pronoun_q(x3,pron(x3),_eat_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "35de31fb-bf6d-425d-935b-b1c23e999c7a"
+        },
+        {
+            "Command": "We'd both like a menu",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: You already ordered a menu for Johnny\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
             "Tree": "_a_q(x12,_menu_n_1(x12),pronoun_q(x3,pron(x3),[_both_a_1(i9,e2), _want_v_1(e2,x3,x12)]))",
             "Enabled": true,
             "ID": "d30b2343-955a-4d2f-ade5-736c1cf2ff73"

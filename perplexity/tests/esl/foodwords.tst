@@ -2,6 +2,13 @@
     "WorldName": "esl",
     "TestItems": [
         {
+            "Command": "I want to eat a burger",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
+            "Tree": "_a_q(x11,_burger_n_1(x11),pronoun_q(x3,pron(x3),_eat_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "05683e71-1eca-4fa7-89cb-d6aca79119dd"
+        },
+        {
             "Command": "Can I have a strawberry?",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
             "Tree": "_a_q(x11,_strawberry_n_1(x11),pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
@@ -11,7 +18,7 @@
         {
             "Command": "Do you have coke?",
             "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
-            "Tree": "udef_q(x11,[_sauce_n_1(x11), _hot_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_coke_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f0f571f6-0201-413a-a12d-ccc0d10bb50e"
         },

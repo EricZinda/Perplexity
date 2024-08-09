@@ -9,13 +9,6 @@
             "ID": "0cb5995b-e3ae-44ab-93af-f94fbfc63c3a"
         },
         {
-            "Command": "I want lunch",
-            "Expected": "\nHost: How many in your party?",
-            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_dish_n_of(x8),_want_v_1(e2,x3,x8)))",
-            "Enabled": true,
-            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
-        },
-        {
             "Command": "/timeout",
             "Expected": "",
             "Tree": "",
@@ -56,6 +49,48 @@
             "Tree": "pronoun_q(x5,pron(x5),_eat_v_1(e2,x5,i9))",
             "Enabled": true,
             "ID": "632ad72d-0a73-4c39-8bac-b3300fb1db78"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "57e5bad7-8002-4ccd-a108-a2b704fe578f"
+        },
+        {
+            "Command": "I want to eat lunch",
+            "Expected": "\nHost: How many in your party?",
+            "Tree": "udef_q(x11,_dish_n_of(x11),pronoun_q(x3,pron(x3),_eat_v_1_request(e2,x3,x11)))",
+            "Enabled": true,
+            "ID": "db7bdc29-02fb-41fb-a0a8-269f2c0da6d7"
+        },
+        {
+            "Command": "/new esl.tutorial.reset",
+            "Expected": "",
+            "Tree": "None",
+            "Enabled": true,
+            "ID": "ffb803af-d65a-4620-a37b-03916f3d73fb"
+        },
+        {
+            "Command": "I want lunch",
+            "Expected": "\nHost: How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_dish_n_of(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "375f18ac-922c-4ae7-bd66-70452a880ca8"
+        },
+        {
+            "Command": "I want to eat",
+            "Expected": "\nHost: How many in your party?",
+            "Tree": "pronoun_q(x3,pron(x3),_eat_v_1_request(e2,x3,i11))",
+            "Enabled": true,
+            "ID": "d7ff6a08-d7f9-490e-a365-ad52d953196a"
+        },
+        {
+            "Command": "we want to eat",
+            "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x3,pron(x3),_eat_v_1_request(e2,x3,i11))",
+            "Enabled": true,
+            "ID": "94a7e695-bf8e-4229-a5d4-5ee4dba113ea"
         },
         {
             "Command": "/new esl.tutorial.reset",
