@@ -445,7 +445,9 @@ class UserInterface(object):
                                                                               current_tree_index=tree_index,
                                                                               target_tree_index=conjunct_tree_index if conjunct_tree_index is not None else self.run_tree_index,
                                                                               find_all_solution_groups=self.show_all_answers,
-                                                                              wh_phrase_variable=wh_phrase_variable):
+                                                                              wh_phrase_variable=wh_phrase_variable,
+                                                                              start_time=self.interaction_record["StartTime"],
+                                                                              timeout=self.timeout):
                                     mrs_record["Interpretations"].append(tree_record)
 
                                     solution_group_generator = tree_record["SolutionGroupGenerator"]

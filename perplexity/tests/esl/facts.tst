@@ -9,11 +9,18 @@
             "ID": "b337f508-a5fc-4bdf-aaed-84e701c86181"
         },
         {
+            "Command": "want food",
+            "Expected": "I do not want food",
+            "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_food_n_1(x8),_want_v_1(e2,x3,x8)))",
+            "Enabled": true,
+            "ID": "c3d69e0c-a5dd-4900-9ec4-17817e5f4fda"
+        },
+        {
             "Command": "salad is a vegetarian meal",
             "Expected": "Yes, that is true.",
             "Tree": "udef_q(x3,_salad_n_1(x3),_a_q(x8,[_dish_n_of(x8), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
             "Enabled": true,
-            "ID": "c3d69e0c-a5dd-4900-9ec4-17817e5f4fda"
+            "ID": "261277f2-240f-44f9-ad6d-3b0eda027319"
         },
         {
             "Command": "We are hungry!",

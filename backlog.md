@@ -129,22 +129,7 @@ New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
 - Figure out what happened here
-    --------------- 2024-07-14 22:59:51.468067 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-225951468041.backup
-    USER: We are hungry!
-    ('user',) is not we
-    Host: How can I help you today?
-    - (fixed) Problem 1: bad error text
-    - (fixed) Problem 2: If this is an adjective used predicatively ('x is vegetarian')
-        The user is stating a fact about something that we don't know
-        If it is about themselves, just say "I did not know that!"
-
         - Figure out what happened here
-            --------------- 2024-07-14 23:00:03.570115 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-230003570091.backup
-            USER: Want food
-            [4, ['notwant', 'want', ('restaurant',)], 0]
-
-            Host: How can I help you today?
-
             --------------- 2024-07-14 23:05:57.968165 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-230557968143.backup
             USER: Eat now
             ('today',) is not thing

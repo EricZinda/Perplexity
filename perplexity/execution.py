@@ -1,6 +1,8 @@
 import logging
 import queue
 import sys
+import time
+
 import perplexity.tree
 import perplexity.solution_groups
 from perplexity.set_utilities import product_stream
@@ -19,6 +21,11 @@ class MessageException(Exception):
         return [self.message_name] + self.message_args
 
 
+class TimeoutException(Exception):
+    def __init__(self):
+        pass
+
+
 def clear_error_when_yield_generator(context, generator):
     for next_value in generator:
         context.clear_error()
@@ -32,6 +39,8 @@ def clear_error_when_yield_generator(context, generator):
 class TreeSolver(object):
     def __init__(self, context):
         self._context = context
+        self._timeout = None
+        self._start_time = None
 
     @classmethod
     def create_top_level_solver(cls, vocabulary, scope_function, scope_init_function):
@@ -44,8 +53,10 @@ class TreeSolver(object):
     # and is consumed by the MRSLineage classes which break the solutions
     # into different solution sets
     class InterpretationSolver(object):
-        def __init__(self, execution_context):
+        def __init__(self, execution_context, timeout, start_time):
             self._context = execution_context
+            self._timeout = timeout
+            self._start_time = start_time
             self.vocabulary = self._context.vocabulary
 
             self._interpretation = None
@@ -59,6 +70,14 @@ class TreeSolver(object):
             self._solution_lineages = None
             self._last_solution_lineage = None
             self._variable_execution_data = {}
+
+        def has_timed_out(self):
+            if self._timeout is not None and self._start_time is not None and time.perf_counter() - self._start_time > self._timeout:
+                pipeline_logger.debug(f"Timed out.")
+                return True
+
+            else:
+                return False
 
         def interpretation(self):
             return self._interpretation
@@ -218,6 +237,9 @@ class TreeSolver(object):
             return self._variable_metadata.get(variable_name, {"ValueSize": perplexity.vocabulary.ValueSize.all})
 
         def call(self, state, term):
+            if self.has_timed_out():
+                raise TimeoutException
+
             # See if the term is actually a list
             # If so, we have a conjunction
             if isinstance(term, list):
@@ -478,10 +500,18 @@ class TreeSolver(object):
             if pipeline_logger.level == logging.DEBUG:
                 pipeline_logger.debug(f"Tree #{current_tree_index_final if current_tree_index is not None else 'unknown'}, interpretation #{current_interpretation if interpretation is None else 'unknown'}: '{func_list}'")
 
-            interpretation_solver = TreeSolver.InterpretationSolver(self._context)
+            interpretation_solver = TreeSolver.InterpretationSolver(self._context, self._timeout, self._start_time)
             lineage_generator = TreeSolver.MrsTreeLineageGenerator(interpretation_solver, state, tree_info, interpretation_dict)
             for solutions in lineage_generator:
                 yield interpretation_solver, solutions
+
+    def has_timed_out(self):
+        if self._timeout is not None and self._start_time is not None and time.perf_counter() - self._start_time > self._timeout:
+            pipeline_logger.debug(f"Timed out.")
+            return True
+
+        else:
+            return False
 
     # Main call to resolve a tree
     # Given a particular scope-resolved tree in tree_info,
@@ -497,44 +527,51 @@ class TreeSolver(object):
                        interpretation=None,
                        find_all_solution_groups=True,
                        wh_phrase_variable=None,
+                       timeout=None,
                        start_time=None):
+        self._timeout = timeout
+        self._start_time = start_time
         current_tree_index_recorded = 0 if current_tree_index is None else current_tree_index
 
         this_sentence_force = sentence_force(tree_info["Variables"])
-        for context, solutions in self.phase1(state, tree_info,
-                                              current_tree_index=current_tree_index,
-                                              target_interpretation_index=target_interpretation_index,
-                                              interpretation=interpretation):
-            if isinstance(solutions, dict):
-                # This is a record of a skipped true
-                yield solutions
-                continue
+        try:
+            for context, solutions in self.phase1(state, tree_info,
+                                                  current_tree_index=current_tree_index,
+                                                  target_interpretation_index=target_interpretation_index,
+                                                  interpretation=interpretation):
+                if isinstance(solutions, dict):
+                    # This is a record of a skipped true
+                    yield solutions
+                    continue
 
-            tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"],
-                                                     tree_index=current_tree_index_recorded,
-                                                     selected_conjuncts=tree_info.get("SelectedConjuncts", None))
+                tree_record = TreeSolver.new_tree_record(tree=tree_info["Tree"],
+                                                         tree_index=current_tree_index_recorded,
+                                                         selected_conjuncts=tree_info.get("SelectedConjuncts", None))
 
-            # solution_groups() should return an iterator that iterates *groups*
-            all_solution_groups = [] if find_all_solution_groups else None
-            tree_record["SolutionGroupGenerator"] = at_least_one_generator(
-                perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_solution_groups=all_solution_groups))
+                # solution_groups() should return an iterator that iterates *groups*
+                all_solution_groups = [] if find_all_solution_groups else None
+                tree_record["SolutionGroupGenerator"] = at_least_one_generator(
+                    perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_solution_groups=all_solution_groups))
 
-            tree_record["SolutionGroups"] = all_solution_groups
-            tree_record["Interpretation"] = ", ".join([f"{x.module}.{x.function}" for x in context.interpretation().values()])
+                tree_record["SolutionGroups"] = all_solution_groups
+                tree_record["Interpretation"] = ", ".join([f"{x.module}.{x.function}" for x in context.interpretation().values()])
 
-            # Collect any error that might have occurred from the first solution group
-            tree_record["Error"] = self._context.error()
-            if message_function is not None and response_function is not None:
-                tree_record["ResponseGenerator"] = at_least_one_generator(
-                    response_function(state, self._context.vocabulary, message_function, tree_info, tree_record["SolutionGroupGenerator"], tree_record["Error"]))
-            else:
-                tree_record["ResponseGenerator"] = None
+                # Collect any error that might have occurred from the first solution group
+                tree_record["Error"] = self._context.error()
+                if message_function is not None and response_function is not None:
+                    tree_record["ResponseGenerator"] = at_least_one_generator(
+                        response_function(state, self._context.vocabulary, message_function, tree_info, tree_record["SolutionGroupGenerator"], tree_record["Error"]))
+                else:
+                    tree_record["ResponseGenerator"] = None
 
-            tree_record["TreeIndex"] = current_tree_index_recorded
-            if pipeline_logger.level == logging.DEBUG:
-                pipeline_logger.debug(f"Returning tree_record for '{tree_info['Tree']}'")
+                tree_record["TreeIndex"] = current_tree_index_recorded
+                if pipeline_logger.level == logging.DEBUG:
+                    pipeline_logger.debug(f"Returning tree_record for '{tree_info['Tree']}'")
 
-            yield tree_record
+                yield tree_record
+
+        except TimeoutException:
+            pass
 
     def _mrs_tree_interpretations(self, tree_info, normalize=False):
         # Gather together all the interpretations for the predications

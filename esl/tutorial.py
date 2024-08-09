@@ -2363,7 +2363,7 @@ def want_v_1_helper(context, state, e_introduced_binding, x_actor_binding, x_obj
                 return True
 
         else:
-            context.report_error(["notwant", "want", x_actor])
+            context.report_error(["notWant", x_actor_binding.variable.name, x_object_binding.variable.name])
             return False
 
     def wanters_of_obj(x_object):
@@ -4592,7 +4592,7 @@ def generate_custom_message(state, tree_info, error_term):
     if error_constant == "notOn":
         return s("{arg1} is not on {arg2}", tree_info)
     if error_constant == "notWant":
-        return f"{arg1} does not want {arg2}"
+        return s("{arg1} {'do':<arg1} not want {arg2}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApplyArg":
         return s("{arg1} {'do':<arg1} not {*arg2} {arg3}", tree_info, reverse_pronouns=True)
     if error_constant == "verbDoesntApply":
