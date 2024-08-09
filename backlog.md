@@ -129,13 +129,20 @@ New Language:
     Don't try different scoping trees that are equivalent
     Hi Pri:
 - Figure out what happened here
+        - Support
+            "I want to eat"
+            "I want to eat lunch"
+
         - Figure out what happened here
             --------------- 2024-07-14 23:05:57.968165 - ip-10-0-0-74.ec2.internal@1013: Interface:REST-, AfterInteractionData: YTd1N2h1NHp5aGpseW01cXpsbQ==-230557968143.backup
-            USER: Eat now
-            ('today',) is not thing
-
-            Host: How can I help you today?
-
+USER: Eat now
+('today',) is not thing
+Host: How can I help you today?
+Issue 1: Eat is not a verb
+    - Scenarios:
+        "eat lunch"
+        etc.
+            Issue 2:
         - USER: Could i have a table for two please.
             Sorry, did you mean to say something?
             Host: How can I help you today?

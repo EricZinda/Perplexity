@@ -2521,5 +2521,35 @@
     "unknown_ignore": {},
     "_well_a_1": {},
     "_for_p_lift_style": {},
-    "_for_p_in_style": {}
+    "_for_p_in_style": {},
+    "_eat_v_1_command": {
+        "Phrases": {
+            "eat now": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            "let's eat": {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "comm",
+                "TENSE": "pres",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    },
+    "_eat_v_1_command_group": {
+        "PropertiesFrom": "_eat_v_1_command_group"
+    }
 }

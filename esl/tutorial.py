@@ -2984,6 +2984,55 @@ def _sit_v_down_able_group(context, state_list, e_introduced_binding_list, x_act
 
 
 @Predication(vocabulary,
+             names=["_eat_v_1"],
+             phrases={
+                "eat now": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "let's eat": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[
+                {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             ],
+             arguments=[("e",), ("x", ValueSize.all), ("i", ValueSize.exactly_one)]
+             )
+def _eat_v_1_command(context, state, e_introduced_binding, x_actor_binding, i_unused_binding):
+    def bound(val):
+        if is_user_type(val):
+            return True
+        else:
+            context.report_error(["unexpected"])
+            return False
+
+    def unbound():
+        context.report_error(["unexpected"])
+        if False:
+            yield None
+
+    yield from combinatorial_predication_1(context, state, x_actor_binding, bound, unbound)
+
+
+@Predication(vocabulary,
+             names=["solution_group__eat_v_1"],
+             properties_from=_eat_v_1_command)
+def _eat_v_1_command_group(context, state_list, e_list, x_actor_variable_group, i_unused_variable_group):
+    # The only valid scenario is "let's eat" so ...
+    actor_group_values = variable_group_values_to_list(x_actor_variable_group)
+    what_group_values = [(ESLConcept("dish"), )] * len(actor_group_values)
+    task = ('satisfy_want',
+            context,
+            actor_group_values,
+            what_group_values,
+            1)
+    final_state = do_task(state_list[0].world_state_frame(), [task])
+    if final_state:
+        yield [final_state]
+
+    else:
+        context.report_error(["formNotUnderstood"])
+        return
+
+
+
+@Predication(vocabulary,
              names=["_see_v_1_able"],
              phrases={
                 "Can I see a menu?":   {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},  # -> implied request

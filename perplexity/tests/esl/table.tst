@@ -51,6 +51,13 @@
             "ID": "cb2667bd-33df-4997-b699-d81f8e831c09"
         },
         {
+            "Command": "let's eat",
+            "Expected": "Waiter: You already ordered a menu for you\nWaiter: You already ordered a menu for Johnny\nWaiter: Can I get you anything besides a menu for you and a menu for Johnny?",
+            "Tree": "pronoun_q(x5,pron(x5),_eat_v_1(e2,x5,i9))",
+            "Enabled": true,
+            "ID": "632ad72d-0a73-4c39-8bac-b3300fb1db78"
+        },
+        {
             "Command": "/new esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
