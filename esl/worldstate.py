@@ -10,6 +10,7 @@ from perplexity.response import RespondOperation, get_reprompt_operation, ResetO
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.sstring import s
 from perplexity.state import State
+from perplexity.world_registry import LoadWorldOperation
 
 
 def in_scope_initialize(state):
@@ -1195,8 +1196,8 @@ class WorldState(State):
             if len(x) == 1:
                 x = x[0]
                 if x in ["cash"]:
-                    return [RespondOperation("Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n"),
-                            ResetOperation()]
+                    return [LoadWorldOperation("lobby"),
+                            RespondOperation("Waiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!", show_if_last_phrase=True)]
 
                 elif x in ["card", "card, credit"]:
                     return [RespondOperation("You reach into your pocket and realize you don’t have a credit card."),
@@ -1226,6 +1227,9 @@ class WorldState(State):
                     actors = [("user",)]
                     whats = [(table_concept,)]
                     return self.find_plan(context, [('satisfy_want', context, actors, whats, 1)])
+
+        if len(x) == 1 and x[0] == "quit":
+            return [LoadWorldOperation("lobby")]
 
         context.report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 

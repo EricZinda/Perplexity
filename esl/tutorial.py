@@ -866,6 +866,18 @@ def event_replace(context, state, u_ununused, e_new_binding, e_replaced_binding)
     yield state
 
 
+@Predication(vocabulary,
+             names=["_quit_v_1"],
+             phrases={
+                 "quit": {'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties=[{'SF': 'prop-or-ques', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}]
+             )
+def _quit_v_1(context, state, e_binding, i_binding_1, i_binding_2):
+    yield state.record_operations([LoadWorldOperation("lobby"),
+                                   RespondOperation("Thanks for playing!", show_if_last_phrase=True)])
+
+
 # @Predication(vocabulary,
 #              names=["_thank_v_1"],
 #              phrases={
@@ -1598,6 +1610,7 @@ def unknown(context, state, e_binding, x_binding):
         operations = state.handle_world_event(context, ("greeting", ))
     else:
         operations = state.handle_world_event(context, ["unknown", x_binding.value])
+
     if operations is not None:
         yield state.record_operations(operations)
 
@@ -2044,12 +2057,13 @@ def _start_v_over_able(context, state, e_introduced_binding, x_who_binding):
 
 
 class PastParticipleConcepts:
-    def __init__(self, predicate_name_list, lemma, function=None, arg1=None, arg2=None):
+    def __init__(self, predicate_name_list, lemma, function=None, arg1=None, arg2=None, only_attributive=False):
         self.predicate_name_list = predicate_name_list
         self.lemma = lemma
         self.function = function if function is not None else rel_subjects
         self.arg1 = arg1 if arg1 is not None else "isAdj"
         self.arg2 = arg2 if arg2 is not None else self.lemma
+        self.only_attributive = only_attributive
 
     def predicate_function(self, context, state, e_introduced_binding, x_actor_binding, x_target_binding):
         def bound(value):
@@ -2066,6 +2080,7 @@ class PastParticipleConcepts:
                 if is_type(state, i):
                     yield store_to_object(state, i)
 
+        term_used_predicatively = used_predicatively(context, state)
         for new_state in combinatorial_predication_1(context, state, x_target_binding,
                                                 bound,
                                                 unbound):
@@ -2076,7 +2091,11 @@ class PastParticipleConcepts:
                 # Add extra criteria to the concept to represent the past participle
                 x_object = new_value.add_criteria(self.function, self.arg1, self.arg2)
 
-                if used_predicatively(context, state):
+                if term_used_predicatively:
+                    if self.only_attributive:
+                        context.report_error(["formNotUnderstood"])
+                        return
+
                     # "The salmon is smoked" interpreted as a concept requires that there is at least one instance of
                     # "smoked salmom"
                     if len(x_object.instances(context, state)) == 0:
@@ -2114,7 +2133,7 @@ grilled = PastParticipleConcepts(["_grill_v_1"], "grilled")
 roasted = PastParticipleConcepts(["_roast_v_cause"], "roasted")
 smoked_concepts = PastParticipleConcepts(["_smoke_v_1"], "smoked")
 smoked_instances = PastParticipleInstances(["_smoke_v_1"], "smoked")
-ordered_concepts_attributive = PastParticipleConcepts(["_order_v_1"], "ordered", rel_object_with_rel, "ordered", None)
+ordered_concepts_attributive = PastParticipleConcepts(["_order_v_1"], "ordered", rel_object_with_rel, "ordered", None, only_attributive=True)
 
 
 @Predication(vocabulary,
@@ -4874,7 +4893,10 @@ error_priority_dict = {
 class EslEvents(object):
     def interaction_end(self, ui, interaction_records, last_phrase_response):
         if last_phrase_response == "":
-            ui.user_output(ui.state.get_reprompt())
+            return [(perplexity.response.ResponseLocation.last, ui.state.get_reprompt(return_first=False))]
+
+    def world_new(self):
+        return [(perplexity.response.ResponseLocation.first, "(Note: This game is designed to practice English: type in actual sentences you'd say in real life. If you get stuck, ask yourself what you would really say in the real world and type that.)\n\n" + "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?")]
 
 
 def ui(loading_info=None, file=None, user_output=None, debug_output=None):
@@ -4887,11 +4909,6 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
 
         if file is not None:
             loaded_state = load_world_state(file)
-
-        message = ""
-
-    else:
-        message = "(Note: This game is designed to practice English: type in actual sentences you'd say in real life. If you get stuck, ask yourself what you would really say in the real world and type that.)\n\n" + "You’re going to a restaurant with your son, Johnny, who is vegetarian and too scared to order by himself. Get a table and buy lunch for both of you. You have 20 dollars in cash.\nHost: Hello! How can I help you today?"
 
     vocabulary.synonyms = {
         "_item_n_of": "_thing_n_of-about",
@@ -4917,12 +4934,13 @@ def ui(loading_info=None, file=None, user_output=None, debug_output=None):
                         best_parses_file=best_parses_file,
                         events=EslEvents())
 
-    ui.user_output(message)
     return ui
 
 
 def hello_world():
     user_interface = ui()
+    user_interface.user_output(user_interface.output_sorted_responses(user_interface.events.world_new()))
+
     while user_interface:
         user_interface = user_interface.default_loop()
 
@@ -4932,7 +4950,7 @@ pipeline_logger = logging.getLogger('Pipeline')
 
 if __name__ == '__main__':
 
-    test_state = reset()
+    # test_state = reset()
 
     # for item in test_state.all_rel("isAdj"):
     #     if item[1] == "roast":
@@ -4942,15 +4960,15 @@ if __name__ == '__main__':
     # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
     # print(concept.instances(None, test_state))
 
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
-    ShowLogging("Generation")
+    # ShowLogging("Generation")
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

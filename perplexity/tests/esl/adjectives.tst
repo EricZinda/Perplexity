@@ -10,7 +10,7 @@
         },
         {
             "Command": "The soup is smoked",
-            "Expected": "the soup is not smoked.",
+            "Expected": "the soup is not smoked.\nHost: How can I help you today?",
             "Tree": "_the_q(x3,_soup_n_1(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "0494e3db-dfae-4a1f-aeeb-f08560e495b7"
@@ -59,7 +59,7 @@
         },
         {
             "Command": "I have roast chicken",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "udef_q(x14,_roast_n_1(x14),pronoun_q(x3,pron(x3),udef_q(x8,[_chicken_n_1(x8), compound(e13,x8,x14)],_have_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "c9ec4dad-55bc-4a0e-b6e9-8b0f4509850a"
@@ -108,14 +108,14 @@
         },
         {
             "Command": "I have a green salad",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_salad_n_1(x8), _green_a_2(e13,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "53adcedd-3198-4849-a66b-5d44ff7f04f5"
         },
         {
             "Command": "I have a tomato soup",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "udef_q(x14,_tomato_n_1(x14),pronoun_q(x3,pron(x3),_a_q(x8,[_soup_n_1(x8), compound(e13,x8,x14)],_have_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "20232d68-23ea-4832-b9e0-3404f288d7a3"
@@ -136,14 +136,14 @@
         },
         {
             "Command": "the salmon is grilled",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "_the_q(x3,_salmon_n_1(x3),_grill_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "53ba1fcf-81b1-4dc9-bca0-2735e71b1c93"
         },
         {
             "Command": "is the salmon grilled?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "_the_q(x3,_salmon_n_1(x3),_grill_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "ab1a2cce-d9ea-4f9d-917a-268f48cf72c9"
@@ -178,21 +178,21 @@
         },
         {
             "Command": "The salad is green",
-            "Expected": "Yes, that is true.(there are more)",
+            "Expected": "Yes, that is true.\n(there are more)\nWaiter: What can I get you?",
             "Tree": "_the_q(x3,_salad_n_1(x3),_green_a_2(e2,x3))",
             "Enabled": true,
             "ID": "4faf6454-f0e9-42d0-8230-62df482171fe"
         },
         {
             "Command": "the pork is smoked",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "_the_q(x3,_pork_n_1(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "06920d5c-cc03-437a-9924-b5af58233f3e"
         },
         {
             "Command": "is the pork smoked?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "_the_q(x3,_pork_n_1(x3),_smoke_v_1(e2,i8,x3))",
             "Enabled": true,
             "ID": "81ff3323-9450-4546-9bd0-f07f2156fcab"
@@ -241,14 +241,14 @@
         },
         {
             "Command": "the chicken is roasted",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "_the_q(x3,_chicken_n_1(x3),_roast_v_cause(e2,i8,x3))",
             "Enabled": true,
             "ID": "d7de34b3-d2b0-45f9-81a9-464b49dfdad7"
         },
         {
             "Command": "is the chicken roasted?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: Can I get you anything besides a salmon for you?",
             "Tree": "_the_q(x3,_chicken_n_1(x3),_roast_v_cause(e2,i8,x3))",
             "Enabled": true,
             "ID": "488094e5-e8d5-4eae-94f0-76d6bfbfec8c"
@@ -289,5 +289,5 @@
             "ID": "2b6c9b55-5f34-4896-9b58-47086f4e32b9"
         }
     ],
-    "ElapsedTime": 32.5297
+    "ElapsedTime": 36.70538
 }

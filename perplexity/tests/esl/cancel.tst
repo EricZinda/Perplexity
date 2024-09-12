@@ -241,7 +241,7 @@
         },
         {
             "Command": "what did I order?",
-            "Expected": "water",
+            "Expected": "water\nWaiter: Can I get you anything besides a water for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "db9d83d4-58fa-4fb9-9023-327381a75586"
@@ -346,7 +346,7 @@
         },
         {
             "Command": "I ordered a steak",
-            "Expected": "a steak is not ordered.",
+            "Expected": "a steak is not ordered.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "3e4874e5-bf9c-4597-83b0-7aafafd0a21e"

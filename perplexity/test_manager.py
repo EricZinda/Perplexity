@@ -6,7 +6,8 @@ import sys
 import time
 import traceback
 import uuid
-from perplexity.utilities import module_name, import_function_from_names, running_under_debugger
+from perplexity.utilities import module_name, import_function_from_names, running_under_debugger, \
+    output_interaction_records
 from perplexity.world_registry import world_information
 
 
@@ -86,7 +87,10 @@ class TestIterator(object):
                     if test_item["Command"].startswith("/new") or test_item["Command"].startswith("/reset"):
                         self.test_manager.record_session_data("LastTestResetIndex", current_index)
 
+                new_world_name = test_item["NewWorldName"] if "NewWorldName" in test_item else None
                 yield test_item
+                if new_world_name is not None:
+                    self.world_name = new_world_name
 
     def test_from_id(self, id):
         for item_index in range(0, len(self.test["TestItems"])):
@@ -133,7 +137,9 @@ class TestFolderIterator(object):
                 self.world_name = self.test_iterator.world_name
                 self.resume = False
                 testStartTime = time.perf_counter()
-                yield from self.test_iterator
+                for item in self.test_iterator:
+                    self.world_name = self.test_iterator.world_name
+                    yield item
                 self.resume = self.test_iterator.resume
                 elapsed = round(time.perf_counter() - testStartTime, 5)
                 if self.record_time:
@@ -175,10 +181,6 @@ class TestManager(object):
         print("\n**** Begin Testing...\n")
         testItemStartTime = time.perf_counter()
         test_ui = None
-        # conjunct_input = None
-        # conjunct_mrs_index = None
-        # conjunct_tree_index = None
-        # next_conjuncts = None
         for test_item in test_iterator:
             if test_iterator.world_name != self.current_world_name or test_ui is None:
                 # World changed, load the new world
@@ -186,32 +188,19 @@ class TestManager(object):
                 if world_info is None:
                     print(f"World {test_iterator.world_name} is not registered as a world")
                     return
+
                 else:
                     test_ui_function = import_function_from_names(world_info["WorldModule"], world_info["WorldUIFunction"])
                     test_ui = test_ui_function()
                     self.current_world_name = test_iterator.world_name
 
             try:
+                # Run the actual test now
                 print(f"\nTest: {test_item['Command']}")
-
                 itemStartTime = time.perf_counter()
                 interaction_records = test_ui.interact_once_across_conjunctions(test_item["Command"])
                 elapsed = round(time.perf_counter() - itemStartTime, 5)
                 logger.debug(f"Test timing: {elapsed}")
-
-                # We currently only support testing the second conjunct of the last phrase in an interaction
-                record = test_ui.chosen_interpretation_record()
-                conjunct_input = test_ui.user_input
-                if record is not None and "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None and record["SelectedConjuncts"][0] == 1:
-                    # This phrase generated conjuncts, remember them
-                    next_conjuncts = [1]
-                    conjunct_mrs_index = test_ui.interaction_record["ChosenMrsIndex"]
-                    conjunct_tree_index = test_ui.interaction_record["Mrss"][test_ui.interaction_record["ChosenMrsIndex"]]["Interpretations"][test_ui.interaction_record["ChosenInterpretationIndex"]]["TreeIndex"]
-
-                else:
-                    conjunct_mrs_index = None
-                    conjunct_tree_index = None
-                    next_conjuncts = None
 
                 interaction_response, interaction_tree, result = self.get_result_from_interaction_records(test_iterator, test_item, interaction_records)
 
@@ -241,6 +230,11 @@ class TestManager(object):
                         if not self.resolve_result(test_iterator, test_item, interaction_response, interaction_tree):
                             print(f"Breaking during {test_iterator.test_folder}:{test_iterator.test_name} -> TestID: {test_item['ID']}")
                             break
+
+            if test_ui.new_ui is not None:
+                # the world launched a different world, switch to it
+                test_ui = test_ui.new_ui
+                self.current_world_name = test_ui.world_name
 
         elapsed = round(time.perf_counter() - testItemStartTime, 5)
         self.final_ui = test_ui
@@ -320,22 +314,27 @@ class TestManager(object):
             else:
                 print(f"'{answer}' is not a valid option")
 
-    def get_result_from_interaction_records(self, test_iterator, test_item, interaction_records):
-        interaction_responses = []
+    def combine_interaction_records(self, interaction_records):
+        user_inputs = []
         interaction_trees = []
-        last_phrase_response = ""
+        new_world_name = None
         for interaction_mrs_record in interaction_records:
-            interaction_response, interaction_tree, last_phrase_response = self.get_result_from_single_record(test_iterator, test_item, interaction_mrs_record)
-            interaction_responses.append(interaction_response)
+            interaction_response, interaction_tree, last_phrase_response, new_world_created = self.get_result_from_single_record(interaction_mrs_record)
+            if new_world_created:
+                new_world_name = new_world_created
+            user_inputs.append(interaction_mrs_record["UserInput"])
             interaction_trees.append(interaction_tree)
 
-        interaction_responses_string = "<end>".join([str(x) for x in interaction_responses])
-        if last_phrase_response != "":
-            interaction_responses_string += "\n" + last_phrase_response
+        interaction_user_input = "<end>".join([str(x) for x in user_inputs])
         interaction_trees_string = "<end>".join([str(x) for x in interaction_trees])
+        interaction_responses_string = output_interaction_records(interaction_records)
+        return interaction_user_input, interaction_responses_string, interaction_trees_string, new_world_name
+
+    def get_result_from_interaction_records(self, test_iterator, test_item, interaction_records):
+        interaction_user_input_string, interaction_responses_string, interaction_trees_string, new_world_name = self.combine_interaction_records(interaction_records)
         return interaction_responses_string, interaction_trees_string, self.get_prompt(test_iterator, test_item, interaction_responses_string, interaction_trees_string)
 
-    def get_result_from_single_record(self, test_iterator, test_item, interaction_mrs_record):
+    def get_result_from_single_record(self, interaction_mrs_record):
         chosen_mrs_index = interaction_mrs_record["ChosenMrsIndex"]
         chosen_interpretation_index = interaction_mrs_record["ChosenInterpretationIndex"]
         interaction_record = interaction_mrs_record["Mrss"][chosen_mrs_index]["Interpretations"][
@@ -343,7 +342,8 @@ class TestManager(object):
         interaction_response = interaction_record["ResponseMessage"] if interaction_record is not None else None
         interaction_tree = interaction_record["Tree"] if interaction_record is not None else None
         last_phrase_response = interaction_record["LastPhraseResponse"] if "LastPhraseResponse" in interaction_record else ""
-        return interaction_response, interaction_tree, last_phrase_response
+        new_world_created = "NewWorldName" in interaction_record and interaction_record["NewWorldName"]
+        return interaction_response, interaction_tree, last_phrase_response, new_world_created
 
     def get_prompt(self, test_iterator, test_item, interaction_response, interaction_tree):
         prompt = None
@@ -453,21 +453,18 @@ class TestManager(object):
     def _add_to_test(self, test, interaction_records):
         if interaction_records is not None:
             test_items = test["TestItems"]
-            for interaction_record in interaction_records:
-                chosen_mrs_index = interaction_record["ChosenMrsIndex"]
-                chosen_interpretation_index = interaction_record["ChosenInterpretationIndex"]
-                tree_record = interaction_record["Mrss"][chosen_mrs_index]["Interpretations"][chosen_interpretation_index] if chosen_mrs_index is not None and chosen_interpretation_index is not None else None
-                if "SelectedConjuncts" in tree_record and tree_record["SelectedConjuncts"] is not None and tree_record["SelectedConjuncts"][0] > 0:
-                    command = "/next_conjuct"
-                else:
-                    command = interaction_record["UserInput"]
-
-                test_items.append({"Command": command,
-                                   "Expected": tree_record["ResponseMessage"] if tree_record is not None else None,
-                                   "Tree": str(tree_record["Tree"] if tree_record is not None else None),
-                                   "Enabled": True,
-                                   "ID": str(uuid.uuid4())
-                                   })
+            for interaction_record_list in interaction_records:
+                # Every interaction could be a list of records due to conjunctions or multiple phrases
+                interaction_user_input_string, interaction_responses_string, interaction_trees_string, new_world_name = self.combine_interaction_records(interaction_record_list)
+                new_test_item = {"Command": interaction_user_input_string,
+                                 "Expected": interaction_responses_string,
+                                 "Tree": interaction_trees_string,
+                                 "Enabled": True,
+                                 "ID": str(uuid.uuid4())
+                                 }
+                if new_world_name is not None:
+                    new_test_item["NewWorldName"] = new_world_name
+                test_items.append(new_test_item)
 
     # Used to hold arbitrary information about the
     # session, across runs

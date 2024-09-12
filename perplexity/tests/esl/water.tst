@@ -31,14 +31,14 @@
         },
         {
             "Command": "I have water",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_water_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "941cf9c7-5b82-4e83-8f12-8d3317c09486"
         },
         {
             "Command": "my son has water",
-            "Expected": "son do not have water",
+            "Expected": "son do not have water\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_water_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_have_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "cb15454a-2a0f-4080-a4f2-654ad1524068"
@@ -59,7 +59,7 @@
         },
         {
             "Command": "my son has water",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x15,_water_n_1(x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_have_v_1(e2,x3,x15))))",
             "Enabled": true,
             "ID": "1d51edd0-6092-45bb-9141-d073f4e59aca"
@@ -93,5 +93,5 @@
             "ID": "fb5fb222-b8d0-4558-b3e5-26edf1e9366c"
         }
     ],
-    "ElapsedTime": 8.78968
+    "ElapsedTime": 16.18451
 }

@@ -1,0 +1,22 @@
+{
+    "_restart_v_1": {
+        "Phrases": {
+            "restart": {
+                "SF": "prop-or-ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        },
+        "Properties": [
+            {
+                "SF": "prop-or-ques",
+                "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            }
+        ]
+    }
+}

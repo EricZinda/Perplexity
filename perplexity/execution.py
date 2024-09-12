@@ -72,6 +72,9 @@ class TreeSolver(object):
             self._variable_execution_data = {}
 
         def has_timed_out(self):
+            if perplexity.utilities.running_under_debugger():
+                return False
+
             if self._timeout is not None and self._start_time is not None and time.perf_counter() - self._start_time > self._timeout:
                 pipeline_logger.debug(f"Timed out.")
                 return True
@@ -506,6 +509,9 @@ class TreeSolver(object):
                 yield interpretation_solver, solutions
 
     def has_timed_out(self):
+        if perplexity.utilities.running_under_debugger():
+            return False
+
         if self._timeout is not None and self._start_time is not None and time.perf_counter() - self._start_time > self._timeout:
             pipeline_logger.debug(f"Timed out.")
             return True

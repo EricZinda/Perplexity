@@ -1,0 +1,7 @@
+{
+ "[ TOP: h0 INDEX: e2 [ e SF: prop ] RELS: < [ unknown LBL: h1 ARG: x4 [ x PERS: 3 NUM: sg ] ARG0: e2 ] [ udef_q LBL: h5 ARG0: x4 RSTR: h6 BODY: h7 ] [ _restart_n_1 LBL: h8 ARG0: x4 ] > HCONS: < h0 qeq h1 h6 qeq h8 > ]": {
+  "Phrase": "restart",
+  "MRSIndex": 1
+ },
+ "timestamp": "67db7f2e-17a5-4b3a-a904-f4a68d3d403c"
+}

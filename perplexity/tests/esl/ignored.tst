@@ -10,14 +10,14 @@
         },
         {
             "Command": "Hi!",
-            "Expected": "Hello!",
+            "Expected": "Hello!\nHost: How can I help you today?",
             "Tree": "proper_q(x4,named(Hawaii,x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "5a55771f-2f05-4c41-b73e-b65a85145b1b"
         },
         {
             "Command": "Hello!",
-            "Expected": "Hello!",
+            "Expected": "Hello!\nHost: How can I help you today?",
             "Tree": "proper_q(x4,named(Hawaii,x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "b00d2816-95d2-4e45-8340-636658ee6264"
@@ -79,5 +79,5 @@
             "ID": "0ec0db9a-43f5-4e32-b381-51246200830a"
         }
     ],
-    "ElapsedTime": 7.68568
+    "ElapsedTime": 7.22878
 }

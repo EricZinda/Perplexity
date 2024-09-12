@@ -101,14 +101,14 @@
         },
         {
             "Command": "what did I order?",
-            "Expected": "soup",
+            "Expected": "soup\nWaiter: Can I get you anything besides a soup for you and a soup for Johnny?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "b52783ed-8747-47bb-8887-781bdd132798"
         },
         {
             "Command": "what did my son order?",
-            "Expected": "soup",
+            "Expected": "soup\nWaiter: Can I get you anything besides a soup for you and a soup for Johnny?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "8424d121-6c81-4bb3-a987-fb38d9335b73"
@@ -122,25 +122,25 @@
         },
         {
             "Command": "which dish do I have?",
-            "Expected": "soup",
+            "Expected": "soup\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ecb032dd-3be2-4c8e-9b1c-1117b72f0554"
         },
         {
             "Command": "I have the soup",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_soup_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "348f9121-461a-4097-b2e3-f4411106f565"
         },
         {
             "Command": "which dish does my son have?",
-            "Expected": "soup",
+            "Expected": "soup\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),def_explicit_q(x3,pronoun_q(x15,pron(x15),[_son_n_of(x3,i20), poss(e14,x3,x15)]),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ea373e12-c8aa-4509-b489-bfaa87c1c6b5"
         }
     ],
-    "ElapsedTime": 20.02843
+    "ElapsedTime": 20.87411
 }

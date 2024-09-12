@@ -59,7 +59,7 @@
         },
         {
             "Command": "what did I order?",
-            "Expected": "you ordered nothing",
+            "Expected": "you ordered nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "a9aa1ba0-ec68-43bf-b2bc-06e075675499"
@@ -149,5 +149,5 @@
             "ID": "d10b2fbf-eb59-4ce7-ba36-f82fc3d0fef8"
         }
     ],
-    "ElapsedTime": 7.63429
+    "ElapsedTime": 14.12798
 }

@@ -32,8 +32,8 @@
         {
             "Command": "what did we order",
             "Expected": [
-                "chicken\nsteak",
-                "steak\nchicken"
+                "chicken\nsteak\nWaiter: Can I get you anything besides a steak for Johnny and a chicken for you?",
+                "steak\nchicken\nWaiter: Can I get you anything besides a steak for Johnny and a chicken for you?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -63,8 +63,8 @@
         {
             "Command": "What is Johnny's order?",
             "Expected": [
-                "steak\nchicken",
-                "chicken\nsteak"
+                "chicken\nsteak\nWaiter: Can I get you anything besides a steak and a chicken for Johnny?",
+                "steak\nchicken\nWaiter: Can I get you anything besides a steak and a chicken for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),def_explicit_q(x3,proper_q(x10,named(Johnny,x10),[_order_n_of(x3), poss(e19,x3,x10)]),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
@@ -79,7 +79,7 @@
         },
         {
             "Command": "What is Johnny's order?",
-            "Expected": "Nothing",
+            "Expected": "Nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),def_explicit_q(x3,proper_q(x10,named(Johnny,x10),[_order_n_of(x3), poss(e19,x3,x10)]),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "7c0aea6b-ae33-456b-87f3-aef8247da3b6"
@@ -107,7 +107,7 @@
         },
         {
             "Command": "What is our order?",
-            "Expected": "chicken",
+            "Expected": "chicken\nWaiter: Can I get you anything besides a chicken for Johnny?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_order_n_of(x3), poss(e13,x3,x14)],_be_v_id(e2,x3,x5))))",
             "Enabled": true,
             "ID": "eab39e04-d9a1-4a84-ab47-8a955355e66c"
@@ -121,7 +121,7 @@
         },
         {
             "Command": "You want to cancel my order",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I'm not sure what that means.\nWaiter: What can I get you?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_order_n_of(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),_cancel_v_1_request(e2,x3,x11)))",
             "Enabled": true,
             "ID": "9a1c3395-a7e6-4f4e-bd7d-0b086c2c188d"
@@ -163,31 +163,28 @@
         },
         {
             "Command": "what did we order",
-            "Expected": [
-                "chicken\nsoup",
-                "soup\nchicken"
-            ],
+            "Expected": "soup\nchicken\nWaiter: Can I get you anything besides a soup for Johnny and a chicken for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f13adba2-77f5-4c66-8a56-31ba14ec0b26"
         },
         {
             "Command": "can my son start over?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: Can I get you anything besides a chicken for you?",
             "Tree": "pronoun_q(x10,pron(x10),def_explicit_q(x3,[_son_n_of(x3,i15), poss(e9,x3,x10)],[event_replace(u99,e2,e17), _start_v_over_able(e2,x3)]))",
             "Enabled": true,
             "ID": "a76a2269-48fc-4c97-bf9d-5cd0e63e8cba"
         },
         {
             "Command": "what did I order",
-            "Expected": "chicken",
+            "Expected": "chicken\nWaiter: Can I get you anything besides a chicken for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "aa70e474-70e8-4c3c-9d95-f591a8906b6b"
         },
         {
             "Command": "what did my son order",
-            "Expected": "son ordered nothing",
+            "Expected": "son ordered nothing\nWaiter: Can I get you anything besides a chicken for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "9a979384-9e3a-4734-91a8-fcc0777c1962"
@@ -201,21 +198,21 @@
         },
         {
             "Command": "can we start over?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _start_v_over_able(e2,x3)])",
             "Enabled": true,
             "ID": "9a34c284-6dda-426f-86a7-fc17d97b0258"
         },
         {
             "Command": "what did I order",
-            "Expected": "you ordered nothing",
+            "Expected": "you ordered nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "a4b5e42c-e427-4877-8fde-0b95a9ec949a"
         },
         {
             "Command": "what did my son order",
-            "Expected": "son ordered nothing",
+            "Expected": "son ordered nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "f8da4a84-5816-40eb-b9a7-ddb765b10aa0"
@@ -236,46 +233,46 @@
         },
         {
             "Command": "could we start over?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _start_v_over_able(e2,x3)])",
             "Enabled": true,
             "ID": "4cda3658-8a91-4bed-aa59-f887e4dc135d"
         },
         {
             "Command": "what did I order",
-            "Expected": "you ordered nothing",
+            "Expected": "you ordered nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "20e138da-2adf-469a-9b09-cc41c87d3f70"
         },
         {
             "Command": "what did my son order",
-            "Expected": "son ordered nothing",
+            "Expected": "son ordered nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "3b5c662a-9cb0-49f2-b059-8b938ebd7a22"
         },
         {
             "Command": "can you start over?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _start_v_over_able(e2,x3)])",
             "Enabled": true,
             "ID": "e92b611c-e75e-4bf3-9a0a-66ed90134583"
         },
         {
             "Command": "what did I order",
-            "Expected": "you ordered nothing",
+            "Expected": "you ordered nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "30bfbe73-9bfa-4ca8-bb8c-8548f95bcd3d"
         },
         {
             "Command": "what did my son order",
-            "Expected": "son ordered nothing",
+            "Expected": "son ordered nothing\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x14,pron(x14),def_explicit_q(x3,[_son_n_of(x3,i19), poss(e13,x3,x14)],_order_v_1(e2,x3,x5))))",
             "Enabled": true,
             "ID": "f037ab19-ceb5-4acd-972e-15dcadada49e"
         }
     ],
-    "ElapsedTime": 91.0012
+    "ElapsedTime": 86.16885
 }

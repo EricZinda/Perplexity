@@ -10,7 +10,7 @@
         },
         {
             "Command": "I want a table for my son",
-            "Expected": "Johnny: Hey! That's not enough seats!",
+            "Expected": "Johnny: Hey! That's not enough seats!\nHost: How can I help you today?",
             "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "fb637129-e4f4-4527-be0d-e6631e4d3fcb"
@@ -52,7 +52,7 @@
         },
         {
             "Command": "I want a steak for 3",
-            "Expected": "steak is not for 3.",
+            "Expected": "steak is not for 3.\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "number_q(x14,card(3,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_steak_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "1ece99a5-80ee-41fa-a807-c28871dd2662"
@@ -122,25 +122,25 @@
         },
         {
             "Command": "my steak is for 1",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),number_q(x14,card(1,x14,i20),def_explicit_q(x3,[_steak_n_1(x3), poss(e8,x3,x9)],_for_p(e2,x3,x14))))",
             "Enabled": true,
             "ID": "86ad8d69-a014-4e4a-9099-6c87bdd70156"
         },
         {
             "Command": "my steak is for 3",
-            "Expected": "Host: No that is not true",
+            "Expected": "Host: No that is not true\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),number_q(x14,card(3,x14,i20),def_explicit_q(x3,[_steak_n_1(x3), poss(e8,x3,x9)],_for_p(e2,x3,x14))))",
             "Enabled": true,
             "ID": "d3726b90-3af5-491e-8aab-521915ab8fb1"
         },
         {
             "Command": "who ordered soup?",
-            "Expected": "Johnny",
+            "Expected": "Johnny\nWaiter: What can I get you?",
             "Tree": "which_q(x3,person(x3),udef_q(x8,_soup_n_1(x8),_order_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c78aeda0-1690-4e8f-b7fc-73aa0038c394"
         }
     ],
-    "ElapsedTime": 60.8951
+    "ElapsedTime": 78.07686
 }

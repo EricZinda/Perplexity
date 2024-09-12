@@ -10,7 +10,7 @@
         },
         {
             "Command": "Soup is a vegetarian item",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nHost: How can I help you today?",
             "Tree": "udef_q(x3,_soup_n_1(x3),_a_q(x8,[_thing_n_of-about(x8,i14), _vegetarian_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "f0ba7d25-284f-4264-91c7-87eceb97897b"
@@ -32,7 +32,7 @@
         },
         {
             "Command": "My son is Johnny",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x9,pron(x9),proper_q(x15,named(Johnny,x15),def_explicit_q(x3,[_son_n_of(x3,i14), poss(e8,x3,x9)],_be_v_id(e2,x3,x15))))",
             "Enabled": true,
             "ID": "a23b8045-864b-4378-8a6d-a49e826a46c4"
@@ -46,7 +46,7 @@
         },
         {
             "Command": "what are the daily specials",
-            "Expected": "the special are not daily.",
+            "Expected": "the special are not daily.\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),_the_q(x8,[_special_n_1(x8), _daily_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "6ecd843f-4675-4ed9-8e10-1e06055609b8"
@@ -115,5 +115,5 @@
             "ID": "102a0dfc-fe89-419d-bdd9-6e99158897ac"
         }
     ],
-    "ElapsedTime": 133.69767
+    "ElapsedTime": 86.70847
 }

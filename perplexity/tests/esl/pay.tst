@@ -108,14 +108,14 @@
         },
         {
             "Command": "We're ready to pay",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,i11,i12))",
             "Enabled": true,
             "ID": "6c1cee67-7ba6-49ca-9903-6c339f559e4a"
         },
         {
             "Command": "I'm ready to pay",
-            "Expected": "Yes, that is true.",
+            "Expected": "Yes, that is true.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,i11,i12))",
             "Enabled": true,
             "ID": "d9151661-b0ee-4e2c-9aee-b675f4ad2dd2"
@@ -129,7 +129,7 @@
         },
         {
             "Command": "I'm ready to pay my son",
-            "Expected": "You can't pay for that.",
+            "Expected": "You can't pay for that.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "def_explicit_q(x11,pronoun_q(x18,pron(x18),[_son_n_of(x11,i23), poss(e17,x11,x18)]),pronoun_q(x3,pron(x3),_pay_v_for_request(e2,x3,x11,i12)))",
             "Enabled": true,
             "ID": "75c4163a-45f2-47f4-8350-92983dccb0cf"
@@ -143,7 +143,7 @@
         },
         {
             "Command": "Who can pay the bill",
-            "Expected": "you\n(among others)",
+            "Expected": "you\n(among others)\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "which_q(x3,person(x3),_the_q(x11,_bill_n_of(x11,i17),_pay_v_for_request(e2,x3,x11,i12)))",
             "Enabled": true,
             "ID": "44f9aabd-a5bf-4ccd-9020-5a7c47801c3d"
@@ -185,7 +185,7 @@
         },
         {
             "Command": "I will pay with my card",
-            "Expected": "You don't have one of those.",
+            "Expected": "You don't have one of those.\nWaiter: So, do you want to pay with cash or card?",
             "Tree": "def_explicit_q(x11,pronoun_q(x17,pron(x17),[_card_n_1(x11), poss(e16,x11,x17)]),pronoun_q(x3,pron(x3),[_with_p(e10,e2,x11), _pay_v_for(e2,x3,i8,i9)]))",
             "Enabled": true,
             "ID": "5dbbce66-c57c-4e82-af30-a3db81744cde"
@@ -206,7 +206,7 @@
         },
         {
             "Command": "I want to pay with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
+            "Expected": "\nWaiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!\nSay 'restart' to try again.",
             "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e2,x14), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "03831612-cfaa-4d2f-b5c7-c0e6a5dfc7aa"
@@ -255,7 +255,7 @@
         },
         {
             "Command": "can I pay with cash?",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
+            "Expected": "Yes.\nWaiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!\nSay 'restart' to try again.",
             "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "e5ae3021-f61e-44c2-88c9-985e50ab51b4"
@@ -304,7 +304,7 @@
         },
         {
             "Command": "I will pay with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
+            "Expected": "\nWaiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!\nSay 'restart' to try again.",
             "Tree": "udef_q(x11,_cash_n_1(x11),pronoun_q(x3,pron(x3),[_with_p(e10,e2,x11), _pay_v_for(e2,x3,i8,i9)]))",
             "Enabled": true,
             "ID": "af9bf474-7a7b-43e1-a979-6773dd735457"
@@ -353,7 +353,7 @@
         },
         {
             "Command": "I want to pay the bill with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
+            "Expected": "\nWaiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!\nSay 'restart' to try again.",
             "Tree": "_the_q(x11,_bill_n_of(x11,i18),udef_q(x20,_cash_n_1(x20),pronoun_q(x3,pron(x3),[_with_p(e19,e2,x20), _pay_v_for_request(e2,x11,i12,i13)])))",
             "Enabled": true,
             "ID": "64e3beac-7292-47e7-840b-7b29471546c5"
@@ -402,7 +402,7 @@
         },
         {
             "Command": "could I pay with cash?",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
+            "Expected": "Yes.\nWaiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!\nSay 'restart' to try again.",
             "Tree": "udef_q(x14,_cash_n_1(x14),pronoun_q(x3,pron(x3),[_with_p(e13,e10,x14), event_replace(u99,e2,e10), _pay_v_for_request(e2,x3,i11,i12)]))",
             "Enabled": true,
             "ID": "0d2939c4-874d-43a6-86ab-91767ac33a20"
@@ -451,11 +451,11 @@
         },
         {
             "Command": "We'll pay with cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
+            "Expected": "\nWaiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!\nSay 'restart' to try again.",
             "Tree": "udef_q(x11,_cash_n_1(x11),pronoun_q(x3,pron(x3),[_with_p(e10,e2,x11), _pay_v_for(e2,x3,i8,i9)]))",
             "Enabled": true,
             "ID": "5cfabc0b-2add-4936-b68d-273154204a19"
         }
     ],
-    "ElapsedTime": 59.02018
+    "ElapsedTime": 62.84941
 }

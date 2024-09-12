@@ -1,9 +1,10 @@
 import inspect
 import os
-
 from perplexity.utilities import import_function_from_names
 
 worlds = dict()
+worlds["lobby"] = {"WorldModule": "esl.lobby",
+                   "WorldUIFunction": "ui"}
 worlds["esl"] = {"WorldModule": "esl.tutorial",
                  "WorldUIFunction": "ui"}
 worlds["example"] = {"WorldModule": "file_system_example.examples",
@@ -27,3 +28,10 @@ def ui_from_world_name(world_name, user_output=None, debug_output=None):
         ui_function = import_function_from_names(world_info["WorldModule"], world_info["WorldUIFunction"])
         return ui_function(user_output=user_output, debug_output=debug_output)
 
+
+class LoadWorldOperation(object):
+    def __init__(self, world_name):
+        self.world_name = world_name
+
+    def apply_to(self, state):
+        pass

@@ -13,6 +13,54 @@ system_added_arg_count = 2
 system_added_group_arg_count = 2
 
 
+# A given interaction can span multiple phrases ("I want a sandwich. He wants a steak.") and potentially
+# multiple worlds ("I want a sandwich. Quit. He wants a steak").
+# Each record (i.e. phrase) can contain a phrase to output if it is the last record in the interaction for that world
+# - "NewWorld" exists on a record if a new UI was created in that interaction
+# - "InteractionEnd" exists on a record when the world had extra text to add at the end of an interaction
+#       and this interaction represents the end
+# - "NewWorldResponse" happens when a new world was created and that world had something to say at startup
+def output_interaction_records(interaction_records):
+    string_output_list = []
+    last_phrase_response = None
+    for interaction_record_index in range(len(interaction_records)):
+        interaction_record = interaction_records[interaction_record_index]
+        chosen_mrs_index = interaction_record["ChosenMrsIndex"]
+        if chosen_mrs_index is None:
+            continue
+
+        # There was at least a parse
+        chosen_interpretation_index = interaction_record["ChosenInterpretationIndex"]
+        chosen_interpretation = interaction_record["Mrss"][chosen_mrs_index]["Interpretations"][chosen_interpretation_index]
+
+        # Output the main message
+        string_output_list.append(chosen_interpretation["ResponseMessage"])
+
+        if "LastPhraseResponse" in chosen_interpretation and chosen_interpretation["LastPhraseResponse"] is not None:
+            last_phrase_response = chosen_interpretation["LastPhraseResponse"]
+
+        if "NewWorld" in chosen_interpretation:
+            # Only output LastPhraseResponse if this was the last output for this world
+            if last_phrase_response is not None:
+                string_output_list.append(last_phrase_response)
+                last_phrase_response = None
+
+        if "InteractionEnd" in chosen_interpretation and chosen_interpretation["InteractionEnd"] is not None:
+                string_output_list.append(chosen_interpretation["InteractionEnd"])
+
+        # Print any introduction text from the new world if there was one
+        if "NewWorldResponse" in chosen_interpretation:
+            if chosen_interpretation["NewWorldResponse"] is not None:
+                string_output_list.append(chosen_interpretation["NewWorldResponse"])
+
+    # Only output LastPhraseResponse if this was the last output for this world
+    if last_phrase_response is not None:
+        string_output_list.append(last_phrase_response)
+        last_phrase_response = None
+
+    return "\n".join(string_output_list)
+
+
 def running_under_debugger():
     # This is a hack to see if we're running under the debugger
     # https://stackoverflow.com/questions/38634988/check-if-program-runs-in-debug-mode

@@ -55,14 +55,14 @@
         },
         {
             "Command": "are any dishes vegetarian?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "_any_q(x3,_dish_n_of(x3,i8),_vegetarian_a_1(e2,x3))",
             "Enabled": true,
             "ID": "ed1b79b6-cb24-4ee3-ad22-72047d065a68"
         },
         {
             "Command": "are there any vegetarian dishes?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "_any_q(x4,[_dish_n_of(x4,i10), _vegetarian_a_1(e9,x4)],_be_v_there(e2,x4))",
             "Enabled": true,
             "ID": "55c33452-0468-4075-b999-38e4420086b9"
@@ -93,7 +93,7 @@
         },
         {
             "Command": "what vegetarian meats do you have?",
-            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,[_meat_n_1(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ae7abcc5-6e6b-4d44-a0b4-897246bd70b6"
@@ -113,5 +113,5 @@
             "ID": "5d63f5ce-6532-40a0-8118-e42cd923740a"
         }
     ],
-    "ElapsedTime": 16.16226
+    "ElapsedTime": 16.26235
 }

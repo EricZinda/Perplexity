@@ -11,7 +11,7 @@ from delphin.codecs import simplemrs
 from perplexity.autocorrect import autocorrect, get_autocorrect
 from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
-from perplexity.response import ResetOperation
+from perplexity.response import ResetOperation, ResponseLocation
 from perplexity.set_utilities import CachedIterable
 from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
@@ -21,8 +21,8 @@ from perplexity.tree import find_predications, find_predications_with_arg_types,
 from perplexity.tree_algorithm_zinda2020 import TooComplicatedError
 from perplexity.user_state import GetStateDirectoryName
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
-    split_into_sentences
-from perplexity.world_registry import world_information
+    split_into_sentences, output_interaction_records
+from perplexity.world_registry import world_information, LoadWorldOperation, ui_from_world_name
 
 
 def default_error_priority(error):
@@ -153,12 +153,19 @@ class UserInterface(object):
             output = self.user_output()
 
     def has_timed_out(self):
+        if perplexity.utilities.running_under_debugger():
+            return False
+
         if self.interaction_record is not None and time.perf_counter() - self.interaction_record["StartTime"] > self.timeout:
             pipeline_logger.debug(f"Timed out.")
             return True
 
         else:
             return False
+
+    def output_sorted_responses(self, responses):
+        responses.sort(key=lambda tup: tup[0])
+        return "\n".join(item[1] for item in responses)
 
     # Convert any input that was multiple sentences into multiple interactions
     # Then: If the phrase is an implicit or explicit conjunction -- basically more than
@@ -205,14 +212,11 @@ class UserInterface(object):
             self.user_output(command_result)
 
         last_phrase_response = ""
+        record = None
         if command_result is not None:
             # If not None it was a system command so the interaction is done
             interaction_records.append(self.interaction_record)
-
-            # self.records is a list if we are recording commands
-            if isinstance(self.records, list):
-                self.records.append(self.interaction_record)
-                self.user_output(f"Recorded ({len(self.records)} items).")
+            record = self.interaction_record
 
         else:
             # This was a phrase not a command (or a command that pushed a phrase through the system)
@@ -240,11 +244,6 @@ class UserInterface(object):
 
                     interaction_records.append(self.interaction_record)
 
-                    # self.records is a list if we are recording commands
-                    if isinstance(self.records, list):
-                        self.records.append(self.interaction_record)
-                        self.user_output(f"Recorded ({len(self.records)} items).")
-
                     next_ui = self.new_ui if self.new_ui else next_ui
                     record = self.chosen_interpretation_record()
                     if record is not None:
@@ -252,6 +251,18 @@ class UserInterface(object):
                         if record["SolutionGroupGenerator"] is not None:
                             if "LastPhraseResponse" in record:
                                 last_phrase_response = record["LastPhraseResponse"]
+
+                            if self.new_ui is not None:
+                                record["NewWorld"] = True
+
+                                # Give the current world a chance to end its interaction
+                                if self.events is not None:
+                                    end_responses = self.events.interaction_end(self, interaction_records, last_phrase_response)
+                                    if end_responses is not None:
+                                        record["InteractionEnd"] = self.output_sorted_responses(end_responses)
+
+                                # Because we are in a new world, the last_phrase_response gets reset
+                                last_phrase_response = ""
 
                             # There were solutions, so keep going with conjuncts
                             if "SelectedConjuncts" in record and record["SelectedConjuncts"] is not None:
@@ -278,16 +289,23 @@ class UserInterface(object):
                         # No parse, break
                         break
 
-        # Print out the "last phrase" if there is one
-        if last_phrase_response != "":
-            self.user_output(last_phrase_response)
-
-        if self.events is not None:
-            self.events.interaction_end(self, interaction_records, last_phrase_response)
-
         if self is not next_ui:
             # The user gave a command to load a new UI
             self.new_ui = next_ui
+
+        else:
+            # Give whatever was the final world a chance to end its interaction
+            if self.events is not None:
+                end_responses = self.events.interaction_end(self, interaction_records, last_phrase_response)
+                if end_responses is not None:
+                    record["InteractionEnd"] = self.output_sorted_responses(end_responses)
+
+        self.user_output(output_interaction_records(interaction_records))
+
+        # self.records is a list if we are recording commands
+        if isinstance(self.records, list):
+            self.records.append(interaction_records)
+            self.user_output(f"Recorded ({len(interaction_records)} items).")
 
         return interaction_records
 
@@ -500,12 +518,32 @@ class UserInterface(object):
 
                                             # Now deal with any resets that have been registered
                                             did_reset = False
+                                            new_world_responses = []
                                             for solution in solution_group_solutions:
                                                 for operation in solution.get_operations():
                                                     if isinstance(operation, ResetOperation):
                                                         self.state = self.reset()
                                                         did_reset = True
                                                         break
+
+                                                    if isinstance(operation, LoadWorldOperation):
+                                                        # World changed, load the new world
+                                                        new_ui = ui_from_world_name(operation.world_name)
+                                                        if new_ui is None:
+                                                            print(f"World {operation.world_name} is not registered as a world")
+
+                                                        else:
+                                                            # Don't lose any recording that has happened
+                                                            new_ui.records = self.records
+                                                            self.new_ui = new_ui
+                                                            tree_record["NewWorldCreated"] = True
+                                                            tree_record["NewWorldName"] = new_ui.world_name
+                                                            if self.new_ui.events is not None:
+                                                                new_world_responses = self.new_ui.events.world_new()
+
+                                                            did_reset = True
+                                                            break
+
                                                 if did_reset:
                                                     break
 
@@ -514,13 +552,13 @@ class UserInterface(object):
                                             tree_record["ResponseMessage"] += f"\n{str(response)}"
                                             operation_responses = []
                                             last_phrase_responses = []
+                                            new_world_responses = []
 
                                         if len(operation_responses) > 0:
-                                            had_operations = True
-                                            operation_responses.sort(key=lambda tup: tup[0])
-                                            response = "\n".join(item[1] for item in operation_responses)
+                                            response = self.output_sorted_responses(operation_responses)
 
                                         elif response is None and len(last_phrase_responses) == 0:
+                                            # No message was provided, give a default one
                                             this_sentence_force = sentence_force(tree_info["Variables"])
                                             if this_sentence_force == "comm":
                                                 # Only give a "Done!" message if it was a command and there were no responses given
@@ -532,19 +570,22 @@ class UserInterface(object):
                                             else:
                                                 response = "(no response)"
 
-                                        # These only get showed if this is the last phrase in the whole user utterance
-                                        last_phrase_responses.sort(key=lambda tup: tup[0])
-                                        tree_record["LastPhraseResponse"] = "\n".join(item[1] for item in last_phrase_responses)
-                                        tree_record["ResponseMessage"] += response if response is not None else ""
-                                        if response is not None:
-                                            self.user_output(response)
-
-                                        # Only show if the developer didn't provide a custom message
-                                        if not had_operations:
+                                            # Only shown if the developer didn't provide a custom message
                                             more_message = self.generate_more_message(tree_info, solution_group_generator)
                                             if more_message is not None:
-                                                tree_record["ResponseMessage"] += more_message
-                                                self.user_output(more_message)
+                                                response += "\n" + more_message
+
+                                        tree_record["ResponseMessage"] += response if response is not None else ""
+
+                                        # These only get shown if this is the last phrase in the whole user utterance (which could be multiple
+                                        # phrases), thus it is stored and not output right now
+                                        if len(last_phrase_responses) > 0:
+                                            tree_record["LastPhraseResponse"] = self.output_sorted_responses(last_phrase_responses)
+
+                                        # Show any responses from the new world after *all* the previous world responses
+                                        # thus it is stored and not output right now
+                                        if len(new_world_responses) > 0:
+                                            tree_record["NewWorldResponse"] = self.output_sorted_responses(new_world_responses)
 
                                         if not self.run_all_parses:
                                             return
@@ -603,7 +644,6 @@ class UserInterface(object):
         if response is None:
             response = "(no error specified)"
         chosen_record["ResponseMessage"] += response
-        self.user_output(response)
 
     def generate_more_message(self, tree, solution_groups):
         if solution_groups is None:

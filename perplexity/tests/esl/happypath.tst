@@ -101,11 +101,11 @@
         },
         {
             "Command": "cash",
-            "Expected": "Waiter: Ah. Perfect! Have a great rest of your day.\n\nYou and Johnny go back to the front of the restaurant and prepare for your next adventure!\nThere you see the friendly host ...\n\n",
+            "Expected": "\nWaiter: Ah. Perfect! Have a great rest of your day.\n\nThanks for playing!\nSay 'restart' to try again.",
             "Tree": "udef_q(x4,_cash_n_1(x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "1b243ee9-08a0-4942-bc6f-d09ddd2e1856"
         }
     ],
-    "ElapsedTime": 10.63867
+    "ElapsedTime": 9.99635
 }

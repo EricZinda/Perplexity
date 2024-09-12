@@ -73,7 +73,7 @@
         },
         {
             "Command": "is the soup vegetarian?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nHost: How can I help you today?",
             "Tree": "_the_q(x3,_soup_n_1(x3),_vegetarian_a_1(e2,x3))",
             "Enabled": true,
             "ID": "a4264b95-47fb-4468-89f4-adfc0e27dcf2"
@@ -86,5 +86,5 @@
             "ID": "26fc6f0a-7692-4135-8859-c27a1b3e9129"
         }
     ],
-    "ElapsedTime": 8.79666
+    "ElapsedTime": 14.26371
 }

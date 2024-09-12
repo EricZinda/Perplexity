@@ -101,7 +101,7 @@
         },
         {
             "Command": "table for one person",
-            "Expected": "There is more than 1 person",
+            "Expected": "There is more than 1 person\nHost: How can I help you today?",
             "Tree": "udef_q(x10,[_person_n_1(x10), card(1,e16,x10)],udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
             "ID": "d606e7bf-0fc4-4278-a598-6249659f3de6"
@@ -276,7 +276,7 @@
         },
         {
             "Command": "Hi, I want a table for 2, please?",
-            "Expected": "I don't understand the way you are using: want",
+            "Expected": "I don't understand the way you are using: want\nWaiter: What can I get you?",
             "Tree": "discourse(i2,greet(hi,i6),_please_a_1(i27,_a_q(x14,number_q(x20,card(2,x20,i26),[_table_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_want_v_1(e13,x3,x14)))))",
             "Enabled": true,
             "ID": "1fad1ba9-a1c9-43c8-af00-48b7b20cc0d7"
@@ -297,21 +297,21 @@
         },
         {
             "Command": "Are there any tables?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nHost: How can I help you today?",
             "Tree": "_any_q(x4,_table_n_1(x4),_be_v_there(e2,x4))",
             "Enabled": true,
             "ID": "a903e437-e680-4990-877b-7e8fa1079924"
         },
         {
             "Command": "Are any tables available?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nHost: How can I help you today?",
             "Tree": "_any_q(x3,_table_n_1(x3),_available_a_to-for(e2,x3,u8))",
             "Enabled": true,
             "ID": "3aac6c9d-c6c1-4d4a-93f5-3d6350cdda9f"
         },
         {
             "Command": "I get a table?",
-            "Expected": "I'm not sure what that means.",
+            "Expected": "I'm not sure what that means.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_get_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d3b37b3f-5323-4310-b004-fe8fb4e49208"
@@ -374,7 +374,7 @@
         },
         {
             "Command": "You will give me a table",
-            "Expected": "I don't understand the way you are using: give",
+            "Expected": "I don't understand the way you are using: give\nHost: How many in your party?",
             "Tree": "pronoun_q(x9,pron(x9),_a_q(x8,_table_n_1(x8),pronoun_q(x3,pron(x3),_give_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "d9773e57-08fb-4df3-9897-2891b1aa2b84"
@@ -409,21 +409,21 @@
         },
         {
             "Command": "I will have a table?",
-            "Expected": "I don't understand the way you are using: have",
+            "Expected": "I don't understand the way you are using: have\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "91cc802b-2e88-4fcb-a251-26c5e6f88f68"
         },
         {
             "Command": "Who will have a table?",
-            "Expected": "I don't understand the way you are using: have",
+            "Expected": "I don't understand the way you are using: have\nWaiter: What can I get you?",
             "Tree": "which_q(x3,person(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c902a6e5-53ff-409f-ba7c-08d63590b422"
         },
         {
             "Command": "Will you have a table?",
-            "Expected": "I don't understand the way you are using: have",
+            "Expected": "I don't understand the way you are using: have\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "c09676b8-c43a-4e18-8a90-109e288eea32"
@@ -437,7 +437,7 @@
         },
         {
             "Command": "Do you have the table?",
-            "Expected": "I'm not sure which table you mean.",
+            "Expected": "I'm not sure which table you mean.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "cd3fae35-7dac-447a-bb2a-94230d411ed1"
@@ -598,7 +598,7 @@
         },
         {
             "Command": "We want tables",
-            "Expected": "Johnny: Hey, let's sit together alright?",
+            "Expected": "Johnny: Hey, let's sit together alright?\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35492138-e4fb-4a43-8bb8-994924f6c1f9"
@@ -612,7 +612,7 @@
         },
         {
             "Command": "I want the table",
-            "Expected": "I'm not sure which table you mean.",
+            "Expected": "I'm not sure which table you mean.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "74092d64-1466-4b30-bf1d-486e17005e9e"
@@ -640,7 +640,7 @@
         },
         {
             "Command": "I'd like a table for 1",
-            "Expected": "Johnny: Hey! That's not enough seats!",
+            "Expected": "Johnny: Hey! That's not enough seats!\nHost: How can I help you today?",
             "Tree": "_a_q(x11,number_q(x17,card(1,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "2f76af1e-038e-4916-b76e-a5344c2ef260"
@@ -668,7 +668,7 @@
         },
         {
             "Command": "I'd like a table for 3",
-            "Expected": "table is not for 3.",
+            "Expected": "table is not for 3.\nHost: How can I help you today?",
             "Tree": "_a_q(x11,number_q(x17,card(3,x17,i23),[_table_n_1(x11), _for_p(e16,x11,x17)]),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "17cdb00c-6f14-458d-a810-639281544c82"

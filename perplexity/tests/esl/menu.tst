@@ -17,7 +17,7 @@
         },
         {
             "Command": "Could we have a vegetarian menu?",
-            "Expected": "WRONG: Host: Sorry, I don't think we have that here.",
+            "Expected": "Host: Sorry, I don't think we have that here.\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,[_menu_n_1(x11), _vegetarian_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "bc1ce7b9-3611-48fa-9baf-5288edde5c55"
@@ -108,14 +108,14 @@
         },
         {
             "Command": "that will be all, thank you.",
-            "Expected": "You realize that you'll need at least two dishes for the two of you.<end>You are welcome!\nWaiter: What can I get you?",
+            "Expected": "You realize that you'll need at least two dishes for the two of you.\nYou are welcome!\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x16,pron(x16),[no_standalone(e9)])<end>pronoun_q(x16,pron(x16),[_thank_v_1(e10,x5,x16)])",
             "Enabled": true,
             "ID": "3eb18b1a-240f-4fea-957b-4e9c98bcbdce"
         },
         {
             "Command": "We would like the menus",
-            "Expected": "There are less than 2 menu",
+            "Expected": "There are less than 2 menu\nWaiter: What can I get you?",
             "Tree": "_the_q(x11,_menu_n_1(x11),pronoun_q(x3,pron(x3),_want_v_1(e2,x3,x11)))",
             "Enabled": true,
             "ID": "42d5f855-1b6d-4b48-9f8f-edecceec3774"
@@ -136,7 +136,7 @@
         },
         {
             "Command": "I want a vegetarian menu",
-            "Expected": "I'm not sure which vegetarian menu you mean.",
+            "Expected": "I'm not sure which vegetarian menu you mean.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,[_menu_n_1(x8), _vegetarian_a_1(e13,x8)],_want_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "98aa8219-aea7-4a10-a917-21bd96368a2d"
@@ -234,7 +234,7 @@
         },
         {
             "Command": "show me 2 menus",
-            "Expected": "Waiter: Our policy is to give one menu to every customer ...",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(2,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "cde58b5d-7df0-4173-a792-d2379fdf4716"
@@ -262,21 +262,21 @@
         },
         {
             "Command": "show us 3 menus",
-            "Expected": "Waiter: Our policy is to give one menu to every customer ...",
+            "Expected": "Waiter: Our policy is to give one menu to every customer ...\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
             "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"
         },
         {
             "Command": "we have 2 menus",
-            "Expected": "you do not have 2 menu",
+            "Expected": "you do not have 2 menu\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(2,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4dd1ccc3-2b8d-4c5e-8048-cfef07a8d1d4"
         },
         {
             "Command": "we have 3 menus",
-            "Expected": "you do not have 3 menu",
+            "Expected": "you do not have 3 menu\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),udef_q(x8,[_menu_n_1(x8), card(3,e14,x8)],_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "28216fc8-69b6-40cb-a699-27c8460b77f9"
@@ -290,7 +290,7 @@
         },
         {
             "Command": "2",
-            "Expected": "Waiter: Sorry, I'm not sure what to do about that.",
+            "Expected": "Waiter: Sorry, I'm not sure what to do about that.\nWaiter: What can I get you?",
             "Tree": "def_implicit_q(x4,basic_numbered_hour(2,x4),unknown(e2,x4))",
             "Enabled": true,
             "ID": "9dd7913d-e27e-4750-9204-6dc50b87c258"

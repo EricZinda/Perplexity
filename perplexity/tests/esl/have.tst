@@ -17,7 +17,7 @@
         },
         {
             "Command": "Do I have a son?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_son_n_of(x8,i13),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4f8fa4a7-85dd-4be5-a9fe-e0ee0cfe1e43"
@@ -31,7 +31,7 @@
         },
         {
             "Command": "Will I have a steak?",
-            "Expected": "I don't understand the way you are using: have",
+            "Expected": "I don't understand the way you are using: have\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "2cf3ed05-a5ad-4137-bc23-b1b39924a5e4"
@@ -45,7 +45,7 @@
         },
         {
             "Command": "Do you have the table?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: Can I get you anything besides 2 steaks for you?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "5228b43a-2306-4599-9955-09dbb3a7b2c1"
@@ -60,12 +60,9 @@
         {
             "Command": "what do I have?",
             "Expected": [
-                "bill\nJohnny\norder",
-                "bill\norder\nJohnny",
-                "Johnny\norder\nbill",
-                "order\nJohnny\nbill",
-                "order\nbill\nJohnny",
-                "Johnny\nbill\norder"
+                "Johnny\nbill\norder\nWaiter: Can I get you anything besides 2 steaks for you?",
+                "bill\nJohnny\norder\nWaiter: Can I get you anything besides 2 steaks for you?",
+                "Johnny\norder\nbill\nWaiter: Can I get you anything besides 2 steaks for you?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -122,7 +119,7 @@
         },
         {
             "Command": "who has steaks?",
-            "Expected": "Host: Nobody.",
+            "Expected": "Host: Nobody.\nHost: How can I help you today?",
             "Tree": "which_q(x3,person(x3),udef_q(x8,_steak_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "dabd14d7-0d27-4eaa-bc91-48236d7ee0b6"
@@ -157,7 +154,7 @@
         },
         {
             "Command": "do you have the table",
-            "Expected": "I'm not sure which table you mean.",
+            "Expected": "I'm not sure which table you mean.\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_the_q(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "d08e91ef-3bcd-42b0-a0dc-8c7d1a357a51"
@@ -178,7 +175,7 @@
         },
         {
             "Command": "do you have this table",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_this_q_dem(x8,_table_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "5e36dbc8-a912-4c92-9878-9ed8de615bfd"
@@ -213,7 +210,7 @@
         },
         {
             "Command": "Do I have a menu?",
-            "Expected": "Yes.",
+            "Expected": "Yes.\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_menu_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "73c3f31c-5793-45a6-a3ac-ebf2cd8d9a6c"

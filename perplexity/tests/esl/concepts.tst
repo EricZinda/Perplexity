@@ -24,7 +24,7 @@
         },
         {
             "Command": "I want a table for my son",
-            "Expected": "Johnny: Hey! That's not enough seats!",
+            "Expected": "Johnny: Hey! That's not enough seats!\nHost: How can I help you today?",
             "Tree": "def_explicit_q(x14,pronoun_q(x20,pron(x20),[_son_n_of(x14,i25), poss(e19,x14,x20)]),pronoun_q(x3,pron(x3),_a_q(x8,[_table_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "8ebb4a5c-69c6-4877-8109-472977c306ce"
@@ -59,7 +59,7 @@
         },
         {
             "Command": "what is a table for?",
-            "Expected": "Host: Sorry, I'm not here to explain things to you ...",
+            "Expected": "Host: Sorry, I'm not here to explain things to you ...\nWaiter: What can I get you?",
             "Tree": "which_q(x5,thing(x5),_a_q(x3,_table_n_1(x3),_for_p(e2,x3,x5)))",
             "Enabled": true,
             "ID": "970ceb12-9c17-41e3-9f02-9d89f88b9552"
@@ -89,5 +89,5 @@
             "ID": "0331458f-c733-4545-a0aa-fc8510f068df"
         }
     ],
-    "ElapsedTime": 23.53684
+    "ElapsedTime": 23.24345
 }
