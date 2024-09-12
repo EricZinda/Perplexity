@@ -97,7 +97,6 @@ class MrsParser(object):
 
         return True
 
-        # If we got here, all predications don't need scope
     def trees_from_mrs(self, mrs):
         # If the tree doesn't have any true scopes, then only return
         # one tree since they will all be the same
@@ -281,6 +280,72 @@ def is_variable_scoped_by_negation(solution, variable_name):
                 break
 
     return negated_index is not None
+
+
+# Phrases like "Hi, I'd love to have a table for 2, please" have more than one syntactic head
+# i.e. greet() and have_v_1() heads joined by discourse(i, h, h)
+# This function pulls out the characteristic variable for each
+# - Start with a scope-resolved MRS
+# - Initially "follow" the predication that introduces the variable that is the MRS index
+# - To "follow" a given predication:
+#     - If there are no scopal arguments, we have found a syntactic head
+#     - Otherwise, if it is a special case predication (like 'nominalization_rel') follow its scopal arguments per whatever the special case is
+#     - Otherwise, for each scopal argument from ARG1 to ARGN:
+#         - If the ARG has a QEQ, use it to get the next predication (which might skip to somewhere deep in the tree) and follow that
+#         - If not, just follow the predication the ARG points to
+# - Note that this algorithm could return more than one syntactic head.  For example "I want steak and I want soup" will generate two: one for each want_v_1
+def syntactic_heads_characteristic_variables(mrs):
+    # Start with the characteristic variable indicated by INDEX
+    variable = mrs.index
+    handle = None
+    for item in mrs.rels:
+        if item.id == variable:
+            handle = item.label
+            break
+
+    if handle is None:
+        assert False, f"variable {variable} was not a characteristic variable: this case shouldn't exist"
+
+    yield from search_syntactic_head(handle, mrs)
+
+
+def search_syntactic_head(handle, mrs):
+    # Find the EP for this handle by searching
+    # for the EP that has this handle as its label
+    ep = None
+    for item in mrs.rels:
+        if item.label == handle:
+            ep = item
+            break
+
+    if ep is None:
+        # Must be a hole, and thus has a QEQ
+        for item in mrs.hcons:
+            if item.hi == handle:
+                # Found the QEQ constraint, now find the predication
+                # that maps to the lo part
+                for ep_candidate in mrs.rels:
+                    if ep_candidate.label == item.lo:
+                        ep = ep_candidate
+                        break
+
+                if ep is not None:
+                    break
+
+    if ep is None:
+        assert False, f"variable {handle} was not a characteristic variable and was not a handle: this case shouldn't exist"
+
+    # Recurse on any arguments that are handles
+    is_scopal = False
+    for arg in ep.args.items():
+        if arg[0] != "CARG" and arg[1][0] == "h":
+            is_scopal = True
+            # found a scopal arg
+            yield from search_syntactic_head(arg[1], mrs)
+
+    # If there are no scopal arguments, we have found a syntactic head
+    if not is_scopal:
+        yield ep.id
 
 
 def tree_from_assignments(hole_label, assignments, predication_dict, mrs, current_index=None):

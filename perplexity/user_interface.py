@@ -17,7 +17,8 @@ from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.transformer import TransformerMatch
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
-    MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable, surface_word_from_mrs_predication
+    MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable, surface_word_from_mrs_predication, \
+    syntactic_heads_characteristic_variables
 from perplexity.tree_algorithm_zinda2020 import TooComplicatedError
 from perplexity.user_state import GetStateDirectoryName
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
@@ -404,8 +405,10 @@ class UserInterface(object):
                         if self.has_timed_out():
                             break
 
+                        heads = [x for x in syntactic_heads_characteristic_variables(mrs)]
                         tree_generated = True
                         tree_info_orig = {"Index": mrs.index,
+                                          "SyntacticHeads": heads,
                                           "Variables": mrs.variables,
                                           "Tree": tree_orig,
                                           "MRS": self.mrs_parser.mrs_to_string(mrs)}

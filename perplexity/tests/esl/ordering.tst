@@ -297,7 +297,10 @@
         },
         {
             "Command": "what is Johnny's order?",
-            "Expected": "salmon\nchicken\nWaiter: Can I get you anything besides a chicken and a salmon for Johnny?",
+            "Expected": [
+                "salmon\nchicken\nWaiter: Can I get you anything besides a chicken and a salmon for Johnny?",
+                "chicken\nsalmon\nWaiter: Can I get you anything besides a chicken and a salmon for Johnny?"
+            ],
             "Tree": "which_q(x5,thing(x5),def_explicit_q(x3,proper_q(x10,named(Johnny,x10),[_order_n_of(x3), poss(e19,x3,x10)]),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "3e8edf8d-ab16-4c70-a35b-9976843a11e3"
@@ -346,7 +349,10 @@
         },
         {
             "Command": "What did we order?",
-            "Expected": "steak\nchicken\nWaiter: Can I get you anything besides a chicken for you and a steak for Johnny?",
+            "Expected": [
+                "steak\nchicken\nWaiter: Can I get you anything besides a chicken for you and a steak for Johnny?",
+                "chicken\nsteak\nWaiter: Can I get you anything besides a chicken for you and a steak for Johnny?"
+            ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "e22dfd49-438f-46a2-98ad-30c4be9da431"
@@ -513,7 +519,8 @@
             "Expected": [
                 "steak\n2 soup\nmenu\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "water\n2 soup\nmenu\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
-                "water\nsteak\nmenu\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
+                "water\nsteak\nmenu\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "menu\n2 soup\nwater\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,

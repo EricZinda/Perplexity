@@ -163,7 +163,10 @@
         },
         {
             "Command": "what did we order",
-            "Expected": "soup\nchicken\nWaiter: Can I get you anything besides a soup for Johnny and a chicken for you?",
+            "Expected": [
+                "soup\nchicken\nWaiter: Can I get you anything besides a soup for Johnny and a chicken for you?",
+                "chicken\nsoup\nWaiter: Can I get you anything besides a soup for Johnny and a chicken for you?"
+            ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "f13adba2-77f5-4c66-8a56-31ba14ec0b26"

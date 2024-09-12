@@ -1,4 +1,8 @@
 # Big Changes
+    - Fix handling of phrases that have multiple syntactic heads:
+        - "I want soup, I want salad" --> two want_v_1 heads joined by impl_conj(e, e, e)
+        - "Hi, I'd love to have a table for 2, please" --> greet() and have_v_1() heads joined by discourse(i, h, h)
+        - The engine should process them as separate "conjunctions"
     - Fix some of the user interface issues:
         - do a better response than "I don't understand the way you used X" and other default messages
             - I don't know the words: plase/nn and I don't know the way you used: for
@@ -31,6 +35,20 @@
 # Bugs
     # Pri 1
         - FIX BROKEN TESTS (i.e. WRONG: tests)
+            - "Hi, I'd love to have a table for 2, please" --> Yes, that is true.
+                - Because the Index is on the discourse predication
+                - How to find the next index?
+                    - Theory: If the index points to something with scopal arguments, that indicates it isn't the end
+                    - Start with a scope-resolved MRS
+                    - Initially "follow" the predication that introduces the variable that is the MRS index
+                    - To "follow" a given predication:
+                        - If there are no scopal arguments, we have found a syntactic head
+                        - Otherwise, if it is a special case predication (like 'nominalization_rel') follow its scopal arguments per whatever the special case is
+                        - Otherwise, for each scopal argument from ARG1 to ARGN:
+                            - If the ARG has a QEQ, use it to get the next predication (which might skip to somewhere deep in the tree) and follow that
+                            - If not, just follow the predication the ARG points to
+                    - Note that this algorithm could return more than one syntactic head.  For example "I want steak and I want soup" will generate two: one for each want_v_1
+                - Problem is that you can get more than one index for "discourse" for example
         - Bug: It looks like collective only checks for one value???
             - whole_group_unique_individuals.update(binding_value) never adds a set of individuals to the set
         - which chicken menu items do you have? --> pork
