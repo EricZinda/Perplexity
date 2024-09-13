@@ -820,21 +820,21 @@
             },
             "I'd like to get a steak": {
                 "SF": "prop",
-                "TENSE": "tensed",
+                "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
             "I'd like to have a steak": {
                 "SF": "prop",
-                "TENSE": "tensed",
+                "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
             },
             "I'd like to order a steak": {
                 "SF": "prop",
-                "TENSE": "tensed",
+                "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
@@ -865,6 +865,13 @@
             {
                 "SF": "prop",
                 "TENSE": "tensed",
+                "MOOD": "indicative",
+                "PROG": "-",
+                "PERF": "-"
+            },
+            {
+                "SF": "prop",
+                "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
@@ -1855,7 +1862,7 @@
             },
             "I'd like to cancel my steak": {
                 "SF": "prop",
-                "TENSE": "tensed",
+                "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"
@@ -1871,7 +1878,7 @@
             },
             {
                 "SF": "prop",
-                "TENSE": "tensed",
+                "TENSE": "untensed",
                 "MOOD": "indicative",
                 "PROG": "-",
                 "PERF": "-"

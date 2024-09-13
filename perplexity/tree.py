@@ -312,13 +312,13 @@ def syntactic_heads_characteristic_variables(mrs):
 def search_syntactic_head(handle, mrs):
     # Find the EP for this handle by searching
     # for the EP that has this handle as its label
-    ep = None
+    # Note that there might be multiple in conjunction
+    eps = []
     for item in mrs.rels:
         if item.label == handle:
-            ep = item
-            break
+            eps.append(item)
 
-    if ep is None:
+    if len(eps) == 0:
         # Must be a hole, and thus has a QEQ
         for item in mrs.hcons:
             if item.hi == handle:
@@ -326,14 +326,58 @@ def search_syntactic_head(handle, mrs):
                 # that maps to the lo part
                 for ep_candidate in mrs.rels:
                     if ep_candidate.label == item.lo:
-                        ep = ep_candidate
-                        break
+                        eps.append(ep_candidate)
 
-                if ep is not None:
+                if eps:
                     break
 
-    if ep is None:
+    ep = None
+    if len(eps) == 0:
         assert False, f"variable {handle} was not a characteristic variable and was not a handle: this case shouldn't exist"
+
+    elif len(eps) == 1:
+        ep = eps[0]
+
+    else:
+        # There are multiple EPs in conjunction.
+        # “that will be all, thank you.” and “nails are rusty and red” generate shared labels that have some form of implicit_conj or _and_conj
+        # which both reference other event variables
+        for test_ep in eps:
+            if test_ep.predicate in ["implicit_conj", "_and_c"]:
+                ep = test_ep
+                break
+
+        if ep is None:
+            # Otherwise Choose the one that doesn't reference the introduced variable of any others
+            final_eps = []
+            for test_ep in eps:
+                doesnt_reference_any = True
+                for other_ep in eps:
+                    if test_ep == other_ep:
+                        continue
+
+                    if other_ep.id in test_ep.args.values():
+                        doesnt_reference_any = False
+                        break
+
+                if doesnt_reference_any:
+                    final_eps.append(test_ep)
+
+            if ep is None and len(final_eps) > 1:
+                # unknown words like "leving" as a full phrase, can generate multiple EPs in conjunction that don't reference
+                # each other like unknown(e2,i4), _leving/vbg_u_unknown(e5,i4,i6)
+                # special case this and choose unknown
+                # “that will be all, thank you.” and “nails are rusty and red” generate shared labels that have some form of implicit_conj or _and_conj
+                # which both reference other event variables
+                for item in final_eps:
+                    if item.predicate in ["unknown"]:
+                        ep = item
+                        break
+
+            if len(final_eps) == 1:
+                ep = final_eps[0]
+
+        assert ep is not None, "Couldn't find an EP that didn't reference others"
 
     # Recurse on any arguments that are handles
     is_scopal = False
@@ -408,6 +452,7 @@ def consumed_variables(arg_value):
             yield from consumed_variables(item)
     else:
         assert False
+
 
 # Make sure a list of predications (like for a conjunction/"logical and")
 #   is sorted such that predications that *modify* e variables
@@ -705,7 +750,20 @@ def find_quantifier_from_variable(term, variable_name):
 
 
 def find_index_predication(tree_info):
-    return find_predication_from_introduced(tree_info["Tree"], tree_info["Index"])
+    # TODO: stop using Index for syntactic head once we are sure that trees will always have just one OR
+    # start returning multiple heads and deal with that properly
+    syntactic_head_variable = tree_info["SyntacticHeads"][0] if len(tree_info["SyntacticHeads"]) == 1 else tree_info["Index"]
+    return find_predication_from_introduced(tree_info["Tree"], syntactic_head_variable)
+
+
+def gather_remaining_syntactic_heads(tree_info):
+    def gather_heads(predication):
+        if predication.introduced_variable() in tree_info["SyntacticHeads"]:
+            remaining_heads.append(predication.introduced_variable())
+
+    remaining_heads = []
+    walk_tree_predications_until(tree_info["Tree"], gather_heads)
+    return remaining_heads
 
 
 def gather_quantifier_order(tree_info):

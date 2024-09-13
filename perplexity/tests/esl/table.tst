@@ -123,7 +123,7 @@
         {
             "Command": "I'd like to get a table for 2",
             "Expected": "Host: Perfect! Please come right this way. The host shows you to a wooden table with a checkered tablecloth. A minute goes by, then your waiter arrives.\nWaiter: Hi there!\nWaiter: What can I get you?",
-            "Tree": "_a_q(x14,number_q(x20,card(2,x20,i26),[_table_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_get_v_1_request(e2,x3,x14)))",
+            "Tree": "_a_q(x14,number_q(x20,card(2,x20,i26),[_table_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_get_v_1_request(e13,x3,x14)))",
             "Enabled": true,
             "ID": "8a5eb15d-aec5-4844-9e37-8c9058e8e392"
         },
@@ -151,21 +151,21 @@
         {
             "Command": "I'd like to have a table for 2 please",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "_please_a_1(i28,_a_q(x15,number_q(x21,card(2,x21,i27),[_table_n_1(x15), _for_p(e20,x15,x21)]),pronoun_q(x3,pron(x3),_have_v_1_request(e2,x3,x15))))",
+            "Tree": "_please_a_1(i28,_a_q(x15,number_q(x21,card(2,x21,i27),[_table_n_1(x15), _for_p(e20,x15,x21)]),pronoun_q(x3,pron(x3),_have_v_1_request(e14,x3,x15))))",
             "Enabled": true,
             "ID": "974262c5-65b3-4155-8773-dc900ed5797d"
         },
         {
             "Command": "Hi, I'd love to have a table for 2",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "_a_q(x19,number_q(x25,card(2,x25,i31),[_table_n_1(x19), _for_p(e24,x19,x25)]),pronoun_q(x3,pron(x3),_have_v_1_request(e12,x3,x19)))",
+            "Tree": "_a_q(x19,number_q(x25,card(2,x25,i31),[_table_n_1(x19), _for_p(e24,x19,x25)]),pronoun_q(x3,pron(x3),_have_v_1_request(e18,x3,x19)))",
             "Enabled": true,
             "ID": "83d2a395-4cbd-4d5a-862e-c85697a98887"
         },
         {
             "Command": "Hi, I'd love to have a table for 2, please",
-            "Expected": "WRONG: Yes, that is true.",
-            "Tree": "discourse(i2,greet(hi,i6),_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e13,x3,x20)))))",
+            "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
+            "Tree": "_please_a_1(i33,_a_q(x20,number_q(x26,card(2,x26,i32),[_table_n_1(x20), _for_p(e25,x20,x26)]),pronoun_q(x3,pron(x3),_have_v_1_request(e19,x3,x20))))",
             "Enabled": true,
             "ID": "e300aab3-42ec-4e9a-9881-dba6b7fe84a5"
         },
@@ -263,7 +263,7 @@
         {
             "Command": "hello, table for 2, please",
             "Expected": "Waiter: Um... You're at a table.\nWaiter: What can I get you?",
-            "Tree": "discourse(i2,greet(hi,i6),_please_a_1(i23,udef_q(x10,number_q(x16,card(2,x16,i22),[_table_n_1(x10), _for_p(e15,x10,x16)]),unknown(e9,x10))))",
+            "Tree": "_please_a_1(i23,udef_q(x10,number_q(x16,card(2,x16,i22),[_table_n_1(x10), _for_p(e15,x10,x16)]),unknown(e9,x10)))",
             "Enabled": true,
             "ID": "19f0bc45-2a55-4c94-b775-eca3afd7979c"
         },
@@ -277,7 +277,7 @@
         {
             "Command": "Hi, I want a table for 2, please?",
             "Expected": "I don't understand the way you are using: want\nWaiter: What can I get you?",
-            "Tree": "discourse(i2,greet(hi,i6),_please_a_1(i27,_a_q(x14,number_q(x20,card(2,x20,i26),[_table_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_want_v_1(e13,x3,x14)))))",
+            "Tree": "_please_a_1(i27,_a_q(x14,number_q(x20,card(2,x20,i26),[_table_n_1(x14), _for_p(e19,x14,x20)]),pronoun_q(x3,pron(x3),_want_v_1(e13,x3,x14))))",
             "Enabled": true,
             "ID": "1fad1ba9-a1c9-43c8-af00-48b7b20cc0d7"
         },

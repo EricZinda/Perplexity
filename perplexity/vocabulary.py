@@ -288,10 +288,12 @@ def check_phrases(func, vocabulary, predicates, phrase_dict):
             for mrs in mrs_parser.mrss_from_phrase(phrase):
                 # Just remember one of every alternate tree for this MRS as an example
                 # to show in errors
+                heads = [x for x in perplexity.tree.syntactic_heads_characteristic_variables(mrs)]
                 example_trees = {}
                 for tree_orig in mrs_parser.trees_from_mrs(mrs):
                     tree_info_orig = {"Tree": tree_orig,
-                                      "Variables": mrs.variables}
+                                      "Variables": mrs.variables,
+                                      "SyntacticHeads": heads}
                     for tree_info in vocabulary.alternate_trees(None, tree_info_orig, yield_original=True):
                         # For each tree that has one of the predicates in it, collect the properties
                         # for the *verb introduced event* variable

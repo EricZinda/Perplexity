@@ -557,6 +557,9 @@ def build_transformed_tree(vocabulary, state, tree_info, transformer_root):
         new_tree_info["Transformed"] = str(transformer_root)
         if new_mrs_index is not None:
             new_tree_info["Index"] = new_mrs_index
+
+        # Automatically remove variables from "SyntacticHeads" if they get removed from the tree
+        new_tree_info["SyntacticHeads"] = perplexity.tree.gather_remaining_syntactic_heads(new_tree_info)
         pipeline_logger.debug(f"Transformed: Index {new_tree_info.get('Index', None)}, Tree:{new_tree_info['Tree'].repr_with_indices() if isinstance(new_tree_info['Tree'], perplexity.tree.TreePredication) else str(new_tree_info['Tree'])}")
         return new_tree_info
 

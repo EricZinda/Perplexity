@@ -62,7 +62,8 @@
             "Expected": [
                 "Johnny\nbill\norder\nWaiter: Can I get you anything besides 2 steaks for you?",
                 "bill\nJohnny\norder\nWaiter: Can I get you anything besides 2 steaks for you?",
-                "Johnny\norder\nbill\nWaiter: Can I get you anything besides 2 steaks for you?"
+                "Johnny\norder\nbill\nWaiter: Can I get you anything besides 2 steaks for you?",
+                "order\nbill\nJohnny\nWaiter: Can I get you anything besides 2 steaks for you?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -216,5 +217,5 @@
             "ID": "73c3f31c-5793-45a6-a3ac-ebf2cd8d9a6c"
         }
     ],
-    "ElapsedTime": 35.70682
+    "ElapsedTime": 34.71427
 }

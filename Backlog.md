@@ -3,6 +3,13 @@
         - "I want soup, I want salad" --> two want_v_1 heads joined by impl_conj(e, e, e)
         - "Hi, I'd love to have a table for 2, please" --> greet() and have_v_1() heads joined by discourse(i, h, h)
         - The engine should process them as separate "conjunctions"
+        - Really this should probably happen way early in the parse process where we split the trees into two different MRSs (or trees) to process
+            - Right now it is happening at runtime when we evaluate
+        - Right now we only do one pair of conjuncts and not the general case
+        - select_tree_conjunct, vocabulary.py:789 is the place that handles it
+        - Really we need a more robust pipeline. There are a few things going on in it
+            - Transforming the original trees to new ones. This needs to account for the syntactic heads instead on indexes, and properly map the old heads to new ones as they get transformed
+            - Transforming one MRS into several for either conjunctions or other constructs that generate multiple syntactic heads like "discourse"
     - Fix some of the user interface issues:
         - do a better response than "I don't understand the way you used X" and other default messages
             - I don't know the words: plase/nn and I don't know the way you used: for
@@ -35,20 +42,8 @@
 # Bugs
     # Pri 1
         - FIX BROKEN TESTS (i.e. WRONG: tests)
-            - "Hi, I'd love to have a table for 2, please" --> Yes, that is true.
-                - Because the Index is on the discourse predication
-                - How to find the next index?
-                    - Theory: If the index points to something with scopal arguments, that indicates it isn't the end
-                    - Start with a scope-resolved MRS
-                    - Initially "follow" the predication that introduces the variable that is the MRS index
-                    - To "follow" a given predication:
-                        - If there are no scopal arguments, we have found a syntactic head
-                        - Otherwise, if it is a special case predication (like 'nominalization_rel') follow its scopal arguments per whatever the special case is
-                        - Otherwise, for each scopal argument from ARG1 to ARGN:
-                            - If the ARG has a QEQ, use it to get the next predication (which might skip to somewhere deep in the tree) and follow that
-                            - If not, just follow the predication the ARG points to
-                    - Note that this algorithm could return more than one syntactic head.  For example "I want steak and I want soup" will generate two: one for each want_v_1
-                - Problem is that you can get more than one index for "discourse" for example
+
+
         - Bug: It looks like collective only checks for one value???
             - whole_group_unique_individuals.update(binding_value) never adds a set of individuals to the set
         - which chicken menu items do you have? --> pork
@@ -529,6 +524,21 @@
         -	And the implied request given by: “My son is a vegetarian”
 
 # Code Cleanup
+    - Refactor the code based on what we've learned:
+        - Need an MRS pipeline up front that does several things
+            - Transforms the tree using user defined tree transforms
+            - potentially generates multiple MRS from a single MRS for cases where there are conjuncts or multiple syntactic heads (like "Hi, I'd love to have a table for 2, please")
+                - properly puts "SyntacticHeads" in the MRS (and not the tree) since it is MRS (not tree) dependent
+
+        - solution groups
+            - The code has become very hard to follow due to interpretations, and the sheer number of generators upon generators that get used
+            - Figure out how to properly maintain constraints in the face of "and" like "I want 2 steaks and 2 soups"
+
+        - user_interface
+            - Code is very convoluted at this point, clean it up and make it maintainable
+            - Do a more principled job of what interaction records are, especially in the face of a single phrase generating multiple interactions
+            - Do a cleaner job of what output happens, and where.
+
     - Switch the code to use the term "scope-resolved MRS" instead of "well-formed tree" or "scope-resolved tree"
     - Get rid of all "NextConjunct" code?
     - Do we still need frames with the new concept handling?

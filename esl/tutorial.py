@@ -367,9 +367,9 @@ def discourse_transformer():
     conjunction_production = ConjunctionProduction(conjunction_list=["$extra_conjuncts", production])
 
     # Be sure to only match the verbs as the target
-    target_match = TransformerMatch(name_pattern=["regex:_v_", "unknown"],
+    target_match = TransformerMatch(name_pattern=["regex:_v_", "_please_a_1", "unknown"],
                                     name_capture="target_name",
-                                    args_pattern=["e", "**"],
+                                    args_pattern=["*", "**"],
                                     args_capture=["target_e"],
                                     args_rest_capture="target_rest_args")
     conjunction_match = ConjunctionMatchTransformer(transformer_list=[target_match], extra_conjuncts_capture="extra_conjuncts")
@@ -830,9 +830,9 @@ def would_like_removal_intransitive_transformer():
 # Convert "I would like to x y" to "I x_request y"
 @Transform(vocabulary)
 def would_like_removal_transitive_transformer():
-    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$e1", "ARG1": "$x1", "ARG2": "$x2"})
+    production = TransformerProduction(name="$|name|_request", args={"ARG0": "$etarget", "ARG1": "$x1", "ARG2": "$x2"})
     target = TransformerMatch(name_pattern="*", name_capture="name", args_pattern=["e", "x", "x"],
-                              args_capture=[None, "x1", "x2"])
+                              args_capture=["etarget", "x1", "x2"])
     like_match = TransformerMatch(name_pattern=["_like_v_1", "_love_v_1"], args_pattern=["e", "x", target],
                                   args_capture=[None, None, None])
     would_match = TransformerMatch(name_pattern="_would_v_modal",
@@ -1626,14 +1626,14 @@ def greetings():
 
 @Predication(vocabulary, names=["greet"])
 def greet(context, state, c_arg, i_unused):
-    yield state
+    yield state.record_operations([RespondOperation("Hello!")])
 
 
 @Predication(vocabulary, names=["discourse"])
 def discourse(context, state, i_unused, h_left_binding, h_right_binding):
-    if isinstance(h_left_binding, TreePredication) and h_left_binding.name == "greet":
-        for solution in context.call(state, h_right_binding):
-            yield solution
+    for solution in context.call(state, h_left_binding):
+        for final_solution in context.call(solution, h_right_binding):
+            yield final_solution
 
 
 @Predication(vocabulary, names=["appos"], arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
@@ -2352,14 +2352,14 @@ def _pay_v_for(context, state, e_introduced_binding, x_actor_binding, i_binding1
                 "I'd like a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I need a steak": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "My son would like a salad": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "I'd like to get a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "I'd like to have a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                "I'd like to order a steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I'd like to get a steak": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I'd like to have a steak": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                "I'd like to order a steak": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
                 "I want a table thank you": {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties=[
                 {'SF': 'comm', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                {'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                {'SF': 'prop', 'TENSE': ['pres', 'tensed', 'untensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              ],
              arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
 def _want_v_1(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
@@ -3288,9 +3288,9 @@ def _cancel_v_1_group(context, state_list, e_introduced_binding_list, x_actor_va
              names=["_cancel_v_1_request"],
              phrases={
                  "I want to cancel my order":  {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-                 "I'd like to cancel my steak": {'SF': 'prop', 'TENSE': 'tensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                 "I'd like to cancel my steak": {'SF': 'prop', 'TENSE': 'untensed', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
-             properties={'SF': 'prop', 'TENSE': ['pres', 'tensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
+             properties={'SF': 'prop', 'TENSE': ['pres', 'untensed'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'})
 def _cancel_v_1_request(context, state, e_introduced_binding, x_actor_binding, x_object_binding):
     if x_actor_binding.value is not None and len(x_actor_binding.value) == 1 and x_actor_binding.value[0] == "restaurant":
         # Don't support "You want to cancel my order"

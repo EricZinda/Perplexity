@@ -11,5 +11,9 @@
     "card_cex": {},
     "card_cxi": {},
     "neg": {},
-    "and_c_u_x": {}
+    "and_c_u_x": {},
+    "noop_x": {},
+    "noop_i": {},
+    "noop_u": {},
+    "noop_e": {}
 }
