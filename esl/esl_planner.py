@@ -624,6 +624,7 @@ def cancel_group_group(state, context, group_who, group_what, what_size_constrai
             who_list = group_who[index]
 
         # See if the customer wants to cancel any of the orders
+        # by seeing if "what" resolves down to some set of orders
         orders_to_cancel = what.instances(context, state, rel_all_instances(state, None, "order"))
         if len(orders_to_cancel) > 0:
             for order in orders_to_cancel:

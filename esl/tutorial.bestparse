@@ -3,7 +3,7 @@
   "Phrase": "What can I pay?",
   "MRSIndex": 1
  },
- "timestamp": "ca1f6a13-519e-4e81-ae31-026584f075da",
+ "timestamp": "3f886fce-f101-49a0-99e6-5ca14606d425",
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: h8 ] [ _pay_v_for LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: i11 ARG3: i12 ] [ _with_p LBL: h9 ARG0: e13 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x14 [ x PERS: 3 NUM: sg GEND: n IND: - ] ] [ udef_q LBL: h15 ARG0: x14 RSTR: h16 BODY: h17 ] [ _cash_n_1 LBL: h18 ARG0: x14 ] > HCONS: < h0 qeq h1 h6 qeq h4 h8 qeq h9 h16 qeq h18 > ]": {
   "Phrase": "I want to pay with cash",
   "MRSIndex": 1
@@ -278,6 +278,10 @@
  },
  "[ TOP: h0 INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ pron LBL: h4 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ] [ _want_v_1 LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: pl IND: + ] ] [ udef_q LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ] [ card LBL: h12 ARG0: e14 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x8 CARG: \"2\" ] [ _steak_n_1 LBL: h12 ARG0: x8 ] [ _for_p LBL: h1 ARG0: e15 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e2 ARG2: x16 [ x PERS: 3 NUM: sg ] ] [ udef_q LBL: h17 ARG0: x16 RSTR: h18 BODY: h19 ] [ _dish_n_of LBL: h20 ARG0: x16 ] > HCONS: < h0 qeq h1 h6 qeq h4 h10 qeq h12 h18 qeq h20 > ]": {
   "Phrase": "I want 2 steaks for lunch",
+  "MRSIndex": 1
+ },
+ "[ TOP: h0 INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ] RELS: < [ _can_v_modal LBL: h1 ARG0: e2 ARG1: h4 ] [ pron LBL: h5 ARG0: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pronoun_q LBL: h6 ARG0: x3 RSTR: h7 BODY: h8 ] [ _cancel_v_1 LBL: h9 ARG0: e10 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: x3 ARG2: x11 [ x PERS: 3 NUM: sg ] ] [ _the_q LBL: h12 ARG0: x11 RSTR: h13 BODY: h14 ] [ _order_n_of LBL: h15 ARG0: x11 ] [ _for_p LBL: h9 ARG0: e16 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e10 ARG2: x17 [ x PERS: 1 NUM: sg IND: + PT: std ] ] [ pron LBL: h18 ARG0: x17 ] [ pronoun_q LBL: h19 ARG0: x17 RSTR: h20 BODY: h21 ] > HCONS: < h0 qeq h1 h4 qeq h9 h7 qeq h5 h13 qeq h15 h20 qeq h18 > ]": {
+  "Phrase": "can I cancel the order for me?",
   "MRSIndex": 1
  }
 }

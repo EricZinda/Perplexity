@@ -1312,6 +1312,8 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
         elif for_type == "intended to belong to":
             if sort_of(solution, x_what_values, "table") or \
                     (len(x_what_values) == 1 and x_what_values[0].entails(context, solution, ESLConcept("table"))):
+                # Interpret "table for x" to mean "table having the capacity for N people"
+                # Get the criteria for the variable for() uses and see if it has a constraint on it
                 tree_info = solution.get_binding("tree").value[0]
                 wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
                 this_sentence_force = sentence_force(tree_info["Variables"])
@@ -1333,11 +1335,16 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
 
                 if found_constraint is None:
                     modified_values = [x_what_values[0].add_criteria(rel_subjects_greater_or_equal, "maxCapacity", len(x_for_list))]
+
                 else:
                     if size == 1 and len(x_for_list) > 1:
                         size = len(x_for_list)
                     modified_values = [x_what_values[0].add_criteria(rel_subjects_greater_or_equal, "maxCapacity", size)]
 
+            elif sort_of(solution, x_what_values, "order") or \
+                    (len(x_what_values) == 1 and x_what_values[0].entails(context, solution, ESLConcept("order"))):
+                modified_values = [value.add_criteria(rel_objects, x_for_list[0], "possess") for value
+                                   in x_what_values]
 
             else:
                 # Anything else gets "targetPossession" as a criteria to indicate what is desired
@@ -4968,7 +4975,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()
