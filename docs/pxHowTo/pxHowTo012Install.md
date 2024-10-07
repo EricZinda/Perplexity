@@ -36,6 +36,7 @@ Now you can choose to run Perplexity in a Docker container or on your local mach
 2. Install the libraries required by Perplexity:
    - `pip install pydelphin`
    - `pip install inflect`
+   - `pip install openai` (note that the ESL sample is the only thing that uses openai for an example, it will just disable this feature if you don't set an OpenAI key to enable it)
 
 Now you need to install the ACE Parser, which is the only non-Python part of the project:
 

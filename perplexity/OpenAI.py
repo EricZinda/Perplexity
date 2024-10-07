@@ -190,6 +190,9 @@ def CachePath():
 
 
 def IsServiceDown():
+    if client is None:
+        return True
+
     now = datetime.now()
     count = len(latestFailures)
     index = 0
@@ -219,9 +222,12 @@ failurePeriodSeconds = 10 * 60
 failureCountLimit = 5
 latestFailures = []
 
+try:
+    client = openai.OpenAI()
 
-client = openai.OpenAI()
-
+except openai.OpenAIError as error:
+    print(f"Can't initialize OpenAI: {str(error)}\nOpenAI will not be used")
+    client = None
 
 if __name__ == '__main__':
     # from openai import OpenAI
