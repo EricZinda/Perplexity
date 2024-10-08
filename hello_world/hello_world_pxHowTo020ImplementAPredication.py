@@ -1,11 +1,11 @@
-from perplexity.predications import combinatorial_predication_1
+from perplexity.predications import combinatorial_predication_1, lift_style_predication_2
 from perplexity.state import State
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
-from perplexity.vocabulary import Predication
+from perplexity.vocabulary import Predication, ValueSize
 from perplexity.world_registry import register_world
 import perplexity.messages
-
+import perplexity.sstring
 
 vocabulary = system_vocabulary()
 
@@ -52,6 +52,64 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
                                            unbound_values)
 
 
+@Predication(vocabulary,
+             names=["_lift_v_cause"],
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
+def lift(context, state, e_introduced_binding, x_actor_binding, x_item_binding):
+    def check_items_lifting_items(item1, item2):
+        if item1 == ("Elsa", "Seo-Yun") and len(item2) == 1 and item2[0] == "table1":
+            return True
+        else:
+            context.report_error(["xIsNotYZ", x_actor_binding.variable.name, "lifting", x_item_binding.variable.name])
+
+    def all_item1s_lifting_item2s(item2):
+        if len(item2) == 1 and item2[0] == "table1":
+            yield ("Elsa", "Seo-Yun")
+
+    def all_item2s_being_lifted_by_item1s(item1):
+        if item1 == ("Elsa", "Seo-Yun"):
+            yield ("table1",)
+
+    yield from lift_style_predication_2(context,
+                                        state,
+                                        x_actor_binding,
+                                        x_item_binding,
+                                        check_items_lifting_items,
+                                        all_item1s_lifting_item2s,
+                                        all_item2s_being_lifted_by_item1s)
+
+
+@Predication(vocabulary, names=["_student_n_of"])
+def student_n_of(context, state, x_binding, i_binding):
+    def bound_variable(value):
+        if value in ["Elsa", "Seo-Yun"]:
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield "Elsa"
+        yield "Seo-Yun"
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
+
+
+@Predication(vocabulary, names=["_table_n_1"])
+def table_n_1(context, state, x_binding):
+    def bound_variable(value):
+        if value in ["table1"]:
+            return True
+        else:
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield "table1"
+
+    yield from combinatorial_predication_1(context, state, x_binding, bound_variable, unbound_variable)
+
+
 # Called to initialize or reset the micro-world state
 def reset():
     return State([])
@@ -62,7 +120,8 @@ def reset():
 def ui():
     ui = UserInterface(world_name="SimplestExample",
                        reset_function=reset,
-                       vocabulary=vocabulary)
+                       vocabulary=vocabulary,
+                       message_function=generate_custom_message)
     return ui
 
 
@@ -94,7 +153,10 @@ def generate_custom_message(state, tree_info, error_term):
             # that it represented in the MRS. The "*" in {*arg1} tells
             # it to use the value of arg1 directly without converting it
             # (described below)
-            return s("{*arg1} is not {arg2}", tree_info)
+            return perplexity.sstring.s("{*arg1} is not {arg2}", tree_info)
+
+        elif error_constant == "adjectiveDoesntApply":
+            return perplexity.sstring.s("{arg2} is not {*arg1}", tree_info)
 
         else:
             # No custom message, just return the raw error for debugging
