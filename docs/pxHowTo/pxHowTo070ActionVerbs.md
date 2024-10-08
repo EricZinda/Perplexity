@@ -1,5 +1,5 @@
 ## Action Verbs
-All of the predications we've dealt with so far have just been used to ask questions like "Is a file large?" or make propositions like "A file is large." (which is just a kind of question in terms of the kind of response a person would expect). Now it is time to implement "action verbs" -- verbs that actually *do* something to the system. Let's implement "delete".
+All the predications we've dealt with so far have just been used to ask questions like "Is a file large?" or make propositions like "A file is large." (which is just a kind of question in terms of the kind of response a person would expect). Now it is time to implement "action verbs" -- verbs that actually *do* something to the system. Let's implement "delete".
 
 "Delete" goes beyond asking questions about the state of the system. To implement it, we need to actually *modify* the state of the system. Since the current state of all parts of the system is represented by the `state` object, we'll end up calling a method on that object in some form to delete a file.
 
@@ -23,13 +23,13 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                                       └─ _delete_v_1(e2,x3,x8)
 ~~~
 
-Let's ignore the pronoun related predications and focus on `_delete_v_1(e2,x3,x8)`. We're not going to handle any modifiers to it either, so we can ignore both `e2` and `x3` (since `x3` represents the pronoun). That leaves `x8`, which is the thing the user wants to delete. We could try implementing `_delete_v_1` like the other single `x` predications we've built by calling the `combinatorial_style_predication_1()` helper. The problem is: `_delete_v_1` is not combinatorial.
+Let's ignore the pronoun related predications and focus on `_delete_v_1(e2,x3,x8)`. We're not going to handle any modifiers to it either, so we can ignore both `e2` and `x3` (since `x3` represents the pronoun). That leaves `x8`, which is the thing the user wants to delete. 
 
-Combinatorial predications are those that, when applied to a set, can be `true` for any chosen subset of the set. Delete, however, doesn't make sense for a set of items "together".  Deleting items together sounds dangerously like "deleting them in a transaction" which our file system can't do.  Really, delete can only apply to one item at a time, and it shouldn't support a "together" semantic unless it can really enforce it. So, it will use a different helper called, `individual_style_predication_1()` which ensures that only single individuals make it through, like this:
+We could try implementing `_delete_v_1` like the other single `x` predications we've built by calling the `combinatorial_predication_1()` helper. The problem is: `_delete_v_1` doesn't support sets > 1. Delete, doesn't make sense for a set of items "together".  Deleting items together sounds dangerously like "deleting them in a transaction" which our file system can't do.  Really, delete can only apply to one item at a time, and it shouldn't support a "together" semantic unless it can really enforce it. So, it will use a different helper called, `individual_style_predication_1()` which ensures that only single individuals make it through, like this:
 
 ~~~
 @Predication(vocabulary, names=["_delete_v_1"])
-def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
         # value will not be a tuple since individual_style_predication_1() was used
@@ -37,12 +37,13 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
             return True
 
         else:
-            report_error(["cantDo", "delete", x_what_binding.variable.name])
+            context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
     def unbound_what():
         report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    yield from individual_style_predication_1(state, 
+    yield from individual_style_predication_1(context,
+                                              state, 
                                               x_what_binding,
                                               criteria, unbound_what,
                                               ["cantXYTogether", "delete", x_what_binding.variable.name])
@@ -57,7 +58,7 @@ Let's imagine that we added a `state.delete_object()` to the `State` object that
 
 ~~~
 @Predication(vocabulary, names=["_delete_v_1"])
-def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
         # value will not be a tuple since individual_style_predication_1() was used
@@ -65,12 +66,13 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
             return True
 
         else:
-            report_error(["cantDo", "delete", x_what_binding.variable.name])
+            context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
     def unbound_what():
-        report_error(["cantDo", "delete", x_what_binding.variable.name])
+        context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in individual_style_predication_1(state, 
+    for success_state in individual_style_predication_1(context,
+                                                        state, 
                                                         x_what_binding,
                                                         criteria, 
                                                         unbound_what,
@@ -81,7 +83,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
 
 This works because: 
 
-When `individual_style_predication_1()` yields a new state, it means this predication was successful. That happened because the `criteria()` function returned `true`. The new state has all of the MRS variables set to the value that made the predication `true`, which means that the `x_what_binding` variable should now be set to the thing being deleted. 
+When `individual_style_predication_1()` yields a new state, it means this predication was successful. That happened because the `criteria()` function returned `true`. The new state has all the MRS variables set to the value that made the predication `true`, which means that the `x_what_binding` variable should now be set to the thing being deleted. 
 
 However, we need to be careful to ask for the value of the variable represented by `x_what_binding` *in the new state*. Remember that `state` objects are immutable, so we have to look at the *copy* being returned to get the new value of the variable. That's what this line does:
 
@@ -119,6 +121,7 @@ class DeleteOperation(object):
 The `DeleteOperation` itself is very simple, it is really just remembering what to delete. When it is asked to `apply_to()`, it calls the method in the `state` object that actually deletes the file, in *that* state object (which might be different than the one it was added to).
 
 To use the `DeleteOperation`, we create an instance of one and pass it to the `apply_operations()` method in the `State` object, like this:
+
 ~~~
 operation = DeleteOperation(new_state.get_binding(x_what_binding.variable.name).value[0])
 new_state.apply_operations([operation])
@@ -132,7 +135,7 @@ Now we can write the basic implementation of "delete":
 
 ~~~
 @Predication(vocabulary, names=["_delete_v_1"])
-def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
         # value will not be a tuple since individual_style_predication_1() was used
@@ -140,12 +143,13 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
             return True
 
         else:
-            report_error(["cantDo", "delete", x_what_binding.variable.name])
+            context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
     def unbound_what():
-        report_error(["cantDo", "delete", x_what_binding.variable.name])
+        context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in individual_style_predication_1(state, 
+    for success_state in individual_style_predication_1(context,
+                                                        state, 
                                                         x_what_binding,
                                                         criteria, 
                                                         unbound_what,
@@ -155,7 +159,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
         yield success_state.apply_operations([operation])
 ~~~
 
-The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of `interact_once()`. That's where `DeleteOperation.apply_to()` gets called for every solution in the solution group.
+The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of `user_interface.default_loop()`. That's where `DeleteOperation.apply_to()` gets called for every solution in the solution group.
 
 ## The pron() Predication
 The MRS we are working with is:
@@ -177,28 +181,29 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                     └─ _a_q(x8,RSTR,BODY)
                                       └─ _delete_v_1(e2,x3,x8)
 ~~~
+
 ... and `pron(x)` is the last predication to implement (`pronoun_q` is a quantifier that is implemented by the system). `pron(x)` is true when `x` is bound to an object that represents what the specified pronoun is *referring to*. The "specified pronoun" is determined by looking at the [properties](../mrscon/devhowto0010MRS#variable-properties) for the `x` variable to determine if the pronoun is "you" (`PERS: 2` -- second person), "him/her"(`PERS: 3` -- third person), etc. If `x` is bound to an object that represents what that pronoun is referring to, it is `true`. 
 
 There were not any pronouns in our command "delete a file", so where did the `pron` predication come from? In this case, the pronoun is an *implied* "you" since it is a command. I.e "(You) delete a large file".  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are "you" ("can you delete the file?" or the implied case above) and maybe "I" ("I want to delete a file"). For now, let's just do "you" and fail otherwise. 
 
 ~~~
 @Predication(vocabulary, names=["pron"])
-def pron(state, x_who_binding):
+def pron(context, state, x_who_binding):
     person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
 
     def bound_variable(value):
         if person == 2 and value == "computer":
             return True
         else:
-            report_error(["dontKnowActor", x_who_binding.variable.name])
+            context.report_error(["dontKnowActor", x_who_binding.variable.name])
 
     def unbound_variable():
         if person == 2:
             yield "computer"
         else:
-            report_error(["dontKnowActor", x_who_binding.variable.name])
+            context.report_error(["dontKnowActor", x_who_binding.variable.name])
 
-    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
+    yield from combinatorial_style_predication_1(context, state, x_who_binding, bound_variable, unbound_variable)
 ~~~
 
 To find out what pronoun is being referred to be `x`, we use a special variable binding that Perplexity puts in `state` called: `tree`.  This is not an MRS concept or feature, it is just a convenient place to keep the tree for predications that need to inspect it. The variables in the tree and their properties are accessed like a tree of dictionaries as shown above.
@@ -232,25 +237,25 @@ We need to change `file_n_of`, `large_a_1` and `delete_v_1_comm` to use the `sta
 
 ~~~
 @Predication(vocabulary, names=["_file_n_of"])
-def file_n_of(state, x_binding, i_binding):
+def file_n_of(context, state, x_binding, i_binding):
     def bound_variable(value):
         if value in state.all_individuals():
             return True
         else:
-            report_error(["notAThing", x_binding.value, x_binding.variable.name])
+            context.report_error(["notAThing", x_binding.value, x_binding.variable.name])
             return False
 
     def unbound_variable():
         yield from state.all_individuals()
 
-    yield from combinatorial_style_predication_1(state, x_binding, bound_variable, unbound_variable)
+    yield from combinatorial_style_predication_1(context, state, x_binding, bound_variable, unbound_variable)
 
 
 
 @Predication(vocabulary,
              names=["_large_a_1"],
              handles=[("DegreeMultiplier", EventOption.optional)])
-def large_a_1(state, e_introduced_binding, x_target_binding):
+def large_a_1(context, state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* large we should be
     degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
@@ -259,17 +264,17 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
             return True
 
         else:
-            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            context.report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
             return False
 
     def unbound_values():
         if criteria_bound("file2.txt"):
             yield "file2.txt"
 
-    yield from combinatorial_style_predication_1(state, x_target_binding, criteria_bound, unbound_values)
+    yield from combinatorial_style_predication_1(context, state, x_target_binding, criteria_bound, unbound_values)
 
 @Predication(vocabulary, names=["_delete_v_1"])
-def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
     def criteria(value):
         # Only allow deleting files and folders that exist
         # value will not be a tuple since individual_style_predication_1() was used
@@ -277,12 +282,13 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
             return True
 
         else:
-            report_error(["cantDo", "delete", x_what_binding.variable.name])
+            context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
     def unbound_what():
-        report_error(["cantDo", "delete", x_what_binding.variable.name])
+        context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-    for success_state in individual_style_predication_1(state, 
+    for success_state in individual_style_predication_1(context,
+                                                        state, 
                                                         x_what_binding,
                                                         criteria, 
                                                         unbound_what,
