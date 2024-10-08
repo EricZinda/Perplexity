@@ -359,7 +359,7 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 </code></pre></div></div>
 
-<p>In summary: The backtracking solver maps each predication in the tree to a Python function and calls it in a depth-first traversal. A <code class="language-plaintext highlighter-rouge">State</code> object is used to track the current value of all MRS variables (such as <code class="language-plaintext highlighter-rouge">x3</code>) as the solver goes through this process. At a given point in the traversal, the <code class="language-plaintext highlighter-rouge">State</code> object always has the current value of all MRS variables <em>and</em> any other current state the application needs to do its own work. Each program that uses Perplexity derives an object from <code class="language-plaintext highlighter-rouge">State</code> to allow predications to interact with the application.</p>
+<p>In summary: The backtracking solver maps each predication in the tree to a Python function and does a depth-first traversal of it. A <code class="language-plaintext highlighter-rouge">State</code> object is used to track the current value of all MRS variables (such as <code class="language-plaintext highlighter-rouge">x3</code>) as the solver goes through this process. At a given point in the traversal, the <code class="language-plaintext highlighter-rouge">State</code> object always has the current value of all MRS variables <em>and</em> any other current state the application needs to do its own work. Each program that uses Perplexity derives an object from <code class="language-plaintext highlighter-rouge">State</code> to allow predications to interact with the application.</p>
 
 <p>The rest of this section describes how to write these predication functions and how to interact with the <code class="language-plaintext highlighter-rouge">State</code> object.</p>
 
@@ -368,7 +368,7 @@ _a_q(x3,RSTR,BODY)
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_file_n_of(x3,i8)
 </code></pre></div></div>
 
-<p>The Perplexity library uses the <code class="language-plaintext highlighter-rouge">Vocabulary</code> object to map this to a Python function that can be called. All predicaiton Python functions have the same two initial arguments: <code class="language-plaintext highlighter-rouge">context</code> and <code class="language-plaintext highlighter-rouge">state</code>, followed by arguments that represent the predication arguments, <code class="language-plaintext highlighter-rouge">x3</code> and <code class="language-plaintext highlighter-rouge">i8</code> in this case.  <code class="language-plaintext highlighter-rouge">_file_n_of</code> looks like this:</p>
+<p>Perplexity uses the <code class="language-plaintext highlighter-rouge">Vocabulary</code> object to map this to a Python function that can be called. All predication Python functions have the same two initial arguments: <code class="language-plaintext highlighter-rouge">context</code> and <code class="language-plaintext highlighter-rouge">state</code>, followed by arguments that represent the predication arguments, <code class="language-plaintext highlighter-rouge">x3</code> and <code class="language-plaintext highlighter-rouge">i8</code> in this case.  <code class="language-plaintext highlighter-rouge">_file_n_of</code> looks like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
    ...
@@ -383,12 +383,12 @@ _a_q(x3,RSTR,BODY)
 <h3 id="predication-success">Predication Success</h3>
 <p>Recall from the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking</a> that the job of a predication is to be <code class="language-plaintext highlighter-rouge">true</code> when its arguments “are set to values that are (or mean) what the predication means”.  So, <code class="language-plaintext highlighter-rouge">file_n_of</code> should be <code class="language-plaintext highlighter-rouge">true</code> if <code class="language-plaintext highlighter-rouge">x_binding</code> and <code class="language-plaintext highlighter-rouge">i_binding</code> have values that mean “file” in the world it is implementing.</p>
 
-<p>Predication functions must be <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics">Python generator functions</a> so they can return multiple values iteratively by calling the Python <code class="language-plaintext highlighter-rouge">yield</code> operator (we’ll see this used next). <code class="language-plaintext highlighter-rouge">true</code> is indicated by <code class="language-plaintext highlighter-rouge">yield</code>ing the <code class="language-plaintext highlighter-rouge">state</code> object, as is, to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of the arguments. <code class="language-plaintext highlighter-rouge">false</code> is indicated by calling Python <code class="language-plaintext highlighter-rouge">return</code> directly – returning without yielding anything.</p>
+<p>Predication functions must be <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics">Python generator functions</a> so they can return multiple values iteratively by calling the Python <code class="language-plaintext highlighter-rouge">yield</code> operator (we’ll see this used next). <code class="language-plaintext highlighter-rouge">true</code> is indicated by <code class="language-plaintext highlighter-rouge">yield</code>ing the <code class="language-plaintext highlighter-rouge">state</code> object, as is, to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of the arguments. <code class="language-plaintext highlighter-rouge">false</code> is indicated by calling Python <code class="language-plaintext highlighter-rouge">return</code> directly – i.e. returning without yielding anything.</p>
 
 <p>Here’s a simple example: Let’s say we are building an interface to a program that has one file in it, called <code class="language-plaintext highlighter-rouge">file1.txt</code>. We could implement <code class="language-plaintext highlighter-rouge">file_n_of</code> like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
-    if x_binding.value is not None and x_binding.value[0] == "file1.txt":
+    if x_binding.value is not None and len(x_binding.value) == 1 and x_binding.value[0] == "file1.txt":
         yield state
 </code></pre></div></div>
 
@@ -401,7 +401,7 @@ _a_q(x3,RSTR,BODY)
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
     if x_binding.value is None:
         yield state.set_x(x_binding.variable.name, ("file1.txt", ))
-    elif x_binding.value[0] == "file1.txt":
+    elif len(x_binding.value) == 1 and x_binding.value[0] == "file1.txt":
         yield state
 </code></pre></div></div>
 
@@ -419,7 +419,7 @@ _a_q(x3,RSTR,BODY)
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
     if x_binding.value is None:
         yield state.set_x(x_binding.variable.name, ("file1.txt",))
-    elif x_binding.value[0] == "file1.txt":
+    elif len(x_binding.value) == 1 and x_binding.value[0] == "file1.txt":
         yield state
     else:
         report_error(["notAThing", x_binding.value, x_binding.variable.name])
@@ -482,14 +482,14 @@ def generate_custom_message(state, tree_info, error_term):
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>return s("{*arg1} is not {arg2}", tree_info)
 </code></pre></div></div>
 
-<p>… call, however. This is how a variable name like <code class="language-plaintext highlighter-rouge">x3</code> gets converted to a string like “file”. S-strings are a Perplexity feature described in a <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo025SStrings">separate topic</a>.</p>
+<p>… This is how a variable name like <code class="language-plaintext highlighter-rouge">x3</code> gets converted to a string like “file”. S-strings are a Perplexity feature described in a <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo025SStrings">separate topic</a>.</p>
 
 <p>The logic Perplexity uses for reporting errors is not obvious, it is worth reading the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure">section on errors</a> to understand how it works.</p>
 
-<h2 id="combinatorial-variables">Combinatorial Variables</h2>
+<h2 id="variables-are-a-tuple">Variables are a Tuple</h2>
 <p>Recall from the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">Together conceptual topic</a> that Perplexity represents items operating together as a set (represented as a <code class="language-plaintext highlighter-rouge">tuple</code> in Python). Because users of the system may ask questions like, “Are the files 20 mb?” (meaning are they 20mb <em>together</em>), predications need to be prepared to deal with variables that have a set of more than one item. Let’s update the <code class="language-plaintext highlighter-rouge">file_n_of()</code> function to handle this case.</p>
 
-<p>Assume we have two more files in our example, so that now we have: <code class="language-plaintext highlighter-rouge">file1.txt</code>, <code class="language-plaintext highlighter-rouge">file2.txt</code> and <code class="language-plaintext highlighter-rouge">file3.txt</code>. There is no extra meaning for files “together” in a folder vs. files “separately” in a folder: they are still just “files in a folder”.  So, we only have to change the logic to loop through the list and make sure they are all files. However, if the <code class="language-plaintext highlighter-rouge">x</code> variable is unbound, we need to yield <em>all combinations</em> of files since any combination of them could make this predication <code class="language-plaintext highlighter-rouge">true</code>, like this:</p>
+<p>Assume we have two more files in our example, so that now we have: <code class="language-plaintext highlighter-rouge">file1.txt</code>, <code class="language-plaintext highlighter-rouge">file2.txt</code> and <code class="language-plaintext highlighter-rouge">file3.txt</code>. There is no extra meaning for files “together” vs. files “separately” as far as being files: they are still just “files”.  So, we only have to change the logic to loop through the list and make sure they are all files. However, if the <code class="language-plaintext highlighter-rouge">x</code> variable is unbound, we need to yield <em>all combinations</em> of files since any combination of them could make this predication <code class="language-plaintext highlighter-rouge">true</code>, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
     if x_binding.value is None:
@@ -587,7 +587,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
 I don't know the words: a
 </code></pre></div></div>
 
-<p>We dont yet have an implementation for the word “a”.  You can see this by typing <code class="language-plaintext highlighter-rouge">/show</code>. Perplexity will then output the MRS, tree, and other debugging information:</p>
+<p>We dont yet have an implementation for the word “a”.  You can see that this is required by typing <code class="language-plaintext highlighter-rouge">/show</code>. Perplexity will then output the MRS, tree, and other debugging information:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? a file is large
 I don't know the words: a

@@ -15,7 +15,7 @@ This is a case where the prediction for "lift":
 _lift_v_cause(e1,x1,x2)
 ```
 
-... can't just check if each value of `x1` is lifting a value in `x2` and assume that means they are all also lifting separately or together.  Lifting together means something different, and thus, unlike "in", all combinations *do* need to be checked. There is a different helper that will do the logic for this scenario: `lift_style_predication_2()`. In contrast to `in_style_predication_2()`, the check functions need to be prepared for sets with more than one item and check if they are working *together*.
+... can't just check if each value of `x1` is lifting a value in `x2` and assume that means they are all also lifting separately or together.  Lifting together means something different, and thus, unlike "in", all combinations *do* need to be checked. There is a different helper that will do the logic for this scenario: `lift_style_predication_2()`. In contrast to `in_style_predication_2()`, the check functions need to be prepared for tuples with more than one item and check if they are working *together*.
 
 For this example, we'll assume that "Elsa" and "Seo-Yun" are lifting "table1" together:
 
@@ -45,12 +45,12 @@ def lift(context, state, e_introduced_binding, x_actor_binding, x_item_binding):
                                         all_item2s_being_lifted_by_item1s)
 ```
 
-So, `lift_style_predication_2()` works very much like the `in_style_predication_2()` from the [previous section](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo030InStylePredications) but calls the check function with sets instead of single values.
+So, `lift_style_predication_2()` works very much like the `in_style_predication_2()` from the [previous section](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo030InStylePredications) but calls the check function with tuples instead of single values.
 
-### Declaring Arguments that Understand Sets of More Than One Item
-As written, however, these check functions will *still* only get called with a single item. That is because the helper functions won't go through the work to generate all combinations unless a predication declares that it will use a set of more than one item if provided. It's too expensive to calculate if it will be thrown away.  
+### Declaring Arguments that Understand Tuples of More Than One Item
+As written, however, these check functions will *still* only get called with a tuple containing a single item. That is because the helper functions won't go through the work to generate all combinations unless a predication declares that it will use a tuple of more than one item if provided. It's too expensive to calculate if it will be thrown away.  
 
-To declare that `lift()` actually interprets meaning in sets (and therefore wants them passed in), we declare which arguments semantically understand sets of more than one by adding information to the `@Predication` declaration, like this:
+To declare that `lift()` actually interprets meaning in tuples > 1 (and therefore wants them passed in), we declare which arguments semantically understand tuples of more than one by adding information to the `@Predication` declaration, like this:
 
 ```
 @Predication(vocabulary,
@@ -61,7 +61,7 @@ def lift(state, e_introduced_binding, x_actor_binding, x_item_binding):
 ```
 All the rest of the function is unchanged.
 
-Adding the `arguments=[]` list to `@Predication()` tells the engine that we want to override the defaults for arguments and declare them ourselves.  The default for all arguments is to only have single values since that is *much* faster.  Only predications which interpret meaning in sets should ask for them. The declaration for `lift` asks for them by setting `ValueSize.all` on both `x` arguments.
+Adding the `arguments=[]` list to `@Predication()` tells the engine that we want to override the defaults for arguments and declare them ourselves.  The default for all arguments is to only have single values since that is *much* faster.  Only predications which interpret meaning in larger tuples should ask for them. The declaration for `lift` asks for them by setting `ValueSize.all` on both `x` arguments.
 
 Other options for `ValueSize` are: `exactly_one` (the default) and `more_than_one`. `more_than_one` can be used when an argument only makes sense for more than one individual to be doing it. One example is the verb "met" when used like "Shal and Vienna met".
 

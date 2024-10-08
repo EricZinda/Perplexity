@@ -341,7 +341,7 @@
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,x1,x2)
 </code></pre></div></div>
 
-<p>Ignoring the event argument <code class="language-plaintext highlighter-rouge">e2</code> for the moment, there are two <code class="language-plaintext highlighter-rouge">x</code> arguments. The predication’s job is to check whether <code class="language-plaintext highlighter-rouge">x1</code> is “in” <code class="language-plaintext highlighter-rouge">x2</code> (whatever that means in the application). Because arguments are lists that can have more than one value (described in <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">the previous topic</a>), if the predication is called with arguments that have two values each, like this:</p>
+<p>Ignoring the event argument <code class="language-plaintext highlighter-rouge">e2</code> for the moment, there are two <code class="language-plaintext highlighter-rouge">x</code> arguments. The predication’s job is to check whether <code class="language-plaintext highlighter-rouge">x1</code> is “in” <code class="language-plaintext highlighter-rouge">x2</code> (whatever that means in the application). Because arguments are tuples that can have more than one value (described in <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">the previous topic</a>), the predication could be called with an argument that has two values, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,(file1, file2),(folder1, ))
 </code></pre></div></div>
@@ -359,7 +359,7 @@ check: (file2,) in (folder1,)?
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check: (file1, file2) in (folder1,)?
 </code></pre></div></div>
 
-<p>This allows us to write a single function that can handle lists of one or more items by simply implementing the one item case and calling it over and over.</p>
+<p>This allows us to write a single function that can handle tuples of one or more items by simply implementing the one item case and calling it over and over.</p>
 
 <p>As for the single <code class="language-plaintext highlighter-rouge">x</code> case from the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">previous topic</a>, Perplexity has a helper function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function for a single value, like this:</p>
 

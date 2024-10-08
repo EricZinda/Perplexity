@@ -45,7 +45,7 @@ if __name__ == '__main__':
         user_interface = user_interface.default_loop()
 ```
 The basics are described in comments above, but the basic flow is: 
-1. A micro-world gets registered with a name ("SimplestExample") and a pointer to the module and function where the system can create its UserInterface object to run it
+1. A micro-world gets registered with a name ("SimplestExample") and a pointer to the module and function where the system can create its UserInterface object to run it.
 2. In `__main__`, this UserInterface object is created a run in a loop.  Each iteration of the loop processes one phrase the user types.
 
 The state of the world is encapsulated, in whatever form the developer wants, in the object that is returned by the reset function (`reset()`).
