@@ -5,7 +5,7 @@ Logic gets more complicated when there is more than one `x` argument because the
 _in_p_loc(e1,x1,x2)
 ~~~
 
-Ignoring the event argument `e2` for the moment, there are two `x` arguments. The predication's job is to check whether `x1` is "in" `x2` (whatever that means in the application). Because arguments are lists that can have more than one value (described in [the previous topic](pxHowTo020ImplementAPredication#combinatorial-variables)), if the predication is called with arguments that have two values each, like this:
+Ignoring the event argument `e2` for the moment, there are two `x` arguments. The predication's job is to check whether `x1` is "in" `x2` (whatever that means in the application). Because arguments are tuples that can have more than one value (described in [the previous topic](pxHowTo020ImplementAPredication#combinatorial-variables)), the predication could be called with an argument that has two values, like this:
 
 ~~~
 _in_p_loc(e1,(file1, file2),(folder1, ))
@@ -26,7 +26,7 @@ If those are both true, then this must be too (without having to check) since "i
 check: (file1, file2) in (folder1,)?
 ~~~
 
-This allows us to write a single function that can handle lists of one or more items by simply implementing the one item case and calling it over and over.
+This allows us to write a single function that can handle tuples of one or more items by simply implementing the one item case and calling it over and over.
 
 As for the single `x` case from the [previous topic](pxHowTo020ImplementAPredication), Perplexity has a helper function that performs the right logic and only requires the caller to implement the `check()` function for a single value, like this:
 
