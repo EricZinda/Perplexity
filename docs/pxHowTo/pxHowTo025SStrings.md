@@ -184,7 +184,7 @@ To facilitate generating errors when predications are being executed, `@meaning_
 For example, if we have the following code:
 ~~~
 @Predication(vocabulary, names=["_give_v_1"])
-def give_v_1(state, e_introduced, x_giver_binding, x_what_binding, x_receiver_binding):
+def give_v_1(context, state, e_introduced, x_giver_binding, x_what_binding, x_receiver_binding):
   after_tree = ["AfterFullPhrase", x_what_binding.variable.name]
   print(
         s("{after_tree} in the cupboard", state.get_binding('tree').value[0])
@@ -202,7 +202,7 @@ Since that is what `x` means after the entire phrase is done.
 If we instead implement the `_the_q` predication like this:
 ~~~
 @Predication(vocabulary, names=["_the_q"])
-def the_q(state, x_variable_binding, h_rstr, h_body):
+def the_q(context, state, x_variable_binding, h_rstr, h_body):
   at_predication = ["AtPredication", h_rstr[1], x_variable_binding.variable.name]
   print(
         s("{at_predication} is in the cupboard", state.get_binding('tree').value[0])
