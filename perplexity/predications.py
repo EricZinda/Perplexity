@@ -269,10 +269,6 @@ def used_combinations(context, binding, generator):
 # for any chosen subset of the set. So, it gives a combinatorial answer.
 #
 # Its binding is always of type VariableDescriptor(individual=semantic, group=ignored)
-#
-# combinatorial_style_predication will preserve (or create) a combinatorial set if possible, it may
-# not be possible if the incoming value is already forced to be a specific (non-combinatorial) set,
-# for example
 def combinatorial_predication_1(context, state, binding, bound_function, unbound_function):
     descriptor = VariableDescriptor(VariableStyle.semantic, VariableStyle.ignored)
     variable_size = descriptor.combinatoric_size(context, binding)

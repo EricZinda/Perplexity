@@ -1,4 +1,3 @@
-from perplexity.execution import report_error, execution_context
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
     individual_style_predication_1
 from perplexity.sstring import s
@@ -7,7 +6,7 @@ from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
 from perplexity.vocabulary import Vocabulary, Predication, ValueSize, EventOption
 import perplexity.messages
-
+from perplexity.world_registry import register_world
 
 vocabulary = system_vocabulary()
 
@@ -178,10 +177,10 @@ def pron(state, x_who_binding):
 
 # Generates all the responses that predications can
 # return when an error occurs
-def generate_custom_message(tree_info, error_term):
+def generate_custom_message(state, tree_info, error_term):
     # See if the system can handle converting the error
     # to a message first
-    system_message = perplexity.messages.generate_message(tree_info, error_term)
+    system_message = perplexity.messages.generate_message(state, tree_info, error_term)
     if system_message is not None:
         return system_message
 
@@ -191,10 +190,11 @@ def generate_custom_message(tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
-    arg_length = len(error_arguments)
+    arg_length = len(error_arguments) if error_arguments is not None else 0
     arg1 = error_arguments[1] if arg_length > 1 else None
     arg2 = error_arguments[2] if arg_length > 2 else None
     arg3 = error_arguments[3] if arg_length > 3 else None
+    arg4 = error_arguments[4] if arg_length > 4 else None
 
     if error_constant == "adjectiveDoesntApply":
         return s("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
@@ -218,18 +218,31 @@ def generate_custom_message(tree_info, error_term):
         return str(error_term)
 
 
+# Called to initialize or reset the micro-world state
 def reset():
     return State(["file1.txt", "file2.txt", "file3.txt"])
 
 
-def hello_world():
-    user_interface = UserInterface("none", reset, vocabulary, generate_custom_message)
+# Creates the micro-world interface on startup
+# or if the user loads the world later
+def ui():
+    ui = UserInterface(world_name="SimplestExample",
+                       reset_function=reset,
+                       vocabulary=vocabulary)
+    return ui
 
-    while True:
-        user_interface.interact_once()
-        print()
+
+# Worlds need to be registered so the user can switch between them by name
+# and so that the engine can search for their autocorrect and other cached files
+# in the same directory where the ui() function resides
+register_world(world_name="SimplestExample",
+               module="hello_world_simplest",
+               ui_function="ui")
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
-    hello_world()
+    user_interface = ui()
+    while user_interface:
+        # The loop might return a different user interface
+        # object if the user changes worlds
+        user_interface = user_interface.default_loop()
