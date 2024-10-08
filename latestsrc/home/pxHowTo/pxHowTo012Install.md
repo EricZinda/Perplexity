@@ -36,6 +36,7 @@ Now you can choose to run Perplexity in a Docker container or on your local mach
 5. Install the libraries required by Perplexity:
    - `pip install pydelphin`
    - `pip install inflect`
+   - `pip install openai` (note that the ESL sample is the only thing that uses openai for an example, it will just disable this feature if you don't set an OpenAI key to enable it)
 
 Now you need to install the ACE Parser, which is the only non-Python part of the project:
 
@@ -84,7 +85,9 @@ On the (very rare) chance you will need to compile an ERG grammar, here are the 
 
 1. Decide which version you want, in this case we'll use 2020.  Replace 2020 below with the version you select
 2. svn checkout http://svn.delph-in.net/erg/tags/2020
+2a. To get the latest (but no commitment on quality) grammar: http://svn.delph-in.net/erg/trunk
 3. cd 2020/ace
 4. ace -G grammar.dat -g ./config.tdl
+5. The grammar file will be called 'grammar.dat' in the 2020/ace folder
 
-Last update: 2024-06-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo012Install.md)]{% endraw %}
+Last update: 2024-10-07 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo012Install.md)]{% endraw %}

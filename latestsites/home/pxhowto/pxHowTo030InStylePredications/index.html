@@ -340,52 +340,38 @@
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,x1,x2)
 </code></pre></div></div>
-<p>Ignoring the event argument <code class="language-plaintext highlighter-rouge">e2</code> for the moment, there are two <code class="language-plaintext highlighter-rouge">x</code> arguments. The predication’s job is to check whether <code class="language-plaintext highlighter-rouge">x1</code> is “in” <code class="language-plaintext highlighter-rouge">x2</code> (whatever that means in the application). Because of combinatorial values (described in <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">the previous topic</a>), if the predication is called with two combinatorial arguments that have two values each, like this:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,(file1, file2),(folder1, folder2))
+<p>Ignoring the event argument <code class="language-plaintext highlighter-rouge">e2</code> for the moment, there are two <code class="language-plaintext highlighter-rouge">x</code> arguments. The predication’s job is to check whether <code class="language-plaintext highlighter-rouge">x1</code> is “in” <code class="language-plaintext highlighter-rouge">x2</code> (whatever that means in the application). Because arguments are lists that can have more than one value (described in <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">the previous topic</a>), if the predication is called with arguments that have two values each, like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_in_p_loc(e1,(file1, file2),(folder1, ))
 </code></pre></div></div>
 
-<p>… it will need to check all combinations of the first argument with the second, and yield any that are true, like this:</p>
+<p>… which means “file1 and file2 are in folder1 <em>together</em>”. For files, saying two files are in a folder “together” is no different than saying they are in a folder “separately”. If <code class="language-plaintext highlighter-rouge">file1</code> is in <code class="language-plaintext highlighter-rouge">folder1</code> and <code class="language-plaintext highlighter-rouge">file2</code> is in <code class="language-plaintext highlighter-rouge">folder2</code>, then they are both in there separately <em>and</em> together. Note that the meaning of “in” in this case also doesn’t <em>exclude</em> someone saying “together” or “separately”. It is perfectly fine to say “Are file1 and file2 in folder2 together?”, it just doesn’t add anything to the meaning.</p>
+
+<p>This observation allows us to separately check the files like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check: (file1,) in (folder1,)?
-check: (file1,) in (folder2,)?
 check: (file2,) in (folder1,)?
-check: (file2,) in (folder2,)?
-check: (file1, file2) in (folder1,)?
-check: (file1, file2) in (folder2,)?
-check: (file1, file2) in (folder1, folder2)?
-</code></pre></div></div>
-<p>We can reduce the combinations that need to be checked by remembering that, when a variable has a set of more than one item, it means “together”.  So, <code class="language-plaintext highlighter-rouge">(file1, file2) in (folder1)?</code> means “are file1 and file2 in folder1 <em>together</em>?” For files, saying two files are in a folder “together” is no different than saying they are in a folder “separately”. If <code class="language-plaintext highlighter-rouge">file1</code> is in <code class="language-plaintext highlighter-rouge">folder1</code> and <code class="language-plaintext highlighter-rouge">file2</code> is in <code class="language-plaintext highlighter-rouge">folder2</code>, then they are both in there separately <em>and</em> together. Note that the meaning of “in” in this case also doesn’t <em>exclude</em> someone saying “together” or “separately”. It is perfectly fine to say “Are file1 and file2 in folder2 together?”, it just doesn’t add anything to the meaning.</p>
-
-<p>This observation allows us to simplify the number of checks down to this:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check: (file1,) in (folder1,)?
-check: (file1,) in (folder2,)?
-check: (file2,) in (folder1,)?
-check: (file2,) in (folder2,)?
 </code></pre></div></div>
 
-<p>If those are all true, then these must be too (without having to check):</p>
+<p>If those are both true, then this must be too (without having to check) since “in a folder together” is the same as “in a folder separatley”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>check: (file1, file2) in (folder1,)?
-check: (file1, file2) in (folder2,)?
-check: (file1, file2) in (folder1, folder2)?
 </code></pre></div></div>
 
-<p>This observation can greatly reduce the number of checks needed. If there are 10 files in <code class="language-plaintext highlighter-rouge">x1</code>, checking all combinations for even one folder would take <code class="language-plaintext highlighter-rouge">n^10 - 1 = 1023</code> checks! If we only check them individually, it only takes 10.</p>
+<p>This allows us to write a single function that can handle lists of one or more items by simply implementing the one item case and calling it over and over.</p>
 
-<p>It should be noted that, even though we can avoid the checks for many sets, in theory we still have to yield all the possible combinations. In the next topic, we’ll walk through how to avoid this for many cases as well.</p>
-
-<p>The logic for checking if variables have combinatorial values, doing the optimization above, and yielding the right values can be long and repetitive. So, like for the single <code class="language-plaintext highlighter-rouge">x</code> case from the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">previous topic</a>, Perplexity has a helper function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function, like this:</p>
+<p>As for the single <code class="language-plaintext highlighter-rouge">x</code> case from the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">previous topic</a>, Perplexity has a helper function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function for a single value, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=("_in_p_loc"))
-def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
     def check_item_in_item(item1, item2):
         return is_item_in_item(item1, item2)
     
     ...
-
-    yield from in_style_predication_2(state, 
+                                          
+    yield from in_style_predication_2(context,
+                                      state, 
                                       x_actor_binding, 
                                       x_location_binding, 
                                       check_item_in_item, 
@@ -404,7 +390,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 <p>Presumably the system we are building would have an efficient way to find “things in something else” (or vice versa) so the example below uses fake functions as placeholders:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=("_in_p_loc"))
-def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
+def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
     def check_item_in_item(item1, item2):
         return is_item_in_item(item1, item2)
     
@@ -414,7 +400,8 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
     def all_item2_containing_item1(item1):
         yield from all_containing(item1)
 
-    yield from in_style_predication_2(state, 
+    yield from in_style_predication_2(context, 
+                                      state, 
                                       x_actor_binding, 
                                       x_location_binding, 
                                       check_item_in_item, 
@@ -426,7 +413,7 @@ def in_p_loc(state, e_introduced_binding, x_actor_binding, x_location_binding):
 
 <p>And, as with the first “check” function, <code class="language-plaintext highlighter-rouge">in_style_predication_2()</code> does all the work to make sure that the two unbound functions are only passed single values – even if the incoming values are combinatorial or sets &gt; 1 item.</p>
 
-<p>Last update: 2023-05-16 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md">edit</a>]</p>
+<p>Last update: 2024-10-08 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md">edit</a>]</p>
 
         
       </section>
