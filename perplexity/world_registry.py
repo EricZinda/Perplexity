@@ -13,6 +13,10 @@ worlds["error_test"] = {"WorldModule": "error_test.vocabulary",
                         "WorldUIFunction": "error_test_ui"}
 
 
+def register_world(world_name, module, ui_function):
+    worlds[world_name] = {"WorldModule": module,
+                          "WorldUIFunction": ui_function}
+
 def world_information(key):
     return worlds.get(key, None)
 

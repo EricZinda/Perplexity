@@ -6,33 +6,51 @@ The simplest Perplexity application is:
 from perplexity.state import State
 from perplexity.user_interface import UserInterface
 from perplexity.vocabulary import Vocabulary
+from perplexity.world_registry import register_world
 
+
+# The Vocabulary object will eventually be where all of the 
+# functions that implement the MRS predications get registered
+# Is just an initial object since we have none
 vocabulary = Vocabulary()
 
 
+# Called to initialize or reset the micro-world state
 def reset():
     return State([])
 
 
-def hello_world():
-    user_interface = UserInterface(reset, vocabulary)
+# Creates the micro-world interface on startup
+# or if the user loads the world later
+def ui():
+    ui = UserInterface(world_name="SimplestExample",
+                       reset_function=reset,
+                       vocabulary=vocabulary)
+    return ui
 
-    while True:
-        user_interface.interact_once()
-        print()
+
+# Worlds need to be registered so the user can switch between them by name
+# and so that the engine can search for their autocorrect and other cached files
+# in the same directory where the ui() function resides
+register_world(world_name="SimplestExample",
+               module="hello_world_simplest",
+               ui_function="ui")
 
 
 if __name__ == '__main__':
-    hello_world()
+    user_interface = ui()
+    while user_interface:
+        # The loop might return a different user interface
+        # object if the user changes worlds
+        user_interface = user_interface.default_loop()
 ~~~
+The basics are described in comments above, but the basic flow is: 
+1. A micro-world gets registered with a name ("SimplestExample") and a pointer to the module and function where the system can create its UserInterface object to run it
+2. In `__main__`, this UserInterface object is created a run in a loop.  Each iteration of the loop processes one phrase the user types.
 
-The `UserInterface` class is the main entry point to Perplexity. 
+The state of the world is encapsulated, in whatever form the developer wants, in the object that is returned by the reset function (`reset()`).
 
-It is created and passed a function (`reset()` in this example) whose job is to return an object derived from the [Perplexity `State` class](../pxint/pxint0020PythonBasics) that is in the "startup state", whatever that means for the application. 
-
-The second argument is a `Vocabulary` object that contains all the vocabulary required for the application. We don't yet have any vocabulary so an empty `Vocabulary` class is used above.
-
-To allow user interaction, `UserInterface.interact_once()` is called in a loop.  That's it!
+That's it! All of these objects will be described more as we go through the tutorial.
 
 To run this:
 
@@ -46,11 +64,11 @@ You'll get something like this:
 
 ~~~
 python ./hello_world.py
-? hello!
-I don't know the words: unknown, greet, discourse
+? Hello!
+I don't know the words: Hi, Hi!
 
-? where am i?
-I don't know the words: loc_nonsp, place, which, pron, pronoun
+? Where am I?
+I don't know the words: I, Where
 ~~~
 
 So far, it has no vocabulary so it will just keep saying, "I don't know the words..." to any phrases typed until we implement some. That's what [the remainder of the tutorial](pxHowTo020ImplementAPredication) is about.

@@ -48,7 +48,7 @@ def load_ui(path_and_filename, user_output=None, debug_output=None):
 class UserInterface(object):
     def __init__(self,
                  world_name,
-                 reset,
+                 reset_function,
                  vocabulary,
                  message_function=perplexity.messages.generate_message,
                  error_priority_function=default_error_priority,
@@ -86,8 +86,8 @@ class UserInterface(object):
         self.error_priority_function = None
         self.state = None
         if loaded_state is None:
-            loaded_state = reset()
-        self.load_ui(loaded_state, reset, vocabulary, message_function, error_priority_function, response_function, scope_init_function, scope_function)
+            loaded_state = reset_function()
+        self.load_ui(loaded_state, reset_function, vocabulary, message_function, error_priority_function, response_function, scope_init_function, scope_function)
 
         self.interaction_record = None
         self.records = None

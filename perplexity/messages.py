@@ -131,8 +131,7 @@ def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group):
     else:
         return group
 
-
-def generate_message(tree_info, error_term):
+def generate_message(state, tree_info, error_term):
     error_predicate_index = error_term[0]
     error_arguments = error_term[1]
     error_constant = error_arguments[0] if error_arguments is not None else "no error set"
@@ -258,14 +257,13 @@ def generate_message(tree_info, error_term):
         return "I'm not sure what that means."
 
     elif error_constant == "unknownWords":
-        lemmas_unknown = []
-        lemmas_form_known = []
+        lemmas_unknown = set()
+        lemmas_form_known = set()
         for unknown_predication in error_arguments[1]:
-            parsed_predicate = parse_predication_name(unknown_predication[0])
             if unknown_predication[3]:
-                lemmas_form_known.append(unknown_predication[4])
+                lemmas_form_known.add(unknown_predication[4])
             else:
-                lemmas_unknown.append(unknown_predication[4])
+                lemmas_unknown.add(unknown_predication[4])
 
         answers = []
         if len(lemmas_unknown) > 0:
