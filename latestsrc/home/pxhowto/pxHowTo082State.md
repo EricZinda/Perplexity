@@ -1,9 +1,9 @@
 {% raw %}## Building a Custom State Object
-We are getting to the point where the examples need to get richer and hard-coding the state of the world or using the base `State` object is not going to be good enough for future examples. We need to step back and think about how to model the file system state in a more robust way.
+We are getting to the point where the examples need to get richer and hard-coding the state of the world or using the base `State` object is not going to be good enough for future examples. We need to step back and think about how to model the file system state in a more robust way.  Even if you aren't building an interface to a file system, many of the concerns and solutions described below could be useful to you.  Designing how your state object works is a key design decision when building a Perplexity application.
 
 ## The Perplexity State object
 
-The default `State` object only has a small amount of code for manipulating *application* state, the rest of its implementation manipulates MRS variables. We used that code in the [Action Verbs topic](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs). Here it is again:
+The default `State` object only has a small amount of code for manipulating *application* state, the rest of its implementation manipulates MRS variables. It is literally just one method: `all_individuals()` and we used it in the [Action Verbs topic](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs). Here it is again:
 
 ```
 class State(object):
@@ -22,9 +22,9 @@ class State(object):
     ...
 ```
 
-The only reason it even has this basic implementation is because the system implementation of `thing(x)` needs to return all "things in the world" if it is called with an unbound `x`. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern used by `set_x()` and `add_to_e()` and return a copy with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) work.
+The only reason it even has this basic implementation is because the system implementation of `in_scope`, when determines which objects are ["proximate"](https://en.wikipedia.org/wiki/Obviative) to the user. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern used by `set_x()` and `add_to_e()` and return a copy with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) work.
 
-So, we'll need to add a notion of files and folders to `State`, and provide some ways to query the system about them. 
+So, we'll need to add a notion of files and folders to `State`, and provide some ways to query the system about them. But all of this will *only* be used by the code we write to implement our custom predications.  The system will completely ignore it.
 
 ## Identity
 Because the system is built around immutable state, we will sometimes end up with two `State` objects and need to be able to find the same object contained in either one. We need a way to compare objects *across* state object. The easiest way to do this is to give all the objects in the system a globally unique id that can be easily compared. We'll create a base class, `UniqueObject` that does this and derive everything from it:
@@ -63,6 +63,13 @@ class File(UniqueObject):
         self.size = size
         self.file_system = file_system
         self.link = link
+
+        # If we assume link objects always have the same name, then if we only hash the name
+        # link objects will have the same hash, but so will anything else with that name (which is OK)
+        # Any other files in the system with the same name (including raw file specifiers) will
+        # hash to the same value too.
+        # This means that there could be collisions if there are lots of files with the same name
+        # but it is unclear how else to do this
         self._hash = hash(self.file_name())
 
     def __repr__(self):
@@ -154,7 +161,6 @@ class Folder(UniqueObject):
 
     def exists(self):
         return self.file_system.exists(self.name, is_file=False)
-
 ```
 
 ## FileSystem
@@ -197,6 +203,8 @@ It takes a list of tuples that describe files and folders. The first element of 
 We will encounter phrases that have an explicit person like "where am I?" as well as an implied person like "delete a file" (i.e. "[you] delete a file"). Either case generates predications that need "actors" to be modelled in the system:
 
 ```
+# Represents something that can "do" things, like a computer
+# or a human (or a dog, etc)
 class Actor(UniqueObject):
     def __init__(self, name, person, file_system=None):
         super().__init__()
@@ -228,16 +236,26 @@ class Actor(UniqueObject):
 An `Actor` has a `person` property that indicates what pronoun role it plays: 1 means "first person pronoun" like "I" or "me", 2 means second person pronoun, which is always "the computer" in this system, etc. It also has a `FileSystem` member so it can find its "current directory". Finally, it has the `all_locations()` method so we can find out where the `Actor` is.
 
 ## FileSystemState
-The last step is to create a new `State` object that uses the `FileSystem` object that we'll actually use in the samples. We need to derive this from the Perplexity `State` object so that it can be used in the system, and we need to implement the `State.all_individuals()` method so that `thing(x)` will work. Note that all individuals needs to return both actors and file system objects since they are all the objects in the system.
+The last step is to create a new `State` object that uses the `FileSystem` object that we'll actually use in the samples. We need to derive this from the Perplexity `State` object so that it can be used in the system, and we need to implement the `State.all_individuals()` method so that `in_scope` will work. Note that all individuals needs to return both actors and file system objects since they are all the objects in the system.
+
+Note that there is also a `save()` method that uses [Python "pickling"](https://docs.python.org/3/library/pickle.html) to save the state of the world, which is a simple way of saving a simple set of objects like these.
 
 ```
+# The state representation used by the file system example
+# note that the core system doesn't care at all what this object
+# looks like. It is only the predications that interact with it
 class FileSystemState(State):
-    def __init__(self, file_system):
+    def __init__(self, file_system, current_user=None, actors=None):
         super().__init__([])
         self.file_system = file_system
-        self.current_user = Actor(name="User", person=1, file_system=file_system)
+        self.current_user = file_system_example.objects.Actor(name="User", person=1, file_system=file_system) if current_user is None else current_user
         self.actors = [self.current_user,
-                       Actor(name="Computer", person=2, file_system=file_system)]
+                       file_system_example.objects.Actor(name="Computer", person=2, file_system=file_system)] if actors is None else actors
+
+    def save(self, file):
+        pickle.dump(self.file_system, file, 5)
+        pickle.dump(self.current_user, file, 5)
+        pickle.dump(self.actors, file, 5)
 
     def all_individuals(self):
         yield from self.file_system.all_individuals()
@@ -247,7 +265,7 @@ class FileSystemState(State):
         return self.current_user
 ```
 
-The base `State` class will handle doing copies of the object when `set_x` or `add_to_e` are called. We don't need to do anything special to handle the object being copied because the objects have all been carefully built to support the Python `copy.deepcopy()` method. They also all derive from `UniqueObject` so they can be compared across objects. As we implement actions like copy or delete, we'll need to add methods to do more than this.
+The base `State` class will handle doing copies of the object when `set_x` or `add_to_e` are called. We don't need to do anything special to handle the object being copied because the objects have all been carefully built to support the Python `copy.deepcopy()` method. They also all derive from `UniqueObject` so they can be compared across objects. 
 
 ## Using FileSystemState
 To use the object, we modify the `hello_world.py` `reset()` function to return the new `FileSystemState` object instead of the default `State` object, like this:
@@ -267,32 +285,21 @@ def reset():
                                            (True, "/Desktop/file3.txt", {"size": 1000})],
                                            "/Desktop"))
 
-
-def hello_world():
-    user_interface = UserInterface(reset, vocabulary)
-
-    while True:
-        user_interface.interact_once()
-        print()
-
-
-if __name__ == '__main__':
-    hello_world()
 ```
 
-That change will ensure that our `FileSystemState` object is used by the solver in every call to one of our predications.That, and modifying the predications to start using the new state, is all that is needed.
+That change will ensure that our `FileSystemState` object is used by the solver in every call to one of our predications. That, and modifying the predications to start using the new state, is all that is needed.
 
 # Example
 Only the `_file_n_of`, `_folder_n_of`, `_large_a_1`, `delete_v_1_comm` and `pron` predications need to be updated to use the new objects.  The `DeleteOperation` class needs to be updated as well. These are all relatively minor changes, and the final functions are listed below:
 
 ```
 @Predication(vocabulary, names=["_file_n_of"])
-def file_n_of(state, x_binding, i_binding):
+def file_n_of(context, state, x_binding, i_binding):
     def bound_variable(value):
         if isinstance(value, File):
             return True
         else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -300,21 +307,22 @@ def file_n_of(state, x_binding, i_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_binding,
-                                                 bound_variable,
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 # true for both sets and individuals as long as everything
 # in the set is a file
 @Predication(vocabulary, names=["_folder_n_of"])
-def folder_n_of(state, x_binding, i_binding):
+def folder_n_of(context, state, x_binding, i_binding):
     def bound_variable(value):
         if isinstance(value, Folder):
             return True
         else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -322,18 +330,19 @@ def folder_n_of(state, x_binding, i_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_binding,
-                                                 bound_variable,
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 @Predication(vocabulary,
              names=["_large_a_1"],
              handles=[("DegreeMultiplier", EventOption.optional)])
-def large_a_1(state, e_introduced_binding, x_target_binding):
+def large_a_1(context, state, e_introduced_binding, x_target_binding):
     # See if any modifiers have changed *how* large we should be
-    degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
+    degree_multiplier = degree_multiplier_from_event(context, state, e_introduced_binding)
 
     # "large" is being used "predicatively" as in "the dogs are large". This needs to force
     # the individuals to be separate (i.e. not part of a group)
@@ -342,7 +351,7 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
             return True
 
         else:
-            report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
+            context.report_error(["adjectiveDoesntApply", "large", x_target_binding.variable.name])
             return False
 
     def unbound_values():
@@ -351,16 +360,17 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
             if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
                 yield value
 
-    yield from combinatorial_style_predication_1(state,
-                                                 x_target_binding,
-                                                 criteria_bound,
-                                                 unbound_values)
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_target_binding,
+                                           criteria_bound,
+                                           unbound_values)
 
 
 # Delete only works on individual values: i.e. there is no semantic for deleting
 # things "together" which would probably imply a transaction or something
 @Predication(vocabulary, names=["_delete_v_1"])
-def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding):
+def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
     # We only know how to delete things from the
     # computer's perspective
     if x_actor_binding.value[0].name == "Computer":
@@ -370,12 +380,13 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
                 return True
 
             else:
-                report_error(["cantDo", "delete", x_what_binding.variable.name])
+                context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
         def unbound_what():
-            report_error(["cantDo", "delete", x_what_binding.variable.name])
+            context.report_error(["cantDo", "delete", x_what_binding.variable.name])
 
-        for new_state in individual_style_predication_1(state,
+        for new_state in individual_style_predication_1(context,
+                                                        state,
                                                         x_what_binding,
                                                         criteria,
                                                         unbound_what,
@@ -383,7 +394,7 @@ def delete_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_binding
             yield new_state.apply_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
 
 
 # Delete any object in the system
@@ -396,7 +407,7 @@ class DeleteOperation(object):
 
 
 @Predication(vocabulary, names=["pron"])
-def pron(state, x_who_binding):
+def pron(context, state, x_who_binding):
     person = int(state.get_binding("tree").value[0]["Variables"][x_who_binding.variable.name]["PERS"])
 
     def bound_variable(value):
@@ -407,17 +418,7 @@ def pron(state, x_who_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state, x_who_binding, bound_variable, unbound_variable)
-```
-
-The `reset()` function also needs to be updated to use the new `FileSystemState` object:
-
-```
-def reset():
-    return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
-                                           (True, "/documents/file2.txt", {"size": 10000000}),
-                                           (True, "/documents/file3.txt", {"size": 1000})],
-                                          "/documents"))
+    yield from combinatorial_predication_1(context, state, x_who_binding, bound_variable, unbound_variable)
 ```
 
 With those changes, all the examples from before still work the same but now use the new objects:
@@ -443,4 +444,4 @@ Done!
 a file is not large
 ```
 
-Last update: 2023-05-17 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md)]{% endraw %}
+Last update: 2024-10-09 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md)]{% endraw %}
