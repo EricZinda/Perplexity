@@ -1,6 +1,5 @@
 Docs Changes
-    - Add help to use openai
-
+    - we now too often add (there are more) because the message function returning a message counts as "the developer" doing it
 # Big Changes
     - Fix handling of phrases that have multiple syntactic heads:
         - "I want soup, I want salad" --> two want_v_1 heads joined by impl_conj(e, e, e)

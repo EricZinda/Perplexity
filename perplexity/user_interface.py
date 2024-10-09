@@ -573,10 +573,11 @@ class UserInterface(object):
                                             else:
                                                 response = "(no response)"
 
-                                        # Only shown if the developer didn't provide a custom message
-                                        more_message = self.generate_more_message(tree_info, solution_group_generator)
-                                        if more_message is not None:
-                                            response += "\n" + more_message
+                                        if len(operation_responses) == 0:
+                                            # Only shown if the developer didn't provide a custom message
+                                            more_message = self.generate_more_message(tree_info, solution_group_generator)
+                                            if more_message is not None:
+                                                response += "\n" + more_message
 
                                         tree_record["ResponseMessage"] += response if response is not None else ""
 

@@ -64,7 +64,8 @@
                 "bill\nJohnny\norder\nWaiter: Can I get you anything besides 2 steaks for you?",
                 "Johnny\norder\nbill\nWaiter: Can I get you anything besides 2 steaks for you?",
                 "order\nbill\nJohnny\nWaiter: Can I get you anything besides 2 steaks for you?",
-                "order\nJohnny\nbill\nWaiter: Can I get you anything besides 2 steaks for you?"
+                "order\nJohnny\nbill\nWaiter: Can I get you anything besides 2 steaks for you?",
+                "bill\norder\nJohnny\nWaiter: Can I get you anything besides 2 steaks for you?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
