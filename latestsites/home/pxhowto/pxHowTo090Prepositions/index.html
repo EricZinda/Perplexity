@@ -338,13 +338,7 @@
         <h2 id="directional-prepositions">Directional Prepositions</h2>
 <p>Let’s implement the verb “go” in <code class="language-plaintext highlighter-rouge">hello_world.py</code> to allow for moving around the file system in a simple way.</p>
 
-<p>The phrase:</p>
-
-<blockquote>
-  <p>go to a folder</p>
-</blockquote>
-
-<p>… yields 4 parses, one of which is:</p>
+<p>The phrase “go to a folder” yields 4 parses, one of which is:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>***** Parse #3:
 Sentence Force: comm
@@ -374,7 +368,7 @@ _a_q(x9,RSTR,BODY)               ┌────── pron(x3)
 <p><code class="language-plaintext highlighter-rouge">_to_p_dir</code> is a <em>directional</em> preposition.  Directional prepositions <em>usually</em> end with <code class="language-plaintext highlighter-rouge">_dir</code> and have the signature (<code class="language-plaintext highlighter-rouge">e</code>, <code class="language-plaintext highlighter-rouge">e_verb</code>, <code class="language-plaintext highlighter-rouge">x_location</code>).  <code class="language-plaintext highlighter-rouge">x_location</code> indicates the location the preposition is specifying, and <code class="language-plaintext highlighter-rouge">e_verb</code> indicates the event (often a verb) that this preposition should be attached to. They specify a particular direction in which to do something.  The fact that the predication takes an event as its second argument is a hint that the predication itself doesn’t <em>do</em> anything except attach its information to the specified event so that something else can use it. Taking an event as an argument besides <code class="language-plaintext highlighter-rouge">ARG0</code> usually indicates the predication is modifying the event. So, it can be implemented like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_to_p_dir"])
-def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
+def to_p_dir(context, state, e_introduced, e_target_binding, x_location_binding):
     preposition_info = {
         "EndLocation": x_location_binding
     }
@@ -382,20 +376,18 @@ def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
     yield state.add_to_e(e_target_binding.variable.name,
                          "DirectionalPreposition",
                          {"Value": preposition_info,
-                          "Originator": execution_context().current_predication_index()})
+                          "Originator": context.current_predication_index()})
 </code></pre></div></div>
 
-<p>This code just adds the location <code class="language-plaintext highlighter-rouge">x_location</code> to the <code class="language-plaintext highlighter-rouge">e_target</code> event under the key <code class="language-plaintext highlighter-rouge">DirectionalPreposition</code>. This allows the event that introduces it to consume it, as discussed in a <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo050EventPredications">Event Predications topic</a>. The <code class="language-plaintext highlighter-rouge">Predication</code> class will ensure that the user will get a “don’t understand” error if the predication that introduced the event doesn’t know how to handle it, as discussed in that same topic.</p>
+<p>This code just adds the location, contained in the binding <code class="language-plaintext highlighter-rouge">x_location_binding</code>, to the <code class="language-plaintext highlighter-rouge">e_target</code> event under the key <code class="language-plaintext highlighter-rouge">DirectionalPreposition</code>. This allows the event that introduces it to consume it, as discussed in a <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo050EventPredications">Event Predications topic</a>. Perplexity will ensure that the user will get a “don’t understand” error if the predication that introduced the event doesn’t know how to handle it, as discussed in that same topic.</p>
 
 <h3 id="_go_v_1"><code class="language-plaintext highlighter-rouge">_go_v_1</code></h3>
 <p>Next, we need to implement <code class="language-plaintext highlighter-rouge">_go_v_1</code>, indicating that it <em>does</em> know how to handle that information, like this:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, 
-             names=["_go_v_1"], 
-             handles=[("DirectionalPreposition", EventOption.required)])
-def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
+def go_v_1_comm(context, state, e_introduced_binding, x_actor_binding):
     if x_actor_binding.value is None or len(x_actor_binding.value) &gt; 1 or x_actor_binding.value[0].name != "Computer":
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
         return
 
     x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
@@ -407,17 +399,18 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
 
         else:
             if hasattr(x_location_binding.value, "exists") and location_item.exists():
-                report_error(["cantDo", "change directory to", x_location_binding.variable.name])
+                context.report_error(["cantDo", "change directory to", x_location_binding.variable.name])
 
             else:
-                report_error(["notFound", x_location_binding.variable.name])
+                context.report_error(["notFound", x_location_binding.variable.name])
 
     def unbound_location(location_item):
         # Location is unbound, ask them to be more specific
-        report_error(["beMoreSpecific"])
+        context.report_error(["beMoreSpecific"])
 
     # go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
-    for new_state in individual_style_predication_1(state,
+    for new_state in individual_style_predication_1(context,
+                                                    state,
                                                     x_location_binding,
                                                     bound_location,
                                                     unbound_location,
@@ -430,13 +423,13 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
 </code></pre></div></div>
 
-<p>The function starts with code for making sure the user specified an actor and didn’t say “<em>he</em> goes to a folder” or “mary and bill go to a folder”, we only support “you”.</p>
+<p>The function starts with code for making sure the user specified an actor and didn’t say “<em>he</em> goes to a folder” or “mary and bill go to a folder”. We only support “you”.</p>
 
 <p>Next, the <code class="language-plaintext highlighter-rouge">bound_location()</code> function has code to check if the object passed in actually exists so that it can return a more specialized error if the user asks to go somewhere that doesn’t exist. Otherwise, they’d get the error “I can’t go to X” if the folder doesn’t exist, which is a little obtuse.</p>
 
 <p>And finally, we handle this as an action verb, just like we handled “delete” in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs">Action Verbs topic</a>, with one difference: <code class="language-plaintext highlighter-rouge">_go_v_1</code> only has one non-event argument which represents “who is doing the going” (i.e. the actor). But, because we say we handle <code class="language-plaintext highlighter-rouge">DirectionalPreposition</code> in the introduced event and mark it as <code class="language-plaintext highlighter-rouge">EventOption.required</code>, it will always be there if this function is called. Thus, the location is effectively acting like a second <code class="language-plaintext highlighter-rouge">x</code> argument. So, in effect, we converted the predication to look just like <code class="language-plaintext highlighter-rouge">_delete_v_1</code>.</p>
 
-<p>So, for the same reasons we had there, we can just handle the actor argument directly, and only have to call <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code>, treating it like a one <code class="language-plaintext highlighter-rouge">x</code> variable predication.  We are doing <code class="language-plaintext highlighter-rouge">individual_style</code> instead of <code class="language-plaintext highlighter-rouge">combinatorial_style</code> for the same reasons <code class="language-plaintext highlighter-rouge">_delete_v_1</code> did: we don’t have a way to implement the semantic of “go to folder1 and folder2” (let alone “together” or “separately”). So, <code class="language-plaintext highlighter-rouge">go_v_1_comm</code> will only handle going to a single location.</p>
+<p>So, for the same reasons we had there, we can just handle the actor argument directly, and only have to call <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code>, treating it like a single <code class="language-plaintext highlighter-rouge">x</code> variable predication.  We are doing <code class="language-plaintext highlighter-rouge">individual_style</code> instead of <code class="language-plaintext highlighter-rouge">combinatorial_style</code> for the same reasons <code class="language-plaintext highlighter-rouge">_delete_v_1</code> did: we don’t have a way to implement the semantic of “go to folder1 and folder2” (let alone “together” or “separately”). So, <code class="language-plaintext highlighter-rouge">go_v_1_comm</code> will only handle going to a single location.</p>
 
 <h3 id="changedirectoryoperation">ChangeDirectoryOperation</h3>
 <p>Changing the directory, just like deleting a file in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs">Action Verb topic</a>, is modifying system state. So, we need to create an <code class="language-plaintext highlighter-rouge">Operation</code> to do the work:</p>
@@ -446,7 +439,7 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
         self.folder_binding = folder_binding
 
     def apply_to(self, state):
-        state.file_system.change_directory(self.folder_binding)    
+        state.file_system.change_directory(self.folder_binding)
 </code></pre></div></div>
 
 <p>The operation uses a built-in method of the <code class="language-plaintext highlighter-rouge">FileSystem</code> object to change the directory.</p>
@@ -484,7 +477,7 @@ Done!
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-05-16 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo090Prepositions.md">edit</a>]</p>
+<p>Last update: 2024-10-09 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo090Prepositions.md">edit</a>]</p>
 
         
       </section>

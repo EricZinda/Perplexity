@@ -355,9 +355,18 @@
 
 <p>More information is available in the <a href="https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_ImplicitLocatives/">ERG reference</a>.</p>
 
-<p>In this topic, we’ll implement the <code class="language-plaintext highlighter-rouge">loc_nonsp</code> and <code class="language-plaintext highlighter-rouge">place_n</code> predications to make the phrase “Where am I?” work. As always, we’ll start by examining the MRS to see what predications it generates for the phrase:</p>
+<p>In this topic, we’ll implement the <code class="language-plaintext highlighter-rouge">loc_nonsp</code> and <code class="language-plaintext highlighter-rouge">place_n</code> predications to make the phrase “Where am I?” work. As always, we’ll start by trying out the phrase, even though we know it won’t work yet, and using <code class="language-plaintext highlighter-rouge">/show</code> to examine the MRS to see what predications it generates for the phrase:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ "where am i"
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? where am I?
+I don't know the words: where, I
+
+? /show
+User Input: where am I?
+1 Parses
+
+***** CHOSEN Parse #0:
+Sentence Force: ques
+[ "where am I?"
   TOP: h0
   INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ]
   RELS: &lt; [ loc_nonsp&lt;0:5&gt; LBL: h1 ARG0: e2 ARG1: x3 [ x PERS: 1 NUM: sg IND: + PT: std ] ARG2: x4 [ x PERS: 3 NUM: sg ] ]
@@ -367,9 +376,11 @@
           [ pronoun_q&lt;9:10&gt; LBL: h10 ARG0: x3 RSTR: h11 BODY: h12 ] &gt;
   HCONS: &lt; h0 qeq h1 h7 qeq h5 h11 qeq h9 &gt; ]
 
-               ┌────── pron(x3)
-pronoun_q(x3,RSTR,BODY)             ┌────── place_n(x4)
-                    └─ which_q(x4,RSTR,BODY)
+-- CHOSEN Parse #0, CHOSEN Tree #0: 
+
+             ┌────── place_n(x4)
+which_q(x4,RSTR,BODY)               ┌────── pron(x3)
+                  └─ pronoun_q(x3,RSTR,BODY)
                                          └─ loc_nonsp(e2,x3,x4)
 </code></pre></div></div>
 
@@ -392,13 +403,13 @@ pronoun_q(x3,RSTR,BODY)             ┌────── place_n(x4)
 <p><code class="language-plaintext highlighter-rouge">place_n</code> will be able to leverage the methods on the objects we built in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo082State">previous section</a> to do this, and we’ll use the same approach we’ve been using for other nouns introduced in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">Implementing a Predication topic</a>:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary)
-def place_n(state, x_binding):
+def place_n(context, state, x_binding):
     def bound_variable(value):
         # Any object is a "place" as long as it can contain things
         if hasattr(value, "contained_items"):
             return True
         else:
-            report_error(["valueIsNotX", value, x_binding.variable.name])
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
@@ -406,12 +417,15 @@ def place_n(state, x_binding):
             if bound_variable(item):
                 yield item
 
-    yield from combinatorial_style_predication_1(state, 
-                                                 x_binding, 
-                                                 bound_variable, 
-                                                 unbound_variable)
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
+
 </code></pre></div></div>
-<p>This should all look reasonablly familiar by now. If an object has a <code class="language-plaintext highlighter-rouge">contained_items</code> method, that means it is a container and that means it is “a place”. Different systems will have different criteria for place depending on their scenarios. The function iterates through all objects in the system and yields any that have this method when its <code class="language-plaintext highlighter-rouge">x</code> argument is unbound, thus yielding all the “places”.</p>
+
+<p>This should all look reasonably familiar by now. If an object has a <code class="language-plaintext highlighter-rouge">contained_items</code> method, that means it is a container and that means it is “a place”. Different systems will have different criteria for place depending on their scenarios. The function iterates through all objects in the system and yields any that have this method when its <code class="language-plaintext highlighter-rouge">x</code> argument is unbound, thus yielding all the “places”.</p>
 
 <h3 id="loc_nonspexx-representing-generic-location"><code class="language-plaintext highlighter-rouge">loc_nonsp(e,x,x)</code>: Representing Generic Location</h3>
 <p>As described above, <code class="language-plaintext highlighter-rouge">loc_nonsp(e,x_actor,x_location)</code> is true when <code class="language-plaintext highlighter-rouge">x_location</code> represents a “place” where <code class="language-plaintext highlighter-rouge">x_actor</code> “is” or “is at” but doesn’t get more specific than that. Basically, it is the “generic location” of <code class="language-plaintext highlighter-rouge">x_actor</code> (<code class="language-plaintext highlighter-rouge">x_actor</code> does not need to be an actually be an <code class="language-plaintext highlighter-rouge">Actor</code> it can be anything). This means we’ll need to get the “location” from the objects in the system. Note that a given file or folder has many “locations”:</p>
@@ -426,7 +440,7 @@ def place_n(state, x_binding):
 <p>We’ve already implemented a method to return the locations of objects called <code class="language-plaintext highlighter-rouge">all_locations()</code> on the <code class="language-plaintext highlighter-rouge">Actor</code>, <code class="language-plaintext highlighter-rouge">File</code> and <code class="language-plaintext highlighter-rouge">Folder</code> objects which we can use:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["loc_nonsp"])
-def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
+def loc_nonsp(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
     def item_at_item(item1, item2):
         if hasattr(item1, "all_locations"):
             # Asking if a location of item1 is at item2
@@ -434,7 +448,7 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
                 if location == item2:
                     return True
 
-        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+        context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
         return False
 
     def location_unbound_values(actor_value):
@@ -444,7 +458,7 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
             for location in actor_value.all_locations(x_actor_binding.variable):
                 yield location
 
-        report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
+        context.report_error(["thingHasNoLocation", x_actor_binding.variable.name, x_location_binding.variable.name])
 
     def actor_unbound_values(location_value):
         # This is a "what is at x?" type query since no actor specified (x_actor_binding was unbound)
@@ -453,13 +467,14 @@ def loc_nonsp(state, e_introduced_binding, x_actor_binding, x_location_binding):
             for actor in location_value.contained_items(x_location_binding.variable):
                 yield actor
 
-        report_error(["thingIsNotContainer", x_location_binding.variable.name])
+        context.report_error(["thingIsNotContainer", x_location_binding.variable.name])
 
-    yield from in_style_predication_2(state, 
-                                      x_actor_binding, 
-                                      x_location_binding, 
-                                      item_at_item, 
-                                      actor_unbound_values, 
+    yield from in_style_predication_2(context,
+                                      state,
+                                      x_actor_binding,
+                                      x_location_binding,
+                                      item_at_item,
+                                      actor_unbound_values,
                                       location_unbound_values)
 </code></pre></div></div>
 
@@ -496,9 +511,10 @@ you is not in place
 
 ? where is a folder?
 (Folder(name=/, size=0),)
+(there are more)
 </code></pre></div></div>
 
-<p>Both “where am I?” and “where is a file?” give an answer and then say, “(there are more)”. That is because the user asked for “a place” (singular) but most things will “be located” in more than one place. For example, the user is in both “/documents” and “/” (the root directory). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Combination Algorithm and Proper Responses topic</a>, we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.</p>
+<p>Both “where am I?” and “where is a file/folder?” give an answer and then say, “(there are more)”. That is because the user asked for “a place” (singular) but most things will “be located” in more than one place. For example, the user is in both “/documents” and “/” (the root directory). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Combination Algorithm and Proper Responses topic</a>, we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.</p>
 
 <p>Also note that “you” refers to “the computer” and we haven’t put it anywhere, that’s why the system responds with “you is not in place”. Again, we’ll fix the English on error messages soon.</p>
 
@@ -506,7 +522,7 @@ you is not in place
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-06-01 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md">edit</a>]</p>
+<p>Last update: 2024-10-09 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md">edit</a>]</p>
 
         
       </section>
