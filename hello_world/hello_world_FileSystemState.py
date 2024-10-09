@@ -381,12 +381,16 @@ def generate_custom_message(state, tree_info, error_term):
 
 
 def reset():
+    # return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
+    #                                        (False, "/Desktop", {"size": 10000000}),
+    #                                        (True, "/Desktop/file2.txt", {"size": 10000000}),
+    #                                        (True, "/Desktop/file3.txt", {"size": 1000})],
+    #                                        "/Desktop"))
     return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
                                            (False, "/Desktop", {"size": 10000000}),
-                                           (True, "/Desktop/file2.txt", {"size": 10000000}),
-                                           (True, "/Desktop/file3.txt", {"size": 1000})],
-                                           "/Desktop"))
-
+                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
+                                           (True, "/Desktop/blue", {"size": 1000})],
+                                          "/Desktop"))
 
 # Creates the micro-world interface on startup
 # or if the user loads the world later

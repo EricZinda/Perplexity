@@ -1,11 +1,7 @@
 ## Directional Prepositions
 Let's implement the verb "go" in `hello_world.py` to allow for moving around the file system in a simple way.
 
-The phrase:
-
-> go to a folder
-
-... yields 4 parses, one of which is:
+The phrase "go to a folder" yields 4 parses, one of which is:
 
 ~~~
 ***** Parse #3:
@@ -37,7 +33,7 @@ It introduces two additional predications we'll need to implement to make this w
 
 ~~~
 @Predication(vocabulary, names=["_to_p_dir"])
-def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
+def to_p_dir(context, state, e_introduced, e_target_binding, x_location_binding):
     preposition_info = {
         "EndLocation": x_location_binding
     }
@@ -45,21 +41,19 @@ def to_p_dir(state, e_introduced, e_target_binding, x_location_binding):
     yield state.add_to_e(e_target_binding.variable.name,
                          "DirectionalPreposition",
                          {"Value": preposition_info,
-                          "Originator": execution_context().current_predication_index()})
+                          "Originator": context.current_predication_index()})
 ~~~
 
-This code just adds the location `x_location` to the `e_target` event under the key `DirectionalPreposition`. This allows the event that introduces it to consume it, as discussed in a [Event Predications topic](pxHowTo050EventPredications). The `Predication` class will ensure that the user will get a "don't understand" error if the predication that introduced the event doesn't know how to handle it, as discussed in that same topic.
+This code just adds the location, contained in the binding `x_location_binding`, to the `e_target` event under the key `DirectionalPreposition`. This allows the event that introduces it to consume it, as discussed in a [Event Predications topic](pxHowTo050EventPredications). Perplexity will ensure that the user will get a "don't understand" error if the predication that introduced the event doesn't know how to handle it, as discussed in that same topic.
 
 ### `_go_v_1`
 Next, we need to implement `_go_v_1`, indicating that it *does* know how to handle that information, like this:
 
 ~~~
-@Predication(vocabulary, 
-             names=["_go_v_1"], 
-             handles=[("DirectionalPreposition", EventOption.required)])
-def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
+@Predication(vocabulary, names=["_go_v_1"], handles=[("DirectionalPreposition", EventOption.required)])
+def go_v_1_comm(context, state, e_introduced_binding, x_actor_binding):
     if x_actor_binding.value is None or len(x_actor_binding.value) > 1 or x_actor_binding.value[0].name != "Computer":
-        report_error(["dontKnowActor", x_actor_binding.variable.name])
+        context.report_error(["dontKnowActor", x_actor_binding.variable.name])
         return
 
     x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
@@ -71,17 +65,18 @@ def go_v_1_comm(state, e_introduced_binding, x_actor_binding):
 
         else:
             if hasattr(x_location_binding.value, "exists") and location_item.exists():
-                report_error(["cantDo", "change directory to", x_location_binding.variable.name])
+                context.report_error(["cantDo", "change directory to", x_location_binding.variable.name])
 
             else:
-                report_error(["notFound", x_location_binding.variable.name])
+                context.report_error(["notFound", x_location_binding.variable.name])
 
     def unbound_location(location_item):
         # Location is unbound, ask them to be more specific
-        report_error(["beMoreSpecific"])
+        context.report_error(["beMoreSpecific"])
 
     # go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
-    for new_state in individual_style_predication_1(state,
+    for new_state in individual_style_predication_1(context,
+                                                    state,
                                                     x_location_binding,
                                                     bound_location,
                                                     unbound_location,
@@ -95,13 +90,13 @@ The `handles=[... EventOption.required ...]` clause on `Predication` tells the s
 x_location_binding = e_introduced_binding.value["DirectionalPreposition"]["Value"]["EndLocation"]
 ~~~
 
-The function starts with code for making sure the user specified an actor and didn't say "*he* goes to a folder" or "mary and bill go to a folder", we only support "you".
+The function starts with code for making sure the user specified an actor and didn't say "*he* goes to a folder" or "mary and bill go to a folder". We only support "you".
 
 Next, the `bound_location()` function has code to check if the object passed in actually exists so that it can return a more specialized error if the user asks to go somewhere that doesn't exist. Otherwise, they'd get the error "I can't go to X" if the folder doesn't exist, which is a little obtuse.
 
 And finally, we handle this as an action verb, just like we handled "delete" in the [Action Verbs topic](pxHowTo070ActionVerbs), with one difference: `_go_v_1` only has one non-event argument which represents "who is doing the going" (i.e. the actor). But, because we say we handle `DirectionalPreposition` in the introduced event and mark it as `EventOption.required`, it will always be there if this function is called. Thus, the location is effectively acting like a second `x` argument. So, in effect, we converted the predication to look just like `_delete_v_1`. 
 
-So, for the same reasons we had there, we can just handle the actor argument directly, and only have to call `individual_style_predication_1()`, treating it like a one `x` variable predication.  We are doing `individual_style` instead of `combinatorial_style` for the same reasons `_delete_v_1` did: we don't have a way to implement the semantic of "go to folder1 and folder2" (let alone "together" or "separately"). So, `go_v_1_comm` will only handle going to a single location.
+So, for the same reasons we had there, we can just handle the actor argument directly, and only have to call `individual_style_predication_1()`, treating it like a single `x` variable predication.  We are doing `individual_style` instead of `combinatorial_style` for the same reasons `_delete_v_1` did: we don't have a way to implement the semantic of "go to folder1 and folder2" (let alone "together" or "separately"). So, `go_v_1_comm` will only handle going to a single location.
 
 ### ChangeDirectoryOperation
 Changing the directory, just like deleting a file in the [Action Verb topic](pxHowTo070ActionVerbs), is modifying system state. So, we need to create an `Operation` to do the work:
@@ -112,7 +107,7 @@ class ChangeDirectoryOperation(object):
         self.folder_binding = folder_binding
 
     def apply_to(self, state):
-        state.file_system.change_directory(self.folder_binding)    
+        state.file_system.change_directory(self.folder_binding)
 ~~~
 
 The operation uses a built-in method of the `FileSystem` object to change the directory.
