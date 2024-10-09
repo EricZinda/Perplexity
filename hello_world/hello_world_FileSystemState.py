@@ -5,6 +5,7 @@ from perplexity.predications import combinatorial_predication_1, lift_style_pred
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
+from perplexity.utilities import ShowLogging
 from perplexity.vocabulary import Predication, ValueSize, EventOption
 import perplexity.messages
 from perplexity.world_registry import register_world
@@ -382,9 +383,9 @@ def generate_custom_message(state, tree_info, error_term):
 def reset():
     return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
                                            (False, "/Desktop", {"size": 10000000}),
-                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
-                                           (True, "/Desktop/blue", {"size": 1000})],
-                                          "/Desktop"))
+                                           (True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file3.txt", {"size": 1000})],
+                                           "/Desktop"))
 
 
 # Creates the micro-world interface on startup
@@ -406,6 +407,17 @@ register_world(world_name="SimplestExample",
 
 
 if __name__ == '__main__':
+    ShowLogging("Pipeline")
+    # ShowLogging("ChatGPT")
+    # ShowLogging("Testing")
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("SString")
+    # ShowLogging("UserInterface")
+    # ShowLogging("Determiners")
+    ShowLogging("SolutionGroups")
+    # ShowLogging("Transformer")
+
     user_interface = ui()
     while user_interface:
         # The loop might return a different user interface
