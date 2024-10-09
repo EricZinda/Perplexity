@@ -4662,7 +4662,7 @@ def generate_custom_message(state, tree_info, error_term):
             return s("Host: There isn't such {a *result} here", tree_info)
 
     else:
-        system_message = perplexity.messages.generate_message(tree_info, error_term)
+        system_message = perplexity.messages.generate_message(state, tree_info, error_term)
         if system_message is not None:
             return system_message
 
