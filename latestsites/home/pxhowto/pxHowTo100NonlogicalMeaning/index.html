@@ -305,6 +305,8 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning/" class="active">Non-logical Meaning</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo110HandlingTenses/">Handling Tenses</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo025SStrings/">A. Generating English with S-strings</a></li>
           
         </ul>
@@ -577,7 +579,7 @@ def _command_n_1(context, state, x_binding):
                                            bound_variable,
                                            unbound_variable)
 </code></pre></div></div>
-<p>With that in place, we’ll first get a set of solution groups that have the <code class="language-plaintext highlighter-rouge">Concept("command")</code> object assigned to variables. Perplexity will do nothing with the <code class="language-plaintext highlighter-rouge">Concept</code> object except recognize that it is one and disable its logic to do any collective/cumulative/distributive solution group testing.  Instead, it will still create <em>all potential</em> solution groups and call your solution group handler.  It is now up to you to decide if they are valid readings. For this case it will be simple since we are going to treat any phrase of the form “Do you have {x} commands?” as a request to see the help string. That includes any of these:</p>
+<p>With that in place, we’ll first get a set of solution groups that have the <code class="language-plaintext highlighter-rouge">Concept("command")</code> object assigned to variables. Perplexity will do nothing with the <code class="language-plaintext highlighter-rouge">Concept</code> object except recognize that it is one and disable its logic to do any <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups">collective/cumulative/distributive</a> solution group testing.  Instead, it will still create <em>all potential</em> solution groups and call your solution group handler.  It is now up to you to decide if they are valid readings. For this case it will be simple since we are going to treat any phrase of the form “Do you have {x} commands?” as a request to see the help string. That includes any of these:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Do you have commands?
 Do you have 2 commands?

@@ -96,5 +96,7 @@ toc:
         url: "/pxhowto/pxHowTo090Prepositions/"
       - title: "Non-logical Meaning"
         url: "/pxhowto/pxHowTo100NonlogicalMeaning/"
+      - title: "Handling Tenses"
+        url: "/pxhowto/pxHowTo110HandlingTenses/"
       - title: "A. Generating English with S-strings"
         url: "/pxhowto/pxHowTo025SStrings/"
