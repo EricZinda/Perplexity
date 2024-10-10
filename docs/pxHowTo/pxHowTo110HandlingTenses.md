@@ -15,9 +15,9 @@ You can use the following commands: copy and go
 While they aren't all that likely to be uttered, they really shouldn't work.  And, it makes you wonder what other phrases might work that could be really confusing. When building predications in Perplexity it is always a good idea to be intentional about the phrases you want to support (and test them). When users get unexpected results from utterances (because they weren't anticipated), they lose faith in the ability of the system to understand them.
 
 ### Specifying Required Properties
-To support restricting when predications get used, and support less accidental misunderstandings like the ones above, Perplexity allows you to specify the types of phrases your predication is meant to support and will automatically skip the predication if the phrase doesn't match. It does this by matching [MRS variable properties](../mrscon/devhowto0010MRS#variable-properties) of the [MRS Index](mrscon/devhowto0010MRS#index) of the phrase. 
+To support restricting when predications get used, and support less accidental misunderstandings like the ones above, Perplexity allows you to specify the types of phrases your predication is meant to support. It will automatically skip the predication if the phrase doesn't match. It does this by matching [MRS variable properties](../mrscon/devhowto0010MRS#variable-properties) of the [MRS Index](../mrscon/devhowto0010MRS#index) of the phrase. 
 
-Recall that the MRS Index variable is the introduced variable that represents the predication that is "the syntactic head of the phrase". That predication represents what the phrase is “about” or “built around". Usually it is just the main verb. So for "Do you have commands?" it would be `_have_v_1`. There are variable properties specified in the MRS that indicate tense information about that verb, and you can specify which tenses your predication is meant to support using those.
+Recall that the MRS Index variable is the introduced variable for the predication that is "the syntactic head of the phrase". That predication represents what the phrase is “about” or “built around". Usually, it is just the main verb. So, for "Do you have commands?", it would be `_have_v_1`. There are variable properties specified in the MRS that indicate tense information about that verb, and you can specify which tenses your predication is meant to support using those.
 
 We can see these properties by inspecting the MRS using `/show`:
 
@@ -48,7 +48,7 @@ The `INDEX` variable of the MRS is `e2`, which is the introduced variable (i.e. 
   INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ]
 ~~~
 
-... that indicate this is a question (`SF: ques`), it is present tense (`TENSE: pres`), etc.  All of the properties are described in the [MRS variable properties section](../mrscon/devhowto0010MRS#variable-properties). If we only want our `_have_v_1` predications called when the verb is in exactly that tense (which we do), we can declare those properties as the only ones supported by using the `properties` argument of the `Predication` object:
+... that indicate this is a question (`SF: ques`), it is present tense (`TENSE: pres`), etc.  All of the properties are described in the [MRS variable properties section](../mrscon/devhowto0010MRS#variable-properties). If we only want our `_have_v_1` predications called when the verb is in exactly that tense (which we do), we can declare those properties as the only ones supported using the `properties` argument of the `Predication` object:
 
 ~~~
 @Predication(vocabulary,
@@ -82,12 +82,12 @@ I don't understand the way you are using: have
 I don't understand the way you are using: have
 ~~~
 
-The system ignores the predication unless it matches the properties of the phrase, and if it can't find one that works gives a "I didn't understand" message.
+The system ignores the predication unless it matches the properties of the phrase. If it can't find one that works, it gives an "I didn't understand" message.
 
 ### Using Phrases to Specify Properties
-Collecting the properties manually can get annoying, and they really don't provide good documentation for what phrases a predication is meant to support. So Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the `properties` argument directly, you can provide phrases and Perplexity will help you work it out.
+Collecting properties manually can get annoying, and they don't provide good documentation for which phrases a predication is meant to support. So, Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the `properties` argument directly, you can provide phrases and Perplexity will help you work it out.
 
-If we instead started with this code, which specifies the phrase we want to support but doesn't supply any properties for it (i.e. specifies `None` where the properties should be:
+If we instead started with this code, which specifies the phrase we want to support but doesn't supply any properties for it (i.e. specifies `None` where the properties should be):
 ~~~
 @Predication(vocabulary,
              names=["_have_v_1"],
@@ -159,11 +159,14 @@ Examining the output, you can see that Perplexity first parsed the example phras
 ~~~
    parsing example: 'What commands do you have?' ...
       'None' did not match properties in any of the following parses:
-      
+      _which_q(x5,_command_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5))): {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+      pronoun_q(x9,pron(x9),basic_free_relative_q(x3,[_command_n_1(x3), _do_v_1(e8,x3,x9)],ellipsis_ref(e2,x3))): Did not contain predicates listed for this function: ['_have_v_1']
+      basic_free_relative_q(x3,pronoun_q(x9,pron(x9),[_command_n_1(x3), _do_v_1(e8,x3,x9)]),ellipsis_ref(e2,x3)): Did not contain predicates listed for this function: ['_have_v_1']
+
    ...
 ~~~
 
-This allows us to examine the parses to find which is the one we meant to support and just copy the properties it has. It will usually be near the top.  In this case it is the first one:
+This allows us to examine the parses to find which is the one we meant to support and just copy the properties it has. It will usually be near the top.  In this case, it is the first one:
 
 ~~~
       _which_q(x5,_command_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5))): {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
@@ -194,6 +197,8 @@ don't match the properties declared by the phrases:
 ~~~
 
 Now it is telling us that it understands we want to support the specified phrase, with the specified properties, but that the `properties` argument didn't match (since it is missing).
+
+Filling those in:
 
 ~~~
 @Predication(vocabulary,
