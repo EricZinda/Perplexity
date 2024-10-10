@@ -73,6 +73,7 @@
         {"Page": "Representing Places", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo085Place.md", "DstFile": "pxhowto/pxHowTo085Place.md"},
         {"Page": "Directional Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo090Prepositions.md", "DstFile": "pxhowto/pxHowTo090Prepositions.md"},
         {"Page": "Non-logical Meaning", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo100NonlogicalMeaning.md", "DstFile": "pxhowto/pxHowTo100NonlogicalMeaning.md"},
+        {"Page": "Handling Tenses", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo110HandlingTenses.md", "DstFile": "pxhowto/pxHowTo110HandlingTenses.md"},
         {"Page": "A. Generating English with S-strings", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo025SStrings.md", "DstFile": "pxhowto/pxHowTo025SStrings.md"}
       ]}
     ]

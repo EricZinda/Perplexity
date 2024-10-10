@@ -250,7 +250,7 @@ def _command_n_1(context, state, x_binding):
                                            bound_variable,
                                            unbound_variable)
 ~~~
-With that in place, we'll first get a set of solution groups that have the `Concept("command")` object assigned to variables. Perplexity will do nothing with the `Concept` object except recognize that it is one and disable its logic to do any [collective/cumulative/distributive](../mrscon/devcon0030MRSSolverSolutionGroups) solution group testing.  Instead, it will still create *all potential* solution groups and call your solution group handler.  It is now up to you to decide if they are valid readings. For this case it will be simple since we are going to treat any phrase of the form "Do you have {x} commands?" as a request to see the help string. That includes any of these:
+With that in place, we'll first get a set of solution groups that have the `Concept("command")` object assigned to variables. Perplexity will do nothing with the `Concept` object except recognize that it is one and disable its logic to do any [collective/cumulative/distributive](../devcon/devcon0030MRSSolverSolutionGroups) solution group testing.  Instead, it will still create *all potential* solution groups and call your solution group handler.  It is now up to you to decide if they are valid readings. For this case it will be simple since we are going to treat any phrase of the form "Do you have {x} commands?" as a request to see the help string. That includes any of these:
 
 ~~~
 Do you have commands?

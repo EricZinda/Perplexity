@@ -372,7 +372,13 @@ def _command_n_1(context, state, x_binding):
                                            unbound_variable)
 
 
-@Predication(vocabulary, names=["_have_v_1"])
+@Predication(vocabulary,
+             names=["_have_v_1"],
+             phrases={"What commands do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                      "You have commands.": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                      },
+             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             )
 def _have_v_1_concept(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
     def actor_have_target(item1, item2):
         if isinstance(item2, Concept) and item2 == Concept("command"):
@@ -403,7 +409,13 @@ def _have_v_1_concept(context, state, e_introduced_binding, x_actor_binding, x_t
         return False
 
 
-@Predication(vocabulary, names=["_have_v_1"])
+@Predication(vocabulary,
+             names=["_have_v_1"],
+             phrases={"What commands do you have?": {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                      "You have commands.": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+                      },
+             properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             )
 def _have_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
     def actor_have_target(item1, item2):
         if isinstance(item2, file_system_example.objects.FileCommand):
