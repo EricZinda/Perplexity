@@ -11,5 +11,10 @@
     "place_n": {},
     "loc_nonsp": {},
     "go_v_1_comm": {},
-    "to_p_dir": {}
+    "to_p_dir": {},
+    "_command_n_1": {},
+    "_have_v_1": {},
+    "_have_v_1_group": {},
+    "_command_n_1_concept": {},
+    "_have_v_1_concept": {}
 }

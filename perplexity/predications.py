@@ -35,9 +35,24 @@ class Concept(object):
     def __init__(self, sort_of):
         # This is a set so it is more easily comparable since order doesn't matter
         self._sort_of_criteria = set([sort_of]) if sort_of is not None else set()
+        self._hash = None
 
     def __repr__(self):
         return f"Concept({','.join(self._sort_of_criteria)})"
+
+    # The only required property is that objects which compare equal have the same hash value
+    # But: objects with the same hash aren't required to be equal
+    # It must remain the same for the lifetime of the object
+    def __hash__(self):
+        if self._hash is None:
+            # TODO: Make this more efficient
+            self._hash = hash(tuple(self._sort_of_criteria))
+
+        return self._hash
+
+    def __eq__(self, other):
+        if isinstance(other, Concept) and self.__hash__() == other.__hash__():
+            return True
 
     def value_type(self):
         return VariableValueType.concept

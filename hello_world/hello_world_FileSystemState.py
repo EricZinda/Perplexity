@@ -1,7 +1,9 @@
+import file_system_example.objects
 from file_system_example.objects import File, Folder, Actor, FileSystemMock
 from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
-    individual_style_predication_1, in_style_predication_2
+    individual_style_predication_1, in_style_predication_2, Concept
+from perplexity.response import RespondOperation
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
@@ -330,6 +332,115 @@ def to_p_dir(context, state, e_introduced, e_target_binding, x_location_binding)
                           "Originator": context.current_predication_index()})
 
 
+@Predication(vocabulary, names=["_command_n_1"])
+def _command_n_1_concept(context, state, x_binding):
+    def bound_variable(value):
+        if isinstance(value, Concept) and value == Concept("command"):
+            return True
+        else:
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield Concept("command")
+
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
+
+
+@Predication(vocabulary, names=["_command_n_1"])
+def _command_n_1(context, state, x_binding):
+    def bound_variable(value):
+        if isinstance(value, file_system_example.objects.FileCommand):
+            return True
+        else:
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        for item in state.all_individuals():
+            if bound_variable(item):
+                yield item
+
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
+
+
+@Predication(vocabulary, names=["_have_v_1"])
+def _have_v_1_concept(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
+    def actor_have_target(item1, item2):
+        if isinstance(item2, Concept) and item2 == Concept("command"):
+            return True
+        else:
+            context.report_error(["doNotHave", x_actor_binding.variable.name, x_target_binding.variable.name])
+            return False
+
+    def all_actors_having_target(item2):
+        if False:
+            yield None
+
+    def all_targets_had_by_actor(item1):
+        if False:
+            yield None
+
+    if x_actor_binding.value is not None and len(x_actor_binding.value) == 1 and x_actor_binding.value[0] == Actor(name="Computer", person=2):
+        yield from in_style_predication_2(context,
+                                          state,
+                                          x_actor_binding,
+                                          x_target_binding,
+                                          actor_have_target,
+                                          all_actors_having_target,
+                                          all_targets_had_by_actor)
+
+    else:
+        context.report_error(["doNotHave", x_actor_binding.variable.name, x_target_binding.variable.name])
+        return False
+
+
+@Predication(vocabulary, names=["_have_v_1"])
+def _have_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
+    def actor_have_target(item1, item2):
+        if isinstance(item2, file_system_example.objects.FileCommand):
+            return True
+        else:
+            context.report_error(["doNotHave", x_actor_binding.variable.name, x_target_binding.variable.name])
+            return False
+
+    def all_actors_having_target(item2):
+        if False:
+            yield None
+
+    def all_targets_had_by_actor(item1):
+        if False:
+            yield None
+
+    if x_actor_binding.value is not None and len(x_actor_binding.value) == 1 and x_actor_binding.value[0] == Actor(name="Computer", person=2):
+        yield from in_style_predication_2(context,
+                                          state,
+                                          x_actor_binding,
+                                          x_target_binding,
+                                          actor_have_target,
+                                          all_actors_having_target,
+                                          all_targets_had_by_actor)
+
+    else:
+        context.report_error(["doNotHave", x_actor_binding.variable.name, x_target_binding.variable.name])
+        return False
+
+
+@Predication(vocabulary,
+             names=["solution_group__have_v_1"],
+             handles_interpretation=_have_v_1_concept)
+def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_target_variable_group):
+    yield [state_list[0].record_operations([RespondOperation("You can use the following commands: copy and go")])]
+
+
 # Generates all the responses that predications can
 # return when an error occurs
 def generate_custom_message(state, tree_info, error_term):
@@ -354,6 +465,11 @@ def generate_custom_message(state, tree_info, error_term):
 
         if error_constant == "adjectiveDoesntApply":
             return s("{A arg2} {'is':<arg2} not {*arg1}", tree_info)
+
+        elif error_constant == "doNotHave":
+            # s() converts a variable name like 'x3' into the english words
+            # that it represented in the MRS
+            return s("{arg1} do not have {arg2}", tree_info, reverse_pronouns=True)
 
         elif error_constant == "notAThing":
             # s() converts a variable name like 'x3' into the english words
@@ -411,7 +527,7 @@ register_world(world_name="SimplestExample",
 
 
 if __name__ == '__main__':
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
@@ -419,7 +535,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     user_interface = ui()

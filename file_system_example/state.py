@@ -22,6 +22,7 @@ class FileSystemState(State):
         self.current_user = file_system_example.objects.Actor(name="User", person=1, file_system=file_system) if current_user is None else current_user
         self.actors = [self.current_user,
                        file_system_example.objects.Actor(name="Computer", person=2, file_system=file_system)] if actors is None else actors
+        self.commands = [file_system_example.objects.FileCommand("copy"), file_system_example.objects.FileCommand("go")]
 
     def save(self, file):
         pickle.dump(self.file_system, file, 5)
@@ -31,6 +32,7 @@ class FileSystemState(State):
     def all_individuals(self):
         yield from self.file_system.all_individuals()
         yield from self.actors
+        yield from self.commands
 
     def user(self):
         return self.current_user

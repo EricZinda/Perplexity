@@ -36,6 +36,22 @@ class Megabyte(object):
         return self.units
 
 
+class FileCommand(UniqueObject):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self._hash = hash(self.name)
+
+    def __hash__(self):
+        return self._hash
+
+    def __repr__(self):
+        return f"Command(name={self.name})"
+
+    def __eq__(self, obj):
+        return isinstance(obj, FileCommand) and str(self.name) == str(obj.name)
+
+
 class Folder(UniqueObject):
     def __init__(self, name, size=0, file_system=None):
         super().__init__()
