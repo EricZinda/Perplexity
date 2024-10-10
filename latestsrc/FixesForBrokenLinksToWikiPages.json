@@ -22,6 +22,9 @@
         {"Page": "devhowtoWhichParseAndTree", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowtoWhichParseAndTree.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true},
         {"Page": "docs/mrscon/devhowto0010MRS", "SrcDir": "main", "SrcFile": "docs/mrscon/docs/mrscon/devhowto0010MRS.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true}
       ]},
+      {"Section": "Using Perplexity", "Pages": [
+        {"Page": "devcon0030MRSSolverSolutionGroups", "SrcDir": "main", "SrcFile": "docs/pxHowTo/devcon0030MRSSolverSolutionGroups.md", "BaseReferrer": "home/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md", "Referrer": "home/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md", "FileMissing": true}
+      ]},
       {"Section": "Perplexity Internals", "Pages": [
         {"Page": "devhowto0010MRS", "SrcDir": "main", "SrcFile": "docs/pxint/devhowto0010MRS.md", "BaseReferrer": "home/docs/pxint/pxint0050Conjunctions.md", "Referrer": "home/docs/pxint/pxint0050Conjunctions.md", "FileMissing": true},
         {"Page": "devhowtoChoosingWhichFailure", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoChoosingWhichFailure.md", "BaseReferrer": "home/docs/pxint/pxint0130ErrorsRobustFailure.md", "Referrer": "home/docs/pxint/pxint0130ErrorsRobustFailure.md", "FileMissing": true},
