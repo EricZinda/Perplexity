@@ -13,10 +13,10 @@ etc.
 
 Everything to the right of "create a" is a [referring expression](https://en.wikipedia.org/wiki/Referring_expression), basically an arbitrarily complex noun phrase that describes or "refers to" something. When that "something" is actually in the world, the techniques we have gone through so far are sufficient to handle it. But in creating files, we are describing something that does not yet exist, so writing predications that find objects in the world and return them won't work. We need a different approach.
 
-The Perplexity `Concept` object gives us a direction, but we'll need to enhance it. We will derive a richer kind of `Concept` object that can hold a representation of these "conceptual" referring expressions and build predications that build them.
+The Perplexity `Concept` object gives us a direction, but we'll need to enhance it. We will create a richer kind of `Concept` object that can hold a representation of these "conceptual" referring expressions and build predications that use them.
 
 ### Creating a File
-Below is the built-in `Concept` object. Its default implementation really just stores a single string that gets passed into the constructor called `sort_of` which represents the sort of concept it is.  Period. It doesn't do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the `value_type` property which returns `VariableValueType.concept`.  This tells Perplexity "I am a concept, treat me as an opaque blob".  The rest of the methods are there to support equality and membership in dictionaries and are use by things like the Python `dict` object:
+Below is the built-in `Concept` object. Its default implementation just stores a single string from the constructor called `sort_of` which represents the sort of concept it is.  Period. It doesn't do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the `value_type` property which returns `VariableValueType.concept`.  This tells Perplexity "I am a concept, treat me as an opaque blob".  The rest of the methods are there to support equality and membership in dictionaries and are use by things like the Python `dict` object:
 
 ~~~
 class Concept(object):
@@ -67,7 +67,7 @@ Sentence Force: prop-or-ques
   HCONS: < h0 qeq h1 h6 qeq h8 > ]
 ~~~
 
-... we can see that we'll need to implement a new version of `_file_n_of` that creates a `Concept` instead of actual files as the current one does. The base `Concept` class is enough for this. It is an exact copy of the `_command_n_1` implementation we did in the section on [Non-logical meaning](pxHowTo100NonlogicalMeaning), just replacing the string "command" with "file":
+... we can see that we'll need to implement a new version of `_file_n_of` that creates a `Concept` instead of actual files as the current one does. The base `Concept` class is enough for this. Our implementation will be an exact copy of the `_command_n_1` implementation we built in the [Non-logical meaning section](pxHowTo100NonlogicalMeaning), just replacing the string "command" with "file":
 
 ~~~
 @Predication(vocabulary, names=["_file_n_of"])
@@ -89,7 +89,7 @@ def file_n_of_concept(context, state, x_binding, i_binding):
                                            unbound_variable)
 ~~~
 
-Next we'll implement `_create_v_1` exactly like we implemented `_delete_v_1` in the [section on action verbs](pxHowTo070ActionVerbs). It will use a new operation, which we'll implement next, called `CreateOperation` to do the creating.  For now, we'll just hard code the name of the file to be "newfile":
+Next we'll implement `_create_v_1` exactly like we implemented `_delete_v_1` in the [action verbs section](pxHowTo070ActionVerbs). It will use a new operation (which we'll implement next) called `CreateOperation` to do the creating.  For now, we'll just hard code the name of the file to be "newfile":
 
 ~~~
 @Predication(vocabulary, names=["_create_v_1"])
@@ -134,9 +134,9 @@ Now we can run it:
 Done!
 ~~~
 
-Not very exciting and since we don't have a way to list files we'll have to trust that it works or examine in the debugger.
+Not very exciting and since we don't have a way to list files, we'll have to trust that it works or examine in the debugger.
 
-To get this far, we've used concepts we've already explained in previous sections and they should be relatively familiar. Next we'll cover some new ground.
+To get this far, we've used concepts we've already explained in previous sections that should be relatively familiar. Next, we'll cover some new ground.
 
 ### A Richer Concept
 Let's now tackle the next phrase from our list at the beginning of this section: "create a text file". As always, we'll start by examining the MRS to see what predications we need to implement:
@@ -175,7 +175,7 @@ udef_q(x14,RSTR,BODY)               ┌────── pron(x3)  │         
                                          └─ _a_q(x8,RSTR,BODY)
                                                            └─ _create_v_1(e2,x3,x8)
 ~~~
-There are 2 new predications to implement: `_text_n_of`, `compound`.  Basically, the ERG is creating the concept of "text" and the concept of "file" and combining them together with the `compound` predication. `_text_n_of` will end up looking just like `_file_n_of` above:
+There are 2 new predications to implement: `_text_n_of` and `compound`.  Basically, the ERG is creating the concept of "text" and the concept of "file" and combining them together with the `compound` predication. `_text_n_of` will end up looking just like `_file_n_of` above:
 
 ~~~
 @Predication(vocabulary, names=["_text_n_of"])
@@ -197,13 +197,19 @@ def text_n_of_concept(context, state, x_binding, i_binding):
                                            unbound_variable)
 ~~~
 
-Next we tackle `compound(e13,x8,x14)`. The `x8` in `compound` is always the "base object".  I.e. "seat" in "bicycle seat", "food" in "baby food". `x14` is the modifier which filters down what *kind* of base object we are discussing. If we were working with object instances (and not concepts) we would simply do a check to see if `x8` is an `x14` kind of object and succeed or not. But, because we are building up a *concept*, we actually need to *modify* the value in `x8` to include that additional description so that downstream predications see a concept that is a "text" kind of "file". We need to enhance the "Concept" object to support this. Since Perplexity doesn't care about the `Concept` object, per se, and only cares that the object has the `value_type` method on it, we can just create our own Concept object and use that.
+Next up is `compound(e13,x8,x14)`. 
 
-To do this we need start building up a simple way of describing things. We'll describe an referred-to-thing with a list of "criteria" which are simply "relationships" and "values".  For example:
+The `x8` in `compound` is always the "base object", i.e. "seat" in "bicycle seat", "food" in "baby food", etc. 
+
+`x14` is the modifier which filters down what *kind* of base object we are discussing. 
+
+If we were working with object instances (and not concepts) we would simply do a check to see if `x8` is an "`x14` kind of object" and succeed or not. But, because we are building up a *concept*, we actually need to *modify* the value in `x8` to include that additional description so that downstream predications see a concept that is a "text" kind of "file". We need to enhance the "Concept" object to support this. Since Perplexity doesn't care about the `Concept` object, per se, and only cares that the object has the `value_type` method on it, we can just create our own `RichConcept` object and use that.
+
+To do this, we need start building up a simple way of describing things. We'll describe a referred-to-thing with a list of "criteria", which are simply "relationships" and "values".  For example:
 ~~~
 Description of "text file":
     object "is_a" "file"
-    object "contains_type" "text"
+    object "has_adjective" "text"
 ~~~
 
 Here is the implementation of that:
@@ -248,11 +254,13 @@ x8 = RichObject("file")   # object "is_a" "file"
 x14 = RichObject("text")  # object "is_a" "text"
 ~~~
 
-This isn't quite right. A text file "is_a" file, but it "has" text, it is not "text". The problem is in how we've interpreted the predications `_text_n_of` and `_file_n_of`.  Normally these predications should be `true` for objects that "are" (i.e. "is_a") that kind of thing. That is how they are implemented and that is the kind of `Concept` being returned by them at the moment. But when used with `compound`, the 2nd argument is used more like an adjective than a noun.  Consider "baby food". A jar of baby food is *not* a baby. "Baby" is being used as an adjective.  
+This isn't quite right. A text file "is_a" file, but it "has" text, it is not "text". 
 
-The problem is that `text_n_of` (or "baby") get called without knowing this is how they'll be used. So, we can either write two different *interpretations* for all noun predications: one interpreting as "is_a" and one interpreting as "has_adjective" version and compound will always only be true for the second.  Or: we can have the `compound` predication do some special magic to interpret nouns as adjectives.
+The problem is in how we've interpreted the predications `_text_n_of` and `_file_n_of`.  Normally, these predications should be `true` for objects that "are" (i.e. "is_a") that kind of thing. That is how they are implemented and that is the kind of `Concept` being returned by them at the moment. But when used with `compound`, the 2nd argument is used more like an adjective than a noun.  Consider "baby food". A jar of baby food is *not* a baby. "Baby" is being used as an adjective.  
 
-Since we don't have other predications that need to treat nouns as adjectives, for now we'll centralize the code in `compound` to save work. We will keep it simple until we find we need to do otherwise, by adding a method to our `RichConcept` class called `add_adjective_concept`. This method will simply convert "is_a" relationships to "has_adjective" relationships and then add to the base object:
+The problem is that `text_n_of` (or "baby") get called without knowing this is how they'll be used. So, we can either write two different *interpretations* for all noun predications: one interpreting as "is_a" and one interpreting as "has_adjective" and then compound will always only be `true` for the second.  Or: we can have the `compound` predication do some special magic to interpret nouns as adjectives.
+
+Since we don't have other predications that need to treat nouns as adjectives, for now we'll centralize the code in `compound` to save work. We will add a method to our `RichConcept` class called `add_adjective_concept`. This method will simply convert "is_a" relationships to "has_adjective" relationships and then add to the base object:
 
 ~~~
 class RichConcept:
@@ -276,7 +284,7 @@ class RichConcept:
         return self_copy
 ~~~
 
-This makes `compound` easy to write. Due to the way it is used in language, it will always have both arguments bound: there isn't a way to make a compound word where you are asking what the first part is that will generate this predication. So all we need to do is use our new method to combine the second argument into the first and yield that as the new first argument:
+This makes `compound` easy to write. Due to the way it is used in English, it will always have both arguments bound: there isn't a way to make a compound word where you are asking what the first part is that will generate this predication. So, all we need to do is use our new method to combine the second argument into the first and yield that as the new first argument:
 
 ~~~
 @Predication(vocabulary,
@@ -309,7 +317,8 @@ class CreateOperation(object):
         state.file_system.create_item(self.binding_to_create, self.file_name)
 ~~~
 
-The real work happens in the `FileSystem` object that haven't really gone through.
+The real work happens in the `FileSystem` object that haven't really gone through.  The pertinent code is below.  It does the work of finding the one adjective that describes the type of file to creating and failing if there is none or more than one.  Obviously this code could be made more robust, but that isn't what we're focused on here. This is just a simple implementation:
+
 ~~~     
 class FileSystem:
     ...
@@ -354,7 +363,7 @@ def create_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
     ...
 ~~~
 
-As far as this predication is concerned, we don't care what *type* of file the user asked to create, that will be dealt with elsewhere.  We just care that it is, and its core, a *file*.  Here, we can appeal to a concept from logic called "logical consequence" or ["logical entailment"](https://en.wikipedia.org/wiki/Logical_consequence).  Really, you can think of it as "implies".  Being a "text file" will always mean it is also a "file". So, "text file" *entails* "file" or "text file" *implies* "file". In this function we want to check for *entailment* of "file", not equality.
+As far as this predication is concerned, we don't care what *type* of file the user asked to create, that will be dealt with elsewhere.  We just care that it is, at its core, a *file*.  Here, we can appeal to a concept from logic called "logical consequence" or ["logical entailment"](https://en.wikipedia.org/wiki/Logical_consequence).  Really, you can think of it as "implies".  Being a "text file" will always mean it is also a "file". So, "text file" *entails* "file" or "text file" *implies* "file". In this function we want to check for *entailment* of "file", not equality.
 
 Now, proving entailment is an active area of research. It is a hard problem. But we don't have the general case here, we have a very limited vocabulary and set of scenarios.  We can therefore just say that something entails something else as long as they both "is_a" the same thing:
 
