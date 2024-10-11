@@ -355,9 +355,9 @@ You can use the following commands: copy and go
 <p>While they aren’t all that likely to be uttered, they really shouldn’t work.  And, it makes you wonder what other phrases might work that could be really confusing. When building predications in Perplexity it is always a good idea to be intentional about the phrases you want to support (and test them). When users get unexpected results from utterances (because they weren’t anticipated), they lose faith in the ability of the system to understand them.</p>
 
 <h3 id="specifying-required-properties">Specifying Required Properties</h3>
-<p>To support restricting when predications get used, and support less accidental misunderstandings like the ones above, Perplexity allows you to specify the types of phrases your predication is meant to support and will automatically skip the predication if the phrase doesn’t match. It does this by matching <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS variable properties</a> of the MRS Index of the phrase.</p>
+<p>To support restricting when predications get used, and support less accidental misunderstandings like the ones above, Perplexity allows you to specify the types of phrases your predication is meant to support. It will automatically skip the predication if the phrase doesn’t match. It does this by matching <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS variable properties</a> of the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS Index</a> of the phrase.</p>
 
-<p>Recall that the MRS Index variable is the introduced variable that represents the predication that is “the syntactic head of the phrase”. That predication represents what the phrase is “about” or “built around”. Usually it is just the main verb. So for “Do you have commands?” it would be <code class="language-plaintext highlighter-rouge">_have_v_1</code>. There are variable properties specified in the MRS that indicate tense information about that verb, and you can specify which tenses your predication is meant to support using those.</p>
+<p>Recall that the MRS Index variable is the introduced variable for the predication that is “the syntactic head of the phrase”. That predication represents what the phrase is “about” or “built around”. Usually, it is just the main verb. So, for “Do you have commands?”, it would be <code class="language-plaintext highlighter-rouge">_have_v_1</code>. There are variable properties specified in the MRS that indicate tense information about that verb, and you can specify which tenses your predication is meant to support using those.</p>
 
 <p>We can see these properties by inspecting the MRS using <code class="language-plaintext highlighter-rouge">/show</code>:</p>
 
@@ -386,7 +386,7 @@ Sentence Force: ques
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ]
 </code></pre></div></div>
 
-<p>… that indicate this is a question (<code class="language-plaintext highlighter-rouge">SF: ques</code>), it is present tense (<code class="language-plaintext highlighter-rouge">TENSE: pres</code>), etc.  All of the properties are described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS variable properties section</a>. If we only want our <code class="language-plaintext highlighter-rouge">_have_v_1</code> predications called when the verb is in exactly that tense (which we do), we can declare those properties as the only ones supported by using the <code class="language-plaintext highlighter-rouge">properties</code> argument of the <code class="language-plaintext highlighter-rouge">Predication</code> object:</p>
+<p>… that indicate this is a question (<code class="language-plaintext highlighter-rouge">SF: ques</code>), it is present tense (<code class="language-plaintext highlighter-rouge">TENSE: pres</code>), etc.  All of the properties are described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS variable properties section</a>. If we only want our <code class="language-plaintext highlighter-rouge">_have_v_1</code> predications called when the verb is in exactly that tense (which we do), we can declare those properties as the only ones supported using the <code class="language-plaintext highlighter-rouge">properties</code> argument of the <code class="language-plaintext highlighter-rouge">Predication</code> object:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary,
              names=["_have_v_1"],
@@ -418,12 +418,12 @@ I don't understand the way you are using: have
 I don't understand the way you are using: have
 </code></pre></div></div>
 
-<p>The system ignores the predication unless it matches the properties of the phrase, and if it can’t find one that works gives a “I didn’t understand” message.</p>
+<p>The system ignores the predication unless it matches the properties of the phrase. If it can’t find one that works, it gives an “I didn’t understand” message.</p>
 
 <h3 id="using-phrases-to-specify-properties">Using Phrases to Specify Properties</h3>
-<p>Collecting the properties manually can get annoying, and they really don’t provide good documentation for what phrases a predication is meant to support. So Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the <code class="language-plaintext highlighter-rouge">properties</code> argument directly, you can provide phrases and Perplexity will help you work it out.</p>
+<p>Collecting properties manually can get annoying, and they don’t provide good documentation for which phrases a predication is meant to support. So, Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the <code class="language-plaintext highlighter-rouge">properties</code> argument directly, you can provide phrases and Perplexity will help you work it out.</p>
 
-<p>If we instead started with this code, which specifies the phrase we want to support but doesn’t supply any properties for it (i.e. specifies <code class="language-plaintext highlighter-rouge">None</code> where the properties should be:</p>
+<p>If we instead started with this code, which specifies the phrase we want to support but doesn’t supply any properties for it (i.e. specifies <code class="language-plaintext highlighter-rouge">None</code> where the properties should be):</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary,
              names=["_have_v_1"],
              phrases={"What commands do you have?": None}
@@ -492,11 +492,14 @@ def _have_v_1_concept(context, state, e_introduced_binding, x_actor_binding, x_t
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   parsing example: 'What commands do you have?' ...
       'None' did not match properties in any of the following parses:
-      
+      _which_q(x5,_command_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5))): {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+      pronoun_q(x9,pron(x9),basic_free_relative_q(x3,[_command_n_1(x3), _do_v_1(e8,x3,x9)],ellipsis_ref(e2,x3))): Did not contain predicates listed for this function: ['_have_v_1']
+      basic_free_relative_q(x3,pronoun_q(x9,pron(x9),[_command_n_1(x3), _do_v_1(e8,x3,x9)]),ellipsis_ref(e2,x3)): Did not contain predicates listed for this function: ['_have_v_1']
+
    ...
 </code></pre></div></div>
 
-<p>This allows us to examine the parses to find which is the one we meant to support and just copy the properties it has. It will usually be near the top.  In this case it is the first one:</p>
+<p>This allows us to examine the parses to find which is the one we meant to support and just copy the properties it has. It will usually be near the top.  In this case, it is the first one:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      _which_q(x5,_command_n_1(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5))): {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
 </code></pre></div></div>
@@ -524,6 +527,8 @@ don't match the properties declared by the phrases:
 </code></pre></div></div>
 
 <p>Now it is telling us that it understands we want to support the specified phrase, with the specified properties, but that the <code class="language-plaintext highlighter-rouge">properties</code> argument didn’t match (since it is missing).</p>
+
+<p>Filling those in:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary,
              names=["_have_v_1"],
