@@ -1,4 +1,4 @@
-{% raw %}## Non-logical Meaning
+{% raw %}## Solution Group Handlers and Non-logical Meaning
 So far, all the examples we've built have a very "logical" behavior.  They are literally asking about things in the world, possibly in relation to other things. We ask about their existence, where they are, etc.
 
 ```
