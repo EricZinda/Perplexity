@@ -1,8 +1,10 @@
+import copy
+
 import file_system_example.objects
-from file_system_example.objects import File, Folder, Actor, FileSystemMock
-from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation
+from file_system_example.objects import File, Folder, Actor, FileSystemMock, RichConcept
+from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation, CreateOperation
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
-    individual_style_predication_1, in_style_predication_2, Concept
+    individual_style_predication_1, in_style_predication_2
 from perplexity.response import RespondOperation
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
@@ -104,6 +106,25 @@ def very_x_deg(context, state, e_introduced_binding, e_target_binding):
                          "DegreeMultiplier",
                          {"Value": 10,
                           "Originator": context.current_predication_index()})
+
+
+@Predication(vocabulary, names=["_file_n_of"])
+def file_n_of_concept(context, state, x_binding, i_binding):
+    def bound_variable(value):
+        if isinstance(value, RichConcept) and value == RichConcept("file"):
+            return True
+        else:
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield RichConcept("file")
+
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
 
 
 @Predication(vocabulary, names=["_file_n_of"])
@@ -335,14 +356,14 @@ def to_p_dir(context, state, e_introduced, e_target_binding, x_location_binding)
 @Predication(vocabulary, names=["_command_n_1"])
 def _command_n_1_concept(context, state, x_binding):
     def bound_variable(value):
-        if isinstance(value, Concept) and value == Concept("command"):
+        if isinstance(value, RichConcept) and value == RichConcept("command"):
             return True
         else:
             context.report_error(["valueIsNotX", value, x_binding.variable.name])
             return False
 
     def unbound_variable():
-        yield Concept("command")
+        yield RichConcept("command")
 
     yield from combinatorial_predication_1(context,
                                            state,
@@ -381,7 +402,7 @@ def _command_n_1(context, state, x_binding):
              )
 def _have_v_1_concept(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
     def actor_have_target(item1, item2):
-        if isinstance(item2, Concept) and item2 == Concept("command"):
+        if isinstance(item2, RichConcept) and item2 == RichConcept("command"):
             return True
         else:
             context.report_error(["doNotHave", x_actor_binding.variable.name, x_target_binding.variable.name])
@@ -451,6 +472,64 @@ def _have_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
              handles_interpretation=_have_v_1_concept)
 def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_target_variable_group):
     yield [state_list[0].record_operations([RespondOperation("You can use the following commands: copy and go")])]
+
+
+@Predication(vocabulary, names=["_create_v_1"])
+def create_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
+    def criteria(value):
+        # Only allow creating conceptual files
+        if isinstance(value, RichConcept) and value.entails(RichConcept("file")):
+            return True
+
+        else:
+            context.report_error(["cantDo", "create", x_what_binding.variable.name])
+
+    def unbound_what():
+        context.report_error(["cantDo", "create", x_what_binding.variable.name])
+
+    for success_state in individual_style_predication_1(context,
+                                                        state,
+                                                        x_what_binding,
+                                                        criteria,
+                                                        unbound_what,
+                                                        ["cantXYTogether", "create", x_what_binding.variable.name]):
+        object_to_create_binding = success_state.get_binding(x_what_binding.variable.name)
+        operation = CreateOperation(object_to_create_binding, "newfile")
+        yield success_state.apply_operations([operation])
+
+
+@Predication(vocabulary, names=["_text_n_of"])
+def text_n_of_concept(context, state, x_binding, i_binding):
+    def bound_variable(value):
+        if isinstance(value, RichConcept) and value == RichConcept("text"):
+            return True
+        else:
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield RichConcept("text")
+
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
+
+
+@Predication(vocabulary,
+             names=["compound"])
+def compound_concept(context, state, e_introduced_binding, x_base_binding, x_modifier_binding):
+    # Only support concepts
+    # Both arguments will always be bound for compound
+    # so we don't need to check unbound cases. Furthermore, the value will always be
+    # a single value due to the way it is parsed, so we only need to check the first value
+    if not isinstance(x_base_binding.value[0], RichConcept) or not isinstance(x_modifier_binding.value[0], RichConcept):
+        context.report_error(["formNotUnderstood"])
+        return
+
+    compound_value = x_base_binding.value[0].add_adjective_concept(x_modifier_binding.value[0])
+    yield state.set_x(x_base_binding.variable.name, (compound_value, ))
 
 
 # Generates all the responses that predications can

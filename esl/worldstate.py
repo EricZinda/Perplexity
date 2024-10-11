@@ -518,7 +518,6 @@ class ESLConcept(Concept):
     def __init__(self, sort_of=None, mrs_variable=None):
         super().__init__(sort_of)
         self.criteria = []
-        self.conjunctions = []
         self._hash = None
         self.mrs_variable = mrs_variable
 

@@ -38,6 +38,15 @@ class FileSystemState(State):
         return self.current_user
 
 
+class CreateOperation(object):
+    def __init__(self, binding_to_create, file_name):
+        self.binding_to_create = binding_to_create
+        self.file_name = file_name
+
+    def apply_to(self, state):
+        state.file_system.create_item(self.binding_to_create, self.file_name)
+
+
 # Delete any object in the system
 class DeleteOperation(object):
     def __init__(self, binding_to_delete):

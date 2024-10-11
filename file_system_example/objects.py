@@ -3,6 +3,8 @@ import logging
 import os
 import pathlib
 import uuid
+
+from perplexity.predications import Concept, VariableValueType
 from perplexity.set_utilities import Measurement
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import MessageException
@@ -193,6 +195,55 @@ class FileSystem(object):
     pass
 
 
+class RichConcept:
+    def __init__(self, is_a=None):
+        self.criteria = [] if is_a is None else [("is_a", is_a)]
+        self._hash = None
+
+    def __repr__(self):
+        return f"RichConcept({[x for x in self.criteria]})"
+
+    # The only required property is that objects which compare equal have the same hash value
+    # But: objects with the same hash aren't required to be equal
+    # It must remain the same for the lifetime of the object
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = hash(tuple(self.criteria))
+
+        return self._hash
+
+    def __eq__(self, other):
+        if isinstance(other, RichConcept) and self.__hash__() == other.__hash__():
+            return True
+
+    def value_type(self):
+        return VariableValueType.concept
+
+    def add_criteria(self, relationship, value):
+        self_copy = copy.deepcopy(self)
+        self_copy.criteria.append((relationship, tuple))
+        self_copy._hash = None
+        return self_copy
+
+    def add_adjective_concept(self, other_concept):
+        self_copy = copy.deepcopy(self)
+        for criteria in other_concept.criteria:
+            if criteria[0] == "is_a":
+                self_copy.criteria.append(("has_adjective", criteria[1]))
+            else:
+                self_copy.criteria.append(criteria)
+        self_copy._hash = None
+        return self_copy
+
+    def entails(self, other_concept):
+        for criteria in self.criteria:
+            if criteria[0] == "is_a":
+                for other_criteria in other_concept.criteria:
+                    if other_criteria[0] == "is_a" and other_criteria[1] == criteria[1]:
+                        return True
+
+        return False
+
 # Allows mocking up a file system for testing
 class FileSystemMock(FileSystem):
     # current = the user's current directory as a string
@@ -321,6 +372,30 @@ class FileSystemMock(FileSystem):
 
         else:
             raise MessageException("notFound", [delete_binding.variable.name])
+
+    def get_file_type(self, concept):
+        file_type = None
+        for criteria in concept.criteria:
+            if criteria[0] == "has_adjective":
+                if file_type is None:
+                    file_type = criteria[1]
+                else:
+                    # More than one type described, fail
+                    return None
+
+        return file_type
+
+    def create_item(self, create_binding, file_name):
+        if isinstance(create_binding.value[0], RichConcept):
+            if self.get_file_type(create_binding.value[0]) == "text":
+                new_item_path = pathlib.PurePath(self.current_directory().name, file_name + ".txt")
+                self.items[str(new_item_path)] = file_name
+
+            else:
+                raise MessageException("cantCreate", [create_binding.variable.name])
+
+        else:
+            raise MessageException("cantCreate", [create_binding.variable.name])
 
     def copy_item(self, from_directory_binding, from_binding, to_binding):
         if from_directory_binding is not None:

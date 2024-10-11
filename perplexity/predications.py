@@ -57,17 +57,6 @@ class Concept(object):
     def value_type(self):
         return VariableValueType.concept
 
-    # return instances of whatever the concept represents
-    # this is implementation dependent and requires the derived class
-    # to implement it
-    def instances(self):
-        return None
-
-    # return specializations of whatever the concept represents
-    # this is implementation dependent and requires the derived class
-    # to implement it
-    def concepts(self):
-        return None
 
 
 # This function is used to check the constraints for a variable that is set to a *concept*.
