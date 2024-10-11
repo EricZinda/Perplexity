@@ -98,5 +98,7 @@ toc:
         url: "/pxhowto/pxHowTo100NonlogicalMeaning/"
       - title: "Handling Tenses"
         url: "/pxhowto/pxHowTo110HandlingTenses/"
+      - title: "Conceptual References"
+        url: "/pxhowto/pxHowTo120ConceptsReferringExpressions/"
       - title: "A. Generating English with S-strings"
         url: "/pxhowto/pxHowTo025SStrings/"
