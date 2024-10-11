@@ -354,7 +354,9 @@ you do not have a file
 us do not have a file
 ~~~
 
-Note that there also a whole set of phrases that happen to work that probably shouldn't:
+Note that all of those phrases end up using the conceptual interpretation. Our instance-based interpretation is currently unused. The most likely use for it would be for phrases like "Do you have a copy command?" or "How do I use the copy command?", i.e. in phrases where the user is talking about a particular instance, and not the general concept of commands. 
+
+Also note that there also a whole set of phrases that happen to work that probably shouldn't:
 
 ~~~
 ? did you have a command?
@@ -367,6 +369,4 @@ You can use the following commands: copy and go
 You can use the following commands: copy and go
 ~~~
 
-Also note that all of those phrases end up using the conceptual interpretation. Our instance-based interpretation is currently unused. The most likely use for it would be for phrases like "Do you have a copy command?" or "How do I use the copy command?", i.e. in phrases where the user is talking about a particular instance, and not the general concept of commands. 
-
-Let's tackle both of those next.
+Let's tackle tenses next.
