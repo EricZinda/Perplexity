@@ -355,10 +355,10 @@ etc.
 
 <p>Everything to the right of “create a” is a <a href="https://en.wikipedia.org/wiki/Referring_expression">referring expression</a>, basically an arbitrarily complex noun phrase that describes or “refers to” something. When that “something” is actually in the world, the techniques we have gone through so far are sufficient to handle it. But in creating files, we are describing something that does not yet exist, so writing predications that find objects in the world and return them won’t work. We need a different approach.</p>
 
-<p>The Perplexity <code class="language-plaintext highlighter-rouge">Concept</code> object gives us a direction, but we’ll need to enhance it. We will derive a richer kind of <code class="language-plaintext highlighter-rouge">Concept</code> object that can hold a representation of these “conceptual” referring expressions and build predications that build them.</p>
+<p>The Perplexity <code class="language-plaintext highlighter-rouge">Concept</code> object gives us a direction, but we’ll need to enhance it. We will create a richer kind of <code class="language-plaintext highlighter-rouge">Concept</code> object that can hold a representation of these “conceptual” referring expressions and build predications that use them.</p>
 
 <h3 id="creating-a-file">Creating a File</h3>
-<p>Below is the built-in <code class="language-plaintext highlighter-rouge">Concept</code> object. Its default implementation really just stores a single string that gets passed into the constructor called <code class="language-plaintext highlighter-rouge">sort_of</code> which represents the sort of concept it is.  Period. It doesn’t do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the <code class="language-plaintext highlighter-rouge">value_type</code> property which returns <code class="language-plaintext highlighter-rouge">VariableValueType.concept</code>.  This tells Perplexity “I am a concept, treat me as an opaque blob”.  The rest of the methods are there to support equality and membership in dictionaries and are use by things like the Python <code class="language-plaintext highlighter-rouge">dict</code> object:</p>
+<p>Below is the built-in <code class="language-plaintext highlighter-rouge">Concept</code> object. Its default implementation just stores a single string from the constructor called <code class="language-plaintext highlighter-rouge">sort_of</code> which represents the sort of concept it is.  Period. It doesn’t do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the <code class="language-plaintext highlighter-rouge">value_type</code> property which returns <code class="language-plaintext highlighter-rouge">VariableValueType.concept</code>.  This tells Perplexity “I am a concept, treat me as an opaque blob”.  The rest of the methods are there to support equality and membership in dictionaries and are use by things like the Python <code class="language-plaintext highlighter-rouge">dict</code> object:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Concept(object):
     def __init__(self, sort_of):
@@ -407,7 +407,7 @@ Sentence Force: prop-or-ques
   HCONS: &lt; h0 qeq h1 h6 qeq h8 &gt; ]
 </code></pre></div></div>
 
-<p>… we can see that we’ll need to implement a new version of <code class="language-plaintext highlighter-rouge">_file_n_of</code> that creates a <code class="language-plaintext highlighter-rouge">Concept</code> instead of actual files as the current one does. The base <code class="language-plaintext highlighter-rouge">Concept</code> class is enough for this. It is an exact copy of the <code class="language-plaintext highlighter-rouge">_command_n_1</code> implementation we did in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning">Non-logical meaning</a>, just replacing the string “command” with “file”:</p>
+<p>… we can see that we’ll need to implement a new version of <code class="language-plaintext highlighter-rouge">_file_n_of</code> that creates a <code class="language-plaintext highlighter-rouge">Concept</code> instead of actual files as the current one does. The base <code class="language-plaintext highlighter-rouge">Concept</code> class is enough for this. Our implementation will be an exact copy of the <code class="language-plaintext highlighter-rouge">_command_n_1</code> implementation we built in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning">Non-logical meaning section</a>, just replacing the string “command” with “file”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_file_n_of"])
 def file_n_of_concept(context, state, x_binding, i_binding):
@@ -428,7 +428,7 @@ def file_n_of_concept(context, state, x_binding, i_binding):
                                            unbound_variable)
 </code></pre></div></div>
 
-<p>Next we’ll implement <code class="language-plaintext highlighter-rouge">_create_v_1</code> exactly like we implemented <code class="language-plaintext highlighter-rouge">_delete_v_1</code> in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs">section on action verbs</a>. It will use a new operation, which we’ll implement next, called <code class="language-plaintext highlighter-rouge">CreateOperation</code> to do the creating.  For now, we’ll just hard code the name of the file to be “newfile”:</p>
+<p>Next we’ll implement <code class="language-plaintext highlighter-rouge">_create_v_1</code> exactly like we implemented <code class="language-plaintext highlighter-rouge">_delete_v_1</code> in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs">action verbs section</a>. It will use a new operation (which we’ll implement next) called <code class="language-plaintext highlighter-rouge">CreateOperation</code> to do the creating.  For now, we’ll just hard code the name of the file to be “newfile”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_create_v_1"])
 def create_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
@@ -470,9 +470,9 @@ def create_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
 Done!
 </code></pre></div></div>
 
-<p>Not very exciting and since we don’t have a way to list files we’ll have to trust that it works or examine in the debugger.</p>
+<p>Not very exciting and since we don’t have a way to list files, we’ll have to trust that it works or examine in the debugger.</p>
 
-<p>To get this far, we’ve used concepts we’ve already explained in previous sections and they should be relatively familiar. Next we’ll cover some new ground.</p>
+<p>To get this far, we’ve used concepts we’ve already explained in previous sections that should be relatively familiar. Next, we’ll cover some new ground.</p>
 
 <h3 id="a-richer-concept">A Richer Concept</h3>
 <p>Let’s now tackle the next phrase from our list at the beginning of this section: “create a text file”. As always, we’ll start by examining the MRS to see what predications we need to implement:</p>
@@ -510,7 +510,7 @@ udef_q(x14,RSTR,BODY)               ┌────── pron(x3)  │         
                                          └─ _a_q(x8,RSTR,BODY)
                                                            └─ _create_v_1(e2,x3,x8)
 </code></pre></div></div>
-<p>There are 2 new predications to implement: <code class="language-plaintext highlighter-rouge">_text_n_of</code>, <code class="language-plaintext highlighter-rouge">compound</code>.  Basically, the ERG is creating the concept of “text” and the concept of “file” and combining them together with the <code class="language-plaintext highlighter-rouge">compound</code> predication. <code class="language-plaintext highlighter-rouge">_text_n_of</code> will end up looking just like <code class="language-plaintext highlighter-rouge">_file_n_of</code> above:</p>
+<p>There are 2 new predications to implement: <code class="language-plaintext highlighter-rouge">_text_n_of</code> and <code class="language-plaintext highlighter-rouge">compound</code>.  Basically, the ERG is creating the concept of “text” and the concept of “file” and combining them together with the <code class="language-plaintext highlighter-rouge">compound</code> predication. <code class="language-plaintext highlighter-rouge">_text_n_of</code> will end up looking just like <code class="language-plaintext highlighter-rouge">_file_n_of</code> above:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_text_n_of"])
 def text_n_of_concept(context, state, x_binding, i_binding):
@@ -531,12 +531,18 @@ def text_n_of_concept(context, state, x_binding, i_binding):
                                            unbound_variable)
 </code></pre></div></div>
 
-<p>Next we tackle <code class="language-plaintext highlighter-rouge">compound(e13,x8,x14)</code>. The <code class="language-plaintext highlighter-rouge">x8</code> in <code class="language-plaintext highlighter-rouge">compound</code> is always the “base object”.  I.e. “seat” in “bicycle seat”, “food” in “baby food”. <code class="language-plaintext highlighter-rouge">x14</code> is the modifier which filters down what <em>kind</em> of base object we are discussing. If we were working with object instances (and not concepts) we would simply do a check to see if <code class="language-plaintext highlighter-rouge">x8</code> is an <code class="language-plaintext highlighter-rouge">x14</code> kind of object and succeed or not. But, because we are building up a <em>concept</em>, we actually need to <em>modify</em> the value in <code class="language-plaintext highlighter-rouge">x8</code> to include that additional description so that downstream predications see a concept that is a “text” kind of “file”. We need to enhance the “Concept” object to support this. Since Perplexity doesn’t care about the <code class="language-plaintext highlighter-rouge">Concept</code> object, per se, and only cares that the object has the <code class="language-plaintext highlighter-rouge">value_type</code> method on it, we can just create our own Concept object and use that.</p>
+<p>Next up is <code class="language-plaintext highlighter-rouge">compound(e13,x8,x14)</code>.</p>
 
-<p>To do this we need start building up a simple way of describing things. We’ll describe an referred-to-thing with a list of “criteria” which are simply “relationships” and “values”.  For example:</p>
+<p>The <code class="language-plaintext highlighter-rouge">x8</code> in <code class="language-plaintext highlighter-rouge">compound</code> is always the “base object”, i.e. “seat” in “bicycle seat”, “food” in “baby food”, etc.</p>
+
+<p><code class="language-plaintext highlighter-rouge">x14</code> is the modifier which filters down what <em>kind</em> of base object we are discussing.</p>
+
+<p>If we were working with object instances (and not concepts) we would simply do a check to see if <code class="language-plaintext highlighter-rouge">x8</code> is an “<code class="language-plaintext highlighter-rouge">x14</code> kind of object” and succeed or not. But, because we are building up a <em>concept</em>, we actually need to <em>modify</em> the value in <code class="language-plaintext highlighter-rouge">x8</code> to include that additional description so that downstream predications see a concept that is a “text” kind of “file”. We need to enhance the “Concept” object to support this. Since Perplexity doesn’t care about the <code class="language-plaintext highlighter-rouge">Concept</code> object, per se, and only cares that the object has the <code class="language-plaintext highlighter-rouge">value_type</code> method on it, we can just create our own <code class="language-plaintext highlighter-rouge">RichConcept</code> object and use that.</p>
+
+<p>To do this, we need start building up a simple way of describing things. We’ll describe a referred-to-thing with a list of “criteria”, which are simply “relationships” and “values”.  For example:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Description of "text file":
     object "is_a" "file"
-    object "contains_type" "text"
+    object "has_adjective" "text"
 </code></pre></div></div>
 
 <p>Here is the implementation of that:</p>
@@ -579,11 +585,13 @@ x8 = RichObject("file")   # object "is_a" "file"
 x14 = RichObject("text")  # object "is_a" "text"
 </code></pre></div></div>
 
-<p>This isn’t quite right. A text file “is_a” file, but it “has” text, it is not “text”. The problem is in how we’ve interpreted the predications <code class="language-plaintext highlighter-rouge">_text_n_of</code> and <code class="language-plaintext highlighter-rouge">_file_n_of</code>.  Normally these predications should be <code class="language-plaintext highlighter-rouge">true</code> for objects that “are” (i.e. “is_a”) that kind of thing. That is how they are implemented and that is the kind of <code class="language-plaintext highlighter-rouge">Concept</code> being returned by them at the moment. But when used with <code class="language-plaintext highlighter-rouge">compound</code>, the 2nd argument is used more like an adjective than a noun.  Consider “baby food”. A jar of baby food is <em>not</em> a baby. “Baby” is being used as an adjective.</p>
+<p>This isn’t quite right. A text file “is_a” file, but it “has” text, it is not “text”.</p>
 
-<p>The problem is that <code class="language-plaintext highlighter-rouge">text_n_of</code> (or “baby”) get called without knowing this is how they’ll be used. So, we can either write two different <em>interpretations</em> for all noun predications: one interpreting as “is_a” and one interpreting as “has_adjective” version and compound will always only be true for the second.  Or: we can have the <code class="language-plaintext highlighter-rouge">compound</code> predication do some special magic to interpret nouns as adjectives.</p>
+<p>The problem is in how we’ve interpreted the predications <code class="language-plaintext highlighter-rouge">_text_n_of</code> and <code class="language-plaintext highlighter-rouge">_file_n_of</code>.  Normally, these predications should be <code class="language-plaintext highlighter-rouge">true</code> for objects that “are” (i.e. “is_a”) that kind of thing. That is how they are implemented and that is the kind of <code class="language-plaintext highlighter-rouge">Concept</code> being returned by them at the moment. But when used with <code class="language-plaintext highlighter-rouge">compound</code>, the 2nd argument is used more like an adjective than a noun.  Consider “baby food”. A jar of baby food is <em>not</em> a baby. “Baby” is being used as an adjective.</p>
 
-<p>Since we don’t have other predications that need to treat nouns as adjectives, for now we’ll centralize the code in <code class="language-plaintext highlighter-rouge">compound</code> to save work. We will keep it simple until we find we need to do otherwise, by adding a method to our <code class="language-plaintext highlighter-rouge">RichConcept</code> class called <code class="language-plaintext highlighter-rouge">add_adjective_concept</code>. This method will simply convert “is_a” relationships to “has_adjective” relationships and then add to the base object:</p>
+<p>The problem is that <code class="language-plaintext highlighter-rouge">text_n_of</code> (or “baby”) get called without knowing this is how they’ll be used. So, we can either write two different <em>interpretations</em> for all noun predications: one interpreting as “is_a” and one interpreting as “has_adjective” and then compound will always only be <code class="language-plaintext highlighter-rouge">true</code> for the second.  Or: we can have the <code class="language-plaintext highlighter-rouge">compound</code> predication do some special magic to interpret nouns as adjectives.</p>
+
+<p>Since we don’t have other predications that need to treat nouns as adjectives, for now we’ll centralize the code in <code class="language-plaintext highlighter-rouge">compound</code> to save work. We will add a method to our <code class="language-plaintext highlighter-rouge">RichConcept</code> class called <code class="language-plaintext highlighter-rouge">add_adjective_concept</code>. This method will simply convert “is_a” relationships to “has_adjective” relationships and then add to the base object:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class RichConcept:
     
@@ -606,7 +614,7 @@ x14 = RichObject("text")  # object "is_a" "text"
         return self_copy
 </code></pre></div></div>
 
-<p>This makes <code class="language-plaintext highlighter-rouge">compound</code> easy to write. Due to the way it is used in language, it will always have both arguments bound: there isn’t a way to make a compound word where you are asking what the first part is that will generate this predication. So all we need to do is use our new method to combine the second argument into the first and yield that as the new first argument:</p>
+<p>This makes <code class="language-plaintext highlighter-rouge">compound</code> easy to write. Due to the way it is used in English, it will always have both arguments bound: there isn’t a way to make a compound word where you are asking what the first part is that will generate this predication. So, all we need to do is use our new method to combine the second argument into the first and yield that as the new first argument:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary,
              names=["compound"])
@@ -637,7 +645,8 @@ def compound_concept(context, state, e_introduced_binding, x_base_binding, x_mod
         state.file_system.create_item(self.binding_to_create, self.file_name)
 </code></pre></div></div>
 
-<p>The real work happens in the <code class="language-plaintext highlighter-rouge">FileSystem</code> object that haven’t really gone through.</p>
+<p>The real work happens in the <code class="language-plaintext highlighter-rouge">FileSystem</code> object that haven’t really gone through.  The pertinent code is below.  It does the work of finding the one adjective that describes the type of file to creating and failing if there is none or more than one.  Obviously this code could be made more robust, but that isn’t what we’re focused on here. This is just a simple implementation:</p>
+
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class FileSystem:
     ...
     
@@ -679,7 +688,7 @@ def create_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
     ...
 </code></pre></div></div>
 
-<p>As far as this predication is concerned, we don’t care what <em>type</em> of file the user asked to create, that will be dealt with elsewhere.  We just care that it is, and its core, a <em>file</em>.  Here, we can appeal to a concept from logic called “logical consequence” or <a href="https://en.wikipedia.org/wiki/Logical_consequence">“logical entailment”</a>.  Really, you can think of it as “implies”.  Being a “text file” will always mean it is also a “file”. So, “text file” <em>entails</em> “file” or “text file” <em>implies</em> “file”. In this function we want to check for <em>entailment</em> of “file”, not equality.</p>
+<p>As far as this predication is concerned, we don’t care what <em>type</em> of file the user asked to create, that will be dealt with elsewhere.  We just care that it is, at its core, a <em>file</em>.  Here, we can appeal to a concept from logic called “logical consequence” or <a href="https://en.wikipedia.org/wiki/Logical_consequence">“logical entailment”</a>.  Really, you can think of it as “implies”.  Being a “text file” will always mean it is also a “file”. So, “text file” <em>entails</em> “file” or “text file” <em>implies</em> “file”. In this function we want to check for <em>entailment</em> of “file”, not equality.</p>
 
 <p>Now, proving entailment is an active area of research. It is a hard problem. But we don’t have the general case here, we have a very limited vocabulary and set of scenarios.  We can therefore just say that something entails something else as long as they both “is_a” the same thing:</p>
 
