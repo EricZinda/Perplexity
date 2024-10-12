@@ -354,9 +354,12 @@ you do not have a file
 us do not have a file
 ```
 
-Note that all of those phrases end up using the conceptual interpretation. Our instance-based interpretation is currently unused. The most likely use for it would be for phrases like "Do you have a copy command?" or "How do I use the copy command?", i.e. in phrases where the user is talking about a particular instance, and not the general concept of commands. 
+### Final Loose Ends
+Three things to note here:
 
-Also note that there also a whole set of phrases that happen to work that probably shouldn't:
+First, all those phrases end up using the conceptual interpretation. The instance-based interpretation is currently unused. The most likely use for it would be for phrases like "Do you have a copy command?" or "How do I use the copy command?", i.e. in phrases where the user is talking about a particular instance, and not the general concept of commands. 
+
+Second, there also a whole set of phrases that happen to work that probably shouldn't:
 
 ```
 ? did you have a command?
@@ -369,6 +372,19 @@ You can use the following commands: copy and go
 You can use the following commands: copy and go
 ```
 
-Let's tackle tenses next.
+Finally, there are some phrases that point to another area we need to focus on, global criteria:
+
+```
+? Do you have 3 commands?
+You can use the following commands: copy and go
+
+? Do you have many commands?
+You can use the following commands: copy and go
+
+? Do you have several commands?
+You can use the following commands: copy and go
+```
+
+All of these phrases are using words like "several" or "3" which quantify how many of something the speaker is interested in. When we implement a solution group handler we take over responsibility for doing the counting, and we're not doing that.  Let's do that next.
 
 Last update: 2024-10-11 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md)]{% endraw %}

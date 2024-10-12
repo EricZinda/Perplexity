@@ -305,6 +305,8 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning/" class="active">Solution Group Handlers and Non-logical Meaning</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo105GlobalCriteria/">Solution Group Handlers and Global Criteria</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo110HandlingTenses/">Handling Tenses</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions/">Conceptual References</a></li>
@@ -680,9 +682,12 @@ you do not have a file
 us do not have a file
 </code></pre></div></div>
 
-<p>Note that all of those phrases end up using the conceptual interpretation. Our instance-based interpretation is currently unused. The most likely use for it would be for phrases like “Do you have a copy command?” or “How do I use the copy command?”, i.e. in phrases where the user is talking about a particular instance, and not the general concept of commands.</p>
+<h3 id="final-loose-ends">Final Loose Ends</h3>
+<p>Three things to note here:</p>
 
-<p>Also note that there also a whole set of phrases that happen to work that probably shouldn’t:</p>
+<p>First, all those phrases end up using the conceptual interpretation. The instance-based interpretation is currently unused. The most likely use for it would be for phrases like “Do you have a copy command?” or “How do I use the copy command?”, i.e. in phrases where the user is talking about a particular instance, and not the general concept of commands.</p>
+
+<p>Second, there also a whole set of phrases that happen to work that probably shouldn’t:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? did you have a command?
 You can use the following commands: copy and go
@@ -694,7 +699,19 @@ You can use the following commands: copy and go
 You can use the following commands: copy and go
 </code></pre></div></div>
 
-<p>Let’s tackle tenses next.</p>
+<p>Finally, there are some phrases that point to another area we need to focus on, global criteria:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? Do you have 3 commands?
+You can use the following commands: copy and go
+
+? Do you have many commands?
+You can use the following commands: copy and go
+
+? Do you have several commands?
+You can use the following commands: copy and go
+</code></pre></div></div>
+
+<p>All of these phrases are using words like “several” or “3” which quantify how many of something the speaker is interested in. When we implement a solution group handler we take over responsibility for doing the counting, and we’re not doing that.  Let’s do that next.</p>
 
 <p>Last update: 2024-10-11 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md">edit</a>]</p>
 

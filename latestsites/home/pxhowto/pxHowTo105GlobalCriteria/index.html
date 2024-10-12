@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo012Install/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo105GlobalCriteria/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo012Install/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo105GlobalCriteria/">
 
 
 
@@ -281,7 +281,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo010Overview/">Overview</a></li>
           
-            <li><a href="/Perplexity/home/pxHowTo/pxHowTo012Install/" class="active">Installing Perplexity</a></li>
+            <li><a href="/Perplexity/home/pxHowTo/pxHowTo012Install/">Installing Perplexity</a></li>
           
             <li><a href="/Perplexity/home/pxHowTo/pxHowTo014HelloWorld/">Hello World</a></li>
           
@@ -305,7 +305,7 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning/">Solution Group Handlers and Non-logical Meaning</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo105GlobalCriteria/">Solution Group Handlers and Global Criteria</a></li>
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo105GlobalCriteria/" class="active">Solution Group Handlers and Global Criteria</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo110HandlingTenses/">Handling Tenses</a></li>
           
@@ -343,168 +343,133 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="installing-perplexity">Installing Perplexity</h2>
-<p>Perplexity is all Python code, with one exception: it requires the DELPH-IN <a href="http://sweaglesw.org/linguistics/ace/">ACE parser</a> for using the DELPH-IN grammars that parse natural language.</p>
+        <h2 id="solution-group-handlers-and-global-criteria">Solution Group Handlers and Global Criteria</h2>
+<p>In the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning">previous section</a> we implemented variations of “Do you have commands?” by implementing a custom <em>solution group handler</em>, but we didn’t complete it.  Since there are only two commands, really, we should do a better job on the following phrases that succeed, and shouldn’t:</p>
 
-<p>Below are instructions for installing everything you’ll need to run Perplexity and begin developing applications.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? Do you have 3 commands?
+You can use the following commands: copy and go
 
-<h3 id="clone-perplexity-using-github-lfs">Clone Perplexity Using GitHub LFS</h3>
-<blockquote>
-  <p>VERY IMPORTANT: This project uses <a href="https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage">GitHub LFS</a> for storing grammar files. You won’t be able to use it properly unless you install <a href="https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage">GitHub LFS</a> and activate it for the repository by following the below steps.</p>
-</blockquote>
+? Do you have many commands?
+You can use the following commands: copy and go
 
-<ol>
-  <li>The Perplexity repository contains very large grammar files and it uses <a href="https://git-lfs.com/">GitHub LFS</a> to store them. If you don’t have GitHub LFS installed yet:
-    <ul>
-      <li>Install <a href="https://git-lfs.com/">GitHub LFS</a> following the instructions at that link</li>
-      <li><code class="language-plaintext highlighter-rouge">git lfs install</code> for the git user account that you will clone Perplexity with</li>
-    </ul>
-  </li>
-  <li><code class="language-plaintext highlighter-rouge">cd</code> to the directory where you want to clone Perplexity</li>
-  <li>(must be done after the above steps!) Clone the Perplexity project:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">git clone https://github.com/EricZinda/Perplexity.git</code></li>
-    </ul>
-  </li>
-</ol>
+? Do you have several commands?
+You can use the following commands: copy and go
+</code></pre></div></div>
 
-<p>Now you can choose to run Perplexity in a Docker container or on your local machine. Instructions for each are below.</p>
+<p>All of these phrases are using words like “several” or “3” which quantify how many of something the speaker is interested in. When we implement a solution group handler we take over responsibility for doing the counting, and we’re not doing that.</p>
 
-<h3 id="option-1-run-perplexity-via-docker">Option 1: Run Perplexity via Docker</h3>
-<blockquote>
-  <p>VERY IMPORTANT: This project uses <a href="https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage">GitHub LFS</a> for storing large grammar files. You won’t be able to use it properly unless you install <a href="https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage">GitHub LFS</a>, activate it for your account, and <em>then</em> clone the repository as described above.</p>
-</blockquote>
+<h3 id="inspecting-global-criteria">Inspecting Global Criteria</h3>
+<p>When a speaker uses a phrase that constrains the solution group in some way, these constraints are added to the arguments and can be inspected:</p>
 
-<ol>
-  <li>Clone Perplexity using GitHub LFS as described above</li>
-  <li><a href="https://docs.docker.com/engine/install/">Install Docker</a></li>
-  <li>Follow the instructions at the top of the <a href="https://github.com/EricZinda/Perplexity/blob/main/docker/Dockerfile">docker/Dockerfile</a> file in the Perplexity repository to build an image and run a sample</li>
-</ol>
+<p>Let’s change our <code class="language-plaintext highlighter-rouge">have_v_1</code> solution group handler to output these constraints so we can see them:</p>
 
-<h3 id="option-2-run-perplexity-on-your-machine">Option 2: Run Perplexity on Your Machine</h3>
-<blockquote>
-  <p>VERY IMPORTANT: This project uses <a href="https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage">GitHub LFS</a> for storing large grammar files. You won’t be able to use it properly unless you install <a href="https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage">GitHub LFS</a>, activate it for your account, and <em>then</em> clone the repository as described above.</p>
-</blockquote>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary,
+             names=["solution_group__have_v_1"],
+             handles_interpretation=_have_v_1_concept)
+def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_target_variable_group):
+    print(f"x_actor_binding constraints: {x_actor_variable_group.variable_constraints}")
+    print(f"x_target_binding constraints: {x_target_variable_group.variable_constraints}")
+    yield [state_list[0].record_operations([RespondOperation("You can use the following commands: copy and go")])]
+</code></pre></div></div>
 
-<ol>
-  <li>Clone Perplexity using GitHub LFS as described above</li>
-  <li><a href="https://www.python.org/downloads/">Install Python 3.8</a> or greater on your machine</li>
-  <li><code class="language-plaintext highlighter-rouge">cd</code> to the directory where you cloned Perplexity:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity repository root&gt;</code></li>
-    </ul>
-  </li>
-  <li>Create an environment for this project:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">python3 -m venv ./env</code></li>
-    </ul>
-  </li>
-  <li>Activate the environment
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">source env/bin/activate</code></li>
-    </ul>
-  </li>
-  <li>Install the libraries required by Perplexity:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">pip install pydelphin</code></li>
-      <li><code class="language-plaintext highlighter-rouge">pip install inflect</code></li>
-      <li><code class="language-plaintext highlighter-rouge">pip install openai</code> (note that the ESL sample is the only thing that uses openai for an example, it will just disable this feature if you don’t set an OpenAI key to enable it)</li>
-    </ul>
-  </li>
-</ol>
+<p>And then run it:</p>
 
-<p>Now you need to install the ACE Parser, which is the only non-Python part of the project:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? do you have commands
+x_actor_binding constraints: {x3: min=1, max=inf, global=None, required_values=None, pred=pronoun_q(x3)}
+x_target_binding constraints: {x8: min=2, max=inf, global=None, required_values=None, pred=udef_q(x8)}
+You can use the following commands: copy and go
 
-<ol>
-  <li><a href="http://sweaglesw.org/linguistics/ace/">Install the DELPH-IN ACE parser</a></li>
-  <li>Make sure your operating system path is set to the ACE binary you download from there.</li>
-</ol>
+? /show
+User Input: do you have commands
+1 Parses
 
-<blockquote>
-  <p>The mac download in the ACE link above <em>does not</em> support the Mac M1 processor. You’ll need a special build that is only available on the forum at the moment if you have an M1. Download that <a href="https://delphinqa.ling.washington.edu/t/compiling-ace-on-macos/486/26">here</a>.</p>
-</blockquote>
+***** CHOSEN Parse #0:
+Sentence Force: ques
+[ "do you have commands"
+  TOP: h0
+  INDEX: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ]
+  RELS: &lt; [ pron&lt;3:6&gt; LBL: h4 ARG0: x3 [ x PERS: 2 IND: + PT: std ] ]
+          [ pronoun_q&lt;3:6&gt; LBL: h5 ARG0: x3 RSTR: h6 BODY: h7 ]
+          [ _have_v_1&lt;7:11&gt; LBL: h1 ARG0: e2 ARG1: x3 ARG2: x8 [ x PERS: 3 NUM: pl IND: + ] ]
+          [ udef_q&lt;12:20&gt; LBL: h9 ARG0: x8 RSTR: h10 BODY: h11 ]
+          [ _command_n_1&lt;12:20&gt; LBL: h12 ARG0: x8 ] &gt;
+  HCONS: &lt; h0 qeq h1 h6 qeq h4 h10 qeq h12 &gt; ]
 
-<p>Notes:</p>
-<ul>
-  <li>The best location for the ACE binary on a Mac is: <code class="language-plaintext highlighter-rouge">/usr/local/bin</code>, but it can be anywhere as long as the path points to it</li>
-  <li>Read the notes in the “Troubleshooting” section of the ACE documentation in the link above: ACE needs execute permissions to your TEMP directory</li>
-</ul>
+-- CHOSEN Parse #0, CHOSEN Tree #0: 
 
-<h2 id="running-testssamples-on-your-machine">Running Tests/Samples on Your Machine</h2>
-<p>If everything is installed correctly, you should be able to successfully run all the tests:</p>
+               ┌────── pron(x3)
+pronoun_q(x3,RSTR,BODY)            ┌────── _command_n_1(x8)
+                    └─ udef_q(x8,RSTR,BODY)
+                                        └─ _have_v_1(e2,x3,x8)
+</code></pre></div></div>
 
-<ol>
-  <li>Go to the directory where Perplexity was cloned:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity repository path&gt;</code></li>
-    </ul>
-  </li>
-  <li>Activate the environment
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">source env/bin/activate</code></li>
-    </ul>
-  </li>
-  <li>Tell Python that it should look in this directory for modules:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">export PYTHONPATH=$PYTHONPATH:&lt;Perplexity repository path&gt;</code></li>
-    </ul>
-  </li>
-  <li>Run the file system example and its tests:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">python3 ./file_system_example/examples.py</code></li>
-      <li><code class="language-plaintext highlighter-rouge">/runfolder</code></li>
-    </ul>
-  </li>
-  <li>OR: Run the ESL Restaurant example and its tests:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">python3 ./esl/tutorial.py</code></li>
-      <li><code class="language-plaintext highlighter-rouge">/runfolder esl</code></li>
-    </ul>
-  </li>
-</ol>
+<p>You can see from the output that the constraints on <code class="language-plaintext highlighter-rouge">x3</code>, which is where “you” is represented are between 1 and inf (infinity):</p>
 
-<h2 id="daily-workflow">Daily Workflow</h2>
-<p>Once everything in installed, to begin a session of Perplexity development you need to activate the Python environment you created above and then run Perplexity:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x_actor_binding constraints: {x3: min=1, max=inf, global=None, required_values=None, pred=pronoun_q(x3)}
+</code></pre></div></div>
 
-<ol>
-  <li>Go to the directory where Perplexity was cloned:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">cd &lt;Perplexity repository path&gt;</code></li>
-    </ul>
-  </li>
-  <li>Activate the environment
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">source env/bin/activate</code></li>
-    </ul>
-  </li>
-  <li>Tell Python that it should look in this directory for modules:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">export PYTHONPATH=$PYTHONPATH:&lt;Perplexity repository path&gt;</code></li>
-    </ul>
-  </li>
-  <li>Start the Perplexity engine:
-    <ul>
-      <li><code class="language-plaintext highlighter-rouge">python3 ./file_system_example/examples.py</code></li>
-    </ul>
-  </li>
-</ol>
+<p>That’s because, if you look at the MRS, <code class="language-plaintext highlighter-rouge">x3</code> doesn’t indicate one way or the other if “you” is plural or singular “you”, and there aren’t any other predications that would constrain things.</p>
 
-<h2 id="next-step-hello-world">Next Step: Hello World</h2>
-<p>Now that you’ve got Perplexity installed, the next step is to <a href="https://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo014HelloWorld">create the minimal “Hello World” application</a>.</p>
+<p>For <code class="language-plaintext highlighter-rouge">x8</code> we get a constraint between 2 and infinity.  Looking at the MRS you can see that <code class="language-plaintext highlighter-rouge">x8</code> has the properties <code class="language-plaintext highlighter-rouge">[ x PERS: 3 NUM: pl IND: + ]</code> set in the <code class="language-plaintext highlighter-rouge">have_v_1</code> predication, which indicates plurality.  I.e. 2 or more:</p>
 
-<h2 id="compile-a-grammar">Compile a Grammar</h2>
-<p>On the (very rare) chance you will need to compile an ERG grammar, here are the steps:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>x_target_binding constraints: {x8: min=2, max=inf, global=None, required_values=None, pred=udef_q(x8)}
+</code></pre></div></div>
 
-<ol>
-  <li>Decide which version you want, in this case we’ll use 2020.  Replace 2020 below with the version you select</li>
-  <li>svn checkout http://svn.delph-in.net/erg/tags/2020
-2a. To get the latest (but no commitment on quality) grammar: http://svn.delph-in.net/erg/trunk</li>
-  <li>cd 2020/ace</li>
-  <li>ace -G grammar.dat -g ./config.tdl</li>
-  <li>The grammar file will be called ‘grammar.dat’ in the 2020/ace folder</li>
-</ol>
+<p>Running this:</p>
 
-<p>Last update: 2024-10-07 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo012Install.md">edit</a>]</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? Do you have 3 commands
+x_actor_binding constraints: {x3: min=1, max=inf, global=None, required_values=None, pred=pronoun_q(x3)}
+x_target_binding constraints: {x8: min=3, max=3, global=None, required_values=None, pred=card(3)}
+You can use the following commands: copy and go
+</code></pre></div></div>
+
+<p>Shows how, if the speaker says “3”, the constraints are set to a min and max of “3”.</p>
+
+<p>Let’s try:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? Do you have the command?
+x_actor_binding constraints: {x3: min=1, max=inf, global=None, required_values=None, pred=pronoun_q(x3)}
+x_target_binding constraints: {x8: min=1, max=1, global=GlobalCriteria.all_rstr_meet_criteria, required_values=None, pred=_the_q(x8)}
+You can use the following commands: copy and go
+</code></pre></div></div>
+
+<p>The word “the” means “the one and only” or “the 1 group” and so it has a min/max of 1 and it has <code class="language-plaintext highlighter-rouge">global=GlobalCriteria.all_rstr_meet_criteria</code>. <code class="language-plaintext highlighter-rouge">all_rstr_meet_criteria</code> is how “the 1 group” gets handled.  It means: all of the things that “the” refers to in its <code class="language-plaintext highlighter-rouge">RSTR</code> must be true of its <code class="language-plaintext highlighter-rouge">BODY</code>. Let’s look at the MRS tree to explain:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>               ┌────── pron(x3)
+pronoun_q(x3,RSTR,BODY)            ┌────── _command_n_1(x8)
+                    └─ _the_q(x8,RSTR,BODY)
+                                        └─ _have_v_1(e2,x3,x8)
+</code></pre></div></div>
+
+<p>Since <code class="language-plaintext highlighter-rouge">all_rstr_meet_criteria</code> is set on <code class="language-plaintext highlighter-rouge">x8</code>, it is referring to the <code class="language-plaintext highlighter-rouge">RSTR</code> and <code class="language-plaintext highlighter-rouge">BODY</code> of: <code class="language-plaintext highlighter-rouge">_the_q(x8,RSTR,BODY)</code>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">RSTR</code> is simply <code class="language-plaintext highlighter-rouge">_command_n_1(x8)</code>, so <em>all</em> commands in the system are being referred to.  The <code class="language-plaintext highlighter-rouge">BODY</code> is set to <code class="language-plaintext highlighter-rouge">_have_v_1(e2,x3,x8)</code>.  So, as long as “you” have all of the commands in the system, this should be true.</p>
+
+<p>What about “The commands are copy”.  This would put “all commands” in the <code class="language-plaintext highlighter-rouge">RSTR</code> and “being copy” in the <code class="language-plaintext highlighter-rouge">BODY</code> which is certainly not true for all of them, so it should fail.</p>
+
+<p>What about this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? Do you have the 3 commands?
+x_actor_binding constraints: {x3: min=1, max=inf, global=None, required_values=None, pred=pronoun_q(x3)}
+x_target_binding constraints: {x8: min=3, max=3, global=GlobalCriteria.all_rstr_meet_criteria, required_values=None, pred=_the_q(x8)}
+You can use the following commands: copy and go
+
+? /show
+...
+                                               ┌── _command_n_1(x8)
+                                   ┌────── and(0,1)
+               ┌────── pron(x3)    │             │
+               │                   │             └ card(3,e14,x8)
+pronoun_q(x3,RSTR,BODY)            │
+                    └─ _the_q(x8,RSTR,BODY)
+                                        └─ _have_v_1(e2,x3,x8)
+</code></pre></div></div>
+
+<p>This one says <code class="language-plaintext highlighter-rouge">x8</code> which is <code class="language-plaintext highlighter-rouge">_the_q(x8,RSTR,BODY)</code> must have 3 different values in it. And: all commands in the system should be true of the body. While it is certainly true that the system “has” all the commands, it is not true that there are 3 of them, so this is false.</p>
+
+<p>Normally, Perplexity handles checking these constraints and doesn’t consider a solution group to be valid unless it meets them all. But when you build a solution group handler, you are telling the system: I am doing something custom, and thus I will be responsible for making sure the constraints are met.</p>
+
+<p>Last update: 2024-10-11 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo105GlobalCriteria.md">edit</a>]</p>
 
         
       </section>
