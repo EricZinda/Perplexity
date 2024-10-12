@@ -471,6 +471,9 @@ def _have_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_bi
              names=["solution_group__have_v_1"],
              handles_interpretation=_have_v_1_concept)
 def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_variable_group, x_target_variable_group):
+    print(f"x_actor_binding constraints: {x_actor_variable_group.variable_constraints}")
+    print(f"x_target_binding constraints: {x_target_variable_group.variable_constraints}")
+
     yield [state_list[0].record_operations([RespondOperation("You can use the following commands: copy and go")])]
 
 
