@@ -29,6 +29,25 @@
         {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0010MRS.md", "DstFile": "mrscon/devhowto0010MRS.md"},
         {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0020WellFormedTree.md", "DstFile": "mrscon/devhowto0020WellFormedTree.md"}
       ]},
+      {"Section": "Using Perplexity", "Pages": [
+        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo010Overview.md", "DstFile": "pxhowto/pxHowTo010Overview.md"},
+        {"Page": "Installing Perplexity", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo012Install.md", "DstFile": "pxHowTo/pxHowTo012Install.md"},
+        {"Page": "Hello World", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo014HelloWorld.md", "DstFile": "pxHowTo/pxHowTo014HelloWorld.md"},
+        {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo020ImplementAPredication.md", "DstFile": "pxhowto/pxHowTo020ImplementAPredication.md"},
+        {"Page": "In-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo030InStylePredications.md", "DstFile": "pxhowto/pxHowTo030InStylePredications.md"},
+        {"Page": "Lift-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo040LiftStylePredications.md", "DstFile": "pxhowto/pxHowTo040LiftStylePredications.md"},
+        {"Page": "Event Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo050EventPredications.md", "DstFile": "pxhowto/pxHowTo050EventPredications.md"},
+        {"Page": "Verb Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo070ActionVerbs.md", "DstFile": "pxhowto/pxHowTo070ActionVerbs.md"},
+        {"Page": "Quantifiers and Determiners", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo080QuantifiersAndDeterminers.md", "DstFile": "pxhowto/pxHowTo080QuantifiersAndDeterminers.md"},
+        {"Page": "Custom State", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo082State.md", "DstFile": "pxhowto/pxHowTo082State.md"},
+        {"Page": "Representing Places", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo085Place.md", "DstFile": "pxhowto/pxHowTo085Place.md"},
+        {"Page": "Directional Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo090Prepositions.md", "DstFile": "pxhowto/pxHowTo090Prepositions.md"},
+        {"Page": "Solution Group Handlers and Non-logical Meaning", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo100NonlogicalMeaning.md", "DstFile": "pxhowto/pxHowTo100NonlogicalMeaning.md"},
+        {"Page": "Solution Group Handlers and Global Criteria", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo105GlobalCriteria.md", "DstFile": "pxhowto/pxHowTo105GlobalCriteria.md"},
+        {"Page": "Handling Tenses", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo110HandlingTenses.md", "DstFile": "pxhowto/pxHowTo110HandlingTenses.md"},
+        {"Page": "Conceptual References", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo120ConceptsReferringExpressions.md", "DstFile": "pxhowto/pxHowTo120ConceptsReferringExpressions.md"},
+        {"Page": "A. Generating English with S-strings", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo025SStrings.md", "DstFile": "pxhowto/pxHowTo025SStrings.md"}
+      ]},
       {"Section": "MRS Solver Conceptual", "Pages": [
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0000Overview.md", "DstFile": "devcon/devcon0000Overview.md"},
         {"Page": "Backtracking", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0010MRSSolver.md", "DstFile": "devcon/devcon0010MRSSolver.md"},
@@ -58,25 +77,6 @@
         {"Page": "Questions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0090SimpleQuestions.md", "DstFile": "pxint/pxint0090SimpleQuestions.md"},
         {"Page": "Commands", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0100SimpleCommands.md", "DstFile": "pxint/pxint0100SimpleCommands.md"},
         {"Page": "A. Python Decorators", "SrcDir": "main", "SrcFile": "docs/pxint/pxint03000PythonDecorators.md", "DstFile": "pxint/pxint03000PythonDecorators.md"}
-      ]},
-      {"Section": "Using Perplexity", "Pages": [
-        {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo010Overview.md", "DstFile": "pxhowto/pxHowTo010Overview.md"},
-        {"Page": "Installing Perplexity", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo012Install.md", "DstFile": "pxHowTo/pxHowTo012Install.md"},
-        {"Page": "Hello World", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo014HelloWorld.md", "DstFile": "pxHowTo/pxHowTo014HelloWorld.md"},
-        {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo020ImplementAPredication.md", "DstFile": "pxhowto/pxHowTo020ImplementAPredication.md"},
-        {"Page": "In-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo030InStylePredications.md", "DstFile": "pxhowto/pxHowTo030InStylePredications.md"},
-        {"Page": "Lift-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo040LiftStylePredications.md", "DstFile": "pxhowto/pxHowTo040LiftStylePredications.md"},
-        {"Page": "Event Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo050EventPredications.md", "DstFile": "pxhowto/pxHowTo050EventPredications.md"},
-        {"Page": "Verb Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo070ActionVerbs.md", "DstFile": "pxhowto/pxHowTo070ActionVerbs.md"},
-        {"Page": "Quantifiers and Determiners", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo080QuantifiersAndDeterminers.md", "DstFile": "pxhowto/pxHowTo080QuantifiersAndDeterminers.md"},
-        {"Page": "Custom State", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo082State.md", "DstFile": "pxhowto/pxHowTo082State.md"},
-        {"Page": "Representing Places", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo085Place.md", "DstFile": "pxhowto/pxHowTo085Place.md"},
-        {"Page": "Directional Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo090Prepositions.md", "DstFile": "pxhowto/pxHowTo090Prepositions.md"},
-        {"Page": "Solution Group Handlers and Non-logical Meaning", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo100NonlogicalMeaning.md", "DstFile": "pxhowto/pxHowTo100NonlogicalMeaning.md"},
-        {"Page": "Solution Group Handlers and Global Criteria", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo105GlobalCriteria.md", "DstFile": "pxhowto/pxHowTo105GlobalCriteria.md"},
-        {"Page": "Handling Tenses", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo110HandlingTenses.md", "DstFile": "pxhowto/pxHowTo110HandlingTenses.md"},
-        {"Page": "Conceptual References", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo120ConceptsReferringExpressions.md", "DstFile": "pxhowto/pxHowTo120ConceptsReferringExpressions.md"},
-        {"Page": "A. Generating English with S-strings", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo025SStrings.md", "DstFile": "pxhowto/pxHowTo025SStrings.md"}
       ]}
     ]
   }
