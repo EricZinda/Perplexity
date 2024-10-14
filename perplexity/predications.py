@@ -58,7 +58,6 @@ class Concept(object):
         return VariableValueType.concept
 
 
-
 # This function is used to check the constraints for a variable that is set to a *concept*.
 # The caller needs to decide if the meaning of the phrase is referring to instances or concepts and set check_concepts=True or False
 #   since the meaning can't always be inferred.
@@ -75,14 +74,20 @@ class Concept(object):
 # Examples where the speaker almost certainly means the concept (check_concepts=True):
 #   "Are the 2 specials good?" --> It is possible this means "the two instances of a special" but very unlikely
 #   "What are your specials?" --> what are the "specials" concepts that you have?
-
 # Examples where the speaker uses a concept and could mean *either* the concept or the instances:
 #   "What chairs do you have?" --> *could* mean: "Which instances of chairs do you have?" or "which "classes" of chairs do you have?"
 #   "Which/How many specials do you have?" --> *could* mean: "which instances of specials do you have left?" or "Which classes of special are available here?"
 #   "Do you have the steak?" (ditto)
 #   "Do you still have 2 menus?" --> (ditto)
 #   "Are 2 specials available?" --> (ditto)
-def concept_meets_constraint(context, tree_info, variable_constraints, concept_count, concept_in_scope_count, instance_count, instance_in_scope_count, check_concepts, variable, value):
+def concept_meets_constraint(context,
+                             tree_info,
+                             variable_constraints,
+                             concept_count,
+                             concept_in_scope_count,
+                             instance_count,
+                             check_concepts,
+                             variable):
     min_size = variable_constraints.min_size if variable_constraints is not None else 1
     max_size = variable_constraints.max_size if variable_constraints is not None else float(inf)
     if check_concepts:
@@ -95,13 +100,13 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
             # "Are the 2 specials good?" (ditto)
             # "Do you have the steak?" (ditto)
             #
-            # Furthermore, because they said "the", they are referring to a "distinguished concept", i.e. "the menu", not
+            # Furthermore, because they said "the", they are referring to an "in-scope concept", i.e. "the menu", not
             # just any old menu. It is a special one. This is modelled as having the concept be "in scope". The generic type, "menu"
             # still exists, but is a type that is out of scope. If they said "What is generally on a menu?" they'd be referring to that generic type.
             check_count = concept_in_scope_count
 
         else:
-            # The user didn't say "the", so the concept doesn't need to be in scope and so
+            # The user didn't say "the", so the concept doesn't need to be "in-scope" and so
             # they are talking about the generic type (as described above). Examples:
             #
             # "How many specials do you have?" (meaning classes of specials)
@@ -128,7 +133,12 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
         return True
 
     else:
-        # The user is talking about a concept, but the constraint is on the instances. See above for examples.
+        # The user is talking about a concept, but, ultimately, our code will need to check if there are enough instances. Examples:
+        #   "We want a menu" --> "We want 1 instance of a menu concept"
+        #   "We want a table" --> "We want 1 instance of a table concept"
+        #   "We want tables/menus" --> "We want instances of the tables"
+        #   "We want the menu(s)" --> "We want an undefined number of instances of 'the one and only table concept in scope'"
+        #   "We want the specials" --> "We want an undefined number of instances of 'the (undefined number of) the special concepts in scope'"
         #
         # First, check to make sure we the system has the right number of "in scope" concepts if "the" is used,
         # as in "I'd like the 2 menus" (if there are a drink menu and a food menu)
@@ -146,8 +156,8 @@ def concept_meets_constraint(context, tree_info, variable_constraints, concept_c
                 context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True, phase=2)
                 return False
 
-        # Then, whether "the" was used, check to make sure there are enough instances to meet the criteria
-        # Since that is what we are looking for
+        # Then, regardless of whether "the" was used, check to make sure there are enough instances to meet the criteria
+        # since that is what we are ultimately looking for
         check_count = instance_count
         if check_count == 0:
             context.report_error(["conceptNotFound", variable], force=True, phase=2)

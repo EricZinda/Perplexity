@@ -114,10 +114,8 @@ def check_concept_solution_group_constraints(context, state_list, x_what_variabl
                                             concept_count,
                                             concept_in_scope_count,
                                             instance_count,
-                                            instance_in_scope_count,
                                             check_concepts,
-                                            variable=x_what_variable,
-                                            value=x_what_variable_group.solution_values[0].value[0])
+                                            variable=x_what_variable)
         if not success:
             pipeline_logger.debug(f"check_concept_solution_group_constraints failed: {context.error()}")
 
@@ -4967,7 +4965,7 @@ if __name__ == '__main__':
     # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
     # print(concept.instances(None, test_state))
 
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
@@ -4975,7 +4973,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()
