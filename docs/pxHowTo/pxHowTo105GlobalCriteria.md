@@ -1,5 +1,5 @@
 ## Solution Group Handlers and Global Criteria
-In the [previous section](pxHowTo100NonlogicalMeaning) we implemented variations of "Do you have commands?" by implementing a custom *solution group handler*, but we didn't complete it.  Since there are only two commands, really, we should do a better job on the following phrases that succeed, and shouldn't:
+In the [previous section](pxHowTo100NonlogicalMeaning) we implemented variations of "Do you have commands?" by implementing a custom *solution group handler*, but we didn't complete it.  Since there are only two commands, we should do a better job on the following phrases that succeed, and shouldn't:
 
 ~~~
 ? Do you have 3 commands?
@@ -10,12 +10,15 @@ You can use the following commands: copy and go
 
 ? Do you have several commands?
 You can use the following commands: copy and go
+
+? Do you have the command?
+You can use the following commands: copy and go
 ~~~
 
-All of these phrases are using words like "several" or "3" which quantify how many of something the speaker is interested in. When we implement a solution group handler we take over responsibility for doing the counting, and we're not doing that.
+All of these phrases are using words like "several" or "3" which quantify how many of something the speaker is interested in. The last uses "the" which implies there is just one that is so obvious the system should know which one it is. When we implement a solution group handler we take over responsibility for doing the counting, and we're not doing that.
 
 ### Inspecting Global Criteria
-When a speaker uses a phrase that constrains the solution group in some way, these constraints are added to the arguments and can be inspected:
+When a speaker uses a phrase that constrains the solution group using numeric constraints or "the", these constraints are tracked with the arguments in the solution group handler and can be inspected:
 
 Let's change our `have_v_1` solution group handler to output these constraints so we can see them:
 
@@ -61,7 +64,7 @@ pronoun_q(x3,RSTR,BODY)            ┌────── _command_n_1(x8)
                                         └─ _have_v_1(e2,x3,x8)
 ~~~
 
-You can see from the output that the constraints on `x3`, which is where "you" is represented are between 1 and inf (infinity):
+You can see from the output that the constraints on `x3`, which is where "you" is represented, are between 1 and `inf` (infinity):
 
 ~~~
 x_actor_binding constraints: {x3: min=1, max=inf, global=None, required_values=None, pred=pronoun_q(x3)}
@@ -69,7 +72,7 @@ x_actor_binding constraints: {x3: min=1, max=inf, global=None, required_values=N
 
 That's because, if you look at the MRS, `x3` doesn't indicate one way or the other if "you" is plural or singular "you", and there aren't any other predications that would constrain things.
 
-For `x8` we get a constraint between 2 and infinity.  Looking at the MRS you can see that `x8` has the properties `[ x PERS: 3 NUM: pl IND: + ]` set in the `have_v_1` predication, which indicates plurality.  I.e. 2 or more:
+For `x8` we get a constraint between 2 and infinity.  Looking at the MRS you can see that `x8` has the properties `[ x PERS: 3 NUM: pl IND: + ]` set in the `have_v_1` predication, which indicates plurality.  I.e. between 2 and infinity:
 
 ~~~
 x_target_binding constraints: {x8: min=2, max=inf, global=None, required_values=None, pred=udef_q(x8)}
@@ -95,7 +98,7 @@ x_target_binding constraints: {x8: min=1, max=1, global=GlobalCriteria.all_rstr_
 You can use the following commands: copy and go
 ~~~
 
-The word "the" means "the one and only" or "the 1 group" and so it has a min/max of 1 and it has `global=GlobalCriteria.all_rstr_meet_criteria`. `all_rstr_meet_criteria` is how "the 1 group" gets handled.  It means: all of the things that "the" refers to in its `RSTR` must be true of its `BODY`. Let's look at the MRS tree to explain:
+The word "the" means "the one and only" or "the 1 group" and so it has a min/max of 1 and it has `global=GlobalCriteria.all_rstr_meet_criteria`. `all_rstr_meet_criteria` is how "the 1 group" gets handled.  It means: all of the things that "the" refers to in its `RSTR` must be true of its `BODY`. Let's look at the MRS tree to understand:
 
 ~~~
                ┌────── pron(x3)
@@ -106,7 +109,7 @@ pronoun_q(x3,RSTR,BODY)            ┌────── _command_n_1(x8)
 
 Since `all_rstr_meet_criteria` is set on `x8`, it is referring to the `RSTR` and `BODY` of: `_the_q(x8,RSTR,BODY)`.
 
-The `RSTR` is simply `_command_n_1(x8)`, so *all* commands in the system are being referred to.  The `BODY` is set to `_have_v_1(e2,x3,x8)`.  So, as long as "you" have all of the commands in the system, this should be true.
+The `RSTR` is simply `_command_n_1(x8)`, so *all* commands in the system are being referred to.  The `BODY` is set to `_have_v_1(e2,x3,x8)`.  So, as long as "you" have "all" the commands in the system, this should be true.
 
 What about "The commands are copy".  This would put "all commands" in the `RSTR` and "being copy" in the `BODY` which is certainly not true for all of them, so it should fail.
 
@@ -131,10 +134,10 @@ pronoun_q(x3,RSTR,BODY)            │
 
 This one says `x8` which is `_the_q(x8,RSTR,BODY)` must have 3 different values in it. And: all commands in the system should be true of the body. While it is certainly true that the system "has" all the commands, it is not true that there are 3 of them, so this is false.
 
-Normally, Perplexity handles checking these constraints and doesn't consider a solution group to be valid unless it meets them all. But when you build a solution group handler, you are telling the system: I am doing something custom, and thus I will be responsible for making sure the constraints are met.
+Normally, Perplexity handles checking these constraints and doesn't consider a solution group to be valid unless it meets them all. But when you build a solution group handler, you are telling the system: I am doing something custom with the solution group and thus I will also be responsible for making sure the constraints are met on it.
 
 ### Different Interpretations of Constraints
-To determine if constraints are met, you first need to make a decision about the speaker meant by the phrase and this isn't always obvious. Consider the phrases:
+To determine if constraints are met, you first need to make a decision about what the speaker meant by the phrase. This isn't always obvious. Consider the following phrases:
 
 > Do you have more than 2 chairs?
 
@@ -144,7 +147,7 @@ If Aiden walks into a furniture store wanting to buy a chair, he is probably ask
 
 > Do you have the steak?
 
-If Elie is talking a waiter and there is often a steak special, she probably means "is the *conceptual type* of steak you usually have on the menu?".
+If Elie is talking to a waiter and there is often a steak special, she probably means "is the *conceptual type* of steak you usually have on the menu today?".
 
 If instead she is talking to her friend about a particular steak he bought, she probably means the *instance*.
 
@@ -154,10 +157,10 @@ If Zahra is in a restaurant that has several types of menus, maybe for lunch and
 
 She could also mean "one menu for me and one for my Mom".
 
-What these all have in common is that hints about what the speaker means can be found in the *context*, or scenario that is occurring. It is often not obvious which is meant a priori. So, you'll need to determine which is meant given your scenario. Note that you can also implement both as different *interpretations* and try each to see which works, or reorder them based on the current context.  You may also decide that the constraint doesn't matter. If there are no steaks available in your vegetarian restaurant just about any question about a steak should be met with, "I'm so sorry, we don't have those here."
+What these all have in common is that hints about what the speaker means can be found in the *context*, or scenario, that is occurring. It is often not obvious which is meant a priori. So, you'll need to determine which is meant given your scenario. Note that you can also implement both as different *interpretations* and try each to see which works, or reorder them based on the current context.  You may also decide that the constraint doesn't matter. If there are no steaks available in your vegetarian restaurant just about any question about a steak should be met with, "I'm so sorry, we don't have those here."
 
 ### The `concept_meets_constraint` Helper
-Regardless of which you decide, you can certainly just write the code to check to make sure the constraint is met.  As shown above, the constraints are available in the `variable_constraints` property of each variable group in your solution group handler. That code is repeated below:
+Regardless of which you decide, you need to write the code to make sure the constraints are met.  As shown above, the constraints are available in the `variable_constraints` property of each variable group in your solution group handler. That code is repeated below:
 
 ~~~
 @Predication(vocabulary,
@@ -223,7 +226,7 @@ How you decide which concepts make sense to be "in-scope" is up to you, but is o
 ~~~
     concept_in_scope_count = 0
     for concept in target_concepts:
-        if in_scope(scope_data, context, state, concept):
+        if in_scope(context, state, concept):
             concept_in_scope_count += 1
 ~~~
 
@@ -233,8 +236,10 @@ How you decide which concepts make sense to be "in-scope" is up to you, but is o
     instances = []
     for concept in concepts:
         this_concept_instances = list(concept.instances(context, state))
-        # If we are dealing with instances and one of the concepts generates zero, we don't want to just count the others
-        # and succeed.  e.g. "I have two ice creams and bowls" should not succeed if there are no bowls
+        # If we are dealing with instances and one of the concepts generates 
+        # zero, we don't want to just count the others
+        # and succeed.  e.g. "I have two ice creams and bowls" should not 
+        # succeed if there are no bowls
         if len(this_concept_instances) == 0:
             instances = None
             break
@@ -265,15 +270,17 @@ def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_vari
     # Count the in-scope concepts
     concept_in_scope_count = 0
     for concept in target_concepts:
-        if in_scope(scope_data, context, state, concept):
+        if in_scope(context, state, concept):
             concept_in_scope_count += 1
 
     # Count the instances
     instances = []
     for concept in concepts:
         this_concept_instances = list(concept.instances(context, state))
-        # If we are dealing with instances and one of the concepts generates zero, we don't want to just count the others
-        # and succeed.  e.g. "I have two ice creams and bowls" should not succeed if there are no bowls
+        # If we are dealing with instances and one of the concepts generates 
+        # zero, we don't want to just count the others
+        # and succeed.  e.g. "I have two ice creams and bowls" should not 
+        # succeed if there are no bowls
         if len(this_concept_instances) == 0:
             instances = None
             break
@@ -296,13 +303,13 @@ def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_vari
                                        variable=x_what_variable_group.solution_values[0].variable.name)
     
     if success:
-        yield state_list
+        # Your custom code here
 ~~~
 
 ### The `concept_meets_constraint` Implementation
-Now let's go through what `concept_meets_constraint` does with all these arguments to check if a solution group meets its constraints. It is useful to understand this since you may need different logic for some of your predications, this is just the most common behavior.
+Now let's go through how `concept_meets_constraint` uses these arguments to check if a solution group meets its constraints. It is useful to understand since you may need different logic for some of your predications. This function just implements the most common behavior.
 
-The very first thing that happens is to fill in default `min` and `max` constraints since some variables might not have them. Then it branches based on whether the caller asked to check concepts or instances.  First let's do concepts.  The comments in the code describe what is happening:
+First, default `min` and `max` constraints are filled in the the variable doesn't have them. Then, it branches based on whether the caller asked to check concepts or instances.  First let's do concepts.  The comments in the code describe what is happening:
 
 ~~~
 def concept_meets_constraint(context,
@@ -319,16 +326,19 @@ def concept_meets_constraint(context,
     if check_concepts:
         # We are making sure the constraints succeed against the concept count
         if variable_constraints is not None and variable_constraints.global_criteria == perplexity.plurals.GlobalCriteria.all_rstr_meet_criteria:
-            # If the user says "the specials" or "the 2 menus" they are putting a criteria on the *concept*, not the instances. I.e. there should be
+            # If the user says "the specials" or "the 2 menus" they are putting a criteria
+            # on the *concept*, not the instances. I.e. there should be
             # 2 *types* of menus in scope. Examples:
             #
             # "Do you have the 2 menus?" (interpreted as meaning classes of menus)
             # "Are the 2 specials good?" (ditto)
             # "Do you have the steak?" (ditto)
             #
-            # Furthermore, because they said "the", they are referring to a "in-scope concept", i.e. "the menu", not
-            # just any old menu. It is a special one. This is modelled as having the concept be "in scope". The generic type, "menu"
-            # still exists, but is a type that is out of scope. If they said "What is generally on a menu?" they'd be referring to that generic type.
+            # Furthermore, because they said "the", they are referring to a "in-scope concept", 
+            # i.e. "the menu", not just any old menu. It is a special one. This is modelled as 
+            # having the concept be "in scope". The generic type, "menu" still exists, but is
+            # a type that is out of scope. If they said "What is generally on a menu?" they'd
+            # be referring to that generic type.
             check_count = concept_in_scope_count
 
         else:
@@ -361,11 +371,11 @@ def concept_meets_constraint(context,
     ...
 ~~~
 
-The real work that happens for checking concepts is to decide whether the word "the" has been used, and this determines whether we check the "in-scope concept" count or just the "concept count".  The rest of the code is just comparing the resulting number to the min and max sizes and reporting an error if it isn't in range.
+The real work for checking concepts is to decide whether the word "the" has been used. This determines whether we check the "in-scope concept" count or just the "concept count".  The rest of the code is just comparing the resulting number to the `min` and `max` sizes and reporting an error if it isn't in range.
 
-The second part of the function gets run when `check_concepts=False`. In this case, the speaker is talking about a concept, but the ultimate thing that needs to be manipulated is an instance.  To implement "I want a menu", our code will need to find a menu and give it to the speaker. 
+The second part of the function gets run when `check_concepts=False`. In this case, the speaker is talking about a concept, but the ultimate thing that needs to be manipulated is an instance.  E.g. to implement "I want a menu", our code will need to find a menu and give it to the speaker. 
 
-Here again the only subtlety is dealing with "the" and making sure we interpret phrases like, "give me the two menus" properly. Even if they are ultimately wanting instances, "the two menus" will need to be checked to make sure that we actually do have two *types* of menu.
+Here again the only subtlety is dealing with "the" and making sure we interpret phrases like, "give me the two menus" properly. Even if they are ultimately wanting instances, "the two menus" will need to be checked to make sure that we actually do have two *types* of menu, so that we can then give them both.
 
 ~~~
 def concept_meets_constraint(context,
@@ -380,12 +390,15 @@ def concept_meets_constraint(context,
     ...
     
     else:
-        # The user is talking about a concept, but, ultimately, our code will need to check if there are enough instances. Examples:
+        # The user is talking about a concept, but, ultimately, our code will need to check if there are 
+        # enough instances. Examples:
         #   "We want a menu" --> "We want 1 instance of a menu concept"
         #   "We want a table" --> "We want 1 instance of a table concept"
         #   "We want tables/menus" --> "We want instances of the tables"
-        #   "We want the menu(s)" --> "We want an undefined number of instances of 'the one and only table concept in scope'"
-        #   "We want the specials" --> "We want an undefined number of instances of 'the (undefined number of) the special concepts in scope'"
+        #   "We want the menu(s)" --> "We want an undefined number of instances of 
+        #                             'the one and only table concept in scope'"
+        #   "We want the specials" --> "We want an undefined number of instances of 
+        #                              'the (undefined number of) the special concepts in scope'"
         #
         # First, check to make sure we the system has the right number of "in scope" concepts if "the" is used,
         # as in "I'd like the 2 menus" (if there are a drink menu and a food menu)
@@ -403,8 +416,8 @@ def concept_meets_constraint(context,
                 context.report_error(["phase2MoreThanN", ["AfterFullPhrase", variable], max_size], force=True, phase=2)
                 return False
 
-        # Then, regardless of whether "the" was used, check to make sure there are enough instances to meet the criteria
-        # since that is what we are ultimately looking for
+        # Then, regardless of whether "the" was used, check to make sure there are enough instances to 
+        # meet the criteria since that is what we are ultimately looking for
         check_count = instance_count
         if check_count == 0:
             context.report_error(["conceptNotFound", variable], force=True, phase=2)
