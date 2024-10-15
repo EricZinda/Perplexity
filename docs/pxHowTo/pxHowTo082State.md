@@ -1,5 +1,5 @@
 ## Building a Custom State Object
-We are getting to the point where the examples need to get richer and hard-coding the state of the world or using the base `State` object is not going to be good enough for future examples. We need to step back and think about how to model the file system state in a more robust way.  Even if you aren't building an interface to a file system, many of the concerns and solutions described below could be useful to you.  Designing how your state object works is a key design decision when building a Perplexity application.
+We are getting to the point where the examples need to get richer and hard-coding the state of the world or using the base `State` object is not going to be good enough. We need to step back and think about how to model the file system state in a more robust way.  Even if you aren't building an interface to a file system, many of the concerns and solutions described below could be useful to you.  Designing how your state object works is a key design decision when building a Perplexity application.
 
 
 ## The Perplexity State object
@@ -23,12 +23,12 @@ class State(object):
     ...
 ~~~
 
-The only reason it even has this basic implementation is because the system implementation of `in_scope`, when determines which objects are ["proximate"](https://en.wikipedia.org/wiki/Obviative) to the user. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern used by `set_x()` and `add_to_e()` and return a copy with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](../devcon/devcon0010MRSSolver) work.
+The only reason it even has this basic implementation is because the system implementation of `in_scope` needs it to determine which objects are ["proximate"](https://en.wikipedia.org/wiki/Obviative) to the user. So, outside of that, we are free to implement our system state in any way we like *as long as it remains immutable*. Any methods we implement that make changes must follow the pattern used by `set_x()` and `add_to_e()` and return a copy with the change instead of modifying the object directly. This is key for making the [solver backtracking algorithm](../devcon/devcon0010MRSSolver) work.
 
-So, we'll need to add a notion of files and folders to `State`, and provide some ways to query the system about them. But all of this will *only* be used by the code we write to implement our custom predications.  The system will completely ignore it.
+So, we'll need to add a notion of files and folders to `State`, and provide some ways to query the system about them. But all of this will *only* be used by the code we write to implement our custom predications.  Perplexity will completely ignore it.
 
 ## Identity
-Because the system is built around immutable state, we will sometimes end up with two `State` objects and need to be able to find the same object contained in either one. We need a way to compare objects *across* state object. The easiest way to do this is to give all the objects in the system a globally unique id that can be easily compared. We'll create a base class, `UniqueObject` that does this and derive everything from it:
+Because the system is built around immutable state, we will sometimes end up with two `State` objects and need to be able to find the same object contained in either one. We need a way to compare objects *across* state objects. The easiest way is to give all the objects in the system a globally unique id that can be easily compared. We'll create a base class, `UniqueObject` that does this and derive everything from it:
 
 ~~~
 class UniqueObject(object):

@@ -122,7 +122,7 @@ A few things to note:
 
 Because we defined `_lift_v_cause` to only be `true` when *both* students are lifting the table, we get the (mangled) error, "There are more than a student". This is trying to say "There is more than one student lifting a table". We'll go through how to fix the English on these in a future topic.  We should probably add logic that allows either student lifting the table to be `true` as well.
 
-Note that we can also use world like "large" from previous scenarios and they do work correctly (since we haven't said either student is large in the system).
+Note that we can also use world like "large" from previous scenarios and they do work correctly (since we haven't said either student is large in the system, it will just always fail).
 
 Next we will tackle [event predications](pxHowTo050EventPredications) so that we can handle words like "very" and other modifiers.
 

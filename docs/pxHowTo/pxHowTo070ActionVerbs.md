@@ -25,7 +25,7 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
 
 Let's ignore the pronoun related predications and focus on `_delete_v_1(e2,x3,x8)`. We're not going to handle any modifiers to it either, so we can ignore both `e2` and `x3` (since `x3` represents the pronoun). That leaves `x8`, which is the thing the user wants to delete. 
 
-We could try implementing `_delete_v_1` like the other single `x` predications we've built by calling the `combinatorial_predication_1()` helper. The problem is: `_delete_v_1` doesn't support sets > 1. Delete, doesn't make sense for a set of items "together".  Deleting items together sounds dangerously like "deleting them in a transaction" which our file system can't do.  Really, delete can only apply to one item at a time, and it shouldn't support a "together" semantic unless it can really enforce it. So, it will use a different helper called, `individual_style_predication_1()` which ensures that only single individuals make it through, like this:
+We could try implementing `_delete_v_1` like the other single `x` predications we've built by calling the `combinatorial_predication_1()` helper. The problem is: `_delete_v_1` doesn't support sets > 1. "Delete" doesn't make sense for a set of items "together".  Deleting items together sounds dangerously like "deleting them in a transaction" which our file system can't do.  Really, delete can only apply to one item at a time, and it shouldn't support a "together" semantic unless it can really enforce it. So, it will use a different helper called, `individual_style_predication_1()` which ensures that only single individuals make it through, like this:
 
 ~~~
 @Predication(vocabulary, names=["_delete_v_1"])
@@ -129,7 +129,7 @@ new_state.apply_operations([operation])
 
 The `apply_operations()` method takes a list of operations to apply, but in this case we're only doing one. Those two lines of code record that we want to delete a particular file, but they don't actually *do* it yet.  Later, when we have the final solution group, we can gather all of the `Operations` that were done to the solutions in the group and call `apply_operations()` on the one single state we want to represent the new world.
 
-Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the "new state of the world" once we know what to do.
+Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them *all* to a single state which can represent the "new state of the world" once we know what to do.
 
 Now we can write the basic implementation of "delete":
 

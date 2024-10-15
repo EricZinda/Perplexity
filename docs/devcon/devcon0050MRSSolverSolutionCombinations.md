@@ -1,4 +1,4 @@
-## Combination Algorithm
+## AppendixA: Optimizing the Combination Algorithm
 In the section [introducing the solution grouping algorithm](devhowtoMRSSolverSolutionGroupsAlgorithm), the algorithm starts with:
 
 > For each possible combination of solutions from Phase 1 ...

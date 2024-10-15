@@ -1,7 +1,7 @@
 ## Implementing a Predication
-Recall from the conceptual topic on [backtracking](../devcon/devcon0010MRSSolver) that Perplexity interpets a phrase by:
-1. Converting the phrase to an MRS document
-2. Creating a well-formed tree from the MRS document
+Recall from the conceptual topic on [backtracking](../devcon/devcon0010MRSSolver) that Perplexity interprets a phrase by:
+1. Converting the phrase to an [MRS document](../mrscon/devhowto0010MRS)
+2. Creating a [well-formed tree](../mrscon/devhowto0020WellFormedTree) from the MRS document
 3. Using backtracking to walk the tree and find values for the variables that make the MRS `true`
 
 Using that approach, the phrase "A file is large." creates this MRS and tree (among others):
@@ -21,18 +21,18 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 ~~~
 
-In summary: The backtracking solver maps each predication in the tree to a Python function and does a depth-first traversal of it. A `State` object is used to track the current value of all MRS variables (such as `x3`) as the solver goes through this process. At a given point in the traversal, the `State` object always has the current value of all MRS variables *and* any other current state the application needs to do its own work. Each program that uses Perplexity derives an object from `State` to allow predications to interact with the application.
+As described in the [backtracking section](../devcon/devcon0010MRSSolver), the backtracking solver maps each predication in the tree to a Python function and does a depth-first traversal of the tree. A `State` object is used to track the current value of all MRS variables (such as `x3`) as the solver goes through this process. At a given point in the traversal, the `State` object always has the current value of all MRS variables *and* any other current state the application needs to do its own work. Each program that uses Perplexity derives an object from `State` to allow predications to interact with the application.
 
 The rest of this section describes how to write these predication functions and how to interact with the `State` object.
 
 
 ### Predication Function Arguments
-Perplexity comes preinstalled and configured to use the DELPH-IN English grammar called the ["English Resource Grammar"](https://https://delph-in.github.io/docs/erg/ErgTop/) or "ERG".  The ERG predication generated for "file" in the above MRS is:
+Perplexity comes preinstalled and configured to use the DELPH-IN English grammar, which is called the ["English Resource Grammar"](https://https://delph-in.github.io/docs/erg/ErgTop/) or "ERG".  You can see from the MRS document in the above example that the ERG predication generated for "file" is:
 ~~~
 _file_n_of(x3,i8)
 ~~~
 
-Perplexity uses the `Vocabulary` object to map this to a Python function that can be called. All predication Python functions have the same two initial arguments: `context` and `state`, followed by arguments that represent the predication arguments, `x3` and `i8` in this case.  `_file_n_of` looks like this:
+Perplexity uses the `Vocabulary` object to map this to a Python function that can be called. All predication Python functions have the same two initial arguments: `context` and `state`, followed by arguments that represent the predication arguments, `x3` and `i8` in this case.  So, the Python implementation of `_file_n_of` looks like this:
 
 ~~~
 def file_n_of(context, state, x_binding, i_binding):
@@ -61,9 +61,9 @@ def file_n_of(context, state, x_binding, i_binding):
 
 Note that `i_binding` is ignored since `i` variables usually indicate an ignored (or 'dropped') argument as described in the section on [MRS](../mrscon/devhowto0010MRS#other-variables-types-i-u-p).
 
-The code illustrates that bindings have a `binding.value` property that returns the current variable's value, which is always a list for reasons described in the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. If so, it `yields` the state object to indicate that this predication is `true` for the current state of its variables. Nothing changed in the `state` object so it can just be yielded, as is. 
+The code illustrates that bindings have a `binding.value` property that returns the current variable's value, which is always a list for reasons described in the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. That is the only time this will bet `true` since that is all we have. If so, it `yields` the state object to indicate that this predication is `true` for the current state of its variables. The `state` object is just yielded, as is, since we are just checking if the values passed in are a "file" and not changing anything. 
 
-Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of *all* `file_n` objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables "unbound", which means: `binding.value is None`.  This indicates to the function that it should `yield` all the things in the world that are a `file`, like this:
+Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of *all* `file_n` objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables "unbound", which is when: `binding.value is None`.  This indicates to the function that it should `yield` all the things in the world that are a `file`, like this:
 
 ~~~
 def file_n_of(context, state, x_binding, i_binding):
@@ -79,10 +79,10 @@ def file_n_of(context, state, x_binding, i_binding):
 
 Note that the `state` object is *immutable*, meaning that it cannot be changed directly.  Instead, when methods like `state.set_x()` are called, the method returns a *copy* of the object with only the change the method accomplished. That's why the function yields like this: `yield state.set_x(...)` -- it needs to yield the *copy* with changes in it.
 
-Since our world only has one file in it, we've just hard-coded it here, but obviously the code could be more complicated in a real example.
+Since our world only has one file in it, we've just hard-coded it here. Obviously the code would be more complicated in a real example.
 
 ## Predication Failure
-If the predication is called with variable values that make it `false`, it simply returns without yielding. However, it needs to register an error first so that it can be reported to the user. Reporting errors is done by calling `context.report_error()` and passing it a list that names the error and includes any other information needed to build a message for the user, like this:
+If the predication is called with variable values that make it `false`, it simply returns without yielding. However, it needs to register an error first so we can report something to the user. Reporting errors is done by calling `context.report_error()` and passing it a list. The list names the error and includes any other information needed to build a message for the user, like this:
 
 ~~~
 def file_n_of(context, state, x_binding, i_binding):
@@ -98,7 +98,7 @@ def file_n_of(context, state, x_binding, i_binding):
 Errors are reported as a list and here we've created a custom `notAThing` error to show how it is done. To create a custom error, we pick a string to represent it like `"notAThing"`, and include all the information we'll need later to generate a nice text string for the user. In this case, we provide `x_binding.value` as its first argument, which will be some non-file object like `"folder1"`. The second argument is `x_binding.variable.name`, which is the name of the variable: `x3`. Perplexity has functions that can convert variable names like `x3` to their actual words like "a file". So, passing the variable name is a way of not hard-coding the predication name and allowing the system to generate richer errors. This is described more in the [Converting Variables to English](../pxint/pxint0120ErrorsConceptualFailures) topic, and the mechanics of it is shown next.
 
 ## Converting Errors to Messages
-If the error returned is a system error, the system will convert it to a message for the user.  If not, we need to create a function that converts the custom error information to messages and pass that function as an additional argument to the `UserInterface` object, like this:
+If the error returned is a system error, the system will convert it to a message for the user.  If we have custom errors like "notAThing", we need to create a function that converts the custom error information to messages and pass that function as an additional argument to the `UserInterface` object, like this:
 
 ~~~
 ...

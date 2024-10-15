@@ -62,7 +62,7 @@ The "world individuals" above are the only objects that exist in the world. `x` 
 
 The "world facts" above are facts about the relationships between things in the world that predications such as `in(x, y)` can refer to to see if they are `true`.
 
-As above, it doesn't matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We'll be building an example of such a system in this tutorial.
+As above, it doesn't matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We'll be building an example of such a system in the [How-To section](../pxHowTo/pxHowTo010Overview).
 
 To make the backtracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of "variable scope". Variable scope shows where a variable is introduced and which predications can use it. 
 
