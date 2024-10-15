@@ -197,6 +197,36 @@
     
       <li>
         
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">A. Optimizing Coll/Dist/Cuml</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
           <span class="nav__sub-title">Using Perplexity</span>
         
 
@@ -219,8 +249,6 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo070ActionVerbs/" class="active">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
-          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo082State/">Custom State</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo085Place/">Representing Places</a></li>
@@ -235,37 +263,9 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions/">Conceptual References</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo025SStrings/">A. Generating English with S-strings</a></li>
-          
-        </ul>
-        
-      </li>
-    
-      <li>
-        
-          <span class="nav__sub-title">MRS Solver Conceptual</span>
-        
-
-        
-        <ul>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
         </ul>
         
@@ -369,7 +369,7 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
 
 <p>Let’s ignore the pronoun related predications and focus on <code class="language-plaintext highlighter-rouge">_delete_v_1(e2,x3,x8)</code>. We’re not going to handle any modifiers to it either, so we can ignore both <code class="language-plaintext highlighter-rouge">e2</code> and <code class="language-plaintext highlighter-rouge">x3</code> (since <code class="language-plaintext highlighter-rouge">x3</code> represents the pronoun). That leaves <code class="language-plaintext highlighter-rouge">x8</code>, which is the thing the user wants to delete.</p>
 
-<p>We could try implementing <code class="language-plaintext highlighter-rouge">_delete_v_1</code> like the other single <code class="language-plaintext highlighter-rouge">x</code> predications we’ve built by calling the <code class="language-plaintext highlighter-rouge">combinatorial_predication_1()</code> helper. The problem is: <code class="language-plaintext highlighter-rouge">_delete_v_1</code> doesn’t support sets &gt; 1. Delete, doesn’t make sense for a set of items “together”.  Deleting items together sounds dangerously like “deleting them in a transaction” which our file system can’t do.  Really, delete can only apply to one item at a time, and it shouldn’t support a “together” semantic unless it can really enforce it. So, it will use a different helper called, <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code> which ensures that only single individuals make it through, like this:</p>
+<p>We could try implementing <code class="language-plaintext highlighter-rouge">_delete_v_1</code> like the other single <code class="language-plaintext highlighter-rouge">x</code> predications we’ve built by calling the <code class="language-plaintext highlighter-rouge">combinatorial_predication_1()</code> helper. The problem is: <code class="language-plaintext highlighter-rouge">_delete_v_1</code> doesn’t support sets &gt; 1. “Delete” doesn’t make sense for a set of items “together”.  Deleting items together sounds dangerously like “deleting them in a transaction” which our file system can’t do.  Really, delete can only apply to one item at a time, and it shouldn’t support a “together” semantic unless it can really enforce it. So, it will use a different helper called, <code class="language-plaintext highlighter-rouge">individual_style_predication_1()</code> which ensures that only single individuals make it through, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_delete_v_1"])
 def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_what_binding):
@@ -467,7 +467,7 @@ new_state.apply_operations([operation])
 
 <p>The <code class="language-plaintext highlighter-rouge">apply_operations()</code> method takes a list of operations to apply, but in this case we’re only doing one. Those two lines of code record that we want to delete a particular file, but they don’t actually <em>do</em> it yet.  Later, when we have the final solution group, we can gather all of the <code class="language-plaintext highlighter-rouge">Operations</code> that were done to the solutions in the group and call <code class="language-plaintext highlighter-rouge">apply_operations()</code> on the one single state we want to represent the new world.</p>
 
-<p>Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don’t want files <em>actually being deleted</em> during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them to a single state which can represent the “new state of the world” once we know what to do.</p>
+<p>Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don’t want files <em>actually being deleted</em> during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them <em>all</em> to a single state which can represent the “new state of the world” once we know what to do.</p>
 
 <p>Now we can write the basic implementation of “delete”:</p>
 
@@ -652,7 +652,7 @@ a file is not large
 
 <p>The last line confirms that the one large file in the system has been deleted.</p>
 
-<p>Last update: 2024-10-08 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo070ActionVerbs.md">edit</a>]</p>
+<p>Last update: 2024-10-14 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo070ActionVerbs.md">edit</a>]</p>
 
         
       </section>

@@ -197,6 +197,36 @@
     
       <li>
         
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">A. Optimizing Coll/Dist/Cuml</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
           <span class="nav__sub-title">Using Perplexity</span>
         
 
@@ -219,8 +249,6 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo070ActionVerbs/">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
-          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo082State/">Custom State</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo085Place/">Representing Places</a></li>
@@ -235,37 +263,9 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions/">Conceptual References</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo025SStrings/">A. Generating English with S-strings</a></li>
-          
-        </ul>
-        
-      </li>
-    
-      <li>
-        
-          <span class="nav__sub-title">MRS Solver Conceptual</span>
-        
-
-        
-        <ul>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
         </ul>
         
@@ -344,10 +344,10 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="implementing-a-predication">Implementing a Predication</h2>
-<p>Recall from the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking</a> that Perplexity interpets a phrase by:</p>
+<p>Recall from the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking</a> that Perplexity interprets a phrase by:</p>
 <ol>
-  <li>Converting the phrase to an MRS document</li>
-  <li>Creating a well-formed tree from the MRS document</li>
+  <li>Converting the phrase to an <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS document</a></li>
+  <li>Creating a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">well-formed tree</a> from the MRS document</li>
   <li>Using backtracking to walk the tree and find values for the variables that make the MRS <code class="language-plaintext highlighter-rouge">true</code></li>
 </ol>
 
@@ -367,16 +367,16 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 </code></pre></div></div>
 
-<p>In summary: The backtracking solver maps each predication in the tree to a Python function and does a depth-first traversal of it. A <code class="language-plaintext highlighter-rouge">State</code> object is used to track the current value of all MRS variables (such as <code class="language-plaintext highlighter-rouge">x3</code>) as the solver goes through this process. At a given point in the traversal, the <code class="language-plaintext highlighter-rouge">State</code> object always has the current value of all MRS variables <em>and</em> any other current state the application needs to do its own work. Each program that uses Perplexity derives an object from <code class="language-plaintext highlighter-rouge">State</code> to allow predications to interact with the application.</p>
+<p>As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking section</a>, the backtracking solver maps each predication in the tree to a Python function and does a depth-first traversal of the tree. A <code class="language-plaintext highlighter-rouge">State</code> object is used to track the current value of all MRS variables (such as <code class="language-plaintext highlighter-rouge">x3</code>) as the solver goes through this process. At a given point in the traversal, the <code class="language-plaintext highlighter-rouge">State</code> object always has the current value of all MRS variables <em>and</em> any other current state the application needs to do its own work. Each program that uses Perplexity derives an object from <code class="language-plaintext highlighter-rouge">State</code> to allow predications to interact with the application.</p>
 
 <p>The rest of this section describes how to write these predication functions and how to interact with the <code class="language-plaintext highlighter-rouge">State</code> object.</p>
 
 <h3 id="predication-function-arguments">Predication Function Arguments</h3>
-<p>Perplexity comes preinstalled and configured to use the DELPH-IN English grammar called the <a href="https://https://delph-in.github.io/docs/erg/ErgTop/">“English Resource Grammar”</a> or “ERG”.  The ERG predication generated for “file” in the above MRS is:</p>
+<p>Perplexity comes preinstalled and configured to use the DELPH-IN English grammar, which is called the <a href="https://https://delph-in.github.io/docs/erg/ErgTop/">“English Resource Grammar”</a> or “ERG”.  You can see from the MRS document in the above example that the ERG predication generated for “file” is:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_file_n_of(x3,i8)
 </code></pre></div></div>
 
-<p>Perplexity uses the <code class="language-plaintext highlighter-rouge">Vocabulary</code> object to map this to a Python function that can be called. All predication Python functions have the same two initial arguments: <code class="language-plaintext highlighter-rouge">context</code> and <code class="language-plaintext highlighter-rouge">state</code>, followed by arguments that represent the predication arguments, <code class="language-plaintext highlighter-rouge">x3</code> and <code class="language-plaintext highlighter-rouge">i8</code> in this case.  <code class="language-plaintext highlighter-rouge">_file_n_of</code> looks like this:</p>
+<p>Perplexity uses the <code class="language-plaintext highlighter-rouge">Vocabulary</code> object to map this to a Python function that can be called. All predication Python functions have the same two initial arguments: <code class="language-plaintext highlighter-rouge">context</code> and <code class="language-plaintext highlighter-rouge">state</code>, followed by arguments that represent the predication arguments, <code class="language-plaintext highlighter-rouge">x3</code> and <code class="language-plaintext highlighter-rouge">i8</code> in this case.  So, the Python implementation of <code class="language-plaintext highlighter-rouge">_file_n_of</code> looks like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
    ...
@@ -402,9 +402,9 @@ _a_q(x3,RSTR,BODY)
 
 <p>Note that <code class="language-plaintext highlighter-rouge">i_binding</code> is ignored since <code class="language-plaintext highlighter-rouge">i</code> variables usually indicate an ignored (or ‘dropped’) argument as described in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS</a>.</p>
 
-<p>The code illustrates that bindings have a <code class="language-plaintext highlighter-rouge">binding.value</code> property that returns the current variable’s value, which is always a list for reasons described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">Together conceptual topic</a> . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. If so, it <code class="language-plaintext highlighter-rouge">yields</code> the state object to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of its variables. Nothing changed in the <code class="language-plaintext highlighter-rouge">state</code> object so it can just be yielded, as is.</p>
+<p>The code illustrates that bindings have a <code class="language-plaintext highlighter-rouge">binding.value</code> property that returns the current variable’s value, which is always a list for reasons described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">Together conceptual topic</a> . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. That is the only time this will bet <code class="language-plaintext highlighter-rouge">true</code> since that is all we have. If so, it <code class="language-plaintext highlighter-rouge">yields</code> the state object to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of its variables. The <code class="language-plaintext highlighter-rouge">state</code> object is just yielded, as is, since we are just checking if the values passed in are a “file” and not changing anything.</p>
 
-<p>Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of <em>all</em> <code class="language-plaintext highlighter-rouge">file_n</code> objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables “unbound”, which means: <code class="language-plaintext highlighter-rouge">binding.value is None</code>.  This indicates to the function that it should <code class="language-plaintext highlighter-rouge">yield</code> all the things in the world that are a <code class="language-plaintext highlighter-rouge">file</code>, like this:</p>
+<p>Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of <em>all</em> <code class="language-plaintext highlighter-rouge">file_n</code> objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables “unbound”, which is when: <code class="language-plaintext highlighter-rouge">binding.value is None</code>.  This indicates to the function that it should <code class="language-plaintext highlighter-rouge">yield</code> all the things in the world that are a <code class="language-plaintext highlighter-rouge">file</code>, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
     if x_binding.value is None:
@@ -419,10 +419,10 @@ _a_q(x3,RSTR,BODY)
 
 <p>Note that the <code class="language-plaintext highlighter-rouge">state</code> object is <em>immutable</em>, meaning that it cannot be changed directly.  Instead, when methods like <code class="language-plaintext highlighter-rouge">state.set_x()</code> are called, the method returns a <em>copy</em> of the object with only the change the method accomplished. That’s why the function yields like this: <code class="language-plaintext highlighter-rouge">yield state.set_x(...)</code> – it needs to yield the <em>copy</em> with changes in it.</p>
 
-<p>Since our world only has one file in it, we’ve just hard-coded it here, but obviously the code could be more complicated in a real example.</p>
+<p>Since our world only has one file in it, we’ve just hard-coded it here. Obviously the code would be more complicated in a real example.</p>
 
 <h2 id="predication-failure">Predication Failure</h2>
-<p>If the predication is called with variable values that make it <code class="language-plaintext highlighter-rouge">false</code>, it simply returns without yielding. However, it needs to register an error first so that it can be reported to the user. Reporting errors is done by calling <code class="language-plaintext highlighter-rouge">context.report_error()</code> and passing it a list that names the error and includes any other information needed to build a message for the user, like this:</p>
+<p>If the predication is called with variable values that make it <code class="language-plaintext highlighter-rouge">false</code>, it simply returns without yielding. However, it needs to register an error first so we can report something to the user. Reporting errors is done by calling <code class="language-plaintext highlighter-rouge">context.report_error()</code> and passing it a list. The list names the error and includes any other information needed to build a message for the user, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
     if x_binding.value is None:
@@ -437,7 +437,7 @@ _a_q(x3,RSTR,BODY)
 <p>Errors are reported as a list and here we’ve created a custom <code class="language-plaintext highlighter-rouge">notAThing</code> error to show how it is done. To create a custom error, we pick a string to represent it like <code class="language-plaintext highlighter-rouge">"notAThing"</code>, and include all the information we’ll need later to generate a nice text string for the user. In this case, we provide <code class="language-plaintext highlighter-rouge">x_binding.value</code> as its first argument, which will be some non-file object like <code class="language-plaintext highlighter-rouge">"folder1"</code>. The second argument is <code class="language-plaintext highlighter-rouge">x_binding.variable.name</code>, which is the name of the variable: <code class="language-plaintext highlighter-rouge">x3</code>. Perplexity has functions that can convert variable names like <code class="language-plaintext highlighter-rouge">x3</code> to their actual words like “a file”. So, passing the variable name is a way of not hard-coding the predication name and allowing the system to generate richer errors. This is described more in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures">Converting Variables to English</a> topic, and the mechanics of it is shown next.</p>
 
 <h2 id="converting-errors-to-messages">Converting Errors to Messages</h2>
-<p>If the error returned is a system error, the system will convert it to a message for the user.  If not, we need to create a function that converts the custom error information to messages and pass that function as an additional argument to the <code class="language-plaintext highlighter-rouge">UserInterface</code> object, like this:</p>
+<p>If the error returned is a system error, the system will convert it to a message for the user.  If we have custom errors like “notAThing”, we need to create a function that converts the custom error information to messages and pass that function as an additional argument to the <code class="language-plaintext highlighter-rouge">UserInterface</code> object, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
 
@@ -772,7 +772,7 @@ if __name__ == '__main__':
         user_interface = user_interface.default_loop()
 </code></pre></div></div>
 
-<p>Last update: 2024-10-08 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md">edit</a>]</p>
+<p>Last update: 2024-10-14 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md">edit</a>]</p>
 
         
       </section>

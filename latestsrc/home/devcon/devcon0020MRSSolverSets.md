@@ -1,5 +1,5 @@
 {% raw %}
-## Add "Together" and "Separately" To the Solver
+## "Together" and "Separately" in the Solver
 If there were multiple large files in folders, the formula we ended the MRS Solver section with:
 
 ```
@@ -32,7 +32,7 @@ We need to be able to capture the semantic of the students working together or s
 ### Handling Sets
 To represent individuals operating "together" or "separately" we can make a simple extension to the algorithm: require that variables always contain a *set* of one or more things from the world. Predications can then interpret a set of greater than one element as meaning "together".  A set of one item can mean "separately" or "alone". 
 
-This change allows the solver to represent a solution where Alice and Bob are lifting a table *together* like this: `lift([alice, bob], [table1])`. The fact that the first argument to `lift` is a set of two people means they are working together, which wasn't possible before.
+This change allows the solver to represent a solution where Alice and Bob are lifting a table *together* like this: `lift([alice, bob], [table1])`. The fact that the first argument to `lift` is a set of two people means they are working together, which wasn't possible to represent before.
 
 With this change, a `scope()` predication now needs to assign *all possible sets of values* to its variable in order to explore the solution tree and find all the solutions. This can quickly become quite expensive, but there are optimizations we will explore. For now, we'll use the direct approach to keep the algorithm simple.
 
@@ -92,4 +92,4 @@ Thus, the algorithm still gives us all the assignments of variables that make th
 
 However, we need something more to allow representing plurals in a phrase, as described in the next section.
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0020MRSSolverSets.md)]{% endraw %}
+Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0020MRSSolverSets.md)]{% endraw %}

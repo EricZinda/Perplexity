@@ -197,6 +197,36 @@
     
       <li>
         
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">A. Optimizing Coll/Dist/Cuml</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
           <span class="nav__sub-title">Using Perplexity</span>
         
 
@@ -219,8 +249,6 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo070ActionVerbs/">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
-          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo082State/" class="active">Custom State</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo085Place/">Representing Places</a></li>
@@ -235,37 +263,9 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions/">Conceptual References</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo025SStrings/">A. Generating English with S-strings</a></li>
-          
-        </ul>
-        
-      </li>
-    
-      <li>
-        
-          <span class="nav__sub-title">MRS Solver Conceptual</span>
-        
-
-        
-        <ul>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
         </ul>
         
@@ -344,7 +344,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="building-a-custom-state-object">Building a Custom State Object</h2>
-<p>We are getting to the point where the examples need to get richer and hard-coding the state of the world or using the base <code class="language-plaintext highlighter-rouge">State</code> object is not going to be good enough for future examples. We need to step back and think about how to model the file system state in a more robust way.  Even if you aren’t building an interface to a file system, many of the concerns and solutions described below could be useful to you.  Designing how your state object works is a key design decision when building a Perplexity application.</p>
+<p>We are getting to the point where the examples need to get richer and hard-coding the state of the world or using the base <code class="language-plaintext highlighter-rouge">State</code> object is not going to be good enough. We need to step back and think about how to model the file system state in a more robust way.  Even if you aren’t building an interface to a file system, many of the concerns and solutions described below could be useful to you.  Designing how your state object works is a key design decision when building a Perplexity application.</p>
 
 <h2 id="the-perplexity-state-object">The Perplexity State object</h2>
 
@@ -366,12 +366,12 @@
     ...
 </code></pre></div></div>
 
-<p>The only reason it even has this basic implementation is because the system implementation of <code class="language-plaintext highlighter-rouge">in_scope</code>, when determines which objects are <a href="https://en.wikipedia.org/wiki/Obviative">“proximate”</a> to the user. So, outside of that, we are free to implement our system state in any way we like <em>as long as it remains immutable</em>. Any methods we implement that make changes must follow the pattern used by <code class="language-plaintext highlighter-rouge">set_x()</code> and <code class="language-plaintext highlighter-rouge">add_to_e()</code> and return a copy with the change instead of modifying the object directly. This is key for making the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">solver backtracking algorithm</a> work.</p>
+<p>The only reason it even has this basic implementation is because the system implementation of <code class="language-plaintext highlighter-rouge">in_scope</code> needs it to determine which objects are <a href="https://en.wikipedia.org/wiki/Obviative">“proximate”</a> to the user. So, outside of that, we are free to implement our system state in any way we like <em>as long as it remains immutable</em>. Any methods we implement that make changes must follow the pattern used by <code class="language-plaintext highlighter-rouge">set_x()</code> and <code class="language-plaintext highlighter-rouge">add_to_e()</code> and return a copy with the change instead of modifying the object directly. This is key for making the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">solver backtracking algorithm</a> work.</p>
 
-<p>So, we’ll need to add a notion of files and folders to <code class="language-plaintext highlighter-rouge">State</code>, and provide some ways to query the system about them. But all of this will <em>only</em> be used by the code we write to implement our custom predications.  The system will completely ignore it.</p>
+<p>So, we’ll need to add a notion of files and folders to <code class="language-plaintext highlighter-rouge">State</code>, and provide some ways to query the system about them. But all of this will <em>only</em> be used by the code we write to implement our custom predications.  Perplexity will completely ignore it.</p>
 
 <h2 id="identity">Identity</h2>
-<p>Because the system is built around immutable state, we will sometimes end up with two <code class="language-plaintext highlighter-rouge">State</code> objects and need to be able to find the same object contained in either one. We need a way to compare objects <em>across</em> state object. The easiest way to do this is to give all the objects in the system a globally unique id that can be easily compared. We’ll create a base class, <code class="language-plaintext highlighter-rouge">UniqueObject</code> that does this and derive everything from it:</p>
+<p>Because the system is built around immutable state, we will sometimes end up with two <code class="language-plaintext highlighter-rouge">State</code> objects and need to be able to find the same object contained in either one. We need a way to compare objects <em>across</em> state objects. The easiest way is to give all the objects in the system a globally unique id that can be easily compared. We’ll create a base class, <code class="language-plaintext highlighter-rouge">UniqueObject</code> that does this and derive everything from it:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class UniqueObject(object):
     def __init__(self):
@@ -778,7 +778,7 @@ Done!
 a file is not large
 </code></pre></div></div>
 
-<p>Last update: 2024-10-09 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md">edit</a>]</p>
+<p>Last update: 2024-10-14 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md">edit</a>]</p>
 
         
       </section>

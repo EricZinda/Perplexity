@@ -197,6 +197,36 @@
     
       <li>
         
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">A. Optimizing Coll/Dist/Cuml</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
           <span class="nav__sub-title">Using Perplexity</span>
         
 
@@ -219,8 +249,6 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo070ActionVerbs/">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
-          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo082State/">Custom State</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo085Place/">Representing Places</a></li>
@@ -235,37 +263,9 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions/">Conceptual References</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo025SStrings/">A. Generating English with S-strings</a></li>
-          
-        </ul>
-        
-      </li>
-    
-      <li>
-        
-          <span class="nav__sub-title">MRS Solver Conceptual</span>
-        
-
-        
-        <ul>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
         </ul>
         
@@ -462,11 +462,11 @@ a student is not large
 
 <p>Because we defined <code class="language-plaintext highlighter-rouge">_lift_v_cause</code> to only be <code class="language-plaintext highlighter-rouge">true</code> when <em>both</em> students are lifting the table, we get the (mangled) error, “There are more than a student”. This is trying to say “There is more than one student lifting a table”. We’ll go through how to fix the English on these in a future topic.  We should probably add logic that allows either student lifting the table to be <code class="language-plaintext highlighter-rouge">true</code> as well.</p>
 
-<p>Note that we can also use world like “large” from previous scenarios and they do work correctly (since we haven’t said either student is large in the system).</p>
+<p>Note that we can also use world like “large” from previous scenarios and they do work correctly (since we haven’t said either student is large in the system, it will just always fail).</p>
 
 <p>Next we will tackle <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo050EventPredications">event predications</a> so that we can handle words like “very” and other modifiers.</p>
 
-<p>Last update: 2024-10-08 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo040LiftStylePredications.md">edit</a>]</p>
+<p>Last update: 2024-10-14 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo040LiftStylePredications.md">edit</a>]</p>
 
         
       </section>

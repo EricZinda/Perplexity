@@ -343,8 +343,8 @@ There are no more variables, thus this group is an answer: a *distributive* answ
 
 etc. 
 
-All of the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
+All the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
 
-There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in the next section) and global constraints from words like "the" (described in the section after that).
+There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in Appendix A since it is not necessary for understanding the concept) and global constraints from words like "the" (described in TBD).
 
-Last update: 2023-05-17 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}
+Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}

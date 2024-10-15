@@ -62,7 +62,7 @@ The "world individuals" above are the only objects that exist in the world. `x` 
 
 The "world facts" above are facts about the relationships between things in the world that predications such as `in(x, y)` can refer to to see if they are `true`.
 
-As above, it doesn't matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We'll be building an example of such a system in this tutorial.
+As above, it doesn't matter how either of these is actually represented in a program, as long as the predications know how to find and interpret them. We'll be building an example of such a system in the [How-To section](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo010Overview).
 
 To make the backtracking algorithm more explicit, and to make the formula more like real MRS predications, we need to introduce a notion of "variable scope". Variable scope shows where a variable is introduced and which predications can use it. 
 
@@ -133,4 +133,4 @@ At this point, it should be noted that there are other algorithms for solving co
 
 But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating "together".
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0010MRSSolver.md)]{% endraw %}
+Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0010MRSSolver.md)]{% endraw %}

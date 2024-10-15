@@ -197,6 +197,36 @@
     
       <li>
         
+          <span class="nav__sub-title">MRS Solver Conceptual</span>
+        
+
+        
+        <ul>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/" class="active">Representing 'Together'</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">A. Optimizing Coll/Dist/Cuml</a></li>
+          
+        </ul>
+        
+      </li>
+    
+      <li>
+        
           <span class="nav__sub-title">Using Perplexity</span>
         
 
@@ -219,8 +249,6 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo070ActionVerbs/">Verb Predications</a></li>
           
-            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
-          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo082State/">Custom State</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo085Place/">Representing Places</a></li>
@@ -235,37 +263,9 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions/">Conceptual References</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo080QuantifiersAndDeterminers/">Quantifiers and Determiners</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo025SStrings/">A. Generating English with S-strings</a></li>
-          
-        </ul>
-        
-      </li>
-    
-      <li>
-        
-          <span class="nav__sub-title">MRS Solver Conceptual</span>
-        
-
-        
-        <ul>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/" class="active">Representing 'Together'</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">Coll/Dist/Cuml Algorithm</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
-          
-            <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
         </ul>
         
@@ -344,7 +344,7 @@
       <section class="page__content e-content" itemprop="text">
         
         
-<h2 id="add-together-and-separately-to-the-solver">Add “Together” and “Separately” To the Solver</h2>
+<h2 id="together-and-separately-in-the-solver">“Together” and “Separately” in the Solver</h2>
 <p>If there were multiple large files in folders, the formula we ended the MRS Solver section with:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>formula: large(x), file(x), folder(y), in(x, y)
@@ -376,7 +376,7 @@ solution 2: x=file2, y=folder2
 <h3 id="handling-sets">Handling Sets</h3>
 <p>To represent individuals operating “together” or “separately” we can make a simple extension to the algorithm: require that variables always contain a <em>set</em> of one or more things from the world. Predications can then interpret a set of greater than one element as meaning “together”.  A set of one item can mean “separately” or “alone”.</p>
 
-<p>This change allows the solver to represent a solution where Alice and Bob are lifting a table <em>together</em> like this: <code class="language-plaintext highlighter-rouge">lift([alice, bob], [table1])</code>. The fact that the first argument to <code class="language-plaintext highlighter-rouge">lift</code> is a set of two people means they are working together, which wasn’t possible before.</p>
+<p>This change allows the solver to represent a solution where Alice and Bob are lifting a table <em>together</em> like this: <code class="language-plaintext highlighter-rouge">lift([alice, bob], [table1])</code>. The fact that the first argument to <code class="language-plaintext highlighter-rouge">lift</code> is a set of two people means they are working together, which wasn’t possible to represent before.</p>
 
 <p>With this change, a <code class="language-plaintext highlighter-rouge">scope()</code> predication now needs to assign <em>all possible sets of values</em> to its variable in order to explore the solution tree and find all the solutions. This can quickly become quite expensive, but there are optimizations we will explore. For now, we’ll use the direct approach to keep the algorithm simple.</p>
 
@@ -510,7 +510,7 @@ world facts:
 
 <p>However, we need something more to allow representing plurals in a phrase, as described in the next section.</p>
 
-<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0020MRSSolverSets.md">edit</a>]</p>
+<p>Last update: 2024-10-14 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0020MRSSolverSets.md">edit</a>]</p>
 
         
       </section>

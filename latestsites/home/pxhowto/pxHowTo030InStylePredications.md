@@ -48,7 +48,7 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
 
 [The example uses a placeholder function `is_item_in_item(item1, item2)` to do the checking since its logic is application specific.]
 
-The function is called `in_style_predication_2()` because it uses the behavior of "in" as a template and has two `x` arguments.  Any predication that is like "in" (meaning that it doesn't have a different meaning for "together" or "separately" but is OK if they are said) can use this same helper to implement the logic efficiently.
+The function is called `in_style_predication_2()` because it uses the behavior of the word "in" as a template and has two `x` arguments.  Any predication that is like "in" (meaning that it doesn't have a different meaning for "together" or "separately" but is OK if they are said) can use this same helper to implement the logic efficiently.
 
 #### Unbound Arguments
 As discussed in the [previous topic](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication), arguments to a predication aren't always set (i.e. *bound*) as in the above example. When they are missing, the predication needs to yield all possible values for them that make the predication `true`.  
@@ -82,4 +82,4 @@ Note that the two new functions need to *yield all alternatives* and not just re
 
 And, as with the first "check" function, `in_style_predication_2()` does all the work to make sure that the two unbound functions are only passed single values -- even if the incoming values are combinatorial or sets > 1 item.  
 
-Last update: 2024-10-08 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md)]{% endraw %}
+Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md)]{% endraw %}
