@@ -44,7 +44,7 @@ def unknown(context, state, e_binding, u_binding):
 
 
 # Make sure that reporting an error from a solution group handler, actually gets through
-# The system, even if there are other solution group handlers
+# the system, even if there are other solution group handlers
 # Saying 'No' to this world should attempt to run 2 solution group handlers
 # (unknown_question_group and unknown_group, in that order).  The first will fail with
 # formNotUnderstood since it is a question, but that shouldn't stop the second from reporting its error
