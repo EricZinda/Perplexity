@@ -26,7 +26,8 @@ def unknown_question(context, state, e_binding, u_binding):
 
 @Predication(vocabulary,
              names=["solution_group_unknown"],
-             properties_from=unknown_question)
+             properties_from=unknown_question,
+             handles_interpretation=unknown_question)
 def unknown_question_group(context, state_list, e_introduced_list, u_variable_group):
     if False:
         yield None
@@ -50,7 +51,8 @@ def unknown(context, state, e_binding, u_binding):
 # formNotUnderstood since it is a question, but that shouldn't stop the second from reporting its error
 @Predication(vocabulary,
              names=["solution_group_unknown"],
-             properties_from=unknown)
+             properties_from=unknown,
+             handles_interpretation=unknown)
 def unknown_group(context, state_list, e_introduced_list, u_variable_group):
     context.report_error(["errorText", "Test"])
     if False:
