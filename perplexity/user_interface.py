@@ -1008,9 +1008,14 @@ def command_run_parse(ui, arg):
 
 
 def command_run_folder(ui, arg):
-    ui.test_manager.record_session_data("LastTestFolder", arg)
-    test_iterator = TestFolderIterator(ui.test_manager, arg)
-    ui.test_manager.run_tests(test_iterator, ui)
+    parts = arg.split(",")
+    for folder in parts:
+        folder = folder.strip()
+        if folder == ".":
+            folder = ""
+        ui.test_manager.record_session_data("LastTestFolder", folder)
+        test_iterator = TestFolderIterator(ui.test_manager, folder)
+        ui.test_manager.run_tests(test_iterator, ui)
 
     return True
 
@@ -1291,8 +1296,8 @@ command_data = {
                 "Description": "Logs test results to the file 'testresults.txt'",
                 "Example": "/logtests true"},
     "runfolder": {"Function": command_run_folder, "Category": "Testing", "WebSafe": False,
-                  "Description": "Runs all tests in a directory",
-                  "Example": "/runfolder foldername"},
+                  "Description": "Runs all tests in a directory or directories. use "." to run folders in the root",
+                  "Example": "/runfolder foldername or /runfolder a, b, c"},
     "resume": {"Function": command_resume_test, "Category": "Testing", "WebSafe": False,
                   "Description": "Resume running the last test (or sequence of tests in a folder) at the last reset before it was stopped",
                   "Example": "/resume"},
