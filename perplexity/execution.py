@@ -119,6 +119,9 @@ class TreeSolver(object):
                     else:
                         return self.__proxied.report_error(error, force, phase=phase)
 
+                def new_initial_context(self):
+                    return self.__proxied.new_initial_context()
+
             return InterpretationSolverPhase2(self)
 
         # Walk the tree and compare any predication with property requirements to the tree_info
@@ -189,6 +192,9 @@ class TreeSolver(object):
                 self._handle_lineage_change("")
 
             pipeline_logger.debug(f"Error after tree evaluation: {self._context.get_error_info()}")
+
+        def new_initial_context(self):
+            return self._context.new_initial_context()
 
         def in_scope(self, state, thing):
             return self._context.in_scope(state, thing)
@@ -632,6 +638,11 @@ class ExecutionContext(object):
         self._in_scope_initialize_data = None
         self._in_scope_function = None
         self.clear_error()
+
+    def new_initial_context(self):
+        context = ExecutionContext(self.vocabulary)
+        context.set_in_scope_function(self._in_scope_function, self._in_scope_initialize_function)
+        return context
 
     @staticmethod
     def blank_error_info(error=None, was_forced=False, predication_index=-1, phase=0):

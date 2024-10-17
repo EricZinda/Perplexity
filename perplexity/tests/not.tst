@@ -17,8 +17,8 @@
         },
         {
             "Command": "/runparse 0,1",
-            "Expected": "Yes, that is true.",
-            "Tree": "udef_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3))",
+            "Expected": "",
+            "Tree": "",
             "Enabled": true,
             "ID": "4c44735a-2178-479b-a0c1-c7464c60467b"
         },
@@ -31,8 +31,8 @@
         },
         {
             "Command": "/runparse 0,0",
-            "Expected": "There isn't a file not large",
-            "Tree": "udef_q(x3,_file_n_of(x3,i8),neg(e9,_large_a_1(e2,x3)))",
+            "Expected": "",
+            "Tree": "",
             "Enabled": true,
             "ID": "f2bd9557-6c4e-4714-a355-7a458c44aac6"
         },
@@ -45,8 +45,8 @@
         },
         {
             "Command": "/runparse 1,1",
-            "Expected": "That isn't true, there aren't file that aren't large file",
-            "Tree": "neg(e9,udef_q(x3,_file_n_of(x3,i8),_large_a_1(e2,x3)))",
+            "Expected": "",
+            "Tree": "",
             "Enabled": true,
             "ID": "b839a136-1b33-418b-add7-a6ff824dc56f"
         },
@@ -59,8 +59,8 @@
         },
         {
             "Command": "/runparse",
-            "Expected": "There isn't a file not large",
-            "Tree": "udef_q(x3,_file_n_of(x3,i8),neg(e2,_large_a_1(e11,x3)))",
+            "Expected": "",
+            "Tree": "",
             "Enabled": true,
             "ID": "04eb4045-3cc0-4bf2-892a-931561614cbd"
         },
@@ -115,22 +115,22 @@
         },
         {
             "Command": "/runparse 0,0",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)",
-            "Tree": "_which_q(x3,_this_q_dem(x13,_folder_n_of(x13,i18),[_file_n_of(x3,i8), neg(e9,_in_p_loc(e12,x3,x13))]),neg(e19,_large_a_1(e2,x3)))",
+            "Expected": "",
+            "Tree": "",
             "Enabled": true,
             "ID": "832b2158-8a7b-415b-9160-a772bdb3f940"
         },
         {
             "Command": "which folder are files not in?",
-            "Expected": "(Folder(name=/temp, size=0),)(there are more)",
+            "Expected": "(Folder(name=/temp, size=0),)\n(there are more)",
             "Tree": "_which_q(x5,_folder_n_of(x5,i9),neg(e15,udef_q(x3,_file_n_of(x3,i14),_in_p_loc(e2,x3,x5))))",
             "Enabled": true,
             "ID": "a3498188-b338-4e7c-99cc-f0bcff661159"
         },
         {
             "Command": "/runparse",
-            "Expected": "(Folder(name=/temp, size=0),)(there are more)",
-            "Tree": "_which_q(x5,_folder_n_of(x5,i9),neg(e15,udef_q(x3,_file_n_of(x3,i14),_in_p_loc(e2,x3,x5))))",
+            "Expected": "",
+            "Tree": "",
             "Enabled": true,
             "ID": "2a238526-69d8-4d64-ae83-05368f578335"
         },
@@ -143,7 +143,7 @@
         },
         {
             "Command": "which files are not in 2 folders?",
-            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/bigfile3.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/green, size=10000000),)(there are more)",
+            "Expected": "(File(name=/temp/59.txt, size=1000),)(File(name=/documents/file1.txt, size=1000),)(File(name=/Desktop/the yearly budget.txt, size=10000000),)(File(name=/Desktop/bigfile.txt, size=20000000),)(File(name=/Desktop/bigfile2.txt, size=20000000),)(File(name=/Desktop/bigfile3.txt, size=20000000),)(File(name=/Desktop/blue, size=10000000),)(File(name=/Desktop/green, size=10000000),)\n(there are more)",
             "Tree": "_which_q(x3,_file_n_of(x3,i8),udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],neg(e9,_in_p_loc(e2,x3,x12))))",
             "Enabled": true,
             "ID": "eded6930-5e46-4850-92f4-51cb3f81ebc3"
@@ -164,11 +164,11 @@
         },
         {
             "Command": "/runparse",
-            "Expected": "There isn't a file not in 2 folder",
-            "Tree": "_which_q(x3,_file_n_of(x3,i8),neg(e9,udef_q(x12,[_folder_n_of(x12,i19), card(2,e18,x12)],_in_p_loc(e2,x3,x12))))",
+            "Expected": "",
+            "Tree": "",
             "Enabled": true,
             "ID": "863f82ba-f37f-4ebd-a8f4-0fd35aafa5fb"
         }
     ],
-    "ElapsedTime": 7.42816
+    "ElapsedTime": 12.81197
 }

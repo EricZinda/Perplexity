@@ -1,5 +1,28 @@
 Docs Changes
-    - we now too often add (there are more) because the message function returning a message counts as "the developer" doing it
+    Fix: "which files are not in 2 folders?",
+        returns: There are less than 2 2 folder
+            Theory: in_p_loc_fail__solution_group always reports "formNotUnderstood" and
+            quantifier_raw() won't return the "there aren't any X" error if this is the recorded error
+            - Solution: If all the solution group handlers report "notUnderstood", shouldn't it be treated
+                like there are no solution group handlers instead of recording that error?
+
+                                                           ┌── _folder_n_of(x12,i19)
+                                               ┌────── and(0,1)
+                                               │             └ card(2,e18,x12)
+              ┌────── _file_n_of(x3,i8)        │
+_which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
+                   └─ neg(e9,ARG1)                  │
+                                                    └─ _in_p_loc(e2,x3,x12)
+
+    - The problem is: The context for the outer tree is being updated by the inner tree
+        - Once fixed we have the problem: Example28_reset: "which files in this folder are not large"
+        There isn't a folder in the system
+        Expected:
+        There isn't a file in this folder not large
+        The right error isn't being recorded because doesntExist gets forced and so the right one doesn't appear
+    - (Fixed) Example31_reset: 4 files are in a folder
+    - Example34_reset: 'file1.txt' and 'file2.txt' are in a folder together
+
 # Big Changes
     - Fix handling of phrases that have multiple syntactic heads:
         - "I want soup, I want salad" --> two want_v_1 heads joined by impl_conj(e, e, e)

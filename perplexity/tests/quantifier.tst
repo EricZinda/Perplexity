@@ -10,7 +10,7 @@
         },
         {
             "Command": "all files are in a folder",
-            "Expected": "Yes, that is true.(there are more)",
+            "Expected": "Yes, that is true.\n(there are more)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_all_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "ebd2248c-81e8-4598-8751-9590373e3beb"
@@ -24,14 +24,14 @@
         },
         {
             "Command": "every file is in a folder",
-            "Expected": "Yes, that is true.(there are more)",
+            "Expected": "Yes, that is true.\n(there are more)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_every_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "125d9c17-ade2-4c51-a4de-fcd43c3f4261"
         },
         {
             "Command": "each file is in a folder",
-            "Expected": "Yes, that is true.(there are more)",
+            "Expected": "Yes, that is true.\n(there are more)",
             "Tree": "_a_q(x9,_folder_n_of(x9,i14),_each_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "fbff47c9-43c7-47b0-9ed1-2a4ee24a880a"
@@ -58,5 +58,5 @@
             "ID": "a080a2e9-b84d-4492-840b-56a8e33a89e1"
         }
     ],
-    "ElapsedTime": 5.49142
+    "ElapsedTime": 8.64177
 }

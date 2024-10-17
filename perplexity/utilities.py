@@ -277,6 +277,19 @@ def split_into_sentences(text: str):
     multiple_dots = r'\.{2,}'
 
     text = " " + text + "  "
+
+    substr_matches = {}
+
+    def substring_counter(matchobj):
+        nonlocal substr_matches
+        token = f"<substr{len(substr_matches)}>"
+        substr_matches[token] = matchobj.group(0)
+        return token
+
+    text = re.sub('"(.*?)"', substring_counter, text)
+    text = re.sub("'(.*?)'", substring_counter, text)
+
+
     text = text.replace("\n"," ")
     text = re.sub(prefixes,"\\1<prd>",text)
     text = re.sub(websites,"<prd>\\1",text)
@@ -300,6 +313,10 @@ def split_into_sentences(text: str):
     text = text.replace("?","?<stop>")
     text = text.replace("!","!<stop>")
     text = text.replace("<prd>",".")
+
+    for substr in substr_matches.items():
+        text = text.replace(substr[0], substr[1])
+
     sentences = text.split("<stop>")
     sentences = [s.strip() for s in sentences]
     if sentences and not sentences[-1]: sentences = sentences[:-1]

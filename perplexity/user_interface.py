@@ -855,8 +855,15 @@ def command_run_all_parses(ui, arg):
     return True
 
 
+def convert_bool(value):
+    convert = {"1": True,
+               "0": False,
+               "true": True,
+               "false": False}
+    return convert.get(value.lower(), "False")
+
 def command_generate_all_parses(ui, arg):
-    turn_on = bool(arg) if len(arg) > 0 else True
+    turn_on = convert_bool(arg) if len(arg) > 0 else True
     ui.user_output(f"Generate all parses is now {turn_on}")
     ui.generate_all_parses = turn_on
     return True
@@ -871,7 +878,7 @@ def command_show(ui, arg):
         all = parts[0].lower() == "all"
 
     if len(parts) >= 2:
-        first_tree_only = bool(parts[1])
+        first_tree_only = convert_bool(parts[1])
 
     if len(parts) >= 3:
         ui.user_output("Don't know that argument set")

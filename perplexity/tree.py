@@ -367,17 +367,19 @@ def search_syntactic_head(handle, mrs):
                 # unknown words like "leving" as a full phrase, can generate multiple EPs in conjunction that don't reference
                 # each other like unknown(e2,i4), _leving/vbg_u_unknown(e5,i4,i6)
                 # special case this and choose unknown
-                # “that will be all, thank you.” and “nails are rusty and red” generate shared labels that have some form of implicit_conj or _and_conj
-                # which both reference other event variables
                 for item in final_eps:
                     if item.predicate in ["unknown"]:
                         ep = item
                         break
 
+                # Case 2: "1 file is in a folder together" generates a parse with "_together_p(e17,x3), _in_p_loc(e2,x3,x11)" where it
+                # is unclear which to pick, choose the last one
+                ep = final_eps[-1]
+
             if len(final_eps) == 1:
                 ep = final_eps[0]
 
-        assert ep is not None, "Couldn't find an EP that didn't reference others"
+        assert ep is not None, f"Couldn't find an EP that didn't reference others: {eps}"
 
     # Recurse on any arguments that are handles
     is_scopal = False

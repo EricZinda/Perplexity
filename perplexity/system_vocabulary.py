@@ -2,6 +2,7 @@ import copy
 import logging
 import numbers
 import perplexity.predications
+from perplexity.execution import TreeSolver
 from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1
 from perplexity.tree import TreePredication, gather_scoped_variables_from_tree_at_index, \
@@ -79,12 +80,12 @@ def quantifier_raw(context, state, x_variable_binding, h_rstr_orig, h_body_orig,
                     context.set_variable_execution_data(variable_name, "AllRstrValues", list(rstr_values))
                 yield body_solution
 
-        # If the RSTR actually ran (reversed or not) and returned no values, give a special error
-        # saying that whatever the RSTR was doesn't exist.  Make sure we tell the error to use the value
-        # of the variable *after* the real RSTR so it uses that word in the description and says
-        # "There isn't a <RSTR> in the system"
-        if not context.has_not_understood_error() and rstr_ran and len(rstr_values) == 0:
-            context.report_error(["doesntExist", ["AtPredication", h_rstr if reversed else h_body, x_variable_binding.variable.name]], force=True)
+    # If the RSTR actually ran (reversed or not) and returned no values, give a special error
+    # saying that whatever the RSTR was doesn't exist.  Make sure we tell the error to use the value
+    # of the variable *after* the real RSTR so it uses that word in the description and says
+    # "There isn't a <RSTR> in the system"
+    if not context.has_not_understood_error() and rstr_ran and len(rstr_values) == 0:
+        context.report_error(["doesntExist", ["AtPredication", h_rstr if reversed else h_body, x_variable_binding.variable.name]], force=True)
 
 
 @Predication(vocabulary, library="system", names=["_a_q"])
@@ -345,7 +346,13 @@ def neg(context, state, e_introduced_binding, h_scopal):
     new_tree_info = copy.deepcopy(context.tree_info)
     new_tree_info["Tree"] = h_scopal
     new_tree_info["NegatedSubtree"] = True
-    tree_solver = context.create_child_solver()
+
+    # Don't create a child solver since it shares the context with the parent
+    # We want the negation() tree to be completely run on its own, isolated, so
+    # We can return particular areas about the tree and not have its phase 2 errors
+    # contaminate the errors from the parent
+    tree_solver = TreeSolver(context.new_initial_context())
+
     subtree_state = state.set_x("tree", (new_tree_info,))
     had_negative_success = False
     had_negative_failure = False

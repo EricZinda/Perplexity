@@ -4,7 +4,7 @@
         {
             "Command": "/new file_system_example.examples.Example19_reset",
             "Expected": "",
-            "Tree": null,
+            "Tree": "None",
             "Enabled": true,
             "ID": "265a5921-b404-4896-9d8f-59305081820d"
         },
@@ -65,15 +65,8 @@
             "ID": "f1f577f2-ddfb-4f7b-9ea2-e58ce52277ff"
         },
         {
-            "Command": "there is a folder",
-            "Expected": "I don't know the words: be",
-            "Tree": null,
-            "Enabled": true,
-            "ID": "35ad763d-92fb-4e79-b250-ef31cb918d84"
-        },
-        {
             "Command": "delete a folder",
-            "Expected": "Done!(there are more)",
+            "Expected": "Done!\n(there are more)",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_folder_n_of(x8,i13),_delete_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "fca99a4c-e127-4a6a-ac21-6d3feeeab865"
@@ -87,7 +80,7 @@
         },
         {
             "Command": "a file is deleted",
-            "Expected": "I don't know the way you used: delete",
+            "Expected": "I don't know the way you used: deleted",
             "Tree": "None",
             "Enabled": true,
             "ID": "7f29b13c-aa0c-4d11-bc8d-ec9dcf598cac"
@@ -101,7 +94,7 @@
         },
         {
             "Command": "a file is deleted",
-            "Expected": "I don't know the way you used: delete",
+            "Expected": "I don't know the way you used: deleted",
             "Tree": "None",
             "Enabled": true,
             "ID": "5df6d756-ed91-4d18-b435-30110dcd8dba"
@@ -115,8 +108,8 @@
         },
         {
             "Command": "he deletes a file",
-            "Expected": "I don't know the way you used: delete",
-            "Tree": null,
+            "Expected": "I don't know the way you used: deletes",
+            "Tree": "None",
             "Enabled": true,
             "ID": "141f6357-7d42-48f1-aa83-d7c0811b35c1"
         },
@@ -129,7 +122,7 @@
         },
         {
             "Command": "where am i",
-            "Expected": "(Folder(name=/Desktop, size=0),)(there are more)",
+            "Expected": "(Folder(name=/Desktop, size=0),)\n(there are more)",
             "Tree": "which_q(x4,place_n(x4),pronoun_q(x3,pron(x3),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
@@ -143,7 +136,7 @@
         },
         {
             "Command": "where am i",
-            "Expected": "(Folder(name=/Desktop, size=0),)(there are more)",
+            "Expected": "(Folder(name=/Desktop, size=0),)\n(there are more)",
             "Tree": "which_q(x4,place_n(x4),pronoun_q(x3,pron(x3),loc_nonsp(e2,x3,x4)))",
             "Enabled": true,
             "ID": "44fe6fc2-2d63-4893-a2ac-e59ca7c9fb85"
@@ -171,7 +164,7 @@
         },
         {
             "Command": "what is large?",
-            "Expected": "(Folder(name=/Desktop, size=10000000),)(there are more)",
+            "Expected": "(Folder(name=/Desktop, size=10000000),)\n(there are more)",
             "Tree": "which_q(x3,thing(x3),_large_a_1(e2,x3))",
             "Enabled": true,
             "ID": "8422a7fa-a85e-48fa-902e-6c85667c01c9"
@@ -185,7 +178,7 @@
         },
         {
             "Command": "what is in this folder?",
-            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)(there are more)",
+            "Expected": "(File(name=/Desktop/file2.txt, size=10000000),)\n(there are more)",
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "2c28ec90-c629-4430-b549-867f0ec569a0"
@@ -199,7 +192,7 @@
         },
         {
             "Command": "is a file in this folder",
-            "Expected": "Yes.(there are more)",
+            "Expected": "Yes.\n(there are more)",
             "Tree": "_this_q_dem(x9,_folder_n_of(x9,i14),_a_q(x3,_file_n_of(x3,i8),_in_p_loc(e2,x3,x9)))",
             "Enabled": true,
             "ID": "8b5f2598-1eaa-4a1b-a879-3019aa14417c"
@@ -367,7 +360,7 @@
         },
         {
             "Command": "what is in this folder?",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(there are more)",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)\n(there are more)",
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "4f519332-f958-470e-ae0c-28da1161c5e6"
@@ -395,7 +388,7 @@
         },
         {
             "Command": "what is in \"\\>root111\"",
-            "Expected": "(File(name=/documents/file1.txt, size=1000),)(there are more)",
+            "Expected": "(File(name=/documents/file1.txt, size=1000),)\n(there are more)",
             "Tree": "which_q(x3,thing(x3),proper_q(x8,[quoted(\\>root111,i13), fw_seq(x8,i13)],_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "87db9431-d91b-492f-844e-919dac3a392f"
@@ -408,15 +401,22 @@
             "ID": "292119f9-27f4-4bea-9f64-46ec589f07b5"
         },
         {
-            "Command": "copy \"\\>temp\\>59.txt\" in \"\\>documents\"",
-            "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(\\>temp\\>59.txt,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
+            "Command": "go to \"\\>documents\"",
+            "Expected": "You are now in Folder(name=/documents, size=0)",
+            "Tree": "proper_q(x9,[quoted(\\>documents,i14), fw_seq(x9,i14)],pronoun_q(x3,pron(x3),[_to_p_dir(e8,e2,x9), _go_v_1(e2,x3)]))",
             "Enabled": true,
             "ID": "bedac8b5-c170-423b-82bf-1e1c0fe5c199"
         },
         {
+            "Command": "copy \"\\>temp\\>59.txt\" in \"\\>documents\"",
+            "Expected": "'/temp/59.txt' in '/documents' is not in '/documents'",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(\\>temp\\>59.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
+            "Enabled": true,
+            "ID": "c7a1db52-5b8c-4b5c-b2e3-d4696a9d7193"
+        },
+        {
             "Command": "\"59.txt\" is in this folder",
-            "Expected": "Yes, that is true.",
+            "Expected": "'59.txt' is not in this folder",
             "Tree": "_this_q_dem(x10,_folder_n_of(x10,i15),proper_q(x3,[quoted(59.txt,i8), fw_seq(x3,i8)],_in_p_loc(e2,x3,x10)))",
             "Enabled": true,
             "ID": "b29a3cab-f351-4021-b5a0-0791beca3007"
@@ -437,15 +437,15 @@
         },
         {
             "Command": "what is in this folder?",
-            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)(there are more)",
+            "Expected": "(File(name=/Desktop/the yearly budget.txt, size=10000000),)\n(there are more)",
             "Tree": "which_q(x3,thing(x3),_this_q_dem(x8,_folder_n_of(x8,i13),_in_p_loc(e2,x3,x8)))",
             "Enabled": true,
             "ID": "35917912-d515-4f69-8a28-f313804fb234"
         },
         {
             "Command": "copy 'blue' in '\\>documents'",
-            "Expected": "Done!",
-            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13)],[_in_p_state(e15,e2,x16), _copy_v_1(e2,x3,x8)])))",
+            "Expected": "'blue' in '/documents' is not in '/documents'",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(blue,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "a25651b5-b4b2-4b40-a2b3-945f6ece746c"
         },
@@ -549,8 +549,8 @@
         },
         {
             "Command": "copy \"file4.txt\" in \"\\>documents\"",
-            "Expected": "Done!",
-            "Tree": "proper_q(x8,[quoted(file4.txt,i14), fw_seq(x8,i14)],proper_q(x18,[quoted(\\>documents,i23), fw_seq(x18,i23)],pronoun_q(x3,pron(x3),_copy_v_1(e2,x3,x8,_in_p_loc(e17,x8,x18)))))",
+            "Expected": "'file4.txt' in '/documents' is not in '/documents'",
+            "Tree": "proper_q(x16,[quoted(\\>documents,i21), fw_seq(x16,i21)],pronoun_q(x3,pron(x3),proper_q(x8,[quoted(file4.txt,i13), fw_seq(x8,i13), _in_p_loc(e15,x8,x16)],_copy_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "67a6caf5-6b4d-4ad0-bdd9-fd5054f4c71f"
         },
@@ -575,5 +575,6 @@
             "Enabled": true,
             "ID": "5902e55a-2d11-44bf-b86d-6c0af4a16e83"
         }
-    ]
+    ],
+    "ElapsedTime": 200.95375
 }

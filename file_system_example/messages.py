@@ -14,7 +14,7 @@ from perplexity.utilities import parse_predication_name, sentence_force, at_leas
 def generate_message(state, tree_info, error_term):
     # See if the system can handle converting the error
     # to a message first
-    system_message = perplexity.messages.generate_message(tree_info, error_term)
+    system_message = perplexity.messages.generate_message(state, tree_info, error_term)
     if system_message is not None:
         return system_message
 
