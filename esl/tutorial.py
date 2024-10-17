@@ -4965,7 +4965,7 @@ if __name__ == '__main__':
     # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
     # print(concept.instances(None, test_state))
 
-    ShowLogging("Pipeline")
+    # ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")
@@ -4973,7 +4973,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()
