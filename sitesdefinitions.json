@@ -57,6 +57,7 @@
         {"Page": "Handling Tenses", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo110HandlingTenses.md", "DstFile": "pxhowto/pxHowTo110HandlingTenses.md"},
         {"Page": "Conceptual References", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo120ConceptsReferringExpressions.md", "DstFile": "pxhowto/pxHowTo120ConceptsReferringExpressions.md"},
         {"Page": "Quantifiers and Determiners", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo080QuantifiersAndDeterminers.md", "DstFile": "pxhowto/pxHowTo080QuantifiersAndDeterminers.md"},
+        {"Page": "Centralizing Nouns/Adjectives", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo130OpenClassWords.md", "DstFile": "pxhowto/pxHowTo130OpenClassWords.md"},
         {"Page": "A. Generating English with S-strings", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo025SStrings.md", "DstFile": "pxhowto/pxHowTo025SStrings.md"}
       ]},
       {"Section": "Perplexity Internals", "Pages": [

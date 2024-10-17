@@ -60,7 +60,29 @@ Given the [predication contract](pxint0010PredicationContract), we'll be doing l
 ### The `State` Class
 Let's work through how to implement a class in Python by creating the class that will hold the state of the world: `State`. The current state of all MRS variables *and* the state of everything in the world will be accessed through this class. Because we want the state to be changed by predications, we will include an instance of it as the first argument when calling them. 
 
-The implementation of the `State` object can be very simple for now:
+The implementation of the `State` object can be very simple for now. We will define two helper classes, `VariableData` and `VariableBinding` that can eventually hold other metadata but for now are simple containers for the variable name and value:
+
+~~~
+# Use None in variable_data to represent a value
+# That is not bound to an actual variable
+class VariableBinding(object):
+    def __init__(self, variable_data, value):
+        self.value = value
+        self.variable = variable_data
+
+    def __repr__(self):
+        return f"{self.variable}={self.value}"
+
+
+class VariableData(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"{self.name}"
+~~~
+
+And then the `State` class will use these to store the state of the world and the MRS:
 
 ~~~
 # "class" declares an object-oriented class in Python
