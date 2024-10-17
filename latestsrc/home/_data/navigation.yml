@@ -66,6 +66,8 @@ toc:
         url: "/pxhowto/pxHowTo120ConceptsReferringExpressions/"
       - title: "Quantifiers and Determiners"
         url: "/pxhowto/pxHowTo080QuantifiersAndDeterminers/"
+      - title: "Centralizing Nouns/Adjectives"
+        url: "/pxhowto/pxHowTo130OpenClassWords/"
       - title: "A. Generating English with S-strings"
         url: "/pxhowto/pxHowTo025SStrings/"
   - title: "Perplexity Internals"
