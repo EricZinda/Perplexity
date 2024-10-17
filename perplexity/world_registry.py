@@ -11,11 +11,14 @@ worlds["example"] = {"WorldModule": "file_system_example.examples",
                      "WorldUIFunction": "Example_ui"}
 worlds["error_test"] = {"WorldModule": "error_test.vocabulary",
                         "WorldUIFunction": "error_test_ui"}
+worlds["SimplestFileSystemStateExample"] = {"WorldModule": "hello_world.hello_world_FileSystemState",
+                                           "WorldUIFunction": "ui"}
 
 
 def register_world(world_name, module, ui_function):
     worlds[world_name] = {"WorldModule": module,
                           "WorldUIFunction": ui_function}
+
 
 def world_information(key):
     return worlds.get(key, None)

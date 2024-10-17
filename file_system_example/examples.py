@@ -549,6 +549,8 @@ def Example_ui(loading_info=None, file=None, user_output=None, debug_output=None
 
 
 if __name__ == '__main__':
+    from hello_world.hello_world_FileSystemState import test
+    foo = test()
     # ShowLogging("Pipeline")
     # ShowLogging("SolutionGroups")
     # ShowLogging("Execution")

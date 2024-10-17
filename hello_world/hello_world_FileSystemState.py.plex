@@ -86,5 +86,9 @@
     "file_n_of_concept": {},
     "create_v_1_comm": {},
     "text_n_of_concept": {},
-    "compound_concept": {}
+    "compound_concept": {},
+    "match_all_n_instances": {},
+    "match_all_n_concepts": {},
+    "match_all_n_i_concepts": {},
+    "match_all_n_i_isntances": {}
 }

@@ -392,7 +392,8 @@ class FileSystemMock(FileSystem):
                 self.items[str(new_item_path)] = file_name
 
             else:
-                raise MessageException("cantCreate", [create_binding.variable.name])
+                new_item_path = pathlib.PurePath(self.current_directory().name, file_name + ".bin")
+                self.items[str(new_item_path)] = file_name
 
         else:
             raise MessageException("cantCreate", [create_binding.variable.name])

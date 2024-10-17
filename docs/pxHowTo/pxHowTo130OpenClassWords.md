@@ -77,14 +77,28 @@ For the code below, there are two functions not shown:
 - `implemented_nouns()` just returns a list of all nouns the application supports
 - `sort_of(state, value, noun_type)` returns true if `value` is something of type `noun_type` (which would be a lemma like "file")
 
-How these work is very application specific.  Here's the code for the generalized function:
+How these work is very application specific and we've implemented the in a very simplistic way below.  Here's the code:
 
 ~~~
+def implemented_nouns():
+    yield "file"
+    yield "folder"
+
+
+def sort_of(state, value, noun_type):
+    if noun_type == "file" and isinstance(value, File):
+        return True
+    elif noun_type == "folder" and isinstance(value, Folder):
+        return True
+    else:
+        return False
+        
+
 # Returns True if it is a lemma we have modelled in the system
 def understood_noun(state, noun_lemma):
     return noun_lemma in implemented_nouns()
- 
-    
+
+
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
 def match_all_n_instances(noun_type, context, state, x_binding):
     def bound_variable(value):
@@ -103,7 +117,7 @@ def match_all_n_instances(noun_type, context, state, x_binding):
                                            state,
                                            x_binding,
                                            bound_variable,
-                                           unbound_variable)                                           
+                                           unbound_variable)                                        
 ~~~
 
 Note that building a `match_all_n` function requires building a helper function (like `understood_noun(state, noun_lemma)` above) which returns `True` if a lemma is implemented. 
@@ -144,7 +158,6 @@ def file_n_of_concept(context, state, x_binding, i_binding):
 Turning this into the template for any type of conceptual object (and using the `RichConcept` object we implemented in [Conceptual Expressions](pxHowTo120ConceptsReferringExpressions)) would look like this:
 
 ~~~
-
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
 def match_all_n_concepts(noun_type, context, state, x_binding):
     def bound_variable(value):
@@ -163,10 +176,10 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
                                            bound_variable,
                                            unbound_variable)
 
+
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
 def match_all_n_i_concepts(noun_type, context, state, x_binding, i_binding):
-    for new_state in match_all_n_concepts(noun_type, context, state, x_binding):
-        yield new_state
+    yield from match_all_n_concepts(noun_type, context, state, x_binding)
 ~~~
 
 Note that we are using the `entails` function, not testing equality. As described in  [Conceptual Expressions](pxHowTo120ConceptsReferringExpressions), entailment means "implies" and MRS predications really test for entailment. Thus, anything that *entails* file should be true: "large file", "empty file", "slimy pink file", "file I saw yesterday", etc. As long as it is, at its root, a "file", this should be true.

@@ -108,52 +108,29 @@ def very_x_deg(context, state, e_introduced_binding, e_target_binding):
                           "Originator": context.current_predication_index()})
 
 
-@Predication(vocabulary, names=["_file_n_of"])
-def file_n_of_concept(context, state, x_binding, i_binding):
+def implemented_nouns():
+    yield "file"
+    yield "folder"
+
+
+def sort_of(state, value, noun_type):
+    if noun_type == "file" and isinstance(value, File):
+        return True
+    elif noun_type == "folder" and isinstance(value, Folder):
+        return True
+    else:
+        return False
+
+
+# Returns True if it is a lemma we have modelled in the system
+def understood_noun(state, noun_lemma):
+    return noun_lemma in implemented_nouns()
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
+def match_all_n_instances(noun_type, context, state, x_binding):
     def bound_variable(value):
-        if isinstance(value, RichConcept) and value == RichConcept("file"):
-            return True
-        else:
-            context.report_error(["valueIsNotX", value, x_binding.variable.name])
-            return False
-
-    def unbound_variable():
-        yield RichConcept("file")
-
-    yield from combinatorial_predication_1(context,
-                                           state,
-                                           x_binding,
-                                           bound_variable,
-                                           unbound_variable)
-
-
-@Predication(vocabulary, names=["_file_n_of"])
-def file_n_of(context, state, x_binding, i_binding):
-    def bound_variable(value):
-        if isinstance(value, File):
-            return True
-        else:
-            context.report_error(["valueIsNotX", value, x_binding.variable.name])
-            return False
-
-    def unbound_variable():
-        for item in state.all_individuals():
-            if bound_variable(item):
-                yield item
-
-    yield from combinatorial_predication_1(context,
-                                           state,
-                                           x_binding,
-                                           bound_variable,
-                                           unbound_variable)
-
-
-# true for both sets and individuals as long as everything
-# in the set is a file
-@Predication(vocabulary, names=["_folder_n_of"])
-def folder_n_of(context, state, x_binding, i_binding):
-    def bound_variable(value):
-        if isinstance(value, Folder):
+        if sort_of(state, value, noun_type):
             return True
         else:
             context.report_error(["valueIsNotX", value, x_binding.variable.name])
@@ -169,6 +146,98 @@ def folder_n_of(context, state, x_binding, i_binding):
                                            x_binding,
                                            bound_variable,
                                            unbound_variable)
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
+def match_all_n_i_instances(noun_type, context, state, x_binding, i_binding):
+    yield from match_all_n_instances(noun_type, context, state, x_binding)
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
+def match_all_n_concepts(noun_type, context, state, x_binding):
+    def bound_variable(value):
+        if isinstance(value, RichConcept) and value.entails(RichConcept(noun_type)):
+            return True
+        else:
+            context.report_error(["valueIsNotX", value, x_binding.variable.name])
+            return False
+
+    def unbound_variable():
+        yield RichConcept(noun_type)
+
+    yield from combinatorial_predication_1(context,
+                                           state,
+                                           x_binding,
+                                           bound_variable,
+                                           unbound_variable)
+
+
+@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
+def match_all_n_i_concepts(noun_type, context, state, x_binding, i_binding):
+    yield from match_all_n_concepts(noun_type, context, state, x_binding)
+
+
+# @Predication(vocabulary, names=["_file_n_of"])
+# def file_n_of_concept(context, state, x_binding, i_binding):
+#     def bound_variable(value):
+#         if isinstance(value, RichConcept) and value == RichConcept("file"):
+#             return True
+#         else:
+#             context.report_error(["valueIsNotX", value, x_binding.variable.name])
+#             return False
+#
+#     def unbound_variable():
+#         yield RichConcept("file")
+#
+#     yield from combinatorial_predication_1(context,
+#                                            state,
+#                                            x_binding,
+#                                            bound_variable,
+#                                            unbound_variable)
+#
+#
+# @Predication(vocabulary, names=["_file_n_of"])
+# def file_n_of(context, state, x_binding, i_binding):
+#     def bound_variable(value):
+#         if isinstance(value, File):
+#             return True
+#         else:
+#             context.report_error(["valueIsNotX", value, x_binding.variable.name])
+#             return False
+#
+#     def unbound_variable():
+#         for item in state.all_individuals():
+#             if bound_variable(item):
+#                 yield item
+#
+#     yield from combinatorial_predication_1(context,
+#                                            state,
+#                                            x_binding,
+#                                            bound_variable,
+#                                            unbound_variable)
+#
+#
+# # true for both sets and individuals as long as everything
+# # in the set is a file
+# @Predication(vocabulary, names=["_folder_n_of"])
+# def folder_n_of(context, state, x_binding, i_binding):
+#     def bound_variable(value):
+#         if isinstance(value, Folder):
+#             return True
+#         else:
+#             context.report_error(["valueIsNotX", value, x_binding.variable.name])
+#             return False
+#
+#     def unbound_variable():
+#         for item in state.all_individuals():
+#             if bound_variable(item):
+#                 yield item
+#
+#     yield from combinatorial_predication_1(context,
+#                                            state,
+#                                            x_binding,
+#                                            bound_variable,
+#                                            unbound_variable)
 
 
 @Predication(vocabulary,
@@ -591,21 +660,23 @@ def generate_custom_message(state, tree_info, error_term):
 
 
 def reset():
-    # return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
-    #                                        (False, "/Desktop", {"size": 10000000}),
-    #                                        (True, "/Desktop/file2.txt", {"size": 10000000}),
-    #                                        (True, "/Desktop/file3.txt", {"size": 1000})],
-    #                                        "/Desktop"))
     return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
                                            (False, "/Desktop", {"size": 10000000}),
-                                           (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
-                                           (True, "/Desktop/blue", {"size": 1000})],
-                                          "/Desktop"))
+                                           (True, "/Desktop/file2.txt", {"size": 10000000}),
+                                           (True, "/Desktop/file3.txt", {"size": 1000})],
+                                           "/Desktop"))
+    # return FileSystemState(FileSystemMock([(True, "/documents/file1.txt", {"size": 1000}),
+    #                                        (False, "/Desktop", {"size": 10000000}),
+    #                                        (True, "/Desktop/the yearly budget.txt", {"size": 10000000}),
+    #                                        (True, "/Desktop/blue", {"size": 1000})],
+    #                                       "/Desktop"))
 
+def test():
+    print("x")
 # Creates the micro-world interface on startup
 # or if the user loads the world later
 def ui():
-    ui = UserInterface(world_name="SimplestExample",
+    ui = UserInterface(world_name="SimplestFileSystemStateExample",
                        reset_function=reset,
                        vocabulary=vocabulary,
                        message_function=generate_custom_message)
@@ -615,9 +686,10 @@ def ui():
 # Worlds need to be registered so the user can switch between them by name
 # and so that the engine can search for their autocorrect and other cached files
 # in the same directory where the ui() function resides
-register_world(world_name="SimplestExample",
-               module="hello_world_FileSystemState",
-               ui_function="ui")
+# NOTE: Hard coded in world_registry.py so not needed here
+# register_world(world_name="SimplestFileSystemStateExample",
+#                module="hello_world.hello_world_FileSystemState",
+#                ui_function="ui")
 
 
 if __name__ == '__main__':
