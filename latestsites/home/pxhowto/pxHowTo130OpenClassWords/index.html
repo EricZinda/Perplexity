@@ -346,7 +346,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="centralizing-nouns-and-adjectives">Centralizing Nouns and Adjectives</h2>
-<p>As we’ve built our vocabulary, there are certain types of words that are basically the same function, with small differences.  Look at the code for <code class="language-plaintext highlighter-rouge">_file_n_of</code> and <code class="language-plaintext highlighter-rouge">_folder_n_of</code> (both nouns):</p>
+<p>As we’ve built our vocabulary, there are certain types of words that are basically the same function with small differences.  Look at the code for <code class="language-plaintext highlighter-rouge">_file_n_of</code> and <code class="language-plaintext highlighter-rouge">_folder_n_of</code> (both nouns):</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
 @Predication(vocabulary, names=["_file_n_of"])
@@ -400,7 +400,7 @@ or
         if isinstance(value, Folder):
 </code></pre></div></div>
 
-<p>In many applications, whether an object is a <code class="language-plaintext highlighter-rouge">noun</code> of a particular type is a very simple check and repeating the code over and over would be a lot of wasted work. Of course, you could create a helper function and then only have to do the function headers, like this:</p>
+<p>In many applications, whether an object is a <code class="language-plaintext highlighter-rouge">noun</code> of a particular type is a very simple check and repeating the code over and over would be a lot of wasted work. Of course, you could create a helper function and only have to write the function headers, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_folder_n_of"])
 def folder_n_of(context, state, x_binding, i_binding):
@@ -411,12 +411,12 @@ def file_n_of(context, state, x_binding, i_binding):
     yield from noun_helper(noun="folder", object_type=folder)
 </code></pre></div></div>
 
-<p>But that is still a lot of typing. And, what if all of your nouns are just listed in a data file some way? Or what if you’d like to return special errors for words you don’t know? This alternative doesn’t allow for a data driven approach.</p>
+<p>But that is still a lot of typing and what if all of your nouns are just listed in a data file? Or if you want to return special errors for words you don’t know? This alternative also doesn’t allow for a data driven approach.</p>
 
 <h3 id="match_all-predications"><code class="language-plaintext highlighter-rouge">match_all</code> predications</h3>
-<p>A more general approach is to implement a single function that matches all predications of a certain part-of-speech. Perplexity supports this by allowing you to specify a special predicate called <code class="language-plaintext highlighter-rouge">match_all_n</code>. It will be called for any noun predication that has the same arguments it implements.  The “lemma” for the predicate will be passed in as well.  I.e. “file” is the lemma for <code class="language-plaintext highlighter-rouge">_file_n_of</code>.  Then, your code can dynamically do whatever has to be done to determine if the binding is a thing of that type.</p>
+<p>A more general approach is to implement a single function that matches all predications of a certain part-of-speech. Perplexity supports this by allowing you to specify a special predicate called <code class="language-plaintext highlighter-rouge">match_all_n</code>. It will be called for any noun predication that matches its arguments.  The “lemma” for the predicate will be passed in as an additional first argument (“file” is the <em>lemma</em> for <code class="language-plaintext highlighter-rouge">_file_n_of</code>).  Then, your code can dynamically determine if the binding is of that type.</p>
 
-<p>For the code below there are two functions not shown:</p>
+<p>For the code below, there are two functions not shown:</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">implemented_nouns()</code> just returns a list of all nouns the application supports</li>
@@ -451,9 +451,11 @@ def match_all_n_instances(noun_type, context, state, x_binding):
                                            unbound_variable)                                           
 </code></pre></div></div>
 
-<p>Note building a <code class="language-plaintext highlighter-rouge">match_all_n</code> function requires building a helper function like <code class="language-plaintext highlighter-rouge">understood_noun(state, noun_lemma)</code> above which returns true if a lemma is implemented. This code replaces the code for <code class="language-plaintext highlighter-rouge">_file_n_of</code> and <code class="language-plaintext highlighter-rouge">_folder_n_of</code> above and then requires updating those helper functions as new words are added.  In a system that models objects in some kind of logical ontology, this could be a simple database lookup.</p>
+<p>Note that building a <code class="language-plaintext highlighter-rouge">match_all_n</code> function requires building a helper function (like <code class="language-plaintext highlighter-rouge">understood_noun(state, noun_lemma)</code> above) which returns <code class="language-plaintext highlighter-rouge">True</code> if a lemma is implemented.</p>
 
-<p>Since the signatures of “file” and “folder” are actually <code class="language-plaintext highlighter-rouge">_file_n_of(x, i)</code> and <code class="language-plaintext highlighter-rouge">_folder_n_of(x, i)</code> and thus have an extra <code class="language-plaintext highlighter-rouge">i</code> argument compared to what is implemented above, this new function won’t actually be called.  Instead, we need to build a wrapper that has, but ignores, this <code class="language-plaintext highlighter-rouge">i</code> argument since it is acting as unused for these predicates:</p>
+<p>All the code above replaces the original code for <code class="language-plaintext highlighter-rouge">_file_n_of</code> and <code class="language-plaintext highlighter-rouge">_folder_n_of</code>. It then requires updating those helper functions as new words are added.  In a system that models objects in some kind of logical ontology, this could be a simple database lookup.</p>
+
+<p>Since the signatures of “file” and “folder” are actually <code class="language-plaintext highlighter-rouge">_file_n_of(x, i)</code> and <code class="language-plaintext highlighter-rouge">_folder_n_of(x, i)</code>, and thus have an extra <code class="language-plaintext highlighter-rouge">i</code> argument compared to what is implemented above, this new function won’t actually be called for them.  Instead, we need to build a wrapper that has, but ignores, this <code class="language-plaintext highlighter-rouge">i</code> argument since it is acting as unused for these predicates:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
 def match_all_n_i_instances(noun_type, context, state, x_binding, i_binding):
@@ -512,7 +514,7 @@ def match_all_n_i_concepts(noun_type, context, state, x_binding, i_binding):
 <p>Note that we are using the <code class="language-plaintext highlighter-rouge">entails</code> function, not testing equality. As described in  <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions">Conceptual Expressions</a>, entailment means “implies” and MRS predications really test for entailment. Thus, anything that <em>entails</em> file should be true: “large file”, “empty file”, “slimy pink file”, “file I saw yesterday”, etc. As long as it is, at its root, a “file”, this should be true.</p>
 
 <h3 id="matching-other-parts-of-speech">Matching Other Parts of Speech</h3>
-<p><code class="language-plaintext highlighter-rouge">match_all</code> predications can be used for any part of speech that the grammar supports.  Thus for the English Resource Grammar that we’ve been using. Since adjectives can often be very repetitive since they might just be checking for a particular property on an object, a <code class="language-plaintext highlighter-rouge">match_all_a</code> predication could be built like this:</p>
+<p><code class="language-plaintext highlighter-rouge">match_all</code> predications can be used for any part of speech that the grammar supports.  Adjectives can also be very repetitive since they might just check for a particular property on an object. A <code class="language-plaintext highlighter-rouge">match_all_a</code> predication could be built like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def handles_adjective(state, adjective_lemma):
     return True
@@ -522,10 +524,10 @@ def match_all_a_concepts(adjective_type, context, state, e_introduced, x_binding
     ...
 </code></pre></div></div>
 
-<p>Any part of speech can be tacked on to the base <code class="language-plaintext highlighter-rouge">match_all_</code> to create a predication that will match all of those predicates.  Just remember that the arguments need to match too. Normally, though, nouns and adjectives are the only parts of speech that end up templatized like this.</p>
+<p>Any part of speech can be tacked on to the base <code class="language-plaintext highlighter-rouge">match_all_</code> to create a predication that will match all predicates of that part-of-speech.  Just remember that the arguments need to match too. Normally, though, nouns and adjectives are the only parts of speech that end up templatized like this.</p>
 
 <h3 id="interpretations-and-match_all">Interpretations and <code class="language-plaintext highlighter-rouge">match_all</code></h3>
-<p>Often you will have some words that really need a special implementation, your <code class="language-plaintext highlighter-rouge">match_all</code> function is not enough. Just like any normal predication, you can create other <em>interpretations</em> (alternatives) by just creating more functions. They get run in the order they are in the file.  So, if we wanted the “command” word to have another way it might get interpreted, we’d add this to the file that contains the other <code class="language-plaintext highlighter-rouge">match_all</code> functions:</p>
+<p>Often you will have some words that need a special implementation, your <code class="language-plaintext highlighter-rouge">match_all</code> function won’t work. Just like any normal predication, you can create other <em>interpretations</em> (alternatives) by just creating more functions. They get run in the order they are in the file.  So, if we wanted the “command” word to have another way it might get interpreted, we’d add this to the file that contains the other <code class="language-plaintext highlighter-rouge">match_all</code> functions:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["_command_n_1"])
 def _command_n_1(context, state, x_binding):
