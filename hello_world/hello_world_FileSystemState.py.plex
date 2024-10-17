@@ -90,5 +90,6 @@
     "match_all_n_instances": {},
     "match_all_n_concepts": {},
     "match_all_n_i_concepts": {},
-    "match_all_n_i_isntances": {}
+    "match_all_n_i_isntances": {},
+    "match_all_n_i_instances": {}
 }

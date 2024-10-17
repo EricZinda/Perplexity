@@ -1,1 +1,0 @@
-{"FolderName": "esl", "TestName": "ordering", "TestID": "a004ac87-0ab4-4ec1-bf9a-1d1940231aa8", "UserInput": "What will I have?", "InteractionResponse": "Host: There isn't such a will, which I have here\nWaiter: Can I get you anything besides 2 steaks for you?", "InteractionTree": "_which_q(x4,pronoun_q(x10,pron(x10),[_will_n_1(x4), _have_v_1(e14,x10,x4)]),unknown(e2,x4))"}
