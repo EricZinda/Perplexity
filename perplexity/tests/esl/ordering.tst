@@ -522,7 +522,8 @@
                 "water\nsteak\nmenu\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "menu\n2 soup\nwater\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "2 soup\nsteak\nwater\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
-                "2 soup\nwater\nsteak\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
+                "2 soup\nwater\nsteak\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "menu\nwater\n2 soup\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -788,8 +789,8 @@
         },
         {
             "Command": "What will I have?",
-            "Expected": "I don't understand the way you are using: have\nWaiter: Can I get you anything besides 2 steaks for you?",
-            "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Expected": "Host: There isn't such a will, which I have here\nWaiter: Can I get you anything besides 2 steaks for you?",
+            "Tree": "_which_q(x4,pronoun_q(x10,pron(x10),[_will_n_1(x4), _have_v_1(e14,x10,x4)]),unknown(e2,x4))",
             "Enabled": true,
             "ID": "a004ac87-0ab4-4ec1-bf9a-1d1940231aa8"
         },

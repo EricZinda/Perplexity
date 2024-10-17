@@ -52,7 +52,7 @@
         },
         {
             "Command": "I want a steak for 3",
-            "Expected": "steak is not for 3.\nWaiter: Can I get you anything besides a steak for you?",
+            "Expected": "Host: There isn't such a steak for 3 thing here\nWaiter: Can I get you anything besides a steak for you?",
             "Tree": "number_q(x14,card(3,x14,i20),pronoun_q(x3,pron(x3),_a_q(x8,[_steak_n_1(x8), _for_p(e13,x8,x14)],_want_v_1(e2,x3,x8))))",
             "Enabled": true,
             "ID": "1ece99a5-80ee-41fa-a807-c28871dd2662"
