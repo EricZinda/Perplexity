@@ -172,13 +172,27 @@ Note that the `set_x()` method does not actually "set" a value in the `State` ob
 
 The `add_to_e()` method is used for adding information to an event (or `e`) variable. Instead of replacing the value of the variable, it represents each `e` variable as a Python `dict` and allows the caller to set or replace key/value pairs in it. Event variables have a very different semantic than `x` variables, as described in [the Event section of the "MRS" topic](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS). This behavior implements that semantic.
 
-Creating a `State` object with the list of the objects representing files and folders could be done like this:
+To create a `State` object that represents a file system, we'll need to create some simple objects to represent files and folders. These are going to be *really* simplistic so we don't get caught up in the file system code since that's not what we're focused on.  In these examples, we are really just using them as two kinds of objects in the system.  Files will not be *in* folders, folders will not *contain* files.  Our system will just have files and folders, on their own. No nesting, etc.
 
 ```
-state = State(["Desktop", 
-               "Documents", 
-               "file1.txt", 
-               "file2.txt"])
+class File:
+    def __init__(self, name):
+        self.name = name
+
+
+class Folder:
+    def __init__(self, name):
+        self.name = name
+```
+
+Now we can create a state object for a simple world that has to folders and two files:
+
+```
+def Example0():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
 ```
 
 Note that an instance of the `State` object is created by calling it like a function. This really calls the `__init__` function of `State` and passes the supplied argument (a list) to `__init__`. Each object in the list is created just like `State` was: by calling it as a function.
@@ -187,4 +201,4 @@ Now you've seen some of the basic Python you'll see throughout the tutorial and 
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-17 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0020PythonBasics.md)]{% endraw %}
+Last update: 2024-10-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0020PythonBasics.md)]{% endraw %}
