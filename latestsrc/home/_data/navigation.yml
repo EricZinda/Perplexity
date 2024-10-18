@@ -42,6 +42,8 @@ toc:
         url: "/pxHowTo/pxHowTo014HelloWorld/"
       - title: "Implementing a Predication"
         url: "/pxhowto/pxHowTo020ImplementAPredication/"
+      - title: "Testing"
+        url: "/pxhowto/pxHowTo022Testing/"
       - title: "In-Style Predications"
         url: "/pxhowto/pxHowTo030InStylePredications/"
       - title: "Lift-Style Predications"
