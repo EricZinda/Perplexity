@@ -5,6 +5,16 @@ import sys
 from perplexity.utilities import ShowLogging
 
 
+class TreePredication(object):
+    def __init__(self, index, name, args):
+        self.index = index
+        self.name = name
+        self.args = args
+
+    def __repr__(self):
+        return f"{self.name}({','.join([str(x) for x in self.args])})"
+
+
 class Vocabulary(object):
     def __init__(self):
         self.name_function_map = {}
@@ -29,12 +39,15 @@ def arg_types_from_names(args):
     for arg_name in args:
         # Allow single character arguments like "x" and "e"
         # OR the format: "x_actor", "xActor", etc
-        arg_type = arg_name[0]
-        if arg_type not in ["u", "i", "p", "e", "x", "h", "c"]:
-            raise Exception(
-                f"unknown argument type of {arg_type}'")
+        if isinstance(arg_name, TreePredication):
+            type_list.append("h")
+        else:
+            arg_type = arg_name[0]
+            if arg_type not in ["u", "i", "p", "e", "x", "h", "c"]:
+                raise Exception(
+                    f"unknown argument type of {arg_type}'")
 
-        type_list.append(arg_type)
+            type_list.append(arg_type)
 
     return type_list
 
@@ -277,11 +290,12 @@ def large_a_1(state, e, x):
             yield new_state
 
 
-class TreePredication(object):
-    def __init__(self, index, name, args):
-        self.index = index
-        self.name = name
-        self.args = args
+@Predication(vocabulary, name="_a_q")
+def a_q(state, x, h_rstr, h_body):
+    for rstr_solution in call(vocabulary, state, h_rstr):
+        for body_solution in call(vocabulary, rstr_solution, h_body):
+            yield body_solution
+            return
 
 
 # Takes a TreePredication object, maps it to a Python function and calls it
@@ -291,6 +305,9 @@ def call_predication(vocabulary, state, predication):
     # "vocabulary.Predication" returns a two-item list,
     # where item[0] is the module and item[1] is the function
     module_function = vocabulary.predication(predication)
+
+    if module_function is None:
+        raise Exception(f"Implementation for Predication {predication} not found")
 
     # sys.modules[] is a built-in Python list that allows you
     # to access actual Python Modules given a string name
@@ -400,20 +417,20 @@ def Example3():
         print(item.variables)
 
 
-# # "a" large file in a world with two large files
-# def Example4():
-#     # Note that both files are "large" now
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=2000000),
-#                    File(name="file2.txt", size=2000000)])
-#
-#     tree = TreePredication(0, "_a_q", ["x3",
-#                                        TreePredication(1, "_file_n_of", ["x3", "i1"]),
-#                                        TreePredication(2, "_large_a_1", ["e2", "x3"])])
-#
-#     for item in call(state, tree):
-#         print(item.variables)
+# "a" large file in a world with two large files
+def Example4():
+    # Note that both files are "large" now
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=2000000)])
+
+    tree = TreePredication(0, "_a_q", ["x3",
+                                       TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                       TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+    for item in call(vocabulary, state, tree):
+        print(item.variables)
 
 # def solve_and_respond(state, mrs):
 #     context = ExecutionContext(vocabulary)
@@ -768,8 +785,8 @@ if __name__ == '__main__':
     # Example1()
     # Example1a()
     # Example2()
-    Example3()
-    # Example4()
+    # Example3()
+    Example4()
     # Example5()
     # Example5_1()
     # Example5_2()
