@@ -178,6 +178,39 @@ class State(object):
             yield item
 
 
+@Predication(vocabulary, name="_file_n_of")
+def _file_n_of(state, x, i):
+    x_value = state.get_binding(x).value
+    if x_value is None:
+        # Variable is unbound:
+        # iterate over all individuals in the world
+        # using the iterator returned by state.AllIndividuals()
+        iterator = state.all_individuals()
+    else:
+        # Variable is bound: create an iterator that will iterate
+        # over just that one by creating a list and adding it as
+        # the only element
+        # Remember that we are ignoring the fact that bindings are tuples
+        # in these examples so we assume there is only one value, and
+        # just retrieve it
+        iterator = [x_value[0]]
+
+    # By converting both cases to an iterator, the code that
+    # checks if x is "a folder" can be shared
+    for item in iterator:
+        # "isinstance" is a built-in function in Python that
+        # checks if a variable is an
+        # instance of the specified class
+        if isinstance(item, File):
+            # state.SetX() returns a *new* state that
+            # is a copy of the old one with just that one
+            # variable set to a new value
+            # Variable bindings are always tuples so we set
+            # this one using the tuple syntax: (item, )
+            new_state = state.set_x(x, (item, ))
+            yield new_state
+
+
 @Predication(vocabulary, name="_folder_n_of")
 def folder_n_of(state, x, i):
     x_value = state.get_binding(x).value
@@ -284,16 +317,16 @@ def call_predication(vocabulary, state, predication):
 
 
 def call(vocabulary, state, term):
-    # If "term" is an empty list, we have solved all
-    # predications in the conjunction, return the final answer.
-    # "len()" is a built-in Python function that returns the
-    # length of a list
-    if len(term) == 0:
-        yield state
-    else:
-        # See if the first thing in the list is actually a list
-        # If so, we have a conjunction
-        if isinstance(term[0], list):
+    # See if the first thing in the list is actually a list
+    # If so, we have a conjunction
+    if isinstance(term, list):
+        # If "term" is an empty list, we have solved all
+        # predications in the conjunction, return the final answer.
+        # "len()" is a built-in Python function that returns the
+        # length of a list
+        if len(term) == 0:
+            yield state
+        else:
             # This is a list of predications, so they should
             # be treated as a conjunction.
             # call each one and pass the state it returns
@@ -303,11 +336,11 @@ def call(vocabulary, state, term):
                 # of everything but the first item"
                 yield from call(vocabulary, nextState, term[1:])
 
-        else:
-            # The first thing in the list was not a list
-            # so we assume it is just a TreePredication term.
-            # Evaluate it using call_predication
-            yield from call_predication(vocabulary, state, term)
+    else:
+        # The first thing in the list was not a list
+        # so we assume it is just a TreePredication term.
+        # Evaluate it using call_predication
+        yield from call_predication(vocabulary, state, term)
 
 
 def Example0():
@@ -363,22 +396,10 @@ def Example3():
     tree = [TreePredication(0, "_large_a_1", ["e1", "x1"]),
             TreePredication(1, "_file_n_of", ["x1", "i1"])]
 
-    for item in call(state, tree):
+    for item in call(vocabulary, state, tree):
         print(item.variables)
 
 
-# def solve_and_respond(state, mrs):
-#     context = ExecutionContext(vocabulary)
-#     solutions = list(context.solve_mrs_tree(state, mrs))
-#     return respond_to_mrs_tree(state, mrs, solutions, context.error())
-
-#
-
-#
-#
-
-#
-#
 # # "a" large file in a world with two large files
 # def Example4():
 #     # Note that both files are "large" now
@@ -393,6 +414,20 @@ def Example3():
 #
 #     for item in call(state, tree):
 #         print(item.variables)
+
+# def solve_and_respond(state, mrs):
+#     context = ExecutionContext(vocabulary)
+#     solutions = list(context.solve_mrs_tree(state, mrs))
+#     return respond_to_mrs_tree(state, mrs, solutions, context.error())
+
+#
+
+#
+#
+
+#
+#
+
 #
 #
 # # Evaluate the proposition: "a file is large" when there is one
@@ -731,9 +766,9 @@ if __name__ == '__main__':
     # respond_to_mrs hadn't been built yet
     # Example0()
     # Example1()
-    Example1a()
+    # Example1a()
     # Example2()
-    # Example3()
+    Example3()
     # Example4()
     # Example5()
     # Example5_1()
