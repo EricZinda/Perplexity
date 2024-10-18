@@ -519,12 +519,25 @@ class State(object):
 
 <p>The <code class="language-plaintext highlighter-rouge">add_to_e()</code> method is used for adding information to an event (or <code class="language-plaintext highlighter-rouge">e</code>) variable. Instead of replacing the value of the variable, it represents each <code class="language-plaintext highlighter-rouge">e</code> variable as a Python <code class="language-plaintext highlighter-rouge">dict</code> and allows the caller to set or replace key/value pairs in it. Event variables have a very different semantic than <code class="language-plaintext highlighter-rouge">x</code> variables, as described in <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">the Event section of the “MRS” topic</a>. This behavior implements that semantic.</p>
 
-<p>Creating a <code class="language-plaintext highlighter-rouge">State</code> object with the list of the objects representing files and folders could be done like this:</p>
+<p>To create a <code class="language-plaintext highlighter-rouge">State</code> object that represents a file system, we’ll need to create some simple objects to represent files and folders. These are going to be <em>really</em> simplistic so we don’t get caught up in the file system code since that’s not what we’re focused on.  In these examples, we are really just using them as two kinds of objects in the system.  Files will not be <em>in</em> folders, folders will not <em>contain</em> files.  Our system will just have files and folders, on their own. No nesting, etc.</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>state = State(["Desktop", 
-               "Documents", 
-               "file1.txt", 
-               "file2.txt"])
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class File:
+    def __init__(self, name):
+        self.name = name
+
+
+class Folder:
+    def __init__(self, name):
+        self.name = name
+</code></pre></div></div>
+
+<p>Now we can create a state object for a simple world that has to folders and two files:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example0():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
 </code></pre></div></div>
 
 <p>Note that an instance of the <code class="language-plaintext highlighter-rouge">State</code> object is created by calling it like a function. This really calls the <code class="language-plaintext highlighter-rouge">__init__</code> function of <code class="language-plaintext highlighter-rouge">State</code> and passes the supplied argument (a list) to <code class="language-plaintext highlighter-rouge">__init__</code>. Each object in the list is created just like <code class="language-plaintext highlighter-rouge">State</code> was: by calling it as a function.</p>
@@ -535,7 +548,7 @@ class State(object):
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2024-10-17 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0020PythonBasics.md">edit</a>]</p>
+<p>Last update: 2024-10-18 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0020PythonBasics.md">edit</a>]</p>
 
         
       </section>
