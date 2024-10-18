@@ -1,7 +1,7 @@
 ## Converting MRS Text to Python Function Calls
 Now it is time to start working through the code that *calls* the [Predication Contract](pxint0010PredicationContract): the solver.  The algorithm we'll use was described in the ["Backtracking" conceptual topic](../devcon/devcon0010MRSSolver).
 
-To be able to solve an MRS, we first need a way to convert from the MRS text representation to actual Python function calls. This section describes how.
+To be able to solve an MRS, we first need a way to convert from the MRS predicate names to actual Python function calls. This section describes how.
 
 We'll use a simple Python representation that allows easy conversion from a raw MRS document: each predication will be represented by a Python class called `TreePredication` that just records the basic information about the predication:
 
@@ -12,11 +12,11 @@ class TreePredication(object):
         self.name = name
         self.args = args
 ~~~
-`index` is a number representing the order in when the predication is called when solving the MRS, all the rest of the arguments are pulled directly from the MRS format.
+`index` is a number representing the order that the predication is called when solving the MRS using a depth-first search. All the rest of the arguments are pulled directly from the MRS format.
 
-To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. `"_folder_n_of"`) to the function and module where the function lives. 
+To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. `"_folder_n_of"`) to the function and module that implements the logic for it. 
 
-We'll start by building a `Vocabulary` class that will store all of the mappings. You add a mapping with `add_predication`, and find a mapping with `predication`. Note that it is both the name and the arguments of a predicate that have to match to get a property mapping:
+We'll start by building a `Vocabulary` class that will store all of the mappings. You add a mapping with `add_predication()` and find a mapping with `predication()`. Note that it is both the name and the arguments of a predicate that have to match to get a proper mapping:
 
 ~~~
 class Vocabulary(object):
@@ -35,7 +35,7 @@ class Vocabulary(object):
         return self.name_function_map.get(signature, None)
 ~~~
 
-Then we need to find a way to add the mappings in. We'll do this using a Python feature called "decorators". It isn't important to understand *how* it works (but if you want to: [read this section](pxint03000PythonDecorators)). For our purposes, just understand that by writing these two small Python classes:
+Then we need to find a way to populate the mappings. We'll do this using a Python feature called "decorators". It isn't important to understand *how* it works (but if you want to: [read this section](pxint03000PythonDecorators)). For our purposes, just understand that by writing these two small Python classes:
 
 ~~~
 def arg_types_from_names(args):
@@ -54,8 +54,8 @@ def arg_types_from_names(args):
 
 
 # Decorator that adds maps a DELPH-IN predicate to a Python function
-def Predication(vocabulary,
-                name=None):
+def Predication(vocabulary, name=None):
+
     def arg_types_from_function(function):
         arg_spec = inspect.getfullargspec(function)
 
@@ -90,19 +90,9 @@ def folder_n_of(state, x_target, i_ignored):
     # ... implementation of folder_n_of goes here ...
 ~~~
 
-The `@Predication(...)` "decoration" above the function runs code at file load time that sticks the Python function (i.e. `def folder_n_of(...)`) and the predication name (i.e. `_folder_n_of`) into the global instance of the `Vocabulary` class it is given. 
+The `@Predication(...)` "decoration" above the function runs code at file load time that sticks the Python function (i.e. `def folder_n_of(...)`) and the predication name (i.e. `_folder_n_of`) into the global instance of the `Vocabulary` class it is passed. 
 
-Note that the function name can be arbitrarily different than the predication name. In this case, we've removed the leading "_", but we could have done something more radical, like this:
-
-~~~
-vocabulary = Vocabulary()
-
-@Predication(vocabulary, name="_folder_n_of")
-def my_folder_predication(state, x_target):
-    # ... implementation of folder_n_of goes here ...
-~~~
-
-Either way, the global `vocabulary` instance will record the mapping between all the functions decorated with `@Predication(vocabulary, name=...)` and the predications they are implementing. With that, we can now build a `CallPredication()` function that uses `vocabulary` to map the name of the predicate, plus the list of arguments, to an actual Python function and call it:
+The global `vocabulary` instance will record the mapping between all the functions decorated with `@Predication(vocabulary, name=...)` and the predications they are implementing. With that, we can now build a `call_predication()` function that uses `vocabulary` to map the name of the predicate, plus the list of arguments, to an actual Python function and call it:
 
 ~~~
 # Takes a TreePredication object, maps it to a Python function and calls it
@@ -157,9 +147,9 @@ def Example2():
 {'x1': x1=(Folder(Documents),)}
 ~~~
 
-`Example2` calls `call_predication()` with the vocabulary object we've built and populated using the `Predication` decorator and a `State` object.  `call_predication` then does the mapping of the predication name `_folder_n_of` to the actual Python function we've written, and performs the "contract" on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.
+`Example2` calls `call_predication()` with the `vocabulary` object we've built and populated using the `Predication` decorator and a `State` object.  `call_predication` then does the mapping of the predication name `_folder_n_of` to the actual Python function we've written, and performs the "contract" on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.
 
-The reason it prints out the two folders that are in our world is that we left all the arguments to `_folder_n_of` unbound. The contract says that, in that case, it should yield all the things in the world that "are a folder", thus the behavior.
+The reason it prints out the two folders in our world is that we left all the arguments to `_folder_n_of` unbound. The contract says that, in that case, it should yield all the things in the world that "are a folder", thus the behavior.
 
 With this in place, we can tackle more complicated groups of predications such as conjunctions in the [next section](./pxint0050Conjunctions).
 
