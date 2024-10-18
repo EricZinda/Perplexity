@@ -33,7 +33,7 @@ def ui():
 # and so that the engine can search for their autocorrect and other cached files
 # in the same directory where the ui() function resides
 register_world(world_name="SimplestExample",
-               module="hello_world_simplest",
+               module="hello_world",
                ui_function="ui")
 
 
@@ -73,4 +73,4 @@ I don't know the words: I, Where
 
 So far, it has no vocabulary so it will just keep saying, "I don't know the words..." to any phrases typed until we implement some. That's what [the remainder of the tutorial](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication) is about.
 
-Last update: 2024-10-08 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo014HelloWorld.md)]{% endraw %}
+Last update: 2024-10-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo014HelloWorld.md)]{% endraw %}
