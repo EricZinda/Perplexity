@@ -671,8 +671,7 @@ def reset():
     #                                        (True, "/Desktop/blue", {"size": 1000})],
     #                                       "/Desktop"))
 
-def test():
-    print("x")
+
 # Creates the micro-world interface on startup
 # or if the user loads the world later
 def ui():

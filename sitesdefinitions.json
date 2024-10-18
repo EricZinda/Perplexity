@@ -45,6 +45,7 @@
         {"Page": "Installing Perplexity", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo012Install.md", "DstFile": "pxHowTo/pxHowTo012Install.md"},
         {"Page": "Hello World", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo014HelloWorld.md", "DstFile": "pxHowTo/pxHowTo014HelloWorld.md"},
         {"Page": "Implementing a Predication", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo020ImplementAPredication.md", "DstFile": "pxhowto/pxHowTo020ImplementAPredication.md"},
+        {"Page": "Testing", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo022Testing.md", "DstFile": "pxhowto/pxHowTo022Testing.md"},
         {"Page": "In-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo030InStylePredications.md", "DstFile": "pxhowto/pxHowTo030InStylePredications.md"},
         {"Page": "Lift-Style Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo040LiftStylePredications.md", "DstFile": "pxhowto/pxHowTo040LiftStylePredications.md"},
         {"Page": "Event Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo050EventPredications.md", "DstFile": "pxhowto/pxHowTo050EventPredications.md"},
