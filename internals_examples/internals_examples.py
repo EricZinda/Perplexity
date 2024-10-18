@@ -1,21 +1,294 @@
+import copy
+import inspect
+import sys
+
+from perplexity.utilities import ShowLogging
 
 
-def solve_and_respond(state, mrs):
-    context = ExecutionContext(vocabulary)
-    solutions = list(context.solve_mrs_tree(state, mrs))
-    return respond_to_mrs_tree(state, mrs, solutions, context.error())
+class Vocabulary(object):
+    def __init__(self):
+        self.name_function_map = {}
 
-# # List folders using call_predication
-# def Example2():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt"),
-#                    File(name="file2.txt")])
+    def get_signature(self, name, args):
+        return f"{name}({','.join(args)})"
+
+    def add_predication(self, name, args, module, function):
+        signature = self.get_signature(name, arg_types_from_names(args))
+        self.name_function_map[signature] = (module, function)
+
+    def predication(self, tree_predication):
+        signature = self.get_signature(tree_predication.name, arg_types_from_names(tree_predication.args))
+        return self.name_function_map.get(signature, None)
+
+
+vocabulary = Vocabulary()
+
+
+def arg_types_from_names(args):
+    type_list = []
+    for arg_name in args:
+        # Allow single character arguments like "x" and "e"
+        # OR the format: "x_actor", "xActor", etc
+        arg_type = arg_name[0]
+        if arg_type not in ["u", "i", "p", "e", "x", "h", "c"]:
+            raise Exception(
+                f"unknown argument type of {arg_type}'")
+
+        type_list.append(arg_type)
+
+    return type_list
+
+
+# Decorator that adds maps a DELPH-IN predicate to a Python function
+def Predication(vocabulary,
+                name=None):
+
+    def arg_types_from_function(function):
+        arg_spec = inspect.getfullargspec(function)
+
+        # Skip the first arg since it should always be "state"
+        arg_list = arg_types_from_names(arg_spec.args[1:])
+
+        return arg_list
+
+    def predication_decorator(function_to_decorate):
+        arg_list = arg_types_from_function(function_to_decorate)
+
+        vocabulary.add_predication(name,
+                                   arg_list,
+                                   function_to_decorate.__module__,
+                                   function_to_decorate.__name__)
+
+        return function_to_decorate
+
+    return predication_decorator
+
+
+class File:
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"File({self.name})"
+
+
+class Folder:
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"Folder({self.name})"
+
+
+# Use None in variable_data to represent a value
+# That is not bound to an actual variable
+class VariableBinding(object):
+    def __init__(self, variable_data, value):
+        self.value = value
+        self.variable = variable_data
+
+    def __repr__(self):
+        return f"{self.variable}={self.value}"
+
+
+class VariableData(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return f"{self.name}"
+
+
+# "class" declares an object-oriented class in Python
+# The parenthesis after the "State" class name surround
+# the object the class derives from (object)
+class State(object):
+    # All class methods are indented under the
+    # class and take "self" as their first argument.
+    # "self" represents the class instance.
+
+    # "__init__" is a special method name that
+    # indicates the constructor, which is called to create
+    # a new instance of the class. Arguments beyond "self"
+    # get passed to the function when the instance is created
+    def __init__(self, objects):
+        # Class member variables are created by
+        # simply assigning to them
+        self.variables = dict()  # an empty dictionary
+
+        # "objects" are passed to us as an argument
+        # by whoever creates an instance of the class
+        self.objects = objects
+
+    # A standard "class method" is just a function definition,
+    # indented properly, with "self" as the first argument
+
+    # This is how predications will access the current value
+    # of MRS variables like "x1" and "e1"
+    def get_binding(self, variable_name):
+        # "get()" is one way to access a value in a dictionary.
+        # The second argument is what to return if the
+        # key doesn't exist.  "VariableBinding" is the class that
+        # represents a variable binding in Perplexity
+        return self.variables.get(variable_name, VariableBinding(VariableData(variable_name), None))
+
+    # This is how predications will set the value
+    # of an "x" variable (or another type of variable
+    # that is acting like an unquantified "x" variable)
+    def set_x(self, variable_name, item):
+        # Make a *copy* of the entire object using the built-in Python
+        # class called "copy", we pass it "self" so it copies this
+        # instance of the object
+        new_state = copy.deepcopy(self)
+
+        # Now we have a new "State" object with the same
+        # world state that we can modify.
+
+        # Find a common mistakes early: item must always be a tuple
+        # since x values are sets
+        assert item is None or isinstance(item, tuple)
+
+        if variable_name in new_state.variables:
+            # Need to copy the item so that if the list is changed it won't affect
+            # the state which is supposed to be immutable
+            variable_data = copy.deepcopy(new_state.variables[variable_name].variable)
+        else:
+            variable_data = VariableData(variable_name)
+
+        new_state.variables[variable_name] = VariableBinding(variable_data, copy.deepcopy(item))
+
+        # "return" returns to the caller the new state with
+        # that one variable set to a new value
+        return new_state
+
+    def add_to_e(self, event_name, key, value):
+        newState = copy.deepcopy(self)
+        e_binding = newState.get_binding(event_name)
+        if e_binding.value is None:
+            e_binding = VariableBinding(VariableData(event_name), dict())
+            newState.variables[event_name] = e_binding
+
+        e_binding.value[key] = value
+        return newState
+
+    # This is an iterator (described above) that returns
+    # all the objects in the world bound to the specified variable
+    def all_individuals(self):
+        for item in self.objects:
+            yield item
+
+
+def Example0():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
+
+
+@Predication(vocabulary, name="_folder_n_of")
+def folder_n_of(state, x, i):
+    x_value = state.get_binding(x).value
+    if x_value is None:
+        # Variable is unbound:
+        # iterate over all individuals in the world
+        # using the iterator returned by state.AllIndividuals()
+        iterator = state.all_individuals()
+    else:
+        # Variable is bound: create an iterator that will iterate
+        # over just that one by creating a list and adding it as
+        # the only element
+        # Remember that we are ignoring the fact that bindings are tuples
+        # in these examples so we assume there is only one value, and
+        # just retrieve it
+        iterator = [x_value[0]]
+
+    # By converting both cases to an iterator, the code that
+    # checks if x is "a folder" can be shared
+    for item in iterator:
+        # "isinstance" is a built-in function in Python that
+        # checks if a variable is an
+        # instance of the specified class
+        if isinstance(item, Folder):
+            # state.SetX() returns a *new* state that
+            # is a copy of the old one with just that one
+            # variable set to a new value
+            # Variable bindings are always tuples so we set
+            # this one using the tuple syntax: (item, )
+            new_state = state.set_x(x, (item, ))
+            yield new_state
+
+
+def Example1():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
+
+    for item in folder_n_of(state, "x1"):
+        print(item.variables)
+
+    print("\nThe original `state` object is not changed:")
+    print(state.variables)
+
+
+class TreePredication(object):
+    def __init__(self, index, name, args):
+        self.index = index
+        self.name = name
+        self.args = args
+
+
+# Takes a TreePredication object, maps it to a Python function and calls it
+def call_predication(vocabulary, state, predication):
+    # Look up the actual Python module and
+    # function name given a string like "folder_n_of".
+    # "vocabulary.Predication" returns a two-item list,
+    # where item[0] is the module and item[1] is the function
+    module_function = vocabulary.predication(predication)
+
+    # sys.modules[] is a built-in Python list that allows you
+    # to access actual Python Modules given a string name
+    module = sys.modules[module_function[0]]
+
+    # Functions are modeled as properties of modules in Python
+    # and getattr() allows you to retrieve a property.
+    # So: this is how we get the "function pointer" to the
+    # predication function we wrote in Python
+    function = getattr(module, module_function[1])
+
+    # [list] + [list] will return a new, combined list
+    # in Python. This is how we add the state object
+    # onto the front of the argument list
+    predication_args = predication.args
+    function_args = [state] + predication_args
+
+    # You call a function "pointer" and pass it arguments
+    # that are a list by using "function(*function_args)"
+    # So: this is actually calling our function (which
+    # returns an iterator and thus we can iterate over it)
+    for next_state in function(*function_args):
+        yield next_state
+
+
+# List folders using call_predication
+def Example2():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
+
+    for item in call_predication(vocabulary,
+                                 state,
+                                 TreePredication(0, "_folder_n_of", ["x1", "i1"])):
+        print(item.variables)
+
+# def solve_and_respond(state, mrs):
+#     context = ExecutionContext(vocabulary)
+#     solutions = list(context.solve_mrs_tree(state, mrs))
+#     return respond_to_mrs_tree(state, mrs, solutions, context.error())
+
 #
-#     for item in call_predication(state,
-#                                  TreePredication(0, "_folder_n_of", ["x1", "i1"])
-#                                  ):
-#         print(item.variables)
+
 #
 #
 # # "Large files" using a conjunction
@@ -367,5 +640,41 @@ def solve_and_respond(state, mrs):
 #     for mrs in user_interface.mrss_from_phrase("every book is in a cave"):
 #         for tree in user_interface.trees_from_mrs(mrs):
 #             print(tree)
-#
-#
+
+
+
+
+if __name__ == '__main__':
+    ShowLogging("Pipeline")
+    ShowLogging("SolutionGroups")
+    # ShowLogging("Execution")
+    # ShowLogging("Generation")
+    # ShowLogging("UserInterface")
+    # ShowLogging("SString")
+    # ShowLogging("Determiners")
+
+    # Early examples need a context to set the vocabulary since
+    # respond_to_mrs hadn't been built yet
+    # Example0()
+    # Example1()
+    Example2()
+    # Example3()
+    # Example4()
+    # Example5()
+    # Example5_1()
+    # Example5_2()
+    # Example6()
+    # Example6a()
+    # Example6b()
+    #     Example7()
+    #     Example8()
+    #     Example9()
+    #     Example10()
+    #     Example11()
+    #     Example12()
+    #     Example13()
+    #     Example14()
+    #     Example15()
+
+    # Example16()
+    # Example17()
