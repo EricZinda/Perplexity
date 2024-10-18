@@ -33,7 +33,7 @@ def ui():
 # and so that the engine can search for their autocorrect and other cached files
 # in the same directory where the ui() function resides
 register_world(world_name="SimplestExample",
-               module="hello_world_simplest",
+               module="hello_world",
                ui_function="ui")
 
 
