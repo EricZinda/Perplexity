@@ -241,6 +241,8 @@
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication/">Implementing a Predication</a></li>
           
+            <li><a href="/Perplexity/home/pxhowto/pxHowTo022Testing/">Testing</a></li>
+          
             <li><a href="/Perplexity/home/pxhowto/pxHowTo030InStylePredications/">In-Style Predications</a></li>
           
             <li><a href="/Perplexity/home/pxhowto/pxHowTo040LiftStylePredications/">Lift-Style Predications</a></li>
@@ -423,13 +425,27 @@ def file_n_of(context, state, x_binding, i_binding):
   <li><code class="language-plaintext highlighter-rouge">sort_of(state, value, noun_type)</code> returns true if <code class="language-plaintext highlighter-rouge">value</code> is something of type <code class="language-plaintext highlighter-rouge">noun_type</code> (which would be a lemma like “file”)</li>
 </ul>
 
-<p>How these work is very application specific.  Here’s the code for the generalized function:</p>
+<p>How these work is very application specific and we’ve implemented the in a very simplistic way below.  Here’s the code:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Returns True if it is a lemma we have modelled in the system
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def implemented_nouns():
+    yield "file"
+    yield "folder"
+
+
+def sort_of(state, value, noun_type):
+    if noun_type == "file" and isinstance(value, File):
+        return True
+    elif noun_type == "folder" and isinstance(value, Folder):
+        return True
+    else:
+        return False
+        
+
+# Returns True if it is a lemma we have modelled in the system
 def understood_noun(state, noun_lemma):
     return noun_lemma in implemented_nouns()
- 
-    
+
+
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
 def match_all_n_instances(noun_type, context, state, x_binding):
     def bound_variable(value):
@@ -448,7 +464,7 @@ def match_all_n_instances(noun_type, context, state, x_binding):
                                            state,
                                            x_binding,
                                            bound_variable,
-                                           unbound_variable)                                           
+                                           unbound_variable)                                        
 </code></pre></div></div>
 
 <p>Note that building a <code class="language-plaintext highlighter-rouge">match_all_n</code> function requires building a helper function (like <code class="language-plaintext highlighter-rouge">understood_noun(state, noun_lemma)</code> above) which returns <code class="language-plaintext highlighter-rouge">True</code> if a lemma is implemented.</p>
@@ -486,8 +502,7 @@ def file_n_of_concept(context, state, x_binding, i_binding):
 
 <p>Turning this into the template for any type of conceptual object (and using the <code class="language-plaintext highlighter-rouge">RichConcept</code> object we implemented in <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions">Conceptual Expressions</a>) would look like this:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
-@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
 def match_all_n_concepts(noun_type, context, state, x_binding):
     def bound_variable(value):
         if isinstance(value, RichConcept) and value.entails(RichConcept(noun_type)):
@@ -505,10 +520,10 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
                                            bound_variable,
                                            unbound_variable)
 
+
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=understood_noun)
 def match_all_n_i_concepts(noun_type, context, state, x_binding, i_binding):
-    for new_state in match_all_n_concepts(noun_type, context, state, x_binding):
-        yield new_state
+    yield from match_all_n_concepts(noun_type, context, state, x_binding)
 </code></pre></div></div>
 
 <p>Note that we are using the <code class="language-plaintext highlighter-rouge">entails</code> function, not testing equality. As described in  <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo120ConceptsReferringExpressions">Conceptual Expressions</a>, entailment means “implies” and MRS predications really test for entailment. Thus, anything that <em>entails</em> file should be true: “large file”, “empty file”, “slimy pink file”, “file I saw yesterday”, etc. As long as it is, at its root, a “file”, this should be true.</p>
