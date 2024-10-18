@@ -40,8 +40,7 @@ def arg_types_from_names(args):
 
 
 # Decorator that adds maps a DELPH-IN predicate to a Python function
-def Predication(vocabulary,
-                name=None):
+def Predication(vocabulary, name=None):
 
     def arg_types_from_function(function):
         arg_spec = inspect.getfullargspec(function)
@@ -65,11 +64,12 @@ def Predication(vocabulary,
 
 
 class File:
-    def __init__(self, name):
+    def __init__(self, name, size=0):
         self.name = name
+        self.size = size
 
     def __repr__(self):
-        return f"File({self.name})"
+        return f"File({self.name}, {self.size})"
 
 
 class Folder:
@@ -178,13 +178,6 @@ class State(object):
             yield item
 
 
-def Example0():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt"),
-                   File(name="file2.txt")])
-
-
 @Predication(vocabulary, name="_folder_n_of")
 def folder_n_of(state, x, i):
     x_value = state.get_binding(x).value
@@ -218,17 +211,37 @@ def folder_n_of(state, x, i):
             yield new_state
 
 
-def Example1():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt"),
-                   File(name="file2.txt")])
+@Predication(vocabulary, name="_large_a_1")
+def large_a_1(state, e, x):
+    x_value = state.get_binding(x).value
+    if x_value is None:
+        # Variable is unbound:
+        # iterate over all individuals in the world
+        # using the iterator returned by state.AllIndividuals()
+        iterator = state.all_individuals()
+    else:
+        # Variable is bound: create an iterator that will iterate
+        # over just that one by creating a list and adding it as
+        # the only element
+        # Remember that we are ignoring the fact that bindings are tuples
+        # in these examples so we assume there is only one value, and
+        # just retrieve it
+        iterator = [x_value[0]]
 
-    for item in folder_n_of(state, "x1"):
-        print(item.variables)
-
-    print("\nThe original `state` object is not changed:")
-    print(state.variables)
+    # By converting both cases to an iterator, the code that
+    # checks if x is "a folder" can be shared
+    for item in iterator:
+        # "isinstance" is a built-in function in Python that
+        # checks if a variable is an
+        # instance of the specified class
+        if isinstance(item, File) and item.size > 1000:
+            # state.SetX() returns a *new* state that
+            # is a copy of the old one with just that one
+            # variable set to a new value
+            # Variable bindings are always tuples so we set
+            # this one using the tuple syntax: (item, )
+            new_state = state.set_x(x, (item, ))
+            yield new_state
 
 
 class TreePredication(object):
@@ -270,6 +283,63 @@ def call_predication(vocabulary, state, predication):
         yield next_state
 
 
+def call(vocabulary, state, term):
+    # If "term" is an empty list, we have solved all
+    # predications in the conjunction, return the final answer.
+    # "len()" is a built-in Python function that returns the
+    # length of a list
+    if len(term) == 0:
+        yield state
+    else:
+        # See if the first thing in the list is actually a list
+        # If so, we have a conjunction
+        if isinstance(term[0], list):
+            # This is a list of predications, so they should
+            # be treated as a conjunction.
+            # call each one and pass the state it returns
+            # to the next one, recursively
+            for nextState in call(vocabulary, state, term[0]):
+                # Note the [1:] syntax which means "return a list
+                # of everything but the first item"
+                yield from call(vocabulary, nextState, term[1:])
+
+        else:
+            # The first thing in the list was not a list
+            # so we assume it is just a TreePredication term.
+            # Evaluate it using call_predication
+            yield from call_predication(vocabulary, state, term)
+
+
+def Example0():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
+
+
+def Example1():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt"),
+                   File(name="file2.txt")])
+
+    for item in folder_n_of(state, "x1"):
+        print(item.variables)
+
+    print("\nThe original `state` object is not changed:")
+    print(state.variables)
+
+
+def Example1a():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=1000),
+                   File(name="file2.txt", size=2000)])
+
+    for item in large_a_1(state, "e1", "x1"):
+        print(item.variables)
+
+
 # List folders using call_predication
 def Example2():
     state = State([Folder(name="Desktop"),
@@ -282,6 +352,21 @@ def Example2():
                                  TreePredication(0, "_folder_n_of", ["x1", "i1"])):
         print(item.variables)
 
+
+# "Large files" using a conjunction
+def Example3():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=100),
+                   File(name="file2.txt", size=2000000)])
+
+    tree = [TreePredication(0, "_large_a_1", ["e1", "x1"]),
+            TreePredication(1, "_file_n_of", ["x1", "i1"])]
+
+    for item in call(state, tree):
+        print(item.variables)
+
+
 # def solve_and_respond(state, mrs):
 #     context = ExecutionContext(vocabulary)
 #     solutions = list(context.solve_mrs_tree(state, mrs))
@@ -291,18 +376,7 @@ def Example2():
 
 #
 #
-# # "Large files" using a conjunction
-# def Example3():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=100),
-#                    File(name="file2.txt", size=2000000)])
-#
-#     tree = [TreePredication(0, "_large_a_1", ["e1", "x1"]),
-#             TreePredication(1, "_file_n_of", ["x1", "i1"])]
-#
-#     for item in call(state, tree):
-#         print(item.variables)
+
 #
 #
 # # "a" large file in a world with two large files
@@ -657,7 +731,8 @@ if __name__ == '__main__':
     # respond_to_mrs hadn't been built yet
     # Example0()
     # Example1()
-    Example2()
+    Example1a()
+    # Example2()
     # Example3()
     # Example4()
     # Example5()

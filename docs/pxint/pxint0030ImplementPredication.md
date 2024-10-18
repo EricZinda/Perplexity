@@ -64,6 +64,72 @@ Again, it is important to note that the initial `state` variable will not actual
 
 Now we have one predication that implements the predication contract: it will iteratively return all the "folders" in the world when called with an unbound variable as we did here. This is the basic pattern we'll use for all predications from here on out. 
 
-Since we are going to start calling more than one predication and eventually deal with a whole MRS resolved tree, we'll need a way to convert the MRS text representation into a set of Python function calls. That way, we won't have to manually convert them to Python like the above example. The [next section](devhowtoMRSToPython) describes how to do that.
+Implementing an adjective works the same way, let's implement `_large_a_1` which is the predication for the adjective "large". We'll need to have a way to represent file sizes to do this first. We'll add an optional size to our `File` object:
+
+~~~
+class File:
+    def __init__(self, name, size=0):
+        self.name = name
+        self.size = size
+
+    def __repr__(self):
+        return f"File({self.name}, {self.size})"
+~~~
+
+We can almost use an exact copy of our `_folder_n_of` code for `_large_a_1` because they both do the same thing: yield a value if they are true, and they are both just checking for a single thing on an object (or yielding all objects that "are" that thing). For "large", we'll arbitrarily decide that > 1000 bytes is "large", and that only files can be large:
+
+~~~
+@Predication(vocabulary, name="_large_a_1")
+def large_a_1(state, e, x):
+    x_value = state.get_binding(x).value
+    if x_value is None:
+        # Variable is unbound:
+        # iterate over all individuals in the world
+        # using the iterator returned by state.AllIndividuals()
+        iterator = state.all_individuals()
+    else:
+        # Variable is bound: create an iterator that will iterate
+        # over just that one by creating a list and adding it as
+        # the only element
+        # Remember that we are ignoring the fact that bindings are tuples
+        # in these examples so we assume there is only one value, and
+        # just retrieve it
+        iterator = [x_value[0]]
+
+    # By converting both cases to an iterator, the code that
+    # checks if x is "a folder" can be shared
+    for item in iterator:
+        # "isinstance" is a built-in function in Python that
+        # checks if a variable is an
+        # instance of the specified class
+        if isinstance(item, File) and item.size > 1000:
+            # state.SetX() returns a *new* state that
+            # is a copy of the old one with just that one
+            # variable set to a new value
+            # Variable bindings are always tuples so we set
+            # this one using the tuple syntax: (item, )
+            new_state = state.set_x(x, (item, ))
+            yield new_state
+~~~
+
+Now we can run the same example that we used for folders, but call `large_a_1` instead:
+
+~~~
+def Example1a():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=1000),
+                   File(name="file2.txt", size=2000)])
+
+    for item in large_a_1(state, "e1", "x1"):
+        print(item.variables)
+        
+# Running Example1a results in:
+{'x1': x1=(File(file2.txt, 2000),)}
+~~~
+
+Since the arguments to the predication are again unbound, this shows that the only large files in the world are "file2.txt".
+
+With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But we'll need a way to convert the MRS text representation into a set of Python function calls. That way, we won't have to manually convert them to Python like the above example. The [next section](devhowtoMRSToPython) describes how to do that.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
