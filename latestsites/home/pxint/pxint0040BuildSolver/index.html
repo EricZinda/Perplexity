@@ -350,7 +350,7 @@
         <h2 id="converting-mrs-text-to-python-function-calls">Converting MRS Text to Python Function Calls</h2>
 <p>Now it is time to start working through the code that <em>calls</em> the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">Predication Contract</a>: the solver.  The algorithm we’ll use was described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">“Backtracking” conceptual topic</a>.</p>
 
-<p>To be able to solve an MRS, we first need a way to convert from the MRS text representation to actual Python function calls. This section describes how.</p>
+<p>To be able to solve an MRS, we first need a way to convert from the MRS predicate names to actual Python function calls. This section describes how.</p>
 
 <p>We’ll use a simple Python representation that allows easy conversion from a raw MRS document: each predication will be represented by a Python class called <code class="language-plaintext highlighter-rouge">TreePredication</code> that just records the basic information about the predication:</p>
 
@@ -360,11 +360,11 @@
         self.name = name
         self.args = args
 </code></pre></div></div>
-<p><code class="language-plaintext highlighter-rouge">index</code> is a number representing the order in when the predication is called when solving the MRS, all the rest of the arguments are pulled directly from the MRS format.</p>
+<p><code class="language-plaintext highlighter-rouge">index</code> is a number representing the order that the predication is called when solving the MRS using a depth-first search. All the rest of the arguments are pulled directly from the MRS format.</p>
 
-<p>To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. <code class="language-plaintext highlighter-rouge">"_folder_n_of"</code>) to the function and module where the function lives.</p>
+<p>To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. <code class="language-plaintext highlighter-rouge">"_folder_n_of"</code>) to the function and module that implements the logic for it.</p>
 
-<p>We’ll start by building a <code class="language-plaintext highlighter-rouge">Vocabulary</code> class that will store all of the mappings. You add a mapping with <code class="language-plaintext highlighter-rouge">add_predication</code>, and find a mapping with <code class="language-plaintext highlighter-rouge">predication</code>. Note that it is both the name and the arguments of a predicate that have to match to get a property mapping:</p>
+<p>We’ll start by building a <code class="language-plaintext highlighter-rouge">Vocabulary</code> class that will store all of the mappings. You add a mapping with <code class="language-plaintext highlighter-rouge">add_predication()</code> and find a mapping with <code class="language-plaintext highlighter-rouge">predication()</code>. Note that it is both the name and the arguments of a predicate that have to match to get a proper mapping:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Vocabulary(object):
     def __init__(self):
@@ -382,7 +382,7 @@
         return self.name_function_map.get(signature, None)
 </code></pre></div></div>
 
-<p>Then we need to find a way to add the mappings in. We’ll do this using a Python feature called “decorators”. It isn’t important to understand <em>how</em> it works (but if you want to: <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators">read this section</a>). For our purposes, just understand that by writing these two small Python classes:</p>
+<p>Then we need to find a way to populate the mappings. We’ll do this using a Python feature called “decorators”. It isn’t important to understand <em>how</em> it works (but if you want to: <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators">read this section</a>). For our purposes, just understand that by writing these two small Python classes:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def arg_types_from_names(args):
     type_list = []
@@ -400,8 +400,8 @@
 
 
 # Decorator that adds maps a DELPH-IN predicate to a Python function
-def Predication(vocabulary,
-                name=None):
+def Predication(vocabulary, name=None):
+
     def arg_types_from_function(function):
         arg_spec = inspect.getfullargspec(function)
 
@@ -435,18 +435,9 @@ def folder_n_of(state, x_target, i_ignored):
     # ... implementation of folder_n_of goes here ...
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">@Predication(...)</code> “decoration” above the function runs code at file load time that sticks the Python function (i.e. <code class="language-plaintext highlighter-rouge">def folder_n_of(...)</code>) and the predication name (i.e. <code class="language-plaintext highlighter-rouge">_folder_n_of</code>) into the global instance of the <code class="language-plaintext highlighter-rouge">Vocabulary</code> class it is given.</p>
+<p>The <code class="language-plaintext highlighter-rouge">@Predication(...)</code> “decoration” above the function runs code at file load time that sticks the Python function (i.e. <code class="language-plaintext highlighter-rouge">def folder_n_of(...)</code>) and the predication name (i.e. <code class="language-plaintext highlighter-rouge">_folder_n_of</code>) into the global instance of the <code class="language-plaintext highlighter-rouge">Vocabulary</code> class it is passed.</p>
 
-<p>Note that the function name can be arbitrarily different than the predication name. In this case, we’ve removed the leading “_”, but we could have done something more radical, like this:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vocabulary = Vocabulary()
-
-@Predication(vocabulary, name="_folder_n_of")
-def my_folder_predication(state, x_target):
-    # ... implementation of folder_n_of goes here ...
-</code></pre></div></div>
-
-<p>Either way, the global <code class="language-plaintext highlighter-rouge">vocabulary</code> instance will record the mapping between all the functions decorated with <code class="language-plaintext highlighter-rouge">@Predication(vocabulary, name=...)</code> and the predications they are implementing. With that, we can now build a <code class="language-plaintext highlighter-rouge">CallPredication()</code> function that uses <code class="language-plaintext highlighter-rouge">vocabulary</code> to map the name of the predicate, plus the list of arguments, to an actual Python function and call it:</p>
+<p>The global <code class="language-plaintext highlighter-rouge">vocabulary</code> instance will record the mapping between all the functions decorated with <code class="language-plaintext highlighter-rouge">@Predication(vocabulary, name=...)</code> and the predications they are implementing. With that, we can now build a <code class="language-plaintext highlighter-rouge">call_predication()</code> function that uses <code class="language-plaintext highlighter-rouge">vocabulary</code> to map the name of the predicate, plus the list of arguments, to an actual Python function and call it:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Takes a TreePredication object, maps it to a Python function and calls it
 def call_predication(vocabulary, state, predication):
@@ -499,9 +490,9 @@ def Example2():
 {'x1': x1=(Folder(Documents),)}
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">Example2</code> calls <code class="language-plaintext highlighter-rouge">call_predication()</code> with the vocabulary object we’ve built and populated using the <code class="language-plaintext highlighter-rouge">Predication</code> decorator and a <code class="language-plaintext highlighter-rouge">State</code> object.  <code class="language-plaintext highlighter-rouge">call_predication</code> then does the mapping of the predication name <code class="language-plaintext highlighter-rouge">_folder_n_of</code> to the actual Python function we’ve written, and performs the “contract” on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.</p>
+<p><code class="language-plaintext highlighter-rouge">Example2</code> calls <code class="language-plaintext highlighter-rouge">call_predication()</code> with the <code class="language-plaintext highlighter-rouge">vocabulary</code> object we’ve built and populated using the <code class="language-plaintext highlighter-rouge">Predication</code> decorator and a <code class="language-plaintext highlighter-rouge">State</code> object.  <code class="language-plaintext highlighter-rouge">call_predication</code> then does the mapping of the predication name <code class="language-plaintext highlighter-rouge">_folder_n_of</code> to the actual Python function we’ve written, and performs the “contract” on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.</p>
 
-<p>The reason it prints out the two folders that are in our world is that we left all the arguments to <code class="language-plaintext highlighter-rouge">_folder_n_of</code> unbound. The contract says that, in that case, it should yield all the things in the world that “are a folder”, thus the behavior.</p>
+<p>The reason it prints out the two folders in our world is that we left all the arguments to <code class="language-plaintext highlighter-rouge">_folder_n_of</code> unbound. The contract says that, in that case, it should yield all the things in the world that “are a folder”, thus the behavior.</p>
 
 <p>With this in place, we can tackle more complicated groups of predications such as conjunctions in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0050Conjunctions">next section</a>.</p>
 
