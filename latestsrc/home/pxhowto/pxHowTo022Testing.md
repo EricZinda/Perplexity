@@ -1,5 +1,5 @@
 {% raw %}## Testing
-Now that we have implemented a predication, it is important to understand how to test it.  In a Perplexity system it is very easy to enhance a predication to support one scenario and break others that used to work. So, to keep the system working well and avoid functionality regressions, you should always write at least simple functionality test for phrases once they work.
+Now that we have implemented a predication, it is important to understand how to test it.  In a Perplexity application, it is very easy to enhance a predication to support one scenario and break others that used to work. So, to keep the system working well and avoid functionality regressions, you should always write at least simple functionality tests for phrases once they work.
 
 Since the interface to a Perplexity system is simply textual user input, and the output is also text, the built-in Perplexity test functionality just records the output that you expect for a given phrase when it is working properly. Then, you can run the test again when you've changed something and it will tell you if the expected output has changed.
 
@@ -57,7 +57,7 @@ Recorded (1 items).
 Recorded (1 items).
 ```
 
-You can see that the system is recording each interact by the text `Recorded (1 items).` at the end of the interaction.  Perplexity will keep gathering all the commands until you are done. Then you can create a test like this:
+You can see that the system is recording each interaction by the text `Recorded (1 items).` at the end of the interaction.  Perplexity will keep gathering all the commands until you are done. Then you can create a test like this:
 
 ```
 ? /createtest test1
@@ -65,7 +65,7 @@ Created test 'test1'
 Recording is now off
 ```
 
-This creates a test called "test1" and stops recording.  Tests are simply JSON files that are stored in `/perplexity/tests`.  If you open the file you'll see:
+This creates a test called "test1" and stops recording.  Tests are simply JSON files that are stored in `/perplexity/tests`.  If you open the file, you'll see:
 
 ```
 {
@@ -149,7 +149,7 @@ Expected:
 (<enter>)ignore, (b)reak to end testing, (u)pdate test, (a) add alternative correct result, (d)isable test
 ```
 
-Perplexity notices the output changed and tells you what it expected. Now you have to decide what to do about it.  
+Perplexity notices the output changed and tells you what it expected. Now you have to decide what to do about it:
 
 - Maybe you meant to do the change. Press "u" to update the test to use this new output as the expected output
 - Maybe you want to ignore it for now, press "enter"
@@ -192,10 +192,10 @@ Yes.
 **** Testing Complete. Elapsed time: 2.01737
 ```
 
-`/appendtest` simply adds these new interactions to the end of the test. You can see when it is run, the whole sequence gets run.
+`/appendtest` simply adds these new interactions to the end of the test. You can see that, when it is run, the whole sequence gets run.
 
 ### Resetting State
-Often your tests will end up manipulating the state of the world and you'll want to reset it to try alternatives. You can do this with the `/reset` command. You give it the module.function_name of your reset function, like this:
+Often your tests will end up manipulating the state of the world and you'll want to reset it to try alternatives. You can do this with the `/reset` command. You give it the `module.function_name` of your reset function, like this:
 
 ```
 ? /reset hello_world.hello_world_FileSystemState.reset
@@ -247,7 +247,7 @@ Since we appended the session, the reset will now happen at the end. This might 
 }
 ```
 
-And now when we run it you can see the reset happening at the beginning:
+And now when we run it, you can see the reset happening at the beginning:
 
 ```
 ? /runtest test1
@@ -280,9 +280,9 @@ You can feel free to rearrange and edit the information in these test files, as 
 ### Folders
 "test1.tst" was created in the `/perplexity/tests` folder. You can also organize your tests using folders:
 
-`/createtest myfolder/test2`: creates a `/perplexity/tests/myfolder` folder and puts your test there.
-`/runtest myfolder/test2`: runs the test in that folder.
-`/appendtest myfolder/test2`: appends to it.
+- `/createtest myfolder/test2`: creates a `/perplexity/tests/myfolder` folder and puts your test there.
+- `/runtest myfolder/test2`: runs the test in that folder.
+- `/appendtest myfolder/test2`: appends to it.
 
 etc.
 
@@ -291,16 +291,16 @@ You can also run *all* the tests in a folder like this:
 `/runfolder myfolder`
 
 ### Stopping and Resuming a Test
-When a test breaks, you will often hit "b" to stop it, go fix it, and want to see if you fixed it. Sometimes you'd like to just restart where the break happened, especially if it is a long test.  You do this with the `/resume` command. If you type that command, Perplexity will resume the test *starting with the most recent `reset` command*. It does this because simply starting right where things broke might put the state in a different configuration. Restarting at the reset point ensures the state gets built up properly.
+When a test breaks, you will often hit "b" to stop it, go fix it, and want to see if you fixed it. Sometimes you'd like to just restart where the break happened, especially if it is a long test.  You do this with the `/resume` command. If you type that command, Perplexity will resume the test *starting with the most recent `reset` command*. It does this because starting right where things broke might put the state in a different configuration. Restarting at the reset point ensures the state gets built up properly.
 
-Due to this, it is always good to put resets into your test as you test different scenarios so you can `/resume` and get back to it more quickly.
+Due to this, it is always good to put resets into your test as you test different scenarios so you can `/resume` and get back to it more quickly and not have to start from the beginning.
 
 Note that this also works for `/runfolder`.  You might have stopped the test 10 folders into the run, but `/resume` will start at that same place and skip the first 9 folders.
 
 Also note that the test location is recorded on disk. So you can shut down your computer and come back and it will still resume in the right place.
 
 ### Logging Tests
-Sometimes you can't sit there and watch the test run. You'd like to run the whole thing and then see what all the failures were.  To do this, you run `/logtests` before running a test or a folder. Perplexity will then record all the failures in a file called `/perplexity/testresults.txt`. You could look at this file to see what happened, but a better way is to run `/resolvetests`. This will run you through the same interaction you would have had by just running interactively, but only on the failures.  If we do the previous example, we'd get:
+Sometimes you can't sit there and watch the test run so you can continue over or update the tests that changed. You'd like to run the whole thing and then see what all the failures were when it is all done.  To do this, you run `/logtests` before running a test or a folder. Perplexity will then record all the failures in a file called `/perplexity/testresults.txt`. You could look at this file to see what happened, but a better way is to run `/resolvetests`. This will run you through the same interaction you would have had by just running interactively, but only on the failures.  If we redo the previous example where we intentionally broke a test, we'd get:
 
 ```
 ? /logtests
