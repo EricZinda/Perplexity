@@ -456,6 +456,7 @@ def large_a_1(state, e, x):
             new_state = state.set_x(x, (item, ))
             yield new_state
 </code></pre></div></div>
+<p>Note that we are ignoring the <code class="language-plaintext highlighter-rouge">e</code> event variable. That only comes into play when other predications want to modify the behavior of “large” like “very large”. We can safely ignore it for now.</p>
 
 <p>Now we can run the same example that we used for folders, but call <code class="language-plaintext highlighter-rouge">large_a_1</code> instead:</p>
 

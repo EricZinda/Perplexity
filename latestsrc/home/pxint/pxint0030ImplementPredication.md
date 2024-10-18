@@ -111,6 +111,7 @@ def large_a_1(state, e, x):
             new_state = state.set_x(x, (item, ))
             yield new_state
 ```
+Note that we are ignoring the `e` event variable. That only comes into play when other predications want to modify the behavior of "large" like "very large". We can safely ignore it for now.
 
 Now we can run the same example that we used for folders, but call `large_a_1` instead:
 
