@@ -348,9 +348,9 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="converting-phrases-to-mrs-and-well-formed-trees">Converting Phrases to MRS and Well-Formed Trees</h2>
-<p>To use our completed backtracking solver, we need to write the code that will convert a human phrase into <code class="language-plaintext highlighter-rouge">TreePredications</code> and call the solver with them. So, we need to generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.</p>
+<p>To use our completed backtracking solver, we need to write the code that will convert a human phrase into <code class="language-plaintext highlighter-rouge">TreePredications</code> and call the solver with them. So, we need to generate all the MRS documents for the phrase and all the well-formed trees for each MRS document.</p>
 
-<p>To do this, we’ll write code to use the <a href="http://sweaglesw.org/linguistics/ace/">ACE parser</a> to convert a phrase into an MRS document using the <code class="language-plaintext highlighter-rouge">ACEParser</code> class from <a href="https://github.com/delph-in/pydelphin"><code class="language-plaintext highlighter-rouge">pydelphin</code></a>. The only trick is that we need to supply a grammar file to tell ACE which language we are speaking. It is platform dependent, so we’ll create a helper function that determines which one to return for the current user. Note that this assumes the grammar files are all in the directory that the function is contained in. The names used are the names of the grammar files in the <code class="language-plaintext highlighter-rouge">/perplexity</code> folder of this repository, and the function is actually imported from a file in that same directory:</p>
+<p>To do this, we’ll write code that uses the <a href="http://sweaglesw.org/linguistics/ace/">ACE parser</a> (via the <code class="language-plaintext highlighter-rouge">ACEParser</code> class from <a href="https://github.com/delph-in/pydelphin"><code class="language-plaintext highlighter-rouge">pydelphin</code></a>) to convert a phrase into an MRS document. The only trick is that we need to supply a grammar file to tell ACE which language we are speaking. It is platform dependent, so we’ll create a helper function that determines which one to return for the current platform. The function assumes the grammar files are all in the directory that the function is contained in. The names of the grammar files in the <code class="language-plaintext highlighter-rouge">/perplexity</code> folder of this repository are used, and the function is actually imported from a file in that same directory:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def erg_file(self):
     if sys.platform == "linux":
@@ -374,7 +374,7 @@
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 </code></pre></div></div>
 
-<p>Using that function, we can now call ACE to get the MRS:</p>
+<p>Using that function, we can now call ACE to get the MRS documents for a phrase:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def mrss_from_phrase(phrase):
     # Don't print errors to the screen
