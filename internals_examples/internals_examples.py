@@ -1,14 +1,29 @@
 import copy
 import inspect
 import os
-import platform
 import sys
+import uuid
 from delphin import ace
-
-from perplexity.tree import sort_conjunctions
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import ShowLogging
 from perplexity.erg import erg_file
+
+
+class UniqueObject(object):
+    def __init__(self):
+        self.unique_id = uuid.uuid4()
+
+
+# Represents something that can "do" things, like a computer
+# or a human (or a dog, etc)
+class Actor(UniqueObject):
+    def __init__(self, name, person):
+        super().__init__()
+        self.name = name
+        self.person = person
+
+    def __repr__(self):
+        return f"Actor(name={self.name}, person={self.person})"
 
 
 class TreePredication(object):
@@ -101,7 +116,7 @@ def arg_types_from_names(args):
     for arg_name in args:
         # Allow single character arguments like "x" and "e"
         # OR the format: "x_actor", "xActor", etc
-        if isinstance(arg_name, TreePredication):
+        if isinstance(arg_name, (TreePredication, list)):
             type_list.append("h")
         else:
             arg_type = arg_name[0]
@@ -138,8 +153,9 @@ def Predication(vocabulary, name=None):
     return predication_decorator
 
 
-class File:
+class File(UniqueObject):
     def __init__(self, name, size=0):
+        super().__init__()
         self.name = name
         self.size = size
 
@@ -147,8 +163,9 @@ class File:
         return f"File({self.name}, {self.size})"
 
 
-class Folder:
+class Folder(UniqueObject):
     def __init__(self, name):
+        super().__init__()
         self.name = name
 
     def __repr__(self):
@@ -194,6 +211,9 @@ class State(object):
         # "objects" are passed to us as an argument
         # by whoever creates an instance of the class
         self.objects = objects
+
+        # Remember all the operations applied to the state object
+        self.operations = []
 
     # A standard "class method" is just a function definition,
     # indented properly, with "self" as the first argument
@@ -251,6 +271,44 @@ class State(object):
     def all_individuals(self):
         for item in self.objects:
             yield item
+
+    # Call to apply a list of operations to
+    # a new State object
+    def apply_operations(self, operation_list):
+        newState = copy.deepcopy(self)
+        for operation in operation_list:
+            operation.apply_to(newState)
+            newState.operations.append(operation)
+
+        return newState
+
+    def get_operations(self):
+        return copy.deepcopy(self.operations)
+
+
+# Delete any object in the system
+class DeleteOperation(object):
+    def __init__(self, object_to_delete):
+        self.object_to_delete = object_to_delete
+
+    def apply_to(self, state):
+        for index in range(0, len(state.objects)):
+            # Use the `unique_id` property to compare objects since they
+            # may have come from different `State` objects and will thus be copies
+            if state.objects[index].unique_id == self.object_to_delete.unique_id:
+                state.objects.pop(index)
+                break
+
+
+@Predication(vocabulary, name="_delete_v_1")
+def delete_v_1(state, e_introduced, x_actor, x_what):
+    # We only know how to delete things from the
+    # computer's perspective
+    x_actor_value = state.get_binding(x_actor).value
+    if x_actor_value is not None and len(x_actor_value) == 1 and isinstance(x_actor_value[0], Actor) and x_actor_value[0].name == "Computer":
+        x_what_value = state.get_binding(x_what).value
+        if len(x_what_value) == 1:
+            yield state.apply_operations([DeleteOperation(x_what_value[0])])
 
 
 @Predication(vocabulary, name="_file_n_of")
@@ -373,6 +431,23 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
             yield body_solution
 
 
+@Predication(vocabulary, name="pron")
+def pron(state, x_who):
+    mrs = state.get_binding("mrs").value[0]
+    person = mrs["Variables"][x_who]["PERS"]
+    for item in state.all_individuals():
+        if isinstance(item, Actor) and item.person == person:
+            yield state.set_x(x_who, (item, ))
+            break
+
+
+# This is just used as a way to provide a scope for a
+# pronoun, so it only needs the default behavior
+@Predication(vocabulary, name="pronoun_q")
+def pronoun_q(state, x, h_rstr, h_body):
+    yield from default_quantifier(state, x, h_rstr, h_body)
+
+
 # Takes a TreePredication object, maps it to a Python function and calls it
 def call_predication(vocabulary, state, predication):
     # Look up the actual Python module and
@@ -482,6 +557,24 @@ def respond_to_mrs(state, mrs):
                     print(solutions.get_binding(wh_variable).value)
             else:
                 print("I don't know")
+
+    elif force == "comm":
+        # This was a command so, if it works, just say so
+        # We'll get better errors and messages in upcoming sections
+        if len(solutions) > 0:
+            # Collect all the operations that were done
+            all_operations = []
+            for solution in solutions:
+                all_operations += solution.get_operations()
+
+            # Now apply all the operations to the original state object and
+            # print it to prove it happened
+            final_state = state.apply_operations(all_operations)
+
+            print("Done!")
+            print(final_state.objects)
+        else:
+            print("Couldn't do that.")
 
 
 def mrss_from_phrase(phrase):
@@ -706,6 +799,32 @@ def Example8():
                                                  TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
     respond_to_mrs(state, mrs)
+
+
+def Example9():
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=1000000)])
+
+    mrs = {}
+    mrs["Index"] = "e2"
+    mrs["Variables"] = {"x3": {"PERS": 2},
+                        "x8": {},
+                        "e2": {"SF": "comm"},
+                        "e13": {}}
+
+    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
+                                                   TreePredication(1, "pron", ["x3"]),
+                                                   TreePredication(0, "_a_q", ["x8",
+                                                                               [TreePredication(1, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
+                                                                               TreePredication(3, "_delete_v_1", ["e2", "x3", "x8"])])]
+                                     )
+
+    state = state.set_x("mrs", (mrs,))
+    respond_to_mrs(state, mrs)
+
 
 
 
@@ -1068,7 +1187,8 @@ if __name__ == '__main__':
     # Example6()
     # Example7()
     # Example5_1
-    Example8()
+    # Example8()
+    Example9()
     # Example5_2()
     # Example6()
     # Example6a()
