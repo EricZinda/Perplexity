@@ -307,6 +307,8 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
     x_actor_value = state.get_binding(x_actor).value
     if x_actor_value is not None and len(x_actor_value) == 1 and isinstance(x_actor_value[0], Actor) and x_actor_value[0].name == "Computer":
         x_what_value = state.get_binding(x_what).value
+
+        # Only handle deleting one object at a time, don't support "together"
         if len(x_what_value) == 1:
             yield state.apply_operations([DeleteOperation(x_what_value[0])])
 

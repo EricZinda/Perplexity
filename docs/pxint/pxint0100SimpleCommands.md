@@ -57,9 +57,9 @@ def Example9():
 ...
 ~~~
 
-The `pron` implementation will look for an `Actor` object in the system with the same `person` value as the `pron` predication's `x` variable.
+(Why `Actor` derives from `UniqueObject` will be explained later in this topic.)
 
-To make sure the MRS is available for `pron` to inspect, we will create a "fake" mrs variable called `mrs` that is set to the MRS. Then any predication can inspect it. `pron` will retrieve it to do its work:
+The `pron` implementation will look for an `Actor` object in the system with the same `person` value as the `pron` predication's `x` variable. To make sure the MRS is available for `pron` to inspect, we will create a "fake" mrs variable called `mrs` that is set to the MRS. Then any predication can inspect it. `pron` will retrieve it to do its work:
 
 ~~~      
 @Predication(vocabulary, name="pron")
@@ -97,7 +97,7 @@ def Example9():
     respond_to_mrs(state, mrs)
 ~~~
 
-`pronoun_q` is just a simple, default quantifier predication that doesn't *do* anything except introduce the variable that `pron` uses. It acts just like `which_q` did in the [Simple Questions topic  ](devhowtoSimpleQuestions). So, `pronoun_q` will use the `default_quantifer` we [defined previously](devhowtoSimpleQuestions):
+`pronoun_q` is just a simple, default quantifier predication that doesn't *do* anything except introduce the variable that `pron` uses. It acts just like `which_q` did in the [Simple Questions topic  ](pxint0090SimpleQuestions). So, `pronoun_q` will use the `default_quantifer` we [defined in that topic](pxint0090SimpleQuestions):
 
 ~~~      
 # This is just used as a way to provide a scope for a
@@ -110,7 +110,7 @@ def pronoun_q(state, x, h_rstr, h_body):
 ### Verbs and State Changes: delete_v_1
 The last new predication is `_delete_v_1`. `_delete_v_1` is the first "real" verb we've dealt with. The others so far have been "implied" "to be" verbs for a phrase like "a file is large", and they don't show up in the MRS as [described previously](devhowtoSentenceForce). A verb looks like every other predication: it has a name and arguments. And, because verbs can be modified by words like adverbs (e.g. "*permanently* delete the file"), it introduces an event to hang modifiers on. Like many verbs, the second argument represents the "actor": the person or thing doing the deleting. The final argument is what to delete.
 
-Because our world state is simply a Python list of Python objects, the logic for deleting something is going to be trivial: remove the thing from the list. In fact, implementing what we are doing here in a real file system interface would be trivial as well: delete the file. However, we would have to decide what to do if a user command like "delete *every* file" fails to delete one of them for some reason. We'll ignore that in our example and just remove the files from the `State` object's list of state. We can safely do this, even though other predications may still be iterating over them, because our `State` object is immutable ([as described previously](devhowtoPythonBasics)) and we will keep it that way by returning a new `State` object when something is deleted, just like we already do for setting variables.
+Because our world state is simply a list of Python objects, the logic for deleting something is going to be trivial: remove the thing from the list. In fact, implementing what we are doing here in a real file system interface would be trivial as well: delete the file. However, we would have to decide what to do if a user command like "delete *every* file" fails to delete one of them for some reason. We'll ignore that in our example and just remove the files from the `State` object's list of state. We can safely do this, even though other predications may still be iterating over them, because our `State` object is immutable ([as described previously](devhowtoPythonBasics)) and we will keep it that way by returning a new `State` object when something is deleted, just like we already do for setting variables.
 
 We do have a problem, though. As you'll see later, we will encounter phrases like "delete *every* file", which have a different solution (i.e. state object) for each file that gets deleted. Each solution will have only *one* of the files deleted.  In order to end up with a single world state that has *all* the files deleted, we'll have to merge them together at the end somehow.
 
@@ -157,7 +157,7 @@ class DeleteOperation(object):
                 break
 ~~~
 
-An "operation" in our system is simply an object that has an `apply_to()` method that does something to the `State` object it is passed. The `DeleteOperation` operation class deletes any object in the system by removing it from the `State` object's list of objects. It uses a `unique_id` property to compare objects since they may have come from different `State` objects and will thus be copies and just comparing the objects will fail. This could be implemented in many ways and one is described at the very end of this section.
+An "operation" in our system is simply an object that has an `apply_to()` method that does something to the `State` object it is passed. The `DeleteOperation` operation class deletes any object in the system by removing it from the `State` object's list of objects. It uses a `unique_id` property to compare objects since they may have come from different `State` objects and will thus be copies and just comparing the objects will fail. This could be implemented in many ways and one approach is described at the very end of this section.
 
 > This is a case where our "immutable" `State` class is actually being changed. That's OK, though, because only the `State` class will be asking it to do this, and only on a fresh `State` object that isn't in use yet.
 
@@ -173,6 +173,8 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
     x_actor_value = state.get_binding(x_actor).value
     if x_actor_value is not None and len(x_actor_value) == 1 and isinstance(x_actor_value[0], Actor) and x_actor_value[0].name == "Computer":
         x_what_value = state.get_binding(x_what).value
+        
+        # Only handle deleting one object at a time, don't support "together"
         if len(x_what_value) == 1:
             yield state.apply_operations([DeleteOperation(x_what_value[0])])
 ~~~
@@ -184,8 +186,7 @@ Then, we use our new `apply_operations()` method to do the deleting and return t
 Finally, we need to add a new clause to `respond_to_mrs()` to handle *commands*. It will simply say "Done!" if the command worked. It will also collect up all of the operations that happened and apply them to a single state object. This isn't really necessary for this example since we are only deleting one file, but is necessary for phrases like "delete every file":
 
 ~~~
-def RespondToMRS(state, mrs):
-    
+def respond_to_mrs(state, mrs):    
     ...
     
         elif force == "comm":
@@ -205,7 +206,11 @@ def RespondToMRS(state, mrs):
             print(final_state.objects)
         else:
             print("Couldn't do that.")
-            
+~~~
+
+Now we can run an example for "delete a large file":
+
+~~~
 def Example9():
     state = State([Actor(name="Computer", person=2),
                    Folder(name="Desktop"),
@@ -237,27 +242,11 @@ Done!
 
 You can see by the output that the only large file in the system was deleted: "file1.txt".
 
-There are a couple of interesting things to point out in what we've done. The code for `delete_v_1` will delete *anything*, so the phrase "delete you" will actually work! Of course, it will then mess up the system because every command after that will not be able to find the implied "you". This is part of the magic and the challenge of implementing MRS predications, if you implement them right, they can be very general and allow constructions that you hadn't thought of.
+There are a couple of interesting things about what we've done. The code for `delete_v_1` will delete *anything*, so the phrase "delete you" will actually work! Of course, it will then mess up the system because every command after that will not be able to find the implied "you". This is part of the magic and the challenge of implementing MRS predications, if you implement them right, they can be very general and allow constructions that you hadn't thought of.
 
 
 ## Identity
-Because the system is built around immutable state, we will sometimes end up with two `State` objects and need to be able to find the same object contained in either one as we did in the implementation of the `DeleteOperation`:
-
-~~~
-class DeleteOperation(object):
-    def __init__(self, object_to_delete):
-        self.object_to_delete = object_to_delete
-
-    def apply_to(self, state):
-        for index in range(0, len(state.objects)):
-            # Use the `unique_id` property to compare objects since they
-            # may have come from different `State` objects and will thus be copies
-            if state.objects[index].unique_id == self.object_to_delete.unique_id:
-                state.objects.pop(index)
-                break
-~~~
-
-We need a way to compare objects *across* state objects. The easiest way is to give all the objects in the system a globally unique id that can be easily compared. In the example above, we created a base class, `UniqueObject` that does this and derived everything from it:
+Because the system is built around immutable state, we will sometimes end up with two `State` objects and need to be able to find the same object contained in either one.  This happened in the implementation of the `DeleteOperation`. We need a way to compare objects *across* state objects. The easiest way is to give all the objects in the system a globally unique id that can be easily compared. In the example above, we created a base class, `UniqueObject` that does this and derived everything from it:
 
 ~~~
 class UniqueObject(object):
@@ -283,6 +272,21 @@ class Folder(UniqueObject):
         return f"Folder({self.name})"
 ~~~
 
-Then the caller can just compare the `.unique_id` property.
+Then the caller can just compare the `.unique_id` property, like we did in `DeleteOperation`:
+
+~~~
+class DeleteOperation(object):
+    def __init__(self, object_to_delete):
+        self.object_to_delete = object_to_delete
+
+    def apply_to(self, state):
+        for index in range(0, len(state.objects)):
+            # Use the `unique_id` property to compare objects since they
+            # may have come from different `State` objects and will thus be copies
+            if state.objects[index].unique_id == self.object_to_delete.unique_id:
+                state.objects.pop(index)
+                break
+~~~
+
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
