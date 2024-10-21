@@ -1,5 +1,5 @@
 {% raw %}## Simple Questions
-Note that the MRS for "Is a file large?" is identical to the proposition "A file is large." *except* that it has a different sentence force of `SF: ques`:
+Note that the MRS for, "Is a file large?" is identical to the proposition, "A file is large." *except* that it has a different sentence force of `SF: ques`:
 
 ```
 [ TOP: h0
@@ -60,7 +60,7 @@ RELS: <
 HCONS: < h0 qeq h1 h5 qeq h7 > ]
 ```
 
-The MRS looks *very* similar and still has a `SF: ques` sentence force. However, it used a new quantifier: `_which_q`. `which_q` is simply a way for the MRS to indicate which variable the user is expecting an answer to. In this case: `x3`. These are called "wh" questions in linguistics (i.e. which, what, where, when, who). The quantifier itself doesn't quantify anything, it simply evaluates all the `RSTR` answers against the `BODY` and returns whatever worked. The ERG has several quantifiers that are just "markers"  like this. So, we're going to build a function they can share, called `default_quantifier()`:
+The MRS looks *very* similar and still has a `SF: ques` sentence force. However, it used a new quantifier: `_which_q`. `_which_q` is simply a way for the MRS to indicate which variable the user is expecting an answer to. In this case: `x3`. These are called "wh" questions in linguistics (i.e. which, what, where, when, who). The quantifier itself doesn't quantify anything, it simply evaluates all the `RSTR` answers against the `BODY` and returns whatever worked. The ERG has several quantifiers that are just "markers"  like this. So, we're going to build a function they can share, called `default_quantifier()`:
 
 ```
 @Predication(vocabulary, name="_which_q")
@@ -76,7 +76,7 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
             yield body_solution
 ```
 
-When `_which_q` is in a sentence, we should answer the question with all the values of the variable that it quantifies (`x3` in this case). To do that, we're going to have to build a function that finds the `_which_q` predication, if it exists. Since searching through the tree is something we'll do often, we'll build another helper function called `walk_tree_predications_until` and then use it to build :
+When `_which_q` is in a sentence, we should answer the question with all the values of the variable that it quantifies (`x3` in this case). To do that, We need to build a function that finds the `_which_q` predication, if it exists. Since searching through the tree is something we'll do often, we'll build another helper function called `walk_tree_predications_until` and then use it to build `find_predication` which will find one or more predications in a tree:
 
 ```
 # walk_tree_predications_until() is a helper function that just walks
@@ -114,23 +114,28 @@ def walk_tree_predications_until(term, func):
 # Walk the tree represented by "term" and
 # return the predication that matches
 # "predicate_name" or "None" if none is found
-def FindPredicate(term, predication_name):
+def find_predication(term, predication_name):
+    if isinstance(predication_name, list):
+        predication_names = predication_name
+    else:
+        predication_names = [predication_name]
+
     # This function gets called for every predication
-    # in the tree. It is a private function since it is 
+    # in the tree. It is a private function since it is
     # only used here
-    def MatchPredicationName(predication):
-        if predication[0] == predication_name:
+    def match_predication_name(predication):
+        if predication.name in predication_names:
             return predication
         else:
             return None
-    
+
     # Pass our private function to WalkTreeUntil as
     # a way to filter through the tree to find
     # predication_name
-    return WalkTreeUntil(term, MatchPredicationName)
+    return walk_tree_predications_until(term, match_predication_name)
 ```
 
-Now we can update the `RespondToMRS()` function to answer "which" questions with actual values:
+Now we can update the `respond_to_mrs()` function to answer "which" questions with actual values:
 
 ```
 def respond_to_mrs(state, mrs):
@@ -174,7 +179,7 @@ def respond_to_mrs(state, mrs):
                 print("I don't know")
 ```
 
-Now we can run an example:
+... and run an example:
 
 ```
 def Example8():
@@ -209,6 +214,8 @@ def Example8():
 ```
 
 Note that we have a subtle bug in our implementation of `default_quantifier`: we are not yet paying attention to `NUM: sg`.  If there were two large files, they would both get returned in this implementation. Really, they should return a failure since the premise of "which file" is wrong (since there are multiple of them). We'll address that once we get to the section on how to handle plurals.
+
+Next up is the "command" sentence force, which is a bit trickier.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
