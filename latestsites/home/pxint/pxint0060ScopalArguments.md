@@ -70,10 +70,8 @@ def Example4():
 
 Note that, even though we have made both files "large" for this example, only one, arbitrary, file is returned since the phrase is "*a* large file".
 
-At this point we have a fully functional evaluator, now we need to use it to process real phrases and build some of the mechanism around it.
-
-We'll start by stepping back and walking through how [MRS documents and trees are generated](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees) in the first place.
+At this point we have a fully functional evaluator. Next we need to figure out how to represent and report errors that happen when a phrase does not have a solution.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md)]{% endraw %}
+Last update: 2024-10-21 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md)]{% endraw %}

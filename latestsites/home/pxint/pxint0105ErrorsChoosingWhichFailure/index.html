@@ -297,6 +297,12 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0060ScopalArguments/">Solving Scopal Arguments</a></li>
           
+            <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
+          
+            <li><a href="/Perplexity/home/pxint/pxint0100SimpleCommands/">Commands</a></li>
+          
             <li><a href="/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure/" class="active">Choosing a Failure</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure/">Naive Failures</a></li>
@@ -304,12 +310,6 @@
             <li><a href="/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures/">Words in Failures</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0130ErrorsRobustFailure/">Robust Failures</a></li>
-          
-            <li><a href="/Perplexity/home/pxint/pxint0080SimplePropositions/">Propositions</a></li>
-          
-            <li><a href="/Perplexity/home/pxint/pxint0090SimpleQuestions/">Questions</a></li>
-          
-            <li><a href="/Perplexity/home/pxint/pxint0100SimpleCommands/">Commands</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
           
@@ -347,10 +347,12 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h3 id="reporting-the-right-failure">Reporting the Right Failure</h3>
-<p>As described in the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure">Choosing a Failure</a>, a good heurstic to use for reporting failures to the user is to pick the “deepest” failure encountered. Here we’ll walk through how Perplexity does that.</p>
+        <h2 id="reporting-failures">Reporting Failures</h2>
 
-<p>We will need to remember the “current deepest” error as we go. To organize the methods and variables dealing with executing predications and tracking errors, we’ll move our existing <code class="language-plaintext highlighter-rouge">Call()</code>, <code class="language-plaintext highlighter-rouge">CallPredication()</code> and <code class="language-plaintext highlighter-rouge">RespondToMRS()</code> functions into a class called <code class="language-plaintext highlighter-rouge">ExecutionContext</code>. Then, we can track our “current deepest” error there, along with a variable that tracks how deep the currently executing predication is.</p>
+<h3 id="reporting-the-right-failure">Reporting the Right Failure</h3>
+<p>As described in the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure">Choosing a Failure</a>, a good heuristic to use for reporting failures to the user is to pick the “deepest” failure encountered. Here we’ll walk through how Perplexity does that.</p>
+
+<p>As discussed in that section, we will need to remember the “current deepest” error as we go. To organize the methods and variables dealing with executing predications and tracking errors, we’ll move our existing <code class="language-plaintext highlighter-rouge">Call()</code>, <code class="language-plaintext highlighter-rouge">CallPredication()</code> and <code class="language-plaintext highlighter-rouge">RespondToMRS()</code> functions into a class called <code class="language-plaintext highlighter-rouge">ExecutionContext</code>. Then, we can track our “current deepest” error there, along with a variable that tracks how deep the currently executing predication is.</p>
 
 <p>The following methods aren’t changed at all from what we wrote in previous sections except for <code class="language-plaintext highlighter-rouge">Call()</code>.  It now assigns an “index” to each predication as they are executed so we know how deep we are. There is also now a global <code class="language-plaintext highlighter-rouge">ExecutionContext</code> that we’ll use for calling predications, along with a couple of methods that make it easy to call:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class ExecutionContext(object):
@@ -423,7 +425,7 @@ def ReportError(error):
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md">edit</a>]</p>
+<p>Last update: 2024-10-21 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md">edit</a>]</p>
 
         
       </section>

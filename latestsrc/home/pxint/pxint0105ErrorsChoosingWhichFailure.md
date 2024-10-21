@@ -1,7 +1,9 @@
-{% raw %}### Reporting the Right Failure
-As described in the conceptual topic on [Choosing a Failure](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure), a good heurstic to use for reporting failures to the user is to pick the "deepest" failure encountered. Here we'll walk through how Perplexity does that.
+{% raw %}## Reporting Failures
 
-We will need to remember the "current deepest" error as we go. To organize the methods and variables dealing with executing predications and tracking errors, we'll move our existing `Call()`, `CallPredication()` and `RespondToMRS()` functions into a class called `ExecutionContext`. Then, we can track our "current deepest" error there, along with a variable that tracks how deep the currently executing predication is.
+### Reporting the Right Failure
+As described in the conceptual topic on [Choosing a Failure](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure), a good heuristic to use for reporting failures to the user is to pick the "deepest" failure encountered. Here we'll walk through how Perplexity does that.
+
+As discussed in that section, we will need to remember the "current deepest" error as we go. To organize the methods and variables dealing with executing predications and tracking errors, we'll move our existing `Call()`, `CallPredication()` and `RespondToMRS()` functions into a class called `ExecutionContext`. Then, we can track our "current deepest" error there, along with a variable that tracks how deep the currently executing predication is.
 
 The following methods aren't changed at all from what we wrote in previous sections except for `Call()`.  It now assigns an "index" to each predication as they are executed so we know how deep we are. There is also now a global `ExecutionContext` that we'll use for calling predications, along with a couple of methods that make it easy to call:
 ```
@@ -74,4 +76,4 @@ The system will now remember which is the right ("deepest") error to report. The
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md)]{% endraw %}
+Last update: 2024-10-21 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md)]{% endraw %}
