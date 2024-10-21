@@ -366,10 +366,12 @@ def call(vocabulary, state, term):
         yield from call_predication(vocabulary, state, term)
 
 
-def sentence_force(variables):
-    for variable in variables.items():
-        if "SF" in variable[1]:
-            return variable[1]["SF"]
+# Get the SF property of the Index of the MRS
+def sentence_force(mrs):
+    if "Index" in mrs:
+        if mrs["Index"] in mrs["Variables"]:
+            if "SF" in mrs["Variables"][mrs["Index"]]:
+                return mrs["Variables"][mrs["Index"]]["SF"]
 
 
 def respond_to_mrs(state, mrs):
@@ -379,7 +381,7 @@ def respond_to_mrs(state, mrs):
     for item in call(vocabulary, state, mrs["RELS"]):
         solution.append(item)
 
-    force = sentence_force(mrs["Variables"])
+    force = sentence_force(mrs)
     if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
@@ -570,7 +572,7 @@ def Example7():
     mrs["Index"] = "e2"
 
     # Set its "Variables" key to *another* dictionary with
-    # two keys: "x1" and "e1". Each of those has a "value" of
+    # keys that represent the variables. Each of those has a "value" of
     # yet another dictionary that holds the properties of the variables
     # For now we'll just fill in the SF property
     mrs["Variables"] = {"x3": {},
