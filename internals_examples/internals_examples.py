@@ -366,6 +366,30 @@ def call(vocabulary, state, term):
         yield from call_predication(vocabulary, state, term)
 
 
+def sentence_force(variables):
+    for variable in variables.items():
+        if "SF" in variable[1]:
+            return variable[1]["SF"]
+
+
+def respond_to_mrs(state, mrs):
+    # Collect all the solutions to the MRS against the
+    # current world state
+    solution = []
+    for item in call(vocabulary, state, mrs["RELS"]):
+        solution.append(item)
+
+    force = sentence_force(mrs["Variables"])
+    if force == "prop":
+        # This was a proposition, so the user only expects
+        # a confirmation or denial of what they said.
+        # The phrase was "true" if there was at least one answer
+        if len(solution) > 0:
+            print("Yes, that is true.")
+        else:
+            print("No, that isn't correct.")
+
+
 def mrss_from_phrase(phrase):
     # Don't print errors to the screen
     f = open(os.devnull, 'w')
@@ -530,6 +554,36 @@ def Example6():
         for tree in trees_from_mrs(mrs):
             print(tree)
         print()
+
+
+# Evaluate the proposition: "a file is large"
+def Example7():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=2000000)])
+
+    # Start with an empty dictionary
+    mrs = {}
+
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # two keys: "x1" and "e1". Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
+
+    # Set the "RELS" key to the scope-resolved MRS tree
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                              TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                              TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+    respond_to_mrs(state, mrs)
+
 
 # def solve_and_respond(state, mrs):
 #     context = ExecutionContext(vocabulary)
@@ -887,7 +941,8 @@ if __name__ == '__main__':
     # Example3()
     # Example4()
     # Example5()
-    Example6()
+    # Example6()
+    Example7()
     # Example5_1()
     # Example5_2()
     # Example6()

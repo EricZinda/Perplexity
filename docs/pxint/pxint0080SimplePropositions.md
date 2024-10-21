@@ -1,27 +1,21 @@
 ## Responding to Simple Propositions
-The [Sentence Types](../devcon/devcon0070SentenceForce) conceptual topic outlines the logic for how to detect what type of phrase a user made. Here we'll walk through how to implement one type of phrase: the proposition. The next sections will walk through the rest.
+The examples we've seen examples that respond just by printing out all the solutions that were found. It is time to start responding more like a human would. Here we'll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through the rest.
 
-"Propositions" are sentences that declare something to be true like "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be [handled later](devhowtoChoosingWhichFailure)). A phrase is a proposition if the "sentence force" (SF) property of one or more of its variables is `prop` as [described in the previous section](devhowtoSentenceForce).
+"Propositions" are sentences that declare something to be true like, "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be [handled later]()). As described in the [Sentence Types section](../devcon/devcon0070SentenceForce), the English Resource Grammar helps us identify the type of phrase we received by providing a property called `SF` or "Sentence Force". A phrase is a proposition if the `SF` property of one or more of its variables is `prop`.
 
-Below is the MRS for "A file is very large". As described in the [previous section](devhowtoSentenceForce): `e2` has a sentence force of "proposition": `SF: prop`.
+Below is the MRS for "A file is large". As described in the [previous section](devhowtoSentenceForce): `e2` is the `INDEX` of the MRS, which represents the "syntactic head" or "main point" of the phrase.  It has a sentence force of "proposition": `SF: prop`.
+
 ~~~
-[ TOP: h0
-INDEX: e2
-RELS: < 
-[ _a_q LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
-[ _file_n_of LBL: h7 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] ARG1: i8 ]
-[ _very_x_deg LBL: h1 ARG0: e9 [ e SF: prop TENSE: untensed MOOD: indicative PROG: - PERF: - ] ARG1: e2 ]
-[ _large_a_1 LBL: h1 ARG0: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ]
->
-HCONS: < h0 qeq h1 h5 qeq h7 > ]
-
-          ┌────── _file_n_of(x3,i8)
-_a_q(x3,RSTR,BODY)    ┌── _very_x_deg(e9,e2)
-               └─ and(0,1)
-                        └ _large_a_1(e2,x3)
+[ "a file is large"
+  TOP: h0
+  INDEX: e2 [ e SF: prop TENSE: pres MOOD: indicative PROG: - PERF: - ]
+  RELS: < [ _a_q<0:1> LBL: h4 ARG0: x3 [ x PERS: 3 NUM: sg IND: + ] RSTR: h5 BODY: h6 ]
+          [ _file_n_of<2:6> LBL: h7 ARG0: x3 ARG1: i8 ]
+          [ _large_a_1<10:15> LBL: h1 ARG0: e2 ARG1: x3 ] >
+  HCONS: < h0 qeq h1 h5 qeq h7 > ]
 ~~~
 
-In order to start responding to user phrases properly, we need to begin passing in more information from the MRS, not just the predications.  We'll need the variable properties. We'll do this using a dictionary. In fact, we can make it easier to read using the Python `json` format. The `json` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
+In order to start responding to user phrases properly, we need to give the solver variable properties in addition to the predications.  We'll do this using a dictionary. In fact, we can make it easier to read using the Python `json` format. The `json` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
 
 In a `json` declaration:
 - Dictionaries are surrounded by `{}` with key/value pairs represented by `"key":"value"`
@@ -37,32 +31,42 @@ As always, you can set the key of a `dict` using the syntax `dict["key"] = <valu
 # Start with an empty dictionary
 mrs = {}
 
-# Set its "index" key to the value "e1"
-mrs["Index"] = "e1"
+# Set its "index" key to the value "e2"
+mrs["Index"] = "e2"
 
 # Set its "Variables" key to *another* dictionary with 
 # two keys: "x1" and "e1". Each of those has a "value" of 
 # yet another dictionary that holds the properties of the variables
-mrs["Variables"] = {"x1": {"NUM": "pl"},
-                    "e1": {"SF": "prop"}}
+# For now we'll just fill in the SF property
+mrs["Variables"] = {"x3": {},
+                    "i1": {},
+                    "e2": {"SF": "prop"}}
                     
-# Set the "RELS" key to the scope-resolved MRS tree, using our format
-mrs["RELS"] = [["_a_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]
+# Set the "RELS" key to the scope-resolved MRS tree
+mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                 TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                 TreePredication(2, "_large_a_1", ["e2", "x3"])])
 ~~~
 Thus, the `mrs` variable ends up being a big, single `json` object that has the MRS definition (that we understand so far) in it.
 
 Now we can create a new function called `RespondToMRS()` that inspects the MRS and uses the handy `sentence_force()` function to properly respond to a proposition:
 
 ~~~
-def RespondToMRS(state, mrs):
+def sentence_force(variables):
+    for variable in variables.items():
+        if "SF" in variable[1]:
+            return variable[1]["SF"]
+
+
+def respond_to_mrs(state, mrs):
     # Collect all the solutions to the MRS against the
     # current world state
     solution = []
-    for item in Call(vocabulary, state, mrs["RELS"]):
+    for item in call(vocabulary, state, mrs["RELS"]):
         solution.append(item)
-    
-    sentence_force = sentence_force(mrs["Variables"])
-    if sentence_force == "prop":
+
+    force = sentence_force(mrs["Variables"])
+    if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
@@ -70,16 +74,13 @@ def RespondToMRS(state, mrs):
             print("Yes, that is true.")
         else:
             print("No, that isn't correct.")
-            
-            
-def sentence_force(variables):
-    for variable in variables.items():
-        if "SF" in variable[1]:
-            return variable[1]["SF"]
-            
-            
+~~~
+
+Now we can run an example:
+
+~~~
 # Evaluate the proposition: "a file is large"
-def Example5():
+def Example7():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
                    File(name="file1.txt", size=2000000),
@@ -87,25 +88,29 @@ def Example5():
 
     # Start with an empty dictionary
     mrs = {}
-    
-    # Set its "index" key to the value "e1"
-    mrs["Index"] = "e1"
-    
-    # Set its "Variables" key to *another* dictionary with 
-    # two keys: "x1" and "e1". Each of those has a "value" of 
+
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # two keys: "x1" and "e1". Each of those has a "value" of
     # yet another dictionary that holds the properties of the variables
-    mrs["Variables"] = {"x1": {"NUM": "pl"},
-                        "e1": {"SF": "prop"}}
-                        
-    # Set the "RELS" key to the scope-resolved MRS tree, using our format
-    mrs["RELS"] = [["_a_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
 
-    RespondToMRS(state, mrs)
+    # Set the "RELS" key to the scope-resolved MRS tree
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                              TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                              TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
+    respond_to_mrs(state, mrs)
+    
 # Outputs:
 Yes, that is true.
 ~~~
 
-In the [next section](devhowtoSimpleQuestions), we'll respond to questions.
+In the [next section](pxint0090SimpleQuestions), we'll respond to questions.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
