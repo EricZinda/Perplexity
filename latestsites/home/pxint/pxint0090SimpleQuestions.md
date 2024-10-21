@@ -16,19 +16,18 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 ```
 
-Handling this can be as simple as responding "yes" or "no". We can add an `elif` clause to our `RespondToMRS()` function to respond properly:
+Handling this can be as simple as responding "yes" or "no". We can add an `elif` clause to our `respond_to_mrs()` function to respond properly:
 
 ```
-def RespondToMRS(state, mrs):
+def respond_to_mrs(state, mrs):
     # Collect all the solutions to the MRS against the
     # current world state
     solution = []
-    for item in Call(vocabulary, state, mrs["RELS"]):
+    for item in call(vocabulary, state, mrs["RELS"]):
         solution.append(item)
 
-    index_variable = mrs["Index"]
-    sentence_force = mrs["Variables"][index_variable]["SF"]
-    if sentence_force == "prop":
+    force = sentence_force(mrs)
+    if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
@@ -45,6 +44,7 @@ def RespondToMRS(state, mrs):
             print("Yes.")
         else:
             print("No.")
+            
 ```
 
 So far, so good. But what if the user says "Which file is large?":
@@ -58,11 +58,6 @@ RELS: <
 [ _large_a_1 LBL: h1 ARG0: e2 [ e SF: ques TENSE: pres MOOD: indicative PROG: - PERF: - ] ARG1: x3 ]
 >
 HCONS: < h0 qeq h1 h5 qeq h7 > ]
-
-
-              ┌────── _file_n_of(x3,i8)
-_which_q(x3,RSTR,BODY)
-                   └─ _large_a_1(e2,x3)
 ```
 
 The MRS looks *very* similar and still has a `SF: ques` sentence force. However, it used a new quantifier: `_which_q`. `which_q` is simply a way for the MRS to indicate which variable the user is expecting an answer to. In this case: `x3`. These are called "wh" questions in linguistics (i.e. which, what, where, when, who). The quantifier itself doesn't quantify anything, it simply evaluates all the `RSTR` answers against the `BODY` and returns whatever worked. The ERG has several quantifiers that are just "markers"  like this. So, we're going to build a function they can share, called `default_quantifier()`:
@@ -81,36 +76,37 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
             yield body_solution
 ```
 
-When `_which_q` is in a sentence, we should answer the question with all the values of the variable that it quantifies (`x3` in this case). To do that, we're going to have to build a function that finds the `_which_q` predication, if it exists. Since searching through the tree is something we'll be doing often, we'll also build a helper function:
+When `_which_q` is in a sentence, we should answer the question with all the values of the variable that it quantifies (`x3` in this case). To do that, we're going to have to build a function that finds the `_which_q` predication, if it exists. Since searching through the tree is something we'll do often, we'll build another helper function called `walk_tree_predications_until` and then use it to build :
 
 ```
-# WalkTreeUntil() is a helper function that just walks
+# walk_tree_predications_until() is a helper function that just walks
 # the tree represented by "term". For every predication found,
 # it calls func(found_predication)
 # If func returns anything besides "None", it quits and
 # returns that value
-def WalkTreeUntil(term, func):
-    if isinstance(term[0], list):
+def walk_tree_predications_until(term, func):
+    if isinstance(term, list):
         # This is a conjunction, recurse through the
         # items in it
         for item in term:
-            result = WalkTreeUntil(item, func)
+            result = walk_tree_predications_until(item, func)
             if result is not None:
                 return result
 
     else:
-        # This is a single term, call func with it
-        result = func(term)
-        if result is not None:
-            return result
+        # This is a single term, call func with it if it is a predication
+        if isinstance(term, TreePredication):
+            result = func(term)
+            if result is not None:
+                return result
 
-        # If func didn't say to quit, see if any of its terms are scopal
-        # i.e. are predications themselves
-        for arg in term[1:]:
-            if not isinstance(arg, str):
-                result = WalkTreeUntil(arg, func)
-                if result is not None:
-                    return term
+            # If func didn't say to quit, see if any of its terms are scopal
+            # i.e. are predications themselves
+            for arg in term.args:
+                if not isinstance(arg, str):
+                    result = walk_tree_predications_until(arg, func)
+                    if result is not None:
+                        return result
 
     return None
 
@@ -137,16 +133,15 @@ def FindPredicate(term, predication_name):
 Now we can update the `RespondToMRS()` function to answer "which" questions with actual values:
 
 ```
-def RespondToMRS(state, mrs):
+def respond_to_mrs(state, mrs):
     # Collect all the solutions to the MRS against the
     # current world state
     solutions = []
-    for item in Call(vocabulary, state, mrs["RELS"]):
+    for item in call(vocabulary, state, mrs["RELS"]):
         solutions.append(item)
 
-    index_variable = mrs["Index"]
-    sentence_force = mrs["Variables"][index_variable]["SF"]
-    if sentence_force == "prop":
+    force = sentence_force(mrs)
+    if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
@@ -155,9 +150,9 @@ def RespondToMRS(state, mrs):
         else:
             print("No, that isn't correct.")
 
-    elif sentence_force == "ques":
+    elif force == "ques":
         # See if this is a "WH" type question
-        wh_predication = FindPredicate(mrs["RELS"], "_which_q")
+        wh_predication = find_predication(mrs["RELS"], "_which_q")
         if wh_predication is None:
             # This was a simple question, so the user only expects
             # a yes or no.
@@ -172,33 +167,49 @@ def RespondToMRS(state, mrs):
             # from the solution
             # The phrase was "true" if there was at least one answer
             if len(solutions) > 0:
-                wh_variable = wh_predication[1]
-                for solution in solutions:
-                    print(solution.GetVariable(wh_variable))
+                wh_variable = wh_predication.args[0]
+                for solutions in solutions:
+                    print(solutions.get_binding(wh_variable).value)
             else:
                 print("I don't know")
+```
 
+Now we can run an example:
 
-# Evaluate the proposition: "which file is large?"
-def Example6():
+```
+def Example8():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
                    File(name="file1.txt", size=2000000),
-                   File(name="file2.txt", size=1000000)])
+                   File(name="file2.txt", size=100)])
 
+    # Start with an empty dictionary
     mrs = {}
-    mrs["Index"] = "e1"
-    mrs["Variables"] = {"x1": {"NUM": "sg"},
-                        "e1": {"SF": "ques"}}
-    mrs["RELS"] = [["_which_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]
 
-    RespondToMRS(state, mrs)
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "ques"}}
+
+    # Set the "RELS" key to the scope-resolved MRS tree
+    mrs["RELS"] = TreePredication(0, "_which_q", ["x3",
+                                                 TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                                 TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+    respond_to_mrs(state, mrs)
     
 # Prints:
-File(name=file1.txt, size=2000000)
+(File(file1.txt, 2000000),)
 ```
+
 Note that we have a subtle bug in our implementation of `default_quantifier`: we are not yet paying attention to `NUM: sg`.  If there were two large files, they would both get returned in this implementation. Really, they should return a failure since the premise of "which file" is wrong (since there are multiple of them). We'll address that once we get to the section on how to handle plurals.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0090SimpleQuestions.md)]{% endraw %}
+Last update: 2024-10-21 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0090SimpleQuestions.md)]{% endraw %}

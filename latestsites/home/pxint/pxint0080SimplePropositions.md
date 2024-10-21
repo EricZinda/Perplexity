@@ -1,9 +1,9 @@
 {% raw %}## Responding to Simple Propositions
-The examples we've seen examples that respond just by printing out all the solutions that were found. It is time to start responding more like a human would. Here we'll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through the rest.
+The examples we've seen so far respond by printing out all the solutions that were found. It is time to start responding more like a human would. Here we'll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through the rest.
 
-"Propositions" are sentences that declare something to be true like, "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be handled later). As described in the [Sentence Types section](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0070SentenceForce), the English Resource Grammar helps us identify the type of phrase we received by providing a property called `SF` or "Sentence Force". A phrase is a proposition if the `SF` property of one or more of its variables is `prop`.
+"Propositions" are sentences that declare something to be true like, "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be handled later). As described in the [Sentence Types section](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0070SentenceForce), the English Resource Grammar helps us identify the type of phrase we received by providing a property called `SF` or "Sentence Force". A phrase is a proposition if the `SF` property of its index variable is `prop`.
 
-Below is the MRS for "A file is large". As described in the previous section: `e2` is the `INDEX` of the MRS, which represents the "syntactic head" or "main point" of the phrase.  It has a sentence force of "proposition": `SF: prop`.
+Below is the MRS for "A file is large". `e2` is the `INDEX` of the MRS, which represents the "syntactic head" or "main point" of the phrase.  It has a sentence force of "proposition": `SF: prop`.
 
 ```
 [ "a file is large"
@@ -15,7 +15,7 @@ Below is the MRS for "A file is large". As described in the previous section: `e
   HCONS: < h0 qeq h1 h5 qeq h7 > ]
 ```
 
-In order to start responding to user phrases properly, we need to give the solver variable properties in addition to the predications.  We'll do this using a dictionary. In fact, we can make it easier to read using the Python `json` format. The `json` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
+In order to start responding to user phrases properly, we need to give the solver a dictionary of variable properties in addition to the predications.  WIn fact, we can make it easier to read using the Python `json` format. The `json` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
 
 In a `json` declaration:
 - Dictionaries are surrounded by `{}` with key/value pairs represented by `"key":"value"`
@@ -34,28 +34,33 @@ mrs = {}
 # Set its "index" key to the value "e2"
 mrs["Index"] = "e2"
 
-# Set its "Variables" key to *another* dictionary with 
-# two keys: "x1" and "e1". Each of those has a "value" of 
+# Set its "Variables" key to *another* dictionary with
+# keys that represent the variables. Each of those has a "value" of
 # yet another dictionary that holds the properties of the variables
 # For now we'll just fill in the SF property
 mrs["Variables"] = {"x3": {},
                     "i1": {},
                     "e2": {"SF": "prop"}}
-                    
+
 # Set the "RELS" key to the scope-resolved MRS tree
 mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
-                                 TreePredication(1, "_file_n_of", ["x3", "i1"]),
-                                 TreePredication(2, "_large_a_1", ["e2", "x3"])])
-```
-Thus, the `mrs` variable ends up being a big, single `json` object that has the MRS definition (that we understand so far) in it.
+                                          TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                          TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
-Now we can create a new function called `RespondToMRS()` that inspects the MRS and uses the handy `sentence_force()` function to properly respond to a proposition:
+respond_to_mrs(state, mrs)
+```
+
+Thus, the `mrs` variable ends up being a single `json` object that has the MRS definition (that we understand so far) in it.
+
+Now we can create a new function called `respond_to_mrs()` that inspects the MRS and uses the handy `sentence_force()` function to properly respond to a proposition:
 
 ```
-def sentence_force(variables):
-    for variable in variables.items():
-        if "SF" in variable[1]:
-            return variable[1]["SF"]
+# Get the SF property of the Index of the MRS
+def sentence_force(mrs):
+    if "Index" in mrs:
+        if mrs["Index"] in mrs["Variables"]:
+            if "SF" in mrs["Variables"][mrs["Index"]]:
+                return mrs["Variables"][mrs["Index"]]["SF"]
 
 
 def respond_to_mrs(state, mrs):
@@ -65,7 +70,7 @@ def respond_to_mrs(state, mrs):
     for item in call(vocabulary, state, mrs["RELS"]):
         solution.append(item)
 
-    force = sentence_force(mrs["Variables"])
+    force = sentence_force(mrs)
     if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
@@ -93,7 +98,7 @@ def Example7():
     mrs["Index"] = "e2"
 
     # Set its "Variables" key to *another* dictionary with
-    # two keys: "x1" and "e1". Each of those has a "value" of
+    # keys that represent the variables. Each of those has a "value" of
     # yet another dictionary that holds the properties of the variables
     # For now we'll just fill in the SF property
     mrs["Variables"] = {"x3": {},
