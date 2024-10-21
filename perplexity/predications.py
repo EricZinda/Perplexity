@@ -7,7 +7,7 @@ from perplexity.set_utilities import all_nonempty_subsets, product_stream, all_n
     DisjunctionIterable, DisjunctionValue
 import perplexity.tree
 from perplexity.variable_binding import VariableBinding
-from perplexity.vocabulary import ValueSize
+import perplexity.vocabulary
 
 
 class VariableValueType(enum.Enum):
@@ -206,18 +206,18 @@ class VariableDescriptor(object):
 
     def combinatoric_size(self, context, binding):
         binding_metadata = context.get_variable_metadata(binding.variable.name)
-        individual_consumed = binding_metadata["ValueSize"] == ValueSize.exactly_one or binding_metadata["ValueSize"] == ValueSize.all
+        individual_consumed = binding_metadata["ValueSize"] == perplexity.vocabulary.ValueSize.exactly_one or binding_metadata["ValueSize"] == perplexity.vocabulary.ValueSize.all
         combinatorial_exactly_one = self.individual == VariableStyle.semantic or \
                                     (self.individual == VariableStyle.ignored and individual_consumed)
 
-        group_consumed = binding_metadata["ValueSize"] == ValueSize.more_than_one or binding_metadata["ValueSize"] == ValueSize.all
+        group_consumed = binding_metadata["ValueSize"] == perplexity.vocabulary.ValueSize.more_than_one or binding_metadata["ValueSize"] == perplexity.vocabulary.ValueSize.all
         combinatorial_more_than_one = self.group == VariableStyle.semantic or \
                                       (self.group == VariableStyle.ignored and group_consumed)
 
         if combinatorial_exactly_one and combinatorial_more_than_one:
-            return ValueSize.all
+            return perplexity.vocabulary.ValueSize.all
         else:
-            return ValueSize.exactly_one if combinatorial_exactly_one else ValueSize.more_than_one
+            return perplexity.vocabulary.ValueSize.exactly_one if combinatorial_exactly_one else perplexity.vocabulary.ValueSize.more_than_one
 
 
 # Yields each possible variable set from binding based on what type of value it is
@@ -226,8 +226,8 @@ class VariableDescriptor(object):
 def discrete_variable_generator(context, value, combinatoric, variable_size):
     if combinatoric is False:
         # Fail immediately if we don't support it
-        if (len(value) == 1 and variable_size == ValueSize.more_than_one) or \
-                (len(value) > 1 and variable_size == ValueSize.exactly_one):
+        if (len(value) == 1 and variable_size == perplexity.vocabulary.ValueSize.more_than_one) or \
+                (len(value) > 1 and variable_size == perplexity.vocabulary.ValueSize.exactly_one):
             context.report_error(["tooManyItemsTogether"])
 
         else:
@@ -235,8 +235,8 @@ def discrete_variable_generator(context, value, combinatoric, variable_size):
 
     else:
         # Generate all possible sets
-        min_set_size = 2 if variable_size == ValueSize.more_than_one else 1
-        max_set_size = 1 if variable_size == ValueSize.exactly_one else len(value)
+        min_set_size = 2 if variable_size == perplexity.vocabulary.ValueSize.more_than_one else 1
+        max_set_size = 1 if variable_size == perplexity.vocabulary.ValueSize.exactly_one else len(value)
 
         for value_set_size in range(min_set_size, max_set_size + 1):
             for value_set in itertools.combinations(value, value_set_size):
@@ -272,8 +272,8 @@ def predication_1(context, state, binding, bound_function, unbound_function, bin
 def used_combinations(context, binding, generator):
     descriptor = VariableDescriptor(VariableStyle.semantic, VariableStyle.ignored)
     variable_size = descriptor.combinatoric_size(context, binding)
-    min_set_size = 2 if variable_size == ValueSize.more_than_one else 1
-    max_set_size = 1 if variable_size == ValueSize.exactly_one else float('inf')
+    min_set_size = 2 if variable_size == perplexity.vocabulary.ValueSize.more_than_one else 1
+    max_set_size = 1 if variable_size == perplexity.vocabulary.ValueSize.exactly_one else float('inf')
 
     for value in all_nonempty_subsets_stream(generator, min_size=min_set_size, max_size=max_set_size):
         yield value
@@ -286,8 +286,8 @@ def used_combinations(context, binding, generator):
 def combinatorial_predication_1(context, state, binding, bound_function, unbound_function):
     descriptor = VariableDescriptor(VariableStyle.semantic, VariableStyle.ignored)
     variable_size = descriptor.combinatoric_size(context, binding)
-    min_set_size = 2 if variable_size == ValueSize.more_than_one else 1
-    max_set_size = 1 if variable_size == ValueSize.exactly_one else float('inf')
+    min_set_size = 2 if variable_size == perplexity.vocabulary.ValueSize.more_than_one else 1
+    max_set_size = 1 if variable_size == perplexity.vocabulary.ValueSize.exactly_one else float('inf')
 
     tree_lineage_value = state.get_binding("tree_lineage").value
     tree_lineage = state.get_binding("tree_lineage").value[0] if tree_lineage_value is not None else ""
@@ -326,10 +326,10 @@ def all_combinations_of_states(context, original_state, combinatorial_x_values):
         for variable_index in range(len(combinatorial_x_variables_names)):
             binding_metadata = context.get_variable_metadata(combinatorial_x_variables_names[variable_index])
             variable_size = binding_metadata["ValueSize"]
-            if variable_size == ValueSize.exactly_one:
+            if variable_size == perplexity.vocabulary.ValueSize.exactly_one:
                 min_size = 1
                 max_size = 1
-            elif variable_size == ValueSize.more_than_one:
+            elif variable_size == perplexity.vocabulary.ValueSize.more_than_one:
                 min_size = 2
                 max_size = len(combinatorial_x_variables_values[variable_index])
             else:
@@ -395,8 +395,8 @@ def predication_2(context, state, binding1, binding2,
         unbound_binding = binding1 if binding1.value is None else binding2
         unbound_binding_descriptor = binding1_descriptor if binding1.value is None else binding2_descriptor
         unbound_binding_variable_size = unbound_binding_descriptor.combinatoric_size(context, binding1) if binding1.value is None else unbound_binding_descriptor.combinatoric_size(context, binding2)
-        min_set_size = 2 if unbound_binding_variable_size == ValueSize.more_than_one else 1
-        max_set_size = 1 if unbound_binding_variable_size == ValueSize.exactly_one else float('inf')
+        min_set_size = 2 if unbound_binding_variable_size == perplexity.vocabulary.ValueSize.more_than_one else 1
+        max_set_size = 1 if unbound_binding_variable_size == perplexity.vocabulary.ValueSize.exactly_one else float('inf')
 
         # This is a "what is in X" type question, that's why it is unbound
         # This could be something like in([mary, john], X) (where mary and john are *together* in someplace)
@@ -533,8 +533,7 @@ def individual_style_predication_1(context, state, binding, bound_predication_fu
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
 def lift_style_predication_2(context, state, binding1, binding2,
-                             both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
-                             binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+                             both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None):
     def default(_):
         if False:
             yield None
@@ -558,8 +557,7 @@ def lift_style_predication_2(context, state, binding1, binding2,
 # - that collective and distributive are both ok, but nothing special happens (unlike lift)
 # - that any combinatoric terms will be turned into single set terms (coll or dist)
 def in_style_predication_2(context, state, binding1, binding2,
-                           both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
-                           binding1_set_size=ValueSize.all, binding2_set_size=ValueSize.all):
+                           both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None):
     for func in [binding1_unbound_predication_function,
                  binding2_unbound_predication_function,
                  all_unbound_predication_function if all_unbound_predication_function is not None else binding2_unbound_predication_function]:

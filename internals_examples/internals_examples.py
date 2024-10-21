@@ -1,8 +1,14 @@
 import copy
 import inspect
+import os
+import platform
 import sys
+from delphin import ace
 
+from perplexity.tree import sort_conjunctions
+from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import ShowLogging
+from perplexity.erg import erg_file
 
 
 class TreePredication(object):
@@ -360,6 +366,86 @@ def call(vocabulary, state, term):
         yield from call_predication(vocabulary, state, term)
 
 
+def mrss_from_phrase(phrase):
+    # Don't print errors to the screen
+    f = open(os.devnull, 'w')
+
+    # Create an instance of the ACE parser and ask to give <= 25 MRS documents
+    with ace.ACEParser(erg_file(), cmdargs=['-n', '25'], stderr=f) as parser:
+        ace_response = parser.interact(phrase)
+
+    for parse_result in ace_response.results():
+        yield parse_result.mrs()
+
+
+def trees_from_mrs(mrs):
+    # Create a dict of predications using their labels as each key
+    # for easy access when building trees
+    # Note that a single label could represent multiple predications
+    # in conjunction so we need a list for each label
+    mrs_predication_dict = {}
+    for predication in mrs.predications:
+        if predication.label not in mrs_predication_dict.keys():
+            mrs_predication_dict[predication.label] = []
+        mrs_predication_dict[predication.label].append(predication)
+
+    # Iteratively return well-formed trees from the MRS
+    for new_mrs, holes_assignments in valid_hole_assignments(mrs, max_holes=12, required_root_label=None):
+        # valid_hole_assignments can return None if the grammar returns something
+        # that doesn't have the same number of holes and floaters (which is a grammar bug)
+        if holes_assignments is not None:
+            # Now we have the assignments of labels to holes, but we need
+            # to actually build the *tree* using that information
+            well_formed_tree = tree_from_assignments(mrs.top,
+                                                     holes_assignments,
+                                                     mrs_predication_dict,
+                                                     mrs)
+            yield well_formed_tree
+
+
+def tree_from_assignments(hole_label, assignments, predication_dict, mrs, index=None):
+    if index is None:
+        # Use a list so the value will get modified during recursion
+        index = [0]
+
+    # Get the list of predications that should fill in the hole
+    # represented by labelName
+    if hole_label in assignments.keys():
+        predication_list = predication_dict[assignments[hole_label]]
+    else:
+        predication_list = predication_dict[hole_label]
+
+    # predication_list is a list because multiple items might
+    # have the same key and should be put in conjunction (i.e. be and'd together)
+    conjunction_list = []
+    for predication in predication_list:
+        predication_name = predication.predicate
+
+        # Recurse through this predication's arguments
+        # and look for any scopal arguments to recursively convert
+        args = []
+        for arg_name in predication.args.keys():
+            original_arg = predication.args[arg_name]
+
+            # CARG arguments contain strings that are never
+            # variables, they are constants
+            if arg_name in ["CARG"]:
+                final_arg = original_arg
+            else:
+                argType = original_arg[0]
+                if argType == "h":
+                    final_arg = tree_from_assignments(original_arg, assignments, predication_dict, mrs, index)
+                else:
+                    final_arg = original_arg
+
+            args.append(final_arg)
+
+        conjunction_list.append(TreePredication(index=index[0], name=predication_name, args=args))
+        index[0] += 1
+
+    return conjunction_list
+
+
 def Example0():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
@@ -431,6 +517,19 @@ def Example4():
 
     for item in call(vocabulary, state, tree):
         print(item.variables)
+
+
+def Example5():
+    for mrs in mrss_from_phrase("2 files are large"):
+        print(mrs)
+
+
+def Example6():
+    for mrs in mrss_from_phrase("2 files are large"):
+        print(mrs)
+        for tree in trees_from_mrs(mrs):
+            print(tree)
+        print()
 
 # def solve_and_respond(state, mrs):
 #     context = ExecutionContext(vocabulary)
@@ -786,8 +885,9 @@ if __name__ == '__main__':
     # Example1a()
     # Example2()
     # Example3()
-    Example4()
+    # Example4()
     # Example5()
+    Example6()
     # Example5_1()
     # Example5_2()
     # Example6()

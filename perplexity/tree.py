@@ -9,6 +9,8 @@ from delphin import ace
 from delphin.codecs.simplemrs import encode
 from delphin.lnk import LnkMixin
 from delphin.predicate import split
+
+from perplexity.erg import erg_file
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import parse_predication_name, sentence_force
 import perplexity.vocabulary
@@ -34,7 +36,7 @@ class MrsParser(object):
         # Create an instance of the ACE parser and ask to give <= 100 MRS documents
         current_max_parses = one_time_max_parses if one_time_max_parses is not None else self.max_parses
         cmd_args = [] if current_max_parses is None else ['-n', str(current_max_parses)]
-        with ace.ACEParser(self.erg_file(), cmdargs=cmd_args, stderr=f) as parser:
+        with ace.ACEParser(erg_file(), cmdargs=cmd_args, stderr=f) as parser:
             ace_response = parser.interact(phrase)
             if current_max_parses is None or current_max_parses > len(ace_response['results']):
                 pipeline_logger.debug(f"{len(ace_response['results'])} parse options for {phrase}")
@@ -64,7 +66,7 @@ class MrsParser(object):
         cmd_args = [] if self.max_parses is None else ['-n', str(self.max_parses)]
         if self.generate_root is not None:
             cmd_args += ['-r', self.generate_root]
-        with ace.ACEGenerator(self.erg_file(), cmdargs=cmd_args, stderr=f) as generator:
+        with ace.ACEGenerator(erg_file(), cmdargs=cmd_args, stderr=f) as generator:
             response = generator.interact(simple)
             surfaceStrings = []
             for index in range(0, len(response.results())):
@@ -135,27 +137,6 @@ class MrsParser(object):
                 yield well_formed_tree
                 if unscoped:
                     return
-
-    def erg_file(self):
-        if sys.platform == "linux":
-            ergFile = "erg-2024-daily-ubuntu-perplexity.dat"
-
-        elif sys.platform == "darwin":
-            # Mac returns darwin for both M1 and Intel silicon, need to dig deeper
-            unameResult = platform.uname()
-
-            if "ARM" in unameResult.version:
-                # M1 silicon
-                ergFile = "erg-2023-osx-m1-perplexity.dat"
-
-            else:
-                # Intel silicon
-                ergFile = "erg-2024-daily-osx-perplexity.dat"
-
-        else:
-            ergFile = "erg-2024-daily-ubuntu-perplexity.dat"
-
-        return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 
 
 _tree_predication_context = contextvars.ContextVar('TreePredication', default=False)

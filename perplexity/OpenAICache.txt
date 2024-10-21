@@ -47,5 +47,6 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is milk either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is cash either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is restart either a food or a drink": "false",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is turnip either a food or a drink": "true"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is turnip either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is file either a food or a drink": "false"
 }
