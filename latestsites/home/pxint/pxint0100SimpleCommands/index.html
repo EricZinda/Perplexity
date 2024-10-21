@@ -371,18 +371,16 @@ pronoun_q(x3,RSTR,BODY)            │
                     └─ _a_q(x8,RSTR,BODY)
                                         └─ _delete_v_1(e2,x3,x8)
 </code></pre></div></div>
-<p>The sentence force for this sentence is <code class="language-plaintext highlighter-rouge">SF: comm</code> meaning “command”, determined the same way we <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions">described in the previous section</a>.</p>
+<p>The sentence force for this sentence is <code class="language-plaintext highlighter-rouge">SF: comm</code> meaning “command”, determined the same way we <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions">described in a previous section</a>.</p>
 
 <h3 id="pronouns-pron-and-pronoun_q">Pronouns: pron and pronoun_q</h3>
 <p>The first two new predicates we encounter are: <code class="language-plaintext highlighter-rouge">pron(x3)</code> and <code class="language-plaintext highlighter-rouge">pronoun_q(x3,RSTR,BODY)</code> and they often work together as they do here.</p>
 
-<p><code class="language-plaintext highlighter-rouge">pron(x)</code> needs to fill <code class="language-plaintext highlighter-rouge">x</code> with an object that represents what the specified pronoun is <em>referring to</em>. It does this by looking at the properties for the <code class="language-plaintext highlighter-rouge">x</code> variable to determine if the pronoun is “you” (<code class="language-plaintext highlighter-rouge">PERS: 2</code> – second person), “him/her”(<code class="language-plaintext highlighter-rouge">PERS: 3</code> – third person), etc. and sets the variable to be whatever the pronoun is referring to.</p>
+<p><code class="language-plaintext highlighter-rouge">pron(x)</code> needs to fill <code class="language-plaintext highlighter-rouge">x</code> with an object that represents what the specified pronoun is <em>referring to</em>. It does this by looking at the properties for the <code class="language-plaintext highlighter-rouge">x</code> variable to determine if the pronoun is “you” (<code class="language-plaintext highlighter-rouge">PERS: 2</code> – second person), “him/her”(<code class="language-plaintext highlighter-rouge">PERS: 3</code> – third person), etc. and sets the variable to be whatever make sense in the current context and matches the properties.</p>
 
-<p>There were not any pronouns in our command “delete a large file”, so where did the <code class="language-plaintext highlighter-rouge">pron</code> predication come from? In this case, the pronoun is an <em>implied</em> “you” since it is a command. I.e “(You) delete a large file”.  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are “you” (“can you delete the file?” or the implied case above) and maybe “I” (“I want to delete a file”). For now, let’s just do “you” and fail otherwise.</p>
+<p>There were not any pronouns in our command, “delete a large file”, so where did the <code class="language-plaintext highlighter-rouge">pron</code> predication come from? In this case, the pronoun is an <em>implied</em> “you” since it is a command. I.e “(You) delete a large file”.  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are “you” (“can you delete the file?” or the implied case above) and maybe “I” (“I want to delete a file”). For now, let’s just do “you” and fail otherwise.</p>
 
-<p><code class="language-plaintext highlighter-rouge">pronoun_q</code> is just a simple, default quantifier predication that doesn’t <em>do</em> anything except introduce the variable that <code class="language-plaintext highlighter-rouge">pron</code> uses. It acts just like <code class="language-plaintext highlighter-rouge">which_q</code> did in the Simple Questions topic  .</p>
-
-<p>To implement these, we’ll need to create a new class to represent “actors” in the system, and then create an instance of it that represents the computer by adding it to the <code class="language-plaintext highlighter-rouge">State</code> object. We’ll say that “the computer” is who should be returned when the user says “You” (second person) by setting the <code class="language-plaintext highlighter-rouge">Actor</code> object’s <code class="language-plaintext highlighter-rouge">person</code> property to <code class="language-plaintext highlighter-rouge">2</code>. The example below has the new <code class="language-plaintext highlighter-rouge">Actor</code> object and  the <code class="language-plaintext highlighter-rouge">State</code> object filled with one:</p>
+<p>To implement it, we’ll need to create a new class to represent “actors” in the system, and then create an instance of it that represents the computer by adding it to the <code class="language-plaintext highlighter-rouge">State</code> object. We’ll say that “the computer” is who should be returned when the user says “You” (second person) by setting the <code class="language-plaintext highlighter-rouge">Actor</code> object’s <code class="language-plaintext highlighter-rouge">person</code> property to <code class="language-plaintext highlighter-rouge">2</code>. The example below has the new <code class="language-plaintext highlighter-rouge">Actor</code> object and  the <code class="language-plaintext highlighter-rouge">State</code> object filled with one:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Represents something that can "do" things, like a computer
 # or a human (or a dog, etc)
@@ -406,12 +404,7 @@ def Example9():
 ...
 </code></pre></div></div>
 
-<p>Now the system knows about files, folders and actors. Or, rather, it now has actors in the world state. We need to teach it how to recognize actors by implementing the two new predications concerning pronouns: <code class="language-plaintext highlighter-rouge">pron</code> and <code class="language-plaintext highlighter-rouge">pronoun_q</code>:</p>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">pron</code> will look for an <code class="language-plaintext highlighter-rouge">Actor</code> object in the system with the same <code class="language-plaintext highlighter-rouge">person</code> value as the <code class="language-plaintext highlighter-rouge">pron</code> predication’s <code class="language-plaintext highlighter-rouge">x</code> variable.</li>
-  <li><code class="language-plaintext highlighter-rouge">pronoun_q</code> will use the <code class="language-plaintext highlighter-rouge">default_quantifer</code> we defined previously.</li>
-</ul>
+<p>The <code class="language-plaintext highlighter-rouge">pron</code> implementation will look for an <code class="language-plaintext highlighter-rouge">Actor</code> object in the system with the same <code class="language-plaintext highlighter-rouge">person</code> value as the <code class="language-plaintext highlighter-rouge">pron</code> predication’s <code class="language-plaintext highlighter-rouge">x</code> variable.</p>
 
 <p>To make sure the MRS is available for <code class="language-plaintext highlighter-rouge">pron</code> to inspect, we will create a “fake” mrs variable called <code class="language-plaintext highlighter-rouge">mrs</code> that is set to the MRS. Then any predication can inspect it. <code class="language-plaintext highlighter-rouge">pron</code> will retrieve it to do its work:</p>
 
@@ -423,13 +416,6 @@ def pron(state, x_who):
         if isinstance(item, Actor) and item.person == person:
             yield state.set_x(x_who, (item, ))
             break
-
-
-# This is just used as a way to provide a scope for a
-# pronoun, so it only needs the default behavior
-@Predication(vocabulary, name="pronoun_q")
-def pronoun_q(state, x, h_rstr, h_body):
-    yield from default_quantifier(state, x, h_rstr, h_body)
     
 
 def Example9():
@@ -455,6 +441,15 @@ def Example9():
 
     state = state.set_x("mrs", (mrs,))
     respond_to_mrs(state, mrs)
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">pronoun_q</code> is just a simple, default quantifier predication that doesn’t <em>do</em> anything except introduce the variable that <code class="language-plaintext highlighter-rouge">pron</code> uses. It acts just like <code class="language-plaintext highlighter-rouge">which_q</code> did in the Simple Questions topic  . So, <code class="language-plaintext highlighter-rouge">pronoun_q</code> will use the <code class="language-plaintext highlighter-rouge">default_quantifer</code> we defined previously:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># This is just used as a way to provide a scope for a
+# pronoun, so it only needs the default behavior
+@Predication(vocabulary, name="pronoun_q")
+def pronoun_q(state, x, h_rstr, h_body):
+    yield from default_quantifier(state, x, h_rstr, h_body)
 </code></pre></div></div>
 
 <h3 id="verbs-and-state-changes-delete_v_1">Verbs and State Changes: delete_v_1</h3>
@@ -584,7 +579,7 @@ Done!
 [Actor(name=Computer, person=2), Folder(Desktop), Folder(Documents), File(file2.txt, 1000000)]
 </code></pre></div></div>
 
-<p>You can see by the output that a single, arbitrary file was deleted, “file1.txt”.</p>
+<p>You can see by the output that the only large file in the system was deleted: “file1.txt”.</p>
 
 <p>There are a couple of interesting things to point out in what we’ve done. The code for <code class="language-plaintext highlighter-rouge">delete_v_1</code> will delete <em>anything</em>, so the phrase “delete you” will actually work! Of course, it will then mess up the system because every command after that will not be able to find the implied “you”. This is part of the magic and the challenge of implementing MRS predications, if you implement them right, they can be very general and allow constructions that you hadn’t thought of.</p>
 
