@@ -21,6 +21,62 @@ class TreePredication(object):
         return f"{self.name}({','.join([str(x) for x in self.args])})"
 
 
+# walk_tree_predications_until() is a helper function that just walks
+# the tree represented by "term". For every predication found,
+# it calls func(found_predication)
+# If func returns anything besides "None", it quits and
+# returns that value
+def walk_tree_predications_until(term, func):
+    if isinstance(term, list):
+        # This is a conjunction, recurse through the
+        # items in it
+        for item in term:
+            result = walk_tree_predications_until(item, func)
+            if result is not None:
+                return result
+
+    else:
+        # This is a single term, call func with it if it is a predication
+        if isinstance(term, TreePredication):
+            result = func(term)
+            if result is not None:
+                return result
+
+            # If func didn't say to quit, see if any of its terms are scopal
+            # i.e. are predications themselves
+            for arg in term.args:
+                if not isinstance(arg, str):
+                    result = walk_tree_predications_until(arg, func)
+                    if result is not None:
+                        return result
+
+    return None
+
+
+# Walk the tree represented by "term" and
+# return the predication that matches
+# "predicate_name" or "None" if none is found
+def find_predication(term, predication_name):
+    if isinstance(predication_name, list):
+        predication_names = predication_name
+    else:
+        predication_names = [predication_name]
+
+    # This function gets called for every predication
+    # in the tree. It is a private function since it is
+    # only used here
+    def match_predication_name(predication):
+        if predication.name in predication_names:
+            return predication
+        else:
+            return None
+
+    # Pass our private function to WalkTreeUntil as
+    # a way to filter through the tree to find
+    # predication_name
+    return walk_tree_predications_until(term, match_predication_name)
+
+
 class Vocabulary(object):
     def __init__(self):
         self.name_function_map = {}
@@ -304,6 +360,19 @@ def a_q(state, x, h_rstr, h_body):
             return
 
 
+@Predication(vocabulary, name="_which_q")
+def which_q(state, x_variable, h_rstr, h_body):
+    yield from default_quantifier(state, x_variable, h_rstr, h_body)
+
+
+def default_quantifier(state, x_variable, h_rstr, h_body):
+    # Find every solution to RSTR
+    for solution in call(vocabulary, state, h_rstr):
+        # And return it if it is true in the BODY
+        for body_solution in call(vocabulary, solution, h_body):
+            yield body_solution
+
+
 # Takes a TreePredication object, maps it to a Python function and calls it
 def call_predication(vocabulary, state, predication):
     # Look up the actual Python module and
@@ -377,19 +446,42 @@ def sentence_force(mrs):
 def respond_to_mrs(state, mrs):
     # Collect all the solutions to the MRS against the
     # current world state
-    solution = []
+    solutions = []
     for item in call(vocabulary, state, mrs["RELS"]):
-        solution.append(item)
+        solutions.append(item)
 
     force = sentence_force(mrs)
     if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
-        if len(solution) > 0:
+        if len(solutions) > 0:
             print("Yes, that is true.")
         else:
             print("No, that isn't correct.")
+
+    elif force == "ques":
+        # See if this is a "WH" type question
+        wh_predication = find_predication(mrs["RELS"], "_which_q")
+        if wh_predication is None:
+            # This was a simple question, so the user only expects
+            # a yes or no.
+            # The phrase was "true" if there was at least one answer
+            if len(solutions) > 0:
+                print("Yes.")
+            else:
+                print("No.")
+        else:
+            # This was a "WH" question
+            # return the values of the variable asked about
+            # from the solution
+            # The phrase was "true" if there was at least one answer
+            if len(solutions) > 0:
+                wh_variable = wh_predication.args[0]
+                for solutions in solutions:
+                    print(solutions.get_binding(wh_variable).value)
+            else:
+                print("I don't know")
 
 
 def mrss_from_phrase(phrase):
@@ -585,6 +677,36 @@ def Example7():
                                               TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
     respond_to_mrs(state, mrs)
+
+
+# Evaluate the proposition: "which file is large?"
+def Example8():
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=100)])
+
+    # Start with an empty dictionary
+    mrs = {}
+
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "ques"}}
+
+    # Set the "RELS" key to the scope-resolved MRS tree
+    mrs["RELS"] = TreePredication(0, "_which_q", ["x3",
+                                                 TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                                 TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+    respond_to_mrs(state, mrs)
+
 
 
 # def solve_and_respond(state, mrs):
@@ -944,8 +1066,9 @@ if __name__ == '__main__':
     # Example4()
     # Example5()
     # Example6()
-    Example7()
-    # Example5_1()
+    # Example7()
+    # Example5_1
+    Example8()
     # Example5_2()
     # Example6()
     # Example6a()
