@@ -1,7 +1,7 @@
 ## Converting Phrases to MRS and Well-Formed Trees
-To use our completed backtracking solver, we need to write the code that will convert a human phrase into `TreePredications` and call the solver with them. So, we need to generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.
+To use our completed backtracking solver, we need to write the code that will convert a human phrase into `TreePredications` and call the solver with them. So, we need to generate all the MRS documents for the phrase and all the well-formed trees for each MRS document.
 
-To do this, we'll write code to use the [ACE parser](http://sweaglesw.org/linguistics/ace/) to convert a phrase into an MRS document using the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin). The only trick is that we need to supply a grammar file to tell ACE which language we are speaking. It is platform dependent, so we'll create a helper function that determines which one to return for the current user. Note that this assumes the grammar files are all in the directory that the function is contained in. The names used are the names of the grammar files in the `/perplexity` folder of this repository, and the function is actually imported from a file in that same directory:
+To do this, we'll write code that uses the [ACE parser](http://sweaglesw.org/linguistics/ace/) (via the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin)) to convert a phrase into an MRS document. The only trick is that we need to supply a grammar file to tell ACE which language we are speaking. It is platform dependent, so we'll create a helper function that determines which one to return for the current platform. The function assumes the grammar files are all in the directory that the function is contained in. The names of the grammar files in the `/perplexity` folder of this repository are used, and the function is actually imported from a file in that same directory:
 
 ~~~
 def erg_file(self):
@@ -26,7 +26,7 @@ def erg_file(self):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), ergFile)
 ~~~
 
-Using that function, we can now call ACE to get the MRS:
+Using that function, we can now call ACE to get the MRS documents for a phrase:
 
 ~~~
 def mrss_from_phrase(phrase):
