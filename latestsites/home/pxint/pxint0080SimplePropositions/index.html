@@ -348,11 +348,11 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="responding-to-simple-propositions">Responding to Simple Propositions</h2>
-<p>The examples we’ve seen examples that respond just by printing out all the solutions that were found. It is time to start responding more like a human would. Here we’ll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through the rest.</p>
+<p>The examples we’ve seen so far respond by printing out all the solutions that were found. It is time to start responding more like a human would. Here we’ll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through the rest.</p>
 
-<p>“Propositions” are sentences that declare something to be true like, “A file is very large”. If true, a human would expect something like “yep, you are right” or “correct!” or “yes, this is true” as a response (error cases will be handled later). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0070SentenceForce">Sentence Types section</a>, the English Resource Grammar helps us identify the type of phrase we received by providing a property called <code class="language-plaintext highlighter-rouge">SF</code> or “Sentence Force”. A phrase is a proposition if the <code class="language-plaintext highlighter-rouge">SF</code> property of one or more of its variables is <code class="language-plaintext highlighter-rouge">prop</code>.</p>
+<p>“Propositions” are sentences that declare something to be true like, “A file is very large”. If true, a human would expect something like “yep, you are right” or “correct!” or “yes, this is true” as a response (error cases will be handled later). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0070SentenceForce">Sentence Types section</a>, the English Resource Grammar helps us identify the type of phrase we received by providing a property called <code class="language-plaintext highlighter-rouge">SF</code> or “Sentence Force”. A phrase is a proposition if the <code class="language-plaintext highlighter-rouge">SF</code> property of its index variable is <code class="language-plaintext highlighter-rouge">prop</code>.</p>
 
-<p>Below is the MRS for “A file is large”. As described in the previous section: <code class="language-plaintext highlighter-rouge">e2</code> is the <code class="language-plaintext highlighter-rouge">INDEX</code> of the MRS, which represents the “syntactic head” or “main point” of the phrase.  It has a sentence force of “proposition”: <code class="language-plaintext highlighter-rouge">SF: prop</code>.</p>
+<p>Below is the MRS for “A file is large”. <code class="language-plaintext highlighter-rouge">e2</code> is the <code class="language-plaintext highlighter-rouge">INDEX</code> of the MRS, which represents the “syntactic head” or “main point” of the phrase.  It has a sentence force of “proposition”: <code class="language-plaintext highlighter-rouge">SF: prop</code>.</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ "a file is large"
   TOP: h0
@@ -363,7 +363,7 @@
   HCONS: &lt; h0 qeq h1 h5 qeq h7 &gt; ]
 </code></pre></div></div>
 
-<p>In order to start responding to user phrases properly, we need to give the solver variable properties in addition to the predications.  We’ll do this using a dictionary. In fact, we can make it easier to read using the Python <code class="language-plaintext highlighter-rouge">json</code> format. The <code class="language-plaintext highlighter-rouge">json</code> format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree.</p>
+<p>In order to start responding to user phrases properly, we need to give the solver a dictionary of variable properties in addition to the predications.  WIn fact, we can make it easier to read using the Python <code class="language-plaintext highlighter-rouge">json</code> format. The <code class="language-plaintext highlighter-rouge">json</code> format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree.</p>
 
 <p>In a <code class="language-plaintext highlighter-rouge">json</code> declaration:</p>
 <ul>
@@ -383,27 +383,32 @@ mrs = {}
 # Set its "index" key to the value "e2"
 mrs["Index"] = "e2"
 
-# Set its "Variables" key to *another* dictionary with 
-# two keys: "x1" and "e1". Each of those has a "value" of 
+# Set its "Variables" key to *another* dictionary with
+# keys that represent the variables. Each of those has a "value" of
 # yet another dictionary that holds the properties of the variables
 # For now we'll just fill in the SF property
 mrs["Variables"] = {"x3": {},
                     "i1": {},
                     "e2": {"SF": "prop"}}
-                    
+
 # Set the "RELS" key to the scope-resolved MRS tree
 mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
-                                 TreePredication(1, "_file_n_of", ["x3", "i1"]),
-                                 TreePredication(2, "_large_a_1", ["e2", "x3"])])
+                                          TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                          TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+respond_to_mrs(state, mrs)
 </code></pre></div></div>
-<p>Thus, the <code class="language-plaintext highlighter-rouge">mrs</code> variable ends up being a big, single <code class="language-plaintext highlighter-rouge">json</code> object that has the MRS definition (that we understand so far) in it.</p>
 
-<p>Now we can create a new function called <code class="language-plaintext highlighter-rouge">RespondToMRS()</code> that inspects the MRS and uses the handy <code class="language-plaintext highlighter-rouge">sentence_force()</code> function to properly respond to a proposition:</p>
+<p>Thus, the <code class="language-plaintext highlighter-rouge">mrs</code> variable ends up being a single <code class="language-plaintext highlighter-rouge">json</code> object that has the MRS definition (that we understand so far) in it.</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def sentence_force(variables):
-    for variable in variables.items():
-        if "SF" in variable[1]:
-            return variable[1]["SF"]
+<p>Now we can create a new function called <code class="language-plaintext highlighter-rouge">respond_to_mrs()</code> that inspects the MRS and uses the handy <code class="language-plaintext highlighter-rouge">sentence_force()</code> function to properly respond to a proposition:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Get the SF property of the Index of the MRS
+def sentence_force(mrs):
+    if "Index" in mrs:
+        if mrs["Index"] in mrs["Variables"]:
+            if "SF" in mrs["Variables"][mrs["Index"]]:
+                return mrs["Variables"][mrs["Index"]]["SF"]
 
 
 def respond_to_mrs(state, mrs):
@@ -413,7 +418,7 @@ def respond_to_mrs(state, mrs):
     for item in call(vocabulary, state, mrs["RELS"]):
         solution.append(item)
 
-    force = sentence_force(mrs["Variables"])
+    force = sentence_force(mrs)
     if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
@@ -440,7 +445,7 @@ def Example7():
     mrs["Index"] = "e2"
 
     # Set its "Variables" key to *another* dictionary with
-    # two keys: "x1" and "e1". Each of those has a "value" of
+    # keys that represent the variables. Each of those has a "value" of
     # yet another dictionary that holds the properties of the variables
     # For now we'll just fill in the SF property
     mrs["Variables"] = {"x3": {},
