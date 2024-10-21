@@ -69,15 +69,15 @@
         {"Page": "Initial Solver", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0040BuildSolver.md", "DstFile": "pxint/pxint0040BuildSolver.md"},
         {"Page": "Solving Conjunctions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0050Conjunctions.md", "DstFile": "pxint/pxint0050Conjunctions.md"},
         {"Page": "Solving Scopal Arguments", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0060ScopalArguments.md", "DstFile": "pxint/pxint0060ScopalArguments.md"},
-        {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0070GenerateMRSAndTrees.md", "DstFile": "pxint/pxint0070GenerateMRSAndTrees.md"},
-        {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0071WhichParseAndTree.md", "DstFile": "pxint/pxint0071WhichParseAndTree.md"},
-        {"Page": "Propositions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0080SimplePropositions.md", "DstFile": "pxint/pxint0080SimplePropositions.md"},
-        {"Page": "Questions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0090SimpleQuestions.md", "DstFile": "pxint/pxint0090SimpleQuestions.md"},
-        {"Page": "Commands", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0100SimpleCommands.md", "DstFile": "pxint/pxint0100SimpleCommands.md"},
         {"Page": "Choosing a Failure", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0105ErrorsChoosingWhichFailure.md", "DstFile": "pxint/pxint0105ErrorsChoosingWhichFailure.md"},
         {"Page": "Naive Failures", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0110ErrorsReportingAFailure.md", "DstFile": "pxint/pxint0110ErrorsReportingAFailure.md"},
         {"Page": "Words in Failures", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0120ErrorsConceptualFailures.md", "DstFile": "pxint/pxint0120ErrorsConceptualFailures.md"},
         {"Page": "Robust Failures", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0130ErrorsRobustFailure.md", "DstFile": "pxint/pxint0130ErrorsRobustFailure.md"},
+        {"Page": "Propositions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0080SimplePropositions.md", "DstFile": "pxint/pxint0080SimplePropositions.md"},
+        {"Page": "Questions", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0090SimpleQuestions.md", "DstFile": "pxint/pxint0090SimpleQuestions.md"},
+        {"Page": "Commands", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0100SimpleCommands.md", "DstFile": "pxint/pxint0100SimpleCommands.md"},
+        {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0070GenerateMRSAndTrees.md", "DstFile": "pxint/pxint0070GenerateMRSAndTrees.md"},
+        {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0071WhichParseAndTree.md", "DstFile": "pxint/pxint0071WhichParseAndTree.md"},
         {"Page": "A. Python Decorators", "SrcDir": "main", "SrcFile": "docs/pxint/pxint03000PythonDecorators.md", "DstFile": "pxint/pxint03000PythonDecorators.md"}
       ]}
     ]
