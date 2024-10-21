@@ -24,7 +24,7 @@
       ]},
       {"Section": "Perplexity Internals", "Pages": [
         {"Page": "devhowto0010MRS", "SrcDir": "main", "SrcFile": "docs/pxint/devhowto0010MRS.md", "BaseReferrer": "home/docs/pxint/pxint0050Conjunctions.md", "Referrer": "home/docs/pxint/pxint0050Conjunctions.md", "FileMissing": true},
-        {"Page": "devhowtoChoosingWhichFailure", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoChoosingWhichFailure.md", "BaseReferrer": "home/docs/pxint/pxint0080SimplePropositions.md", "Referrer": "home/docs/pxint/pxint0080SimplePropositions.md", "FileMissing": true},
+        {"Page": "devhowtoChoosingWhichFailure", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoChoosingWhichFailure.md", "BaseReferrer": "home/docs/pxint/pxint0130ErrorsRobustFailure.md", "Referrer": "home/docs/pxint/pxint0130ErrorsRobustFailure.md", "FileMissing": true},
         {"Page": "devhowtoConceptualFailures", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoConceptualFailures.md", "BaseReferrer": "home/docs/pxint/pxint0110ErrorsReportingAFailure.md", "Referrer": "home/docs/pxint/pxint0110ErrorsReportingAFailure.md", "FileMissing": true},
         {"Page": "devhowtoEvents", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoEvents.md", "BaseReferrer": "home/docs/pxint/pxint0010PredicationContract.md", "Referrer": "home/docs/pxint/pxint0010PredicationContract.md", "FileMissing": true},
         {"Page": "devhowtoMRSToPython", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoMRSToPython.md", "BaseReferrer": "home/docs/pxint/pxint0030ImplementPredication.md", "Referrer": "home/docs/pxint/pxint0030ImplementPredication.md", "FileMissing": true},
@@ -35,9 +35,10 @@
         {"Page": "devhowtoReportingAFailure", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoReportingAFailure.md", "BaseReferrer": "home/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md", "Referrer": "home/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md", "FileMissing": true},
         {"Page": "devhowtoScopalArguments", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoScopalArguments.md", "BaseReferrer": "home/docs/pxint/pxint0050Conjunctions.md", "Referrer": "home/docs/pxint/pxint0050Conjunctions.md", "FileMissing": true},
         {"Page": "devhowtoSentenceForce", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoSentenceForce.md", "BaseReferrer": "home/docs/pxint/pxint0080SimplePropositions.md", "Referrer": "home/docs/pxint/pxint0080SimplePropositions.md", "FileMissing": true},
-        {"Page": "devhowtoSimpleQuestions", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoSimpleQuestions.md", "BaseReferrer": "home/docs/pxint/pxint0080SimplePropositions.md", "Referrer": "home/docs/pxint/pxint0080SimplePropositions.md", "FileMissing": true},
+        {"Page": "devhowtoSimpleQuestions", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoSimpleQuestions.md", "BaseReferrer": "home/docs/pxint/pxint0100SimpleCommands.md", "Referrer": "home/docs/pxint/pxint0100SimpleCommands.md", "FileMissing": true},
         {"Page": "devhowtoWellFormedTree", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoWellFormedTree.md", "BaseReferrer": "home/docs/pxint/pxint0050Conjunctions.md", "Referrer": "home/docs/pxint/pxint0050Conjunctions.md", "FileMissing": true},
-        {"Page": "docs/pxint/pxint0010PredicationContract", "SrcDir": "main", "SrcFile": "docs/pxint/docs/pxint/pxint0010PredicationContract.md", "BaseReferrer": "home/docs/pxint/pxint0010PredicationContract.md", "Referrer": "home/docs/pxint/pxint0010PredicationContract.md", "FileMissing": true}
+        {"Page": "docs/pxint/pxint0010PredicationContract", "SrcDir": "main", "SrcFile": "docs/pxint/docs/pxint/pxint0010PredicationContract.md", "BaseReferrer": "home/docs/pxint/pxint0010PredicationContract.md", "Referrer": "home/docs/pxint/pxint0010PredicationContract.md", "FileMissing": true},
+        {"Page": "docs/pxint/pxint0080SimplePropositions", "SrcDir": "main", "SrcFile": "docs/pxint/docs/pxint/pxint0080SimplePropositions.md", "BaseReferrer": "home/docs/pxint/pxint0080SimplePropositions.md", "Referrer": "home/docs/pxint/pxint0080SimplePropositions.md", "FileMissing": true}
       ]}
     ]
   }
