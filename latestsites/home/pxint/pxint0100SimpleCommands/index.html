@@ -404,9 +404,9 @@ def Example9():
 ...
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">pron</code> implementation will look for an <code class="language-plaintext highlighter-rouge">Actor</code> object in the system with the same <code class="language-plaintext highlighter-rouge">person</code> value as the <code class="language-plaintext highlighter-rouge">pron</code> predication’s <code class="language-plaintext highlighter-rouge">x</code> variable.</p>
+<p>(Why <code class="language-plaintext highlighter-rouge">Actor</code> derives from <code class="language-plaintext highlighter-rouge">UniqueObject</code> will be explained later in this topic.)</p>
 
-<p>To make sure the MRS is available for <code class="language-plaintext highlighter-rouge">pron</code> to inspect, we will create a “fake” mrs variable called <code class="language-plaintext highlighter-rouge">mrs</code> that is set to the MRS. Then any predication can inspect it. <code class="language-plaintext highlighter-rouge">pron</code> will retrieve it to do its work:</p>
+<p>The <code class="language-plaintext highlighter-rouge">pron</code> implementation will look for an <code class="language-plaintext highlighter-rouge">Actor</code> object in the system with the same <code class="language-plaintext highlighter-rouge">person</code> value as the <code class="language-plaintext highlighter-rouge">pron</code> predication’s <code class="language-plaintext highlighter-rouge">x</code> variable. To make sure the MRS is available for <code class="language-plaintext highlighter-rouge">pron</code> to inspect, we will create a “fake” mrs variable called <code class="language-plaintext highlighter-rouge">mrs</code> that is set to the MRS. Then any predication can inspect it. <code class="language-plaintext highlighter-rouge">pron</code> will retrieve it to do its work:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="pron")
 def pron(state, x_who):
@@ -443,7 +443,7 @@ def Example9():
     respond_to_mrs(state, mrs)
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">pronoun_q</code> is just a simple, default quantifier predication that doesn’t <em>do</em> anything except introduce the variable that <code class="language-plaintext highlighter-rouge">pron</code> uses. It acts just like <code class="language-plaintext highlighter-rouge">which_q</code> did in the Simple Questions topic  . So, <code class="language-plaintext highlighter-rouge">pronoun_q</code> will use the <code class="language-plaintext highlighter-rouge">default_quantifer</code> we defined previously:</p>
+<p><code class="language-plaintext highlighter-rouge">pronoun_q</code> is just a simple, default quantifier predication that doesn’t <em>do</em> anything except introduce the variable that <code class="language-plaintext highlighter-rouge">pron</code> uses. It acts just like <code class="language-plaintext highlighter-rouge">which_q</code> did in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions">Simple Questions topic  </a>. So, <code class="language-plaintext highlighter-rouge">pronoun_q</code> will use the <code class="language-plaintext highlighter-rouge">default_quantifer</code> we <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions">defined in that topic</a>:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># This is just used as a way to provide a scope for a
 # pronoun, so it only needs the default behavior
@@ -455,7 +455,7 @@ def pronoun_q(state, x, h_rstr, h_body):
 <h3 id="verbs-and-state-changes-delete_v_1">Verbs and State Changes: delete_v_1</h3>
 <p>The last new predication is <code class="language-plaintext highlighter-rouge">_delete_v_1</code>. <code class="language-plaintext highlighter-rouge">_delete_v_1</code> is the first “real” verb we’ve dealt with. The others so far have been “implied” “to be” verbs for a phrase like “a file is large”, and they don’t show up in the MRS as described previously. A verb looks like every other predication: it has a name and arguments. And, because verbs can be modified by words like adverbs (e.g. “<em>permanently</em> delete the file”), it introduces an event to hang modifiers on. Like many verbs, the second argument represents the “actor”: the person or thing doing the deleting. The final argument is what to delete.</p>
 
-<p>Because our world state is simply a Python list of Python objects, the logic for deleting something is going to be trivial: remove the thing from the list. In fact, implementing what we are doing here in a real file system interface would be trivial as well: delete the file. However, we would have to decide what to do if a user command like “delete <em>every</em> file” fails to delete one of them for some reason. We’ll ignore that in our example and just remove the files from the <code class="language-plaintext highlighter-rouge">State</code> object’s list of state. We can safely do this, even though other predications may still be iterating over them, because our <code class="language-plaintext highlighter-rouge">State</code> object is immutable (as described previously) and we will keep it that way by returning a new <code class="language-plaintext highlighter-rouge">State</code> object when something is deleted, just like we already do for setting variables.</p>
+<p>Because our world state is simply a list of Python objects, the logic for deleting something is going to be trivial: remove the thing from the list. In fact, implementing what we are doing here in a real file system interface would be trivial as well: delete the file. However, we would have to decide what to do if a user command like “delete <em>every</em> file” fails to delete one of them for some reason. We’ll ignore that in our example and just remove the files from the <code class="language-plaintext highlighter-rouge">State</code> object’s list of state. We can safely do this, even though other predications may still be iterating over them, because our <code class="language-plaintext highlighter-rouge">State</code> object is immutable (as described previously) and we will keep it that way by returning a new <code class="language-plaintext highlighter-rouge">State</code> object when something is deleted, just like we already do for setting variables.</p>
 
 <p>We do have a problem, though. As you’ll see later, we will encounter phrases like “delete <em>every</em> file”, which have a different solution (i.e. state object) for each file that gets deleted. Each solution will have only <em>one</em> of the files deleted.  In order to end up with a single world state that has <em>all</em> the files deleted, we’ll have to merge them together at the end somehow.</p>
 
@@ -501,7 +501,7 @@ class DeleteOperation(object):
                 break
 </code></pre></div></div>
 
-<p>An “operation” in our system is simply an object that has an <code class="language-plaintext highlighter-rouge">apply_to()</code> method that does something to the <code class="language-plaintext highlighter-rouge">State</code> object it is passed. The <code class="language-plaintext highlighter-rouge">DeleteOperation</code> operation class deletes any object in the system by removing it from the <code class="language-plaintext highlighter-rouge">State</code> object’s list of objects. It uses a <code class="language-plaintext highlighter-rouge">unique_id</code> property to compare objects since they may have come from different <code class="language-plaintext highlighter-rouge">State</code> objects and will thus be copies and just comparing the objects will fail. This could be implemented in many ways and one is described at the very end of this section.</p>
+<p>An “operation” in our system is simply an object that has an <code class="language-plaintext highlighter-rouge">apply_to()</code> method that does something to the <code class="language-plaintext highlighter-rouge">State</code> object it is passed. The <code class="language-plaintext highlighter-rouge">DeleteOperation</code> operation class deletes any object in the system by removing it from the <code class="language-plaintext highlighter-rouge">State</code> object’s list of objects. It uses a <code class="language-plaintext highlighter-rouge">unique_id</code> property to compare objects since they may have come from different <code class="language-plaintext highlighter-rouge">State</code> objects and will thus be copies and just comparing the objects will fail. This could be implemented in many ways and one approach is described at the very end of this section.</p>
 
 <blockquote>
   <p>This is a case where our “immutable” <code class="language-plaintext highlighter-rouge">State</code> class is actually being changed. That’s OK, though, because only the <code class="language-plaintext highlighter-rouge">State</code> class will be asking it to do this, and only on a fresh <code class="language-plaintext highlighter-rouge">State</code> object that isn’t in use yet.</p>
@@ -518,6 +518,8 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
     x_actor_value = state.get_binding(x_actor).value
     if x_actor_value is not None and len(x_actor_value) == 1 and isinstance(x_actor_value[0], Actor) and x_actor_value[0].name == "Computer":
         x_what_value = state.get_binding(x_what).value
+        
+        # Only handle deleting one object at a time, don't support "together"
         if len(x_what_value) == 1:
             yield state.apply_operations([DeleteOperation(x_what_value[0])])
 </code></pre></div></div>
@@ -528,8 +530,7 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
 
 <p>Finally, we need to add a new clause to <code class="language-plaintext highlighter-rouge">respond_to_mrs()</code> to handle <em>commands</em>. It will simply say “Done!” if the command worked. It will also collect up all of the operations that happened and apply them to a single state object. This isn’t really necessary for this example since we are only deleting one file, but is necessary for phrases like “delete every file”:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def RespondToMRS(state, mrs):
-    
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def respond_to_mrs(state, mrs):    
     ...
     
         elif force == "comm":
@@ -549,8 +550,11 @@ def delete_v_1(state, e_introduced, x_actor, x_what):
             print(final_state.objects)
         else:
             print("Couldn't do that.")
-            
-def Example9():
+</code></pre></div></div>
+
+<p>Now we can run an example for “delete a large file”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example9():
     state = State([Actor(name="Computer", person=2),
                    Folder(name="Desktop"),
                    Folder(name="Documents"),
@@ -581,25 +585,10 @@ Done!
 
 <p>You can see by the output that the only large file in the system was deleted: “file1.txt”.</p>
 
-<p>There are a couple of interesting things to point out in what we’ve done. The code for <code class="language-plaintext highlighter-rouge">delete_v_1</code> will delete <em>anything</em>, so the phrase “delete you” will actually work! Of course, it will then mess up the system because every command after that will not be able to find the implied “you”. This is part of the magic and the challenge of implementing MRS predications, if you implement them right, they can be very general and allow constructions that you hadn’t thought of.</p>
+<p>There are a couple of interesting things about what we’ve done. The code for <code class="language-plaintext highlighter-rouge">delete_v_1</code> will delete <em>anything</em>, so the phrase “delete you” will actually work! Of course, it will then mess up the system because every command after that will not be able to find the implied “you”. This is part of the magic and the challenge of implementing MRS predications, if you implement them right, they can be very general and allow constructions that you hadn’t thought of.</p>
 
 <h2 id="identity">Identity</h2>
-<p>Because the system is built around immutable state, we will sometimes end up with two <code class="language-plaintext highlighter-rouge">State</code> objects and need to be able to find the same object contained in either one as we did in the implementation of the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class DeleteOperation(object):
-    def __init__(self, object_to_delete):
-        self.object_to_delete = object_to_delete
-
-    def apply_to(self, state):
-        for index in range(0, len(state.objects)):
-            # Use the `unique_id` property to compare objects since they
-            # may have come from different `State` objects and will thus be copies
-            if state.objects[index].unique_id == self.object_to_delete.unique_id:
-                state.objects.pop(index)
-                break
-</code></pre></div></div>
-
-<p>We need a way to compare objects <em>across</em> state objects. The easiest way is to give all the objects in the system a globally unique id that can be easily compared. In the example above, we created a base class, <code class="language-plaintext highlighter-rouge">UniqueObject</code> that does this and derived everything from it:</p>
+<p>Because the system is built around immutable state, we will sometimes end up with two <code class="language-plaintext highlighter-rouge">State</code> objects and need to be able to find the same object contained in either one.  This happened in the implementation of the <code class="language-plaintext highlighter-rouge">DeleteOperation</code>. We need a way to compare objects <em>across</em> state objects. The easiest way is to give all the objects in the system a globally unique id that can be easily compared. In the example above, we created a base class, <code class="language-plaintext highlighter-rouge">UniqueObject</code> that does this and derived everything from it:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class UniqueObject(object):
     def __init__(self):
@@ -624,7 +613,20 @@ class Folder(UniqueObject):
         return f"Folder({self.name})"
 </code></pre></div></div>
 
-<p>Then the caller can just compare the <code class="language-plaintext highlighter-rouge">.unique_id</code> property.</p>
+<p>Then the caller can just compare the <code class="language-plaintext highlighter-rouge">.unique_id</code> property, like we did in <code class="language-plaintext highlighter-rouge">DeleteOperation</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class DeleteOperation(object):
+    def __init__(self, object_to_delete):
+        self.object_to_delete = object_to_delete
+
+    def apply_to(self, state):
+        for index in range(0, len(state.objects)):
+            # Use the `unique_id` property to compare objects since they
+            # may have come from different `State` objects and will thus be copies
+            if state.objects[index].unique_id == self.object_to_delete.unique_id:
+                state.objects.pop(index)
+                break
+</code></pre></div></div>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
