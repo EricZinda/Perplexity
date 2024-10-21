@@ -23,18 +23,16 @@ pronoun_q(x3,RSTR,BODY)            │
                     └─ _a_q(x8,RSTR,BODY)
                                         └─ _delete_v_1(e2,x3,x8)
 ~~~
-The sentence force for this sentence is `SF: comm` meaning "command", determined the same way we [described in the previous section](pxint0080SimplePropositions.md).
+The sentence force for this sentence is `SF: comm` meaning "command", determined the same way we [described in a previous section](pxint0080SimplePropositions.md).
 
 ### Pronouns: pron and pronoun_q
 The first two new predicates we encounter are: `pron(x3)` and `pronoun_q(x3,RSTR,BODY)` and they often work together as they do here. 
 
-`pron(x)` needs to fill `x` with an object that represents what the specified pronoun is *referring to*. It does this by looking at the [properties](devhowto0010MRS#variable-properties) for the `x` variable to determine if the pronoun is "you" (`PERS: 2` -- second person), "him/her"(`PERS: 3` -- third person), etc. and sets the variable to be whatever the pronoun is referring to. 
+`pron(x)` needs to fill `x` with an object that represents what the specified pronoun is *referring to*. It does this by looking at the [properties](devhowto0010MRS#variable-properties) for the `x` variable to determine if the pronoun is "you" (`PERS: 2` -- second person), "him/her"(`PERS: 3` -- third person), etc. and sets the variable to be whatever make sense in the current context and matches the properties.
 
-There were not any pronouns in our command "delete a large file", so where did the `pron` predication come from? In this case, the pronoun is an *implied* "you" since it is a command. I.e "(You) delete a large file".  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are "you" ("can you delete the file?" or the implied case above) and maybe "I" ("I want to delete a file"). For now, let's just do "you" and fail otherwise. 
+There were not any pronouns in our command, "delete a large file", so where did the `pron` predication come from? In this case, the pronoun is an *implied* "you" since it is a command. I.e "(You) delete a large file".  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are "you" ("can you delete the file?" or the implied case above) and maybe "I" ("I want to delete a file"). For now, let's just do "you" and fail otherwise. 
 
-`pronoun_q` is just a simple, default quantifier predication that doesn't *do* anything except introduce the variable that `pron` uses. It acts just like `which_q` did in the [Simple Questions topic  ](devhowtoSimpleQuestions).
-
-To implement these, we'll need to create a new class to represent "actors" in the system, and then create an instance of it that represents the computer by adding it to the `State` object. We'll say that "the computer" is who should be returned when the user says "You" (second person) by setting the `Actor` object's `person` property to `2`. The example below has the new `Actor` object and  the `State` object filled with one:
+To implement it, we'll need to create a new class to represent "actors" in the system, and then create an instance of it that represents the computer by adding it to the `State` object. We'll say that "the computer" is who should be returned when the user says "You" (second person) by setting the `Actor` object's `person` property to `2`. The example below has the new `Actor` object and  the `State` object filled with one:
 
 ~~~
 # Represents something that can "do" things, like a computer
@@ -59,10 +57,7 @@ def Example9():
 ...
 ~~~
 
-Now the system knows about files, folders and actors. Or, rather, it now has actors in the world state. We need to teach it how to recognize actors by implementing the two new predications concerning pronouns: `pron` and `pronoun_q`:
-
-- `pron` will look for an `Actor` object in the system with the same `person` value as the `pron` predication's `x` variable.
-- `pronoun_q` will use the `default_quantifer` we [defined previously](devhowtoSimpleQuestions).
+The `pron` implementation will look for an `Actor` object in the system with the same `person` value as the `pron` predication's `x` variable.
 
 To make sure the MRS is available for `pron` to inspect, we will create a "fake" mrs variable called `mrs` that is set to the MRS. Then any predication can inspect it. `pron` will retrieve it to do its work:
 
@@ -75,13 +70,6 @@ def pron(state, x_who):
         if isinstance(item, Actor) and item.person == person:
             yield state.set_x(x_who, (item, ))
             break
-
-
-# This is just used as a way to provide a scope for a
-# pronoun, so it only needs the default behavior
-@Predication(vocabulary, name="pronoun_q")
-def pronoun_q(state, x, h_rstr, h_body):
-    yield from default_quantifier(state, x, h_rstr, h_body)
     
 
 def Example9():
@@ -107,6 +95,16 @@ def Example9():
 
     state = state.set_x("mrs", (mrs,))
     respond_to_mrs(state, mrs)
+~~~
+
+`pronoun_q` is just a simple, default quantifier predication that doesn't *do* anything except introduce the variable that `pron` uses. It acts just like `which_q` did in the [Simple Questions topic  ](devhowtoSimpleQuestions). So, `pronoun_q` will use the `default_quantifer` we [defined previously](devhowtoSimpleQuestions):
+
+~~~      
+# This is just used as a way to provide a scope for a
+# pronoun, so it only needs the default behavior
+@Predication(vocabulary, name="pronoun_q")
+def pronoun_q(state, x, h_rstr, h_body):
+    yield from default_quantifier(state, x, h_rstr, h_body)
 ~~~
 
 ### Verbs and State Changes: delete_v_1
@@ -237,7 +235,7 @@ Done!
 [Actor(name=Computer, person=2), Folder(Desktop), Folder(Documents), File(file2.txt, 1000000)]
 ~~~
 
-You can see by the output that a single, arbitrary file was deleted, "file1.txt".
+You can see by the output that the only large file in the system was deleted: "file1.txt".
 
 There are a couple of interesting things to point out in what we've done. The code for `delete_v_1` will delete *anything*, so the phrase "delete you" will actually work! Of course, it will then mess up the system because every command after that will not be able to find the implied "you". This is part of the magic and the challenge of implementing MRS predications, if you implement them right, they can be very general and allow constructions that you hadn't thought of.
 
