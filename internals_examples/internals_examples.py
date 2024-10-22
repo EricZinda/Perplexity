@@ -5,7 +5,7 @@ import sys
 import uuid
 from delphin import ace
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import ShowLogging
+from perplexity.utilities import ShowLogging, parse_predication_name
 from perplexity.erg import erg_file
 
 
@@ -720,6 +720,77 @@ def generate_message(state, error):
         return str(error)
 
 
+# Given the index where an error happened and a variable,
+# return what that variable "is" up to that point (i.e. its "domain")
+# in English
+def english_for_delphin_variable(failure_index, variable, mrs):
+    # Integers can't be passed by reference in Python, so we need to pass
+    # the current index in a list so it can be changed as we iterate
+    current_predication_index = [0]
+
+    # This function will be called for every predication in the MRS
+    # as we walk it in execution order
+    def RecordPredicationsUntilFailureIndex(predication):
+        # Once we have hit the index where the failure happened, stop
+        if current_predication_index[0] == failure_index:
+            return False
+        else:
+            # See if this predication can contribute anything to the
+            # description of the variable we are describing. If so,
+            # collect it in nlg_data
+            refine_NLG_with_predication(variable, predication, nlg_data)
+            current_predication_index[0] = current_predication_index[0] + 1
+            return None
+
+    nlg_data = {}
+
+    # WalkTreeUntil() walks the predications in mrs["RELS"] and calls
+    # the function RecordPredicationsUntilFailureIndex(), until hits the
+    # failure_index position
+    walk_tree_predications_until(mrs["RELS"], RecordPredicationsUntilFailureIndex)
+
+    # Take the data we gathered and convert to English
+    return convert_to_english(nlg_data)
+
+
+# Takes the information gathered in the nlg_data dictionary
+# and converts it, in a very simplistic way, to English
+def convert_to_english(nlg_data):
+    phrase = ""
+
+    if "Quantifier" in nlg_data:
+        phrase += nlg_data["Quantifier"] + " "
+    else:
+        phrase += "a "
+
+    if "Topic" in nlg_data:
+        phrase += nlg_data["Topic"]
+    else:
+        phrase += "thing"
+
+    return phrase
+
+
+# See if this predication in any way contributes words to
+# the variable specified. Put whatever it contributes in nlg_data
+def refine_NLG_with_predication(variable, predication, nlg_data):
+    # Parse the name of the predication to find out its
+    # part of speech (POS) which could be a noun ("n"),
+    # quantifier ("q"), etc.
+    parsed_predication = parse_predication_name(predication.name)
+
+    # If the predication has this variable as its first argument,
+    # it either *introduces* it, or is quantifying it
+    if predication.args[0] == variable:
+        if parsed_predication["Pos"] == "q":
+            # It is quantifying it
+            nlg_data["Quantifier"] = parsed_predication["Lemma"]
+        else:
+            # It is introducing it, thus it is the "main" description
+            # of the variable, usually a noun predication
+            nlg_data["Topic"] = parsed_predication["Lemma"]
+
+
 def Example0():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
@@ -890,33 +961,62 @@ def Example9():
     respond_to_mrs(state, mrs)
 
 
-# "a file is large" in a world with no large files
+# Delete a large file
 def Example10():
-    # Note neither file is "large" now
-    state = State([Folder(name="Desktop"),
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
                    Folder(name="Documents"),
-                   File(name="file1.txt", size=100),
-                   File(name="file2.txt", size=100)])
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=1000000)])
 
-    # Start with an empty dictionary
     mrs = {}
-
-    # Set its "index" key to the value "e2"
     mrs["Index"] = "e2"
+    mrs["Variables"] = {"x3": {"PERS": 2},
+                        "x8": {},
+                        "e2": {"SF": "comm"},
+                        "e13": {}}
 
-    # Set its "Variables" key to *another* dictionary with
-    # keys that represent the variables. Each of those has a "value" of
-    # yet another dictionary that holds the properties of the variables
-    # For now we'll just fill in the SF property
-    mrs["Variables"] = {"x3": {},
-                        "i1": {},
-                        "e2": {"SF": "prop"}}
+    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
+                                                   TreePredication(1, "pron", ["x3"]),
+                                                   TreePredication(0, "_a_q", ["x8",
+                                                                               [TreePredication(1, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
+                                                                               TreePredication(3, "_delete_v_1", ["e2", "x3", "x8"])])]
+                                     )
 
-    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
-                                       TreePredication(1, "_file_n_of", ["x3", "i1"]),
-                                       TreePredication(2, "_large_a_1", ["e2", "x3"])])
-
+    state = state.set_x("mrs", (mrs,))
     respond_to_mrs(state, mrs)
+
+
+# Generating English for "Delete a large file"
+def Example11():
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=1000000)])
+
+    mrs = {}
+    mrs["Index"] = "e2"
+    mrs["Variables"] = {"x3": {"PERS": 2},
+                        "x8": {},
+                        "e2": {"SF": "comm"},
+                        "e13": {}}
+
+    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
+                                                   TreePredication(2, "pron", ["x3"]),
+                                                   TreePredication(1, "_a_q", ["x8",
+                                                                               [TreePredication(3, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
+                                                                               TreePredication(4, "_delete_v_1", ["e2", "x3", "x8"])])]
+                                     )
+
+    # Set index to failure in _a_q
+    print(english_for_delphin_variable(1, "x8", mrs))
+
+    # Set index to failure in _file_n_of
+    print(english_for_delphin_variable(3, "x8", mrs))
+
+    # Set index to failure in _large_a_1
+    print(english_for_delphin_variable(4, "x8", mrs))
 
 
 # Running Example7 results in:
@@ -1283,7 +1383,7 @@ if __name__ == '__main__':
     # Example5_1
     # Example8()
     # Example9()
-    Example10()
+    Example11()
     # Example5_2()
     # Example6()
     # Example6a()
