@@ -1,6 +1,8 @@
 
 ## Reporting a Failure Naively
-With all that in place, we can now start reporting errors from predications. As outlined in the [predication contract](devhowtoPredicationContract), "failure" is when the predication is not true for its arguments, so let's add a little code at the end of `large_a_1` to record an error when there is a failure. We'll call the new `report_error()` method and pass it what seems like the right error given the code:
+In the [previous section](pxint0105ErrorsChoosingWhichFailure) we updated our code to support reporting errors (via `ExecutionContext.report_error()`) and updated the `ExecutionContext.call()` method to record the index of our currently executing predication.  This allowed us to keep track of the "deepest" error.
+
+With that in place, we can now start reporting errors from predications. As outlined in the [predication contract](devhowtoPredicationContract), "failure" is when the predication is not true for its arguments. So, let's add ode at the end of `large_a_1` to record an error when there is a failure. We'll call the new `report_error()` method and pass it what seems like the right error given the code:
 
 ~~~
 @Predication(vocabulary, name="_large_a_1")
@@ -70,37 +72,11 @@ def Example10():
 No, that isn't correct:'File(file1.txt, 100)' is not large
 ~~~
 
-Let's try it by evaluating "A file is large":
+While the code is all working correctly, it isn't responding the way a user would expect. If nothing is large, a human would say something like "No, nothing is large", "No, a file isn't large" or maybe: "No files are large".  Our code is picking the first thing that appeared and saying "the [first file that was checked] is not large", which is pretty random. 
 
-~~~
-          ┌────── _file_n_of(x3,i8)
-_a_q(x3,RSTR,BODY)    
-               └─ _large_a_1(e2,x3)
-~~~
+We can correct it by remembering what is going on at the abstract level: The user will only see this error if there ends up being no large files. If there *are* large files, the system will report, "That is true!".  So, what *should* get reported is, "[whatever domain is being checked] is not large".  In this case the "domain being checked" is "a file". So it should say "a file is not large" (or "no files are large"). We need a way to get a textual description of "the domain that is being checked".
 
-... against this example world:
-
-~~~
-a folder
-a small file
-a file
-a dog
-~~~
-
-... and with our new error logic, we'll get these failures:
-
-1. `a folder`: a `_file_n_of` failure
-2. `a small file`: a `large_a_1` failure
-3. `a file`: a `large_a_1` failure
-4. `a dog`: a `_file_n_of` failure
-
-Error #2 will be remembered using our new heuristic. The actual error reported from #2 for the phrase, "A file is large" will be: "'a small file' is not large". 
-
-This is an odd answer.  Even though it looked like it made sense in the code, it is pretty far from the one we wanted which is something like: "There isn't a large file". 
-
-We can correct it if we remember what is going on at the abstract level: We are finding values for the variables that make the MRS true.  The *mechanics* are to feed every object in the world through the variables in the MRS, but the overall *objective* is to, for example, find an `x` that makes `_large_a_1` true.  The problem is that we are reporting the error with a textual description of the *example* that is currently in the `x` variable (e.g. `a small file`) instead of what `x` *represents* ("a file").  
-
-Right now, all that `large_a_1` knows about `x` is that it is a variable, it doesn't know that x represents `a file` (we'll fix this [next](devhowtoConceptualFailures)). So, the best we can do at the moment is to say "a thing":
+Right now, all that `large_a_1` knows about the domain of `x` is that it is a variable that could hold anything. It doesn't know that x represents `a file` (we'll fix this [next](pxint0120ErrorsConceptualFailures)). So, the best we can do at the moment is to say "a thing":
 
 ~~~
 @Predication(vocabulary, name="_large_a_1")
@@ -108,10 +84,10 @@ def large_a_1(state, e_introduced, x_target):
     
     ...
     
-            ReportError("A thing is not large")
+            ReportError(["thingNotLarge"])
 ~~~
 
-With that, if we run "A file is large" through the system with no large files, we'll get: "A thing is not large".  This is the best we can do for now. 
+With that (and the appropriate changes to `generate_message()`, if we run "A file is large" through the system with no large files, we'll get: "A thing is not large".  This is the best we can do for now. 
 
 The [next section](devhowtoConceptualFailures) will improve it to say "A file is not large" which is more clear.
 

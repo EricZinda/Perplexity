@@ -34,25 +34,27 @@ def Example10():
 
 ~~~
 
-Nothing gets printed out because we haven't implemented any way to report errors from the system. Now it is time to dig into failures.
+Nothing gets printed out because we haven't implemented a way to report errors from the system. Now it is time to dig into failures.
 
 ### Failure Codes and Data
-To centralize error reporting and make the code easy to maintain we will separate the notion of the *error code* from the actual text that gets shown to the user. That way we can report the same error in multiple places but only have to update one place to change the wording that gets shown to the user.
+To centralize error reporting and make the code easy to maintain, we will separate the notion of the *error code* from the actual text that gets shown to the user. That way, we can report the same error in multiple places but change the wording shown to the user in one place.
 
-The format will be a simple list. The first item in the list is a string representing the error code, and the rest of the list is whatever information is needed to generate the string later.  For example:
+The format will be a simple list. The first list item is a string representing the error code, and the rest of the list is whatever information is needed to generate the string later.  For example:
 
 ~~~
 ["notAThing", "dog", "car"]
 ~~~
 
-... could be used to generate the string:
+... could later be used to generate the string:
 
 ~~~
 A "dog" is not a "car"
 ~~~
 
 ### Recording Errors
-Recall from the conceptual section on [reporting errors](../devcon/devcon0080ErrorsChoosingWhichFailure) that the best error is usually the *deepest* error, the one which was generated at the deepest part of the predication tree when traversing it in a depth-first manner. To track current depth, and allow for reporting errors, we'll build a new class called `ExecutionContext` and create a single global instance of it.  Our MRS solver will be modified to call it to record the current depth as the tree is traversed, and the predications we write will record their errors on it. This will allow the `ExecutionContext` to only remember an error if it is the "deepest".  Here's the class, along with its global instance and a helper to retrieve it:
+Recall from the conceptual section on [reporting errors](../devcon/devcon0080ErrorsChoosingWhichFailure) that the best error is usually the *deepest* error, the one which was generated at the deepest part of the predication tree when traversing it in a depth-first manner. To track current depth, and allow for reporting errors, we'll build a new class called `ExecutionContext` and create a single global instance of it.  Our MRS solver code will be modified to use it to record the current depth as the tree is traversed, and the predication implementations will record their errors in it. `ExecutionContext` will use the current depth to only remember the "deepest" error.  
+
+Here's the class, along with its global instance and a helper to retrieve it. It doesn't yet include the changes to `call()` needed to record the current predication index, we'll do that next:
 
 ~~~
 class ExecutionContext(object):
@@ -61,9 +63,6 @@ class ExecutionContext(object):
         self._error_predication_index = -1
         self._predication_index = -1
 
-    def set_predication_index(self, value):
-        self._predication_index = value
-    
     def deepest_error(self):
         return self._error
         
@@ -83,7 +82,7 @@ def context():
     return execution_context
 ~~~
 
-Now we can modify our main entry point, `respond_to_mrs` to start using this.  It will retrieve the error string if there were no solutions and use the error string for each sentence type in the failure case:
+Now we can modify our main entry point, `respond_to_mrs` to start using this.  It will retrieve the error string if there were no solutions and use it for each sentence type in the failure case. Here we can see the changes for the 'prop' sentence type:
 
 ~~~
     ...
@@ -102,7 +101,7 @@ Now we can modify our main entry point, `respond_to_mrs` to start using this.  I
     etc.
 ~~~
 
-Here is the full code:
+... and here is the full code:
 
 ~~~
 def respond_to_mrs(state, mrs):
@@ -166,7 +165,7 @@ def respond_to_mrs(state, mrs):
 
 ~~~
 
-... and we'll need to update our functions that actually traverse the tree to record the current predication index. We'll do this by moving the `call()` and `call_predication()` functions to be members of the `ExecutionContext` class and update `call()` to set the predication index.  Here is the only change to `call()`:
+Next, we'll need to update our functions that traverse the tree to record the current predication index. We'll do this by moving the `call()` and `call_predication()` functions to be members of the `ExecutionContext` class and update `call()` to set the predication index.  Here is the only change to `call()`:
 
 ~~~
 class ExecutionContext(object):
