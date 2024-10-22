@@ -75,7 +75,6 @@
         {"Page": "Choosing a Failure", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0105ErrorsChoosingWhichFailure.md", "DstFile": "pxint/pxint0105ErrorsChoosingWhichFailure.md"},
         {"Page": "Naive Failure Text", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0110ErrorsReportingAFailure.md", "DstFile": "pxint/pxint0110ErrorsReportingAFailure.md"},
         {"Page": "English Variable Domains", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0120ErrorsConceptualFailures.md", "DstFile": "pxint/pxint0120ErrorsConceptualFailures.md"},
-        {"Page": "Robust Failure Text", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0130ErrorsRobustFailure.md", "DstFile": "pxint/pxint0130ErrorsRobustFailure.md"},
         {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0070GenerateMRSAndTrees.md", "DstFile": "pxint/pxint0070GenerateMRSAndTrees.md"},
         {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0071WhichParseAndTree.md", "DstFile": "pxint/pxint0071WhichParseAndTree.md"},
         {"Page": "A. Python Decorators", "SrcDir": "main", "SrcFile": "docs/pxint/pxint03000PythonDecorators.md", "DstFile": "pxint/pxint03000PythonDecorators.md"}
