@@ -347,17 +347,17 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="converting-variables-to-english">Converting Variables to English</h2>
+        <h2 id="converting-variable-domains-to-english">Converting Variable Domains to English</h2>
 <p>So far, the code for <code class="language-plaintext highlighter-rouge">large_a_1</code> looks like this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_large_a_1")
 def large_a_1(state, e_introduced, x_target):
             
     ...
-    
-            ReportError("A thing is not large.")
+            # "A thing is not large"
+            context().report_error(["thingNotLarge")
 </code></pre></div></div>
 
-<p>… and will respond to “A file is large” with “A <em>thing</em> is not large” because we didn’t know how to tell what kind of “thing” the variable <code class="language-plaintext highlighter-rouge">x</code> is currently restricted to be.  The best answer would replace “thing” in “A <em>thing</em> is not large” with the “type” of thing <code class="language-plaintext highlighter-rouge">x</code> is <em>at the point we are reporting the error</em>. Remember that the <code class="language-plaintext highlighter-rouge">large_a_1</code> predication will be used for anything the user references as “large”, so it will need to be flexible about how it reports its failures.  <code class="language-plaintext highlighter-rouge">x</code> won’t always contain files.</p>
+<p>In a world with no large files it will respond to “A file is large” with “A <em>thing</em> is not large”. This is because we didn’t know how to describe the “domain” that <code class="language-plaintext highlighter-rouge">x</code> is restricted to be. Remember that the <code class="language-plaintext highlighter-rouge">large_a_1</code> predication will be used for anything the user references as “large”, so it will need to be flexible about how it reports its failures.  <code class="language-plaintext highlighter-rouge">x</code> won’t always contain files.</p>
 
 <p>For example, here is a scope-resolved tree for “A file is large”:</p>
 
@@ -377,9 +377,9 @@ _a_q(x3,RSTR,BODY)
 
 <p>etc.</p>
 
-<p>If we can get a description of what <code class="language-plaintext highlighter-rouge">x</code> is, we can write one error message and have it work no matter how the predication is used.</p>
+<p>If we can get a description of the domain of <code class="language-plaintext highlighter-rouge">x</code>, we can write one error message and have it work no matter how the predication is used.</p>
 
-<h3 id="determining-what-to-call-x">Determining What to Call “x”</h3>
+<h3 id="determining-what-to-call-the-domain-of-x">Determining What to Call the Domain of “x”</h3>
 <p>We can figure out what the variable <code class="language-plaintext highlighter-rouge">x</code> has been restricted to “so far” by taking advantage of some things we know:</p>
 
 <ol>
@@ -388,7 +388,7 @@ _a_q(x3,RSTR,BODY)
   <li>We know which predication reported the error</li>
 </ol>
 
-<p>Thus: We know <em>where</em> the failed predication is in the execution order</p>
+<p>Thus: We know <em>where</em> the failed predication is in the execution order.</p>
 
 <p>So, in the scope-resolved tree for “a dog is large”:</p>
 
@@ -397,21 +397,22 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 </code></pre></div></div>
 
-<p>… if the error came from <code class="language-plaintext highlighter-rouge">_large_a_1</code>, we must have finished <code class="language-plaintext highlighter-rouge">_dog_n_1</code> but be in the middle of resolving <code class="language-plaintext highlighter-rouge">_a_q</code>.  At that point, the variable <code class="language-plaintext highlighter-rouge">x3</code> contains something that is restricted to <code class="language-plaintext highlighter-rouge">dog</code> things (not even <code class="language-plaintext highlighter-rouge">*a* dog</code> yet).  In this way, we can write code which gives the English description of a variable <em>at a certain point in the tree’s execution</em>. We can use that to build failure messages that have the proper “thing” for any phrase we encounter.</p>
+<p>… if the error came from <code class="language-plaintext highlighter-rouge">_large_a_1</code>, we must have finished <code class="language-plaintext highlighter-rouge">_dog_n_1</code> but be in the middle of resolving <code class="language-plaintext highlighter-rouge">_a_q</code>.  At that point, the variable <code class="language-plaintext highlighter-rouge">x3</code> contains something that is restricted to <code class="language-plaintext highlighter-rouge">dog</code> things (not even <code class="language-plaintext highlighter-rouge">*a* dog</code> yet).  In this way, we can write code which gives the English description of a variable <em>at a certain point in the tree’s execution</em>. We can use that to build failure messages that have the proper “domain” for any phrase we encounter.</p>
 
-<p>To do this, let’s create a function, <code class="language-plaintext highlighter-rouge">EnglishForDelphinVariable()</code>, which takes:</p>
+<p>To do this, let’s create a function, <code class="language-plaintext highlighter-rouge">english_for_delphin_variable()</code>, which takes:</p>
 
 <ol>
   <li>The <code class="language-plaintext highlighter-rouge">variable</code> we want an English representation of</li>
   <li>The MRS</li>
-  <li>The place in the tree for which we want the English</li>
+  <li>The predication index (i.e. the place in the tree) for which we want the English</li>
 </ol>
 
-<p>It will walk the tree in execution order using the function we’ve written in a previous section called <code class="language-plaintext highlighter-rouge">WalkTreeUntil()</code>. This function will pass each predication, in execution order, to a different function called <code class="language-plaintext highlighter-rouge">RefineNLGWithPredication()</code> (“NLG” stands for “Natural Language Generation”). That function will determine if the predication is restricting the <code class="language-plaintext highlighter-rouge">variable</code> in question somehow. If so, it adds some data to a structure called <code class="language-plaintext highlighter-rouge">nlg_data</code> that records what the English description of the restriction is. At the end, we’ll call a function (<code class="language-plaintext highlighter-rouge">ConvertToEnglish()</code>) that takes all the gathered data and turns it into English:</p>
+<p>It will walk the tree in execution order using the function we’ve written <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions">in a previous section</a> called <code class="language-plaintext highlighter-rouge">walk_tree_predications_until()</code>. This function will pass each predication, in execution order, to a different function called <code class="language-plaintext highlighter-rouge">refine_NLG_with_predication()</code> (“NLG” stands for “Natural Language Generation”). That function will determine if the predication is restricting the <code class="language-plaintext highlighter-rouge">variable</code> in question somehow. If so, it adds some data to a structure called <code class="language-plaintext highlighter-rouge">nlg_data</code> that records what the English description of the restriction is. At the end, we’ll call a function (<code class="language-plaintext highlighter-rouge">convert_to_english()</code>) that takes all the gathered data and turns it into English:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Given the index where an error happened and a variable,
-# return what that variable "is" up to that point, in English
-def EnglishForDelphinVariable(failure_index, variable, mrs):
+# return what that variable "is" up to that point (i.e. its "domain")
+# in English
+def english_for_delphin_variable(failure_index, variable, mrs):
     # Integers can't be passed by reference in Python, so we need to pass
     # the current index in a list so it can be changed as we iterate
     current_predication_index = [0]
@@ -426,34 +427,34 @@ def EnglishForDelphinVariable(failure_index, variable, mrs):
             # See if this predication can contribute anything to the
             # description of the variable we are describing. If so,
             # collect it in nlg_data
-            RefineNLGWithPredication(variable, predication, nlg_data)
+            refine_NLG_with_predication(variable, predication, nlg_data)
             current_predication_index[0] = current_predication_index[0] + 1
             return None
 
     nlg_data = {}
-    
+
     # WalkTreeUntil() walks the predications in mrs["RELS"] and calls
     # the function RecordPredicationsUntilFailureIndex(), until hits the
     # failure_index position
-    WalkTreeUntil(mrs["RELS"], RecordPredicationsUntilFailureIndex)
-    
+    walk_tree_predications_until(mrs["RELS"], RecordPredicationsUntilFailureIndex)
+
     # Take the data we gathered and convert to English
-    return ConvertToEnglish(nlg_data)
+    return convert_to_english(nlg_data)
 </code></pre></div></div>
 
-<p>For now, <code class="language-plaintext highlighter-rouge">RefineNLGWithPredication()</code> takes a very simple approach to seeing if a predication is restricting the <code class="language-plaintext highlighter-rouge">variable</code>: Predications which <em>introduce</em> a variable (as described in a previous section) are, in some sense, the base “thing” that the variable is. They should clearly be part of its description. Quantifiers for that variable describe “how much” of it there is, so they should be included as well. There is lots more we could add (and we will later) but keeping it simple is fine for now:</p>
+<p>For now, <code class="language-plaintext highlighter-rouge">refine_NLG_with_predication()</code> takes a very simple approach to seeing if a predication is restricting the <code class="language-plaintext highlighter-rouge">variable</code>: Predications which <em>introduce</em> a variable (as described in a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">the MRS conceptual section</a>) are, in some sense, the base “thing” that the variable is. They should clearly be part of its description. Quantifiers for that variable describe “how much” of it there is, so they should be included as well. There is lots more we could add (and we will later) but keeping it simple is fine for now:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># See if this predication in any way contributes words to 
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># See if this predication in any way contributes words to
 # the variable specified. Put whatever it contributes in nlg_data
-def RefineNLGWithPredication(variable, predication, nlg_data):
-    # Parse the name of the predication to find out its 
-    # part of speech (POS) which could be a noun ("n"), 
-    # quantifier ("q"), etc. 
-    parsed_predication = ParsePredicationName(predication[0])
+def refine_NLG_with_predication(variable, predication, nlg_data):
+    # Parse the name of the predication to find out its
+    # part of speech (POS) which could be a noun ("n"),
+    # quantifier ("q"), etc.
+    parsed_predication = parse_predication_name(predication.name)
 
     # If the predication has this variable as its first argument,
     # it either *introduces* it, or is quantifying it
-    if predication[1] == variable:
+    if predication.args[0] == variable:
         if parsed_predication["Pos"] == "q":
             # It is quantifying it
             nlg_data["Quantifier"] = parsed_predication["Lemma"]
@@ -464,14 +465,14 @@ def RefineNLGWithPredication(variable, predication, nlg_data):
 </code></pre></div></div>
 
 <blockquote>
-  <p>Note: The code for <code class="language-plaintext highlighter-rouge">ParsePredicationName()</code> is described in an appendix</p>
+  <p>Note: The code for <code class="language-plaintext highlighter-rouge">parse_predication_name()</code> is available in the <a href="https://github.com/EricZinda/Perplexity/blob/1a7e058a77dd8d64a6ee7acdea4adbef93bbeef5/perplexity/utilities.py#L91">main Perplexity tree</a></p>
 </blockquote>
 
 <p>Finally, we can take the information we gathered and convert it (in a very simple way) to English. Note that generating proper English is <em>much</em> more complicated than this, and we’ll tackle doing it “more right” later. For now, our naive approach will illustrate the ideas:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Takes the information gathered in the nlg_data dictionary
 # and converts it, in a very simplistic way, to English
-def ConvertToEnglish(nlg_data):
+def convert_to_english(nlg_data):
     phrase = ""
 
     if "Quantifier" in nlg_data:
@@ -491,31 +492,50 @@ def ConvertToEnglish(nlg_data):
 
 <p>Using the MRS from “A file is large”, we can test it out by calling it with different indices to see what it thinks <code class="language-plaintext highlighter-rouge">x1</code> is at that point:</p>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example12():
-    mrs = {"RELS": [["_a_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]}
-    
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Generating English for "Delete a large file"
+def Example11():
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=1000000)])
+
+    mrs = {}
+    mrs["Index"] = "e2"
+    mrs["Variables"] = {"x3": {"PERS": 2},
+                        "x8": {},
+                        "e2": {"SF": "comm"},
+                        "e13": {}}
+
+    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
+                                                   TreePredication(2, "pron", ["x3"]),
+                                                   TreePredication(1, "_a_q", ["x8",
+                                                                               [TreePredication(3, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
+                                                                               TreePredication(4, "_delete_v_1", ["e2", "x3", "x8"])])]
+                                     )
+
     # Set index to failure in _a_q
-    print(EnglishForDelphinVariable(1, "x1", mrs))
-    
+    print(english_for_delphin_variable(1, "x8", mrs))
+
     # Set index to failure in _file_n_of
-    print(EnglishForDelphinVariable(2, "x1", mrs))
+    print(english_for_delphin_variable(3, "x8", mrs))
 
     # Set index to failure in _large_a_1
-    print(EnglishForDelphinVariable(3, "x1", mrs))
+    print(english_for_delphin_variable(4, "x8", mrs))
 
-# Prints:
+# Outputs:
 a thing
 a thing
 a file
 </code></pre></div></div>
 
-<p>You can see that, until predication #2 has succeeded (<code class="language-plaintext highlighter-rouge">_file_n_of</code>), <code class="language-plaintext highlighter-rouge">x1</code> is described as “a thing” since nothing has restricted it yet. Once it gets to predication #3 it now holds “a file”. We could easily beef up our code so that after <code class="language-plaintext highlighter-rouge">_large_a_1</code> it is described as “a large file” and we will, eventually.</p>
+<p>You can see that, until predication #3 has succeeded (<code class="language-plaintext highlighter-rouge">_file_n_of</code>), <code class="language-plaintext highlighter-rouge">x8</code> is described as “a thing” since nothing has restricted it yet. Once it gets past predication #3, it now holds “a file”. We could easily beef up our code so that after <code class="language-plaintext highlighter-rouge">_large_a_1</code> it is described as “a large file” and we will, eventually.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0120ErrorsConceptualFailures.md">edit</a>]</p>
+<p>Last update: 2024-10-22 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0120ErrorsConceptualFailures.md">edit</a>]</p>
 
         
       </section>
