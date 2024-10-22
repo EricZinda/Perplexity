@@ -1,5 +1,5 @@
 {% raw %}## Converting Variable Domains to English
-So far, the code for `large_a_1` looks like this:
+So far, the error reporting code for `large_a_1` looks like this:
 ```
 @Predication(vocabulary, name="_large_a_1")
 def large_a_1(state, e_introduced, x_target):
@@ -9,7 +9,7 @@ def large_a_1(state, e_introduced, x_target):
             context().report_error(["thingNotLarge")
 ```
 
-In a world with no large files it will respond to "A file is large" with "A *thing* is not large". This is because we didn't know how to describe the "domain" that `x` is restricted to be. Remember that the `large_a_1` predication will be used for anything the user references as "large", so it will need to be flexible about how it reports its failures.  `x` won't always contain files.
+In a world with no large files, it responds to: "A file is large" with: "A *thing* is not large". This is because, in the [previous section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure), we didn't know how to describe the "domain" that `x` is restricted to. Remember that the `large_a_1` predication will be used for anything the user references as "large", so it will need to be flexible about how it reports its failures.  `x` won't always contain files.
 
 For example, here is a scope-resolved tree for "A file is large":
 
@@ -19,7 +19,7 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 ```
 
-Errors in that MRS from `_large_a_1` should say "A *file* is not large" since the only things that can be in `x` by the time it gets to `_large_a_1` have been restricted to be files. 
+The error in that MRS from `_large_a_1` should say "A *file* is not large" since the only things that can be in `x` by the time it gets to `_large_a_1` have been restricted to files. 
 
 For "A dog is large":
 ```
@@ -27,7 +27,7 @@ For "A dog is large":
 _a_q(x3,RSTR,BODY)    
                └─ _large_a_1(e2,x3)
 ```
-Errors in *that* MRS from `_large_a_1` should say "A *dog* is not large". 
+The error in *that* MRS from `_large_a_1` should say "A *dog* is not large". 
 
 etc. 
 
@@ -36,7 +36,7 @@ If we can get a description of the domain of `x`, we can write one error message
 ### Determining What to Call the Domain of "x"
 We can figure out what the variable `x` has been restricted to "so far" by taking advantage of some things we know:
 
-1. We know how the tree is executed (depth-first)
+1. We know the tree is executed depth-first
 2. We know the predications in the tree
 3. We know which predication reported the error 
 
@@ -142,7 +142,7 @@ def convert_to_english(nlg_data):
 
 Those functions will provide the start of a system that converts a variable into English, given a spot in the MRS. 
 
-Using the MRS from "A file is large", we can test it out by calling it with different indices to see what it thinks `x1` is at that point:
+Using the MRS from "A file is large", we can test it out by calling it with different indices to see what it thinks `x8` is at that point:
 
 ```
 # Generating English for "Delete a large file"
@@ -161,14 +161,14 @@ def Example11():
                         "e13": {}}
 
     mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
-                                                   TreePredication(2, "pron", ["x3"]),
-                                                   TreePredication(1, "_a_q", ["x8",
+                                                   TreePredication(1, "pron", ["x3"]),
+                                                   TreePredication(2, "_a_q", ["x8",
                                                                                [TreePredication(3, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
                                                                                TreePredication(4, "_delete_v_1", ["e2", "x3", "x8"])])]
                                      )
 
     # Set index to failure in _a_q
-    print(english_for_delphin_variable(1, "x8", mrs))
+    print(english_for_delphin_variable(2, "x8", mrs))
 
     # Set index to failure in _file_n_of
     print(english_for_delphin_variable(3, "x8", mrs))

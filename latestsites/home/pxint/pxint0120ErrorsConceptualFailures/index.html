@@ -348,7 +348,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="converting-variable-domains-to-english">Converting Variable Domains to English</h2>
-<p>So far, the code for <code class="language-plaintext highlighter-rouge">large_a_1</code> looks like this:</p>
+<p>So far, the error reporting code for <code class="language-plaintext highlighter-rouge">large_a_1</code> looks like this:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_large_a_1")
 def large_a_1(state, e_introduced, x_target):
             
@@ -357,7 +357,7 @@ def large_a_1(state, e_introduced, x_target):
             context().report_error(["thingNotLarge")
 </code></pre></div></div>
 
-<p>In a world with no large files it will respond to “A file is large” with “A <em>thing</em> is not large”. This is because we didn’t know how to describe the “domain” that <code class="language-plaintext highlighter-rouge">x</code> is restricted to be. Remember that the <code class="language-plaintext highlighter-rouge">large_a_1</code> predication will be used for anything the user references as “large”, so it will need to be flexible about how it reports its failures.  <code class="language-plaintext highlighter-rouge">x</code> won’t always contain files.</p>
+<p>In a world with no large files, it responds to: “A file is large” with: “A <em>thing</em> is not large”. This is because, in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure">previous section</a>, we didn’t know how to describe the “domain” that <code class="language-plaintext highlighter-rouge">x</code> is restricted to. Remember that the <code class="language-plaintext highlighter-rouge">large_a_1</code> predication will be used for anything the user references as “large”, so it will need to be flexible about how it reports its failures.  <code class="language-plaintext highlighter-rouge">x</code> won’t always contain files.</p>
 
 <p>For example, here is a scope-resolved tree for “A file is large”:</p>
 
@@ -366,14 +366,14 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 </code></pre></div></div>
 
-<p>Errors in that MRS from <code class="language-plaintext highlighter-rouge">_large_a_1</code> should say “A <em>file</em> is not large” since the only things that can be in <code class="language-plaintext highlighter-rouge">x</code> by the time it gets to <code class="language-plaintext highlighter-rouge">_large_a_1</code> have been restricted to be files.</p>
+<p>The error in that MRS from <code class="language-plaintext highlighter-rouge">_large_a_1</code> should say “A <em>file</em> is not large” since the only things that can be in <code class="language-plaintext highlighter-rouge">x</code> by the time it gets to <code class="language-plaintext highlighter-rouge">_large_a_1</code> have been restricted to files.</p>
 
 <p>For “A dog is large”:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ┌────── _dog_n_1(x3)
 _a_q(x3,RSTR,BODY)    
                └─ _large_a_1(e2,x3)
 </code></pre></div></div>
-<p>Errors in <em>that</em> MRS from <code class="language-plaintext highlighter-rouge">_large_a_1</code> should say “A <em>dog</em> is not large”.</p>
+<p>The error in <em>that</em> MRS from <code class="language-plaintext highlighter-rouge">_large_a_1</code> should say “A <em>dog</em> is not large”.</p>
 
 <p>etc.</p>
 
@@ -383,7 +383,7 @@ _a_q(x3,RSTR,BODY)
 <p>We can figure out what the variable <code class="language-plaintext highlighter-rouge">x</code> has been restricted to “so far” by taking advantage of some things we know:</p>
 
 <ol>
-  <li>We know how the tree is executed (depth-first)</li>
+  <li>We know the tree is executed depth-first</li>
   <li>We know the predications in the tree</li>
   <li>We know which predication reported the error</li>
 </ol>
@@ -490,7 +490,7 @@ def convert_to_english(nlg_data):
 
 <p>Those functions will provide the start of a system that converts a variable into English, given a spot in the MRS.</p>
 
-<p>Using the MRS from “A file is large”, we can test it out by calling it with different indices to see what it thinks <code class="language-plaintext highlighter-rouge">x1</code> is at that point:</p>
+<p>Using the MRS from “A file is large”, we can test it out by calling it with different indices to see what it thinks <code class="language-plaintext highlighter-rouge">x8</code> is at that point:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Generating English for "Delete a large file"
 def Example11():
@@ -508,14 +508,14 @@ def Example11():
                         "e13": {}}
 
     mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
-                                                   TreePredication(2, "pron", ["x3"]),
-                                                   TreePredication(1, "_a_q", ["x8",
+                                                   TreePredication(1, "pron", ["x3"]),
+                                                   TreePredication(2, "_a_q", ["x8",
                                                                                [TreePredication(3, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
                                                                                TreePredication(4, "_delete_v_1", ["e2", "x3", "x8"])])]
                                      )
 
     # Set index to failure in _a_q
-    print(english_for_delphin_variable(1, "x8", mrs))
+    print(english_for_delphin_variable(2, "x8", mrs))
 
     # Set index to failure in _file_n_of
     print(english_for_delphin_variable(3, "x8", mrs))
