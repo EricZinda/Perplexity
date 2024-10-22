@@ -412,7 +412,7 @@ def large_a_1(state, e, x):
                 new_state = state.set_x(x, (item, ))
                 yield new_state
             else:
-                context().report_error(["notLarge", item])
+                context().report_error(["notLargeDomain", x])
 
 
 @Predication(vocabulary, name="_a_q")
@@ -468,7 +468,9 @@ def respond_to_mrs(state, mrs):
     for item in call(vocabulary, state, mrs["RELS"]):
         solutions.append(item)
 
-    error = generate_message(state, context().deepest_error()) if len(solutions) == 0 else None
+    error = generate_message_with_index(state,
+                                        context().deepest_error_predication_index(),
+                                        context().deepest_error()) if len(solutions) == 0 else None
     force = sentence_force(mrs)
     if force == "prop":
         # This was a proposition, so the user only expects
@@ -477,7 +479,7 @@ def respond_to_mrs(state, mrs):
         if len(solutions) > 0:
             print("Yes, that is true.")
         else:
-            print(f"No, that isn't correct:{error}")
+            print(f"No, that isn't correct: {error}")
 
     elif force == "ques":
         # See if this is a "WH" type question
@@ -529,6 +531,9 @@ class ExecutionContext(object):
 
     def deepest_error(self):
         return self._error
+
+    def deepest_error_predication_index(self):
+        return self._error_predication_index
 
     def report_error(self, error):
         if self._error_predication_index < self._predication_index:
@@ -701,7 +706,12 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, index=
     return conjunction_list
 
 
+# Wrapper for earlier samples
 def generate_message(state, error):
+    return generate_message_with_index(state, 0, error)
+
+
+def generate_message_with_index(state, predication_index, error):
     # "error" is a list like: ["name", arg1, arg2, ...]. The first item is the error
     # constant (i.e. its name). What the args mean depends on the error.
     error_constant = error[0] if error is not None else "no error set"
@@ -715,6 +725,11 @@ def generate_message(state, error):
 
     elif error_constant == "notLarge":
         return f"'{arg1}' is not large"
+
+    elif error_constant == "notLargeDomain":
+        mrs = state.get_binding("mrs").value[0]
+        domain = english_for_delphin_variable(predication_index, arg1, mrs)
+        return f"{domain} is not large"
 
     else:
         return str(error)
@@ -961,62 +976,71 @@ def Example9():
     respond_to_mrs(state, mrs)
 
 
-# Delete a large file
+# "a file is large" in a world with no large files
 def Example10():
-    state = State([Actor(name="Computer", person=2),
-                   Folder(name="Desktop"),
+    # Note neither file is "large" now
+    state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
-                   File(name="file1.txt", size=2000000),
-                   File(name="file2.txt", size=1000000)])
+                   File(name="file1.txt", size=100),
+                   File(name="file2.txt", size=100)])
 
+    # Start with an empty dictionary
     mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 2},
-                        "x8": {},
-                        "e2": {"SF": "comm"},
-                        "e13": {}}
 
-    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
-                                                   TreePredication(1, "pron", ["x3"]),
-                                                   TreePredication(0, "_a_q", ["x8",
-                                                                               [TreePredication(1, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
-                                                                               TreePredication(3, "_delete_v_1", ["e2", "x3", "x8"])])]
-                                     )
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
+
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                       TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                       TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
     state = state.set_x("mrs", (mrs,))
     respond_to_mrs(state, mrs)
 
 
-# Generating English for "Delete a large file"
+# Generating English for "a file is large"
 def Example11():
-    state = State([Actor(name="Computer", person=2),
-                   Folder(name="Desktop"),
+    # Note neither file is "large" now
+    state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
-                   File(name="file1.txt", size=2000000),
-                   File(name="file2.txt", size=1000000)])
+                   File(name="file1.txt", size=100),
+                   File(name="file2.txt", size=100)])
 
+    # Start with an empty dictionary
     mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 2},
-                        "x8": {},
-                        "e2": {"SF": "comm"},
-                        "e13": {}}
 
-    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
-                                                   TreePredication(1, "pron", ["x3"]),
-                                                   TreePredication(2, "_a_q", ["x8",
-                                                                               [TreePredication(3, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
-                                                                               TreePredication(4, "_delete_v_1", ["e2", "x3", "x8"])])]
-                                     )
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
+
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                              TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                              TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
     # Set index to failure in _a_q
-    print(english_for_delphin_variable(2, "x8", mrs))
+    print(english_for_delphin_variable(0, "x3", mrs))
 
     # Set index to failure in _file_n_of
-    print(english_for_delphin_variable(3, "x8", mrs))
+    print(english_for_delphin_variable(1, "x3", mrs))
 
     # Set index to failure in _large_a_1
-    print(english_for_delphin_variable(4, "x8", mrs))
+    print(english_for_delphin_variable(2, "x3", mrs))
+
 
 
 # Running Example7 results in:
@@ -1383,6 +1407,7 @@ if __name__ == '__main__':
     # Example5_1
     # Example8()
     # Example9()
+    # Example10()
     Example11()
     # Example5_2()
     # Example6()

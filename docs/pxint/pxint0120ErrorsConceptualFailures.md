@@ -142,40 +142,45 @@ def convert_to_english(nlg_data):
 
 Those functions will provide the start of a system that converts a variable into English, given a spot in the MRS. 
 
-Using the MRS from "A file is large", we can test it out by calling it with different indices to see what it thinks `x8` is at that point:
+Using the MRS from "A file is large", we can test it out by calling it with different indices to see what it thinks `x3` is at that point:
 
 ~~~
-# Generating English for "Delete a large file"
+# Generating English for "a file is large"
 def Example11():
-    state = State([Actor(name="Computer", person=2),
-                   Folder(name="Desktop"),
+    # Note neither file is "large" now
+    state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
-                   File(name="file1.txt", size=2000000),
-                   File(name="file2.txt", size=1000000)])
+                   File(name="file1.txt", size=100),
+                   File(name="file2.txt", size=100)])
 
+    # Start with an empty dictionary
     mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 2},
-                        "x8": {},
-                        "e2": {"SF": "comm"},
-                        "e13": {}}
 
-    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
-                                                   TreePredication(1, "pron", ["x3"]),
-                                                   TreePredication(2, "_a_q", ["x8",
-                                                                               [TreePredication(3, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
-                                                                               TreePredication(4, "_delete_v_1", ["e2", "x3", "x8"])])]
-                                     )
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
+
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                              TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                              TreePredication(2, "_large_a_1", ["e2", "x3"])])
 
     # Set index to failure in _a_q
-    print(english_for_delphin_variable(2, "x8", mrs))
+    print(english_for_delphin_variable(0, "x3", mrs))
 
     # Set index to failure in _file_n_of
-    print(english_for_delphin_variable(3, "x8", mrs))
+    print(english_for_delphin_variable(1, "x3", mrs))
 
     # Set index to failure in _large_a_1
-    print(english_for_delphin_variable(4, "x8", mrs))
-
+    print(english_for_delphin_variable(2, "x3", mrs))
+    
+    
 # Outputs:
 a thing
 a thing
@@ -183,5 +188,103 @@ a file
 ~~~
 
 You can see that, until predication #3 has succeeded (`_file_n_of`), `x8` is described as "a thing" since nothing has restricted it yet. Once it gets past predication #3, it now holds "a file". We could easily beef up our code so that after `_large_a_1` it is described as "a large file" and we will, eventually.
+
+To enable our code to use `english_for_delphin_variable()`, we need to know what predication reported the error.  We'll add a helper to `ExecutionContext` to retrieve it:
+
+~~~
+class ExecutionContext(object):
+    def __init__(self):
+        self._error = None
+        self._error_predication_index = -1
+        self._predication_index = -1
+
+    ...
+    
+    def deepest_error_predication_index(self):
+        return self._error_predication_index
+    
+    ...
+~~~
+
+... and pass it to `generate_message_with_index` in `respond_to_mrs`. `generate_message_with_index` is a renamed `generate_message` that now just has an extra argument that code can use:
+
+~~~
+def respond_to_mrs(state, mrs):
+    ...
+    
+    error = generate_message_with_index(state,
+                                        context().deepest_error_predication_index(),
+                                        context().deepest_error()) if len(solutions) == 0 else None
+~~~
+
+### Fixing _large_a_1 to Use Domains
+Recall from the beginning that, running an example, "a file is large" in a world with no large files resulted in "a thing is not large". Once we use the work above, we will get a better result. We'll report a new error code (`notLargeDomain`) from `large_a_1` that will use the MRS *variable* as data:
+
+~~~
+@Predication(vocabulary, name="_large_a_1")
+def large_a_1(state, e, x):
+        ... 
+        
+        if isinstance(item, File):
+            if item.size > 1000:
+                # state.SetX() returns a *new* state that
+                # is a copy of the old one with just that one
+                # variable set to a new value
+                # Variable bindings are always tuples so we set
+                # this one using the tuple syntax: (item, )
+                new_state = state.set_x(x, (item, ))
+                yield new_state
+            else:
+                context().report_error(["notLargeDomain", x])
+~~~
+
+Then we can convert this to a string in `generate_message` using our new `english_for_delphin_variable`, which gives us the *domain* of the variable:
+
+~~~
+def generate_message_with_index(state, predication_index, error):
+    ...
+
+    elif error_constant == "notLargeDomain":
+        mrs = state.get_binding("mrs").value[0]
+        domain = english_for_delphin_variable(predication_index, arg1, mrs)
+        return f"{domain} is not large"
+~~~
+
+Running the example now gives:
+
+~~~
+def Example10():
+    # Note neither file is "large" now
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=100),
+                   File(name="file2.txt", size=100)])
+
+    # Start with an empty dictionary
+    mrs = {}
+
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
+
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                       TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                       TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+    state = state.set_x("mrs", (mrs,))
+    respond_to_mrs(state, mrs)
+    
+# Outputs:
+No, that isn't correct: a file is not large
+~~~
+
+Much better!
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
