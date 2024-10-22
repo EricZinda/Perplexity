@@ -1,24 +1,73 @@
-{% raw %}## Reporting a Failure Naively
-With all that in place, we can now start reporting errors from predications. As outlined in the predication contract, "failure" is when the predication is not true for its arguments, so let's add a little code at the end of `large_a_1` to record an error when there is a failure. We'll call the new `ReportError()` method and pass it what seems like the right error given the code:
+{% raw %}
+## Reporting a Failure Naively
+With all that in place, we can now start reporting errors from predications. As outlined in the predication contract, "failure" is when the predication is not true for its arguments, so let's add a little code at the end of `large_a_1` to record an error when there is a failure. We'll call the new `report_error()` method and pass it what seems like the right error given the code:
 
 ```
 @Predication(vocabulary, name="_large_a_1")
-def large_a_1(state, e_introduced, x_target):
-
-    ...
+def large_a_1(state, e, x):
+        ...
     
-    degree_multiplier = DegreeMultiplierFromEvent(state, e_introduced)
-    for item in iterator:
-        if hasattr(item, 'size') and item.size > degree_multiplier * 1000000:
-            new_state = state.SetX(x_target, item)
-            yield new_state
-        else:
-            # starting a string with: f" allows you to put local Python
-            # variables into it using {}, in a kind of template approach
-            ReportError(f"'{item}' is not large")
+        if isinstance(item, File):
+            if item.size > 1000:
+                # state.SetX() returns a *new* state that
+                # is a copy of the old one with just that one
+                # variable set to a new value
+                # Variable bindings are always tuples so we set
+                # this one using the tuple syntax: (item, )
+                new_state = state.set_x(x, (item, ))
+                yield new_state
+            else:
+                context().report_error(["notLarge", item])
 ```
 
-`large_a_1` looks at an object, checks if it has a size at all, and if so, checks if it is "large" and succeeds if it is. If not, a logical error to report would be "'this thing I was passed' is not large" (which is what we did).
+`large_a_1` looks at an object, checks if it has a size at all, and if so, checks if it is "large" and succeeds if it is. If not, a logical error to report would be "'this thing I was passed' is not large", which is what the code does.
+
+We finish by updating `generate_message()` to convert the error to a string:
+
+```
+def generate_message(state, error):
+    ... 
+    
+    elif error_constant == "notLarge":
+        return f"'{arg1}' is not large"
+
+    ...
+```
+
+... and then run the sample:
+
+```
+# "a file is large" in a world with no large files
+def Example10():
+    # Note neither file is "large" now
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=100),
+                   File(name="file2.txt", size=100)])
+
+    # Start with an empty dictionary
+    mrs = {}
+
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
+
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                       TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                       TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+    respond_to_mrs(state, mrs)
+    
+# Outputs:
+No, that isn't correct:'File(file1.txt, 100)' is not large
+```
 
 Let's try it by evaluating "A file is large":
 
@@ -67,4 +116,4 @@ The next section will improve it to say "A file is not large" which is more clea
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0110ErrorsReportingAFailure.md)]{% endraw %}
+Last update: 2024-10-22 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0110ErrorsReportingAFailure.md)]{% endraw %}
