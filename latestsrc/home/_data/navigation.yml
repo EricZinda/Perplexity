@@ -100,8 +100,6 @@ toc:
         url: "/pxint/pxint0110ErrorsReportingAFailure/"
       - title: "English Variable Domains"
         url: "/pxint/pxint0120ErrorsConceptualFailures/"
-      - title: "Robust Failure Text"
-        url: "/pxint/pxint0130ErrorsRobustFailure/"
       - title: "Generating MRS and Trees"
         url: "/pxint/pxint0070GenerateMRSAndTrees/"
       - title: "Choosing a Parse and Tree"
