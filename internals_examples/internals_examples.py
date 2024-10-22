@@ -1003,14 +1003,14 @@ def Example11():
                         "e13": {}}
 
     mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
-                                                   TreePredication(2, "pron", ["x3"]),
-                                                   TreePredication(1, "_a_q", ["x8",
+                                                   TreePredication(1, "pron", ["x3"]),
+                                                   TreePredication(2, "_a_q", ["x8",
                                                                                [TreePredication(3, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
                                                                                TreePredication(4, "_delete_v_1", ["e2", "x3", "x8"])])]
                                      )
 
     # Set index to failure in _a_q
-    print(english_for_delphin_variable(1, "x8", mrs))
+    print(english_for_delphin_variable(2, "x8", mrs))
 
     # Set index to failure in _file_n_of
     print(english_for_delphin_variable(3, "x8", mrs))
