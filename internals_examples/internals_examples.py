@@ -402,14 +402,17 @@ def large_a_1(state, e, x):
         # "isinstance" is a built-in function in Python that
         # checks if a variable is an
         # instance of the specified class
-        if isinstance(item, File) and item.size > 1000:
-            # state.SetX() returns a *new* state that
-            # is a copy of the old one with just that one
-            # variable set to a new value
-            # Variable bindings are always tuples so we set
-            # this one using the tuple syntax: (item, )
-            new_state = state.set_x(x, (item, ))
-            yield new_state
+        if isinstance(item, File):
+            if item.size > 1000:
+                # state.SetX() returns a *new* state that
+                # is a copy of the old one with just that one
+                # variable set to a new value
+                # Variable bindings are always tuples so we set
+                # this one using the tuple syntax: (item, )
+                new_state = state.set_x(x, (item, ))
+                yield new_state
+            else:
+                context().report_error(["notLarge", item])
 
 
 @Predication(vocabulary, name="_a_q")
@@ -450,68 +453,6 @@ def pronoun_q(state, x, h_rstr, h_body):
     yield from default_quantifier(state, x, h_rstr, h_body)
 
 
-# Takes a TreePredication object, maps it to a Python function and calls it
-def call_predication(vocabulary, state, predication):
-    # Look up the actual Python module and
-    # function name given a string like "folder_n_of".
-    # "vocabulary.Predication" returns a two-item list,
-    # where item[0] is the module and item[1] is the function
-    module_function = vocabulary.predication(predication)
-
-    if module_function is None:
-        raise Exception(f"Implementation for Predication {predication} not found")
-
-    # sys.modules[] is a built-in Python list that allows you
-    # to access actual Python Modules given a string name
-    module = sys.modules[module_function[0]]
-
-    # Functions are modeled as properties of modules in Python
-    # and getattr() allows you to retrieve a property.
-    # So: this is how we get the "function pointer" to the
-    # predication function we wrote in Python
-    function = getattr(module, module_function[1])
-
-    # [list] + [list] will return a new, combined list
-    # in Python. This is how we add the state object
-    # onto the front of the argument list
-    predication_args = predication.args
-    function_args = [state] + predication_args
-
-    # You call a function "pointer" and pass it arguments
-    # that are a list by using "function(*function_args)"
-    # So: this is actually calling our function (which
-    # returns an iterator and thus we can iterate over it)
-    for next_state in function(*function_args):
-        yield next_state
-
-
-def call(vocabulary, state, term):
-    # See if the first thing in the list is actually a list
-    # If so, we have a conjunction
-    if isinstance(term, list):
-        # If "term" is an empty list, we have solved all
-        # predications in the conjunction, return the final answer.
-        # "len()" is a built-in Python function that returns the
-        # length of a list
-        if len(term) == 0:
-            yield state
-        else:
-            # This is a list of predications, so they should
-            # be treated as a conjunction.
-            # call each one and pass the state it returns
-            # to the next one, recursively
-            for nextState in call(vocabulary, state, term[0]):
-                # Note the [1:] syntax which means "return a list
-                # of everything but the first item"
-                yield from call(vocabulary, nextState, term[1:])
-
-    else:
-        # The first thing in the list was not a list
-        # so we assume it is just a TreePredication term.
-        # Evaluate it using call_predication
-        yield from call_predication(vocabulary, state, term)
-
-
 # Get the SF property of the Index of the MRS
 def sentence_force(mrs):
     if "Index" in mrs:
@@ -527,6 +468,7 @@ def respond_to_mrs(state, mrs):
     for item in call(vocabulary, state, mrs["RELS"]):
         solutions.append(item)
 
+    error = generate_message(state, context().deepest_error()) if len(solutions) == 0 else None
     force = sentence_force(mrs)
     if force == "prop":
         # This was a proposition, so the user only expects
@@ -535,7 +477,7 @@ def respond_to_mrs(state, mrs):
         if len(solutions) > 0:
             print("Yes, that is true.")
         else:
-            print("No, that isn't correct.")
+            print(f"No, that isn't correct:{error}")
 
     elif force == "ques":
         # See if this is a "WH" type question
@@ -547,7 +489,7 @@ def respond_to_mrs(state, mrs):
             if len(solutions) > 0:
                 print("Yes.")
             else:
-                print("No.")
+                print(f"No, {error}")
         else:
             # This was a "WH" question
             # return the values of the variable asked about
@@ -558,7 +500,7 @@ def respond_to_mrs(state, mrs):
                 for solutions in solutions:
                     print(solutions.get_binding(wh_variable).value)
             else:
-                print("I don't know")
+                print(f"{error}")
 
     elif force == "comm":
         # This was a command so, if it works, just say so
@@ -576,7 +518,107 @@ def respond_to_mrs(state, mrs):
             print("Done!")
             print(final_state.objects)
         else:
-            print("Couldn't do that.")
+            print(f"Couldn't do that: {error}")
+
+
+class ExecutionContext(object):
+    def __init__(self):
+        self._error = None
+        self._error_predication_index = -1
+        self._predication_index = -1
+
+    def deepest_error(self):
+        return self._error
+
+    def report_error(self, error):
+        if self._error_predication_index < self._predication_index:
+            self._error = error
+            self._error_predication_index = self._predication_index
+
+    def call(self, vocabulary, state, term):
+        # See if the first thing in the list is actually a list
+        # If so, we have a conjunction
+        if isinstance(term, list):
+            # If "term" is an empty list, we have solved all
+            # predications in the conjunction, return the final answer.
+            # "len()" is a built-in Python function that returns the
+            # length of a list
+            if len(term) == 0:
+                yield state
+            else:
+                # This is a list of predications, so they should
+                # be treated as a conjunction.
+                # call each one and pass the state it returns
+                # to the next one, recursively
+                for nextState in self.call(vocabulary, state, term[0]):
+                    # Note the [1:] syntax which means "return a list
+                    # of everything but the first item"
+                    yield from self.call(vocabulary, nextState, term[1:])
+
+        else:
+            # The first thing in the list was not a list
+            # so we assume it is just a TreePredication term.
+            # Evaluate it using call_predication
+            last_predication_index = self._predication_index
+            self._predication_index += 1
+
+            yield from self.call_predication(vocabulary, state, term)
+
+            # Restore it since we are recursing
+            self._predication_index = last_predication_index
+
+    # Takes a TreePredication object, maps it to a Python function and calls it
+    def call_predication(self, vocabulary, state, predication):
+        # Look up the actual Python module and
+        # function name given a string like "folder_n_of".
+        # "vocabulary.Predication" returns a two-item list,
+        # where item[0] is the module and item[1] is the function
+        module_function = vocabulary.predication(predication)
+
+        if module_function is None:
+            raise Exception(f"Implementation for Predication {predication} not found")
+
+        # sys.modules[] is a built-in Python list that allows you
+        # to access actual Python Modules given a string name
+        module = sys.modules[module_function[0]]
+
+        # Functions are modeled as properties of modules in Python
+        # and getattr() allows you to retrieve a property.
+        # So: this is how we get the "function pointer" to the
+        # predication function we wrote in Python
+        function = getattr(module, module_function[1])
+
+        # [list] + [list] will return a new, combined list
+        # in Python. This is how we add the state object
+        # onto the front of the argument list
+        predication_args = predication.args
+        function_args = [state] + predication_args
+
+        # You call a function "pointer" and pass it arguments
+        # that are a list by using "function(*function_args)"
+        # So: this is actually calling our function (which
+        # returns an iterator and thus we can iterate over it)
+        for next_state in function(*function_args):
+            yield next_state
+
+
+# helpers to make the early samples work
+def call(vocabulary, state, term):
+    yield from context().call(vocabulary, state, term)
+
+
+def call_predication(self, vocabulary, state, predication):
+    yield from context().call_predication(vocabulary, state, predication)
+
+
+# Create a global execution context
+execution_context = ExecutionContext()
+
+
+# Helper to access the global context so code is isolated from
+# how we manage it
+def context():
+    return execution_context
 
 
 def mrss_from_phrase(phrase):
@@ -657,6 +699,25 @@ def tree_from_assignments(hole_label, assignments, predication_dict, mrs, index=
         index[0] += 1
 
     return conjunction_list
+
+
+def generate_message(state, error):
+    # "error" is a list like: ["name", arg1, arg2, ...]. The first item is the error
+    # constant (i.e. its name). What the args mean depends on the error.
+    error_constant = error[0] if error is not None else "no error set"
+    arg_length = len(error) if error is not None else 0
+    arg1 = error[1] if arg_length > 1 else None
+    arg2 = error[2] if arg_length > 2 else None
+    arg3 = error[3] if arg_length > 3 else None
+
+    if error_constant == "notAThing":
+        return f"a '{arg1}' is not a '{arg2}'"
+
+    elif error_constant == "notLarge":
+        return f"'{arg1}' is not large"
+
+    else:
+        return str(error)
 
 
 def Example0():
@@ -803,6 +864,7 @@ def Example8():
     respond_to_mrs(state, mrs)
 
 
+# Delete a large file
 def Example9():
     state = State([Actor(name="Computer", person=2),
                    Folder(name="Desktop"),
@@ -828,6 +890,36 @@ def Example9():
     respond_to_mrs(state, mrs)
 
 
+# "a file is large" in a world with no large files
+def Example10():
+    # Note neither file is "large" now
+    state = State([Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=100),
+                   File(name="file2.txt", size=100)])
+
+    # Start with an empty dictionary
+    mrs = {}
+
+    # Set its "index" key to the value "e2"
+    mrs["Index"] = "e2"
+
+    # Set its "Variables" key to *another* dictionary with
+    # keys that represent the variables. Each of those has a "value" of
+    # yet another dictionary that holds the properties of the variables
+    # For now we'll just fill in the SF property
+    mrs["Variables"] = {"x3": {},
+                        "i1": {},
+                        "e2": {"SF": "prop"}}
+
+    mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
+                                       TreePredication(1, "_file_n_of", ["x3", "i1"]),
+                                       TreePredication(2, "_large_a_1", ["e2", "x3"])])
+
+    respond_to_mrs(state, mrs)
+
+
+# Running Example7 results in:
 
 
 # def solve_and_respond(state, mrs):
@@ -1190,7 +1282,8 @@ if __name__ == '__main__':
     # Example7()
     # Example5_1
     # Example8()
-    Example9()
+    # Example9()
+    Example10()
     # Example5_2()
     # Example6()
     # Example6a()
