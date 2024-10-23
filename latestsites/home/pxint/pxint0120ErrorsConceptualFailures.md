@@ -34,7 +34,7 @@ etc.
 If we can get a description of the domain of `x`, we can write one error message and have it work no matter how the predication is used.
 
 ### Determining What to Call the Domain of "x"
-We can figure out what the variable `x` has been restricted to "so far" by taking advantage of some things we know:
+We can figure out what the variable `x` has been restricted by taking advantage of some things we know:
 
 1. We know the tree is executed depth-first
 2. We know the predications in the tree
@@ -58,7 +58,7 @@ To do this, let's create a function, `english_for_delphin_variable()`, which tak
 2. The MRS
 3. The predication index (i.e. the place in the tree) for which we want the English
 
-It will walk the tree in execution order using the function we've written [in a previous section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions) called `walk_tree_predications_until()`. This function will pass each predication, in execution order, to a different function called `refine_NLG_with_predication()` ("NLG" stands for "Natural Language Generation"). That function will determine if the predication is restricting the `variable` in question somehow. If so, it adds some data to a structure called `nlg_data` that records what the English description of the restriction is. At the end, we'll call a function (`convert_to_english()`) that takes all the gathered data and turns it into English:
+It will walk the tree in execution order using the function we've written [in a previous section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions) called `walk_tree_predications_until()`. This function will pass each predication, in execution order, to a different function called `refine_NLG_with_predication()` ("NLG" stands for "Natural Language Generation"). That function will determine if the predication is restricting the domain of the `variable` in question somehow. If so, it adds some data to a structure called `nlg_data` that records what the English description of the restriction is. At the end, we'll call a function (`convert_to_english()`) that takes all the gathered data and turns it into English:
 
 ```
 # Given the index where an error happened and a variable,
@@ -206,7 +206,7 @@ class ExecutionContext(object):
     ...
 ```
 
-... and pass it to `generate_message_with_index` in `respond_to_mrs`. `generate_message_with_index` is a renamed `generate_message` that now just has an extra argument that code can use:
+... and pass it to `generate_message_with_index` in `respond_to_mrs`. `generate_message_with_index` is a renamed `generate_message` that now has an extra argument for the failed predication index:
 
 ```
 def respond_to_mrs(state, mrs):
@@ -218,7 +218,7 @@ def respond_to_mrs(state, mrs):
 ```
 
 ### Fixing _large_a_1 to Use Domains
-Recall from the beginning that, running an example, "a file is large" in a world with no large files resulted in "a thing is not large". Once we use the work above, we will get a better result. We'll report a new error code (`notLargeDomain`) from `large_a_1` that will use the MRS *variable* as data:
+Recall from the beginning that, running an example, "a file is large" in a world with no large files resulted in "a thing is not large". Once we use the work above, we will get a better result. We'll report a new error code (`notLargeDomain`) from `large_a_1` that will have the MRS *variable* as data:
 
 ```
 @Predication(vocabulary, name="_large_a_1")
@@ -234,8 +234,8 @@ def large_a_1(state, e, x):
                 # this one using the tuple syntax: (item, )
                 new_state = state.set_x(x, (item, ))
                 yield new_state
-            else:
-                context().report_error(["notLargeDomain", x])
+                
+        context().report_error(["notLargeDomain", x])
 ```
 
 Then we can convert this to a string in `generate_message` using our new `english_for_delphin_variable`, which gives us the *domain* of the variable:
@@ -289,4 +289,4 @@ Much better!
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-22 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0120ErrorsConceptualFailures.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0120ErrorsConceptualFailures.md)]{% endraw %}

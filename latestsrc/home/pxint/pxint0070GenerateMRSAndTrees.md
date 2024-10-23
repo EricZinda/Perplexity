@@ -1,5 +1,5 @@
 {% raw %}## Converting Phrases to MRS and Well-Formed Trees
-To use our completed backtracking solver, we need to write the code that will convert a human phrase into `TreePredications` and call the solver with them. So, we need to generate all the MRS documents for the phrase and all the well-formed trees for each MRS document.
+To complete our backtracking solver, we need to write the code that will convert a human phrase into `TreePredications` and call the solver with them. Up to this point, we have been hand-coding this. It is now time to generate all the MRS documents for the phrase and all the well-formed trees for each MRS document and have the system build them for us.  Then we will have an end-to-end working system that starts from text like "a file is large" and responds to it.
 
 To do this, we'll write code that uses the [ACE parser](http://sweaglesw.org/linguistics/ace/) (via the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin)) to convert a phrase into an MRS document. The only trick is that we need to supply a grammar file to tell ACE which language we are speaking. It is platform dependent, so we'll create a helper function that determines which one to return for the current platform. The function assumes the grammar files are all in the directory that the function is contained in. The names of the grammar files in the `/perplexity` folder of this repository are used, and the function is actually imported from a file in that same directory:
 
@@ -198,4 +198,4 @@ You can see that each MRS parse can generate a variable number of fully-resolved
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-21 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0070GenerateMRSAndTrees.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0070GenerateMRSAndTrees.md)]{% endraw %}

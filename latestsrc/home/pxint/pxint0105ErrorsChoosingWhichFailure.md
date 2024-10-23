@@ -251,7 +251,7 @@ class ExecutionContext(object):
         module_function = vocabulary.predication(predication)
 
         if module_function is None:
-            raise Exception(f"Implementation for Predication {predication} not found")
+            raise NotImplementedError(f"Implementation for Predication {predication} not found")
 
         # sys.modules[] is a built-in Python list that allows you
         # to access actual Python Modules given a string name
@@ -281,4 +281,4 @@ The system will now remember which is the right ("deepest") error to report. The
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-22 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0105ErrorsChoosingWhichFailure.md)]{% endraw %}
