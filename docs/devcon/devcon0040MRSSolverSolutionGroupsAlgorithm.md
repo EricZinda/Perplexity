@@ -1,5 +1,7 @@
-## Solution Group Algorithm
-As described in the [previous section](devhowtoMRSSolverSolutionGroups), the only way to represent the semantics of collective, distributive and cumulative readings of a sentence like:
+## Appendix: Implementing the Solution Group Algorithm
+[This is an appendix because it doesn't change the overall concepts you need to understand to use the system, it just walks through one architecture for how to implement them.]
+
+As described in the [section describing Solution Groups](devcon0030MRSSolverSolutionGroups), we saw that the only way to represent the semantics of collective, distributive and cumulative readings of a sentence like:
 
 ~~~
 students lifted a table

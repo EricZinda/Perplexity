@@ -1,9 +1,12 @@
 ## Appendix: Implementing the Solution Group Algorithm
+[This is an appendix because it doesn't change the overall concepts you need to understand to use the system, it just walks through one architecture for how to implement them.]
+
 In the section [introducing the solution grouping algorithm](devhowtoMRSSolverSolutionGroupsAlgorithm), the algorithm starts with:
 
 > For each possible combination of solutions from Phase 1 ...
 
 And leaves how to generate them as an exercise for the reader. In this section, we'll go through one approach to generating combinations of solutions that properly deals with the kinds of answers users expect and allows for some performance optimizations.
+
 
 ## Only 2 Solution Groups Are Needed
 The number of solution groups for a tree in a given world can be quite large, but the system only needs 2 of them for any response (question, proposition or command). This allows for some nice performance optimizations. Let's go through each type of phrase to see why.
@@ -278,7 +281,3 @@ Given what we now know about what is needed from our combination generator, ther
 - **Quit generating at 2**: Since we only really care about 2 solution groups, the generator doesn't need to keep track of all the sets to build all combinations.  Instead, once it has returned two unique solution groups, it only needs to generate iterations of those. In fact, it really only needs to generate iterations of the first. This eliminates a lot of work generating and testing sets that aren't used.
 - **Merge answers**: We can reduce the number of sets we have to consider in `set_list` by observing that we only need to add a new set to the set list if we have a set that needs to be the base for more alternatives. Variables that have constraints with an upper limit of `inf` don't need to generate all the combinations since they will just be subsets of the one maximal set. So, if a solution only introduces new individuals to variables that have an upper limit of `inf`, it can just be merged into that set, it doesn't need to be added as a separate set to `set_list`.
 
-## Next Steps
-The last few sections have described an algorithm that properly generates all the solutions to an MRS by providing solution groups.
-
-[Next](devcon0060WhichParseAndTree), we'll describe how to decide which of the multiple MRS parses and trees should be used when a user provides a phrase to the system.
