@@ -524,7 +524,8 @@
                 "2 soup\nsteak\nwater\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "2 soup\nwater\nsteak\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "menu\nwater\n2 soup\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
-                "2 soup\nmenu\nsteak\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
+                "2 soup\nmenu\nsteak\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "water\nmenu\n2 soup\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
