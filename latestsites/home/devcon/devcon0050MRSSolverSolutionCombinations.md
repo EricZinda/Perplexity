@@ -1,4 +1,6 @@
 {% raw %}## Appendix: Implementing the Solution Group Algorithm
+[This is an appendix because it doesn't change the overall concepts you need to understand to use the system, it just walks through one architecture for how to implement them.]
+
 In the section introducing the solution grouping algorithm, the algorithm starts with:
 
 > For each possible combination of solutions from Phase 1 ...
@@ -273,10 +275,5 @@ This algorithm will allow the user interface to call the Solution Group Picker a
 Given what we now know about what is needed from our combination generator, there are many optimizations that can be made to improve performance. Here are a couple:
 - **Quit generating at 2**: Since we only really care about 2 solution groups, the generator doesn't need to keep track of all the sets to build all combinations.  Instead, once it has returned two unique solution groups, it only needs to generate iterations of those. In fact, it really only needs to generate iterations of the first. This eliminates a lot of work generating and testing sets that aren't used.
 - **Merge answers**: We can reduce the number of sets we have to consider in `set_list` by observing that we only need to add a new set to the set list if we have a set that needs to be the base for more alternatives. Variables that have constraints with an upper limit of `inf` don't need to generate all the combinations since they will just be subsets of the one maximal set. So, if a solution only introduces new individuals to variables that have an upper limit of `inf`, it can just be merged into that set, it doesn't need to be added as a separate set to `set_list`.
-
-## Next Steps
-The last few sections have described an algorithm that properly generates all the solutions to an MRS by providing solution groups.
-
-[Next](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree), we'll describe how to decide which of the multiple MRS parses and trees should be used when a user provides a phrase to the system.
 
 Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0050MRSSolverSolutionCombinations.md)]{% endraw %}
