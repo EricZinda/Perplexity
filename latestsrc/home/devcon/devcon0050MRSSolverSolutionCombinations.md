@@ -1,4 +1,4 @@
-{% raw %}## AppendixA: Optimizing the Combination Algorithm
+{% raw %}## Appendix: Implementing the Solution Group Algorithm
 In the section introducing the solution grouping algorithm, the algorithm starts with:
 
 > For each possible combination of solutions from Phase 1 ...
@@ -279,4 +279,4 @@ The last few sections have described an algorithm that properly generates all th
 
 [Next](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree), we'll describe how to decide which of the multiple MRS parses and trees should be used when a user provides a phrase to the system.
 
-Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0050MRSSolverSolutionCombinations.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0050MRSSolverSolutionCombinations.md)]{% endraw %}

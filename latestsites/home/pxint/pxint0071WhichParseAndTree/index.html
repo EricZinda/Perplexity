@@ -211,15 +211,15 @@
           
             <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
           
-            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">Combinations and Proper Responses</a></li>
-          
             <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/">Choosing a Parse and Tree</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure/">Choosing a Failure</a></li>
           
-            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">A. Optimizing Coll/Dist/Cuml</a></li>
+            <li><a href="/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm/">A. Implementing Solution Groups</a></li>
+          
+            <li><a href="/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations/">B. Optimizing Solution Groups</a></li>
           
         </ul>
         
@@ -313,6 +313,8 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/" class="active">Choosing a Parse and Tree</a></li>
           
+            <li><a href="/Perplexity/home/pxint/pxint0230Summary/">Summary</a></li>
+          
             <li><a href="/Perplexity/home/pxint/pxint03000PythonDecorators/">A. Python Decorators</a></li>
           
         </ul>
@@ -346,20 +348,20 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="determining-the-right-parse-and-tree">Determining the Right Parse and Tree</h2>
-<p>As discussed in the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree">Choosing a Parse and Tree</a>, returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general.</p>
+<p>In the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees">previous section</a>, we wrote the code to generate all the parses for a phrase, and all the fully-resolved MRS trees that result from. Next we have to decide which one is the one the user intended and write the code to run it. As discussed in the conceptual topic on <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree">Choosing a Parse and Tree</a>, returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general.</p>
 
 <p>To implement the code for choosing the right tree, we’re going to create a new class that will be the main entry point into the whole system. It is called <code class="language-plaintext highlighter-rouge">UserInterface</code> and its main method is <code class="language-plaintext highlighter-rouge">interact_once()</code>. Each call to that method does a single “command/response” interaction with the system mostly using code we’ve already written. Here’s a summary of its logic:</p>
 
 <ol>
-  <li>Use the code we wrote in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees">previous topic</a> to convert the phrase to MRS and then generate the trees for the MRS.</li>
-  <li>Solve the trees using a modification to the <code class="language-plaintext highlighter-rouge">call()</code> which we saw in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0050Conjunctions">Conjunctions topic</a> which is called <code class="language-plaintext highlighter-rouge">solve</code>. Which is the same, but also resets the predication counter when a new MRS is being resolved.</li>
-  <li>Get a string for any errors that happened by calling <code class="language-plaintext highlighter-rouge">generate_message_with_index</code> (which gets passed as an argument to <code class="language-plaintext highlighter-rouge">interact_once</code>). We built this in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures">English Domain Names section</a></li>
-  <li>Actually do the response using the (slightly refactored) <code class="language-plaintext highlighter-rouge">respond_to_solutions()</code> function we built in <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions">the Propositions Section</a></li>
+  <li>Use the code we wrote in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees">previous topic</a> to convert the phrase to MRS and then generate the trees for the MRS, go through them in order.</li>
+  <li>Solve the trees using a modification to the <code class="language-plaintext highlighter-rouge">call()</code> function from <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0050Conjunctions">Conjunctions topic</a> which is called <code class="language-plaintext highlighter-rouge">solve</code>. Go through these in order.</li>
+  <li>If an error occurs when solving a tree, get a string for it by calling <code class="language-plaintext highlighter-rouge">generate_message_with_index</code> (which gets passed as an argument to <code class="language-plaintext highlighter-rouge">interact_once</code>). We built this in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures">English Domain Names section</a></li>
+  <li>When we are done, actually respond using the (slightly refactored) <code class="language-plaintext highlighter-rouge">respond_to_solutions()</code> function we built in <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0080SimplePropositions">the Propositions Section</a></li>
 </ol>
 
 <p>The new code is at the end of the function, where we apply all the operations to a single state object and then store it away as the new state.  Otherwise, changes would just get discarded and the next interaction wouldn’t see them.</p>
 
-<p>If the function succeeds on a particular tree, it stops processing. Otherwise, it will report the first tree failure.</p>
+<p>Our new code iterates through every MRS, then every tree it has.  If the function succeeds on a particular tree, it stops processing. Otherwise, it continues until it finds a succcess or runs out of trees. If nothing succeeds, it will report the first tree failure.</p>
 
 <p>Here is the full code for it:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class UserInterface(object):
@@ -426,7 +428,7 @@
         ...
 </code></pre></div></div>
 
-<p>Here is the modified <code class="language-plaintext highlighter-rouge">ExecutionContext</code> that has the new <code class="language-plaintext highlighter-rouge">solve()</code> method:</p>
+<p>Here is the modified <code class="language-plaintext highlighter-rouge">ExecutionContext</code> that has the new <code class="language-plaintext highlighter-rouge">solve()</code> method that is only there to reset the predication index since it can now be called multiple times as we process new phrases:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class ExecutionContext(object):
     def __init__(self):
@@ -447,7 +449,7 @@
     ...
 </code></pre></div></div>
 
-<p>Below is the modified <code class="language-plaintext highlighter-rouge">respond_to_solutions()</code> function. It no longer generates solutions or error text, instead it requires the caller to pass them in. That allows us to centralize the code that does the solver in <code class="language-plaintext highlighter-rouge">interact_once()</code>.  The rest of the code is the same:</p>
+<p>Below is the modified <code class="language-plaintext highlighter-rouge">respond_to_solutions()</code> function. It no longer generates solutions or error text, instead it requires the caller to pass them in. That allows us to centralize the code that does the solving into <code class="language-plaintext highlighter-rouge">interact_once()</code>.  It also returns the response instead of printing it now.  The rest of the code is the same:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def respond_to_solutions(state, mrs, solutions, error_text):
     force = sentence_force(mrs)
@@ -492,9 +494,9 @@
             return f"Couldn't do that: {error_text}"
 </code></pre></div></div>
 
-<p>We also moved the functions that parse and build trees (<code class="language-plaintext highlighter-rouge">mrss_from_phrase</code>, <code class="language-plaintext highlighter-rouge">tree_from_assignments</code> and <code class="language-plaintext highlighter-rouge">trees_from_mrs</code>) to be part of the <code class="language-plaintext highlighter-rouge">UserInterface</code> class.</p>
+<p>We also moved the functions that parse and build trees (<code class="language-plaintext highlighter-rouge">mrss_from_phrase</code>, <code class="language-plaintext highlighter-rouge">tree_from_assignments</code> and <code class="language-plaintext highlighter-rouge">trees_from_mrs</code>) to be part of the <code class="language-plaintext highlighter-rouge">UserInterface</code> class just to clean up the code.</p>
 
-<p>With this, we now have a (simple) fully functioning interactive natural language system! Here’s a simple example that runs it in a loop, and an interactive session using some phrases we’ve used throughout the tutorial to test it:</p>
+<p>With this, we now have a (simple) fully-functioning interactive natural language system! Here’s a simple example that runs it in a loop, and an interactive session using some phrases we’ve used throughout the tutorial to test it:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example12():
     state = State([Actor(name="Computer", person=2),
@@ -545,7 +547,7 @@ which folder is not large
 No, that isn't correct: a folder is not large
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">interact_once()</code> prints out the trees that get found so it is easier to see which is being used and which have missing predications. It also helps point out when a tree failed and the solver is trying more trees to find a success. You can see that by looking at the difference between the first “which file is large?” which only generates one tree since it succeeds, and the second one which fails since there are no large files.  The second one keeps going trying to find a tree that works.</p>
+<p><code class="language-plaintext highlighter-rouge">interact_once()</code> prints out the trees that get found so it is easier to see which is being used and which have missing predications. It also helps point out when a tree failed and the solver is trying more trees to find a success. You can see that in action by looking at the difference between the first “which file is large?” which only generates one tree since it succeeds, and the second one which fails since there are no large files.  The second one keeps going trying to find a tree that works.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
