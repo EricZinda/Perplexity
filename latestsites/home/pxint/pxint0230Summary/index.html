@@ -21,7 +21,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Perplexity">
 <meta property="og:title" content="Perplexity">
-<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0030ImplementPredication/">
+<meta property="og:url" content="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0230Summary/">
 
 
   <meta property="og:description" content="An amazing website.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0030ImplementPredication/">
+<link rel="canonical" href="http://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0230Summary/">
 
 
 
@@ -289,7 +289,7 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0020PythonBasics/">State and Python Basics</a></li>
           
-            <li><a href="/Perplexity/home/pxint/pxint0030ImplementPredication/" class="active">Implementing a Predication</a></li>
+            <li><a href="/Perplexity/home/pxint/pxint0030ImplementPredication/">Implementing a Predication</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0040BuildSolver/">Initial Solver</a></li>
           
@@ -313,7 +313,7 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Parse and Tree</a></li>
           
-            <li><a href="/Perplexity/home/pxint/pxint0230Summary/">Summary</a></li>
+            <li><a href="/Perplexity/home/pxint/pxint0230Summary/" class="active">Summary</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint03000PythonDecorators/">A. Python Decorators</a></li>
           
@@ -347,141 +347,10 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="implementing-a-predication">Implementing a Predication</h2>
-<p>With that <a href="">Python background and overview of the <code class="language-plaintext highlighter-rouge">State</code> object</a>, we can now implement the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a> for a predication to see how it all works. Let’s implement the <code class="language-plaintext highlighter-rouge">_folder_n_of</code> predication in Python.</p>
+        <h2 id="summary">Summary</h2>
+<p>In the course of this internals section we have implemented everything necessary to build a simple natural language system that can be interfaced with any type of application.  The basic approach is exactly how Perplexity is implemented, but because Perplexity is a production system there are many more corner cases, exceptions and performance improvements that are in the code. The idea of this section was to allow you to build your own Perplexity-type system, perhaps with another language, perhaps with a different approach after learning how Perplexity itself is architected.</p>
 
-<p>We will be passing an instance of the <code class="language-plaintext highlighter-rouge">State</code> object as the first argument to every predication so that it can access its arguments <em>and</em> the world state. The variables will be passed in as strings like <code class="language-plaintext highlighter-rouge">"x1"</code> or <code class="language-plaintext highlighter-rouge">"e12"</code>. To get their values, the code will look them up in the <code class="language-plaintext highlighter-rouge">State</code> object as shown below:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def folder_n_of(state, x):
-    x_value = state.get_binding(x).value
-    if x_value is None:
-        # Variable is unbound:
-        # iterate over all individuals in the world
-        # using the iterator returned by state.AllIndividuals()
-        iterator = state.all_individuals()
-    else:
-        # Variable is bound: create an iterator that will iterate
-        # over just that one by creating a list and adding it as
-        # the only element
-        # Remember that we are ignoring the fact that bindings are tuples
-        # in these examples so we assume there is only one value, and
-        # just retrieve it
-        iterator = [x_value[0]]
-
-    # By converting both cases to an iterator, the code that
-    # checks if x is "a folder" can be shared
-    for item in iterator:
-        # "isinstance" is a built-in function in Python that
-        # checks if a variable is an
-        # instance of the specified class
-        if isinstance(item, Folder):
-            # state.SetX() returns a *new* state that
-            # is a copy of the old one with just that one
-            # variable set to a new value
-            # Variable bindings are always tuples so we set
-            # this one using the tuple syntax: (item, )
-            new_state = state.set_x(x, (item, ))
-            yield new_state
-</code></pre></div></div>
-<p>First notice that we are not really taking advantage of our “practical predication contract” in this code: we are literally just iterating through every object in the system. We can fix that later, but for the moment the examples are so small that it won’t really matter.</p>
-
-<p>Further on in the code, notice that the <code class="language-plaintext highlighter-rouge">folder_n_of</code> <code class="language-plaintext highlighter-rouge">yields</code> the new instance of the state object returned from setting <code class="language-plaintext highlighter-rouge">x</code> to a value.  This behavior (enforced by the<code class="language-plaintext highlighter-rouge">State</code> object) will allow our solver to pass around the same state object to a predication multiple times and get fresh values bound to the variables. Since we always make copies when setting a value, the solver can rely on a particular <code class="language-plaintext highlighter-rouge">State</code> object not being changed, even after it has been passed to a predication.</p>
-
-<p>Now we can write a simple test to call our first predication:</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example1():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt"),
-                   File(name="file2.txt")])
-
-    for item in folder_n_of(state, "x1"):
-        print(item.variables)
-
-    print("\nThe original `state` object is not changed:")
-    print(state.variables)
-
-# calling Example1() prints:
-{'x1': x1=(Folder(Desktop),)}
-{'x1': x1=(Folder(Documents),)}
-
-The original `state` object is not changed:
-{}
-</code></pre></div></div>
-
-<p>Again, it is important to note that the initial <code class="language-plaintext highlighter-rouge">state</code> variable will not actually be changed at the end of the <code class="language-plaintext highlighter-rouge">Example1()</code> function. In order to print out the folders that were found by the predication, we need to print the value of <code class="language-plaintext highlighter-rouge">x1</code> in the state <em>returned from the predication</em>. This is key to allowing us to call the same predication multiple times with the same <code class="language-plaintext highlighter-rouge">State</code> object to get different answers.</p>
-
-<p>Now we have one predication that implements the predication contract: it will iteratively return all the “folders” in the world when called with an unbound variable as we did here. This is the basic pattern we’ll use for all predications from here on out.</p>
-
-<p>Implementing an adjective works the same way, let’s implement <code class="language-plaintext highlighter-rouge">_large_a_1</code> which is the predication for the adjective “large”. We’ll need to have a way to represent file sizes to do this first. We’ll add an optional size to our <code class="language-plaintext highlighter-rouge">File</code> object:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class File:
-    def __init__(self, name, size=0):
-        self.name = name
-        self.size = size
-
-    def __repr__(self):
-        return f"File({self.name}, {self.size})"
-</code></pre></div></div>
-
-<p>We can almost use an exact copy of our <code class="language-plaintext highlighter-rouge">_folder_n_of</code> code for <code class="language-plaintext highlighter-rouge">_large_a_1</code> because they both do the same thing: yield a value if they are true, and they are both just checking for a single thing on an object (or yielding all objects that “are” that thing). For “large”, we’ll arbitrarily decide that &gt; 1000 bytes is “large”, and that only files can be large:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_large_a_1")
-def large_a_1(state, e, x):
-    x_value = state.get_binding(x).value
-    if x_value is None:
-        # Variable is unbound:
-        # iterate over all individuals in the world
-        # using the iterator returned by state.AllIndividuals()
-        iterator = state.all_individuals()
-    else:
-        # Variable is bound: create an iterator that will iterate
-        # over just that one by creating a list and adding it as
-        # the only element
-        # Remember that we are ignoring the fact that bindings are tuples
-        # in these examples so we assume there is only one value, and
-        # just retrieve it
-        iterator = [x_value[0]]
-
-    # By converting both cases to an iterator, the code that
-    # checks if x is "a folder" can be shared
-    for item in iterator:
-        # "isinstance" is a built-in function in Python that
-        # checks if a variable is an
-        # instance of the specified class
-        if isinstance(item, File) and item.size &gt; 1000:
-            # state.SetX() returns a *new* state that
-            # is a copy of the old one with just that one
-            # variable set to a new value
-            # Variable bindings are always tuples so we set
-            # this one using the tuple syntax: (item, )
-            new_state = state.set_x(x, (item, ))
-            yield new_state
-</code></pre></div></div>
-<p>Note that we are ignoring the <code class="language-plaintext highlighter-rouge">e</code> event variable. That only comes into play when other predications want to modify the behavior of “large” like “very large”. We can safely ignore it for now.</p>
-
-<p>Now we can run the same example that we used for folders, but call <code class="language-plaintext highlighter-rouge">large_a_1</code> instead:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def Example1a():
-    state = State([Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt", size=1000),
-                   File(name="file2.txt", size=2000)])
-
-    for item in large_a_1(state, "e1", "x1"):
-        print(item.variables)
-        
-# Running Example1a results in:
-{'x1': x1=(File(file2.txt, 2000),)}
-</code></pre></div></div>
-
-<p>Since the arguments to the predication are again unbound, this shows that the only large files in the world are “file2.txt”.</p>
-
-<p>With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But we’ll need a way to convert the MRS text representation into a set of Python function calls. That way, we won’t have to manually convert them to Python like the above example. The next section describes how to do that.</p>
-
-<blockquote>
-  <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
-</blockquote>
-
-<p>Last update: 2024-10-18 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md">edit</a>]</p>
+<p>Last update: 2024-10-23 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0230Summary.md">edit</a>]</p>
 
         
       </section>
