@@ -3,6 +3,9 @@ import inspect
 import os
 import sys
 import uuid
+from io import StringIO
+
+import delphin.mrs
 from delphin import ace
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
 from perplexity.utilities import ShowLogging, parse_predication_name
@@ -411,8 +414,8 @@ def large_a_1(state, e, x):
                 # this one using the tuple syntax: (item, )
                 new_state = state.set_x(x, (item, ))
                 yield new_state
-            else:
-                context().report_error(["notLargeDomain", x])
+                return
+        context().report_error(["notLargeDomain", x])
 
 
 @Predication(vocabulary, name="_a_q")
@@ -439,7 +442,7 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
 @Predication(vocabulary, name="pron")
 def pron(state, x_who):
     mrs = state.get_binding("mrs").value[0]
-    person = mrs["Variables"][x_who]["PERS"]
+    person = int(mrs["Variables"][x_who]["PERS"])
     for item in state.all_individuals():
         if isinstance(item, Actor) and item.person == person:
             yield state.set_x(x_who, (item, ))
@@ -471,15 +474,20 @@ def respond_to_mrs(state, mrs):
     error = generate_message_with_index(state,
                                         context().deepest_error_predication_index(),
                                         context().deepest_error()) if len(solutions) == 0 else None
+
+    print(respond_to_solutions(state, mrs, solutions, error))
+
+
+def respond_to_solutions(state, mrs, solutions, error_text):
     force = sentence_force(mrs)
     if force == "prop":
         # This was a proposition, so the user only expects
         # a confirmation or denial of what they said.
         # The phrase was "true" if there was at least one answer
         if len(solutions) > 0:
-            print("Yes, that is true.")
+            return "Yes, that is true."
         else:
-            print(f"No, that isn't correct: {error}")
+            return f"No, that isn't correct: {error_text}"
 
     elif force == "ques":
         # See if this is a "WH" type question
@@ -489,9 +497,9 @@ def respond_to_mrs(state, mrs):
             # a yes or no.
             # The phrase was "true" if there was at least one answer
             if len(solutions) > 0:
-                print("Yes.")
+                return "Yes."
             else:
-                print(f"No, {error}")
+                return f"No, {error_text}"
         else:
             # This was a "WH" question
             # return the values of the variable asked about
@@ -500,31 +508,24 @@ def respond_to_mrs(state, mrs):
             if len(solutions) > 0:
                 wh_variable = wh_predication.args[0]
                 for solutions in solutions:
-                    print(solutions.get_binding(wh_variable).value)
+                    return f"{str(solutions.get_binding(wh_variable).value)}"
             else:
-                print(f"{error}")
+                return f"{error_text}"
 
     elif force == "comm":
         # This was a command so, if it works, just say so
         # We'll get better errors and messages in upcoming sections
         if len(solutions) > 0:
-            # Collect all the operations that were done
-            all_operations = []
-            for solution in solutions:
-                all_operations += solution.get_operations()
-
-            # Now apply all the operations to the original state object and
-            # print it to prove it happened
-            final_state = state.apply_operations(all_operations)
-
-            print("Done!")
-            print(final_state.objects)
+            return f"Done!"
         else:
-            print(f"Couldn't do that: {error}")
+            return f"Couldn't do that: {error_text}"
 
 
 class ExecutionContext(object):
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self._error = None
         self._error_predication_index = -1
         self._predication_index = -1
@@ -539,6 +540,10 @@ class ExecutionContext(object):
         if self._error_predication_index < self._predication_index:
             self._error = error
             self._error_predication_index = self._predication_index
+
+    def solve(self, vocabulary, state, term):
+        self.reset()
+        yield from call(vocabulary, state, term)
 
     def call(self, vocabulary, state, term):
         # See if the first thing in the list is actually a list
@@ -581,7 +586,7 @@ class ExecutionContext(object):
         module_function = vocabulary.predication(predication)
 
         if module_function is None:
-            raise Exception(f"Implementation for Predication {predication} not found")
+            raise NotImplementedError(f"Implementation for Predication {predication} not found")
 
         # sys.modules[] is a built-in Python list that allows you
         # to access actual Python Modules given a string name
@@ -612,7 +617,7 @@ def call(vocabulary, state, term):
     yield from context().call(vocabulary, state, term)
 
 
-def call_predication(self, vocabulary, state, predication):
+def call_predication(vocabulary, state, predication):
     yield from context().call_predication(vocabulary, state, predication)
 
 
@@ -624,86 +629,6 @@ execution_context = ExecutionContext()
 # how we manage it
 def context():
     return execution_context
-
-
-def mrss_from_phrase(phrase):
-    # Don't print errors to the screen
-    f = open(os.devnull, 'w')
-
-    # Create an instance of the ACE parser and ask to give <= 25 MRS documents
-    with ace.ACEParser(erg_file(), cmdargs=['-n', '25'], stderr=f) as parser:
-        ace_response = parser.interact(phrase)
-
-    for parse_result in ace_response.results():
-        yield parse_result.mrs()
-
-
-def trees_from_mrs(mrs):
-    # Create a dict of predications using their labels as each key
-    # for easy access when building trees
-    # Note that a single label could represent multiple predications
-    # in conjunction so we need a list for each label
-    mrs_predication_dict = {}
-    for predication in mrs.predications:
-        if predication.label not in mrs_predication_dict.keys():
-            mrs_predication_dict[predication.label] = []
-        mrs_predication_dict[predication.label].append(predication)
-
-    # Iteratively return well-formed trees from the MRS
-    for new_mrs, holes_assignments in valid_hole_assignments(mrs, max_holes=12, required_root_label=None):
-        # valid_hole_assignments can return None if the grammar returns something
-        # that doesn't have the same number of holes and floaters (which is a grammar bug)
-        if holes_assignments is not None:
-            # Now we have the assignments of labels to holes, but we need
-            # to actually build the *tree* using that information
-            well_formed_tree = tree_from_assignments(mrs.top,
-                                                     holes_assignments,
-                                                     mrs_predication_dict,
-                                                     mrs)
-            yield well_formed_tree
-
-
-def tree_from_assignments(hole_label, assignments, predication_dict, mrs, index=None):
-    if index is None:
-        # Use a list so the value will get modified during recursion
-        index = [0]
-
-    # Get the list of predications that should fill in the hole
-    # represented by labelName
-    if hole_label in assignments.keys():
-        predication_list = predication_dict[assignments[hole_label]]
-    else:
-        predication_list = predication_dict[hole_label]
-
-    # predication_list is a list because multiple items might
-    # have the same key and should be put in conjunction (i.e. be and'd together)
-    conjunction_list = []
-    for predication in predication_list:
-        predication_name = predication.predicate
-
-        # Recurse through this predication's arguments
-        # and look for any scopal arguments to recursively convert
-        args = []
-        for arg_name in predication.args.keys():
-            original_arg = predication.args[arg_name]
-
-            # CARG arguments contain strings that are never
-            # variables, they are constants
-            if arg_name in ["CARG"]:
-                final_arg = original_arg
-            else:
-                argType = original_arg[0]
-                if argType == "h":
-                    final_arg = tree_from_assignments(original_arg, assignments, predication_dict, mrs, index)
-                else:
-                    final_arg = original_arg
-
-            args.append(final_arg)
-
-        conjunction_list.append(TreePredication(index=index[0], name=predication_name, args=args))
-        index[0] += 1
-
-    return conjunction_list
 
 
 # Wrapper for earlier samples
@@ -806,6 +731,170 @@ def refine_NLG_with_predication(variable, predication, nlg_data):
             nlg_data["Topic"] = parsed_predication["Lemma"]
 
 
+class UserInterface(object):
+    def __init__(self, state, vocabulary):
+        self.max_holes = 13
+        self.state = state
+        self.execution_context = ExecutionContext()
+        self.vocabulary = vocabulary
+
+    # response_function gets passed three arguments:
+    #   response_function(mrs, solutions, error)
+    # It must use them to return a string to say to the user
+    def interact_once(self, response_function, forced_input=None):
+        # input() pauses the program and waits for the user to
+        # type input and hit enter, and then returns it
+        if forced_input:
+            user_input=forced_input
+        else:
+            user_input = str(input("? "))
+        best_failure = None
+
+        # Loop through each MRS and each tree that can be
+        # generated from it...
+        for mrs_raw in self.mrss_from_phrase(user_input):
+            for tree in self.trees_from_mrs(mrs_raw):
+                print(tree)
+                # Collect all the solutions for this tree against the
+                # current world state
+                mrs = {"Index": mrs_raw.index,
+                       "Variables": mrs_raw.variables,
+                       "RELS": tree}
+
+                call_state = self.state.set_x("mrs", (mrs, ))
+                solutions = []
+                try:
+                    for item in context().solve(vocabulary, call_state, mrs["RELS"]):
+                        solutions.append(item)
+                except NotImplementedError as e:
+                    print(str(e))
+                    continue
+
+                # Determine the response to it
+                error_text = response_function(call_state,
+                                               context().deepest_error_predication_index(),
+                                               context().deepest_error()) if len(solutions) == 0 else None
+
+                message = respond_to_solutions(call_state, mrs, solutions, error_text)
+                if len(solutions) > 0:
+                    # This worked, give a response
+                    print(message)
+
+                    # apply the results to the current world state if it was a command
+                    if sentence_force(mrs) == "comm":
+                        self.state = self.apply_solutions_to_state(self.state, solutions)
+                        print(f"New state: {str(self.state.objects)}")
+
+                    return
+                else:
+                    # This failed, remember it if it is the "best" failure
+                    # which we currently define as the first one
+                    if best_failure is None:
+                        best_failure = message
+
+        # If we got here, nothing worked: print out the best failure
+        print(best_failure)
+
+    def apply_solutions_to_state(self, state, solutions):
+        # Collect all the operations that were done
+        all_operations = []
+        for solution in solutions:
+            for operation in solution.get_operations():
+                all_operations.append(operation)
+
+        # Now apply all the operations to the original state object
+        return state.apply_operations(all_operations)
+
+    @staticmethod
+    def mrss_from_phrase(phrase):
+        # Don't print errors to the screen
+        f = open(os.devnull, 'w')
+
+        # Create an instance of the ACE parser and ask to give <= 25 MRS documents
+        with ace.ACEParser(erg_file(), cmdargs=['-n', '25'], stderr=f) as parser:
+            ace_response = parser.interact(phrase)
+
+        for parse_result in ace_response.results():
+            yield parse_result.mrs()
+
+    @staticmethod
+    def trees_from_mrs(mrs):
+        # Create a dict of predications using their labels as each key
+        # for easy access when building trees
+        # Note that a single label could represent multiple predications
+        # in conjunction so we need a list for each label
+        mrs_predication_dict = {}
+        for predication in mrs.predications:
+            if predication.label not in mrs_predication_dict.keys():
+                mrs_predication_dict[predication.label] = []
+            mrs_predication_dict[predication.label].append(predication)
+
+        # Iteratively return well-formed trees from the MRS
+        for new_mrs, holes_assignments in valid_hole_assignments(mrs, max_holes=12, required_root_label=None):
+            # valid_hole_assignments can return None if the grammar returns something
+            # that doesn't have the same number of holes and floaters (which is a grammar bug)
+            if holes_assignments is not None:
+                # Now we have the assignments of labels to holes, but we need
+                # to actually build the *tree* using that information
+                well_formed_tree = UserInterface.tree_from_assignments(mrs.top,
+                                                              holes_assignments,
+                                                              mrs_predication_dict,
+                                                              mrs)
+                yield well_formed_tree
+
+    @staticmethod
+    def tree_from_assignments(hole_label, assignments, predication_dict, mrs, index=None):
+        if index is None:
+            # Use a list so the value will get modified during recursion
+            index = [0]
+
+        # Get the list of predications that should fill in the hole
+        # represented by labelName
+        if hole_label in assignments.keys():
+            predication_list = predication_dict[assignments[hole_label]]
+        else:
+            predication_list = predication_dict[hole_label]
+
+        # predication_list is a list because multiple items might
+        # have the same key and should be put in conjunction (i.e. be and'd together)
+        conjunction_list = []
+        for predication in predication_list:
+            predication_name = predication.predicate
+
+            # Recurse through this predication's arguments
+            # and look for any scopal arguments to recursively convert
+            args = []
+            for arg_name in predication.args.keys():
+                original_arg = predication.args[arg_name]
+
+                # CARG arguments contain strings that are never
+                # variables, they are constants
+                if arg_name in ["CARG"]:
+                    final_arg = original_arg
+                else:
+                    argType = original_arg[0]
+                    if argType == "h":
+                        final_arg = UserInterface.tree_from_assignments(original_arg, assignments, predication_dict, mrs, index)
+                    else:
+                        final_arg = original_arg
+
+                args.append(final_arg)
+
+            conjunction_list.append(TreePredication(index=index[0], name=predication_name, args=args))
+            index[0] += 1
+
+        return conjunction_list
+
+
+# Used to keep old examples running
+def mrss_from_phrase(phrase):
+    yield from UserInterface.mrss_from_phrase("2 files are large")
+
+
+def trees_from_mrs(mrs):
+    yield from UserInterface.trees_from_mrs(mrs)
+
+
 def Example0():
     state = State([Folder(name="Desktop"),
                    Folder(name="Documents"),
@@ -819,7 +908,7 @@ def Example1():
                    File(name="file1.txt"),
                    File(name="file2.txt")])
 
-    for item in folder_n_of(state, "x1"):
+    for item in folder_n_of(state, "x1", None):
         print(item.variables)
 
     print("\nThe original `state` object is not changed:")
@@ -879,14 +968,18 @@ def Example4():
         print(item.variables)
 
 
+def mrs_repr(self):
+    return f"MRS object <{', '.join([str(x.predicate) for x in self.predications])}>"
+
+
 def Example5():
     for mrs in mrss_from_phrase("2 files are large"):
-        print(mrs)
+        print(mrs_repr(mrs))
 
 
 def Example6():
     for mrs in mrss_from_phrase("2 files are large"):
-        print(mrs)
+        print(mrs_repr(mrs))
         for tree in trees_from_mrs(mrs):
             print(tree)
         print()
@@ -1042,386 +1135,186 @@ def Example11():
     print(english_for_delphin_variable(2, "x3", mrs))
 
 
+def Example12():
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=100)])
 
-# Running Example7 results in:
+    user_interface = UserInterface(state, vocabulary)
 
+    while True:
+        user_interface.interact_once(generate_message_with_index)
+        print()
 
-# def solve_and_respond(state, mrs):
-#     context = ExecutionContext(vocabulary)
-#     solutions = list(context.solve_mrs_tree(state, mrs))
-#     return respond_to_mrs_tree(state, mrs, solutions, context.error())
+# Uses only by the test code in main below
+def Example12_test():
+    state = State([Actor(name="Computer", person=2),
+                   Folder(name="Desktop"),
+                   Folder(name="Documents"),
+                   File(name="file1.txt", size=2000000),
+                   File(name="file2.txt", size=100)])
 
-#
-
-#
-#
-
-#
-#
-
-#
-#
-# # Evaluate the proposition: "a file is large" when there is one
-# def Example5():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=2000000),
-#                    File(name="file2.txt", size=2000000)])
-#
-#     # Start with an empty dictionary
-#     tree_info = {}
-#
-#     # Set its "index" key to the value "e1"
-#     tree_info["Index"] = "e1"
-#
-#     # Set its "Variables" key to *another* dictionary with
-#     # two keys: "x1" and "e1". Each of those has a "value" of
-#     # yet another dictionary that holds the properties of the variables
-#     tree_info["Variables"] = {"x1": {"NUM": "pl"},
-#                               "e1": {"SF": "prop"}}
-#
-#     # Set the "Tree" key to the scope-resolved MRS tree, using our format
-#     tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
-#                                                     TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                     TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "a file is large" when there isn't a large one
-# def Example5_1():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=200),
-#                    File(name="file2.txt", size=200)])
-#     # Start with an empty dictionary
-#     tree_info = {}
-#
-#     # Set its "index" key to the value "e1"
-#     tree_info["Index"] = "e1"
-#
-#     # Set its "Variables" key to *another* dictionary with
-#     # two keys: "x1" and "e1". Each of those has a "value" of
-#     # yet another dictionary that holds the properties of the variables
-#     tree_info["Variables"] = {"x1": {"NUM": "pl"},
-#                         "e1": {"SF": "prop"}}
-#
-#     # Set the "Tree" key to the scope-resolved MRS tree, using our format
-#     tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
-#                                                     TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                     TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "a file is large" when there isn't any files
-# def Example5_2():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents")])
-#     # Start with an empty dictionary
-#     tree_info = {}
-#     # Set its "index" key to the value "e1"
-#     tree_info["Index"] = "e1"
-#     # Set its "Variables" key to *another* dictionary with
-#     # two keys: "x1" and "e1". Each of those has a "value" of
-#     # yet another dictionary that holds the properties of the variables
-#     tree_info["Variables"] = {"x1": {"NUM": "pl"},
-#                         "e1": {"SF": "prop"}}
-#     # Set the "Tree" key to the scope-resolved MRS tree, using our format
-#     tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
-#                                                     TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                     TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "which file is large?"
-# def Example6():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=2000000),
-#                    File(name="file2.txt", size=1000000)])
-#
-#     tree_info = {}
-#     tree_info["Index"] = "e1"
-#     tree_info["Variables"] = {"x1": {"NUM": "sg"},
-#                         "e1": {"SF": "ques"}}
-#     tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
-#                                                         TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                         TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "which file is very small?"
-# def Example6a():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=20000000),
-#                    File(name="file2.txt", size=1000000)])
-#
-#     tree_info = {}
-#     tree_info["Index"] = "e1"
-#     tree_info["Variables"] = {"x1": {"NUM": "sg"},
-#                         "e1": {"SF": "ques"}}
-#     tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
-#                                                         TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                         [TreePredication(2, "_very_x_deg", ["e2", "e1"]),
-#                                                          TreePredication(3, "_small_a_1", ["e1", "x1"])]])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "which file is very large?"
-# def Example6b():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=20000000),
-#                    File(name="file2.txt", size=1000000)])
-#
-#     tree_info = {}
-#     tree_info["Index"] = "e1"
-#     tree_info["Variables"] = {"x1": {"NUM": "sg"},
-#                         "e1": {"SF": "ques"}}
-#     tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
-#                                                         TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                         [TreePredication(2, "_very_x_deg", ["e2", "e1"]),
-#                                                          TreePredication(3, "_large_a_1", ["e1", "x1"])]])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Delete a large file when there are some
-# def Example7():
-#     state = State([Actor(name="Computer", person=2),
-#                    Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=2000000),
-#                    File(name="file2.txt", size=1000000)])
-#     tree_info = {}
-#     tree_info["Index"] = "e2"
-#     tree_info["Variables"] = {"x3": {"PERS": 2},
-#                               "e2": {"SF": "comm"}}
-#     tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
-#                                                          TreePredication(1, "pron", ["x3"]),
-#                                                          TreePredication(2, "_a_q", ["x8",
-#                                                                                      [TreePredication(3, "_large_a_1", ["e1", "x1"]),
-#                                                                                       TreePredication(4, "_file_n_of", ["x1", "i1"])],
-#                                                                                       TreePredication(5, "_delete_v_1", ["e2", "x3", "x1"])])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # delete you
-# def Example8():
-#     state = State([Actor(name="Computer", person=2),
-#                    Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=2000000),
-#                    File(name="file2.txt", size=1000000)])
-#
-#     tree_info = {}
-#     tree_info["Index"] = "e2"
-#     tree_info["Variables"] = {"x3": {"PERS": 2},
-#                               "x8": {"PERS": 2},
-#                               "e2": {"SF": "comm"}}
-#     tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
-#                                                          TreePredication(1, "pron", ["x3"]),
-#                                                          TreePredication(2, "pronoun_q", ["x8",
-#                                                                                           TreePredication(3, "pron", ["x8"]),
-#                                                                                           TreePredication(4, "_delete_v_1",["e2", "x3", "x8"])])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Delete a large file when there are no large files
-# def Example9():
-#     state = State([Actor(name="Computer", person=2),
-#                    Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=10),
-#                    File(name="file2.txt", size=10)])
-#
-#     tree_info = {}
-#     tree_info["Index"] = "e2"
-#     tree_info["Variables"] = {"x3": {"PERS": 2},
-#                               "e2": {"SF": "comm"}}
-#     tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
-#                                                          TreePredication(1, "pron", ["x3"]),
-#                                                          TreePredication(2, "_a_q", ["x1",
-#                                                                                      [TreePredication(3, "_large_a_1", ["e1", "x1"]),
-#                                                                                       TreePredication(4, "_file_n_of", ["x1", "i1"])],
-#                                                                                      TreePredication(5, "_delete_v_1", ["e2", "x3", "x1"])])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "a file is large" when there are no *large* files
-# def Example10():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=1000000),
-#                    File(name="file2.txt", size=1000000)])
-#     tree_info = {}
-#     tree_info["Index"] = "e1"
-#     tree_info["Variables"] = {"x1": {"NUM": "pl"},
-#                         "e1": {"SF": "prop"}}
-#
-#     tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
-#                                                     TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                     TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "a file is large" when there are no files, period
-# def Example11():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents")])
-#     tree_info = {}
-#     tree_info["Index"] = "e1"
-#     tree_info["Variables"] = {"x1": {"NUM": "pl"},
-#                         "e1": {"SF": "prop"}}
-#     tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
-#                                                     TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                     TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# def Example12():
-#     tree_info = {}
-#     tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
-#                                                     TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                     TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(english_for_delphin_variable(0, "x1", tree_info))
-#     print(english_for_delphin_variable(1, "x1", tree_info))
-#     print(english_for_delphin_variable(2, "x1", tree_info))
-#
-#
-# # "he/she" deletes a large file
-# def Example13():
-#     state = State([Actor(name="Computer", person=2),
-#                    Folder(name="Desktop"),
-#                    Folder(name="Documents"),
-#                    File(name="file1.txt", size=2000000),
-#                    File(name="file2.txt", size=1000000)])
-#     tree_info = {}
-#     tree_info["Index"] = "e2"
-#     tree_info["Variables"] = {"x3": {"PERS": 3},
-#                               "e2": {"SF": "prop"}}
-#
-#     tree_info["Tree"] = TreePredication(0, "pronoun_q", ["x3",
-#                                                          TreePredication(1, "pron", ["x3"]),
-#                                                          TreePredication(2, "_a_q", ["x1",
-#                                                                                      [TreePredication(3, "_large_a_1", ["e1", "x1"]),
-#                                                                                       TreePredication(4, "_file_n_of", ["x1", "i1"])],
-#                                                                                      TreePredication(5, "_delete_v_1", ["e2", "x3", "x1"])])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # Evaluate the proposition: "which file is large?" if there are no files
-# def Example14():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents")])
-#     tree_info = {}
-#     tree_info["Index"] = "e1"
-#     tree_info["Variables"] = {"x1": {"NUM": "sg"},
-#                               "e1": {"SF": "ques"}}
-#     tree_info["Tree"] = TreePredication(0, "_which_q", ["x1",
-#                                                         TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                         TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# # "A file is large" when there isn't a file in the system
-# def Example15():
-#     state = State([Folder(name="Desktop"),
-#                    Folder(name="Documents")])
-#     tree_info = {}
-#     tree_info["Index"] = "e1"
-#     tree_info["Variables"] = {"x1": {"NUM": "pl"},
-#                         "e1": {"SF": "prop"}}
-#     tree_info["Tree"] = TreePredication(0, "_a_q", ["x1",
-#                                                     TreePredication(1, "_file_n_of", ["x1", "i1"]),
-#                                                     TreePredication(2, "_large_a_1", ["e1", "x1"])])
-#
-#     print(solve_and_respond(state, tree_info))
-#
-#
-# def Example16_reset():
-#     return State([Actor(name="Computer", person=2),
-#                   Folder(name="Desktop"),
-#                   Folder(name="Documents"),
-#                   File(name="file1.txt", size=2000000)])
-#
-#
-# def Example16():
-#     Test_main(Example16_reset)
-#
-#     # # ShowLogging("Pipeline")
-#     # user_interface = UserInterface("example", Example16_reset, vocabulary, generate_message, respond_to_mrs_tree)
-#     #
-#     # while True:
-#     #     user_interface.interact_once()
-#     #     print()
-#
-#
-# def Example17():
-#     def reset():
-#         return State([Folder(name="Desktop"),
-#                       Folder(name="Documents")])
-#
-#     user_interface = UserInterface("example", reset, vocabulary, generate_message, None)
-#
-#     for mrs in user_interface.mrss_from_phrase("every book is in a cave"):
-#         for tree in user_interface.trees_from_mrs(mrs):
-#             print(tree)
+    user_interface = UserInterface(state, vocabulary)
+    user_interface.interact_once(generate_message_with_index, forced_input="a file is large")
+    user_interface.interact_once(generate_message_with_index, forced_input="which file is large?")
+    user_interface.interact_once(generate_message_with_index, forced_input="delete a large file")
+    user_interface.interact_once(generate_message_with_index, forced_input="which file is large?")
+    user_interface.interact_once(generate_message_with_index, forced_input="which folder is large?")
+    user_interface.interact_once(generate_message_with_index, forced_input="a folder is large")
 
 
+def test_all():
+    original_stdout = sys.stdout
+    sys.stdout = StringIO()
+    Example0()
+    Example1()
+    Example1a()
+    Example2()
+    Example3()
+    Example4()
+    Example5()
+    Example6()
+    Example7()
+    Example8()
+    Example9()
+    Example10()
+    Example11()
+    # Example12()
+    Example12_test()
+    result = sys.stdout.getvalue()
+    sys.stdout = original_stdout
+
+    return result
 
 
 if __name__ == '__main__':
-    ShowLogging("Pipeline")
-    ShowLogging("SolutionGroups")
+    # ShowLogging("Pipeline")
+    # ShowLogging("SolutionGroups")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
     # ShowLogging("UserInterface")
     # ShowLogging("SString")
     # ShowLogging("Determiners")
 
-    # Early examples need a context to set the vocabulary since
-    # respond_to_mrs hadn't been built yet
-    # Example0()
-    # Example1()
-    # Example1a()
-    # Example2()
-    # Example3()
-    # Example4()
-    # Example5()
-    # Example6()
-    # Example7()
-    # Example5_1
-    # Example8()
-    # Example9()
-    # Example10()
+    # test_all()
+    original_stdout = sys.stdout
+    sys.stdout = StringIO()
+    Example0()
+    Example1()
+    Example1a()
+    Example2()
+    Example3()
+    Example4()
+    Example5()
+    Example6()
+    Example7()
+    Example8()
+    Example9()
+    Example10()
     Example11()
-    # Example5_2()
-    # Example6()
-    # Example6a()
-    # Example6b()
-    #     Example7()
-    #     Example8()
-    #     Example9()
-    #     Example10()
-    #     Example11()
-    #     Example12()
-    #     Example13()
-    #     Example14()
-    #     Example15()
+    # Example12()
+    Example12_test()
+    captured_output = sys.stdout.getvalue()
+    sys.stdout = original_stdout
 
-    # Example16()
-    # Example17()
+    baseline = """{'x1': x1=(Folder(Desktop),)}
+{'x1': x1=(Folder(Documents),)}
+
+The original `state` object is not changed:
+{}
+{'x1': x1=(File(file2.txt, 2000),)}
+{'x1': x1=(Folder(Desktop),)}
+{'x1': x1=(Folder(Documents),)}
+{'x1': x1=(File(file2.txt, 2000000),)}
+{'x3': x3=(File(file1.txt, 2000000),)}
+MRS object <udef_q, card, _file_n_of, _large_a_1>
+MRS object <udef_q, compound, number_q, card, _file_n_of, _large_a_1>
+MRS object <loc_nonsp, number_q, card, udef_q, _file_n_of, _large_a_1>
+MRS object <appos, generic_entity, udef_q, card, proper_q, named, _large_a_1>
+MRS object <number_q, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+MRS object <loc_nonsp, number_q, card, udef_q, _file_n_of, subord, _large_a_1>
+MRS object <generic_entity, udef_q, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+MRS object <unknown, generic_entity, udef_q, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+MRS object <unknown, udef_q, generic_entity, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+MRS object <udef_q, card, _file_n_of, _large_a_1>
+[udef_q(x3,[card(2,e9,x3), _file_n_of(x3,i10)],[_large_a_1(e2,x3)])]
+
+MRS object <udef_q, compound, number_q, card, _file_n_of, _large_a_1>
+[number_q(x9,[card(2,x9,i15)],[udef_q(x3,[compound(e8,x3,x9), _file_n_of(x3,i16)],[_large_a_1(e2,x3)])])]
+[udef_q(x3,[number_q(x9,[card(2,x9,i15)],[compound(e8,x3,x9), _file_n_of(x3,i16)])],[_large_a_1(e2,x3)])]
+
+MRS object <loc_nonsp, number_q, card, udef_q, _file_n_of, _large_a_1>
+[udef_q(x3,[_file_n_of(x3,i16)],[number_q(x5,[card(2,x5,i11)],[loc_nonsp(e4,e2,x5), _large_a_1(e2,x3)])])]
+[number_q(x5,[card(2,x5,i11)],[udef_q(x3,[_file_n_of(x3,i16)],[loc_nonsp(e4,e2,x5), _large_a_1(e2,x3)])])]
+
+MRS object <appos, generic_entity, udef_q, card, proper_q, named, _large_a_1>
+[proper_q(x5,[named(Files,x5)],[udef_q(x3,[generic_entity(x3), card(2,e11,x3)],[appos(e4,x3,x5), _large_a_1(e2,x3)])])]
+[udef_q(x3,[generic_entity(x3), card(2,e11,x3)],[proper_q(x5,[named(Files,x5)],[appos(e4,x3,x5), _large_a_1(e2,x3)])])]
+
+MRS object <number_q, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+[subord(e17,[udef_q(x3,[_file_n_of(x3,i15)],[number_q(x5,[card(2,x5,i10)],[_be_v_id(e2,x3,x5)])])],[_large_a_1(e21,i22)])]
+[subord(e17,[number_q(x5,[card(2,x5,i10)],[udef_q(x3,[_file_n_of(x3,i15)],[_be_v_id(e2,x3,x5)])])],[_large_a_1(e21,i22)])]
+[udef_q(x3,[_file_n_of(x3,i15)],[subord(e17,[number_q(x5,[card(2,x5,i10)],[_be_v_id(e2,x3,x5)])],[_large_a_1(e21,i22)])])]
+[udef_q(x3,[_file_n_of(x3,i15)],[number_q(x5,[card(2,x5,i10)],[subord(e17,[_be_v_id(e2,x3,x5)],[_large_a_1(e21,i22)])])])]
+[number_q(x5,[card(2,x5,i10)],[subord(e17,[udef_q(x3,[_file_n_of(x3,i15)],[_be_v_id(e2,x3,x5)])],[_large_a_1(e21,i22)])])]
+[number_q(x5,[card(2,x5,i10)],[udef_q(x3,[_file_n_of(x3,i15)],[subord(e17,[_be_v_id(e2,x3,x5)],[_large_a_1(e21,i22)])])])]
+
+MRS object <loc_nonsp, number_q, card, udef_q, _file_n_of, subord, _large_a_1>
+[subord(e17,[udef_q(x3,[_file_n_of(x3,i16)],[number_q(x5,[card(2,x5,i11)],[loc_nonsp(e2,x3,x5)])])],[_large_a_1(e21,i22)])]
+[subord(e17,[number_q(x5,[card(2,x5,i11)],[udef_q(x3,[_file_n_of(x3,i16)],[loc_nonsp(e2,x3,x5)])])],[_large_a_1(e21,i22)])]
+[udef_q(x3,[_file_n_of(x3,i16)],[subord(e17,[number_q(x5,[card(2,x5,i11)],[loc_nonsp(e2,x3,x5)])],[_large_a_1(e21,i22)])])]
+[udef_q(x3,[_file_n_of(x3,i16)],[number_q(x5,[card(2,x5,i11)],[subord(e17,[loc_nonsp(e2,x3,x5)],[_large_a_1(e21,i22)])])])]
+[number_q(x5,[card(2,x5,i11)],[subord(e17,[udef_q(x3,[_file_n_of(x3,i16)],[loc_nonsp(e2,x3,x5)])],[_large_a_1(e21,i22)])])]
+[number_q(x5,[card(2,x5,i11)],[udef_q(x3,[_file_n_of(x3,i16)],[subord(e17,[loc_nonsp(e2,x3,x5)],[_large_a_1(e21,i22)])])])]
+
+MRS object <generic_entity, udef_q, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+[subord(e17,[udef_q(x3,[_file_n_of(x3,i15)],[udef_q(x5,[generic_entity(x5), card(2,e10,x5)],[_be_v_id(e2,x3,x5)])])],[_large_a_1(e21,i22)])]
+[subord(e17,[udef_q(x5,[generic_entity(x5), card(2,e10,x5)],[udef_q(x3,[_file_n_of(x3,i15)],[_be_v_id(e2,x3,x5)])])],[_large_a_1(e21,i22)])]
+[udef_q(x3,[_file_n_of(x3,i15)],[subord(e17,[udef_q(x5,[generic_entity(x5), card(2,e10,x5)],[_be_v_id(e2,x3,x5)])],[_large_a_1(e21,i22)])])]
+[udef_q(x3,[_file_n_of(x3,i15)],[udef_q(x5,[generic_entity(x5), card(2,e10,x5)],[subord(e17,[_be_v_id(e2,x3,x5)],[_large_a_1(e21,i22)])])])]
+[udef_q(x5,[generic_entity(x5), card(2,e10,x5)],[subord(e17,[udef_q(x3,[_file_n_of(x3,i15)],[_be_v_id(e2,x3,x5)])],[_large_a_1(e21,i22)])])]
+[udef_q(x5,[generic_entity(x5), card(2,e10,x5)],[udef_q(x3,[_file_n_of(x3,i15)],[subord(e17,[_be_v_id(e2,x3,x5)],[_large_a_1(e21,i22)])])])]
+
+MRS object <unknown, generic_entity, udef_q, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+[udef_q(x12,[_file_n_of(x12,i16)],[udef_q(x4,[generic_entity(x4), card(2,e10,x4), subord(e19,[_be_v_id(e18,x12,x4)],[_large_a_1(e23,i24)])],[unknown(e2,x4)])])]
+[udef_q(x4,[udef_q(x12,[_file_n_of(x12,i16)],[generic_entity(x4), card(2,e10,x4), subord(e19,[_be_v_id(e18,x12,x4)],[_large_a_1(e23,i24)])])],[unknown(e2,x4)])]
+[udef_q(x4,[generic_entity(x4), card(2,e10,x4), subord(e19,[udef_q(x12,[_file_n_of(x12,i16)],[_be_v_id(e18,x12,x4)])],[_large_a_1(e23,i24)])],[unknown(e2,x4)])]
+
+MRS object <unknown, udef_q, generic_entity, card, udef_q, _file_n_of, _be_v_id, subord, _large_a_1>
+[udef_q(x12,[_file_n_of(x12,i16)],[udef_q(x4,[generic_entity(x4), card(2,i10,x4), subord(e19,[_be_v_id(e18,x12,x4)],[_large_a_1(e23,i24)])],[unknown(e2,x4)])])]
+[udef_q(x4,[udef_q(x12,[_file_n_of(x12,i16)],[generic_entity(x4), card(2,i10,x4), subord(e19,[_be_v_id(e18,x12,x4)],[_large_a_1(e23,i24)])])],[unknown(e2,x4)])]
+[udef_q(x4,[generic_entity(x4), card(2,i10,x4), subord(e19,[udef_q(x12,[_file_n_of(x12,i16)],[_be_v_id(e18,x12,x4)])],[_large_a_1(e23,i24)])],[unknown(e2,x4)])]
+
+Yes, that is true.
+(File(file1.txt, 2000000),)
+Done!
+No, that isn't correct: a file is not large
+a thing
+a thing
+a file
+[_a_q(x3,[_file_n_of(x3,i8)],[_large_a_1(e2,x3)])]
+Yes, that is true.
+[_which_q(x3,[_file_n_of(x3,i8)],[_large_a_1(e2,x3)])]
+(File(file1.txt, 2000000),)
+[_a_q(x4,[_large_a_1(e9,x4), _file_n_of(x4,i10)],[_delete_v_1(e2,i3,x4)])]
+Implementation for Predication _delete_v_1(e2,i3,x4) not found
+[pronoun_q(x3,[pron(x3)],[_a_q(x8,[_large_a_1(e13,x8), _file_n_of(x8,i14)],[_delete_v_1(e2,x3,x8)])])]
+Done!
+New state: [Actor(name=Computer, person=2), Folder(Desktop), Folder(Documents), File(file2.txt, 100)]
+[_which_q(x3,[_file_n_of(x3,i8)],[_large_a_1(e2,x3)])]
+[udef_q(x3,[_which_q(x10,[generic_entity(x10)],[nominalization(x3,[_file_v_1(e14,x10,i15)])])],[_large_a_1(e2,x3)])]
+Implementation for Predication udef_q(x3,[_which_q(x10,[generic_entity(x10)],[nominalization(x3,[_file_v_1(e14,x10,i15)])])],[_large_a_1(e2,x3)]) not found
+[_which_q(x10,[generic_entity(x10)],[udef_q(x3,[nominalization(x3,[_file_v_1(e14,x10,i15)])],[_large_a_1(e2,x3)])])]
+Implementation for Predication generic_entity(x10) not found
+which file is not large
+[_which_q(x3,[_folder_n_of(x3,i8)],[_large_a_1(e2,x3)])]
+which folder is not large
+[_a_q(x3,[_folder_n_of(x3,i8)],[_large_a_1(e2,x3)])]
+No, that isn't correct: a folder is not large
+"""
+    if captured_output != baseline:
+        print("test FAILED")
+    else:
+        print("test succeeded")

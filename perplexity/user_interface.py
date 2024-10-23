@@ -1,4 +1,6 @@
 import copy
+from importlib import import_module
+import inspect
 import json
 import logging
 import os
@@ -920,6 +922,20 @@ def command_record_test(ui, arg):
     return True
 
 
+def command_run_code_test(ui, arg):
+    values = arg.split(",")
+    module_name = values[0].strip()
+    function_name = values[1].strip()
+    module = import_module(name=values[0])
+    functions = inspect.getmembers(module, inspect.isfunction)
+    result = None
+    for function in functions:
+        if function[0] == function_name:
+            result = function[1]()
+            break
+    return result
+
+
 def command_create_test(ui, arg):
     if len(arg) == 0:
         ui.user_output(f"Please supply a test name.")
@@ -1286,6 +1302,9 @@ command_data = {
     "appendtest": {"Function": command_append_test, "Category": "Testing",
                    "Description": "Appends the interactions recorded by /record to an existing test",
                    "Example": "/appendtest Foo"},
+    "runfunction": {"Function": command_run_code_test, "Category": "Testing",
+                "Description": "Runs a specified function and prints the results. Useful for a test that needs to run arbitrary code",
+                "Example": "/runFunction module1.submodule1, foo"},
     "runtest": {"Function": command_run_test, "Category": "Testing",
                 "Description": "Runs a test",
                 "Example": "/runtest subdirectory/foo"},

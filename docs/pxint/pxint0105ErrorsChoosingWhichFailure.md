@@ -251,7 +251,7 @@ class ExecutionContext(object):
         module_function = vocabulary.predication(predication)
 
         if module_function is None:
-            raise Exception(f"Implementation for Predication {predication} not found")
+            raise NotImplementedError(f"Implementation for Predication {predication} not found")
 
         # sys.modules[] is a built-in Python list that allows you
         # to access actual Python Modules given a string name
