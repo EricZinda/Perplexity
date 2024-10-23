@@ -1,4 +1,4 @@
-## AppendixA: Optimizing the Combination Algorithm
+## Appendix: Implementing the Solution Group Algorithm
 In the section [introducing the solution grouping algorithm](devhowtoMRSSolverSolutionGroupsAlgorithm), the algorithm starts with:
 
 > For each possible combination of solutions from Phase 1 ...

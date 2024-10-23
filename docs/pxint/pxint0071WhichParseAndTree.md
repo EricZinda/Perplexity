@@ -1,16 +1,16 @@
 ## Determining the Right Parse and Tree
-As discussed in the conceptual topic on [Choosing a Parse and Tree](../devcon/devcon0060WhichParseAndTree), returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general. 
+In the [previous section](pxint0070GenerateMRSAndTrees), we wrote the code to generate all the parses for a phrase, and all the fully-resolved MRS trees that result from. Next we have to decide which one is the one the user intended and write the code to run it. As discussed in the conceptual topic on [Choosing a Parse and Tree](../devcon/devcon0060WhichParseAndTree), returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general. 
 
 To implement the code for choosing the right tree, we're going to create a new class that will be the main entry point into the whole system. It is called `UserInterface` and its main method is `interact_once()`. Each call to that method does a single "command/response" interaction with the system mostly using code we've already written. Here's a summary of its logic:
 
-1. Use the code we wrote in the [previous topic](pxint0070GenerateMRSAndTrees) to convert the phrase to MRS and then generate the trees for the MRS. 
-2. Solve the trees using a modification to the `call()` which we saw in the [Conjunctions topic](pxint0050Conjunctions) which is called `solve`. Which is the same, but also resets the predication counter when a new MRS is being resolved.
-3. Get a string for any errors that happened by calling `generate_message_with_index` (which gets passed as an argument to `interact_once`). We built this in the [English Domain Names section](pxint0120ErrorsConceptualFailures)
-4. Actually do the response using the (slightly refactored) `respond_to_solutions()` function we built in [the Propositions Section](pxint0080SimplePropositions)
+1. Use the code we wrote in the [previous topic](pxint0070GenerateMRSAndTrees) to convert the phrase to MRS and then generate the trees for the MRS, go through them in order. 
+2. Solve the trees using a modification to the `call()` function from [Conjunctions topic](pxint0050Conjunctions) which is called `solve`. Go through these in order.
+3. If an error occurs when solving a tree, get a string for it by calling `generate_message_with_index` (which gets passed as an argument to `interact_once`). We built this in the [English Domain Names section](pxint0120ErrorsConceptualFailures)
+4. When we are done, actually respond using the (slightly refactored) `respond_to_solutions()` function we built in [the Propositions Section](pxint0080SimplePropositions)
 
 The new code is at the end of the function, where we apply all the operations to a single state object and then store it away as the new state.  Otherwise, changes would just get discarded and the next interaction wouldn't see them.
 
-If the function succeeds on a particular tree, it stops processing. Otherwise, it will report the first tree failure.
+Our new code iterates through every MRS, then every tree it has.  If the function succeeds on a particular tree, it stops processing. Otherwise, it continues until it finds a succcess or runs out of trees. If nothing succeeds, it will report the first tree failure.
 
 Here is the full code for it:
 ~~~
@@ -78,7 +78,7 @@ class UserInterface(object):
         ...
 ~~~
 
-Here is the modified `ExecutionContext` that has the new `solve()` method:
+Here is the modified `ExecutionContext` that has the new `solve()` method that is only there to reset the predication index since it can now be called multiple times as we process new phrases:
 
 ~~~
 class ExecutionContext(object):
@@ -100,7 +100,7 @@ class ExecutionContext(object):
     ...
 ~~~
 
-Below is the modified `respond_to_solutions()` function. It no longer generates solutions or error text, instead it requires the caller to pass them in. That allows us to centralize the code that does the solver in `interact_once()`.  The rest of the code is the same:
+Below is the modified `respond_to_solutions()` function. It no longer generates solutions or error text, instead it requires the caller to pass them in. That allows us to centralize the code that does the solving into `interact_once()`.  It also returns the response instead of printing it now.  The rest of the code is the same:
 
 ~~~
 def respond_to_solutions(state, mrs, solutions, error_text):
@@ -146,9 +146,9 @@ def respond_to_solutions(state, mrs, solutions, error_text):
             return f"Couldn't do that: {error_text}"
 ~~~
 
-We also moved the functions that parse and build trees (`mrss_from_phrase`, `tree_from_assignments` and `trees_from_mrs`) to be part of the `UserInterface` class.
+We also moved the functions that parse and build trees (`mrss_from_phrase`, `tree_from_assignments` and `trees_from_mrs`) to be part of the `UserInterface` class just to clean up the code.
 
-With this, we now have a (simple) fully functioning interactive natural language system! Here's a simple example that runs it in a loop, and an interactive session using some phrases we've used throughout the tutorial to test it:
+With this, we now have a (simple) fully-functioning interactive natural language system! Here's a simple example that runs it in a loop, and an interactive session using some phrases we've used throughout the tutorial to test it:
 
 ~~~
 def Example12():
@@ -201,6 +201,6 @@ which folder is not large
 No, that isn't correct: a folder is not large
 ~~~
 
-`interact_once()` prints out the trees that get found so it is easier to see which is being used and which have missing predications. It also helps point out when a tree failed and the solver is trying more trees to find a success. You can see that by looking at the difference between the first "which file is large?" which only generates one tree since it succeeds, and the second one which fails since there are no large files.  The second one keeps going trying to find a tree that works.
+`interact_once()` prints out the trees that get found so it is easier to see which is being used and which have missing predications. It also helps point out when a tree failed and the solver is trying more trees to find a success. You can see that in action by looking at the difference between the first "which file is large?" which only generates one tree since it succeeds, and the second one which fails since there are no large files.  The second one keeps going trying to find a tree that works.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
