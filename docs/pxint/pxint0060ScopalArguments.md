@@ -36,7 +36,7 @@ To implement `_a_q` using our [predication contract](pxint0010PredicationContrac
 3. If there was at least one answer, this is `true`. So: return each of the `BODY` solutions that worked from `a_q`, one by one.  Don't "backtrack" to find another "file" since `a_q` should only return "one, arbitrary thing". Other quantifiers like "every" will behave differently.
 4. If there was not an answer from the first "file", go back to #1 and try again (remember that our contract says these predications will keep returning values until there are no more)
 
-If there were no large files, `a_q` fails instead of returning any assignments, as per the [predication contract](devhowtoPredicationContract). Here's the Python code that does all this:
+If there were no large files, `a_q` fails instead of returning any assignments, as per the [predication contract](pxint0010PredicationContract). Here's the Python code that does all this:
 
 ~~~
 @Predication(vocabulary, name="_a_q")
