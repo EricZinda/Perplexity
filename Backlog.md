@@ -33,7 +33,7 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
         - Right now we only do one pair of conjuncts and not the general case
         - select_tree_conjunct, vocabulary.py:789 is the place that handles it
         - Really we need a more robust pipeline. There are a few things going on in it
-            - Transforming the original trees to new ones. This needs to account for the syntactic heads instead on indexes, and properly map the old heads to new ones as they get transformed
+            - Transforming the original trees to new ones. This needs to account for the syntactic heads instead of indexes, and properly map the old heads to new ones as they get transformed
             - Transforming one MRS into several for either conjunctions or other constructs that generate multiple syntactic heads like "discourse"
     - Fix some of the user interface issues:
         - do a better response than "I don't understand the way you used X" and other default messages
