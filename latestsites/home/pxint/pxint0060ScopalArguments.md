@@ -72,6 +72,6 @@ Note that, even though we have made both files "large" for this example, only on
 
 At this point we have a fully functional evaluator. Next we need to figure out how to represent and report errors that happen when a phrase does not have a solution.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md)]{% endraw %}

@@ -82,4 +82,6 @@ Note that the two new functions need to *yield all alternatives* and not just re
 
 And, as with the first "check" function, `in_style_predication_2()` does all the work to make sure that the two unbound functions are only passed single values -- even if the incoming values are combinatorial or sets > 1 item.  
 
-Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md)]{% endraw %}

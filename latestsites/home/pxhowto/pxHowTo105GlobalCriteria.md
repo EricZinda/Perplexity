@@ -439,4 +439,6 @@ The work to *actually do something* in the system was not covered above.  We wal
 
 How to do that is up to you.  
 
-Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo105GlobalCriteria.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo105GlobalCriteria.md)]{% endraw %}

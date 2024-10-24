@@ -346,4 +346,6 @@ Expected:
 
 You can see that running the tests didn't say anything or stop when a test failed, but running `/resolvetests` allows you to figure out what the failure was and decide what to do with it.
 
-Last update: 2024-10-17 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo022Testing.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo022Testing.md)]{% endraw %}

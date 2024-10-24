@@ -153,6 +153,6 @@ The reason it prints out the two folders in our world is that we left all the ar
 
 With this in place, we can tackle more complicated groups of predications such as conjunctions in the [next section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0050Conjunctions).
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0040BuildSolver.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0040BuildSolver.md)]{% endraw %}

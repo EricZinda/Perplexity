@@ -238,4 +238,6 @@ To save space, you can compress the values permitted in the `properties` argumen
              )
 ```
 
-Last update: 2024-10-10 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo110HandlingTenses.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo110HandlingTenses.md)]{% endraw %}

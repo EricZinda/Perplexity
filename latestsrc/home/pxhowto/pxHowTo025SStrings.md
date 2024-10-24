@@ -229,4 +229,6 @@ pronoun_q(x9,RSTR,BODY)            │
 
 So asking for `["AtPredication", h_rstr[1], x_variable_binding.variable.name]` sets the second element of the `RSTR` to be the `@meaning_at_index`, which skips `_blue_a_1`.
 
-Last update: 2024-10-08 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo025SStrings.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo025SStrings.md)]{% endraw %}

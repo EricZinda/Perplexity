@@ -17,4 +17,6 @@ The same is true for determiners that count like "a few", "less than 3", "both",
 
 ### TODO: describe how to build one that isn't in the system like "this"
 
-Last update: 2023-05-16 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo080QuantifiersAndDeterminers.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo080QuantifiersAndDeterminers.md)]{% endraw %}

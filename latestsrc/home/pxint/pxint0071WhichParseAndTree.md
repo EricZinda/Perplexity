@@ -203,6 +203,6 @@ No, that isn't correct: a folder is not large
 
 `interact_once()` prints out the trees that get found so it is easier to see which is being used and which have missing predications. It also helps point out when a tree failed and the solver is trying more trees to find a success. You can see that in action by looking at the difference between the first "which file is large?" which only generates one tree since it succeeds, and the second one which fails since there are no large files.  The second one keeps going trying to find a tree that works.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0071WhichParseAndTree.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0071WhichParseAndTree.md)]{% endraw %}

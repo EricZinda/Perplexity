@@ -387,4 +387,6 @@ You can use the following commands: copy and go
 
 All of these phrases are using words like "several" or "3" which quantify how many of something the speaker is interested in. When we implement a solution group handler we take over responsibility for doing the counting, and we're not doing that.  Let's do that next.
 
-Last update: 2024-10-11 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md)]{% endraw %}
