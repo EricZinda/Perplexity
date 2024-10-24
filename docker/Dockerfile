@@ -51,11 +51,9 @@ RUN chmod uog+x /gunicorndocker
 RUN mkdir /data
 WORKDIR /
 COPY ./perplexity/ /perplexity/
-COPY ./file_system_example/ /file_system_example/
+COPY ./samples/ /samples/
 COPY ./esl/ /esl/
 COPY ./error_test/ /error_test/
-COPY ./hello_world/ /hello_world/
-COPY ./internals_examples/ /internals_examples/
 
 EXPOSE 8000
 CMD ["/gunicorndocker"]
