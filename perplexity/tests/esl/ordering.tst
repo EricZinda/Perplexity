@@ -2,7 +2,7 @@
     "WorldName": "esl",
     "TestItems": [
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -30,7 +30,7 @@
             "ID": "59241cdb-9064-4e87-b1c4-79267672615a"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -121,7 +121,7 @@
             "ID": "21060508-e9a9-4a0d-aaf9-44785556b7de"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -184,7 +184,7 @@
             "ID": "d6042a80-ea0d-4290-8e85-b09c16eb7b44"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -268,7 +268,7 @@
             "ID": "fd743d50-17c2-4097-adef-8e252b58ebe6"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -306,7 +306,7 @@
             "ID": "3e8edf8d-ab16-4c70-a35b-9976843a11e3"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -358,7 +358,7 @@
             "ID": "e22dfd49-438f-46a2-98ad-30c4be9da431"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -393,7 +393,7 @@
             "ID": "1b2a99a7-7850-49c0-8e91-93e7355f49c2"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -428,7 +428,7 @@
             "ID": "7d357afa-69a1-4002-a3a3-b224f8724807"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -466,7 +466,7 @@
             "ID": "b076a0b6-5b3c-431c-afef-bb7a74b42df0"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -542,7 +542,7 @@
             "ID": "daf4a340-1126-4f27-b87c-233dd8d3ba17"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -706,7 +706,7 @@
             "ID": "d8ca1c3b-7a12-4913-8427-67c51d28ecb0"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -804,7 +804,7 @@
             "ID": "74aa2bec-f3d0-457a-98f0-afbbd59e9f88"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -867,7 +867,7 @@
             "ID": "c2877f26-4c57-48b8-8e5f-f7809e671537"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -923,7 +923,7 @@
             "ID": "b3589252-e0bf-4534-8bfa-c2d079bc4700"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -944,7 +944,7 @@
             "ID": "c06eb8ef-1e74-42dd-b82c-a1a02c54ec08"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -972,7 +972,7 @@
             "ID": "cbe31443-8b30-48e9-a530-a131548fa6b5"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -1094,7 +1094,7 @@
             "ID": "ca595830-25f1-4b1b-a74e-3d47e4515acd"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -1136,7 +1136,7 @@
             "ID": "59a2e11f-c5cd-4613-9628-7ffb6d53cee2"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,

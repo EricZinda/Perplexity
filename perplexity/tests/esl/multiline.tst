@@ -2,7 +2,7 @@
     "WorldName": "esl",
     "TestItems": [
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,

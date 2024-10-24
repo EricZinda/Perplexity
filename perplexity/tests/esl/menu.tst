@@ -2,7 +2,7 @@
     "WorldName": "esl",
     "TestItems": [
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -317,7 +317,7 @@
             "ID": "a62bdeda-54d0-4517-9e33-c5925a4bd1ed"
         },
         {
-            "Command": "/new esl.tutorial.reset",
+            "Command": "/new samples.esl.tutorial.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
