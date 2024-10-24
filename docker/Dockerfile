@@ -52,8 +52,6 @@ RUN mkdir /data
 WORKDIR /
 COPY ./perplexity/ /perplexity/
 COPY ./samples/ /samples/
-COPY ./esl/ /esl/
-COPY ./error_test/ /error_test/
 
 EXPOSE 8000
 CMD ["/gunicorndocker"]
