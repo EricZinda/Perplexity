@@ -1,19 +1,14 @@
-import copy
-
-import file_system_example.objects
-from file_system_example.objects import File, Folder, Actor, FileSystemMock, RichConcept
-from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation, CreateOperation
+import file_system_example
+from file_system_example import File, Folder, Actor, FileSystemMock, RichConcept
+from file_system_example import DeleteOperation, FileSystemState, ChangeDirectoryOperation, CreateOperation
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
     individual_style_predication_1, in_style_predication_2
 from perplexity.response import RespondOperation
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
-from perplexity.utilities import ShowLogging
 from perplexity.vocabulary import Predication, ValueSize, EventOption
 import perplexity.messages
-from perplexity.world_registry import register_world
-
 
 vocabulary = system_vocabulary()
 

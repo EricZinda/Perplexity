@@ -6,7 +6,6 @@ from perplexity.messages import respond_to_mrs_tree
 from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.state import LoadException
 from perplexity.user_interface import UserInterface
-from perplexity.utilities import ShowLogging
 
 
 def Example18_reset():

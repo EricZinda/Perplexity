@@ -4,7 +4,7 @@ import os
 import pathlib
 import uuid
 
-from perplexity.predications import Concept, VariableValueType
+from perplexity.predications import VariableValueType
 from perplexity.set_utilities import Measurement
 from perplexity.variable_binding import VariableBinding
 from perplexity.execution import MessageException
@@ -469,4 +469,3 @@ class QuotedText(object):
 pipeline_logger = logging.getLogger('Pipeline')
 
 # Added to end of file to resolve circular dependency
-from file_system_example.state import FileSystemState
