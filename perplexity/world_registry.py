@@ -5,7 +5,7 @@ from perplexity.utilities import import_function_from_names
 worlds = dict()
 worlds["lobby"] = {"WorldModule": "esl.lobby",
                    "WorldUIFunction": "ui"}
-worlds["esl"] = {"WorldModule": "esl.tutorial",
+worlds["esl"] = {"WorldModule": "samples.esl.tutorial",
                  "WorldUIFunction": "ui"}
 worlds["example"] = {"WorldModule": "samples.file_system_example.examples",
                      "WorldUIFunction": "Example_ui"}

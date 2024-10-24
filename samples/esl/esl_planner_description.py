@@ -1,5 +1,5 @@
 import numbers
-from esl.worldstate import instance_of_what, rel_check, location_of_type, \
+from samples.esl.worldstate import instance_of_what, rel_check, location_of_type, \
     has_item_of_type, is_type, is_instance, rel_objects, all_specializations, \
     instance_of_or_entails, ESLConcept
 from perplexity.predications import is_concept

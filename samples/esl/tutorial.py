@@ -1,17 +1,13 @@
 import os
-import sys
-import itertools
 import perplexity.messages
-from esl.esl_planner import do_task
-from esl.esl_planner_description import convert_to_english, convert_to_english_list
-from perplexity.generation import english_for_delphin_variable
-from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication, GroupVariableValues
+from samples.esl.esl_planner import do_task
+from samples.esl.esl_planner_description import convert_to_english, convert_to_english_list
+from perplexity.plurals import VariableCriteria, GlobalCriteria, NegatedPredication
 from perplexity.predications import combinatorial_predication_1, in_style_predication_2, \
     lift_style_predication_2, concept_meets_constraint
 from perplexity.set_utilities import Measurement
 from perplexity.solution_groups import declared_determiner_infos, optimize_determiner_infos, \
     create_group_variable_values
-from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary, quantifier_raw
 from perplexity.transformer import TransformerMatch, TransformerProduction, PropertyTransformerMatch, \
     PropertyTransformerProduction, ConjunctionMatchTransformer, ConjunctionProduction
@@ -21,7 +17,7 @@ from perplexity.user_interface import UserInterface
 from perplexity.utilities import ShowLogging, sentence_force, parse_predication_name
 from perplexity.variable_binding import VariableBinding, VariableData
 from perplexity.vocabulary import Predication, EventOption, Transform, ValueSize
-from esl.worldstate import *
+from samples.esl.worldstate import *
 import logging
 import perplexity.OpenAI
 
@@ -892,14 +888,14 @@ def _thank_v_1(context, state, e_binding, x_binding_1, x_binding_2):
     # x_binding_1.value can be None if a transform removes a generic_entity() that sets its value
     if (single_value_is_generic_entity_concept or x_binding_1.value is None) and is_computer_type(x_binding_2.value):
         yield state.record_operations([RespondOperation(f"You are welcome!"),
-                                       esl.esl_planner.get_reprompt_operation(state)])
+                                       samples.esl.esl_planner.get_reprompt_operation(state)])
 
 
 @Predication(vocabulary, names=["_thank+you_v_1"])
 def _thankyou_v_1(context, state, e_binding, x_target):
     if x_target.value is not None and len(x_target.value) == 1 and is_computer_type(x_target.value):
         yield state.record_operations([RespondOperation(f"You are welcome!"),
-                                       esl.esl_planner.get_reprompt_operation(state)])
+                                       samples.esl.esl_planner.get_reprompt_operation(state)])
 
 
 # @Predication(vocabulary, names=["_thank_v_for"])

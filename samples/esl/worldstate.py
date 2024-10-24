@@ -1,12 +1,11 @@
 import copy
-import json
 import logging
 import numbers
 import pickle
-import esl.esl_planner
-import esl.esl_planner_description
+import samples.esl.esl_planner
+import samples.esl.esl_planner_description
 from perplexity.predications import is_concept, Concept
-from perplexity.response import RespondOperation, get_reprompt_operation, ResetOperation
+from perplexity.response import RespondOperation, get_reprompt_operation
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.sstring import s
 from perplexity.state import State
@@ -1048,7 +1047,7 @@ class WorldState(State):
                     ordered[item[0]] = {}
 
                 # Add the item
-                english = esl.esl_planner_description.convert_to_english(self, item[1])
+                english = samples.esl.esl_planner_description.convert_to_english(self, item[1])
                 if english not in ordered[item[0]]:
                     ordered[item[0]][english] = 1
 
@@ -1065,9 +1064,9 @@ class WorldState(State):
                         else:
                             english_description_list.append(s(str(english_count[1]) + " {bare *english_count[0]:pl}"))
 
-                    response_list.append(f"{esl.esl_planner_description.oxford_comma(english_description_list)} for {esl.esl_planner_description.convert_to_english(self, item[0])}")
+                    response_list.append(f"{samples.esl.esl_planner_description.oxford_comma(english_description_list)} for {samples.esl.esl_planner_description.convert_to_english(self, item[0])}")
 
-                return prefix + f"Waiter: Can I get you anything besides {esl.esl_planner_description.oxford_comma(response_list)}?"
+                return prefix + f"Waiter: Can I get you anything besides {samples.esl.esl_planner_description.oxford_comma(response_list)}?"
 
             else:
                 return prefix + "Waiter: What can I get you?"
@@ -1233,7 +1232,7 @@ class WorldState(State):
         context.report_error(["errorText", "Hmm. I didn't understand what you said." + self.get_reprompt()])
 
     def find_plan(self, context, tasks):
-        current_state = esl.esl_planner.do_task(self.world_state_frame(), tasks)
+        current_state = samples.esl.esl_planner.do_task(self.world_state_frame(), tasks)
         if current_state is not None:
             return current_state.get_operations()
         else:
