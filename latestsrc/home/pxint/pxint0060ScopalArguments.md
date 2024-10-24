@@ -29,7 +29,7 @@ This tree says, "from all the files in the world model, return a single (arbitra
 
 If you look at the resolved tree, it really is just one predication with the other two as arguments. So, the `call()` solver [we built](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver) is only going to call the function that implements `_a_q`. The work of implementing the rest of the tree goes to that predication itself. It works this way because the job of predications with scopal arguments is to handle *how* those trees get resolved. That is their whole point. Thus, they need control over the resolution behavior for those arguments.
 
-To implement `_a_q` using our predication contract, we conceptually:
+To implement `_a_q` using our [predication contract](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract), we conceptually:
 
 1. Find the first set of variable assignments returned from the first argument (called `RSTR`), `_file_n_of(x3)`, using `call()`
 2. Use *those* variable assignments to find a solution to the second argument (called `BODY`), `_large_a_1(e2,x3)`, again using `call()`
@@ -74,4 +74,4 @@ At this point we have a fully functional evaluator. Next we need to figure out h
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-21 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md)]{% endraw %}

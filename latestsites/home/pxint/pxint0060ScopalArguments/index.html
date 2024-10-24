@@ -377,7 +377,7 @@ _a_q(x3, RSTR,BODY)
 
 <p>If you look at the resolved tree, it really is just one predication with the other two as arguments. So, the <code class="language-plaintext highlighter-rouge">call()</code> solver <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver">we built</a> is only going to call the function that implements <code class="language-plaintext highlighter-rouge">_a_q</code>. The work of implementing the rest of the tree goes to that predication itself. It works this way because the job of predications with scopal arguments is to handle <em>how</em> those trees get resolved. That is their whole point. Thus, they need control over the resolution behavior for those arguments.</p>
 
-<p>To implement <code class="language-plaintext highlighter-rouge">_a_q</code> using our predication contract, we conceptually:</p>
+<p>To implement <code class="language-plaintext highlighter-rouge">_a_q</code> using our <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a>, we conceptually:</p>
 
 <ol>
   <li>Find the first set of variable assignments returned from the first argument (called <code class="language-plaintext highlighter-rouge">RSTR</code>), <code class="language-plaintext highlighter-rouge">_file_n_of(x3)</code>, using <code class="language-plaintext highlighter-rouge">call()</code></li>
@@ -424,7 +424,7 @@ def a_q(state, x, h_rstr, h_body):
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2024-10-21 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md">edit</a>]</p>
+<p>Last update: 2024-10-23 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0060ScopalArguments.md">edit</a>]</p>
 
         
       </section>
