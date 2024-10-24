@@ -79,8 +79,8 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 ~~~
 Two points to note as we transition to using real MRS trees instead of simplified trees:
 
-1. At this point, we can dispense with the artificial `scope()` predication because the MRS [quantifier predications](devhowto0010MRS#quantifier-predications) (those with `_q` at the end) fulfill the same variable scoping role as `scope()`. They declare where in the tree a variable can be used.  They *also* can add numeric constraints to the variable, as we'll see below.
-2. Predications in MRS have [variable types](devhowto0010MRS#predication-arguments-and-variables) beyond the `x`-type variables we've been using. For the examples we'll see here, these can be safely ignored. We'll handle those in a later section.
+1. At this point, we can dispense with the artificial `scope()` predication because the MRS [quantifier predications](..) (those with `_q` at the end) fulfill the same variable scoping role as `scope()`. They declare where in the tree a variable can be used.  They *also* can add numeric constraints to the variable, as we'll see below.
+2. Predications in MRS have [variable types](../mrscon/devhowto0010MRS/#quantifier-predications) beyond the `x`-type variables we've been using. For the examples we'll see here, these can be safely ignored. We'll handle those in a later section.
 
 With that covered, let's walk through how to get the numeric constraints from the above MRS.
 
@@ -88,7 +88,7 @@ With that covered, let's walk through how to get the numeric constraints from th
 First, notice that the variable order in this tree is [`x3`, `x11`] (read left to right) since that is the order of the variable quantifiers when evaluating the tree depth-first.
 
 #### Quantifier Constraints
-Each variable in an MRS [must have a quantifier that scopes it](devhowto0010MRS#quantifier-predications) (the artificial `scope()` predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like `udef_q` in our example, add the default criteria `between(1, inf)`. This simply means: "at least one". The `_a_q` quantifier means "a single thing", so it adds `between(1, 1)`. 
+Each variable in an MRS [must have a quantifier that scopes it](../mrscon/devhowto0010MRS/#quantifier-predications) (the artificial `scope()` predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like `udef_q` in our example, add the default criteria `between(1, inf)`. This simply means: "at least one". The `_a_q` quantifier means "a single thing", so it adds `between(1, 1)`. 
 
 Thus, the quantifiers in this example add these constraints:
 
@@ -348,4 +348,4 @@ etc.
 
 All the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
 
-There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in [Appendix A](devhowtoMRSSolverSolutionCombinations) since it is not necessary for understanding the concept) and global constraints from words like "the" (described in TBD).
+There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in [Appendix A](devcon0050MRSSolverSolutionCombinations) since it is not necessary for understanding the concept) and global constraints from words like "the" (described in TBD).

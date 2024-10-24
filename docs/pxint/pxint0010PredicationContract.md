@@ -27,7 +27,7 @@ The contract is designed to "solve" an MRS for the variables defined in it, such
 
 A few observations about the contract:
 - What the variables *are* -- i.e. how the world is represented in the program -- is not defined in the contract. It doesn't care.
-- Quantifier Predications only scope `x` variables. These are the only variables that represent "things in the world" (aka "individuals"), that we are solving for. Event (`e`) variables are handled differently since they are an implementation detail of the MRS that gets used by the predications. They are not relevant here and get described in a [later section](devhowtoEvents).
+- Quantifier Predications only scope `x` variables. These are the only variables that represent "things in the world" (aka "individuals"), that we are solving for. Event (`e`) variables are handled differently since they are an implementation detail of the MRS that gets used by the predications. They are not relevant here and get described in a [another section](../pxhowto/pxHowTo050EventPredications).
 - This "idealized contract" has different requirements for Regular and Quantifier Predications. Regular Predications simply return `True` or `False`. Quantifier Predications return a set of answers consisting of variable assignments, iteratively. 
 
 Let's walk through an example of each to clarify:

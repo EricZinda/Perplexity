@@ -89,6 +89,6 @@ def large_a_1(state, e_introduced, x_target):
 
 With that (and the appropriate changes to `generate_message()`, if we run "A file is large" through the system with no large files, we'll get: "A thing is not large".  This is the best we can do for now. 
 
-The [next section](devhowtoConceptualFailures) will improve it to say "A file is not large" which is more clear.
+The [next section](pxint0120ErrorsConceptualFailures) will improve it to say "A file is not large" which is more clear.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

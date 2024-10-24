@@ -1,7 +1,7 @@
 ## Solving an MRS
 > It is important to understand [what MRS is](../mrscon/devhowto0010MRS) and what [a well-formed MRS tree is](../mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
-A [well-formed MRS tree](devhowtoWellFormedTree) can be thought of as an *equation* that is `true` or `false` depending on the values of its variables. Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are `true` when their arguments are set to values that *are* or *mean* what the predication means. 
+A [well-formed MRS tree](../mrscon/devhowto0020WellFormedTree) can be thought of as an *equation* that is `true` or `false` depending on the values of its variables. Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are `true` when their arguments are set to values that *are* or *mean* what the predication means. 
 
 So:
 
@@ -132,4 +132,4 @@ It works because we are effectively trying all values in all variables. But, it 
 
 At this point, it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using completely different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems, and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We'll work through some of those and find optimizations for some of the most egregious problems.
 
-But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating ["together"](devhowtoMRSSolverSets).
+But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating ["together"](devcon0020MRSSolverSets).
