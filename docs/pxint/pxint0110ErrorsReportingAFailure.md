@@ -2,7 +2,7 @@
 ## Reporting a Failure Naively
 In the [previous section](pxint0105ErrorsChoosingWhichFailure) we updated our code to support reporting errors (via `ExecutionContext.report_error()`) and updated the `ExecutionContext.call()` method to record the index of our currently executing predication.  This allowed us to keep track of the "deepest" error.
 
-With that in place, we can now start reporting errors from predications. As outlined in the [predication contract](devhowtoPredicationContract), "failure" is when the predication is not true for its arguments. So, let's add ode at the end of `large_a_1` to record an error when there is a failure. We'll call the new `report_error()` method and pass it what seems like the right error given the code:
+With that in place, we can now start reporting errors from predications. As outlined in the [predication contract](pxint0010PredicationContract), "failure" is when the predication is not true for its arguments. So, let's add ode at the end of `large_a_1` to record an error when there is a failure. We'll call the new `report_error()` method and pass it what seems like the right error given the code:
 
 ~~~
 @Predication(vocabulary, name="_large_a_1")
