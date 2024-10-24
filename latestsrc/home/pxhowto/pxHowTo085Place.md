@@ -12,7 +12,7 @@ It *would not* show up in phrases that more specifically locate something, such 
 - The stick is on the table. -> locates the stick in a place on the location
 - He arrives before/at 10am. -> locates the arrival before/at a certain time
 
-More information is available in the [ERG reference](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_ImplicitLocatives/).
+More information is available in the ERG reference.
 
 In this topic, we'll implement the `loc_nonsp` and `place_n` predications to make the phrase "Where am I?" work. As always, we'll start by trying out the phrase, even though we know it won't work yet, and using `/show` to examine the MRS to see what predications it generates for the phrase:
 

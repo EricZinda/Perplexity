@@ -4,7 +4,6 @@
         {"Page": "docs/mrscon/devhowto0010MRS", "SrcDir": "main", "SrcFile": "docs/mrscon/docs/mrscon/devhowto0010MRS.md", "BaseReferrer": "home/docs/mrscon/devhowto0010MRS.md", "Referrer": "home/docs/mrscon/devhowto0010MRS.md", "FileMissing": true}
       ]},
       {"Section": "Perplexity Internals", "Pages": [
-        {"Page": "devhowtoPredicationContract", "SrcDir": "main", "SrcFile": "docs/pxint/devhowtoPredicationContract.md", "BaseReferrer": "home/docs/pxint/pxint0110ErrorsReportingAFailure.md", "Referrer": "home/docs/pxint/pxint0110ErrorsReportingAFailure.md", "FileMissing": true},
         {"Page": "docs/pxint/pxint0010PredicationContract", "SrcDir": "main", "SrcFile": "docs/pxint/docs/pxint/pxint0010PredicationContract.md", "BaseReferrer": "home/docs/pxint/pxint0010PredicationContract.md", "Referrer": "home/docs/pxint/pxint0010PredicationContract.md", "FileMissing": true},
         {"Page": "docs/pxint/pxint0080SimplePropositions", "SrcDir": "main", "SrcFile": "docs/pxint/docs/pxint/pxint0080SimplePropositions.md", "BaseReferrer": "home/docs/pxint/pxint0080SimplePropositions.md", "Referrer": "home/docs/pxint/pxint0080SimplePropositions.md", "FileMissing": true},
         {"Page": "tbdsentenceforce", "SrcDir": "main", "SrcFile": "docs/pxint/tbdsentenceforce.md", "BaseReferrer": "home/docs/pxint/pxint0100SimpleCommands.md", "Referrer": "home/docs/pxint/pxint0100SimpleCommands.md", "FileMissing": true}
