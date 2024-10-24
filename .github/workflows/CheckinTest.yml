@@ -10,7 +10,7 @@ on:
       testCommandLine:
         description: 'Command to use for testing (e.g. /runtest foo or a single phrase like "what do you see?")'
         required: true
-        default: '/runfolder internals_examples, errors, howto, ., esl'
+        default: '/runfolder internals_examples, error_test, hello_world, file_system_example, esl'
 
 permissions:
   id-token: write

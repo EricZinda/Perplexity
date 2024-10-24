@@ -62,7 +62,7 @@ If everything is installed correctly, you should be able to successfully run all
    - `export PYTHONPATH=$PYTHONPATH:<Perplexity repository path>`
 4. Run the file system example and its tests:
    - `python3 ./file_system_example/examples.py`
-   - `/runfolder`
+   - `/runfolder file_system_example`
 5. OR: Run the ESL Restaurant example and its tests:
    - `python3 ./esl/tutorial.py`
    - `/runfolder esl`
