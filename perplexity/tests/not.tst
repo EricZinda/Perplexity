@@ -2,7 +2,7 @@
     "WorldName": "example",
     "TestItems": [
         {
-            "Command": "/new file_system_example.examples.Example29_reset",
+            "Command": "/new samples.file_system_example.examples.Example29_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -72,7 +72,7 @@
             "ID": "ad36aee8-3362-498b-a32c-4770a1a37497"
         },
         {
-            "Command": "/new file_system_example.examples.Example28_reset",
+            "Command": "/new samples.file_system_example.examples.Example28_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -86,7 +86,7 @@
             "ID": "f048ade0-0f33-4181-bc5e-b4b8376268a0"
         },
         {
-            "Command": "/new file_system_example.examples.Example27_reset",
+            "Command": "/new samples.file_system_example.examples.Example27_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -100,7 +100,7 @@
             "ID": "165915b2-ca79-4230-980a-4c0ed477bfeb"
         },
         {
-            "Command": "/new file_system_example.examples.Example27_reset",
+            "Command": "/new samples.file_system_example.examples.Example27_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -135,7 +135,7 @@
             "ID": "2a238526-69d8-4d64-ae83-05368f578335"
         },
         {
-            "Command": "/new file_system_example.examples.Example27_reset",
+            "Command": "/new samples.file_system_example.examples.Example27_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -149,7 +149,7 @@
             "ID": "eded6930-5e46-4850-92f4-51cb3f81ebc3"
         },
         {
-            "Command": "/new file_system_example.examples.Example31_reset",
+            "Command": "/new samples.file_system_example.examples.Example31_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -170,5 +170,5 @@
             "ID": "863f82ba-f37f-4ebd-a8f4-0fd35aafa5fb"
         }
     ],
-    "ElapsedTime": 12.17971
+    "ElapsedTime": 11.83057
 }

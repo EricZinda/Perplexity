@@ -1,7 +1,7 @@
-from file_system_example.messages import error_priority, generate_message
-from file_system_example.objects import FileSystemMock
-from file_system_example.state import State, FileSystemState, load_file_system_state
-from file_system_example.vocabulary import vocabulary, in_scope_initialize, in_scope
+from samples.file_system_example.messages import error_priority, generate_message
+from samples.file_system_example.objects import FileSystemMock
+from samples.file_system_example.state import State, FileSystemState, load_file_system_state
+from samples.file_system_example.vocabulary import vocabulary, in_scope_initialize, in_scope
 from perplexity.messages import respond_to_mrs_tree
 from perplexity.plurals import all_plural_groups_stream, VariableCriteria, GlobalCriteria
 from perplexity.state import LoadException

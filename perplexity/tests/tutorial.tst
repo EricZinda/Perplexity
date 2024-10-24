@@ -2,7 +2,7 @@
     "WorldName": "example",
     "TestItems": [
         {
-            "Command": "/new file_system_example.examples.Example19_reset",
+            "Command": "/new samples.file_system_example.examples.Example19_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -72,7 +72,7 @@
             "ID": "fca99a4c-e127-4a6a-ac21-6d3feeeab865"
         },
         {
-            "Command": "/new file_system_example.examples.Example18a_reset",
+            "Command": "/new samples.file_system_example.examples.Example18a_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -114,7 +114,7 @@
             "ID": "141f6357-7d42-48f1-aa83-d7c0811b35c1"
         },
         {
-            "Command": "/new file_system_example.examples.Example20_reset",
+            "Command": "/new samples.file_system_example.examples.Example20_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -128,7 +128,7 @@
             "ID": "1c77c347-656b-4a14-9317-b319adb0fab4"
         },
         {
-            "Command": "/new file_system_example.examples.Example21_reset",
+            "Command": "/new samples.file_system_example.examples.Example21_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -156,7 +156,7 @@
             "ID": "e820409b-70ce-4331-80a2-6701fab73378"
         },
         {
-            "Command": "/new file_system_example.examples.Example22_reset",
+            "Command": "/new samples.file_system_example.examples.Example22_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -212,7 +212,7 @@
             "ID": "ecfb6513-af04-4b08-9ab0-de6f27873473"
         },
         {
-            "Command": "/new file_system_example.examples.Example23_reset",
+            "Command": "/new samples.file_system_example.examples.Example23_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -394,7 +394,7 @@
             "ID": "87db9431-d91b-492f-844e-919dac3a392f"
         },
         {
-            "Command": "/new file_system_example.examples.Example24_reset",
+            "Command": "/new samples.file_system_example.examples.Example24_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -422,7 +422,7 @@
             "ID": "b29a3cab-f351-4021-b5a0-0791beca3007"
         },
         {
-            "Command": "/new file_system_example.examples.Example23_reset",
+            "Command": "/new samples.file_system_example.examples.Example23_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -478,7 +478,7 @@
             "ID": "ed22ce42-3d7e-4b07-bfa2-3f6a48e2a2ff"
         },
         {
-            "Command": "/new file_system_example.examples.Example26_reset",
+            "Command": "/new samples.file_system_example.examples.Example26_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -513,7 +513,7 @@
             "ID": "8e760db8-a939-4f26-a6a5-c82896108357"
         },
         {
-            "Command": "/new file_system_example.examples.Example38_reset",
+            "Command": "/new samples.file_system_example.examples.Example38_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -527,7 +527,7 @@
             "ID": "9a02fd1d-81fb-40d5-a7bd-15add7c6ab15"
         },
         {
-            "Command": "/new file_system_example.examples.Example39_reset",
+            "Command": "/new samples.file_system_example.examples.Example39_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -541,7 +541,7 @@
             "ID": "75d771c6-b11a-4c34-a3ee-9495aa385c07"
         },
         {
-            "Command": "/new file_system_example.examples.Example40_reset",
+            "Command": "/new samples.file_system_example.examples.Example40_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -562,7 +562,7 @@
             "ID": "1a169fd6-1915-4c2a-bf7e-9f9b0d34ebaa"
         },
         {
-            "Command": "/new file_system_example.examples.Example41_reset",
+            "Command": "/new samples.file_system_example.examples.Example41_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -576,5 +576,5 @@
             "ID": "5902e55a-2d11-44bf-b86d-6c0af4a16e83"
         }
     ],
-    "ElapsedTime": 204.43058
+    "ElapsedTime": 198.72447
 }

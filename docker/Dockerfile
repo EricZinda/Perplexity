@@ -14,7 +14,7 @@
 #   http://127.0.0.1:8000/?From=user&Body=hello
 #
 # Or run the tests like this:
-# docker run --name testrun2 --env DONTUSEGOOGLE_APPLICATION_CREDENTIALS='' --env PYTHONPATH='/' -i p8y:latest /usr/src/Python-3.8.0/python /esl/tutorial.py "/runfolder errors,howto"
+# docker run --env DONTUSEGOOGLE_APPLICATION_CREDENTIALS='' --env PYTHONPATH='/' -i p8y:latest /usr/src/Python-3.8.0/python /esl/tutorial.py "/runfolder internals_examples, errors, howto, ., esl"
 #
 # To push your image to docker hub so others can access it:
 # 1. Tag it with <your docker username>/<what you want to call it>, for example: inductorsoftware/p8y

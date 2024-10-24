@@ -1,5 +1,5 @@
 import logging
-import file_system_example.objects
+import samples.file_system_example.objects
 from perplexity.state import State
 import pickle
 
@@ -18,10 +18,10 @@ class FileSystemState(State):
     def __init__(self, file_system, current_user=None, actors=None):
         super().__init__([])
         self.file_system = file_system
-        self.current_user = file_system_example.objects.Actor(name="User", person=1, file_system=file_system) if current_user is None else current_user
+        self.current_user = samples.file_system_example.objects.Actor(name="User", person=1, file_system=file_system) if current_user is None else current_user
         self.actors = [self.current_user,
-                       file_system_example.objects.Actor(name="Computer", person=2, file_system=file_system)] if actors is None else actors
-        self.commands = [file_system_example.objects.FileCommand("copy"), file_system_example.objects.FileCommand("go")]
+                       samples.file_system_example.objects.Actor(name="Computer", person=2, file_system=file_system)] if actors is None else actors
+        self.commands = [samples.file_system_example.objects.FileCommand("copy"), samples.file_system_example.objects.FileCommand("go")]
 
     def save(self, file):
         pickle.dump(self.file_system, file, 5)

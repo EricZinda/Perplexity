@@ -7,7 +7,7 @@ worlds["lobby"] = {"WorldModule": "esl.lobby",
                    "WorldUIFunction": "ui"}
 worlds["esl"] = {"WorldModule": "esl.tutorial",
                  "WorldUIFunction": "ui"}
-worlds["example"] = {"WorldModule": "file_system_example.examples",
+worlds["example"] = {"WorldModule": "samples.file_system_example.examples",
                      "WorldUIFunction": "Example_ui"}
 worlds["error_test"] = {"WorldModule": "error_test.vocabulary",
                         "WorldUIFunction": "error_test_ui"}

@@ -1,5 +1,5 @@
-from file_system_example.objects import File, Folder, Megabyte, Actor, QuotedText
-from file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
+from samples.file_system_example.objects import File, Folder, Megabyte, Actor, QuotedText
+from samples.file_system_example.state import DeleteOperation, ChangeDirectoryOperation, CopyOperation
 # from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
 from perplexity.plurals import GlobalCriteria, VariableCriteria
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, in_style_predication_2, \

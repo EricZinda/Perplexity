@@ -2,7 +2,7 @@
     "WorldName": "example",
     "TestItems": [
         {
-            "Command": "/new file_system_example.examples.Example25_reset",
+            "Command": "/new samples.file_system_example.examples.Example25_reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -58,5 +58,5 @@
             "ID": "a080a2e9-b84d-4492-840b-56a8e33a89e1"
         }
     ],
-    "ElapsedTime": 8.41956
+    "ElapsedTime": 8.80261
 }

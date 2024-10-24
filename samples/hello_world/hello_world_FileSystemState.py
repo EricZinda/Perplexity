@@ -1,17 +1,14 @@
-import copy
-import file_system_example.objects
-from file_system_example.objects import File, Folder, Actor, FileSystemMock, RichConcept
-from file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation, CreateOperation
+import samples.file_system_example.objects
+from samples.file_system_example.objects import File, Folder, Actor, FileSystemMock, RichConcept
+from samples.file_system_example.state import DeleteOperation, FileSystemState, ChangeDirectoryOperation, CreateOperation
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, \
     individual_style_predication_1, in_style_predication_2
 from perplexity.response import RespondOperation
 from perplexity.sstring import s
 from perplexity.system_vocabulary import system_vocabulary
 from perplexity.user_interface import UserInterface
-from perplexity.utilities import ShowLogging
 from perplexity.vocabulary import Predication, ValueSize, EventOption
 import perplexity.messages
-from perplexity.world_registry import register_world
 
 vocabulary = system_vocabulary()
 
@@ -442,7 +439,7 @@ def _command_n_1_concept(context, state, x_binding):
 @Predication(vocabulary, names=["_command_n_1"])
 def _command_n_1(context, state, x_binding):
     def bound_variable(value):
-        if isinstance(value, file_system_example.objects.FileCommand):
+        if isinstance(value, samples.file_system_example.objects.FileCommand):
             return True
         else:
             context.report_error(["valueIsNotX", value, x_binding.variable.name])
@@ -506,7 +503,7 @@ def _have_v_1_concept(context, state, e_introduced_binding, x_actor_binding, x_t
              )
 def _have_v_1(context, state, e_introduced_binding, x_actor_binding, x_target_binding):
     def actor_have_target(item1, item2):
-        if isinstance(item2, file_system_example.objects.FileCommand):
+        if isinstance(item2, samples.file_system_example.objects.FileCommand):
             return True
         else:
             context.report_error(["doNotHave", x_actor_binding.variable.name, x_target_binding.variable.name])

@@ -1,4 +1,5 @@
 import copy
+import traceback
 from importlib import import_module
 import inspect
 import json
@@ -737,7 +738,7 @@ class UserInterface(object):
                             return True
 
         except Exception as error:
-            self.user_output(str(error))
+            self.user_output(f"{error}: {''.join(traceback.format_tb(error.__traceback__))}")
             return True
 
         return None

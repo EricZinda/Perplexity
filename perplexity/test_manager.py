@@ -205,9 +205,10 @@ class TestManager(object):
                 interaction_response, interaction_tree, result = self.get_result_from_interaction_records(test_iterator, test_item, interaction_records)
 
             except Exception as error:
-                print(f"**** HALTING: Exception in test run: {error}")
-                traceback.print_tb(error.__traceback__, file=sys.stdout)
-                break
+                interaction_response = f"**** HALTING: Exception in test run: {error}\n{''.join(traceback.format_tb(error.__traceback__))}"
+                interaction_tree = None
+                result = "Exception in test"
+                print(interaction_response)
 
             if result is not None:
                 # Don't record this timing since a test item failed
