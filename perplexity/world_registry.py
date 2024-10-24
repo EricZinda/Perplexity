@@ -11,7 +11,7 @@ worlds["example"] = {"WorldModule": "file_system_example.examples",
                      "WorldUIFunction": "Example_ui"}
 worlds["error_test"] = {"WorldModule": "error_test.vocabulary",
                         "WorldUIFunction": "error_test_ui"}
-worlds["SimplestFileSystemStateExample"] = {"WorldModule": "hello_world.hello_world_FileSystemState",
+worlds["SimplestFileSystemStateExample"] = {"WorldModule": "samples.hello_world.hello_world_FileSystemState",
                                            "WorldUIFunction": "ui"}
 
 

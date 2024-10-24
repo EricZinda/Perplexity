@@ -2,7 +2,7 @@
     "WorldName": "SimplestFileSystemStateExample",
     "TestItems": [
         {
-            "Command": "/new hello_world.hello_world_FileSystemState.reset",
+            "Command": "/new samples.hello_world.hello_world_FileSystemState.reset",
             "Expected": "",
             "Tree": "None",
             "Enabled": true,
@@ -264,5 +264,5 @@
             "ID": "76dd77fa-e9ad-4cdb-9da2-f30b4d9e5b0c"
         }
     ],
-    "ElapsedTime": 84.15927
+    "ElapsedTime": 84.13031
 }
