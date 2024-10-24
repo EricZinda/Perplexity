@@ -29,7 +29,7 @@ This tree says, "from all the files in the world model, return a single (arbitra
 
 If you look at the resolved tree, it really is just one predication with the other two as arguments. So, the `call()` solver [we built](pxint0040BuildSolver) is only going to call the function that implements `_a_q`. The work of implementing the rest of the tree goes to that predication itself. It works this way because the job of predications with scopal arguments is to handle *how* those trees get resolved. That is their whole point. Thus, they need control over the resolution behavior for those arguments.
 
-To implement `_a_q` using our [predication contract](devhowtoPredicationContract), we conceptually:
+To implement `_a_q` using our [predication contract](pxint0010PredicationContract), we conceptually:
 
 1. Find the first set of variable assignments returned from the first argument (called `RSTR`), `_file_n_of(x3)`, using `call()`
 2. Use *those* variable assignments to find a solution to the second argument (called `BODY`), `_large_a_1(e2,x3)`, again using `call()`

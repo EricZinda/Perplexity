@@ -196,7 +196,7 @@ Here's the full algorithm all in one place:
 >
 >Phase 1: Solution Generation
 >
->5.  Generate the list of solutions to the modified tree using the approach described in the [previous section](devhowtoMRSSolverSets)
+>5.  Generate the list of solutions to the modified tree using the approach described in the [previous section](devcon0020MRSSolverSets)
 >
 >Phase 2: Group Generation
 >
