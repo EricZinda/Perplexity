@@ -111,4 +111,4 @@ This shows that the only "large file" in the world is "file2.txt".
 
 Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](pxint0060ScopalArguments), we'll be able to handle full well-formed trees.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

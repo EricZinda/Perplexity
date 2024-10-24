@@ -411,4 +411,4 @@ More information on `INDEX` is described in the section on [dealing with differe
 
 The [next topic](devhowto0020WellFormedTree) walks through the rules of creating "well-formed MRS trees", and is the last big chunk of conceptual background needed before we start building the system.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

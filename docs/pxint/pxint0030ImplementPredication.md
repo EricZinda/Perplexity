@@ -133,4 +133,4 @@ Since the arguments to the predication are again unbound, this shows that the on
 
 With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But first we need to understand [the State object](pxint0020PythonBasics)
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

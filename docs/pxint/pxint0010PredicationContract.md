@@ -141,4 +141,4 @@ There are other ways to solve an MRS for the variables that make it true. For ex
 ### Conclusion
 We've talked through the contract required on functions that implement a predication, but aren't yet ready to implement one. First, we need to describe a key object used in the implementation: [the `State` object](pxint0020PythonBasics).
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

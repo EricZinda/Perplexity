@@ -237,3 +237,5 @@ To save space, you can compress the values permitted in the `properties` argumen
              properties={'SF': ['ques', 'prop'], 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              )
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

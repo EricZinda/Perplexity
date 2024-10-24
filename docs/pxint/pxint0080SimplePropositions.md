@@ -118,4 +118,4 @@ Yes, that is true.
 
 In the [next section](pxint0090SimpleQuestions), we'll respond to questions.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

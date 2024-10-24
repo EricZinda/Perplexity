@@ -92,3 +92,4 @@ On the (very rare) chance you will need to compile an ERG grammar, here are the 
 4. ace -G grammar.dat -g ./config.tdl
 5. The grammar file will be called 'grammar.dat' in the 2020/ace folder
 
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

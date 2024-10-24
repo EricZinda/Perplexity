@@ -279,4 +279,4 @@ class ExecutionContext(object):
 
 The system will now remember which is the right ("deepest") error to report. The [next section](pxint0110ErrorsReportingAFailure) will describe what the error should say. This is not as obvious as it might seem. 
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

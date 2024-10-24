@@ -445,3 +445,5 @@ Done!
 ? a file is large
 a file is not large
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

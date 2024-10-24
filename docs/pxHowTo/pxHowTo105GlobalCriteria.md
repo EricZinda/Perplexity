@@ -438,3 +438,5 @@ def concept_meets_constraint(context,
 The work to *actually do something* in the system was not covered above.  We walked through how process a phrase like "Give me a menu" by interpreting it as a "Conceptual" menu and building a solution group handler in the section on [implementing non-logical meaning](pxHowTo100NonlogicalMeaning), and then checking global constraints in the description above. Once all that succeeds, you still need to *do the thing*.  
 
 How to do that is up to you.  
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

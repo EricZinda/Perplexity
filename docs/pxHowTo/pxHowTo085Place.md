@@ -176,4 +176,4 @@ Both "where am I?" and "where is a file/folder?" give an answer and then say, "(
 
 Also note that "you" refers to "the computer" and we haven't put it anywhere, that's why the system responds with "you is not in place". Again, we'll fix the English on error messages soon.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

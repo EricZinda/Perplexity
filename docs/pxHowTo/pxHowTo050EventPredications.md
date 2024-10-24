@@ -143,4 +143,4 @@ Note that the system doesn't know how to add the word "very" to the error, so we
 
 Now we are ready to tackle action verbs in the [next topic](pxHowTo070ActionVerbs).
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

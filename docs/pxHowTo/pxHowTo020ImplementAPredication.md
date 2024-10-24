@@ -444,3 +444,5 @@ if __name__ == '__main__':
         # object if the user changes worlds
         user_interface = user_interface.default_loop()
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

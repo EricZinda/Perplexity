@@ -538,4 +538,4 @@ Done!
 
 In this example I have not described one, reasonably large, change that needed to be done to make the error handling as clean as it is here (i.e. nonexistent). The [next topic](devvocabContextInHelpers) discusses that.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

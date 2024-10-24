@@ -682,4 +682,4 @@ def scopal_events_modifying_individual(x_individual, h_scopal):
     return events
 ~~~
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

@@ -126,5 +126,5 @@ Note that we can also use world like "large" from previous scenarios and they do
 
 Next we will tackle [event predications](pxHowTo050EventPredications) so that we can handle words like "very" and other modifiers.
 
-
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 

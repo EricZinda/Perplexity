@@ -91,4 +91,4 @@ With that (and the appropriate changes to `generate_message()`, if we run "A fil
 
 The [next section](pxint0120ErrorsConceptualFailures) will improve it to say "A file is not large" which is more clear.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

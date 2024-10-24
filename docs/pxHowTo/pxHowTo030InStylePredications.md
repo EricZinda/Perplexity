@@ -81,3 +81,5 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
 Note that the two new functions need to *yield all alternatives* and not just return `true` or `false`, just like `combinatorial_style_predication_1()` did in the [previous topic](./pxHowTo020ImplementAPredication).
 
 And, as with the first "check" function, `in_style_predication_2()` does all the work to make sure that the two unbound functions are only passed single values -- even if the incoming values are combinatorial or sets > 1 item.  
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

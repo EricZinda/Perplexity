@@ -196,4 +196,4 @@ Running Example6 results in:
 
 You can see that each MRS parse can generate a variable number of fully-resolved trees. The [next topic](pxint0071WhichParseAndTree.md) will describe a heuristic for determining which of those trees is the one the user meant.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

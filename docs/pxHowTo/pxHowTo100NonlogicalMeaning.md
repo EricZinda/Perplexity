@@ -386,3 +386,5 @@ You can use the following commands: copy and go
 ~~~
 
 All of these phrases are using words like "several" or "3" which quantify how many of something the speaker is interested in. When we implement a solution group handler we take over responsibility for doing the counting, and we're not doing that.  Let's do that next.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

@@ -620,3 +620,5 @@ class FileSysem:
 
         return file_type
 ~~~
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

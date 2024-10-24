@@ -72,3 +72,5 @@ I don't know the words: I, Where
 ~~~
 
 So far, it has no vocabulary so it will just keep saying, "I don't know the words..." to any phrases typed until we implement some. That's what [the remainder of the tutorial](pxHowTo020ImplementAPredication) is about.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

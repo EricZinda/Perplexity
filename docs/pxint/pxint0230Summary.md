@@ -3,3 +3,4 @@ In the course of this internals section, we have implemented everything necessar
 
 However, one key part of how to implement a Perplexity-like system has not been described: building the mechanism to properly implement *solution groups* as described in [Collective and Distributive Readings](../devcon/devcon0030MRSSolverSolutionGroups). These are required for many types of sentences including any that have multiple plurals, such as "two girls ate two ice cream cones". A conceptual description of how to implement this is covered in the appendices of the conceptual material: [Implementing the Solution Group Algorithm](../devcon/devcon0040MRSSolverSolutionGroupsAlgorithm) and [Optimizing the Solution Group Algorithm](../devcon/devcon0050MRSSolverSolutionCombinations).
 
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

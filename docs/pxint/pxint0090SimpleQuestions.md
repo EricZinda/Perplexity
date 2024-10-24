@@ -218,4 +218,4 @@ Note that we have a subtle bug in our implementation of `default_quantifier`: we
 
 Next up is the "command" sentence force, which is a bit trickier.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

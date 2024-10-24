@@ -229,3 +229,5 @@ pronoun_q(x9,RSTR,BODY)            │
 ~~~
 
 So asking for `["AtPredication", h_rstr[1], x_variable_binding.variable.name]` sets the second element of the `RSTR` to be the `@meaning_at_index`, which skips `_blue_a_1`.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

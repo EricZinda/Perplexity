@@ -72,4 +72,4 @@ Note that, even though we have made both files "large" for this example, only on
 
 At this point we have a fully functional evaluator. Next we need to figure out how to represent and report errors that happen when a phrase does not have a solution.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

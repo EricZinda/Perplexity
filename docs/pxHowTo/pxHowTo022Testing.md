@@ -345,3 +345,5 @@ Expected:
 ~~~
 
 You can see that running the tests didn't say anything or stop when a test failed, but running `/resolvetests` allows you to figure out what the failure was and decide what to do with it.
+
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
