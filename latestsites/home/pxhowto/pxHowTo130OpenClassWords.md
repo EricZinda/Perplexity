@@ -209,5 +209,6 @@ def _command_n_1(context, state, x_binding):
 
 If you *only* want this new predication to run, then you'd also return `False` from the `understood_noun` function written above that tells the system when to call `match_all_n`.
 
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-17 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo130OpenClassWords.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo130OpenClassWords.md)]{% endraw %}

@@ -442,4 +442,6 @@ if __name__ == '__main__':
         user_interface = user_interface.default_loop()
 ```
 
-Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md)]{% endraw %}

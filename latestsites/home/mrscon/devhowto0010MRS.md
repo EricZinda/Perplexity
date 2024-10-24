@@ -276,7 +276,7 @@ Recall that the variable types in DELPH-IN form a hierarchy. So far we've discus
 e   x   h
 ```
 
-The other three types of variables represent a type that is "in-between" or "underspecified" between the other "concrete" types (`e`, `x`, `h`).  In general, these appear when the ERG can't decide the type of something since it falls somewhere between the types (i.e. is "underspecified").  From the ERG documentation:
+The other three types of variables represent a type that is "in-between" or "underspecified" between the other "concrete" types (`e`, `x`, `h`).  In general, these appear when the ERG can't decide the type of something since it falls somewhere between the types (i.e. is "underspecified").  From the [ERG documentation](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_Basics/):
 
 > "i (for individual) is a generalization over eventualities and instances; p (the half-way mark in the alphabet between h and x) is a generalization over labels and instances; and u (for unspecific or maybe unbound) generalizes over all of the above. Note that Copestake et al. (2001) use individual for what is called instance here."
 
@@ -403,6 +403,6 @@ More information on `INDEX` is described in the section on dealing with differen
 
 The [next topic](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) walks through the rules of creating "well-formed MRS trees", and is the last big chunk of conceptual background needed before we start building the system.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}

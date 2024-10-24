@@ -12,7 +12,7 @@ It *would not* show up in phrases that more specifically locate something, such 
 - The stick is on the table. -> locates the stick in a place on the location
 - He arrives before/at 10am. -> locates the arrival before/at a certain time
 
-More information is available in the ERG reference.
+More information is available in the [ERG reference](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_ImplicitLocatives/).
 
 In this topic, we'll implement the `loc_nonsp` and `place_n` predications to make the phrase "Where am I?" work. As always, we'll start by trying out the phrase, even though we know it won't work yet, and using `/show` to examine the MRS to see what predications it generates for the phrase:
 
@@ -176,6 +176,6 @@ Both "where am I?" and "where is a file/folder?" give an answer and then say, "(
 
 Also note that "you" refers to "the computer" and we haven't put it anywhere, that's why the system responds with "you is not in place". Again, we'll fix the English on error messages soon.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-09 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md)]{% endraw %}

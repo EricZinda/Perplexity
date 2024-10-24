@@ -60,7 +60,7 @@ If everything is installed correctly, you should be able to successfully run all
    - `export PYTHONPATH=$PYTHONPATH:<Perplexity repository path>`
 4. Run the file system example and its tests:
    - `python3 ./file_system_example/examples.py`
-   - `/runfolder`
+   - `/runfolder file_system_example`
 5. OR: Run the ESL Restaurant example and its tests:
    - `python3 ./esl/tutorial.py`
    - `/runfolder esl`
@@ -90,4 +90,6 @@ On the (very rare) chance you will need to compile an ERG grammar, here are the 
 4. ace -G grammar.dat -g ./config.tdl
 5. The grammar file will be called 'grammar.dat' in the 2020/ace folder
 
-Last update: 2024-10-07 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo012Install.md)]{% endraw %}
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
+
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo012Install.md)]{% endraw %}

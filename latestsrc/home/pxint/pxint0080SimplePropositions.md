@@ -118,6 +118,6 @@ Yes, that is true.
 
 In the [next section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions), we'll respond to questions.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-21 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0080SimplePropositions.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0080SimplePropositions.md)]{% endraw %}

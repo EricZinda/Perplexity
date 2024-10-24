@@ -143,6 +143,6 @@ Done!
 
 The system says "(there are more)" in response to "where am i" because the user is in both "/Desktop" and "/". The reasons are described in the [Combinations and Proper Responses topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations). The same is true for "go to a folder" ... there are several folders.
 
-> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
+> Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-09 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo090Prepositions.md)]{% endraw %}
+Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo090Prepositions.md)]{% endraw %}
