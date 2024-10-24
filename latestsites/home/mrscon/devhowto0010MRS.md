@@ -276,7 +276,7 @@ Recall that the variable types in DELPH-IN form a hierarchy. So far we've discus
 e   x   h
 ```
 
-The other three types of variables represent a type that is "in-between" or "underspecified" between the other "concrete" types (`e`, `x`, `h`).  In general, these appear when the ERG can't decide the type of something since it falls somewhere between the types (i.e. is "underspecified").  From the [ERG documentation](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_Basics/):
+The other three types of variables represent a type that is "in-between" or "underspecified" between the other "concrete" types (`e`, `x`, `h`).  In general, these appear when the ERG can't decide the type of something since it falls somewhere between the types (i.e. is "underspecified").  From the ERG documentation:
 
 > "i (for individual) is a generalization over eventualities and instances; p (the half-way mark in the alphabet between h and x) is a generalization over labels and instances; and u (for unspecific or maybe unbound) generalizes over all of the above. Note that Copestake et al. (2001) use individual for what is called instance here."
 
