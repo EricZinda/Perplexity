@@ -1,5 +1,5 @@
 {% raw %}## Collective and Distributive Readings
-If we change the "students lifted a table" example from the previous section slightly, we can uncover another layer of meaning we need to represent in the solver. 
+If we change the "students lifted a table" example from the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets) slightly, we can uncover another layer of meaning we need to represent in the solver. 
 
 For example:
 
