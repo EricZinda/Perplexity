@@ -4961,7 +4961,7 @@ if __name__ == '__main__':
     # concept = concept.add_criteria(rel_subjects, "isAdj", "roast")
     # print(concept.instances(None, test_state))
 
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("ChatGPT")
     # ShowLogging("Testing")
     # ShowLogging("Execution")

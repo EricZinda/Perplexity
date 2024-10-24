@@ -61,6 +61,9 @@ class CopyOperation(object):
         self.binding_from_copy = binding_from_copy
         self.binding_to_copy = binding_to_copy
 
+    def __repr__(self):
+        return f"from directory: {self.from_directory_binding}, from: {self.binding_from_copy}, to: {self.binding_to_copy}"
+
     def apply_to(self, state):
         state.file_system.copy_item(self.from_directory_binding, self.binding_from_copy, self.binding_to_copy)
 

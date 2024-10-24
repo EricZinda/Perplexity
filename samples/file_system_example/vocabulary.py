@@ -643,6 +643,8 @@ def go_v_1_comm(context, state, e_introduced_binding, x_actor_binding):
     def unbound_location(location_item):
         # Location is unbound, ask them to be more specific
         context.report_error(["beMoreSpecific"])
+        if False:
+            yield None
 
     # go_v_1 effectively has two arguments since it has x_actor by default and requires x_location from a preposition
     for new_state in individual_style_predication_1(context, state,
@@ -714,7 +716,7 @@ def copy_v_1_stative_comm(context, state, e_introduced_binding, x_actor_binding,
     def both_bound_function(actor_item, location_item):
         if actor_item.name == "Computer":
             # We only know how to copy something "from" a folder
-            if isinstance(x_what_binding.value[0], (File, Folder)) and x_what_binding.value[0].exists():
+            if isinstance(x_what_binding.value[0], Folder) and x_what_binding.value[0].exists():
                 return True
 
             else:
@@ -726,10 +728,14 @@ def copy_v_1_stative_comm(context, state, e_introduced_binding, x_actor_binding,
     def binding1_unbound_predication_function(location_item):
         # Actor is unbound, unclear when this would happen but report an error
         context.report_error(["dontKnowActor", x_actor_binding.variable.name])
+        if False:
+            yield None
 
     def binding2_unbound_predication_function(actor_item):
         # Location is unbound, ask them to be more specific
         context.report_error(["beMoreSpecific"])
+        if False:
+            yield None
 
     for new_state in in_style_predication_2(context, state, x_actor_binding, x_what_binding,
                                             both_bound_function, binding1_unbound_predication_function, binding2_unbound_predication_function):
@@ -762,10 +768,14 @@ def copy_v_1_locative_comm(context, state, e_introduced_binding, x_actor_binding
     def binding1_unbound_predication_function(location_item):
         # Actor is unbound, unclear when this would happen but report an error
         context.report_error(["dontKnowActor", x_actor_binding.variable.name])
+        if False:
+            yield None
 
     def binding2_unbound_predication_function(actor_item):
         # Location is unbound, ask them to be more specific
         context.report_error(["beMoreSpecific"])
+        if False:
+            yield None
 
     for new_state in in_style_predication_2(context, state, x_actor_binding, x_what_binding,
                                             both_bound_function, binding1_unbound_predication_function,

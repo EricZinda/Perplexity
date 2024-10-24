@@ -1,3 +1,4 @@
+from perplexity.utilities import ShowLogging
 from samples.file_system_example.messages import error_priority, generate_message
 from samples.file_system_example.objects import FileSystemMock
 from samples.file_system_example.state import State, FileSystemState, load_file_system_state
@@ -548,7 +549,7 @@ def Example_ui(loading_info=None, file=None, user_output=None, debug_output=None
 
 
 if __name__ == '__main__':
-    # ShowLogging("Pipeline")
+    ShowLogging("Pipeline")
     # ShowLogging("SolutionGroups")
     # ShowLogging("Execution")
     # ShowLogging("Generation")
@@ -585,8 +586,8 @@ if __name__ == '__main__':
     # Example20()
     # Example21()
     # Example22()
-    # Example23()
-    Example24()
+    Example23()
+    # Example24()
     # Example25()
     # Example26()
     # Example27()
