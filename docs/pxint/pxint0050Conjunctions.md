@@ -4,13 +4,13 @@ There are two ways to group predications together in an MRS: as a "conjunction" 
 To handle a logical "and" or "conjunction" of predications, we'll perform a depth-first search of the tree and call each predication in turn, *if* they succeed. We'll pass the state yielded by one predication to the next one. Once you've iterated through all of them, you have the set of things that are true for all the predications in the conjunction for that world.
 
 For an example such as: `_large_a_1(e,x) and _file_n_of(x)` (to indicate a "large file"):
-1. Start with unbound variables and call the first predication using our [predication contract](devhowtoPredicationContract): `_large_a_1`. 
+1. Start with unbound variables and call the first predication using our [predication contract](pxint0010PredicationContract): `_large_a_1`. 
 2. If it succeeds, take the resulting variable assignments that were yielded and call `_file_n_of` with those assignments. Since there are no more predications, if it succeeds, that result is the first answer.
 3. Then "backtrack" by going to step 2 and call `_file_n_of` again to get the next answer. 
 4. When `_file_n_of` finally fails, backtrack to step 1 and call `_large_a_1` for its next value and do it all again. 
 5. When you have exhausted them all, you have a set of answers (in this case values for `x` and `e`) that represent all the "large files" in that world.
 
-This works because the first predication (`_large_a_1(e,x)`) is called with *unbound variables*, and because of our [predication contract](devhowtoPredicationContract), this means it will iterate through all the "large" things in the world, whether they are files, folders, beach balls, or whatever. When it returns, `x` is set to whatever it selected and the next predication (`file_n_of`) will only succeed if the item is a *file*, So, if we get all the way through, we have a "large file".  The "backtracking" behavior allows us to iterate through all the objects in the world to find all the "large files".
+This works because the first predication (`_large_a_1(e,x)`) is called with *unbound variables*, and because of our [predication contract](pxint0010PredicationContract), this means it will iterate through all the "large" things in the world, whether they are files, folders, beach balls, or whatever. When it returns, `x` is set to whatever it selected and the next predication (`file_n_of`) will only succeed if the item is a *file*, So, if we get all the way through, we have a "large file".  The "backtracking" behavior allows us to iterate through all the objects in the world to find all the "large files".
 
 We'll implement this logic generally by creating a `call()` function. It will take the new `TreePredication` class, either as a single predication or a list of predications, and call the predications using the `call_predication()` function we [defined in the previous section](pxint0040BuildSolver). 
 

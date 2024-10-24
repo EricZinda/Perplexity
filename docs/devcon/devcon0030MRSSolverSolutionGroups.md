@@ -1,5 +1,5 @@
 ## Collective and Distributive Readings
-If we change the "students lifted a table" example from the [previous section](devhowtoMRSSolverSets) slightly, we can uncover another layer of meaning we need to represent in the solver. 
+If we change the "students lifted a table" example from the [previous section](devcon0020MRSSolverSets) slightly, we can uncover another layer of meaning we need to represent in the solver. 
 
 For example:
 
@@ -13,7 +13,7 @@ Two students lifted one table
 2. Two students [separately] lifted one [different] table
 ~~~
 
-So, in addition to representing things working together or separately by using sets as we did in the [previous section](devhowtoMRSSolverSets), we need to deal with the fact that terms representing sets in language create a new layer of ambiguity: it isn't always clear if you are talking about the whole group of "two students" working together, or subsets of the group working separately. The solver needs to be able to find either solution properly.
+So, in addition to representing things working together or separately by using sets as we did in the [previous section](devhdevcon0020MRSSolverSetsowtoMRSSolverSets), we need to deal with the fact that terms representing sets in language create a new layer of ambiguity: it isn't always clear if you are talking about the whole group of "two students" working together, or subsets of the group working separately. The solver needs to be able to find either solution properly.
 
 Let's start by defining some linguistics terminology to help us talk about the different ways students are grouped in the interpretations above:
 - A group of items operating together are called *collective*: #1 has collective students.

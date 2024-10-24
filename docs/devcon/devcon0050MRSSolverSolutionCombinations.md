@@ -1,7 +1,7 @@
 ## Appendix: Optimizing the Solution Group Algorithm
 [This is an appendix because it doesn't change the overall concepts you need to understand to use the system, it just walks through one architecture for how to implement them.]
 
-In the section [introducing the solution grouping algorithm](devhowtoMRSSolverSolutionGroupsAlgorithm), the algorithm starts with:
+In the section [introducing the solution grouping algorithm](devcon0040MRSSolverSolutionGroupsAlgorithm), the algorithm starts with:
 
 > For each possible combination of solutions from Phase 1 ...
 
