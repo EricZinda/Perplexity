@@ -1,5 +1,5 @@
 {% raw %}#### Solving Conjuctions of Predications
-There are two ways to group predications together in an MRS: as a "conjunction" (i.e. a logical "and") or by using "scopal arguments". Scopal arguments allow passing *a predication* as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a well-formed tree. Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.
+There are two ways to group predications together in an MRS: as a "conjunction" (i.e. a logical "and") or by using ["scopal arguments"](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS). Scopal arguments allow passing *a predication* as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a [well-formed tree](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree). Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.
 
 To handle a logical "and" or "conjunction" of predications, we'll perform a depth-first search of the tree and call each predication in turn, *if* they succeed. We'll pass the state yielded by one predication to the next one. Once you've iterated through all of them, you have the set of things that are true for all the predications in the conjunction for that world.
 
@@ -108,8 +108,8 @@ def Example3():
 
 This shows that the only "large file" in the world is "file2.txt".
 
-Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments in the next topic, we'll be able to handle full well-formed trees.
+Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0060ScopalArguments), we'll be able to handle full well-formed trees.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0050Conjunctions.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0050Conjunctions.md)]{% endraw %}

@@ -1,13 +1,13 @@
 {% raw %}## The Minimal Recursion Semantics (MRS) Format
 > This section is designed to give application developers an *overview* of the Minimal Recursion Semantics format which is the primary artifact used by DELPH-IN to represent the meaning of a phrase. For a deeper dive into MRS, or one that has a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).
 
-The DELPH-IN English Resource Grammar (ERG) converts an English phrase into a data structure called an ["Minimal Recursion Semantics Formalism" (MRS)](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) which is a technical representation of human language. The [ACE processor](http://sweaglesw.org/linguistics/ace/), among other processors, processes the grammar and the phrase to produce the MRS formalism and represent it in one of several formats, such as Simple MRS. Processors can be used with any of the other DELPH-IN grammars to convert other natural languages into the MRS format. While the examples below use English, the concepts apply across the DELPH-IN grammars.
+The DELPH-IN [English Resource Grammar (ERG)](https://delph-in.github.io/docs/erg/ErgTop/) converts an English phrase into a data structure called an ["Minimal Recursion Semantics Formalism" (MRS)](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) which is a technical representation of human language. The [ACE processor](http://sweaglesw.org/linguistics/ace/), among other processors, processes the grammar and the phrase to produce the MRS formalism and represent it in one of several formats, such as [Simple MRS](https://delph-in.github.io/docs/tools/MrsRFC/). Processors can be used with any of the [other DELPH-IN grammars](https://delph-in.github.io/docs/grammars/GrammarsOverview/) to convert other natural languages into the MRS format. While the examples below use English, the concepts apply across the DELPH-IN grammars.
 
 Because language is ambiguous, most phrases parse into more than one MRS document, each representing a different interpretation of the phrase. Each MRS document encodes one high-level meaning of the phrase into a list of predicate-logic-like predicates (called *predications*).
 
 Each MRS document *also* has multiple interpretations. Using constraints that are included as part of the MRS, a set of trees (called *well-formed trees*) can be built from the flat list of predications in a given MRS.  These well-formed trees define all the alternative meanings of that particular MRS.
 
-So, a phrase generates `n` MRS documents, each of those generates `m` well-formed trees, which results in `n x m` possible interpretations of a single phrase. One of the challenges of building a system that uses natural language is to determine which of the many possible meanings was intended by the user (one approach to doing this will be discussed in a future section of the tutorial).
+So, a phrase generates `n` MRS documents, each of those generates `m` well-formed trees, which results in `n x m` possible interpretations of a single phrase. One of the challenges of building a system that uses natural language is to determine which of the many possible meanings was intended by the user (one approach to doing this will be discussed in the conceptual topic: [Determining the Right Parse and Tree](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree)).
 
 For example, the phrase: "Look under the table." produces 12 different MRS documents (also called "parses" or "interpretations"). These include interpretations that mean: 
 
@@ -162,7 +162,7 @@ So, if an MRS has two predications like this:
 
 Thinking of MRS variables as variables in a math equation can help: The MRS is effectively defining a formula with variables. If you pick variable values such that the MRS is true for a given world, then you have understood the meaning of the MRS in that world.
 
-Of all the arguments, `ARG0` is special.  It holds a variable that "represents" the predication, sometimes called the "characteristic" or "distinguished" variable, but most often the "instrinsic variable".  If you read the [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) documentation, you'll see the term "introduced" is used to describe the intrinsic variable.  A predicate is described as "introducing" its "intrinsic variable" (which is always `ARG0`). Sometimes phrases like "the variable *introduced by* predicate X..." are used.  This will become important later, mostly when we talk about events or about how to convert predications back into a phrase. For now, it is enough to understand that `ARG0` *represents* the predication in some special ways.
+Of all the arguments, `ARG0` is special.  It holds a variable that "represents" the predication, sometimes called the "characteristic" or "distinguished" variable, but most often the "instrinsic variable".  If you read the [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf) documentation, you'll see the term "introduced" is used to describe the intrinsic variable.  A predicate is described as "introducing" its "intrinsic variable" (which is always `ARG0`). Sometimes phrases like "the variable *introduced by* predicate X..." are used.  This will become important later, mostly when we talk about events or about how to [convert predications back into a phrase](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures). For now, it is enough to understand that `ARG0` *represents* the predication in some special ways.
 
 One final point: Every variable in an MRS is introduced by exactly one predication in the MRS (which is why they can serve as makeshift "representations" of the predication). We'll come back to this when we [talk about `i`, `p` and `u` variable types]().
 
@@ -192,7 +192,7 @@ _the_q(x3,RSTR,BODY)
                  └─ _small_a_1(e2,x3)
 ```
 
-Think of this process like a lambda function being passed to a function in a programming language like C++ or C#.  The `the_q` predication itself will be responsible for "doing something" with the two branches it is passed.  What, exactly, is specific to the predication. We'll go into this more in a future topic in the tutorial. For now, think about scopal arguments as places to put other predications which are acting like programming language "lambda functions".
+Think of this process like a lambda function being passed to a function in a programming language like C++ or C#.  The `the_q` predication itself will be responsible for "doing something" with the two branches it is passed.  What, exactly, is specific to the predication. We go into this more in the section on  [solving scopal arguments](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0060ScopalArguments). For now, think about scopal arguments as places to put other predications which are acting like programming language "lambda functions".
 
 Because the MRS is underspecified, it usually doesn't directly list which predication to put in which scopal argument. You figure that out by the process of creating a well-formed tree.  However, if a predication has a `LBL` that is the same handle as a scopal argument, then that part of the tree *has* been specified and is "locked in place" (i.e. there is no hole there for something else to be).
 
@@ -399,10 +399,10 @@ _the_q(x3,RSTR,BODY)
                  └─ _blue_a_1(e2,x3)
 ```
 
-More information on `INDEX` is described in the section on sentence force.
+More information on `INDEX` is described in the section on dealing with different types of phrases.
 
-The next topic walks through the rules of creating "well-formed MRS trees", and is the last big chunk of conceptual background needed before we start building the system.
+The [next topic](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) walks through the rules of creating "well-formed MRS trees", and is the last big chunk of conceptual background needed before we start building the system.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2023-06-06 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md)]{% endraw %}

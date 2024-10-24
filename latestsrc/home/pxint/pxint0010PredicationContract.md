@@ -27,7 +27,7 @@ The contract is designed to "solve" an MRS for the variables defined in it, such
 
 A few observations about the contract:
 - What the variables *are* -- i.e. how the world is represented in the program -- is not defined in the contract. It doesn't care.
-- Quantifier Predications only scope `x` variables. These are the only variables that represent "things in the world" (aka "individuals"), that we are solving for. Event (`e`) variables are handled differently since they are an implementation detail of the MRS that gets used by the predications. They are not relevant here and get described in a later section.
+- Quantifier Predications only scope `x` variables. These are the only variables that represent "things in the world" (aka "individuals"), that we are solving for. Event (`e`) variables are handled differently since they are an implementation detail of the MRS that gets used by the predications. They are not relevant here and get described in a another section.
 - This "idealized contract" has different requirements for Regular and Quantifier Predications. Regular Predications simply return `True` or `False`. Quantifier Predications return a set of answers consisting of variable assignments, iteratively. 
 
 Let's walk through an example of each to clarify:
@@ -142,4 +142,4 @@ We've talked through the contract required on functions that implement a predica
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2023-05-14 by EricZinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0010PredicationContract.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0010PredicationContract.md)]{% endraw %}

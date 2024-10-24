@@ -347,6 +347,6 @@ etc.
 
 All the groups that succeed are solution groups and will be valid collective, distributive or cumulative readings of the phrase in that world.
 
-There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in Appendix A since it is not necessary for understanding the concept) and global constraints from words like "the" (described in TBD).
+There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in [Appendix A](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations) since it is not necessary for understanding the concept) and global constraints from words like "the" (described in TBD).
 
 Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}

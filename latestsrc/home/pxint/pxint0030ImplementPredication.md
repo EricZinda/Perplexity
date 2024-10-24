@@ -1,5 +1,5 @@
 {% raw %}## Implementing a Predication
-With that [Python background and overview of the `State` object](), we can now implement the [predication contract](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract) for a predication to see how it all works. Let's implement the `_folder_n_of` predication in Python.  
+With that [Python background and overview of the `State` object](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics), we can now implement the [predication contract](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract) for a predication to see how it all works. Let's implement the `_folder_n_of` predication in Python.  
 
 We will be passing an instance of the `State` object as the first argument to every predication so that it can access its arguments *and* the world state. The variables will be passed in as strings like `"x1"` or `"e12"`. To get their values, the code will look them up in the `State` object as shown below:
 ```
@@ -34,7 +34,7 @@ def folder_n_of(state, x):
             new_state = state.set_x(x, (item, ))
             yield new_state
 ```
-First notice that we are not really taking advantage of our "practical predication contract" in this code: we are literally just iterating through every object in the system. We can fix that later, but for the moment the examples are so small that it won't really matter.
+First notice that we are not really taking advantage of our ["practical predication contract"](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract) in this code: we are literally just iterating through every object in the system. We can fix that later, but for the moment the examples are so small that it won't really matter.
 
 Further on in the code, notice that the `folder_n_of` `yields` the new instance of the state object returned from setting `x` to a value.  This behavior (enforced by the`State` object) will allow our solver to pass around the same state object to a predication multiple times and get fresh values bound to the variables. Since we always make copies when setting a value, the solver can rely on a particular `State` object not being changed, even after it has been passed to a predication.
 
@@ -131,8 +131,8 @@ def Example1a():
 
 Since the arguments to the predication are again unbound, this shows that the only large files in the world are "file2.txt".
 
-With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But we'll need a way to convert the MRS text representation into a set of Python function calls. That way, we won't have to manually convert them to Python like the above example. The next section describes how to do that.
+With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But first we need to understand [the State object](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics)
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-10-18 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md)]{% endraw %}

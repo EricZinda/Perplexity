@@ -1,6 +1,6 @@
 {% raw %}
 ## "Together" and "Separately" in the Solver
-If there were multiple large files in folders, the formula we ended the MRS Solver section with:
+If there were multiple large files in folders, the formula we ended the [MRS Solver](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) section with:
 
 ```
 formula: large(x), file(x), folder(y), in(x, y)
@@ -90,6 +90,6 @@ In the new form, the solutions we get back (i.e. the variable assignments that m
 
 Thus, the algorithm still gives us all the assignments of variables that make the formula `true` in the world, but now our formulation can express things operating together or separately.
 
-However, we need something more to allow representing plurals in a phrase, as described in the next section.
+However, we need something more to allow representing plurals in a phrase, as described in the [next section](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups).
 
-Last update: 2024-10-14 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0020MRSSolverSets.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0020MRSSolverSets.md)]{% endraw %}

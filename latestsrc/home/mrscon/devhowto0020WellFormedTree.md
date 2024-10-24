@@ -129,7 +129,7 @@ Another algorithm, the one we'll use in the tutorial, is able to prune the searc
 There are definitely more efficient approaches, but the algorithm below has the advantage of being relatively simple. Here is [one alternative](https://www.aclweb.org/anthology/W05-1105.pdf).  There are definitely more.
 
 ## A Simple, Fast Enough, Algorithm
-> It isn't important to fully understand this algorithm as long as you understand what it has to do: build a well-formed MRS tree, and what the rules are in doing that. We'll use this code as a library routine all throughout the tutorial, but we won't dive into its implementation again. If you've followed along and understood the content so far, you've got enough background to go to the next section where we start to dive into how to implement the predications.
+> It isn't important to fully understand this algorithm as long as you understand what it has to do: build a well-formed MRS tree, and what the rules are in doing that. We'll use this code as a library routine all throughout the tutorial, but we won't dive into its implementation again.
 
 This description is for those that are interested in how the algorithm works, and isn't necessary for understanding the rest of the tutorial:
 
@@ -272,4 +272,4 @@ def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, node
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).
 
-Last update: 2024-01-31 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}
+Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}

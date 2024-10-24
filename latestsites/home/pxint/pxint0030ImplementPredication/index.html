@@ -348,7 +348,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="implementing-a-predication">Implementing a Predication</h2>
-<p>With that <a href="">Python background and overview of the <code class="language-plaintext highlighter-rouge">State</code> object</a>, we can now implement the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a> for a predication to see how it all works. Let’s implement the <code class="language-plaintext highlighter-rouge">_folder_n_of</code> predication in Python.</p>
+<p>With that <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics">Python background and overview of the <code class="language-plaintext highlighter-rouge">State</code> object</a>, we can now implement the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a> for a predication to see how it all works. Let’s implement the <code class="language-plaintext highlighter-rouge">_folder_n_of</code> predication in Python.</p>
 
 <p>We will be passing an instance of the <code class="language-plaintext highlighter-rouge">State</code> object as the first argument to every predication so that it can access its arguments <em>and</em> the world state. The variables will be passed in as strings like <code class="language-plaintext highlighter-rouge">"x1"</code> or <code class="language-plaintext highlighter-rouge">"e12"</code>. To get their values, the code will look them up in the <code class="language-plaintext highlighter-rouge">State</code> object as shown below:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def folder_n_of(state, x):
@@ -382,7 +382,7 @@
             new_state = state.set_x(x, (item, ))
             yield new_state
 </code></pre></div></div>
-<p>First notice that we are not really taking advantage of our “practical predication contract” in this code: we are literally just iterating through every object in the system. We can fix that later, but for the moment the examples are so small that it won’t really matter.</p>
+<p>First notice that we are not really taking advantage of our <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">“practical predication contract”</a> in this code: we are literally just iterating through every object in the system. We can fix that later, but for the moment the examples are so small that it won’t really matter.</p>
 
 <p>Further on in the code, notice that the <code class="language-plaintext highlighter-rouge">folder_n_of</code> <code class="language-plaintext highlighter-rouge">yields</code> the new instance of the state object returned from setting <code class="language-plaintext highlighter-rouge">x</code> to a value.  This behavior (enforced by the<code class="language-plaintext highlighter-rouge">State</code> object) will allow our solver to pass around the same state object to a predication multiple times and get fresh values bound to the variables. Since we always make copies when setting a value, the solver can rely on a particular <code class="language-plaintext highlighter-rouge">State</code> object not being changed, even after it has been passed to a predication.</p>
 
@@ -475,13 +475,13 @@ def large_a_1(state, e, x):
 
 <p>Since the arguments to the predication are again unbound, this shows that the only large files in the world are “file2.txt”.</p>
 
-<p>With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But we’ll need a way to convert the MRS text representation into a set of Python function calls. That way, we won’t have to manually convert them to Python like the above example. The next section describes how to do that.</p>
+<p>With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But first we need to understand <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics">the State object</a></p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2024-10-18 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md">edit</a>]</p>
+<p>Last update: 2024-10-23 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md">edit</a>]</p>
 
         
       </section>
