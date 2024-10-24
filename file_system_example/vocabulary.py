@@ -3,7 +3,7 @@ from file_system_example.state import DeleteOperation, ChangeDirectoryOperation,
 # from perplexity.OpenAI import StartOpenAIBooleanRequest, CompleteOpenAIRequest
 from perplexity.plurals import GlobalCriteria, VariableCriteria
 from perplexity.predications import combinatorial_predication_1, lift_style_predication_2, in_style_predication_2, \
-    individual_style_predication_1, discrete_variable_generator
+    individual_style_predication_1, discrete_variable_generator, VariableDescriptor, VariableStyle
 from perplexity.response import RespondOperation
 from perplexity.set_utilities import Measurement
 from perplexity.system_vocabulary import system_vocabulary
@@ -542,11 +542,17 @@ def loc_nonsp_size(context, state, e_introduced_binding, x_actor_binding, x_size
     # if it is for x_actor or x_size, so we have to try both
     if e_introduced_binding.value is not None and "DeterminerSetLimiter" in e_introduced_binding.value:
         set_size = e_introduced_binding.value["DeterminerSetLimiter"]["Value"]["ValueSetSize"]
-        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, set_size, ValueSize.all)
-        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, set_size)
+        if set_size == ValueSize.more_than_one or set_size == ValueSize.all:
+            limiter_descriptor = VariableDescriptor(individual=VariableStyle.unsupported, group=VariableStyle.semantic)
+        else:
+            assert set_size == ValueSize.exactly_one
+            limiter_descriptor = VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.unsupported)
+
+        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, limiter_descriptor, None)
+        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, None, limiter_descriptor)
 
     else:
-        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None, ValueSize.all, ValueSize.all)
+        yield from lift_style_predication_2(context, state, x_actor_binding, x_size_binding, both_bound_criteria, None, None, None)
 
 
 @Predication(vocabulary, names=["_only_x_deg"])

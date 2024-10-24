@@ -200,10 +200,6 @@ class VariableDescriptor(object):
         self.individual = individual
         self.group = group
 
-    def individual_check_only(self):
-        return self.individual == VariableStyle.semantic and \
-               (self.group == VariableStyle.ignored or self.group == VariableStyle.unsupported)
-
     def combinatoric_size(self, context, binding):
         binding_metadata = context.get_variable_metadata(binding.variable.name)
         individual_consumed = binding_metadata["ValueSize"] == perplexity.vocabulary.ValueSize.exactly_one or binding_metadata["ValueSize"] == perplexity.vocabulary.ValueSize.all
@@ -533,10 +529,16 @@ def individual_style_predication_1(context, state, binding, bound_predication_fu
 # - a group behaves differently than an individual (like "men lifted a table")
 # - thus the predication_function is called with sets of things
 def lift_style_predication_2(context, state, binding1, binding2,
-                             both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None):
+                             both_bound_prediction_function, binding1_unbound_predication_function, binding2_unbound_predication_function, all_unbound_predication_function=None,
+                             binding1_descriptor=None, binding2_descriptor=None):
     def default(_):
         if False:
             yield None
+
+    if binding1_descriptor is None:
+        binding1_descriptor = VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic)
+    if binding2_descriptor is None:
+        binding2_descriptor = VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic)
 
     if binding1_unbound_predication_function is None:
         binding1_unbound_predication_function = default
@@ -548,8 +550,8 @@ def lift_style_predication_2(context, state, binding1, binding2,
                              binding1_unbound_predication_function,
                              binding2_unbound_predication_function,
                              all_unbound_predication_function,
-                             VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic),
-                             VariableDescriptor(individual=VariableStyle.semantic, group=VariableStyle.semantic))
+                             binding1_descriptor,
+                             binding2_descriptor)
 
 
 # "'in' style" means that:
