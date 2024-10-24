@@ -3,7 +3,7 @@ import os
 from perplexity.utilities import import_function_from_names
 
 worlds = dict()
-worlds["lobby"] = {"WorldModule": "esl.lobby",
+worlds["lobby"] = {"WorldModule": "samples.esl.lobby",
                    "WorldUIFunction": "ui"}
 worlds["esl"] = {"WorldModule": "samples.esl.tutorial",
                  "WorldUIFunction": "ui"}
