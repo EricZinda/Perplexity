@@ -385,7 +385,7 @@
 <p>A few observations about the contract:</p>
 <ul>
   <li>What the variables <em>are</em> – i.e. how the world is represented in the program – is not defined in the contract. It doesn’t care.</li>
-  <li>Quantifier Predications only scope <code class="language-plaintext highlighter-rouge">x</code> variables. These are the only variables that represent “things in the world” (aka “individuals”), that we are solving for. Event (<code class="language-plaintext highlighter-rouge">e</code>) variables are handled differently since they are an implementation detail of the MRS that gets used by the predications. They are not relevant here and get described in a another section.</li>
+  <li>Quantifier Predications only scope <code class="language-plaintext highlighter-rouge">x</code> variables. These are the only variables that represent “things in the world” (aka “individuals”), that we are solving for. Event (<code class="language-plaintext highlighter-rouge">e</code>) variables are handled differently since they are an implementation detail of the MRS that gets used by the predications. They are not relevant here and get described in a <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo050EventPredications">another section</a>.</li>
   <li>This “idealized contract” has different requirements for Regular and Quantifier Predications. Regular Predications simply return <code class="language-plaintext highlighter-rouge">True</code> or <code class="language-plaintext highlighter-rouge">False</code>. Quantifier Predications return a set of answers consisting of variable assignments, iteratively.</li>
 </ul>
 

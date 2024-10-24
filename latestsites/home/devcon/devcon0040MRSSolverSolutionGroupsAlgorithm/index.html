@@ -444,7 +444,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 
 <ol>
   <li>At this point, we can dispense with the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication because the MRS quantifier predications (those with <code class="language-plaintext highlighter-rouge">_q</code> at the end) fulfill the same variable scoping role as <code class="language-plaintext highlighter-rouge">scope()</code>. They declare where in the tree a variable can be used.  They <em>also</em> can add numeric constraints to the variable, as we’ll see below.</li>
-  <li>Predications in MRS have variable types beyond the <code class="language-plaintext highlighter-rouge">x</code>-type variables we’ve been using. For the examples we’ll see here, these can be safely ignored. We’ll handle those in a later section.</li>
+  <li>Predications in MRS have <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">variable types</a> beyond the <code class="language-plaintext highlighter-rouge">x</code>-type variables we’ve been using. For the examples we’ll see here, these can be safely ignored. We’ll handle those in a later section.</li>
 </ol>
 
 <p>With that covered, let’s walk through how to get the numeric constraints from the above MRS.</p>
@@ -453,7 +453,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 <p>First, notice that the variable order in this tree is [<code class="language-plaintext highlighter-rouge">x3</code>, <code class="language-plaintext highlighter-rouge">x11</code>] (read left to right) since that is the order of the variable quantifiers when evaluating the tree depth-first.</p>
 
 <h4 id="quantifier-constraints">Quantifier Constraints</h4>
-<p>Each variable in an MRS must have a quantifier that scopes it (the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like <code class="language-plaintext highlighter-rouge">udef_q</code> in our example, add the default criteria <code class="language-plaintext highlighter-rouge">between(1, inf)</code>. This simply means: “at least one”. The <code class="language-plaintext highlighter-rouge">_a_q</code> quantifier means “a single thing”, so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>.</p>
+<p>Each variable in an MRS <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">must have a quantifier that scopes it</a> (the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication performed this function in prior examples), and quantifiers always add a numeric criteria to the variable they scope.  Some, like <code class="language-plaintext highlighter-rouge">udef_q</code> in our example, add the default criteria <code class="language-plaintext highlighter-rouge">between(1, inf)</code>. This simply means: “at least one”. The <code class="language-plaintext highlighter-rouge">_a_q</code> quantifier means “a single thing”, so it adds <code class="language-plaintext highlighter-rouge">between(1, 1)</code>.</p>
 
 <p>Thus, the quantifiers in this example add these constraints:</p>
 
@@ -495,7 +495,7 @@ Text Tree: udef_q(x3,[_student_n_of(x3,i10), card(2,e9,x3)],_a_q(x11,_table_n_1(
 </table>
 
 <h4 id="plural-variable-properties">Plural Variable Properties</h4>
-<p>Finally, some variables (<code class="language-plaintext highlighter-rouge">x3</code> in our example), are defined to be plural by the MRS, as indicated by <code class="language-plaintext highlighter-rouge">NUM: pl</code> in the variable properties of <code class="language-plaintext highlighter-rouge">x3</code>:</p>
+<p>Finally, some variables (<code class="language-plaintext highlighter-rouge">x3</code> in our example), are defined to be plural by the MRS, as indicated by <code class="language-plaintext highlighter-rouge">NUM: pl</code> in the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">variable properties</a> of <code class="language-plaintext highlighter-rouge">x3</code>:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ udef_q&lt;0:3&gt; LBL: h4 ARG0: x3 [ x PERS: 3 NUM: pl IND: + ] RSTR: h5 BODY: h6 ]
 </code></pre></div></div>
@@ -742,11 +742,11 @@ udef_q(x3,RSTR,BODY)             ┌────── _table_n_1(x10)
 
 <blockquote>
   <ul>
-    <li>Generate the list of solutions to the modified tree using the approach described in the previous section</li>
+    <li>Generate the list of solutions to the modified tree using the approach described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">previous section</a></li>
   </ul>
 </blockquote>
 
-<p>Using a (unshown) world state, and using the approach described in the previous section, the solutions to the modified tree are (let’s say):</p>
+<p>Using a (unshown) world state, and using the approach described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">previous section</a>, the solutions to the modified tree are (let’s say):</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>"students lifted a table"
 
 Tree: udef_q(x3,_student_n_of(x3,i8),udef_q(x10,_table_n_1(x10),_lift_v_cause(e2,x3,x10)))
