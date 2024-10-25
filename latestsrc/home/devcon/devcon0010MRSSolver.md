@@ -133,4 +133,6 @@ At this point, it should be noted that there are other algorithms for solving co
 
 But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating ["together"](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets).
 
-Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0010MRSSolver.md)]{% endraw %}
+The Internals section has a description of how to [implement a simple backtracking solver](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver).
+
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0010MRSSolver.md)]{% endraw %}

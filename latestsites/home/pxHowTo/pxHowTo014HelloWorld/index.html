@@ -205,7 +205,7 @@
           
             <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
           
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Solving an MRS</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
           
@@ -394,8 +394,8 @@ if __name__ == '__main__':
 </code></pre></div></div>
 <p>The basics are described in comments above, but the basic flow is:</p>
 <ol>
-  <li>A micro-world gets registered with a name (“SimplestExample”) and a pointer to the module and function where the system can create its UserInterface object to run it.</li>
-  <li>In <code class="language-plaintext highlighter-rouge">__main__</code>, this UserInterface object is created a run in a loop.  Each iteration of the loop processes one phrase the user types.</li>
+  <li>A micro-world gets registered with a name (“SimplestExample”) and a pointer to the module and function where the system can create its <code class="language-plaintext highlighter-rouge">UserInterface</code> object to run it.</li>
+  <li>In <code class="language-plaintext highlighter-rouge">__main__</code>, this <code class="language-plaintext highlighter-rouge">UserInterface</code> object is created and run in a loop.  Each iteration of the loop processes one phrase from the user.</li>
 </ol>
 
 <p>The state of the world is encapsulated, in whatever form the developer wants, in the object that is returned by the reset function (<code class="language-plaintext highlighter-rouge">reset()</code>).</p>
@@ -428,7 +428,7 @@ I don't know the words: I, Where
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo014HelloWorld.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo014HelloWorld.md">edit</a>]</p>
 
         
       </section>

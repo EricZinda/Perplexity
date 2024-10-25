@@ -16,7 +16,7 @@ toc:
     children:
       - title: "Overview"
         url: "/devcon/devcon0000Overview/"
-      - title: "Backtracking"
+      - title: "Solving an MRS"
         url: "/devcon/devcon0010MRSSolver/"
       - title: "Representing 'Together'"
         url: "/devcon/devcon0020MRSSolverSets/"

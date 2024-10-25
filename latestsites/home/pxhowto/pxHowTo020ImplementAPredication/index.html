@@ -205,7 +205,7 @@
           
             <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
           
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Solving an MRS</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
           
@@ -376,7 +376,7 @@ _a_q(x3,RSTR,BODY)
 <p>The rest of this section describes how to write these predication functions and how to interact with the <code class="language-plaintext highlighter-rouge">State</code> object.</p>
 
 <h3 id="predication-function-arguments">Predication Function Arguments</h3>
-<p>Perplexity comes preinstalled and configured to use the DELPH-IN English grammar, which is called the <a href="https://https://delph-in.github.io/docs/erg/ErgTop/">“English Resource Grammar”</a> or “ERG”.  You can see from the MRS document in the above example that the ERG predication generated for “file” is:</p>
+<p>Perplexity comes preinstalled and configured to use the DELPH-IN English grammar, which is called the <a href="https://delph-in.github.io/docs/erg/ErgTop/">“English Resource Grammar”</a> or “ERG”.  You can see from the MRS document in the above example that the ERG predication generated for “file” is:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_file_n_of(x3,i8)
 </code></pre></div></div>
 
@@ -406,9 +406,9 @@ _a_q(x3,RSTR,BODY)
 
 <p>Note that <code class="language-plaintext highlighter-rouge">i_binding</code> is ignored since <code class="language-plaintext highlighter-rouge">i</code> variables usually indicate an ignored (or ‘dropped’) argument as described in the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS</a>.</p>
 
-<p>The code illustrates that bindings have a <code class="language-plaintext highlighter-rouge">binding.value</code> property that returns the current variable’s value, which is always a list for reasons described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">Together conceptual topic</a> . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. That is the only time this will bet <code class="language-plaintext highlighter-rouge">true</code> since that is all we have. If so, it <code class="language-plaintext highlighter-rouge">yields</code> the state object to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of its variables. The <code class="language-plaintext highlighter-rouge">state</code> object is just yielded, as is, since we are just checking if the values passed in are a “file” and not changing anything.</p>
+<p>The code illustrates that bindings have a <code class="language-plaintext highlighter-rouge">binding.value</code> property that returns the current variable’s value, which is always a list for reasons described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">Together conceptual topic</a> . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. That is the only time this will be <code class="language-plaintext highlighter-rouge">true</code> since that is all we have. If so, it <code class="language-plaintext highlighter-rouge">yields</code> the state object to indicate that this predication is <code class="language-plaintext highlighter-rouge">true</code> for the current state of its variables. The <code class="language-plaintext highlighter-rouge">state</code> object is just yielded, as is, since we are just checking if the values passed in are a “file” and not changing anything.</p>
 
-<p>Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of <em>all</em> <code class="language-plaintext highlighter-rouge">file_n</code> objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables “unbound”, which is when: <code class="language-plaintext highlighter-rouge">binding.value is None</code>.  This indicates to the function that it should <code class="language-plaintext highlighter-rouge">yield</code> all the things in the world that are a <code class="language-plaintext highlighter-rouge">file</code>, like this:</p>
+<p>Predications will often be called with all of their variables bound like this. But, recall from the section on <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">The Predication Contract</a> that sometimes the engine will be looking for the function to provide a list of <em>all</em> <code class="language-plaintext highlighter-rouge">file_n</code> objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables “unbound”, which is when: <code class="language-plaintext highlighter-rouge">binding.value is None</code>.  This indicates to the function that it should <code class="language-plaintext highlighter-rouge">yield</code> all the things in the world that are a <code class="language-plaintext highlighter-rouge">file</code>, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def file_n_of(context, state, x_binding, i_binding):
     if x_binding.value is None:
@@ -499,7 +499,7 @@ def generate_custom_message(state, tree_info, error_term):
 <p>The logic Perplexity uses for reporting errors is not obvious, it is worth reading the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0080ErrorsChoosingWhichFailure">section on errors</a> to understand how it works.</p>
 
 <h2 id="variables-are-a-tuple">Variables are a Tuple</h2>
-<p>Recall from the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">Together conceptual topic</a> that Perplexity represents items operating together as a set (represented as a <code class="language-plaintext highlighter-rouge">tuple</code> in Python). Because users of the system may ask questions like, “Are the files 20 mb?” (meaning are they 20mb <em>together</em>), predications need to be prepared to deal with variables that have a set of more than one item. Let’s update the <code class="language-plaintext highlighter-rouge">file_n_of()</code> function to handle this case.</p>
+<p>Recall from the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">Together conceptual topic</a> that Perplexity represents items operating <em>together</em> as a set (represented as a <code class="language-plaintext highlighter-rouge">tuple</code> in Python). Because users of the system may ask questions like, “Are the files 20 mb?” (meaning are they 20mb <em>together</em>), predications need to be prepared to deal with variables that have a set of more than one item. Let’s update the <code class="language-plaintext highlighter-rouge">file_n_of()</code> function to handle this case.</p>
 
 <p>Assume we have two more files in our example, so that now we have: <code class="language-plaintext highlighter-rouge">file1.txt</code>, <code class="language-plaintext highlighter-rouge">file2.txt</code> and <code class="language-plaintext highlighter-rouge">file3.txt</code>. There is no extra meaning for files “together” vs. files “separately” as far as being files: they are still just “files”.  So, we only have to change the logic to loop through the list and make sure they are all files. However, if the <code class="language-plaintext highlighter-rouge">x</code> variable is unbound, we need to yield <em>all combinations</em> of files since any combination of them could make this predication <code class="language-plaintext highlighter-rouge">true</code>, like this:</p>
 
@@ -780,7 +780,7 @@ if __name__ == '__main__':
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md">edit</a>]</p>
 
         
       </section>
