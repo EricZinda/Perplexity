@@ -289,7 +289,7 @@ def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
                                                         criteria,
                                                         unbound_what,
                                                         ["cantDeleteSet", x_what_binding.variable.name]):
-            yield new_state.apply_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
+            yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:
         context.report_error(["dontKnowActor", x_actor_binding.variable.name])
