@@ -350,7 +350,7 @@
         <h2 id="testing">Testing</h2>
 <p>Now that we have implemented a predication, it is important to understand how to test it.  In a Perplexity application, it is very easy to enhance a predication to support one scenario and break others that used to work. So, to keep the system working well and avoid functionality regressions, you should always write at least simple functionality tests for phrases once they work.</p>
 
-<p>Since the interface to a Perplexity system is simply textual user input, and the output is also text, the built-in Perplexity test functionality just records the output that you expect for a given phrase when it is working properly. Then, you can run the test again when you’ve changed something and it will tell you if the expected output has changed.</p>
+<p>Since the interface to a Perplexity system is textual user input, and the output is also text, the built-in Perplexity test functionality just records the output that you expect for a given phrase when it is working properly. Then, you can run the test again when you’ve changed something and it will tell you if the expected output has changed.</p>
 
 <h3 id="recording-a-test">Recording a test</h3>
 <p>You can see all the commands (even beyond testing) that Perplexity supports by typing “/help”:</p>
@@ -390,7 +390,7 @@ Commands start with /:
 /resume Resume running the last test (or sequence of tests in a folder) at the last reset before it was stopped -&gt; e.g. /resume
 </code></pre></div></div>
 
-<p>Let’s start by recording a test using the <code class="language-plaintext highlighter-rouge">/recordtest</code> command and by running the code we’ve done so far and doing this:</p>
+<p>Let’s start by recording a test using the <code class="language-plaintext highlighter-rouge">/recordtest</code> command and by running the code we’ve done so far:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? /recordtest
 Recording is now True
@@ -551,7 +551,7 @@ Recording is now off
 
 <p>(You’ll need to use the module and function name that you’ve used to successfully run the example above.)</p>
 
-<p>Since we appended the session, the reset will now happen at the end. This might be fine if we’re going to add more interactions that we want to happen in a fresh world. But it is also a best practice to always start your tests with a reset so you know the world is starting in a known state.  You can simply edit the file and move that reset to the beginning.  It is just a JSON file. Here’s what it looks like when finished:</p>
+<p>Since we used <code class="language-plaintext highlighter-rouge">/appendtest</code> the session, the reset will now happen at the end of the test. This might be fine if we’re going to add more interactions that we want to happen in a fresh world. But it is also a best practice to always start your tests with a reset so you know the world is starting in a known state.  You can simply edit the file and move that reset to the beginning.  It is just a JSON file. Here’s what it looks like when finished:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
     "WorldName": "SimplestFileSystemStateExample",
@@ -618,7 +618,7 @@ Yes.
 <p>You can feel free to rearrange and edit the information in these test files, as long as you don’t break the JSON format.</p>
 
 <h3 id="folders">Folders</h3>
-<p>“test1.tst” was created in the <code class="language-plaintext highlighter-rouge">/perplexity/tests</code> folder. You can also organize your tests using folders:</p>
+<p>“test1.tst” was created in the <code class="language-plaintext highlighter-rouge">/perplexity/tests</code> folder since just the name <code class="language-plaintext highlighter-rouge">test1</code> was used in <code class="language-plaintext highlighter-rouge">/createtest</code> and <code class="language-plaintext highlighter-rouge">/appendtest</code>. You can also organize your tests using folders:</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">/createtest myfolder/test2</code>: creates a <code class="language-plaintext highlighter-rouge">/perplexity/tests/myfolder</code> folder and puts your test there.</li>
@@ -633,16 +633,16 @@ Yes.
 <p><code class="language-plaintext highlighter-rouge">/runfolder myfolder</code></p>
 
 <h3 id="stopping-and-resuming-a-test">Stopping and Resuming a Test</h3>
-<p>When a test breaks, you will often hit “b” to stop it, go fix it, and want to see if you fixed it. Sometimes you’d like to just restart where the break happened, especially if it is a long test.  You do this with the <code class="language-plaintext highlighter-rouge">/resume</code> command. If you type that command, Perplexity will resume the test <em>starting with the most recent <code class="language-plaintext highlighter-rouge">reset</code> command</em>. It does this because starting right where things broke might put the state in a different configuration. Restarting at the reset point ensures the state gets built up properly.</p>
+<p>When a test breaks, you will often hit “b” to stop it, go fix it, and want to see if you fixed it. Sometimes you’d like to just restart where the break happened, especially if it is a long test.  You do this with the <code class="language-plaintext highlighter-rouge">/resume</code> command. If you type that command, Perplexity will resume the test starting with the most recent <code class="language-plaintext highlighter-rouge">reset</code> command. It does this because starting right where things broke might put the state in a different configuration. Restarting at the reset point ensures the state gets built up properly.</p>
 
 <p>Due to this, it is always good to put resets into your test as you test different scenarios so you can <code class="language-plaintext highlighter-rouge">/resume</code> and get back to it more quickly and not have to start from the beginning.</p>
 
-<p>Note that this also works for <code class="language-plaintext highlighter-rouge">/runfolder</code>.  You might have stopped the test 10 folders into the run, but <code class="language-plaintext highlighter-rouge">/resume</code> will start at that same place and skip the first 9 folders.</p>
+<p>Note that this also works for <code class="language-plaintext highlighter-rouge">/runfolder</code>.  You might have stopped at the tenth test in that folder, but <code class="language-plaintext highlighter-rouge">/resume</code> will start at that same place and skip the first 9 folders.</p>
 
 <p>Also note that the test location is recorded on disk. So you can shut down your computer and come back and it will still resume in the right place.</p>
 
 <h3 id="logging-tests">Logging Tests</h3>
-<p>Sometimes you can’t sit there and watch the test run so you can continue over or update the tests that changed. You’d like to run the whole thing and then see what all the failures were when it is all done.  To do this, you run <code class="language-plaintext highlighter-rouge">/logtests</code> before running a test or a folder. Perplexity will then record all the failures in a file called <code class="language-plaintext highlighter-rouge">/perplexity/testresults.txt</code>. You could look at this file to see what happened, but a better way is to run <code class="language-plaintext highlighter-rouge">/resolvetests</code>. This will run you through the same interaction you would have had by just running interactively, but only on the failures.  If we redo the previous example where we intentionally broke a test, we’d get:</p>
+<p>Sometimes you can’t sit there and watch the test run so you can skip or update tests that changed. You’d like to run the whole thing and then see what all the failures were when it is all done.  To do this, you run <code class="language-plaintext highlighter-rouge">/logtests</code> before running a test or a folder. Perplexity will then record all the failures in a file called <code class="language-plaintext highlighter-rouge">/perplexity/testresults.txt</code>. You could look at this file to see what happened, but a better way is to run <code class="language-plaintext highlighter-rouge">/resolvetests</code>. This will run you through the same interaction you would have had by just running interactively, but only on the failures.  If we redo the previous example where we intentionally broke a test, we’d get:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? /logtests
 Log Test Results is now True
@@ -691,7 +691,7 @@ Expected:
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo022Testing.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo022Testing.md">edit</a>]</p>
 
         
       </section>

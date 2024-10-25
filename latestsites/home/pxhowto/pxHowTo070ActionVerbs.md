@@ -120,16 +120,16 @@ class DeleteOperation(object):
 ```
 The `DeleteOperation` itself is very simple, it is really just remembering what to delete. When it is asked to `apply_to()`, it calls the method in the `state` object that actually deletes the file, in *that* state object (which might be different than the one it was added to).
 
-To use the `DeleteOperation`, we create an instance of one and pass it to the `apply_operations()` method in the `State` object, like this:
+To use the `DeleteOperation`, we create an instance of one and pass it to the `record_operations()` method in the `State` object, like this:
 
 ```
 operation = DeleteOperation(new_state.get_binding(x_what_binding.variable.name).value[0])
-new_state.apply_operations([operation])
+yield new_state.record_operations([operation])
 ```
 
-The `apply_operations()` method takes a list of operations to apply, but in this case we're only doing one. Those two lines of code record that we want to delete a particular file, but they don't actually *do* it yet.  Later, when we have the final solution group, we can gather all of the `Operations` that were done to the solutions in the group and call `apply_operations()` on the one single state we want to represent the new world.
+The `record_operations()` method takes a list of operations to apply, but in this case we're only doing one. Those two lines of code record that we want to delete a particular file, but doesn't actually do it yet.  Later, when we have the final solution group, we can gather all of the `Operations` that were done to the solutions in the group and call `apply_operations()` (which will actually do the work) on the one single state we want to represent the new world.
 
-Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into solution groups. We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them *all* to a single state which can represent the "new state of the world" once we know what to do.
+Doing things in this more roundabout way solves two problems. Recall that the solver builds a list of all solutions (conceptually) and then groups them into [solution groups](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups). We don't want files *actually being deleted* during this phase because some of the solutions might not be used! Furthermore, each solution in a group will only have a subset of the files deleted. Using operations allows us to both delay state changes as well as apply them *all* to a single state which can represent the "new state of the world" once we know what to do.
 
 Now we can write the basic implementation of "delete":
 
@@ -156,7 +156,7 @@ def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
-        yield success_state.apply_operations([operation])
+        yield success_state.record_operations([operation])
 ```
 
 The final step that merges together all the operations and applies them to a single state is done by Perplexity automatically at the end of `user_interface.default_loop()`. That's where `DeleteOperation.apply_to()` gets called for every solution in the solution group.
@@ -182,7 +182,7 @@ pronoun_q(x3,RSTR,BODY)          ┌────── _file_n_of(x8,i13)
                                       └─ _delete_v_1(e2,x3,x8)
 ```
 
-... and `pron(x)` is the last predication to implement (`pronoun_q` is a quantifier that is implemented by the system). `pron(x)` is true when `x` is bound to an object that represents what the specified pronoun is *referring to*. The "specified pronoun" is determined by looking at the [properties](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) for the `x` variable to determine if the pronoun is "you" (`PERS: 2` -- second person), "him/her"(`PERS: 3` -- third person), etc. If `x` is bound to an object that represents what that pronoun is referring to, it is `true`. 
+... and `pron(x)` is the last predication to implement (`pronoun_q` is a quantifier that is implemented by the system). `pron(x)` is true when `x` is bound to an object that represents what the specified pronoun is *referring to*. The "specified pronoun" is determined by looking at the [properties](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) for the `x` variable to determine if the pronoun is "you". The properties could be: `PERS: 2` (second person: i.e. "you"), `PERS: 3` (third person: i.e. "him/her"), etc. If `x` is bound to an object that represents what that pronoun is referring to, it is `true`. 
 
 There were not any pronouns in our command "delete a file", so where did the `pron` predication come from? In this case, the pronoun is an *implied* "you" since it is a command. I.e "(You) delete a large file".  Because we are not including the notion of other people in the file system, the only pronouns we probably care to understand are "you" ("can you delete the file?" or the implied case above) and maybe "I" ("I want to delete a file"). For now, let's just do "you" and fail otherwise. 
 
@@ -206,7 +206,7 @@ def pron(context, state, x_who_binding):
     yield from combinatorial_style_predication_1(context, state, x_who_binding, bound_variable, unbound_variable)
 ```
 
-To find out what pronoun is being referred to be `x`, we use a special variable binding that Perplexity puts in `state` called: `tree`.  This is not an MRS concept or feature, it is just a convenient place to keep the tree for predications that need to inspect it. The variables in the tree and their properties are accessed like a tree of dictionaries as shown above.
+To find out what pronoun is being referred to by `x`, we use a special variable binding that Perplexity puts in `state` called: `tree`.  This is not an MRS concept or feature, it is just a convenient place to keep the fully-resolved MRS tree for predications that need to inspect it. The variables in the tree and their properties are accessed like a tree of dictionaries as shown above.
 
 The 2nd person pronoun "you" will always refer to "the computer" so we represent it as a string "computer". That is enough for this simple example. 
 
@@ -260,7 +260,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
     degree_multiplier = degree_multiplier_from_event(state, e_introduced_binding)
 
     def criteria_bound(value):
-        if degree_multiplier == 1 and value == "file2.txt" and "file2.txt" in state.all_individuals():
+        if degree_multiplier >= 1 and value == "file2.txt" and "file2.txt" in state.all_individuals():
             return True
 
         else:
@@ -295,7 +295,7 @@ def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
                                                         ["cantXYTogether", "delete", x_what_binding.variable.name]):
         object_to_delete = success_state.get_binding(x_what_binding.variable.name).value[0]
         operation = DeleteOperation(object_to_delete)
-        yield success_state.apply_operations([operation])
+        yield success_state.record_operations([operation])
 ```
 
 ... and create our initial `State` object with the starting list of files:
@@ -323,4 +323,4 @@ The last line confirms that the one large file in the system has been deleted.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo070ActionVerbs.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo070ActionVerbs.md)]{% endraw %}

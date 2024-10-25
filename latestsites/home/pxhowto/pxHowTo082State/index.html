@@ -509,7 +509,7 @@ class Folder(UniqueObject):
 </code></pre></div></div>
 
 <h2 id="filesystem">FileSystem</h2>
-<p>We’ll be using a fake <code class="language-plaintext highlighter-rouge">FileSystem</code> object for the examples so that we can inject the files and folders that we want to test, but the class is built to allow it to be implemented on top of a real file system as well. There are a lot of implementation details in this class that aren’t important for understanding how the system works – you can see the full implementation <a href="https://github.com/EricZinda/Perplexity/blob/main/file_system_example/objects.py">here</a>. For our purposes, the important parts are the constructor and the implementation of <code class="language-plaintext highlighter-rouge">all_individuals()</code>:</p>
+<p>We’ll be using a fake <code class="language-plaintext highlighter-rouge">FileSystem</code> object for the examples so that we can inject the files and folders that we want to test, but the class is built to allow it to be implemented on top of a real file system as well. There are a lot of implementation details in this class that aren’t important for understanding how the system works – you can see the full implementation <a href="https://github.com/EricZinda/Perplexity/blob/18a75c346c4d12385768cf0daa57380cf187fc4c/samples/file_system_example/objects.py#L248">here</a>. For our purposes, the important parts are the constructor and the implementation of <code class="language-plaintext highlighter-rouge">all_individuals()</code>:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Allows mocking up a file system for testing
 class FileSystemMock(State):
@@ -730,7 +730,7 @@ def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
                                                         criteria,
                                                         unbound_what,
                                                         ["cantDeleteSet", x_what_binding.variable.name]):
-            yield new_state.apply_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
+            yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:
         context.report_error(["dontKnowActor", x_actor_binding.variable.name])
@@ -786,7 +786,7 @@ a file is not large
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo082State.md">edit</a>]</p>
 
         
       </section>

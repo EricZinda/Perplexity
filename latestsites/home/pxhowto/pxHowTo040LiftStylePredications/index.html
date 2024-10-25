@@ -410,7 +410,7 @@ def lift(state, e_introduced_binding, x_actor_binding, x_item_binding):
 
 <p>Adding the <code class="language-plaintext highlighter-rouge">arguments=[]</code> list to <code class="language-plaintext highlighter-rouge">@Predication()</code> tells the engine that we want to override the defaults for arguments and declare them ourselves.  The default for all arguments is to only have single values since that is <em>much</em> faster.  Only predications which interpret meaning in larger tuples should ask for them. The declaration for <code class="language-plaintext highlighter-rouge">lift</code> asks for them by setting <code class="language-plaintext highlighter-rouge">ValueSize.all</code> on both <code class="language-plaintext highlighter-rouge">x</code> arguments.</p>
 
-<p>Other options for <code class="language-plaintext highlighter-rouge">ValueSize</code> are: <code class="language-plaintext highlighter-rouge">exactly_one</code> (the default) and <code class="language-plaintext highlighter-rouge">more_than_one</code>. <code class="language-plaintext highlighter-rouge">more_than_one</code> can be used when an argument only makes sense for more than one individual to be doing it. One example is the verb “met” when used like “Shal and Vienna met”.</p>
+<p>Other options for <code class="language-plaintext highlighter-rouge">ValueSize</code> are: <code class="language-plaintext highlighter-rouge">exactly_one</code> (the default) and <code class="language-plaintext highlighter-rouge">more_than_one</code>. <code class="language-plaintext highlighter-rouge">more_than_one</code> can be used when an argument only makes sense for more than one individual to be doing it. One example is the verb “met” when used like “Shal and Vienna met”. You can’t say “Shal met”, it doesn’t really make sense. So it will always require at least two individuals.</p>
 
 <h2 id="running-the-example">Running the Example</h2>
 <p>As is, we can’t run the example, yet. We need to teach the system “students” and “tables” first.  This is easy enough using the approach we used in our <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">first topic</a> about files:</p>
@@ -474,7 +474,7 @@ a student is not large
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo040LiftStylePredications.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo040LiftStylePredications.md">edit</a>]</p>
 
         
       </section>

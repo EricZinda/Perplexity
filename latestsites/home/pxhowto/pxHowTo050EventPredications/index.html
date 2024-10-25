@@ -398,7 +398,7 @@ def very_x_deg(context, state, e_introduced_binding, e_target_binding):
 
 <p>It really doesn’t matter <em>what</em> the predication adds to <code class="language-plaintext highlighter-rouge">e_target_binding</code> as long as the predications that consume it know what to look for. It is application specific. However, the system <em>will</em> look for the <code class="language-plaintext highlighter-rouge">Originator: &lt;index&gt;</code> field and use it to produce nice errors if it exists.</p>
 
-<p>So, we’ve chosen to use the key <code class="language-plaintext highlighter-rouge">"DegreeMultiplier"</code> in the event dictionary as the name of the information provided by <code class="language-plaintext highlighter-rouge">very_x_deg</code>, and added a value for it (that is also a dictionary) that indicates to what degree something should be increased: <code class="language-plaintext highlighter-rouge">"Value": 10</code>.</p>
+<p>So, we’ve chosen to use the key <code class="language-plaintext highlighter-rouge">"DegreeMultiplier"</code> in the event dictionary as the name of the information provided by <code class="language-plaintext highlighter-rouge">very_x_deg</code>, and added a value for it (that is also a dictionary) that indicates to what degree something should be increased: <code class="language-plaintext highlighter-rouge">"Value": 10</code>. This is an arbitrary value, your application should do whatever makes sense for it.</p>
 
 <p>We can now build a helper that knows about the names we’ve chosen so that any predication that understands “very” can call it:</p>
 
@@ -426,7 +426,7 @@ def large_a_1_very(context, state, e_introduced_binding, x_target_binding):
     degree_multiplier = degree_multiplier_from_event(context, state, e_introduced_binding)
 
     def criteria_bound(value):
-        if degree_multiplier == 1 and value == "file2.txt":
+        if degree_multiplier &gt;= 1 and value == "file2.txt":
             return True
 
         else:
@@ -434,14 +434,14 @@ def large_a_1_very(context, state, e_introduced_binding, x_target_binding):
             return False
 
     def unbound_values():
-        if criteria_bound("file2.txt"):
+        if degree_multiplier &gt;= 1 and criteria_bound("file2.txt"):
             yield "file2.txt"
 
     yield from combinatorial_predication_1(context, state, x_target_binding, criteria_bound, unbound_values)
 </code></pre></div></div>
-<p>We have modified the <code class="language-plaintext highlighter-rouge">large_a_1</code> implementation from the first section to now pay attention to “very”. For the example, we assume that “file2.txt” is just large, not very large.</p>
+<p>We have modified the <code class="language-plaintext highlighter-rouge">large_a_1</code> implementation from the first section to now pay attention to “very”. For the example, we assume that “file2.txt” is very large.</p>
 
-<p>Note that if <code class="language-plaintext highlighter-rouge">large_a_1</code> is called with an unbound variable, it calls the same <code class="language-plaintext highlighter-rouge">criteria_bound()</code> function so it will only say that “file2.txt” is large, not very large.</p>
+<p>Note that if <code class="language-plaintext highlighter-rouge">large_a_1</code> is called with an unbound variable, it calls the same <code class="language-plaintext highlighter-rouge">criteria_bound()</code> function so it will say that “file2.txt” is both large and very large.</p>
 
 <h2 id="declaring-use-of-event-information">Declaring Use of Event Information</h2>
 <p>There is a problem, however. This doesn’t work yet. If the user says “a file is very large” the system will respond with:</p>
@@ -467,20 +467,18 @@ def large_a_1(state, e_introduced_binding, x_target_binding):
 <p>Adding these to <code class="language-plaintext highlighter-rouge">hello_world.py</code> allows us to have this interaction:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python ./hello_world.py
-? what file is large?
-('file2.txt',)
+? which file is large?
+('file2.txt', )
 
-? what file is very large?
-a file is not large
+? which file is very large?
+('file2.txt', )
 
 ? a file is very large
-a file is not large
+Yes, that is true.
 
 ? a file is large
 Yes, that is true.
 </code></pre></div></div>
-
-<p>Note that the system doesn’t know how to add the word “very” to the error, so we get the error “a file is not large”. We’ll fix that in a future topic.</p>
 
 <p>Now we are ready to tackle action verbs in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs">next topic</a>.</p>
 
@@ -488,7 +486,7 @@ Yes, that is true.
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo050EventPredications.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo050EventPredications.md">edit</a>]</p>
 
         
       </section>

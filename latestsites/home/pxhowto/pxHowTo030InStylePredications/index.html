@@ -373,7 +373,7 @@ check: (file2,) in (folder1,)?
 
 <p>This allows us to write a single function that can handle tuples of one or more items by simply implementing the one item case and calling it over and over.</p>
 
-<p>As for the single <code class="language-plaintext highlighter-rouge">x</code> case from the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">previous topic</a>, Perplexity has a helper function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function for a single value, like this:</p>
+<p>As in the single <code class="language-plaintext highlighter-rouge">x</code> case from the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">previous topic</a>, Perplexity has a helper function that performs the right logic and only requires the caller to implement the <code class="language-plaintext highlighter-rouge">check()</code> function for a single value, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, names=("_in_p_loc"))
 def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_binding):
@@ -421,7 +421,7 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
                                       all_item2_containing_item1)
 </code></pre></div></div>
 
-<p>Note that the two new functions need to <em>yield all alternatives</em> and not just return <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code>, just like <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> did in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">previous topic</a>.</p>
+<p>Note that the two new functions need to <em>yield all alternatives</em> and not just return <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code>, just like <code class="language-plaintext highlighter-rouge">combinatorial_style_predication_1()</code> did in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication">previous topic</a>. And, just like in that previous example, the helper function will generate all combinations if other predications in the tree need this.</p>
 
 <p>And, as with the first “check” function, <code class="language-plaintext highlighter-rouge">in_style_predication_2()</code> does all the work to make sure that the two unbound functions are only passed single values – even if the incoming values are combinatorial or sets &gt; 1 item.</p>
 
@@ -429,7 +429,7 @@ def in_p_loc(context, state, e_introduced_binding, x_actor_binding, x_location_b
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo030InStylePredications.md">edit</a>]</p>
 
         
       </section>
