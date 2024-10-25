@@ -245,7 +245,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
     # "large" is being used "predicatively" as in "the dogs are large". This needs to force
     # the individuals to be separate (i.e. not part of a group)
     def criteria_bound(value):
-        if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+        if hasattr(value, 'size') and value.size >= degree_multiplier * 1000000:
             return True
 
         else:
@@ -255,7 +255,7 @@ def large_a_1(context, state, e_introduced_binding, x_target_binding):
     def unbound_values():
         # Find all large things
         for value in state.all_individuals():
-            if hasattr(value, 'size') and value.size > degree_multiplier * 1000000:
+            if hasattr(value, 'size') and value.size >= degree_multiplier * 1000000:
                 yield value
 
     yield from combinatorial_predication_1(context,
