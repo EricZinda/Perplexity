@@ -16,7 +16,7 @@ Everything to the right of "create a" is a [referring expression](https://en.wik
 The Perplexity `Concept` object gives us a direction, but we'll need to enhance it. We will create a richer kind of `Concept` object that can hold a representation of these "conceptual" referring expressions and build predications that use them.
 
 ### Creating a File
-Below is the built-in `Concept` object. Its default implementation just stores a single string from the constructor called `sort_of` which represents the sort of concept it is.  Period. It doesn't do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the `value_type` property which returns `VariableValueType.concept`.  This tells Perplexity "I am a concept, treat me as an opaque blob".  The rest of the methods are there to support equality and membership in dictionaries and are use by things like the Python `dict` object:
+Below is the built-in `Concept` object. Its default implementation just stores a single string from the constructor called `sort_of` which represents the sort of concept it is.  Period. It doesn't do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the `value_type` property which returns `VariableValueType.concept`.  This tells Perplexity "I am a concept, treat me as an opaque blob".  The rest of the methods are there to support equality and membership in dictionaries and are used by things like the Python `dict` object:
 
 ~~~
 class Concept(object):
@@ -345,6 +345,8 @@ If we now run a test, we get this:
 
 (We haven't added to code to make a nice error yet ...)
 
+Hmmm. What happened here? Let's dig in.
+
 ### Logical Entailment
 
 The problem is in the implementation of `_create_v_1`.  It checks to see if its argument `== RichConcept("file")`, but the `Concept` is no longer simply a file, it is a `RichConcept([('is_a', 'file'), ('has_adjective', 'text')])`, so it fails:
@@ -365,7 +367,7 @@ def create_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
 
 As far as this predication is concerned, we don't care what *type* of file the user asked to create, that will be dealt with elsewhere.  We just care that it is, at its core, a *file*.  Here, we can appeal to a concept from logic called "logical consequence" or ["logical entailment"](https://en.wikipedia.org/wiki/Logical_consequence).  Really, you can think of it as "implies".  Being a "text file" will always mean it is also a "file". So, "text file" *entails* "file" or "text file" *implies* "file". In this function we want to check for *entailment* of "file", not equality.
 
-Now, proving entailment is an active area of research. It is a hard problem. But we don't have the general case here, we have a very limited vocabulary and set of scenarios.  We can therefore just say that something entails something else as long as they both "is_a" the same thing:
+Now, proving entailment is an active area of research. It is a hard problem in the general case. But we don't have the general case here, we have a very limited vocabulary and set of scenarios.  We can therefore just say that something entails something else as long as they both "is_a" the same thing:
 
 Let's add a method to our `Concept` object to do that (the last method below):
 
