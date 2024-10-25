@@ -47,7 +47,7 @@ def call(vocabulary, state, term):
 
 It is worth making sure you understand how this function works since it is the core of our evaluator:
 
-When a list is passed to `call`, it is treated as a conjunction (i.e. "and"), and so each predication in the conjunction gets passed to `call` again, one after the other. If one fails, we stop iterating and see if there are other states yielded from the first predication and try again. If they all fail, the function stops searching. That is how "and" gets implemented, they all must succeed for the search to succeed.
+When a list is passed to `call`, it is treated as a conjunction (i.e. "and"), and so each predication in the conjunction gets passed to `call` again, one after the other. If one fails, we stop iterating and check if there are other states yielded from the first predication and try again. If they all fail, the function stops searching. That is how "and" gets implemented, they all must succeed for the search to succeed.
 
 When a single predication is passed to `call`, it just gets directly passed on to `call_predication()`.  Once it fails, we stop.
 
