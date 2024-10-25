@@ -61,10 +61,10 @@ If everything is installed correctly, you should be able to successfully run all
 3. Tell Python that it should look in this directory for modules:
    - `export PYTHONPATH=$PYTHONPATH:<Perplexity repository path>`
 4. Run the file system example and its tests:
-   - `python3 ./file_system_example/examples.py`
+   - `python3 ./examples/file_system_example/examples.py`
    - `/runfolder file_system_example`
 5. OR: Run the ESL Restaurant example and its tests:
-   - `python3 ./esl/tutorial.py`
+   - `python3 ./examples/esl/tutorial.py`
    - `/runfolder esl`
 
 ## Daily Workflow
@@ -77,7 +77,7 @@ Once everything in installed, to begin a session of Perplexity development you n
 3. Tell Python that it should look in this directory for modules:
    - `export PYTHONPATH=$PYTHONPATH:<Perplexity repository path>`
 4. Start the Perplexity engine:
-   - `python3 ./file_system_example/examples.py` 
+   - `python3 ./examples/file_system_example/examples.py` 
 
 ## Next Step: Hello World
 Now that you've got Perplexity installed, the next step is to [create the minimal "Hello World" application](pxHowTo014HelloWorld.md).

@@ -27,7 +27,7 @@ The rest of this section describes how to write these predication functions and 
 
 
 ### Predication Function Arguments
-Perplexity comes preinstalled and configured to use the DELPH-IN English grammar, which is called the ["English Resource Grammar"](https://https://delph-in.github.io/docs/erg/ErgTop/) or "ERG".  You can see from the MRS document in the above example that the ERG predication generated for "file" is:
+Perplexity comes preinstalled and configured to use the DELPH-IN English grammar, which is called the ["English Resource Grammar"](https://delph-in.github.io/docs/erg/ErgTop/) or "ERG".  You can see from the MRS document in the above example that the ERG predication generated for "file" is:
 ~~~
 _file_n_of(x3,i8)
 ~~~
@@ -61,9 +61,9 @@ def file_n_of(context, state, x_binding, i_binding):
 
 Note that `i_binding` is ignored since `i` variables usually indicate an ignored (or 'dropped') argument as described in the section on [MRS](../mrscon/devhowto0010MRS#other-variables-types-i-u-p).
 
-The code illustrates that bindings have a `binding.value` property that returns the current variable's value, which is always a list for reasons described in the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. That is the only time this will bet `true` since that is all we have. If so, it `yields` the state object to indicate that this predication is `true` for the current state of its variables. The `state` object is just yielded, as is, since we are just checking if the values passed in are a "file" and not changing anything. 
+The code illustrates that bindings have a `binding.value` property that returns the current variable's value, which is always a list for reasons described in the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) . So, this function retrieves the first item in the list and checks to see if it is the one file we have in our world. That is the only time this will be `true` since that is all we have. If so, it `yields` the state object to indicate that this predication is `true` for the current state of its variables. The `state` object is just yielded, as is, since we are just checking if the values passed in are a "file" and not changing anything. 
 
-Predications will often be called with all of their variables bound like this. But, recall that sometimes the engine will instead be looking for the function to provide a list of *all* `file_n` objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables "unbound", which is when: `binding.value is None`.  This indicates to the function that it should `yield` all the things in the world that are a `file`, like this:
+Predications will often be called with all of their variables bound like this. But, recall from the section on [The Predication Contract](../pxint/pxint0010PredicationContract) that sometimes the engine will be looking for the function to provide a list of *all* `file_n` objects as opposed to checking if a particular object is a file. It indicates this by leaving one or more variables "unbound", which is when: `binding.value is None`.  This indicates to the function that it should `yield` all the things in the world that are a `file`, like this:
 
 ~~~
 def file_n_of(context, state, x_binding, i_binding):
@@ -153,13 +153,13 @@ You can use whatever logic you want for converting the error code to a string, t
 return s("{*arg1} is not {arg2}", tree_info)
 ~~~
 
-... This is how a variable name like `x3` gets converted to a string like "file". S-strings are a Perplexity feature described in a [separate topic](pxHowTo025SStrings).
+... This is how a variable name like `x3` gets converted to a string like "file". S-strings are a Perplexity feature described in a [separate topic](pxHowTo025SStrings).  
 
 The logic Perplexity uses for reporting errors is not obvious, it is worth reading the [section on errors](../devcon/devcon0080ErrorsChoosingWhichFailure) to understand how it works.
 
 
 ## Variables are a Tuple
-Recall from the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) that Perplexity represents items operating together as a set (represented as a `tuple` in Python). Because users of the system may ask questions like, "Are the files 20 mb?" (meaning are they 20mb *together*), predications need to be prepared to deal with variables that have a set of more than one item. Let's update the `file_n_of()` function to handle this case.
+Recall from the [Together conceptual topic](../devcon/devcon0020MRSSolverSets) that Perplexity represents items operating *together* as a set (represented as a `tuple` in Python). Because users of the system may ask questions like, "Are the files 20 mb?" (meaning are they 20mb *together*), predications need to be prepared to deal with variables that have a set of more than one item. Let's update the `file_n_of()` function to handle this case.
 
 Assume we have two more files in our example, so that now we have: `file1.txt`, `file2.txt` and `file3.txt`. There is no extra meaning for files "together" vs. files "separately" as far as being files: they are still just "files".  So, we only have to change the logic to loop through the list and make sure they are all files. However, if the `x` variable is unbound, we need to yield *all combinations* of files since any combination of them could make this predication `true`, like this:
 

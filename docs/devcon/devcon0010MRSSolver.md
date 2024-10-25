@@ -133,3 +133,5 @@ It works because we are effectively trying all values in all variables. But, it 
 At this point, it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using completely different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems, and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We'll work through some of those and find optimizations for some of the most egregious problems.
 
 But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating ["together"](devcon0020MRSSolverSets).
+
+The Internals section has a description of how to [implement a simple backtracking solver](../pxint/pxint0040BuildSolver).
