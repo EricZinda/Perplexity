@@ -205,7 +205,7 @@
           
             <li><a href="/Perplexity/home/devcon/devcon0000Overview/">Overview</a></li>
           
-            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Backtracking</a></li>
+            <li><a href="/Perplexity/home/devcon/devcon0010MRSSolver/">Solving an MRS</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0020MRSSolverSets/">Representing 'Together'</a></li>
           
@@ -448,7 +448,7 @@ RELS: &lt;
 
 <p>Predications are “predicate-logic-like” in that they state a relation or a fact about their arguments that must be true in order for the MRS to be true. The arguments are most often variables and, if you find values for all the variables that make all the predications in the MRS true in a given world, then you have “solved” or “resolved” the MRS. You have figured out (in a sense) the meaning of the sentence. So, predications do the work in an MRS by providing constraints or restrictions on the variables they are passed.</p>
 
-<p>For example: the predication <code class="language-plaintext highlighter-rouge">_table_n_1(x9)</code> in the example above is saying “restrict the set of things in the variable <code class="language-plaintext highlighter-rouge">x9</code> to be only those which are a ‘table’” or, alternatively: “ensure that <code class="language-plaintext highlighter-rouge">x9</code> contains a ‘table’”.  Depending on how you ultimately solve the MRS, you might look at these variables as containing sets or individual items. Our approach will start by iteratively solving the MRS using individual items, so we’ll be describing predications as restricting to individual items for the rest of the tutorial.</p>
+<p>For example: the predication <code class="language-plaintext highlighter-rouge">_table_n_1(x9)</code> in the example above is saying “restrict the set of things in the variable <code class="language-plaintext highlighter-rouge">x9</code> to be only those which are a ‘table’” or, alternatively: “ensure that <code class="language-plaintext highlighter-rouge">x9</code> contains a ‘table’”.  Depending on how you ultimately solve the MRS, you might look at these variables as containing sets or individual items. Our approach will start by iteratively solving the MRS using sets.</p>
 
 <p>If we evaluated a different predication such as <code class="language-plaintext highlighter-rouge">_large_a_1(x9)</code> immediately afterward, it would mean “also make sure the thing in <code class="language-plaintext highlighter-rouge">x9</code> is ‘large’”.  An MRS that contains both predications like that is saying, “restrict <code class="language-plaintext highlighter-rouge">x9</code> to be a ‘large table’ from the world we are talking about”.</p>
 
@@ -544,7 +544,7 @@ _the_q(x3,RSTR,BODY)
 <p>Because the MRS is underspecified, it usually doesn’t directly list which predication to put in which scopal argument. You figure that out by the process of <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">creating a well-formed tree</a>.  However, if a predication has a <code class="language-plaintext highlighter-rouge">LBL</code> that is the same handle as a scopal argument, then that part of the tree <em>has</em> been specified and is “locked in place” (i.e. there is no hole there for something else to be).</p>
 
 <h4 id="x-instance-variables">X (Instance) Variables</h4>
-<p>Instance (<code class="language-plaintext highlighter-rouge">x</code>) variables are just like normal First Order Logic variables, or like variables in popular programming languages. The types of things they can contain are “individuals”, which is another name for a “thing in the world”.  They hold the things the speaker is talking about.</p>
+<p>Instance (<code class="language-plaintext highlighter-rouge">x</code>) variables are just like normal <a href="https://en.wikipedia.org/wiki/First-order_logic">First Order Logic</a> variables, or like variables in popular programming languages. The types of things they can contain are “individuals”, which is another name for a “thing in the world”.  They hold the things the speaker is talking about.</p>
 
 <p>In the MRS for “Look under the large table”:</p>
 

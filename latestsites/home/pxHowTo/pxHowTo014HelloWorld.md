@@ -45,8 +45,8 @@ if __name__ == '__main__':
         user_interface = user_interface.default_loop()
 ```
 The basics are described in comments above, but the basic flow is: 
-1. A micro-world gets registered with a name ("SimplestExample") and a pointer to the module and function where the system can create its UserInterface object to run it.
-2. In `__main__`, this UserInterface object is created a run in a loop.  Each iteration of the loop processes one phrase the user types.
+1. A micro-world gets registered with a name ("SimplestExample") and a pointer to the module and function where the system can create its `UserInterface` object to run it.
+2. In `__main__`, this `UserInterface` object is created and run in a loop.  Each iteration of the loop processes one phrase from the user.
 
 The state of the world is encapsulated, in whatever form the developer wants, in the object that is returned by the reset function (`reset()`).
 
@@ -75,4 +75,4 @@ So far, it has no vocabulary so it will just keep saying, "I don't know the word
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo014HelloWorld.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo014HelloWorld.md)]{% endraw %}
