@@ -166,7 +166,7 @@ class Folder(UniqueObject):
 ~~~
 
 ## FileSystem
-We'll be using a fake `FileSystem` object for the examples so that we can inject the files and folders that we want to test, but the class is built to allow it to be implemented on top of a real file system as well. There are a lot of implementation details in this class that aren't important for understanding how the system works -- you can see the full implementation [here](https://github.com/EricZinda/Perplexity/blob/main/file_system_example/objects.py). For our purposes, the important parts are the constructor and the implementation of `all_individuals()`:
+We'll be using a fake `FileSystem` object for the examples so that we can inject the files and folders that we want to test, but the class is built to allow it to be implemented on top of a real file system as well. There are a lot of implementation details in this class that aren't important for understanding how the system works -- you can see the full implementation [here](https://github.com/EricZinda/Perplexity/blob/18a75c346c4d12385768cf0daa57380cf187fc4c/samples/file_system_example/objects.py#L248). For our purposes, the important parts are the constructor and the implementation of `all_individuals()`:
 
 ~~~
 # Allows mocking up a file system for testing
@@ -393,7 +393,7 @@ def delete_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
                                                         criteria,
                                                         unbound_what,
                                                         ["cantDeleteSet", x_what_binding.variable.name]):
-            yield new_state.apply_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
+            yield new_state.record_operations([DeleteOperation(new_state.get_binding(x_what_binding.variable.name))])
 
     else:
         context.report_error(["dontKnowActor", x_actor_binding.variable.name])
