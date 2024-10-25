@@ -15,7 +15,7 @@ You can use the following commands: copy and go
 You can use the following commands: copy and go
 ~~~
 
-All of these phrases are using words like "several" or "3" which quantify how many of something the speaker is interested in. The last uses "the" which implies there is just one that is so obvious the system should know which one it is. When we implement a solution group handler we take over responsibility for doing the counting, and we're not doing that.
+All of these phrases are using words like "several" or "3" which quantify how many of something the speaker is interested in. The last uses "the" which implies there is just one that is so obvious the system should know which one it is. When we implement a solution group handler we take over responsibility for doing the counting, and we're not yet doing that.
 
 ### Inspecting Global Criteria
 When a speaker uses a phrase that constrains the solution group using numeric constraints or "the", these constraints are tracked with the arguments in the solution group handler and can be inspected:
@@ -157,7 +157,7 @@ If Zahra is in a restaurant that has several types of menus, maybe for lunch and
 
 She could also mean "one menu for me and one for my Mom".
 
-What these all have in common is that hints about what the speaker means can be found in the *context*, or scenario, that is occurring. It is often not obvious which is meant a priori. So, you'll need to determine which is meant given your scenario. Note that you can also implement both as different *interpretations* and try each to see which works, or reorder them based on the current context.  You may also decide that the constraint doesn't matter. If there are no steaks available in your vegetarian restaurant just about any question about a steak should be met with, "I'm so sorry, we don't have those here."
+What these all have in common is that hints about what the speaker means can be found in the *context*, or scenario, that is occurring. It is often not obvious which is meant, a priori. So, you'll need to determine which is meant given your scenario. Note that you can also implement both as different *interpretations* and try each to see which works, or reorder them based on the current context.  You may also decide that the constraint doesn't matter. If there are no steaks available in your vegetarian restaurant just about any question about a steak should be met with, "I'm so sorry, we don't have those here."
 
 ### The `concept_meets_constraint` Helper
 Regardless of which you decide, you need to write the code to make sure the constraints are met.  As shown above, the constraints are available in the `variable_constraints` property of each variable group in your solution group handler. That code is repeated below:
@@ -256,7 +256,7 @@ How you decide which concepts make sense to be "in-scope" is up to you, but is o
 
 `variable` is the final argument, and is simply the name of the MRS variable being checked.
 
-Now that we've seen all the arguments, here they are all together being used to check for an interpretation where the speaker is asking about having the concept of, not instances of, something. For example, "Do you have specials?". Since the implementation of most of this depends on your implementation, it isn't a library function. However, it will be the same for most of your predications so you can create one of your own:
+Now that we've seen all the arguments, here they are being used to check for an interpretation where the speaker is asking about having the concept of, not instances of, something. For example, "Do you have specials?", referring to the existence of specials, not how many are left of them. Since the implementation of most of this depends on your implementation, it isn't a library function. However, it will be the same for most of your predications so you can create one of your own:
 
 ~~~
 @Predication(vocabulary,
