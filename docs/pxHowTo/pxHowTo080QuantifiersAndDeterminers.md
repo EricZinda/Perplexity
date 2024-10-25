@@ -7,7 +7,7 @@ All of the examples we've used so far have produced quantifiers in their MRS, an
 
 etc.
 
-This will almost always be the case because quantifiers are not application specific. As described in the [Solution Group Algorithm topic](../devcon/devcon0040MRSSolverSolutionGroupsAlgorithm), quantifers do two things, neither of which is usually application specific:
+This will almost always be the case because quantifiers are not usually application specific. As described in the [Solution Group Algorithm topic](../devcon/devcon0040MRSSolverSolutionGroupsAlgorithm), quantifers do two things, neither of which is usually application specific:
 - scope variables
 - constrain their variables to be a certain count
 
