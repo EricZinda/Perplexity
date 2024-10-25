@@ -52,7 +52,7 @@ def very_x_deg(context, state, e_introduced_binding, e_target_binding):
 
 It really doesn't matter *what* the predication adds to `e_target_binding` as long as the predications that consume it know what to look for. It is application specific. However, the system *will* look for the `Originator: <index>` field and use it to produce nice errors if it exists. 
 
-So, we've chosen to use the key `"DegreeMultiplier"` in the event dictionary as the name of the information provided by `very_x_deg`, and added a value for it (that is also a dictionary) that indicates to what degree something should be increased: `"Value": 10`.
+So, we've chosen to use the key `"DegreeMultiplier"` in the event dictionary as the name of the information provided by `very_x_deg`, and added a value for it (that is also a dictionary) that indicates to what degree something should be increased: `"Value": 10`. This is an arbitrary value, your application should do whatever makes sense for it.
 
 We can now build a helper that knows about the names we've chosen so that any predication that understands "very" can call it:
 
@@ -82,7 +82,7 @@ def large_a_1_very(context, state, e_introduced_binding, x_target_binding):
     degree_multiplier = degree_multiplier_from_event(context, state, e_introduced_binding)
 
     def criteria_bound(value):
-        if degree_multiplier == 1 and value == "file2.txt":
+        if degree_multiplier >= 1 and value == "file2.txt":
             return True
 
         else:
@@ -90,14 +90,14 @@ def large_a_1_very(context, state, e_introduced_binding, x_target_binding):
             return False
 
     def unbound_values():
-        if criteria_bound("file2.txt"):
+        if degree_multiplier >= 1 and criteria_bound("file2.txt"):
             yield "file2.txt"
 
     yield from combinatorial_predication_1(context, state, x_target_binding, criteria_bound, unbound_values)
 ```
-We have modified the `large_a_1` implementation from the first section to now pay attention to "very". For the example, we assume that "file2.txt" is just large, not very large.
+We have modified the `large_a_1` implementation from the first section to now pay attention to "very". For the example, we assume that "file2.txt" is very large.
 
-Note that if `large_a_1` is called with an unbound variable, it calls the same `criteria_bound()` function so it will only say that "file2.txt" is large, not very large.
+Note that if `large_a_1` is called with an unbound variable, it calls the same `criteria_bound()` function so it will say that "file2.txt" is both large and very large.
 
 ## Declaring Use of Event Information
 There is a problem, however. This doesn't work yet. If the user says "a file is very large" the system will respond with:
@@ -126,23 +126,21 @@ Adding these to `hello_world.py` allows us to have this interaction:
 
 ```
 python ./hello_world.py
-? what file is large?
-('file2.txt',)
+? which file is large?
+('file2.txt', )
 
-? what file is very large?
-a file is not large
+? which file is very large?
+('file2.txt', )
 
 ? a file is very large
-a file is not large
+Yes, that is true.
 
 ? a file is large
 Yes, that is true.
 ```
 
-Note that the system doesn't know how to add the word "very" to the error, so we get the error "a file is not large". We'll fix that in a future topic.
-
 Now we are ready to tackle action verbs in the [next topic](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo050EventPredications.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo050EventPredications.md)]{% endraw %}

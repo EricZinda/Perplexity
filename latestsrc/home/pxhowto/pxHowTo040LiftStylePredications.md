@@ -63,7 +63,7 @@ All the rest of the function is unchanged.
 
 Adding the `arguments=[]` list to `@Predication()` tells the engine that we want to override the defaults for arguments and declare them ourselves.  The default for all arguments is to only have single values since that is *much* faster.  Only predications which interpret meaning in larger tuples should ask for them. The declaration for `lift` asks for them by setting `ValueSize.all` on both `x` arguments.
 
-Other options for `ValueSize` are: `exactly_one` (the default) and `more_than_one`. `more_than_one` can be used when an argument only makes sense for more than one individual to be doing it. One example is the verb "met" when used like "Shal and Vienna met".
+Other options for `ValueSize` are: `exactly_one` (the default) and `more_than_one`. `more_than_one` can be used when an argument only makes sense for more than one individual to be doing it. One example is the verb "met" when used like "Shal and Vienna met". You can't say "Shal met", it doesn't really make sense. So it will always require at least two individuals.
 
 ## Running the Example
 As is, we can't run the example, yet. We need to teach the system "students" and "tables" first.  This is easy enough using the approach we used in our [first topic](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo020ImplementAPredication) about files:
@@ -128,4 +128,4 @@ Next we will tackle [event predications](https://blog.inductorsoftware.com/Perpl
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo040LiftStylePredications.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo040LiftStylePredications.md)]{% endraw %}
