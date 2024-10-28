@@ -1,6 +1,3 @@
-Docs Changes
-- Reorganize the samples
-- Read ALL the docs now
     Fix: "which files are not in 2 folders?",
         returns: There are less than 2 2 folder
             Theory: in_p_loc_fail__solution_group always reports "formNotUnderstood" and
