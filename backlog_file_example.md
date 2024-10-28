@@ -1,7 +1,3 @@
-
-
-
-
 - 3 files are in a folder together -> There is more than a folder together
   - "together_p" is applied to "a folder" and returns an error that there is more than 1 folder "together"
     - together requires sets of more than one be generated, and "a_q" means exactly one
