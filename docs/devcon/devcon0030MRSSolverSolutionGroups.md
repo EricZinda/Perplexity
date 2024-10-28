@@ -1,4 +1,4 @@
-## Collective and Distributive Readings
+## Collective, Distributive, and Cumulative Readings
 If we change the "students lifted a table" example from the [previous section](devcon0020MRSSolverSets) slightly, we can uncover another layer of meaning we need to represent in the solver. 
 
 For example:
