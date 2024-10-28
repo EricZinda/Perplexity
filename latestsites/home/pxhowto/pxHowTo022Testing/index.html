@@ -370,12 +370,12 @@ Commands start with /:
 /timeout Sets timeout time for a given phrase -&gt; e.g. /timeout or /timeout 20
 
 ****** Parsing ******
-/show Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first trees -&gt; e.g. /show or /show all or /show all, 1
+/show Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first scope-resolved MRSs -&gt; e.g. /show or /show all or /show all, 1
 /soln Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else toggles the current setting -&gt; e.g. /soln or /soln all
 /genall Generates all parses (normally only the first 5 are generated) -&gt; e.g. /genall 1 OR /genall True
 /runall Runs all parses, doesn't stop after success -&gt; e.g. /runall 1 OR /runall True
-/runparse Only runs the identified parse index and optional tree index. Pass no arguments to turn off -&gt; e.g. /runparse 1 OR /runparse 1, 0
-/debugtree Shows tracing information about the tree. give a predication query after to only show trees that match it. Use '_' to mean 'anything' for an argument or the predication name -&gt; e.g. /debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)
+/runparse Only runs the identified parse index and optional scope-resolved MRS index. Pass no arguments to turn off -&gt; e.g. /runparse 1 OR /runparse 1, 0
+/debugtree Shows tracing information about the scope-resolved MRS. give a predication query after to only show scope-resolved MRSs that match it. Use '_' to mean 'anything' for an argument or the predication name -&gt; e.g. /debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)
 /debugmrs Shows tracing information about the mrs -&gt; e.g. /debugmrs
 /findmrs ? -&gt; e.g. /findmrs
 
@@ -434,7 +434,7 @@ Recording is now off
 }
 </code></pre></div></div>
 
-<p>The system is simply recording the input, output, the tree that was used, and an ID.  There is also an “Enabled” field that you can set to “false” if you want a particular test to be ignored.</p>
+<p>The system is simply recording the input, output, the scope-resolved MRS that was used, and an ID.  There is also an “Enabled” field that you can set to “false” if you want a particular test to be ignored.</p>
 
 <p>To run the test:</p>
 
@@ -691,7 +691,7 @@ Expected:
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo022Testing.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo022Testing.md">edit</a>]</p>
 
         
       </section>

@@ -131,8 +131,8 @@ def Example1a():
 
 Since the arguments to the predication are again unbound, this shows that the only large files in the world are "file2.txt".
 
-With two predications implemented, We can start calling more than one predication and eventually deal with a whole MRS resolved tree. But first we need to write the code that actually calls the predications by building [the solver](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver).
+With two predications implemented, We can start calling more than one predication and eventually deal with a whole scope-resolved MRS. But first we need to write the code that actually calls the predications by building [the solver](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver).
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0030ImplementPredication.md)]{% endraw %}

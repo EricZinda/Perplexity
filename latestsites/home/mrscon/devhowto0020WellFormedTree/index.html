@@ -347,9 +347,9 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="building-well-formed-mrs-trees">Building Well-Formed MRS Trees</h2>
+        <h2 id="building-scope-resolved-mrs">Building Scope-Resolved MRS</h2>
 <blockquote>
-  <p>This section is designed to help application developers understand how to build well-formed trees from MRS documents. To understand this section, first make sure you have a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">basic understanding of the MRS formalism</a> or, for a more academic or linguistic approach, explore <a href="https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf">Minimal Recursion Semantics: An Introduction</a>.</p>
+  <p>This section is designed to help application developers understand how to build scope-resolved mrss from MRS documents. To understand this section, first make sure you have a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">basic understanding of the MRS formalism</a> or, for a more academic or linguistic approach, explore <a href="https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf">Minimal Recursion Semantics: An Introduction</a>.</p>
 </blockquote>
 
 <p>Let’s use the sentence “every book is in a cave” as an example. If the phrase is parsed with <a href="http://sweaglesw.org/linguistics/ace/">the ACE parser</a>, you get an MRS document like this:</p>
@@ -367,7 +367,7 @@ HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 </code></pre></div></div>
 <p>Our goal is to eventually “solve” the MRS by finding values for its MRS variables such that it is “true”. When complete, these variables indicate what the speaker <em>meant</em> and allow us to <em>do</em> something about it.</p>
 
-<p>To resolve an MRS against a world state (a particular state of the world at a moment in time) and get <em>solutions</em> to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a <em>well-formed MRS tree</em>. We will examine <em>how</em> shortly, but for now just know that a well-formed MRS tree has (among other things) nodes that are the predications from the MRS like <code class="language-plaintext highlighter-rouge">_every_q__xhh</code> and arcs that are links between the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS"><em>scopal arguments</em></a> of the predications and other nodes, like this:</p>
+<p>To resolve an MRS against a world state (a particular state of the world at a moment in time) and get <em>solutions</em> to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a <em>scope-resolved MRS</em>. We will examine <em>how</em> shortly, but for now just know that a scope-resolved MRS has (among other things) nodes that are the predications from the MRS like <code class="language-plaintext highlighter-rouge">_every_q__xhh</code> and arcs that are links between the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS"><em>scopal arguments</em></a> of the predications and other nodes, like this:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>              ┌────── _book_n_of(x3,i8)
 _every_q(x3,RSTR,BODY)          ┌────── _cave_n_1(x9)
@@ -408,7 +408,7 @@ RELS: &lt;
 &gt;
 HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 </code></pre></div></div>
-<p>The MRS is a flat list of predications so that it avoids building a single tree which would “lock in” one interpretation.  How it does this is described in detail next, but in summary: It leaves “holes” using scopal (<code class="language-plaintext highlighter-rouge">h</code>) arguments for various predications and provides constraints (the <code class="language-plaintext highlighter-rouge">HCONS</code>) for plugging the predications together “legally”.  If you combine the predications by following the constraints (among other things), you’ll end up with a “well-formed MRS tree” which defines one valid interpretation of the sentence. If you build all the well-formed trees, you have all the possible interpretations.</p>
+<p>The MRS is a flat list of predications so that it avoids building a single tree which would “lock in” one interpretation.  How it does this is described in detail next, but in summary: It leaves “holes” using scopal (<code class="language-plaintext highlighter-rouge">h</code>) arguments for various predications and provides constraints (the <code class="language-plaintext highlighter-rouge">HCONS</code>) for plugging the predications together “legally”.  If you combine the predications by following the constraints (among other things), you’ll end up with a “scope-resolved MRS” which defines one valid interpretation of the sentence. If you build all the scope-resolved mrss, you have all the possible interpretations.</p>
 
 <p>This interpretation is what we need in order to eventually “solve” the phrase for the variables it contains. This topic describes how to build that tree.</p>
 
@@ -471,7 +471,7 @@ HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 <h2 id="resolving-the-tree">Resolving the tree</h2>
 <p>Finding ways to efficiently create these trees is an area of active research because natural language can easily create MRS structures that have a ton of holes.  <code class="language-plaintext highlighter-rouge">n</code> holes, in the worst case, can require <code class="language-plaintext highlighter-rouge">n!</code> checks to resolve, if done exhaustively.  So, an MRS structure with 12 holes (which is easy to generate) could require up to 480,000,000 checks before finding a valid solution if you just try every combination.</p>
 
-<p>To generate the well-formed trees, you could simply try all possible combinations of holes and labels, do the <code class="language-plaintext highlighter-rouge">qeq</code> and <code class="language-plaintext highlighter-rouge">x</code> scoping checks on each, and only keep the valid ones. This will only be practical for the simplest possible trees.</p>
+<p>To generate the scope-resolved mrss, you could simply try all possible combinations of holes and labels, do the <code class="language-plaintext highlighter-rouge">qeq</code> and <code class="language-plaintext highlighter-rouge">x</code> scoping checks on each, and only keep the valid ones. This will only be practical for the simplest possible trees.</p>
 
 <p>Another algorithm, the one we’ll use in the tutorial, is able to prune the search space and works much faster.  The Python implementation can usually generate all trees for an MRS with 12 holes in around 1.5s (with some outliers being slower) on a 2013-era MacBook Pro.  This will be sufficient for the purposes of this tutorial.  Something like “put the diamond on the table where the safe is and the book is” generates MRS structures with up to 14 holes and could take up to 30 seconds to generate <em>all</em> the valid interpretations (1500+ valid interpretations in some cases!) for each MRS.  It turns out it is very rarely necessary to generate all the interpretations, but regardless: because it scales factorially, things slow down fast after 12 holes.</p>
 
@@ -479,7 +479,7 @@ HCONS: &lt; h0 qeq h1 h5 qeq h7 h11 qeq h13 &gt; ]
 
 <h2 id="a-simple-fast-enough-algorithm">A Simple, Fast Enough, Algorithm</h2>
 <blockquote>
-  <p>It isn’t important to fully understand this algorithm as long as you understand what it has to do: build a well-formed MRS tree, and what the rules are in doing that. We’ll use this code as a library routine all throughout the tutorial, but we won’t dive into its implementation again.</p>
+  <p>It isn’t important to fully understand this algorithm as long as you understand what it has to do: build a scope-resolved MRS, and what the rules are in doing that. We’ll use this code as a library routine all throughout the tutorial, but we won’t dive into its implementation again.</p>
 </blockquote>
 
 <p>This description is for those that are interested in how the algorithm works, and isn’t necessary for understanding the rest of the tutorial:</p>
@@ -544,7 +544,7 @@ Starting at the initial node:</p>
 <p><strong>Returns</strong>:
 <code class="language-plaintext highlighter-rouge">nodeAssignmentList</code> which is simply a dictionary where the keys are holes and the value is the floater that was assigned to it.</p>
 
-<p>Once this has run its course you will have all the valid well-formed trees for the MRS.</p>
+<p>Once this has run its course you will have all the valid scope-resolved mrss for the MRS.</p>
 
 <p><strong>Code and Example</strong>
 Below is the Python code for the main routine, all of the code is available <a href="https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py">here</a>.</p>
@@ -583,7 +583,7 @@ Below is the Python code for the main routine, all of the code is available <a h
 <ol>
   <li>Pick the next unassigned hole: in this case, <code class="language-plaintext highlighter-rouge">h0</code>.</li>
   <li>Pick the next unassigned floater: in this case, <code class="language-plaintext highlighter-rouge">h1</code>.</li>
-  <li>If assigning <code class="language-plaintext highlighter-rouge">h1</code> to <code class="language-plaintext highlighter-rouge">h0</code> doesn’t violate any constraints on building a scope-resolved tree: update <code class="language-plaintext highlighter-rouge">all_holes_dict()</code> to contain this assignment and recurse at step #1 with the new <code class="language-plaintext highlighter-rouge">all_holes_dict()</code>.</li>
+  <li>If assigning <code class="language-plaintext highlighter-rouge">h1</code> to <code class="language-plaintext highlighter-rouge">h0</code> doesn’t violate any constraints on building a scope-resolved mrs: update <code class="language-plaintext highlighter-rouge">all_holes_dict()</code> to contain this assignment and recurse at step #1 with the new <code class="language-plaintext highlighter-rouge">all_holes_dict()</code>.</li>
   <li>If the assignment does violate a constraint, skip it and jump to step #2 to try the next floater.</li>
 </ol>
 

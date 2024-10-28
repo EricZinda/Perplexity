@@ -349,10 +349,10 @@
         
         <h2 id="solving-an-mrs">Solving an MRS</h2>
 <blockquote>
-  <p>It is important to understand <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">what MRS is</a> and what <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">a well-formed MRS tree is</a> before reading this section. Visit those links first to understand the basic concepts.</p>
+  <p>It is important to understand <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">what MRS is</a> and what <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">a scope-resolved MRS is</a> before reading this section. Visit those links first to understand the basic concepts.</p>
 </blockquote>
 
-<p>A <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">well-formed MRS tree</a> can be thought of as an <em>equation</em> that is <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code> depending on the values of its variables. Recall that predications are of the form: <code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> or <code class="language-plaintext highlighter-rouge">compound(e,x,x)</code>. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are <code class="language-plaintext highlighter-rouge">true</code> when their arguments are set to values that <em>are</em> or <em>mean</em> what the predication means.</p>
+<p>A <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">scope-resolved MRS</a> can be thought of as an <em>equation</em> that is <code class="language-plaintext highlighter-rouge">true</code> or <code class="language-plaintext highlighter-rouge">false</code> depending on the values of its variables. Recall that predications are of the form: <code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> or <code class="language-plaintext highlighter-rouge">compound(e,x,x)</code>. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are <code class="language-plaintext highlighter-rouge">true</code> when their arguments are set to values that <em>are</em> or <em>mean</em> what the predication means.</p>
 
 <p>So:</p>
 
@@ -367,7 +367,7 @@
 
 <p>A group of multiple predications separated by commas means they are “in conjunction”, which means the commas should be treated as <code class="language-plaintext highlighter-rouge">and</code>. So,<code class="language-plaintext highlighter-rouge">large(x), file(x)</code> will only be <code class="language-plaintext highlighter-rouge">true</code> if <code class="language-plaintext highlighter-rouge">x</code> is set to values that make all the predications <code class="language-plaintext highlighter-rouge">true</code>. In this example, <code class="language-plaintext highlighter-rouge">x</code> must be set to something that is <code class="language-plaintext highlighter-rouge">a large file</code>. Again, <code class="language-plaintext highlighter-rouge">x</code> could be <code class="language-plaintext highlighter-rouge">a large yellow file</code> or <code class="language-plaintext highlighter-rouge">a large file of paperwork</code>, but each predication just tests for some property of <code class="language-plaintext highlighter-rouge">x</code> and is <code class="language-plaintext highlighter-rouge">true</code> as long as that property is <code class="language-plaintext highlighter-rouge">true</code>, regardless of its other properties.</p>
 
-<p><em>Solving</em> a well-formed tree means finding values for the variables that make all the predications <code class="language-plaintext highlighter-rouge">true</code>.</p>
+<p><em>Solving</em> a scope-resolved mrs means finding values for the variables that make all the predications <code class="language-plaintext highlighter-rouge">true</code>.</p>
 
 <p>Here’s a simple example. Let’s solve <code class="language-plaintext highlighter-rouge">large(x), file(x)</code> in a world with 3 objects in it:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a folder
@@ -389,7 +389,7 @@ a large file
 <p>One simple approach to solving constraint satisfaction problems (like finding the solutions to an MRS) is to use <a href="https://en.wikipedia.org/wiki/Backtracking">“backtracking”</a>. The simplest backtracking algorithm is to:</p>
 
 <ul>
-  <li>Traverse the predications from the well-formed MRS tree, depth-first</li>
+  <li>Traverse the predications from the scope-resolved MRS, depth-first</li>
   <li>When an unassigned variable in a predication is encountered:
     <ol>
       <li>Assign it the first item in the world</li>
@@ -408,7 +408,7 @@ a large file
 
 <p>Let’s use the backtracking algorithm to solve a slightly more interesting example, “large file in folder”:</p>
 
-<p>[It is important to note that these are not real MRS or well-formed tree examples yet!  That will come soon.]</p>
+<p>[It is important to note that these are not real MRS or scope-resolved mrs examples yet!  That will come soon.]</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>formula: large(x), file(x), folder(y), in(x, y)
 
 world individuals:
@@ -545,11 +545,11 @@ scope(x, predication_list)                          │
 
 <p>At this point, it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using completely different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems, and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We’ll work through some of those and find optimizations for some of the most egregious problems.</p>
 
-<p>But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">“together”</a>.</p>
+<p>But, before we can solve a real scope-resolved MRS, we need to account for more of its features. First up is allowing the solver to represent things operating <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets">“together”</a>.</p>
 
 <p>The Internals section has a description of how to <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver">implement a simple backtracking solver</a>.</p>
 
-<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0010MRSSolver.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0010MRSSolver.md">edit</a>]</p>
 
         
       </section>

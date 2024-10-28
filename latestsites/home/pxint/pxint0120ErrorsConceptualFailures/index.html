@@ -359,7 +359,7 @@ def large_a_1(state, e_introduced, x_target):
 
 <p>In a world with no large files, it responds to: “A file is large” with: “A <em>thing</em> is not large”. This is because, in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0110ErrorsReportingAFailure">previous section</a>, we didn’t know how to describe the “domain” that <code class="language-plaintext highlighter-rouge">x</code> is restricted to. Remember that the <code class="language-plaintext highlighter-rouge">large_a_1</code> predication will be used for anything the user references as “large”, so it will need to be flexible about how it reports its failures.  <code class="language-plaintext highlighter-rouge">x</code> won’t always contain files.</p>
 
-<p>For example, here is a scope-resolved tree for “A file is large”:</p>
+<p>For example, here is a scope-resolved mrs for “A file is large”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ┌────── _file_n_of(x3,i8)
 _a_q(x3,RSTR,BODY)    
@@ -390,7 +390,7 @@ _a_q(x3,RSTR,BODY)
 
 <p>Thus: We know <em>where</em> the failed predication is in the execution order.</p>
 
-<p>So, in the scope-resolved tree for “a dog is large”:</p>
+<p>So, in the scope-resolved mrs for “a dog is large”:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ┌────── _dog_n_1(x3)
 _a_q(x3,RSTR,BODY)    

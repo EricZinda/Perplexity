@@ -53,7 +53,7 @@ The next section talks about how to extract these constraints from the tree itse
 ### Determining Constraints From the MRS Tree
 Numeric constraints can come from 3 places in an MRS: quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments that use the artificial `scope()` predication we invented in the previous section.
 
-Let's start with "two students lifted a table". Here's one MRS reading of it, along with one well-formed tree:
+Let's start with "two students lifted a table". Here's one MRS reading of it, along with one scope-resolved mrs:
 
 ```
 [ "two students lifted a table"
@@ -186,7 +186,7 @@ udef_q(x3,RSTR,BODY)
 Here's the full algorithm all in one place:
 
 > Phase 0: Setup
-> 1. Start with a well-formed MRS Tree
+> 1. Start with a scope-resolved MRS
 > 2. Determine the list of `x` variables in the tree and the order they will be evaluated in
 > 3. Determine the constraints placed on each `x` variable by predications that modify it
 > 4. Create a modified tree by:
@@ -232,7 +232,7 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
 ```
 
 #### Phase 0: Setup
-> - Start with a well-formed MRS Tree
+> - Start with a scope-resolved MRS
 > - Determine the list of `x` variables in the tree and the order they will be evaluated in
 > - Determine the constraints placed on each `x` variable by predications that modify it.
 
@@ -349,4 +349,4 @@ All the groups that succeed are solution groups and will be valid collective, di
 
 There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in [Appendix A](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations) since it is not necessary for understanding the concept) and global constraints from words like "the" (described in TBD).
 
-Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md)]{% endraw %}

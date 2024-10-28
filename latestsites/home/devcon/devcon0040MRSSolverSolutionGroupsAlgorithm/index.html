@@ -417,7 +417,7 @@ scoped formula: scope(x3, [student(x3), scope(x10, [table(y), lift(x3, x10)])])
 <h3 id="determining-constraints-from-the-mrs-tree">Determining Constraints From the MRS Tree</h3>
 <p>Numeric constraints can come from 3 places in an MRS: quantifiers, adjectives and the plurality property of a variable. Determining constraints will force us to finally start looking at full MRS documents as opposed to simplified MRS fragments that use the artificial <code class="language-plaintext highlighter-rouge">scope()</code> predication we invented in the previous section.</p>
 
-<p>Let’s start with “two students lifted a table”. Here’s one MRS reading of it, along with one well-formed tree:</p>
+<p>Let’s start with “two students lifted a table”. Here’s one MRS reading of it, along with one scope-resolved mrs:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ "two students lifted a table"
   TOP: h0
@@ -610,7 +610,7 @@ udef_q(x3,RSTR,BODY)
 <blockquote>
   <p>Phase 0: Setup</p>
   <ol>
-    <li>Start with a well-formed MRS Tree</li>
+    <li>Start with a scope-resolved MRS</li>
     <li>Determine the list of <code class="language-plaintext highlighter-rouge">x</code> variables in the tree and the order they will be evaluated in</li>
     <li>Determine the constraints placed on each <code class="language-plaintext highlighter-rouge">x</code> variable by predications that modify it</li>
     <li>Create a modified tree by:
@@ -675,7 +675,7 @@ Text Tree: udef_q(x3,_student_n_of(x3,i8),_a_q(x10,_table_n_1(x10),_lift_v_cause
 <h4 id="phase-0-setup">Phase 0: Setup</h4>
 <blockquote>
   <ul>
-    <li>Start with a well-formed MRS Tree</li>
+    <li>Start with a scope-resolved MRS</li>
     <li>Determine the list of <code class="language-plaintext highlighter-rouge">x</code> variables in the tree and the order they will be evaluated in</li>
     <li>Determine the constraints placed on each <code class="language-plaintext highlighter-rouge">x</code> variable by predications that modify it.</li>
   </ul>
@@ -855,7 +855,7 @@ Group 3:
 
 <p>There are some subtleties that need to be address with this algorithm. Namely: which of these solution groups to respond to the user with (described in <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Appendix A</a> since it is not necessary for understanding the concept) and global constraints from words like “the” (described in TBD).</p>
 
-<p>Last update: 2024-10-23 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md">edit</a>]</p>
 
         
       </section>

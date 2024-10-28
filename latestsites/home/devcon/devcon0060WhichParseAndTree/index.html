@@ -348,14 +348,14 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="determining-the-right-parse-and-tree">Determining the Right Parse and Tree</h2>
-<p>As discussed in the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS topic</a> and the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">Well-Formed Trees topic</a>, a single phrase like “Look under the table” produces <code class="language-plaintext highlighter-rouge">m</code> MRS documents, and each of those produces <code class="language-plaintext highlighter-rouge">n</code> well-formed trees, thus generating <code class="language-plaintext highlighter-rouge">m x n</code> potential interpretations of a phrase. How do you determine which one is the one the user <em>meant</em>?</p>
+<p>As discussed in the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS topic</a> and the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">Scope-Resolved Mrs topic</a>, a single phrase like “Look under the table” produces <code class="language-plaintext highlighter-rouge">m</code> MRS documents, and each of those produces <code class="language-plaintext highlighter-rouge">n</code> scope-resolved mrss, thus generating <code class="language-plaintext highlighter-rouge">m x n</code> potential interpretations of a phrase. How do you determine which one is the one the user <em>meant</em>?</p>
 
-<p>The short answer is that, just like when you are talking to a human, you never <em>really</em> know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: First, <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> uses a machine-learning-based algorithm to sort the MRS documents and returns the “most common” ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the well-formed trees. So, at best we have a partial ordering of the <code class="language-plaintext highlighter-rouge">m x n</code> trees in terms of “most commonly meant”.</p>
+<p>The short answer is that, just like when you are talking to a human, you never <em>really</em> know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: First, <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> uses a machine-learning-based algorithm to sort the MRS documents and returns the “most common” ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the scope-resolved mrss. So, at best we have a partial ordering of the <code class="language-plaintext highlighter-rouge">m x n</code> trees in terms of “most commonly meant”.</p>
 
 <p>With that in mind, a simple approach to choosing the “right” interpretation that works surprisingly well is:</p>
 
 <blockquote>
-  <p>Solve each well-formed tree against the world state in the provided partial ordering of MRS documents. Assume the first one that succeeds is what the user meant. If none succeed, return the first failure.</p>
+  <p>Solve each scope-resolved MRS against the world state in the provided partial ordering of MRS documents. Assume the first one that succeeds is what the user meant. If none succeed, return the first failure.</p>
 </blockquote>
 
 <p>This works for the same reason human interactions work: Most phrases are meant to convey information that <em>makes sense</em>. I.e. the phrase discusses things that actually exist, uses verbs that make sense with objects being discussed, etc. So, most phrases the user gives your system <em>should</em> have a solution given the current world state. Furthermore, humans have an intuitive understanding of the ambiguity of language and are forgiving of errors when they are understandable and logical failures. I.e. “I can see why you thought that, even though it wasn’t what I meant…”.</p>
@@ -372,7 +372,7 @@
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity">here</a>.</p>
 </blockquote>
 
-<p>Last update: 2023-05-14 by EricZinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0060WhichParseAndTree.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0060WhichParseAndTree.md">edit</a>]</p>
 
         
       </section>
