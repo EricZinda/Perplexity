@@ -7,7 +7,7 @@ All of the examples we've used so far have produced quantifiers in their MRS, an
 
 etc.
 
-This will almost always be the case because quantifiers are not application specific. As described in the [Solution Group Algorithm topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm), quantifers do two things, neither of which is usually application specific:
+This will almost always be the case because quantifiers are not usually application specific. As described in the [Solution Group Algorithm topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm), quantifers do two things, neither of which is usually application specific:
 - scope variables
 - constrain their variables to be a certain count
 
@@ -19,4 +19,4 @@ The same is true for determiners that count like "a few", "less than 3", "both",
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo080QuantifiersAndDeterminers.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo080QuantifiersAndDeterminers.md)]{% endraw %}

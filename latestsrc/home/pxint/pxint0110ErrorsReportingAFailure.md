@@ -2,7 +2,7 @@
 ## Reporting a Failure Naively
 In the [previous section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure) we updated our code to support reporting errors (via `ExecutionContext.report_error()`) and updated the `ExecutionContext.call()` method to record the index of our currently executing predication.  This allowed us to keep track of the "deepest" error.
 
-With that in place, we can now start reporting errors from predications. As outlined in the [predication contract](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract), "failure" is when the predication is not true for its arguments. So, let's add ode at the end of `large_a_1` to record an error when there is a failure. We'll call the new `report_error()` method and pass it what seems like the right error given the code:
+With that in place, we can now start reporting errors from predications. As outlined in the [predication contract](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract), "failure" is when the predication is not true for its arguments. So, let's add code at the end of `large_a_1` to record an error when there is a failure. We'll call the new `report_error()` method and pass it what seems like the right error given the code:
 
 ```
 @Predication(vocabulary, name="_large_a_1")
@@ -92,4 +92,4 @@ The [next section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0110ErrorsReportingAFailure.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0110ErrorsReportingAFailure.md)]{% endraw %}

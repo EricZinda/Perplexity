@@ -365,9 +365,9 @@
   <li>He arrives before/at 10am. -&gt; locates the arrival before/at a certain time</li>
 </ul>
 
-<p>More information is available in the <a href="https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_ImplicitLocatives/">ERG reference</a>.</p>
+<p>More information is available in the <a href="https://delph-in.github.io/docs/erg/ErgSemantics_ImplicitLocatives/">ERG reference</a>.</p>
 
-<p>In this topic, we’ll implement the <code class="language-plaintext highlighter-rouge">loc_nonsp</code> and <code class="language-plaintext highlighter-rouge">place_n</code> predications to make the phrase “Where am I?” work. As always, we’ll start by trying out the phrase, even though we know it won’t work yet, and using <code class="language-plaintext highlighter-rouge">/show</code> to examine the MRS to see what predications it generates for the phrase:</p>
+<p>In this topic, we’ll implement the <code class="language-plaintext highlighter-rouge">loc_nonsp</code> and <code class="language-plaintext highlighter-rouge">place_n</code> predications to make the phrase “Where am I?” work. As always, we’ll start by trying out the phrase, even though we know it won’t work yet, and using <code class="language-plaintext highlighter-rouge">/show</code> to examine the MRS to see what predications it generates:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? where am I?
 I don't know the words: where, I
@@ -397,7 +397,7 @@ which_q(x4,RSTR,BODY)               ┌────── pron(x3)
 </code></pre></div></div>
 
 <h3 id="place_nx"><code class="language-plaintext highlighter-rouge">place_n(x)</code></h3>
-<p>As in “Where am I?”, a predication that often appears with <code class="language-plaintext highlighter-rouge">loc_nonsp</code> is <code class="language-plaintext highlighter-rouge">place_n</code> when the location being referred to is inferred by the system to be a place.</p>
+<p>As in “Where am I?”, <code class="language-plaintext highlighter-rouge">place_n</code> often appears with <code class="language-plaintext highlighter-rouge">loc_nonsp</code> when the location being referred to is inferred by the ERG to be a place.</p>
 
 <p>What are the “places” in a file system? They are all the objects where something else can be located, some obvious ones:</p>
 <ul>
@@ -526,7 +526,7 @@ you is not in place
 (there are more)
 </code></pre></div></div>
 
-<p>Both “where am I?” and “where is a file/folder?” give an answer and then say, “(there are more)”. That is because the user asked for “a place” (singular) but most things will “be located” in more than one place. For example, the user is in both “/documents” and “/” (the root directory). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Combination Algorithm and Proper Responses topic</a>, we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.</p>
+<p>Both “where am I?” and “where is a file/folder?” give an answer and then say, “(there are more)”. That is because the user asked for “a place” (singular) but most things will “be located” in more than one place. For example, the user is in both “/documents” and “/” (the root directory). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations">Optimizing Solution Groups topic</a>, we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.</p>
 
 <p>Also note that “you” refers to “the computer” and we haven’t put it anywhere, that’s why the system responds with “you is not in place”. Again, we’ll fix the English on error messages soon.</p>
 
@@ -534,7 +534,7 @@ you is not in place
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md">edit</a>]</p>
 
         
       </section>

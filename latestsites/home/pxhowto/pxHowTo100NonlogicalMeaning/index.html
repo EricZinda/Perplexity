@@ -358,11 +358,11 @@
 ? which students are lifting the table
 </code></pre></div></div>
 
-<p>The system “solves” the MRS by finding variable assignments that make it <code class="language-plaintext highlighter-rouge">true</code> and then gives built-in answers like “that is true” or lists what was requested.</p>
+<p>The system <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">“solves” the MRS</a> by finding variable assignments that make it <code class="language-plaintext highlighter-rouge">true</code> and then gives built-in answers like “that is true” or lists what was requested.</p>
 
 <p>Next, we are going to walk through how to implement phrases that aren’t logical in that same way.  For example, imagine we want to implement a rudimentary help system for our file system example and we’d like users to be able to ask for help using phrases too. To find out what they can do, a user might ask, “Do you have commands?”.</p>
 
-<p>Here’s a quick overview of how: start by adding the notion of a “command” object into the system, creating one for each of the commands we have so far (“copy” and “go”) and implementing the new predications from the MRS, which are <code class="language-plaintext highlighter-rouge">_have_v_1</code> and <code class="language-plaintext highlighter-rouge">_command_n_1</code>, as you can see from the MRS:</p>
+<p>We’ll start by adding the notion of a “command” object into the system, creating one for each of the commands we have so far (“copy” and “go”) and implementing the new predications from the MRS, which are <code class="language-plaintext highlighter-rouge">_have_v_1</code> and <code class="language-plaintext highlighter-rouge">_command_n_1</code>:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[ "Do you have commands?"
   TOP: h0
@@ -392,7 +392,7 @@ go
 
 <p>You can almost hear the user say “Ugh! Dumb computer” after the first phrase.  A human would interpret that as “Tell me what commands you have, if you have them”.  This is known in linguistics as <a href="https://en.wikipedia.org/wiki/Pragmatics">“Pragmatics”</a>. The area of Pragmatics concerns the meaning of phrases that can’t be “logically” or “mechanically” interpreted since they require taking into account the context the phrase is uttered in and potentially taking some implied leaps to understand what is actually meant.</p>
 
-<p>Making “Do you have commands?” actually say something custom and not purely give a logical response requires customizing how Perplexity responds when it finds a Solution Group. That is where we’ll finish.</p>
+<p>Making “Do you have commands?” actually say something custom and not purely logical requires customizing how Perplexity responds when it finds a Solution Group. That is where we’ll finish.</p>
 
 <h1 id="logical-interpretation">Logical Interpretation</h1>
 
@@ -509,9 +509,9 @@ def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_vari
     yield state_list
 </code></pre></div></div>
 
-<p>First, instead of using “<em>have_v_1” as the name, we prefix the name with “solution_group</em>” and use “solution_group__have_v_1” as the name. This tells the system we are implementing a solution group handler.</p>
+<p>First, instead of using “_have_v_1” as the name, we prefix the name with “solution_group_” and use “solution_group__have_v_1” as the name. This tells the system we are implementing a solution group handler.</p>
 
-<p>It has the same number of arguments as the “have_v_1” function, but, because this is handling a solution <em>group</em>, the arguments contain multiple items instead of one: one item for each solution in the group.</p>
+<p>It has the same number of arguments as the “have_v_1” function, but, because this is handling a solution <em>group</em>, the arguments contain objects that return multiple items: one item for each solution in the group.</p>
 
 <p>Implementing a solution group handler allows you to inspect each solution group that Perplexity finds and write custom logic to invalidate it or respond differently than the system would.  Yielding a list of state objects from the solution group handler indicates that this list of state objects is a valid solution group.  If nothing is yielded, the incoming list of state objects is invalidated and Perplexity continues looking for alternative solution groups.</p>
 
@@ -526,7 +526,7 @@ def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_vari
     yield new_solution_group
 </code></pre></div></div>
 
-<p>Instead of yielding the original solution group, we now are only yielding the first solution … after modifying it to include a built-in operation called <code class="language-plaintext highlighter-rouge">RespondOperation</code>.  This is just like the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs"><code class="language-plaintext highlighter-rouge">DeleteOperation</code></a> we created in an earlier section, but this operation’s job is to print text for the user.  Putting a <code class="language-plaintext highlighter-rouge">RespondOperation</code> in any of the state objects we yield tells the system that we want to override the default output.</p>
+<p>Instead of yielding the original solution group, we now are only yielding the first solution, after modifying it to include a built-in operation called <code class="language-plaintext highlighter-rouge">RespondOperation</code>.  This is just like the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs"><code class="language-plaintext highlighter-rouge">DeleteOperation</code></a> we created in an earlier section, but this operation’s job is to print text for the user.  Putting a <code class="language-plaintext highlighter-rouge">RespondOperation</code> in any of the state objects we yield tells the system that we want to override the default output.</p>
 
 <p>So, now we get this:</p>
 
@@ -544,7 +544,7 @@ You can use the following commands: copy and go
 
 <p>Instead, we can use another Perplexity feature called a “Concept” to make it more efficient.  The idea is that, sometimes, instead of Perplexity assigning actual objects to variables, we’d like the “concept” of them (called a <a href="https://en.wikipedia.org/wiki/Referring_expression"><code class="language-plaintext highlighter-rouge">referring expression</code></a> in linguistics) to be assigned.  I.e. instead of assigning <code class="language-plaintext highlighter-rouge">x8 = FileCommand('copy')</code>, we’d like to have <code class="language-plaintext highlighter-rouge">x8 = {representation of whatever they said before it got resolved into an actual object}</code> so that we can look at what they said “conceptually” instead of dealing with the actual instances of objects that it generated. This allows the solution group handler to just see if they are were talking about “you” having “the concept of commands” and, if so, generate the custom text.  This would be much more efficient.</p>
 
-<p>To do this, we start adding an alternative <code class="language-plaintext highlighter-rouge">_command_n_1</code> predication since that is where the instances of commands get generated.  Perplexity allows adding more than one <em>interpretation</em> of a predication by creating more than one function and indicating that they use the same predication name. It treats them as <em>alternatives</em> and attempts to solve the MRS once using the first interpretation and then again using the next.</p>
+<p>To do this, we start by adding an alternative <code class="language-plaintext highlighter-rouge">_command_n_1</code> predication since that is where the instances of commands get generated.  Perplexity allows adding more than one <em>interpretation</em> of a predication by creating more than one function and indicating that they use the same predication name. It treats them as <em>alternatives</em> and attempts to solve the MRS once using the first interpretation and then again using the next.</p>
 
 <p>In the new interpretation, instead of yielding instances, we yield a <code class="language-plaintext highlighter-rouge">Concept("command")</code> object.  The <code class="language-plaintext highlighter-rouge">Concept</code> object in Perplexity literally does nothing except tell the system it is an opaque “Concept” object.  Here are both interpretations:</p>
 
@@ -721,7 +721,7 @@ You can use the following commands: copy and go
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md">edit</a>]</p>
 
         
       </section>

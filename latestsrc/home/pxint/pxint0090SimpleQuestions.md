@@ -215,8 +215,8 @@ def Example8():
 
 Note that we have a subtle bug in our implementation of `default_quantifier`: we are not yet paying attention to `NUM: sg`.  If there were two large files, they would both get returned in this implementation. Really, they should return a failure since the premise of "which file" is wrong (since there are multiple of them). We'll address that once we get to the section on how to handle plurals.
 
-Next up is the "command" sentence force, which is a bit trickier.
+Next up is the ["command" sentence force](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0100SimpleCommands), which is a bit trickier.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0090SimpleQuestions.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0090SimpleQuestions.md)]{% endraw %}

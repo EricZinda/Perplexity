@@ -348,7 +348,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="responding-to-simple-propositions">Responding to Simple Propositions</h2>
-<p>The examples we’ve seen so far respond by printing out all the solutions that were found. It is time to start responding more like a human would. Here we’ll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through the rest.</p>
+<p>The examples we’ve seen so far respond by printing out all the solutions that were found. It is time to start responding more like a human would. Here we’ll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through how to do the same for questions and commands.</p>
 
 <p>“Propositions” are sentences that declare something to be true like, “A file is very large”. If true, a human would expect something like “yep, you are right” or “correct!” or “yes, this is true” as a response (error cases will be handled later). As described in the <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0070SentenceForce">Sentence Types section</a>, the English Resource Grammar helps us identify the type of phrase we received by providing a property called <code class="language-plaintext highlighter-rouge">SF</code> or “Sentence Force”. A phrase is a proposition if the <code class="language-plaintext highlighter-rouge">SF</code> property of its index variable is <code class="language-plaintext highlighter-rouge">prop</code>.</p>
 
@@ -363,9 +363,9 @@
   HCONS: &lt; h0 qeq h1 h5 qeq h7 &gt; ]
 </code></pre></div></div>
 
-<p>In order to start responding to user phrases properly, we need to give the solver a dictionary of variable properties in addition to the predications.  WIn fact, we can make it easier to read using the Python <code class="language-plaintext highlighter-rouge">json</code> format. The <code class="language-plaintext highlighter-rouge">json</code> format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree.</p>
+<p>In order to start responding to user phrases properly, we need to give the solver a dictionary of variable properties in addition to the predications. In fact, we can make it easier to read using the Python <code class="language-plaintext highlighter-rouge">JSON</code> format. The <code class="language-plaintext highlighter-rouge">JSON</code> format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree.</p>
 
-<p>In a <code class="language-plaintext highlighter-rouge">json</code> declaration:</p>
+<p>In a <code class="language-plaintext highlighter-rouge">JSON</code> declaration:</p>
 <ul>
   <li>Dictionaries are surrounded by <code class="language-plaintext highlighter-rouge">{}</code> with key/value pairs represented by <code class="language-plaintext highlighter-rouge">"key":"value"</code></li>
   <li>Lists are surrounded by <code class="language-plaintext highlighter-rouge">[]</code>, with items in the list separated by <code class="language-plaintext highlighter-rouge">,</code></li>
@@ -469,7 +469,7 @@ Yes, that is true.
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0080SimplePropositions.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0080SimplePropositions.md">edit</a>]</p>
 
         
       </section>

@@ -12,9 +12,9 @@ It *would not* show up in phrases that more specifically locate something, such 
 - The stick is on the table. -> locates the stick in a place on the location
 - He arrives before/at 10am. -> locates the arrival before/at a certain time
 
-More information is available in the [ERG reference](https://blog.inductorsoftware.com/docsproto/erg/ErgSemantics_ImplicitLocatives/).
+More information is available in the [ERG reference](https://delph-in.github.io/docs/erg/ErgSemantics_ImplicitLocatives/).
 
-In this topic, we'll implement the `loc_nonsp` and `place_n` predications to make the phrase "Where am I?" work. As always, we'll start by trying out the phrase, even though we know it won't work yet, and using `/show` to examine the MRS to see what predications it generates for the phrase:
+In this topic, we'll implement the `loc_nonsp` and `place_n` predications to make the phrase "Where am I?" work. As always, we'll start by trying out the phrase, even though we know it won't work yet, and using `/show` to examine the MRS to see what predications it generates:
 
 ```
 ? where am I?
@@ -45,7 +45,7 @@ which_q(x4,RSTR,BODY)               ┌────── pron(x3)
 ```
 
 ### `place_n(x)`
-As in "Where am I?", a predication that often appears with `loc_nonsp` is `place_n` when the location being referred to is inferred by the system to be a place.
+As in "Where am I?", `place_n` often appears with `loc_nonsp` when the location being referred to is inferred by the ERG to be a place.
 
 What are the "places" in a file system? They are all the objects where something else can be located, some obvious ones:
 - `file`: text can be located in a file, "where is the text 'summary of costs'?"
@@ -172,10 +172,10 @@ you is not in place
 (there are more)
 ```
 
-Both "where am I?" and "where is a file/folder?" give an answer and then say, "(there are more)". That is because the user asked for "a place" (singular) but most things will "be located" in more than one place. For example, the user is in both "/documents" and "/" (the root directory). As described in the [Combination Algorithm and Proper Responses topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations), we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.
+Both "where am I?" and "where is a file/folder?" give an answer and then say, "(there are more)". That is because the user asked for "a place" (singular) but most things will "be located" in more than one place. For example, the user is in both "/documents" and "/" (the root directory). As described in the [Optimizing Solution Groups topic](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0050MRSSolverSolutionCombinations), we let the user know if they there is more than one thing if they ask for a singular answer, just to clarify.
 
 Also note that "you" refers to "the computer" and we haven't put it anywhere, that's why the system responds with "you is not in place". Again, we'll fix the English on error messages soon.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo085Place.md)]{% endraw %}
