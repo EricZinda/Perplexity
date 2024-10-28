@@ -1,5 +1,5 @@
 ## Responding to Simple Propositions
-The examples we've seen so far respond by printing out all the solutions that were found. It is time to start responding more like a human would. Here we'll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through the rest.
+The examples we've seen so far respond by printing out all the solutions that were found. It is time to start responding more like a human would. Here we'll walk through how to implement a better response to one type of phrase: the proposition. The next sections will walk through how to do the same for questions and commands.
 
 "Propositions" are sentences that declare something to be true like, "A file is very large". If true, a human would expect something like "yep, you are right" or "correct!" or "yes, this is true" as a response (error cases will be [handled later]()). As described in the [Sentence Types section](../devcon/devcon0070SentenceForce), the English Resource Grammar helps us identify the type of phrase we received by providing a property called `SF` or "Sentence Force". A phrase is a proposition if the `SF` property of its index variable is `prop`.
 
@@ -15,9 +15,9 @@ Below is the MRS for "A file is large". `e2` is the `INDEX` of the MRS, which re
   HCONS: < h0 qeq h1 h5 qeq h7 > ]
 ~~~
 
-In order to start responding to user phrases properly, we need to give the solver a dictionary of variable properties in addition to the predications.  WIn fact, we can make it easier to read using the Python `json` format. The `json` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
+In order to start responding to user phrases properly, we need to give the solver a dictionary of variable properties in addition to the predications. In fact, we can make it easier to read using the Python `JSON` format. The `JSON` format is basically a way of building up an object out of base types (strings, integers, etc) and lists and dictionaries, in a big tree. 
 
-In a `json` declaration:
+In a `JSON` declaration:
 - Dictionaries are surrounded by `{}` with key/value pairs represented by `"key":"value"`
 - Lists are surrounded by `[]`, with items in the list separated by `,`
 - Strings are surrounded by `""`
