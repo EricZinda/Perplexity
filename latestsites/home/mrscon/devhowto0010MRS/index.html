@@ -352,7 +352,7 @@
   <p>This section is designed to give application developers an <em>overview</em> of the Minimal Recursion Semantics format which is the primary artifact used by DELPH-IN to represent the meaning of a phrase. For a deeper dive into MRS, or one that has a more academic or linguistic approach, explore <a href="https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf">Minimal Recursion Semantics: An Introduction</a>.</p>
 </blockquote>
 
-<p>The DELPH-IN <a href="https://delph-in.github.io/docs/erg/ErgTop/">English Resource Grammar (ERG)</a> converts an English phrase into a data structure called an <a href="https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf">“Minimal Recursion Semantics Formalism” (MRS)</a> which is a technical representation of human language. The <a href="http://sweaglesw.org/linguistics/ace/">ACE processor</a>, among other processors, processes the grammar and the phrase to produce the MRS formalism and represent it in one of several formats, such as <a href="https://delph-in.github.io/docs/tools/MrsRFC/">Simple MRS</a>. Processors can be used with any of the <a href="https://delph-in.github.io/docs/grammars/GrammarsOverview/">other DELPH-IN grammars</a> to convert other natural languages into the MRS format. While the examples below use English, the concepts apply across the DELPH-IN grammars.</p>
+<p>The DELPH-IN <a href="https://delph-in.github.io/docs/erg/ErgTop/">English Resource Grammar (ERG)</a> converts an English phrase into a data structure called an <a href="https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf">“Minimal Recursion Semantics Formalism” (MRS)</a> which is a technical representation of human language. The <a href="http://sweaglesw.org/linguistics/ace/">ACE processor</a>, among other processors, processes the grammar and the phrase to produce the MRS formalism and represent it in one of several formats, such as <a href="https://delph-in.github.io/docs/tools/MrsRFC/">Simple MRS</a>. Processors can be used with any of the <a href="https://delph-in.github.io/docs/grammars/GrammarsOverview/">other DELPH-IN grammars</a> to convert other natural languages into the MRS formalism. While the examples below use English, the concepts apply across the DELPH-IN grammars.</p>
 
 <p>Because language is ambiguous, most phrases parse into more than one MRS document, each representing a different interpretation of the phrase. Each MRS document encodes one high-level meaning of the phrase into a list of predicate-logic-like predicates (called <em>predications</em>).</p>
 
@@ -398,7 +398,7 @@ pronoun_q(x3,RSTR,BODY)            ┌────── _table_n_1(x9)
                                                  └ _look_v_1(e2,x3)
 </code></pre></div></div>
 
-<p>The rest of this section will give you a base understanding of the MRS format so that we can explore how to build these well-formed trees in a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">later section</a> and ultimately write software that derives the speaker’s intended meaning from them.  Deriving their intended meaning is the topic of this entire tutorial.</p>
+<p>The rest of this section will give you a base understanding of the MRS formalism so that we can explore how to build these well-formed trees in a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">later section</a> and ultimately write software that derives the speaker’s intended meaning from them.  Deriving their intended meaning is the topic of this entire tutorial.</p>
 
 <h2 id="underspecification">Underspecification</h2>
 <p>A DELPH-IN parser like <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> will usually generate more than one MRS document representing the various high-level interpretations of a phrase. Each one contains a <em>list</em> of predicate-logic-like predications and not a <em>tree</em> like you’ll see in many natural language systems.  That’s because it is <em>underspecified</em>.  Even though the parser has already done one level of interpretation on the phrase, there are still (usually) multiple ways to interpret <em>that</em>.</p>
@@ -509,7 +509,7 @@ So, if an MRS has two predications like this:</p>
   <li><code class="language-plaintext highlighter-rouge">_table_n_1</code> shares <code class="language-plaintext highlighter-rouge">x9</code> in its <code class="language-plaintext highlighter-rouge">ARG0</code> and so both predications are restricting the same variable. This means that, ultimately, <code class="language-plaintext highlighter-rouge">x9</code> should contain only “large tables”</li>
 </ul>
 
-<p>Thinking of MRS variables as variables in a math equation can help: The MRS is effectively defining a formula with variables. If you pick variable values such that the MRS is true for a given world, then you have understood the meaning of the MRS in that world.</p>
+<p>Thinking of MRS variables as variables in a math equation can help: The MRS is effectively defining a formula with variables. One way to use the formula is to find the set of all variable values that make the MRS true in a given world. Those values, combined with the predications they are used in, provide a valuable tool for getting at the meaning of the original phrase.</p>
 
 <p>Of all the arguments, <code class="language-plaintext highlighter-rouge">ARG0</code> is special.  It holds a variable that “represents” the predication, sometimes called the “characteristic” or “distinguished” variable, but most often the “instrinsic variable”.  If you read the <a href="https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf">Minimal Recursion Semantics: An Introduction</a> documentation, you’ll see the term “introduced” is used to describe the intrinsic variable.  A predicate is described as “introducing” its “intrinsic variable” (which is always <code class="language-plaintext highlighter-rouge">ARG0</code>). Sometimes phrases like “the variable <em>introduced by</em> predicate X…” are used.  This will become important later, mostly when we talk about <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo050EventPredications">events</a> or about how to <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0120ErrorsConceptualFailures">convert predications back into a phrase</a>. For now, it is enough to understand that <code class="language-plaintext highlighter-rouge">ARG0</code> <em>represents</em> the predication in some special ways.</p>
 
@@ -760,7 +760,7 @@ _the_q(x3,RSTR,BODY)
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0010MRS.md">edit</a>]</p>
 
         
       </section>

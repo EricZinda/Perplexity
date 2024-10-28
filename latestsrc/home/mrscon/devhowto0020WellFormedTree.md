@@ -1,5 +1,5 @@
 {% raw %}## Building Well-Formed MRS Trees
-> This section is designed to help application developers understand how to build well-formed trees from MRS documents. To understand this section, first make sure you have a [basic understanding of the MRS format](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) or, for a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).  
+> This section is designed to help application developers understand how to build well-formed trees from MRS documents. To understand this section, first make sure you have a [basic understanding of the MRS formalism](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS) or, for a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).  
 
 Let's use the sentence "every book is in a cave" as an example. If the phrase is parsed with [the ACE parser](http://sweaglesw.org/linguistics/ace/), you get an MRS document like this:
 
@@ -272,4 +272,4 @@ def TryAlternativeHoleAssignments(allHolesDict, nodeRemainingHolesListOrig, node
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/mrscon/devhowto0020WellFormedTree.md)]{% endraw %}
