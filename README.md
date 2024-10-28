@@ -10,7 +10,7 @@ It has a [tutorial](https://blog.inductorsoftware.com/Perplexity/) that explains
 To install and run the engine and examples, follow the [installation instructions](https://blog.inductorsoftware.com/Perplexity/home/pxHowTo/pxHowTo012Install/).
 
 ## More Details
-So far, Perplexity has been tested by implementing 5 games, which have been tried by users over 1000 times at yearly gaming competitions (perplexitygame.com), and by implementing a [very simple interactive file system](https://github.com/EricZinda/Perplexity/tree/3b0b65031b7f9396fa940bca0862749fdd1fc699/samples/file_system_example). It is by no means done, but I believe it now represents a good example for showing potential developers what I believe is a novel approach to using DELPH-IN in their applications.
+So far, Perplexity has been tested by implementing 5 games, which have been tried by users over 1000 times at yearly gaming competitions (https://perplexitygame.com), and by implementing a [very simple interactive file system](https://github.com/EricZinda/Perplexity/tree/3b0b65031b7f9396fa940bca0862749fdd1fc699/samples/file_system_example). It is by no means done, but I believe it now represents a good example for showing potential developers what I believe is a novel approach to using DELPH-IN in their applications.
 
 There is documentation designed to teach potential *developers* that are interested in DELPH-IN:
 - What [MRS](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS/) is and how to construct [well-formed MRS](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree/) 
