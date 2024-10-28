@@ -1,7 +1,7 @@
 ## Solving an MRS
-> It is important to understand [what MRS is](../mrscon/devhowto0010MRS) and what [a well-formed MRS tree is](../mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
+> It is important to understand [what MRS is](../mrscon/devhowto0010MRS) and what [a scope-resolved MRS is](../mrscon/devhowto0020WellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
-A [well-formed MRS tree](../mrscon/devhowto0020WellFormedTree) can be thought of as an *equation* that is `true` or `false` depending on the values of its variables. Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are `true` when their arguments are set to values that *are* or *mean* what the predication means. 
+A [scope-resolved MRS](../mrscon/devhowto0020WellFormedTree) can be thought of as an *equation* that is `true` or `false` depending on the values of its variables. Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. They are `true` when their arguments are set to values that *are* or *mean* what the predication means. 
 
 So:
 
@@ -14,7 +14,7 @@ How `a cat` or `the brown table` are actually *represented* doesn't matter as lo
 
 A group of multiple predications separated by commas means they are "in conjunction", which means the commas should be treated as `and`. So,`large(x), file(x)` will only be `true` if `x` is set to values that make all the predications `true`. In this example, `x` must be set to something that is `a large file`. Again, `x` could be `a large yellow file` or `a large file of paperwork`, but each predication just tests for some property of `x` and is `true` as long as that property is `true`, regardless of its other properties.
 
-*Solving* a well-formed tree means finding values for the variables that make all the predications `true`.
+*Solving* a scope-resolved mrs means finding values for the variables that make all the predications `true`.
 
 Here's a simple example. Let's solve `large(x), file(x)` in a world with 3 objects in it:
 ~~~
@@ -34,7 +34,7 @@ We can look at solving an MRS as a [constraint satisfaction problem](https://en.
 
 One simple approach to solving constraint satisfaction problems (like finding the solutions to an MRS) is to use ["backtracking"](https://en.wikipedia.org/wiki/Backtracking). The simplest backtracking algorithm is to:
 
-- Traverse the predications from the well-formed MRS tree, depth-first
+- Traverse the predications from the scope-resolved MRS, depth-first
 - When an unassigned variable in a predication is encountered: 
   1) Assign it the first item in the world
   2) Mark it as a `backtrack point`
@@ -46,7 +46,7 @@ This will try all items in the world, in all variables, until it finds all solut
 
 Let's use the backtracking algorithm to solve a slightly more interesting example, "large file in folder":
 
-[It is important to note that these are not real MRS or well-formed tree examples yet!  That will come soon.]
+[It is important to note that these are not real MRS or scope-resolved mrs examples yet!  That will come soon.]
 ~~~
 formula: large(x), file(x), folder(y), in(x, y)
 
@@ -132,6 +132,6 @@ It works because we are effectively trying all values in all variables. But, it 
 
 At this point, it should be noted that there are other algorithms for solving constraint satisfaction problems. Furthermore, the MRS tree can sometimes be transformed into other forms, such as a predicate logic formula, and turned into a different kind of problem which can be solved using completely different approaches. This tutorial will be using the backtracking algorithm because it is simple, efficient enough for many problems, and has the nice property that it can handle all MRS formulas. It has the downside that it can be very inefficient in some cases. We'll work through some of those and find optimizations for some of the most egregious problems.
 
-But, before we can solve a real well-formed MRS tree, we need to account for more of its features. First up is allowing the solver to represent things operating ["together"](devcon0020MRSSolverSets).
+But, before we can solve a real scope-resolved MRS, we need to account for more of its features. First up is allowing the solver to represent things operating ["together"](devcon0020MRSSolverSets).
 
 The Internals section has a description of how to [implement a simple backtracking solver](../pxint/pxint0040BuildSolver).

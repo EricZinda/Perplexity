@@ -1,7 +1,7 @@
 # Developer Predication Tutorial Overview
 The [Developer How-To section](../devhowto/devhowtoOverview) is a tutorial that introduces developers to the DELPH-IN technologies by building a Python framework called ["Perplexity"](https://github.com/EricZinda/Perplexity) that evaluates DELPH-IN predications written in Python. In this section, we will show how to *use it* by implementing the vocabulary for a file system using the Perplexity framework. When finished, we'll have a working interactive natural language interface that allows users to browse their file system.
 
-This section assumes a working knowledge of [The Minimal Recursion Semantics (MRS) Format](../devhowto/devhowtoMRS) and [Building Well-Formed MRS Trees](../devhowto/devhowtoWellFormedTree) as well as a [basic understanding of Python](../devhowto/devhowtoPythonBasics/). Having read through the [Developer Tutorial](../devhowto/devhowtoOverview/) would also be very helpful, but shouldn't be required. We'll link to the relevant sections as we discuss them.
+This section assumes a working knowledge of [The Minimal Recursion Semantics (MRS) Format](../devhowto/devhowtoMRS) and [Building Scope-Resolved MRS](../devhowto/devhowtoWellFormedTree) as well as a [basic understanding of Python](../devhowto/devhowtoPythonBasics/). Having read through the [Developer Tutorial](../devhowto/devhowtoOverview/) would also be very helpful, but shouldn't be required. We'll link to the relevant sections as we discuss them.
  
 Let's start with a review of the Perplexity framework. 
 

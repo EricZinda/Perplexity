@@ -42,7 +42,7 @@ mrs["Variables"] = {"x3": {},
                     "i1": {},
                     "e2": {"SF": "prop"}}
 
-# Set the "RELS" key to the scope-resolved MRS tree
+# Set the "RELS" key to the scope-resolved MRS predications
 mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
                                           TreePredication(1, "_file_n_of", ["x3", "i1"]),
                                           TreePredication(2, "_large_a_1", ["e2", "x3"])])
@@ -105,7 +105,7 @@ def Example7():
                         "i1": {},
                         "e2": {"SF": "prop"}}
 
-    # Set the "RELS" key to the scope-resolved MRS tree
+    # Set the "RELS" key to the scope-resolved MRS predication tree
     mrs["RELS"] = TreePredication(0, "_a_q", ["x3",
                                               TreePredication(1, "_file_n_of", ["x3", "i1"]),
                                               TreePredication(2, "_large_a_1", ["e2", "x3"])])

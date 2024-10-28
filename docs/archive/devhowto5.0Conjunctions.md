@@ -1,5 +1,5 @@
 #### Conjuctions of Predications
-There are two ways to group predications together in an MRS: as a "conjunction" (i.e. a logical "and") or by using ["scopal arguments"](devhowto0010MRS#h-handle-variables-aka-scopal-arguments). Scopal arguments allow passing *a predication* as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a [well-formed tree](devhowtoWellFormedTree). Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.
+There are two ways to group predications together in an MRS: as a "conjunction" (i.e. a logical "and") or by using ["scopal arguments"](devhowto0010MRS#h-handle-variables-aka-scopal-arguments). Scopal arguments allow passing *a predication* as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a [scope-resolved mrs](devhowtoWellFormedTree). Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.
 
 To handle a logical "and" or "conjunction" of predications, we'll perform a depth-first search of the answers from each predication, evaluated in order. This means: take the variables set by the first predication, pass them to the second predication, and collect the successful result. Once you've iterated through all of them, you have the set of things that are true for all of the predications in the conjunction for that world.
 
@@ -55,7 +55,7 @@ def Call(vocabulary, state, term):
 
 It is worth making sure you understand how this function works since it is the core of our evaluator. 
 
-A scope-resolved MRS is a *tree*, so to solve it, we do a single call to `Call()` and pass the whole tree as `term`. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. "scopal arguments"). This builds a tree and the predications with scopal arguments are responsible for solving the scopal arguments. How this all works is [described in the next topic](devhowtoScopalArguments).
+A scope-resolved MRS has a *tree* of predications, so to solve it, we do a single call to `Call()` and pass the whole tree as `term`. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. "scopal arguments"). This builds a tree and the predications with scopal arguments are responsible for solving the scopal arguments. How this all works is [described in the next topic](devhowtoScopalArguments).
 
 To finish this up, let's implement the predications needed to make the example run and run it:
 
@@ -106,6 +106,6 @@ def Example3():
 # File(name="file2.txt", size=2000000)
 ~~~
 
-Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](devhowtoScopalArguments), we'll be able to handle full well-formed trees.
+Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](devhowtoScopalArguments), we'll be able to handle full scope-resolved mrss.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity).

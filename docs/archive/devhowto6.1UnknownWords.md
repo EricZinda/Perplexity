@@ -56,7 +56,7 @@ def a_q(state, x_variable, h_rstr, h_body):
         report_error(["doesntExist", ["AtPredication", h_body, x_variable]], force=True)
 ~~~
 
-A better approach all around is to add an earlier stage to our processing pipeline: Before we bother to [build a well-formed tree](devhowtoWellFormedTree) (because it could take some time), check and see if we understand all the terms. If not, building the tree won't help anyway.  In addition, this gives us a chance to do some swapping out of terms for synonyms if we so choose.
+A better approach all around is to add an earlier stage to our processing pipeline: Before we bother to [build a scope-resolved mrs](devhowtoWellFormedTree) (because it could take some time), check and see if we understand all the terms. If not, building the tree won't help anyway.  In addition, this gives us a chance to do some swapping out of terms for synonyms if we so choose.
 
 So, first let's build a function that goes through all the predications in an MRS and returns any that are not known by the system:
 

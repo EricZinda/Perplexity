@@ -5,9 +5,9 @@ The DELPH-IN [English Resource Grammar (ERG)](https://delph-in.github.io/docs/er
 
 Because language is ambiguous, most phrases parse into more than one MRS document, each representing a different interpretation of the phrase. Each MRS document encodes one high-level meaning of the phrase into a list of predicate-logic-like predicates (called *predications*).
 
-Each MRS document *also* has multiple interpretations. Using constraints that are included as part of the MRS, a set of trees (called *well-formed trees*) can be built from the flat list of predications in a given MRS.  These well-formed trees define all the alternative meanings of that particular MRS.
+Each MRS document *also* has multiple interpretations. Using constraints that are included as part of the MRS, a set of trees (called *scope-resolved mrss*) can be built from the flat list of predications in a given MRS.  These scope-resolved mrss define all the alternative meanings of that particular MRS.
 
-So, a phrase generates `n` MRS documents, each of those generates `m` well-formed trees, which results in `n x m` possible interpretations of a single phrase. One of the challenges of building a system that uses natural language is to determine which of the many possible meanings was intended by the user (one approach to doing this will be discussed in the conceptual topic: [Determining the Right Parse and Tree](../devcon/devcon0060WhichParseAndTree)).
+So, a phrase generates `n` MRS documents, each of those generates `m` scope-resolved mrss, which results in `n x m` possible interpretations of a single phrase. One of the challenges of building a system that uses natural language is to determine which of the many possible meanings was intended by the user (one approach to doing this will be discussed in the conceptual topic: [Determining the Right Parse and Tree](../devcon/devcon0060WhichParseAndTree)).
 
 For example, the phrase: "Look under the table." produces 12 different MRS documents (also called "parses" or "interpretations"). These include interpretations that mean: 
 
@@ -31,7 +31,7 @@ RELS: <
 HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 ~~~
 
-Using the constraints described in the `HCONS` section (which we will [describe later](#constraints)), there are two well-formed trees that can be built from that MRS, which describe the two alternatives that *it* could mean:
+Using the constraints described in the `HCONS` section (which we will [describe later](#constraints)), there are two scope-resolved mrss that can be built from that MRS, which describe the two alternatives that *it* could mean:
 
 ~~~
             ┌────── _table_n_1(x9)
@@ -47,12 +47,12 @@ pronoun_q(x3,RSTR,BODY)            ┌────── _table_n_1(x9)
                                                  └ _look_v_1(e2,x3)
 ~~~
 
-The rest of this section will give you a base understanding of the MRS formalism so that we can explore how to build these well-formed trees in a [later section](devhowto0020WellFormedTree) and ultimately write software that derives the speaker's intended meaning from them.  Deriving their intended meaning is the topic of this entire tutorial.
+The rest of this section will give you a base understanding of the MRS formalism so that we can explore how to build these scope-resolved mrss in a [later section](devhowto0020WellFormedTree) and ultimately write software that derives the speaker's intended meaning from them.  Deriving their intended meaning is the topic of this entire tutorial.
 
 ## Underspecification
 A DELPH-IN parser like [ACE](http://sweaglesw.org/linguistics/ace/) will usually generate more than one MRS document representing the various high-level interpretations of a phrase. Each one contains a *list* of predicate-logic-like predications and not a *tree* like you'll see in many natural language systems.  That's because it is *underspecified*.  Even though the parser has already done one level of interpretation on the phrase, there are still (usually) multiple ways to interpret *that*.  
 
-The final interpretations of a phrase are called "well-formed MRS trees". The MRS document doesn't pick a primary interpretation by choosing a specific tree, it provides the rules for building *all of them*. That's what "underspecified" means. `Every book is in a cave` could mean "all books are in the same cave" or "every book is in a (possibly different) cave". Given just the phrase, it isn't clear which the speaker intended, so the MRS provides all the alternatives. Context (which the MRS doesn't have) usually helps to decide which is meant.
+The final interpretations of a phrase are called "scope-resolved MRS". The MRS document doesn't pick a primary interpretation by choosing a specific tree, it provides the rules for building *all of them*. That's what "underspecified" means. `Every book is in a cave` could mean "all books are in the same cave" or "every book is in a (possibly different) cave". Given just the phrase, it isn't clear which the speaker intended, so the MRS provides all the alternatives. Context (which the MRS doesn't have) usually helps to decide which is meant.
 
 This section will go through the entire MRS document in detail, but as a navigational guide to the format itself: The list of predicate-logic-like predications in provided in the `RELS` section of the MRS document:
 ~~~
@@ -70,7 +70,7 @@ RELS: <
 ...
 ~~~
 
-... and the `HCONS` section lists the constraints on putting the predications together to create a well-formed tree which represents a single meaning:
+... and the `HCONS` section lists the constraints on putting the predications together to create a scope-resolved mrs which represents a single meaning:
 
 ~~~
 ... 
@@ -124,7 +124,7 @@ RELS: < [ _the_q LBL: h10 ARG0: x9 [ x PERS: 3 NUM: sg IND: + ] RSTR: h11 BODY: 
 HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 ~~~
 
-These labels are used to turn the flat list of predications into the set of well-formed trees that represent its various meanings. The section below on [scopal arguments](#h-handle-variables-aka-scopal-arguments) gives an overview of how this works. The [Well-Formed Trees topic](devhowto0020WellFormedTree) describes it in detail.
+These labels are used to turn the flat list of predications into the set of scope-resolved mrss that represent its various meanings. The section below on [scopal arguments](#h-handle-variables-aka-scopal-arguments) gives an overview of how this works. The [Scope-Resolved Mrss topic](devhowto0020WellFormedTree) describes it in detail.
 
 ### Predication Names
 The name of a predication, for example, `_table_n_1`, encodes important information about it:
@@ -195,7 +195,7 @@ _the_q(x3,RSTR,BODY)
 
 Think of this process like a lambda function being passed to a function in a programming language like C++ or C#.  The `the_q` predication itself will be responsible for "doing something" with the two branches it is passed.  What, exactly, is specific to the predication. We go into this more in the section on  [solving scopal arguments](../pxint/pxint0060ScopalArguments). For now, think about scopal arguments as places to put other predications which are acting like programming language "lambda functions".
 
-Because the MRS is [underspecified](#underspecification), it usually doesn't directly list which predication to put in which scopal argument. You figure that out by the process of [creating a well-formed tree](devhowto0020WellFormedTree).  However, if a predication has a `LBL` that is the same handle as a scopal argument, then that part of the tree *has* been specified and is "locked in place" (i.e. there is no hole there for something else to be).
+Because the MRS is [underspecified](#underspecification), it usually doesn't directly list which predication to put in which scopal argument. You figure that out by the process of [creating a scope-resolved mrs](devhowto0020WellFormedTree).  However, if a predication has a `LBL` that is the same handle as a scopal argument, then that part of the tree *has* been specified and is "locked in place" (i.e. there is no hole there for something else to be).
 
 
 #### X (Instance) Variables
@@ -224,7 +224,7 @@ HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 
 The other variables in the MRS are there to help build up the tree (`h` variables, described previously) or allow predications to refer to each other (`e` variables, described next).  `x` variables are the most concrete type of variable that maps most obviously to what is being said in the phrase.
 
-Note that instance variables are always *scoped* by a quantifier when a well-formed tree is built. Quantifiers are described later, but for now think of them as a predication named with `_q` and with the argument structure: (`x`, `h`, `h`). The first argument of the quantifier, `x`, is the variable being "scoped", and the two branches in its scopal arguments are the only branches allowed to use that particular `x` variable.  That's what "scoped by a quantifier" means. This is important to know when creating [well-formed trees](devhowto0020WellFormedTree) but also helps explain some of the uses of [other variable types](#other-variables-types-i-u-p) later in this section.
+Note that instance variables are always *scoped* by a quantifier when a scope-resolved mrs is built. Quantifiers are described later, but for now think of them as a predication named with `_q` and with the argument structure: (`x`, `h`, `h`). The first argument of the quantifier, `x`, is the variable being "scoped", and the two branches in its scopal arguments are the only branches allowed to use that particular `x` variable.  That's what "scoped by a quantifier" means. This is important to know when creating [scope-resolved mrss](devhowto0020WellFormedTree) but also helps explain some of the uses of [other variable types](#other-variables-types-i-u-p) later in this section.
 
 
 #### E (Event) Variables
@@ -361,7 +361,7 @@ Note that, unlike non-quantifier predications, the first (`ARG0`) argument of a 
 
 
 ## Constraints
-The `HCONS` section of the MRS is used when building a well-formed tree. It puts *CONS*traints on where the *H*andles for predications can be validly placed and still be a legal interpretation of the phrase. The only constraints used in "modern" MRS are `qeq` constraints so that's all you'll see in this section.  
+The `HCONS` section of the MRS is used when building a scope-resolved mrs. It puts *CONS*traints on where the *H*andles for predications can be validly placed and still be a legal interpretation of the phrase. The only constraints used in "modern" MRS are `qeq` constraints so that's all you'll see in this section.  
 
 A `qeq` constraint always relates an `h` argument of one predication, called a "hole", to the handle (`LBL`) of another predication. It states that the handle must be a direct or eventual child of the hole in the tree and, if not direct, the only things between the hole and the handle can be quantifiers.  Said a different way: 
 
@@ -409,6 +409,6 @@ _the_q(x3,RSTR,BODY)
 
 More information on `INDEX` is described in the section on [dealing with different types of phrases](pxint/pxint0080SimplePropositions/).
 
-The [next topic](devhowto0020WellFormedTree) walks through the rules of creating "well-formed MRS trees", and is the last big chunk of conceptual background needed before we start building the system.
+The [next topic](devhowto0020WellFormedTree) walks through the rules of creating "scope-resolved MRS", and is the last big chunk of conceptual background needed before we start building the system.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)

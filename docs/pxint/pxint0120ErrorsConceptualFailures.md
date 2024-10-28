@@ -11,7 +11,7 @@ def large_a_1(state, e_introduced, x_target):
 
 In a world with no large files, it responds to: "A file is large" with: "A *thing* is not large". This is because, in the [previous section](pxint0110ErrorsReportingAFailure), we didn't know how to describe the "domain" that `x` is restricted to. Remember that the `large_a_1` predication will be used for anything the user references as "large", so it will need to be flexible about how it reports its failures.  `x` won't always contain files.
 
-For example, here is a scope-resolved tree for "A file is large":
+For example, here is a scope-resolved mrs for "A file is large":
 
 ~~~
           ┌────── _file_n_of(x3,i8)
@@ -42,7 +42,7 @@ We can figure out what the variable `x` has been restricted to by taking advanta
 
 Thus: We know *where* the failed predication is in the execution order.
 
-So, in the scope-resolved tree for "a dog is large":
+So, in the scope-resolved mrs for "a dog is large":
 
 ~~~
           ┌────── _dog_n_1(x3)

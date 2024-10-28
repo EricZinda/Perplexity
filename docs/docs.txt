@@ -1,7 +1,7 @@
       {"Section": "Developer Tutorial", "Pages": [
         {"Page": "Overview", "SrcDir": "perplexity", "SrcFile": "docs/devhowto/devhowtoOverview.md", "DstFile": "devhowto/devhowtoOverview.md"},
         {"Page": "Minimal Recursion Semantics", "SrcDir": "perplexity", "SrcFile": "docs/devhowto/devhowtoMRS.md", "DstFile": "devhowto/devhowtoMRS.md"},
-        {"Page": "Well-Formed Trees", "SrcDir": "perplexity", "SrcFile": "docs/devhowto/devhowtoWellFormedTree.md", "DstFile": "devhowto/devhowtoWellFormedTree.md"},
+        {"Page": "Scope-Resolved MRS", "SrcDir": "perplexity", "SrcFile": "docs/devhowto/devhowtoWellFormedTree.md", "DstFile": "devhowto/devhowtoWellFormedTree.md"},
         {"Page": "The Predication Contract", "SrcDir": "perplexity", "SrcFile": "docs/devhowto/devhowtoPredicationContract.md", "DstFile": "devhowto/devhowtoPredicationContract.md"},
         {"Page": "Python Primer and State", "SrcDir": "perplexity", "SrcFile": "docs/devhowto/devhowtoPythonBasics.md", "DstFile": "devhowto/devhowtoPythonBasics.md"},
         {"Page": "Implementing a Predication", "SrcDir": "perplexity", "SrcFile": "docs/devhowto/devhowtoImplementPredication.md", "DstFile": "devhowto/devhowtoImplementPredication.md"},

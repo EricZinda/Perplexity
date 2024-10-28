@@ -1,5 +1,5 @@
-## Converting Phrases to MRS and Well-Formed Trees
-Now that we've got the basic algorithm worked out for solving a well-formed tree, it is time to work through how to generate them. Let's take our knowledge of MRS and well-formed trees and write the code that will convert a human phrase into all its interpretations -- i.e. generate all the MRS documents for the phrase and all the well-formed trees for the MRS documents.
+## Converting Phrases to MRS and scope-resolved MRSs
+Now that we've got the basic algorithm worked out for solving a scope-resolved MRS, it is time to work through how to generate them. Let's take our knowledge of MRS and scope-resolved MRSs and write the code that will convert a human phrase into all its interpretations -- i.e. generate all the MRS documents for the phrase and all the scope-resolved MRSs for the MRS documents.
 
 First, we'll write code to use the [ACE parser](http://sweaglesw.org/linguistics/ace/) to convert a phrase into an MRS document. We can use the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin) to do this. The only trick is that we need to supply a grammar file. The grammar file tells ACE which language we are speaking. It is platform dependent, so we've got a helper function that determines which one to return for the current user:
 ~~~
@@ -40,7 +40,7 @@ First, we'll write code to use the [ACE parser](http://sweaglesw.org/linguistics
         return ergFile
 ~~~
 
-Next, we need to take those MRS documents and turn them into well-formed trees. For this, we'll create a function called `trees_from_mrs()`. It will call the function we wrote in the section on [well-formed trees](devhowtoWellFormedTree) called `valid_hole_assignments()` that does the assignments of predication labels to "holes" as discussed in that section.  It will then call the `tree_from_assignments()` function (also included below) that does the work of actually *building a tree* from those assignments and represents the tree using the text format we designed in the [MRS to Python topic](devhowtoMRSToPython):
+Next, we need to take those MRS documents and turn them into scope-resolved MRSs. For this, we'll create a function called `trees_from_mrs()`. It will call the function we wrote in the section on [scope-resolved MRSs](devhowtoWellFormedTree) called `valid_hole_assignments()` that does the assignments of predication labels to "holes" as discussed in that section.  It will then call the `tree_from_assignments()` function (also included below) that does the work of actually *building a tree* from those assignments and represents the tree using the text format we designed in the [MRS to Python topic](devhowtoMRSToPython):
 
 ~~~
 def trees_from_mrs(self, mrs):
@@ -54,7 +54,7 @@ def trees_from_mrs(self, mrs):
             mrs_predication_dict[predication.label] = []
         mrs_predication_dict[predication.label].append(predication)
 
-    # Iteratively return well-formed trees from the MRS
+    # Iteratively return scope-resolved MRSs from the MRS
     for holes_assignments in valid_hole_assignments(mrs, self.max_holes):
         # valid_hole_assignments can return None if the grammar returns something
         # that doesn't have the same number of holes and floaters (which is a grammar bug)

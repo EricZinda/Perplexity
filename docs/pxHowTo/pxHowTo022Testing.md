@@ -22,12 +22,12 @@ Commands start with /:
 /timeout Sets timeout time for a given phrase -> e.g. /timeout or /timeout 20
 
 ****** Parsing ******
-/show Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first trees -> e.g. /show or /show all or /show all, 1
+/show Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first scope-resolved MRSs -> e.g. /show or /show all or /show all, 1
 /soln Retrieves all solutions when parsing so they can be shown with /show. Add 'all' to see all solutions, anything else toggles the current setting -> e.g. /soln or /soln all
 /genall Generates all parses (normally only the first 5 are generated) -> e.g. /genall 1 OR /genall True
 /runall Runs all parses, doesn't stop after success -> e.g. /runall 1 OR /runall True
-/runparse Only runs the identified parse index and optional tree index. Pass no arguments to turn off -> e.g. /runparse 1 OR /runparse 1, 0
-/debugtree Shows tracing information about the tree. give a predication query after to only show trees that match it. Use '_' to mean 'anything' for an argument or the predication name -> e.g. /debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)
+/runparse Only runs the identified parse index and optional scope-resolved MRS index. Pass no arguments to turn off -> e.g. /runparse 1 OR /runparse 1, 0
+/debugtree Shows tracing information about the scope-resolved MRS. give a predication query after to only show scope-resolved MRSs that match it. Use '_' to mean 'anything' for an argument or the predication name -> e.g. /debugtree OR /debugtree which(x,h,h) OR /debugtree _(e,x,_,h)
 /debugmrs Shows tracing information about the mrs -> e.g. /debugmrs
 /findmrs ? -> e.g. /findmrs
 
@@ -89,7 +89,7 @@ This creates a test called "test1" and stops recording.  Tests are simply JSON f
 }
 ~~~
 
-The system is simply recording the input, output, the tree that was used, and an ID.  There is also an "Enabled" field that you can set to "false" if you want a particular test to be ignored.
+The system is simply recording the input, output, the scope-resolved MRS that was used, and an ID.  There is also an "Enabled" field that you can set to "false" if you want a particular test to be ignored.
 
 To run the test:
 

@@ -1,16 +1,16 @@
-## Determining the Right Parse and Tree
-In the [previous section](pxint0070GenerateMRSAndTrees), we wrote the code to generate all the MRS parses for a phrase, and all the fully-resolved MRS trees that result from the MRS. Next we have to decide which one the user intended and write the code to run it. As discussed in the conceptual topic on [Choosing a Parse and Tree](../devcon/devcon0060WhichParseAndTree), returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general. 
+## Determining the Right Scope-Resolved MRS
+In the [previous section](pxint0070GenerateMRSAndTrees), we wrote the code to generate all the MRS parses for a phrase, and all the  that result from the MRS. Next we have to decide which one the user intended and write the code to run it. As discussed in the conceptual topic on [Choosing a Scope-Resolved MRS](../devcon/devcon0060WhichParseAndTree), returning the response from the first MRS parse and scope-resolved MRS that succeeded (or failed) is good heuristic to use in general. 
 
-To implement the code for choosing the right tree, we're going to create a new class that will be the main entry point into the whole system. It is called `UserInterface` and its main method is `interact_once()`. Each call to that method does a single "command/response" interaction with the system mostly using code we've already written. Here's a summary of its logic:
+To implement the code for choosing the right scope-resolved MRS, we're going to create a new class that will be the main entry point into the whole system. It is called `UserInterface` and its main method is `interact_once()`. Each call to that method does a single "command/response" interaction with the system mostly using code we've already written. Here's a summary of its logic:
 
-1. Use the code we wrote in the [previous topic](pxint0070GenerateMRSAndTrees) to convert the phrase to MRS and then generate the trees for the MRS, go through them in order. 
-2. Solve the trees using a modification to the `call()` function from [Conjunctions topic](pxint0050Conjunctions) which is called `solve`. Go through these in order.
-3. If an error occurs when solving a tree, get a string for it by calling `generate_message_with_index` (which gets passed as an argument to `interact_once`). We built this in the [English Domain Names section](pxint0120ErrorsConceptualFailures)
+1. Use the code we wrote in the [previous topic](pxint0070GenerateMRSAndTrees) to convert the phrase to MRS and then generate the scope-resolved MRSs for the MRS, go through them in order. 
+2. Solve the scope-resolved MRSs using a modification to the `call()` function from [Conjunctions topic](pxint0050Conjunctions) which is called `solve`. Go through these in order.
+3. If an error occurs when solving a scope-resolved MRS, get a string for it by calling `generate_message_with_index` (which gets passed as an argument to `interact_once`). We built this in the [English Domain Names section](pxint0120ErrorsConceptualFailures)
 4. When we are done, actually respond using the (slightly refactored) `respond_to_solutions()` function we built in [the Propositions Section](pxint0080SimplePropositions)
 
 The new code is at the end of the function, where we apply all the operations to a single state object and then store it away as the new state.  Otherwise, changes would just get discarded and the next interaction wouldn't see them.
 
-Our new code iterates through every MRS, then every tree it has.  If the function succeeds on a particular tree, it stops processing. Otherwise, it continues until it finds a succcess or runs out of trees. If nothing succeeds, it will report the first tree failure.
+Our new code iterates through every MRS, then every scope-resolved MRS it has.  If the function succeeds on a particular scope-resolved MRS, it stops processing. Otherwise, it continues until it finds a succcess or runs out of trees. If nothing succeeds, it will report the first tree failure.
 
 Here is the full code for it:
 ~~~

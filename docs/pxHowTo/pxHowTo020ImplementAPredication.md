@@ -1,7 +1,7 @@
 ## Implementing a Predication
 Recall from the conceptual topic on [backtracking](../devcon/devcon0010MRSSolver) that Perplexity interprets a phrase by:
 1. Converting the phrase to an [MRS document](../mrscon/devhowto0010MRS)
-2. Creating a [well-formed tree](../mrscon/devhowto0020WellFormedTree) from the MRS document
+2. Creating a [scope-resolved mrs](../mrscon/devhowto0020WellFormedTree) from the MRS document
 3. Using backtracking to walk the tree and find values for the variables that make the MRS `true`
 
 Using that approach, the phrase "A file is large." creates this MRS and tree (among others):

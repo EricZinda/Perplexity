@@ -44,7 +44,7 @@ mrs["Index"] = "e1"
 mrs["Variables"] = {"x1": {"NUM": "pl"},
                     "e1": {"SF": "prop"}}
                     
-# Set the "RELS" key to the scope-resolved MRS tree, using our format
+# Set the "RELS" key to the scope-resolved MRS, using our format
 mrs["RELS"] = [["_a_q", "x1", ["_file_n_of", "x1"], ["_large_a_1", "e1", "x1"]]]
 ~~~
 Thus, the `mrs` variable ends up being a big, single `json` object that has the MRS definition (that we understand so far) in it.

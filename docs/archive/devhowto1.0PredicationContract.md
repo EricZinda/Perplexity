@@ -1,7 +1,7 @@
 ## The Predication Contract
-> It is important to understand [what MRS is](devhowto0010MRS) and what [a well-formed MRS tree is](devhowtoWellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
+> It is important to understand [what MRS is](devhowto0010MRS) and what [a scope-resolved MRS is](devhowtoWellFormedTree) before reading this section. Visit those links first to understand the basic concepts.
 
-A [well-formed MRS tree](devhowtoWellFormedTree) can be thought of as an *equation* that can be solved against a certain state of the world. One approach to solving an MRS is to walk the well-formed tree in depth-first order and iteratively find assignments of variables that make the MRS "true", using backtracking to try alternatives when they exist. This is a [depth-first computational SLD approach](https://en.wikipedia.org/wiki/SLD_resolution) that, for example, the Prolog language uses in proving a goal.  We'll be using this approach for the tutorial. To solve an MRS tree using the SLD approach, we need to code the predications to meet a specific contract that our solver will rely on. This is the "predication contract".
+A [scope-resolved MRS](devhowtoWellFormedTree) can be thought of as an *equation* that can be solved against a certain state of the world. One approach to solving an MRS is to walk the scope-resolved MRS in depth-first order and iteratively find assignments of variables that make the MRS "true", using backtracking to try alternatives when they exist. This is a [depth-first computational SLD approach](https://en.wikipedia.org/wiki/SLD_resolution) that, for example, the Prolog language uses in proving a goal.  We'll be using this approach for the tutorial. To solve an MRS tree using the SLD approach, we need to code the predications to meet a specific contract that our solver will rely on. This is the "predication contract".
 
 Recall that predications are of the form: `_table_n_1(x)` or `compound(e,x,x)`. Just like functions in mathematics or programming languages, they have a name and a set of arguments. We'll be treating the predications we implement as classic programming language functions that can be "called" or "invoked".
 
@@ -64,7 +64,7 @@ The performance of the contract can be greatly improved. Let's imagine a world w
 
 > A large file is in the folder
 
-Which results in this as one of the well-formed MRS trees:
+Which results in this as one of the scope-resolved MRS predication trees:
 
 ~~~
              ┌────── _folder_n_of(x10,i15) 

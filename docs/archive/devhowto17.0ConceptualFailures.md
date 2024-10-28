@@ -11,7 +11,7 @@ def large_a_1(state, e_introduced, x_target):
 
 ... and will respond to "A file is large" with "A *thing* is not large" because we didn't know how to tell what kind of "thing" the variable `x` is currently restricted to be.  The best answer would replace "thing" in "A *thing* is not large" with the "type" of thing `x` is *at the point we are reporting the error*. Remember that the `large_a_1` predication will be used for anything the user references as "large", so it will need to be flexible about how it reports its failures.  `x` won't always contain files.
 
-For example, here is a scope-resolved tree for "A file is large":
+For example, here is a scope-resolved mrs for "A file is large":
 
 ~~~
           ┌────── _file_n_of(x3,i8)
@@ -36,13 +36,13 @@ If we can get a description of what `x` is, we can write one error message and h
 ### Determining What to Call "x"
 We can figure out what the variable `x` has been restricted to "so far" by taking advantage of some things we know:
 
-1. We know how the tree is executed (depth-first)
-2. We know the predications in the tree
+1. We know how the scope-resolved MRS is executed (depth-first)
+2. We know the predications in the scope-resolved MRS
 3. We know which predication reported the error 
 
 Thus: We know *where* the failed predication is in the execution order
 
-So, in the scope-resolved tree for "a dog is large":
+So, in the scope-resolved mrs for "a dog is large":
 
 ~~~
           ┌────── _dog_n_1(x3)
@@ -50,13 +50,13 @@ _a_q(x3,RSTR,BODY)
                └─ _large_a_1(e2,x3)
 ~~~
 
-... if the error came from `_large_a_1`, we must have finished `_dog_n_1` but be in the middle of resolving `_a_q`.  At that point, the variable `x3` contains something that is restricted to `dog` things (not even `*a* dog` yet).  In this way, we can write code which gives the English description of a variable *at a certain point in the tree's execution*. We can use that to build failure messages that have the proper "thing" for any phrase we encounter.
+... if the error came from `_large_a_1`, we must have finished `_dog_n_1` but be in the middle of resolving `_a_q`.  At that point, the variable `x3` contains something that is restricted to `dog` things (not even `*a* dog` yet).  In this way, we can write code which gives the English description of a variable *at a certain point in the scope-resolved MRSs execution*. We can use that to build failure messages that have the proper "thing" for any phrase we encounter.
 
 To do this, let's create a function, `EnglishForDelphinVariable()`, which takes:
 
 1) The `variable` we want an English representation of 
 2) The MRS
-3) The place in the tree for which we want the English
+3) The place in the scope-resolved MRS for which we want the English
 
 It will walk the tree in execution order using the function we've written [in a previous section](devhowtoSimpleQuestions) called `WalkTreeUntil()`. This function will pass each predication, in execution order, to a different function called `RefineNLGWithPredication()` ("NLG" stands for "Natural Language Generation"). That function will determine if the predication is restricting the `variable` in question somehow. If so, it adds some data to a structure called `nlg_data` that records what the English description of the restriction is. At the end, we'll call a function (`ConvertToEnglish()`) that takes all the gathered data and turns it into English:
 

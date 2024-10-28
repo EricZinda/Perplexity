@@ -1,5 +1,5 @@
-## Building Well-Formed MRS Trees
-> This section is designed to help application developers understand how to build well-formed trees from MRS documents. To understand this section, first make sure you have a [basic understanding of the MRS formalism](devhowto0010MRS) or, for a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).  
+## Building Scope-Resolved MRS
+> This section is designed to help application developers understand how to build scope-resolved mrss from MRS documents. To understand this section, first make sure you have a [basic understanding of the MRS formalism](devhowto0010MRS) or, for a more academic or linguistic approach, explore [Minimal Recursion Semantics: An Introduction](https://www.cl.cam.ac.uk/~aac10/papers/mrs.pdf).  
 
 Let's use the sentence "every book is in a cave" as an example. If the phrase is parsed with [the ACE parser](http://sweaglesw.org/linguistics/ace/), you get an MRS document like this:
 
@@ -17,7 +17,7 @@ HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 ~~~
 Our goal is to eventually "solve" the MRS by finding values for its MRS variables such that it is "true". When complete, these variables indicate what the speaker *meant* and allow us to *do* something about it.  
 
-To resolve an MRS against a world state (a particular state of the world at a moment in time) and get *solutions* to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a *well-formed MRS tree*. We will examine *how* shortly, but for now just know that a well-formed MRS tree has (among other things) nodes that are the predications from the MRS like `_every_q__xhh` and arcs that are links between the [*scopal arguments*](devhowto0010MRS#h-handle-variables-aka-scopal-arguments) of the predications and other nodes, like this:
+To resolve an MRS against a world state (a particular state of the world at a moment in time) and get *solutions* to it (meaning the set of MRS variable assignments that make it true) you need to turn it into a *scope-resolved MRS*. We will examine *how* shortly, but for now just know that a scope-resolved MRS has (among other things) nodes that are the predications from the MRS like `_every_q__xhh` and arcs that are links between the [*scopal arguments*](devhowto0010MRS#h-handle-variables-aka-scopal-arguments) of the predications and other nodes, like this:
 
 ~~~
               ┌────── _book_n_of(x3,i8)
@@ -59,7 +59,7 @@ RELS: <
 >
 HCONS: < h0 qeq h1 h5 qeq h7 h11 qeq h13 > ]
 ~~~
-The MRS is a flat list of predications so that it avoids building a single tree which would "lock in" one interpretation.  How it does this is described in detail next, but in summary: It leaves "holes" using scopal (`h`) arguments for various predications and provides constraints (the `HCONS`) for plugging the predications together "legally".  If you combine the predications by following the constraints (among other things), you'll end up with a "well-formed MRS tree" which defines one valid interpretation of the sentence. If you build all the well-formed trees, you have all the possible interpretations.
+The MRS is a flat list of predications so that it avoids building a single tree which would "lock in" one interpretation.  How it does this is described in detail next, but in summary: It leaves "holes" using scopal (`h`) arguments for various predications and provides constraints (the `HCONS`) for plugging the predications together "legally".  If you combine the predications by following the constraints (among other things), you'll end up with a "scope-resolved MRS" which defines one valid interpretation of the sentence. If you build all the scope-resolved mrss, you have all the possible interpretations.
 
 This interpretation is what we need in order to eventually "solve" the phrase for the variables it contains. This topic describes how to build that tree.
 
@@ -123,14 +123,14 @@ If the labels from the MRS are all in (exactly) one place, the built tree passes
 ## Resolving the tree
 Finding ways to efficiently create these trees is an area of active research because natural language can easily create MRS structures that have a ton of holes.  `n` holes, in the worst case, can require `n!` checks to resolve, if done exhaustively.  So, an MRS structure with 12 holes (which is easy to generate) could require up to 480,000,000 checks before finding a valid solution if you just try every combination.  
 
-To generate the well-formed trees, you could simply try all possible combinations of holes and labels, do the `qeq` and `x` scoping checks on each, and only keep the valid ones. This will only be practical for the simplest possible trees.
+To generate the scope-resolved mrss, you could simply try all possible combinations of holes and labels, do the `qeq` and `x` scoping checks on each, and only keep the valid ones. This will only be practical for the simplest possible trees.
 
 Another algorithm, the one we'll use in the tutorial, is able to prune the search space and works much faster.  The Python implementation can usually generate all trees for an MRS with 12 holes in around 1.5s (with some outliers being slower) on a 2013-era MacBook Pro.  This will be sufficient for the purposes of this tutorial.  Something like "put the diamond on the table where the safe is and the book is" generates MRS structures with up to 14 holes and could take up to 30 seconds to generate *all* the valid interpretations (1500+ valid interpretations in some cases!) for each MRS.  It turns out it is very rarely necessary to generate all the interpretations, but regardless: because it scales factorially, things slow down fast after 12 holes.
 
 There are definitely more efficient approaches, but the algorithm below has the advantage of being relatively simple. Here is [one alternative](https://www.aclweb.org/anthology/W05-1105.pdf).  There are definitely more.
 
 ## A Simple, Fast Enough, Algorithm
-> It isn't important to fully understand this algorithm as long as you understand what it has to do: build a well-formed MRS tree, and what the rules are in doing that. We'll use this code as a library routine all throughout the tutorial, but we won't dive into its implementation again.
+> It isn't important to fully understand this algorithm as long as you understand what it has to do: build a scope-resolved MRS, and what the rules are in doing that. We'll use this code as a library routine all throughout the tutorial, but we won't dive into its implementation again.
 
 This description is for those that are interested in how the algorithm works, and isn't necessary for understanding the rest of the tutorial:
 
@@ -177,7 +177,7 @@ Starting at the initial node:
 **Returns**:
 `nodeAssignmentList` which is simply a dictionary where the keys are holes and the value is the floater that was assigned to it.
 
-Once this has run its course you will have all the valid well-formed trees for the MRS. 
+Once this has run its course you will have all the valid scope-resolved mrss for the MRS. 
 
 **Code and Example**
 Below is the Python code for the main routine, all of the code is available [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py).
@@ -217,7 +217,7 @@ It starts with the `all_holes_dict` from above. Since there are some holes that 
 
 1. Pick the next unassigned hole: in this case, `h0`.
 2. Pick the next unassigned floater: in this case, `h1`.
-3. If assigning `h1` to `h0` doesn't violate any constraints on building a scope-resolved tree: update `all_holes_dict()` to contain this assignment and recurse at step #1 with the new `all_holes_dict()`.
+3. If assigning `h1` to `h0` doesn't violate any constraints on building a scope-resolved mrs: update `all_holes_dict()` to contain this assignment and recurse at step #1 with the new `all_holes_dict()`.
 4. If the assignment does violate a constraint, skip it and jump to step #2 to try the next floater.
  
 If you recurse to the point where there are no more holes you've found a valid tree: yield it, and then keep searching for more.

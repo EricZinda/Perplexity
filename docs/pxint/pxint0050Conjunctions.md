@@ -1,7 +1,7 @@
 #### Solving Conjuctions of Predications
-There are two ways to group predications together in an MRS: as a "conjunction" (i.e. a logical "and") or by using ["scopal arguments"](../mrscon/devhowto0010MRS#h-handle-variables-aka-scopal-arguments). Scopal arguments allow passing *a predication* as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a [well-formed tree](../mrscon/devhowto0020WellFormedTree). Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.
+There are two ways to group predications together in an MRS: as a "conjunction" (i.e. a logical "and") or by using ["scopal arguments"](../mrscon/devhowto0010MRS#h-handle-variables-aka-scopal-arguments). Scopal arguments allow passing *a predication* as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a [scope-resolved mrs](../mrscon/devhowto0020WellFormedTree). Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.
 
-To handle a logical "and" or "conjunction" of predications, we'll perform a depth-first search of the tree and call each predication in turn, *if* they succeed. We'll pass the state yielded by one predication to the next one. Once you've iterated through all of them, you have the set of things that are true for all the predications in the conjunction for that world.
+To handle a logical "and" or "conjunction" of predications, we'll perform a depth-first search of the scope-resolved MRS and call each predication in turn, *if* they succeed. We'll pass the state yielded by one predication to the next one. Once you've iterated through all of them, you have the set of things that are true for all the predications in the conjunction for that world.
 
 For an example such as: `_large_a_1(e,x) and _file_n_of(x)` (to indicate a "large file"):
 1. Start with unbound variables and call the first predication using our [predication contract](pxint0010PredicationContract): `_large_a_1`. 
@@ -51,7 +51,7 @@ When a list is passed to `call`, it is treated as a conjunction (i.e. "and"), an
 
 When a single predication is passed to `call`, it just gets directly passed on to `call_predication()`.  Once it fails, we stop.
 
-Now, a scope-resolved MRS is a *tree*, so to solve it, we do a single call to `call()` and pass the whole tree as `term`. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. "scopal arguments"). The scopal arguments build the tree.  And: the predications with scopal arguments are themselves responsible for solving the scopal arguments. How scopal arguments do this is [described in the next topic](pxint0060ScopalArguments).
+Now, a scope-resolved MRS has a *tree* of predications, so to solve it, we do a single call to `call()` and pass the whole tree as `term`. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. "scopal arguments"). The scopal arguments build the tree.  And: the predications with scopal arguments are themselves responsible for solving the scopal arguments. How scopal arguments do this is [described in the next topic](pxint0060ScopalArguments).
 
 To finish this up, let's implement the last predication needed to make the example run and run it: `file_n_of`. It is an almost exact copy of `_folder_n_of`:
 ~~~
@@ -109,6 +109,6 @@ def Example3():
 
 This shows that the only "large file" in the world is "file2.txt".
 
-Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](pxint0060ScopalArguments), we'll be able to handle full well-formed trees.
+Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments [in the next topic](pxint0060ScopalArguments), we'll be able to handle full scope-resolved mrss.
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
