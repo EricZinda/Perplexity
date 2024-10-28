@@ -211,7 +211,7 @@
           
             <li><a href="/Perplexity/home/devcon/devcon0030MRSSolverSolutionGroups/">Collective, Distributive, Cumulative</a></li>
           
-            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/" class="active">Choosing a Parse and Tree</a></li>
+            <li><a href="/Perplexity/home/devcon/devcon0060WhichParseAndTree/" class="active">Choosing a Scope-Resolved MRS</a></li>
           
             <li><a href="/Perplexity/home/devcon/devcon0070SentenceForce/">Sentence Types</a></li>
           
@@ -311,7 +311,7 @@
           
             <li><a href="/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees/">Generating MRS and Trees</a></li>
           
-            <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Parse and Tree</a></li>
+            <li><a href="/Perplexity/home/pxint/pxint0071WhichParseAndTree/">Choosing a Scope-Resolved MRS</a></li>
           
             <li><a href="/Perplexity/home/pxint/pxint0230Summary/">Summary</a></li>
           
@@ -347,7 +347,7 @@
 
       <section class="page__content e-content" itemprop="text">
         
-        <h2 id="determining-the-right-parse-and-tree">Determining the Right Parse and Tree</h2>
+        <h2 id="determining-the-right-scope-resolved-mrs">Determining the Right Scope-Resolved MRS</h2>
 <p>As discussed in the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">MRS topic</a> and the <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">Scope-Resolved Mrs topic</a>, a single phrase like “Look under the table” produces <code class="language-plaintext highlighter-rouge">m</code> MRS documents, and each of those produces <code class="language-plaintext highlighter-rouge">n</code> scope-resolved mrss, thus generating <code class="language-plaintext highlighter-rouge">m x n</code> potential interpretations of a phrase. How do you determine which one is the one the user <em>meant</em>?</p>
 
 <p>The short answer is that, just like when you are talking to a human, you never <em>really</em> know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: First, <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> uses a machine-learning-based algorithm to sort the MRS documents and returns the “most common” ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the scope-resolved mrss. So, at best we have a partial ordering of the <code class="language-plaintext highlighter-rouge">m x n</code> trees in terms of “most commonly meant”.</p>
