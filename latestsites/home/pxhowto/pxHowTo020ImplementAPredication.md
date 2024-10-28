@@ -1,7 +1,7 @@
 {% raw %}## Implementing a Predication
 Recall from the conceptual topic on [backtracking](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) that Perplexity interprets a phrase by:
 1. Converting the phrase to an [MRS document](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS)
-2. Creating a [well-formed tree](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) from the MRS document
+2. Creating a [scope-resolved mrs](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) from the MRS document
 3. Using backtracking to walk the tree and find values for the variables that make the MRS `true`
 
 Using that approach, the phrase "A file is large." creates this MRS and tree (among others):
@@ -444,4 +444,4 @@ if __name__ == '__main__':
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo020ImplementAPredication.md)]{% endraw %}

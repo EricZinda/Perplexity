@@ -348,9 +348,9 @@
       <section class="page__content e-content" itemprop="text">
         
         <h4 id="solving-conjuctions-of-predications">Solving Conjuctions of Predications</h4>
-<p>There are two ways to group predications together in an MRS: as a “conjunction” (i.e. a logical “and”) or by using <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">“scopal arguments”</a>. Scopal arguments allow passing <em>a predication</em> as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">well-formed tree</a>. Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.</p>
+<p>There are two ways to group predications together in an MRS: as a “conjunction” (i.e. a logical “and”) or by using <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">“scopal arguments”</a>. Scopal arguments allow passing <em>a predication</em> as an argument to another predication, much like lambda functions do in many programming languages. This is how you built up a tree of predications in a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">scope-resolved mrs</a>. Now that we have a textual representation and a way to execute it, we can start resolving these more complex structures.</p>
 
-<p>To handle a logical “and” or “conjunction” of predications, we’ll perform a depth-first search of the tree and call each predication in turn, <em>if</em> they succeed. We’ll pass the state yielded by one predication to the next one. Once you’ve iterated through all of them, you have the set of things that are true for all the predications in the conjunction for that world.</p>
+<p>To handle a logical “and” or “conjunction” of predications, we’ll perform a depth-first search of the scope-resolved MRS and call each predication in turn, <em>if</em> they succeed. We’ll pass the state yielded by one predication to the next one. Once you’ve iterated through all of them, you have the set of things that are true for all the predications in the conjunction for that world.</p>
 
 <p>For an example such as: <code class="language-plaintext highlighter-rouge">_large_a_1(e,x) and _file_n_of(x)</code> (to indicate a “large file”):</p>
 <ol>
@@ -400,7 +400,7 @@
 
 <p>When a single predication is passed to <code class="language-plaintext highlighter-rouge">call</code>, it just gets directly passed on to <code class="language-plaintext highlighter-rouge">call_predication()</code>.  Once it fails, we stop.</p>
 
-<p>Now, a scope-resolved MRS is a <em>tree</em>, so to solve it, we do a single call to <code class="language-plaintext highlighter-rouge">call()</code> and pass the whole tree as <code class="language-plaintext highlighter-rouge">term</code>. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. “scopal arguments”). The scopal arguments build the tree.  And: the predications with scopal arguments are themselves responsible for solving the scopal arguments. How scopal arguments do this is <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0060ScopalArguments">described in the next topic</a>.</p>
+<p>Now, a scope-resolved MRS has a <em>tree</em> of predications, so to solve it, we do a single call to <code class="language-plaintext highlighter-rouge">call()</code> and pass the whole tree as <code class="language-plaintext highlighter-rouge">term</code>. But: this function only evaluates either single predications or conjunctions, what makes it able to solve a tree? The trick is that predications can have other predications as arguments (i.e. “scopal arguments”). The scopal arguments build the tree.  And: the predications with scopal arguments are themselves responsible for solving the scopal arguments. How scopal arguments do this is <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0060ScopalArguments">described in the next topic</a>.</p>
 
 <p>To finish this up, let’s implement the last predication needed to make the example run and run it: <code class="language-plaintext highlighter-rouge">file_n_of</code>. It is an almost exact copy of <code class="language-plaintext highlighter-rouge">_folder_n_of</code>:</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_file_n_of")
@@ -456,13 +456,13 @@ def _file_n_of(state, x, i):
 
 <p>This shows that the only “large file” in the world is “file2.txt”.</p>
 
-<p>Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0060ScopalArguments">in the next topic</a>, we’ll be able to handle full well-formed trees.</p>
+<p>Now we have evaluated our first (very small) MRS document. Once we implement scopal arguments <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0060ScopalArguments">in the next topic</a>, we’ll be able to handle full scope-resolved mrss.</p>
 
 <blockquote>
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0050Conjunctions.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0050Conjunctions.md">edit</a>]</p>
 
         
       </section>

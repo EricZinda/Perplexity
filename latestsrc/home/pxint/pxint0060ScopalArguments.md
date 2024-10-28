@@ -1,7 +1,7 @@
 {% raw %}## Solving Scopal Arguments
 "Scopal arguments" are arguments to a predication that hold *other predications*, much like lambda functions can pass around functions as arguments in some programming languages.  They indicate that the predication should do its job using the results of the whole "branch" it is given. Exactly *what* job depends on the predication. The most common scopal arguments are seen in quantifiers like "a, the, every, some" etc. The job of a quantifier in a natural language is to limit (i.e. "quantify") the number of answers in some way. They do that by taking a `RSTR` argument that indicates what the quantifier is about (e.g. "a *folder*"), and a `BODY` argument that says what we are restricting the quantification to (e.g. "something *large*"). 
 
-For example, take the phrase: "a file is large". One of the scope-resolved MRS trees for it is:
+For example, take the phrase: "a file is large". One of the scope-resolved MRSs for it is:
 
 ```
            ┌───── _file_n_of(x3)

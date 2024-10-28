@@ -1,5 +1,5 @@
-{% raw %}## Converting Phrases to MRS and Well-Formed Trees
-To complete our backtracking solver, we need to write the code that will convert a human phrase into `TreePredications` and call the solver with them. Up to this point, we have been hand-coding this. It is now time to have the *system* generate all the MRS documents for the phrase and all the well-formed trees for each MRS document.  Then we will have an end-to-end working system that starts from text like "a file is large" and responds to it.
+{% raw %}## Converting Phrases to MRS and Scope-Resolved Mrss
+To complete our backtracking solver, we need to write the code that will convert a human phrase into `TreePredications` and call the solver with them. Up to this point, we have been hand-coding this. It is now time to have the *system* generate all the MRS documents for the phrase and all the scope-resolved mrss for each MRS document.  Then we will have an end-to-end working system that starts from text like "a file is large" and responds to it.
 
 To do this, we'll write code that uses the [ACE parser](http://sweaglesw.org/linguistics/ace/) (via the `ACEParser` class from [`pydelphin`](https://github.com/delph-in/pydelphin)) to convert a phrase into an MRS document. The only trick is that we need to supply a grammar file to tell ACE which language we are speaking. It is platform dependent, so we'll create a helper function that determines which one to return for the current platform. The function assumes the grammar files are all in the directory that the function is contained in. The names of the grammar files in the `/perplexity` folder of the Perplexity repository are used, and the function is actually imported from a file in that same directory. Here is the code for that function:
 
@@ -62,7 +62,7 @@ def Example5():
 
 Thus, there were 9 parses for the phrase "2 files are large". The `delphin` Python library returns its own representation of MRS, and that's what you see printed. 
 
-Next, we need to take the MRS documents returned from this function and turn them into well-formed trees. For this, we'll create a function called `trees_from_mrs()`. It uses the function written in the section on [well-formed trees](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) called `valid_hole_assignments()` (available [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py)) that does the assignments of predication labels to "holes" as discussed in that section.  It will then call the `tree_from_assignments()` function (included below) that actually *builds* a tree from those assignments. It represents the tree using the `TreePredication` object we designed in the [Initial Solver topic](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver):
+Next, we need to take the MRS documents returned from this function and turn them into scope-resolved mrss. For this, we'll create a function called `trees_from_mrs()`. It uses the function written in the section on [scope-resolved mrss](https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree) called `valid_hole_assignments()` (available [here](https://github.com/EricZinda/Perplexity/blob/main/perplexity/tree_algorithm_zinda2020.py)) that does the assignments of predication labels to "holes" as discussed in that section.  It will then call the `tree_from_assignments()` function (included below) that actually *builds* a tree from those assignments. It represents the tree using the `TreePredication` object we designed in the [Initial Solver topic](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0040BuildSolver):
 
 ```
 def trees_from_mrs(mrs):
@@ -76,7 +76,7 @@ def trees_from_mrs(mrs):
             mrs_predication_dict[predication.label] = []
         mrs_predication_dict[predication.label].append(predication)
 
-    # Iteratively return well-formed trees from the MRS
+    # Iteratively return scope-resolved mrss from the MRS
     for new_mrs, holes_assignments in valid_hole_assignments(mrs, max_holes=12, required_root_label=None):
         # valid_hole_assignments can return None if the grammar returns something
         # that doesn't have the same number of holes and floaters (which is a grammar bug)

@@ -349,12 +349,12 @@
         
         <h2 id="the-predication-contract">The Predication Contract</h2>
 <blockquote>
-  <p>It is important to understand <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">what MRS is</a> and what <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">a well-formed MRS tree is</a> before reading this section. Visit those links first to understand the basic concepts.</p>
+  <p>It is important to understand <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0010MRS">what MRS is</a> and what <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">a scope-resolved MRS is</a> before reading this section. Visit those links first to understand the basic concepts.</p>
 </blockquote>
 
-<p>As discussed in <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">the “Backtracking” conceptual topic</a>, we’ll be solving MRS well-formed trees using a backtracking approach. That topic discusses “calling” or “evaluating” predications without discussing exactly <em>how</em> this happens. This section will get specific.</p>
+<p>As discussed in <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">the “Backtracking” conceptual topic</a>, we’ll be solving MRS scope-resolved mrss using a backtracking approach. That topic discusses “calling” or “evaluating” predications without discussing exactly <em>how</em> this happens. This section will get specific.</p>
 
-<p>As discussed previously, a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">well-formed MRS tree</a> can be thought of as an <em>equation</em> that can be solved against a certain state of the world. One approach to solving an MRS is to walk the well-formed tree in depth-first order and iteratively find assignments of variables that make the MRS <code class="language-plaintext highlighter-rouge">true</code>, using <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking</a> to try alternatives when they exist. This is the approach we’ll be using. To solve an MRS tree using the backtracking approach, we need to code the predications to meet a specific contract that our backtracking solver will rely on. This is the “predication contract”.</p>
+<p>As discussed previously, a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">scope-resolved MRS</a> can be thought of as an <em>equation</em> that can be solved against a certain state of the world. One approach to solving an MRS is to walk the scope-resolved mrs in depth-first order and iteratively find assignments of variables that make the MRS <code class="language-plaintext highlighter-rouge">true</code>, using <a href="https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver">backtracking</a> to try alternatives when they exist. This is the approach we’ll be using. To solve an MRS tree using the backtracking approach, we need to code the predications to meet a specific contract that our backtracking solver will rely on. This is the “predication contract”.</p>
 
 <p>Recall that predications are of the form: <code class="language-plaintext highlighter-rouge">_table_n_1(x)</code> or <code class="language-plaintext highlighter-rouge">compound(e,x,x)</code>. Just like functions in mathematics or programming languages, they have a name and a set of arguments. We’ll be treating the predications as classic programming language functions that can be “called” or “invoked”.</p>
 
@@ -435,7 +435,7 @@ a large file
   <p>A large file is in the folder.</p>
 </blockquote>
 
-<p>Which results in this as one of the well-formed MRS trees:</p>
+<p>Which results in this as one of the scope-resolved MRS predication trees:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>             ┌────── _folder_n_of(x10,i15) 
              │                             ┌── _large_a_1(e8,x3)
@@ -509,7 +509,7 @@ _the_q(x10,RSTR,BODY)          │             └ _file_n_of(x3,i9)
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0010PredicationContract.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0010PredicationContract.md">edit</a>]</p>
 
         
       </section>

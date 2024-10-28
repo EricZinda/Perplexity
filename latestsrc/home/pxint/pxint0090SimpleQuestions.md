@@ -76,7 +76,7 @@ def default_quantifier(state, x_variable, h_rstr, h_body):
             yield body_solution
 ```
 
-When `_which_q` is in a sentence, we should answer the question with all the values of the variable that it quantifies (`x3` in this case). To do that, We need to build a function that finds the `_which_q` predication, if it exists. Since searching through the tree is something we'll do often, we'll build another helper function called `walk_tree_predications_until` and then use it to build `find_predication` which will find one or more predications in a tree:
+When `_which_q` is in a sentence, we should answer the question with all the values of the variable that it quantifies (`x3` in this case). To do that, We need to build a function that finds the `_which_q` predication, if it exists. Since searching through the scope-resolved MRS predication tree is something we'll do often, we'll build another helper function called `walk_tree_predications_until` and then use it to build `find_predication` which will find one or more predications in a tree:
 
 ```
 # walk_tree_predications_until() is a helper function that just walks
