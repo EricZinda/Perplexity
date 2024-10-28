@@ -12,7 +12,7 @@ class TreePredication(object):
         self.name = name
         self.args = args
 ~~~
-`index` is a number representing the order that the predication is called when solving the MRS using a depth-first search. All the rest of the arguments are pulled directly from the MRS format.
+`index` is a number representing the order that the predication is called when solving the MRS using a depth-first search. All the rest of the arguments are pulled directly from the MRS formalism.
 
 To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. `"_folder_n_of"`) to the function and module that implements the logic for it. 
 
