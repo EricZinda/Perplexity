@@ -10,7 +10,7 @@ toc:
     children:
       - title: "Minimal Recursion Semantics (MRS)"
         url: "/mrscon/devhowto0010MRS/"
-      - title: "Well-Formed Trees"
+      - title: "Scope-Resolved MRS"
         url: "/mrscon/devhowto0020WellFormedTree/"
   - title: "MRS Solver Conceptual"
     children:
