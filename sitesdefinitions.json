@@ -27,7 +27,7 @@
       ]},
       {"Section": "MRS Conceptual", "Pages": [
         {"Page": "Minimal Recursion Semantics (MRS)", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0010MRS.md", "DstFile": "mrscon/devhowto0010MRS.md"},
-        {"Page": "Well-Formed Trees", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0020WellFormedTree.md", "DstFile": "mrscon/devhowto0020WellFormedTree.md"}
+        {"Page": "Scope-Resolved MRS", "SrcDir": "main", "SrcFile": "docs/mrscon/devhowto0020WellFormedTree.md", "DstFile": "mrscon/devhowto0020WellFormedTree.md"}
       ]},
       {"Section": "MRS Solver Conceptual", "Pages": [
         {"Page": "Overview", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0000Overview.md", "DstFile": "devcon/devcon0000Overview.md"},
