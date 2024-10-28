@@ -1,5 +1,5 @@
 {% raw %}## Determining the Right Parse and Tree
-In the [previous section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees), we wrote the code to generate all the parses for a phrase, and all the fully-resolved MRS trees that result from. Next we have to decide which one is the one the user intended and write the code to run it. As discussed in the conceptual topic on [Choosing a Parse and Tree](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree), returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general. 
+In the [previous section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0070GenerateMRSAndTrees), we wrote the code to generate all the MRS parses for a phrase, and all the fully-resolved MRS trees that result from the MRS. Next we have to decide which one the user intended and write the code to run it. As discussed in the conceptual topic on [Choosing a Parse and Tree](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0060WhichParseAndTree), returning the response from the first MRS parse and tree that succeeded (or failed) is good heuristic to use in general. 
 
 To implement the code for choosing the right tree, we're going to create a new class that will be the main entry point into the whole system. It is called `UserInterface` and its main method is `interact_once()`. Each call to that method does a single "command/response" interaction with the system mostly using code we've already written. Here's a summary of its logic:
 
@@ -205,4 +205,4 @@ No, that isn't correct: a folder is not large
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0071WhichParseAndTree.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0071WhichParseAndTree.md)]{% endraw %}

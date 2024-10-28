@@ -380,7 +380,7 @@ _a_q(x3,RSTR,BODY)
 <p>If we can get a description of the domain of <code class="language-plaintext highlighter-rouge">x</code>, we can write one error message and have it work no matter how the predication is used.</p>
 
 <h3 id="determining-what-to-call-the-domain-of-x">Determining What to Call the Domain of “x”</h3>
-<p>We can figure out what the variable <code class="language-plaintext highlighter-rouge">x</code> has been restricted by taking advantage of some things we know:</p>
+<p>We can figure out what the variable <code class="language-plaintext highlighter-rouge">x</code> has been restricted to by taking advantage of some things we know:</p>
 
 <ol>
   <li>We know the tree is executed depth-first</li>
@@ -407,7 +407,7 @@ _a_q(x3,RSTR,BODY)
   <li>The predication index (i.e. the place in the tree) for which we want the English</li>
 </ol>
 
-<p>It will walk the tree in execution order using the function we’ve written <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions">in a previous section</a> called <code class="language-plaintext highlighter-rouge">walk_tree_predications_until()</code>. This function will pass each predication, in execution order, to a different function called <code class="language-plaintext highlighter-rouge">refine_NLG_with_predication()</code> (“NLG” stands for “Natural Language Generation”). That function will determine if the predication is restricting the domain of the <code class="language-plaintext highlighter-rouge">variable</code> in question somehow. If so, it adds some data to a structure called <code class="language-plaintext highlighter-rouge">nlg_data</code> that records what the English description of the restriction is. At the end, we’ll call a function (<code class="language-plaintext highlighter-rouge">convert_to_english()</code>) that takes all the gathered data and turns it into English:</p>
+<p>It will walk the tree in execution order, using the function we’ve written <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions">in a previous section</a> called <code class="language-plaintext highlighter-rouge">walk_tree_predications_until()</code>. This function will pass each predication, in execution order, to a different function called <code class="language-plaintext highlighter-rouge">refine_NLG_with_predication()</code> (“NLG” stands for “Natural Language Generation”). That function will determine if the predication is restricting the domain of the <code class="language-plaintext highlighter-rouge">variable</code> somehow. If so, it will add some data to a structure called <code class="language-plaintext highlighter-rouge">nlg_data</code> that records what the English description of the restriction is. At the end, we’ll call a function (<code class="language-plaintext highlighter-rouge">convert_to_english()</code>) that takes all the gathered data and turns it into English:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Given the index where an error happened and a variable,
 # return what that variable "is" up to that point (i.e. its "domain")
@@ -633,7 +633,7 @@ No, that isn't correct: a file is not large
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0120ErrorsConceptualFailures.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0120ErrorsConceptualFailures.md">edit</a>]</p>
 
         
       </section>
