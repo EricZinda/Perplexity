@@ -52,7 +52,7 @@
         {"Page": "Verb Predications", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo070ActionVerbs.md", "DstFile": "pxhowto/pxHowTo070ActionVerbs.md"},
         {"Page": "Custom State", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo082State.md", "DstFile": "pxhowto/pxHowTo082State.md"},
         {"Page": "Representing Places", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo085Place.md", "DstFile": "pxhowto/pxHowTo085Place.md"},
-        {"Page": "Directional Propositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo090Prepositions.md", "DstFile": "pxhowto/pxHowTo090Prepositions.md"},
+        {"Page": "Directional Prepositions", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo090Prepositions.md", "DstFile": "pxhowto/pxHowTo090Prepositions.md"},
         {"Page": "Solution Group Handlers and Non-logical Meaning", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo100NonlogicalMeaning.md", "DstFile": "pxhowto/pxHowTo100NonlogicalMeaning.md"},
         {"Page": "Solution Group Handlers and Global Criteria", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo105GlobalCriteria.md", "DstFile": "pxhowto/pxHowTo105GlobalCriteria.md"},
         {"Page": "Handling Tenses", "SrcDir": "main", "SrcFile": "docs/pxHowTo/pxHowTo110HandlingTenses.md", "DstFile": "pxhowto/pxHowTo110HandlingTenses.md"},
