@@ -189,7 +189,7 @@
           
             <li><a href="/Perplexity/home/mrscon/devhowto0010MRS/" class="active">Minimal Recursion Semantics (MRS)</a></li>
           
-            <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/">Well-Formed Trees</a></li>
+            <li><a href="/Perplexity/home/mrscon/devhowto0020WellFormedTree/">Scope-Resolved MRS</a></li>
           
         </ul>
         
@@ -401,7 +401,7 @@ pronoun_q(x3,RSTR,BODY)            ┌────── _table_n_1(x9)
 <p>The rest of this section will give you a base understanding of the MRS formalism so that we can explore how to build these scope-resolved mrss in a <a href="https://blog.inductorsoftware.com/Perplexity/home/mrscon/devhowto0020WellFormedTree">later section</a> and ultimately write software that derives the speaker’s intended meaning from them.  Deriving their intended meaning is the topic of this entire tutorial.</p>
 
 <h2 id="underspecification">Underspecification</h2>
-<p>A DELPH-IN parser like <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> will usually generate more than one MRS document representing the various high-level interpretations of a phrase. Each one contains a <em>list</em> of predicate-logic-like predications and not a <em>tree</em> like you’ll see in many natural language systems.  That’s because it is <em>underspecified</em>.  Even though the parser has already done one level of interpretation on the phrase, there are still (usually) multiple ways to interpret <em>that</em>.</p>
+<p>A DELPH-IN parser like <a href="http://sweaglesw.org/linguistics/ace/">ACE</a> will usually generate more than one MRS document representing the various high-level interpretations of a phrase. Each one contains a <em>bag</em> of predicate-logic-like predications and not a <em>tree</em> like you’ll see in many natural language systems.  This is because the connection between the predications that are underspecified.  Even though the parser has already done one level of interpretation on the phrase, there are still (usually) multiple ways to interpret <em>that</em>.</p>
 
 <p>The final interpretations of a phrase are called “scope-resolved MRS”. The MRS document doesn’t pick a primary interpretation by choosing a specific tree, it provides the rules for building <em>all of them</em>. That’s what “underspecified” means. <code class="language-plaintext highlighter-rouge">Every book is in a cave</code> could mean “all books are in the same cave” or “every book is in a (possibly different) cave”. Given just the phrase, it isn’t clear which the speaker intended, so the MRS provides all the alternatives. Context (which the MRS doesn’t have) usually helps to decide which is meant.</p>
 
