@@ -1,4 +1,4 @@
-## Determining the Right Parse and Tree
+## Determining the Right Scope-Resolved MRS
 As discussed in the [MRS topic](../mrscon/devhowto0010MRS) and the [Scope-Resolved Mrs topic](../mrscon/devhowto0020WellFormedTree), a single phrase like "Look under the table" produces `m` MRS documents, and each of those produces `n` scope-resolved mrss, thus generating `m x n` potential interpretations of a phrase. How do you determine which one is the one the user *meant*?
 
 The short answer is that, just like when you are talking to a human, you never *really* know what they meant unless you pick your best guess and confirm it with them. But: there are a couple of things that help: First, [ACE](http://sweaglesw.org/linguistics/ace/) uses a machine-learning-based algorithm to sort the MRS documents and returns the "most common" ones first. This means the more obscure MRS interpretations will be sorted last. Unfortunately, there is no such mechanism for the scope-resolved mrss. So, at best we have a partial ordering of the `m x n` trees in terms of "most commonly meant". 

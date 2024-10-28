@@ -221,7 +221,7 @@ def stative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_b
     else:
         report_error(["dontKnowActor", x_actor_binding.variable.name])
 ~~~
-We're using the same pattern in `_in_p_state` that we used for `_in_p_dir` in a [previous topic](../devvocab/devvocabGoTo): the preposition is just adding its information to the event it is passed, and the verb that introduced that event consumes the information to do its job.
+We're using the same pattern in `_in_p_state` that we used for `_in_p_dir` in a [previous topic](../archive/devvocab/devvocabGoTo): the preposition is just adding its information to the event it is passed, and the verb that introduced that event consumes the information to do its job.
 
 `FileSystemMock.copy_item()` only changed to use a "copy from" directory to set the base of a relative file name:
 

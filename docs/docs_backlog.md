@@ -1,0 +1,11 @@
+- The docs to use the term "scope-resolved MRS" instead of "well-formed tree" or "scope-resolved tree"
+  - If needed use "scope-resolved MRS predication tree"
+- which() needs to take wide scope
+    - Fix the scope resolved trees docs?
+- Fixup /docs/pxHowTo/pxHowTo093Quotes.md and publish it
+- Write howto topics on: Negation, and marking predications as supporting negation
+- Write howto topics on disjunction.  Use 2-InterpretationDisjunctionRedesign.md as a base
+- work through the issues in 3-concepts.md
+- Describe in more detail how errors are resolved.  look at: errorhandling.md
+- Describe how libraries work.  look at: librarydesign.md
+- Describe how initial tree transformations work

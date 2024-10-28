@@ -1,3 +1,0 @@
-- The docs to use the term "scope-resolved MRS" instead of "well-formed tree" or "scope-resolved tree"
-- which() needs to take wide scope
-    - Fix the scope resolved trees docs?

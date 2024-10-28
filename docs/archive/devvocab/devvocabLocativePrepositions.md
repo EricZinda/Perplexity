@@ -7,11 +7,11 @@ There are 171 different parses that the ERG provides since there is a lot of amb
 
 1. `_in_p_loc(e15,x8,x16), _copy_v_1(e2,x3,x8)`: Copy the 'foo' that is in 'documents' [where to copy is not specified]
 
-   This version of "in" has already been implemented [in a previous topic](../devvocab/devvocabIn_p_loc) and doesn't need modification. It takes two `x` arguments and restricts them: `x8` must be something that is "in" `x16`. This is a "locative" form of the "in" preposition that specifies where something is.  So, `in_p_loc` indicates where to find `x8` (in `x16`), and `copy_v_1` simply needs to copy `x8`...somewhere.  *Where* is not specified.
+   This version of "in" has already been implemented [in a previous topic](/devvocabIn_p_loc) and doesn't need modification. It takes two `x` arguments and restricts them: `x8` must be something that is "in" `x16`. This is a "locative" form of the "in" preposition that specifies where something is.  So, `in_p_loc` indicates where to find `x8` (in `x16`), and `copy_v_1` simply needs to copy `x8`...somewhere.  *Where* is not specified.
 
 2. `_in_p_state(e13,e2,x14), _copy_v_1(e2,x3,x8)`: Copy 'foo', and do the copy from within '/documents' [*where* to copy and where 'foo' *is* are not specified]
 
-   This reading has a version of "in" that takes the `e2` event for its second arg, and `e2` is introduced by `_copy_v_1`. As described in [the topic about `go_v_1`](../devvocab/devvocabGoTo), this means that `in_p_state` is providing information to `_copy_v_1` about *how* to go about copying. Unlike directional prepositions described in that topic, `_state` in the predication name indicates that the preposition is used in a "stative" sense. This means it is specifying where the verb is *taking place*. So this phrase says that the "copying" should be done "in the location specified by `x4`".  Where to copy *to* is not specified.
+   This reading has a version of "in" that takes the `e2` event for its second arg, and `e2` is introduced by `_copy_v_1`. As described in [the topic about `go_v_1`](/devvocabGoTo), this means that `in_p_state` is providing information to `_copy_v_1` about *how* to go about copying. Unlike directional prepositions described in that topic, `_state` in the predication name indicates that the preposition is used in a "stative" sense. This means it is specifying where the verb is *taking place*. So this phrase says that the "copying" should be done "in the location specified by `x4`".  Where to copy *to* is not specified.
 
 3. `_copy_v_1(e2,x3,x8,_in_p_loc(e15,x8,x16))`: Copy 'foo' such that it ends up in '/documents'
 
@@ -19,7 +19,7 @@ There are 171 different parses that the ERG provides since there is a lot of amb
 
 4. (not used in this example) `_preposition_p_dir(e,e1,x), verb_v(e1, ...)`
 
-   There is another variation of the predication for "in" that the ERG doesn't generate for this example, but was shown in [the topic on `go_v_1`](../devvocab/devvocabGoTo). Look at the two interpretations of "the mouse is running under the table":
+   There is another variation of the predication for "in" that the ERG doesn't generate for this example, but was shown in [the topic on `go_v_1`](/devvocabGoTo). Look at the two interpretations of "the mouse is running under the table":
 
    (stative) Just like example 1 above: The mouse staying under the table and running around there:
 
@@ -31,7 +31,7 @@ _the_q(x3,RSTR,BODY)            ┌────── _table_n_1(x9)
                                               └ _run_v_1(e2,x3)
 ~~~
 
-(directional) Just like [`to_p_dir` in the topic on `go_v_1`](../devvocab/devvocabGoTo): The mouse moving from some other spot in the room on a path that takes it under the table:
+(directional) Just like [`to_p_dir` in the topic on `go_v_1`](/devvocabGoTo): The mouse moving from some other spot in the room on a path that takes it under the table:
 
 
 ~~~
@@ -50,7 +50,7 @@ So, we've seen 4 ways a locative preposition can be used with a verb that takes 
 3. (scopal) `verb_v(..., preposition_p_loc(e,x,x))`: The verb should make this preposition true via what it does
 4. (directional) `_preposition_p_dir(e,e1,x), verb_v(e1, ...)`: The actor or verb are happening in that direction
 
-We already have the version of "in" for #1 [implemented](../devvocab/devvocabIn_p_loc), so let's start there.
+We already have the version of "in" for #1 [implemented](/devvocabIn_p_loc), so let's start there.
 
 ### 1. `_in_p_loc(e15,x8,x16), _copy_v_1(e2,x3,x8)`: Copy the 'foo' that is in 'documents'
 Here is the version of `_in_p_loc` that we implemented in a [previous section](devvocabIn_p_loc):
@@ -209,7 +209,7 @@ def stative_copy_v_1_comm(state, e_introduced_binding, x_actor_binding, x_what_b
     else:
         report_error(["dontKnowActor", x_actor_binding.variable.name])
 ~~~
-We're using the same pattern in `_in_p_state` that we used for `_in_p_dir` in a [previous topic](../devvocab/devvocabGoTo): the preposition is just adding its information to the event it is passed, and the verb that introduced that event consumes the information to do its job.
+We're using the same pattern in `_in_p_state` that we used for `_in_p_dir` in a [previous topic](/devvocabGoTo): the preposition is just adding its information to the event it is passed, and the verb that introduced that event consumes the information to do its job.
 
 `FileSystemMock.copy_item()` only changed to use a "copy from" directory to set the base of a relative file name:
 

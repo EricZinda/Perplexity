@@ -1,1 +1,0 @@
-Negation, and marking predications as supporting negation

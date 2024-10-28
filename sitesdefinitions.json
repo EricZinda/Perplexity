@@ -34,7 +34,7 @@
         {"Page": "Solving an MRS", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0010MRSSolver.md", "DstFile": "devcon/devcon0010MRSSolver.md"},
         {"Page": "Representing 'Together'", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0020MRSSolverSets.md", "DstFile": "devcon/devcon0020MRSSolverSets.md"},
         {"Page": "Collective, Distributive, Cumulative", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0030MRSSolverSolutionGroups.md", "DstFile": "devcon/devcon0030MRSSolverSolutionGroups.md"},
-        {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0060WhichParseAndTree.md", "DstFile": "devcon/devcon0060WhichParseAndTree.md"},
+        {"Page": "Choosing a Scope-Resolved MRS", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0060WhichParseAndTree.md", "DstFile": "devcon/devcon0060WhichParseAndTree.md"},
         {"Page": "Sentence Types", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0070SentenceForce.md", "DstFile": "devcon/devcon0070SentenceForce.md"},
         {"Page": "Choosing a Failure", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0080ErrorsChoosingWhichFailure.md", "DstFile": "devcon/devcon0080ErrorsChoosingWhichFailure.md"},
         {"Page": "A. Implementing Solution Groups", "SrcDir": "main", "SrcFile": "docs/devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md", "DstFile": "devcon/devcon0040MRSSolverSolutionGroupsAlgorithm.md"},
@@ -76,7 +76,7 @@
         {"Page": "Naive Failure Text", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0110ErrorsReportingAFailure.md", "DstFile": "pxint/pxint0110ErrorsReportingAFailure.md"},
         {"Page": "English Variable Domains", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0120ErrorsConceptualFailures.md", "DstFile": "pxint/pxint0120ErrorsConceptualFailures.md"},
         {"Page": "Generating MRS and Trees", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0070GenerateMRSAndTrees.md", "DstFile": "pxint/pxint0070GenerateMRSAndTrees.md"},
-        {"Page": "Choosing a Parse and Tree", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0071WhichParseAndTree.md", "DstFile": "pxint/pxint0071WhichParseAndTree.md"},
+        {"Page": "Choosing a Scope-Resolved MRS", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0071WhichParseAndTree.md", "DstFile": "pxint/pxint0071WhichParseAndTree.md"},
         {"Page": "Summary", "SrcDir": "main", "SrcFile": "docs/pxint/pxint0230Summary.md", "DstFile": "pxint/pxint0230Summary.md"},
         {"Page": "A. Python Decorators", "SrcDir": "main", "SrcFile": "docs/pxint/pxint03000PythonDecorators.md", "DstFile": "pxint/pxint03000PythonDecorators.md"}
       ]}
