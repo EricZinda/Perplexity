@@ -1,4 +1,4 @@
-{% raw %}## Collective and Distributive Readings
+{% raw %}## Collective, Distributive, and Cumulative Readings
 If we change the "students lifted a table" example from the [previous section](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0020MRSSolverSets) slightly, we can uncover another layer of meaning we need to represent in the solver. 
 
 For example:
@@ -195,4 +195,4 @@ With the addition of solution groups, the solver can now properly represent the 
 TODO: talk about forward and reverse readings with respect to word order being a function of the tree that is generated.
 
 
-Last update: 2024-10-23 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0030MRSSolverSolutionGroups.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/devcon/devcon0030MRSSolverSolutionGroups.md)]{% endraw %}
