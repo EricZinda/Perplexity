@@ -10,11 +10,11 @@ So far, all the examples we've built have a very "logical" behavior.  They are l
 ? which students are lifting the table
 ```
 
-The system "solves" the MRS by finding variable assignments that make it `true` and then gives built-in answers like "that is true" or lists what was requested.
+The system ["solves" the MRS](https://blog.inductorsoftware.com/Perplexity/home/devcon/devcon0010MRSSolver) by finding variable assignments that make it `true` and then gives built-in answers like "that is true" or lists what was requested.
 
 Next, we are going to walk through how to implement phrases that aren't logical in that same way.  For example, imagine we want to implement a rudimentary help system for our file system example and we'd like users to be able to ask for help using phrases too. To find out what they can do, a user might ask, "Do you have commands?".
 
-Here's a quick overview of how: start by adding the notion of a "command" object into the system, creating one for each of the commands we have so far ("copy" and "go") and implementing the new predications from the MRS, which are `_have_v_1` and `_command_n_1`, as you can see from the MRS:
+We'll start by adding the notion of a "command" object into the system, creating one for each of the commands we have so far ("copy" and "go") and implementing the new predications from the MRS, which are `_have_v_1` and `_command_n_1`:
 
 ```
 [ "Do you have commands?"
@@ -46,7 +46,7 @@ go
 
 You can almost hear the user say "Ugh! Dumb computer" after the first phrase.  A human would interpret that as "Tell me what commands you have, if you have them".  This is known in linguistics as ["Pragmatics"](https://en.wikipedia.org/wiki/Pragmatics). The area of Pragmatics concerns the meaning of phrases that can't be "logically" or "mechanically" interpreted since they require taking into account the context the phrase is uttered in and potentially taking some implied leaps to understand what is actually meant.
 
-Making "Do you have commands?" actually say something custom and not purely give a logical response requires customizing how Perplexity responds when it finds a Solution Group. That is where we'll finish.
+Making "Do you have commands?" actually say something custom and not purely logical requires customizing how Perplexity responds when it finds a Solution Group. That is where we'll finish.
 
 # Logical Interpretation
 
@@ -169,9 +169,9 @@ def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_vari
     yield state_list
 ```
 
-First, instead of using "*have_v_1" as the name, we prefix the name with "solution_group*" and use "solution_group__have_v_1" as the name. This tells the system we are implementing a solution group handler.
+First, instead of using "\_have_v_1" as the name, we prefix the name with "solution_group\_" and use "solution_group__have_v_1" as the name. This tells the system we are implementing a solution group handler.
 
-It has the same number of arguments as the "have_v_1" function, but, because this is handling a solution *group*, the arguments contain multiple items instead of one: one item for each solution in the group.
+It has the same number of arguments as the "have_v_1" function, but, because this is handling a solution *group*, the arguments contain objects that return multiple items: one item for each solution in the group.
 
 Implementing a solution group handler allows you to inspect each solution group that Perplexity finds and write custom logic to invalidate it or respond differently than the system would.  Yielding a list of state objects from the solution group handler indicates that this list of state objects is a valid solution group.  If nothing is yielded, the incoming list of state objects is invalidated and Perplexity continues looking for alternative solution groups.
 
@@ -187,7 +187,7 @@ def _have_v_1_group(context, state_list, e_introduced_binding_list, x_actor_vari
     yield new_solution_group
 ```
 
-Instead of yielding the original solution group, we now are only yielding the first solution ... after modifying it to include a built-in operation called `RespondOperation`.  This is just like the [`DeleteOperation`](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs) we created in an earlier section, but this operation's job is to print text for the user.  Putting a `RespondOperation` in any of the state objects we yield tells the system that we want to override the default output.  
+Instead of yielding the original solution group, we now are only yielding the first solution, after modifying it to include a built-in operation called `RespondOperation`.  This is just like the [`DeleteOperation`](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo070ActionVerbs) we created in an earlier section, but this operation's job is to print text for the user.  Putting a `RespondOperation` in any of the state objects we yield tells the system that we want to override the default output.  
 
 So, now we get this:
 
@@ -206,7 +206,7 @@ While that works, it seems inefficient to have to create `FileCommand` objects, 
 
 Instead, we can use another Perplexity feature called a "Concept" to make it more efficient.  The idea is that, sometimes, instead of Perplexity assigning actual objects to variables, we'd like the "concept" of them (called a [`referring expression`](https://en.wikipedia.org/wiki/Referring_expression) in linguistics) to be assigned.  I.e. instead of assigning `x8 = FileCommand('copy')`, we'd like to have `x8 = {representation of whatever they said before it got resolved into an actual object}` so that we can look at what they said "conceptually" instead of dealing with the actual instances of objects that it generated. This allows the solution group handler to just see if they are were talking about "you" having "the concept of commands" and, if so, generate the custom text.  This would be much more efficient.
 
-To do this, we start adding an alternative `_command_n_1` predication since that is where the instances of commands get generated.  Perplexity allows adding more than one *interpretation* of a predication by creating more than one function and indicating that they use the same predication name. It treats them as *alternatives* and attempts to solve the MRS once using the first interpretation and then again using the next. 
+To do this, we start by adding an alternative `_command_n_1` predication since that is where the instances of commands get generated.  Perplexity allows adding more than one *interpretation* of a predication by creating more than one function and indicating that they use the same predication name. It treats them as *alternatives* and attempts to solve the MRS once using the first interpretation and then again using the next. 
 
 In the new interpretation, instead of yielding instances, we yield a `Concept("command")` object.  The `Concept` object in Perplexity literally does nothing except tell the system it is an opaque "Concept" object.  Here are both interpretations:
 
@@ -389,4 +389,4 @@ All of these phrases are using words like "several" or "3" which quantify how ma
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo100NonlogicalMeaning.md)]{% endraw %}

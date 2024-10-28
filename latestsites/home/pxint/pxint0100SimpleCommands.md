@@ -70,31 +70,6 @@ def pron(state, x_who):
         if isinstance(item, Actor) and item.person == person:
             yield state.set_x(x_who, (item, ))
             break
-    
-
-def Example9():
-    state = State([Actor(name="Computer", person=2),
-                   Folder(name="Desktop"),
-                   Folder(name="Documents"),
-                   File(name="file1.txt", size=2000000),
-                   File(name="file2.txt", size=1000000)])
-
-    mrs = {}
-    mrs["Index"] = "e2"
-    mrs["Variables"] = {"x3": {"PERS": 2},
-                        "x8": {},
-                        "e2": {"SF": "comm"},
-                        "e13": {}}
-
-    mrs["RELS"] = TreePredication(0, "pronoun_q", ["x3",
-                                                   TreePredication(1, "pron", ["x3"]),
-                                                   TreePredication(0, "_a_q", ["x8",
-                                                                               [TreePredication(1, "_file_n_of", ["x8", "i1"]), TreePredication(2, "_large_a_1", ["e1", "x8"])],
-                                                                               TreePredication(3, "_delete_v_1", ["e2", "x3", "x8"])])]
-                                     )
-
-    state = state.set_x("mrs", (mrs,))
-    respond_to_mrs(state, mrs)
 ```
 
 `pronoun_q` is just a simple, default quantifier predication that doesn't *do* anything except introduce the variable that `pron` uses. It acts just like `which_q` did in the [Simple Questions topic  ](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions). So, `pronoun_q` will use the `default_quantifer` we [defined in that topic](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0090SimpleQuestions):
@@ -110,11 +85,11 @@ def pronoun_q(state, x, h_rstr, h_body):
 ### Verbs and State Changes: delete_v_1
 The last new predication is `_delete_v_1`. `_delete_v_1` is the first "real" verb we've dealt with. The others so far have been "implied" "to be" verbs for a phrase like "a file is large", and they don't show up in the MRS as described previously. A verb looks like every other predication: it has a name and arguments. And, because verbs can be modified by words like adverbs (e.g. "*permanently* delete the file"), it introduces an event to hang modifiers on. Like many verbs, the second argument represents the "actor": the person or thing doing the deleting. The final argument is what to delete.
 
-Because our world state is simply a list of Python objects, the logic for deleting something is going to be trivial: remove the thing from the list. In fact, implementing what we are doing here in a real file system interface would be trivial as well: delete the file. However, we would have to decide what to do if a user command like "delete *every* file" fails to delete one of them for some reason. We'll ignore that in our example and just remove the files from the `State` object's list of state. We can safely do this, even though other predications may still be iterating over them, because our `State` object is immutable ([as described previously](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics)) and we will keep it that way by returning a new `State` object when something is deleted, just like we already do for setting variables.
+Because our world state is simply a list of Python objects, the logic for deleting something is going to be trivial: remove the thing from the list. We can safely do this, even though other predications may still be iterating over them, because our `State` object is immutable ([as described previously](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0020PythonBasics)) and we will keep it that way by returning a new `State` object when something is deleted, just like we already do for setting variables.
 
 We do have a problem, though. As you'll see later, we will encounter phrases like "delete *every* file", which have a different solution (i.e. state object) for each file that gets deleted. Each solution will have only *one* of the files deleted.  In order to end up with a single world state that has *all* the files deleted, we'll have to merge them together at the end somehow.
 
-The solution is to create the concept of an "operation" class which does "something" to the state. We will build different operation classes that do different things over time (rename, copy, etc). If a command succeeds with multiple solutions, we can collect all of the operations from the solutions apply *all of them* to a *single* state object at the end. In fact, this is a good way to implement our system in general: build up a set of operations based on what the user says and, when we have the final, solved MRS, actually apply them to the file system. We won't be taking that final step here, but we would need to in order to handle all quantifiers. More on that in the section on Plurals.
+The solution is to create the concept of an `Operation` class which does "something" to the state. We will build different `Operation` classes that do different things over time (rename, copy, etc). If a command succeeds with multiple solutions, we can collect all of the operations from the solutions apply *all of them* to a *single* state object at the end. In fact, this is a good way to implement our system in general: build up a set of operations based on what the user says and, when we have the final, solved MRS, actually apply them to the file system. We won't be taking that final step here, but we would need to in order to handle all quantifiers. More on that in the section on Plurals.
 
 We'll start by building some new mechanics into the `State` object to handle operations and create the `DeleteOperation` class:
 
@@ -157,9 +132,9 @@ class DeleteOperation(object):
                 break
 ```
 
-An "operation" in our system is simply an object that has an `apply_to()` method that does something to the `State` object it is passed. The `DeleteOperation` operation class deletes any object in the system by removing it from the `State` object's list of objects. It uses a `unique_id` property to compare objects since they may have come from different `State` objects and will thus be copies and just comparing the objects will fail. This could be implemented in many ways and one approach is described at the very end of this section.
-
 > This is a case where our "immutable" `State` class is actually being changed. That's OK, though, because only the `State` class will be asking it to do this, and only on a fresh `State` object that isn't in use yet.
+
+An "operation" in our system is simply an object that has an `apply_to()` method that does something to the `State` object it is passed. The `DeleteOperation` operation class deletes any object in the system by removing it from the `State` object's list of objects. It uses a `unique_id` property to compare objects since they may have come from different `State` objects and will thus be copies and just comparing the objects will fail. This could be implemented in many ways and one approach is described at the very end of this section.
 
 When an operation is applied to the `State` class, we'll remember what happened by adding the operation to the new `State` object's list of operations.  Then, once we've collected all the solutions to a problem like "delete every file", we can gather the operations from each of the solutions using the `get_operations()` method, and apply them, as a group, to the original state. This will give us a new state object that combines them all. You'll see this at the end of this section.
 
@@ -189,7 +164,7 @@ Finally, we need to add a new clause to `respond_to_mrs()` to handle *commands*.
 def respond_to_mrs(state, mrs):    
     ...
     
-        elif force == "comm":
+    elif force == "comm":
         # This was a command so, if it works, just say so
         # We'll get better errors and messages in upcoming sections
         if len(solutions) > 0:
@@ -244,7 +219,7 @@ You can see by the output that the only large file in the system was deleted: "f
 
 There are a couple of interesting things about what we've done. The code for `delete_v_1` will delete *anything*, so the phrase "delete you" will actually work! Of course, it will then mess up the system because every command after that will not be able to find the implied "you". This is part of the magic and the challenge of implementing MRS predications, if you implement them right, they can be very general and allow constructions that you hadn't thought of.
 
-## Identity
+## Footnote: Identity
 Because the system is built around immutable state, we will sometimes end up with two `State` objects and need to be able to find the same object contained in either one.  This happened in the implementation of the `DeleteOperation`. We need a way to compare objects *across* state objects. The easiest way is to give all the objects in the system a globally unique id that can be easily compared. In the example above, we created a base class, `UniqueObject` that does this and derived everything from it:
 
 ```
@@ -289,4 +264,4 @@ class DeleteOperation(object):
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0100SimpleCommands.md)]{% endraw %}
+Last update: 2024-10-28 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0100SimpleCommands.md)]{% endraw %}

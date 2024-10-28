@@ -364,7 +364,7 @@ etc.
 <p>The Perplexity <code class="language-plaintext highlighter-rouge">Concept</code> object gives us a direction, but we’ll need to enhance it. We will create a richer kind of <code class="language-plaintext highlighter-rouge">Concept</code> object that can hold a representation of these “conceptual” referring expressions and build predications that use them.</p>
 
 <h3 id="creating-a-file">Creating a File</h3>
-<p>Below is the built-in <code class="language-plaintext highlighter-rouge">Concept</code> object. Its default implementation just stores a single string from the constructor called <code class="language-plaintext highlighter-rouge">sort_of</code> which represents the sort of concept it is.  Period. It doesn’t do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the <code class="language-plaintext highlighter-rouge">value_type</code> property which returns <code class="language-plaintext highlighter-rouge">VariableValueType.concept</code>.  This tells Perplexity “I am a concept, treat me as an opaque blob”.  The rest of the methods are there to support equality and membership in dictionaries and are use by things like the Python <code class="language-plaintext highlighter-rouge">dict</code> object:</p>
+<p>Below is the built-in <code class="language-plaintext highlighter-rouge">Concept</code> object. Its default implementation just stores a single string from the constructor called <code class="language-plaintext highlighter-rouge">sort_of</code> which represents the sort of concept it is.  Period. It doesn’t do anything with it. As far as Perplexity is concerned, the only part of it that gets used is the <code class="language-plaintext highlighter-rouge">value_type</code> property which returns <code class="language-plaintext highlighter-rouge">VariableValueType.concept</code>.  This tells Perplexity “I am a concept, treat me as an opaque blob”.  The rest of the methods are there to support equality and membership in dictionaries and are used by things like the Python <code class="language-plaintext highlighter-rouge">dict</code> object:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Concept(object):
     def __init__(self, sort_of):
@@ -677,6 +677,8 @@ def compound_concept(context, state, e_introduced_binding, x_base_binding, x_mod
 
 <p>(We haven’t added to code to make a nice error yet …)</p>
 
+<p>Hmmm. What happened here? Let’s dig in.</p>
+
 <h3 id="logical-entailment">Logical Entailment</h3>
 
 <p>The problem is in the implementation of <code class="language-plaintext highlighter-rouge">_create_v_1</code>.  It checks to see if its argument <code class="language-plaintext highlighter-rouge">== RichConcept("file")</code>, but the <code class="language-plaintext highlighter-rouge">Concept</code> is no longer simply a file, it is a <code class="language-plaintext highlighter-rouge">RichConcept([('is_a', 'file'), ('has_adjective', 'text')])</code>, so it fails:</p>
@@ -696,7 +698,7 @@ def create_v_1_comm(context, state, e_introduced_binding, x_actor_binding, x_wha
 
 <p>As far as this predication is concerned, we don’t care what <em>type</em> of file the user asked to create, that will be dealt with elsewhere.  We just care that it is, at its core, a <em>file</em>.  Here, we can appeal to a concept from logic called “logical consequence” or <a href="https://en.wikipedia.org/wiki/Logical_consequence">“logical entailment”</a>.  Really, you can think of it as “implies”.  Being a “text file” will always mean it is also a “file”. So, “text file” <em>entails</em> “file” or “text file” <em>implies</em> “file”. In this function we want to check for <em>entailment</em> of “file”, not equality.</p>
 
-<p>Now, proving entailment is an active area of research. It is a hard problem. But we don’t have the general case here, we have a very limited vocabulary and set of scenarios.  We can therefore just say that something entails something else as long as they both “is_a” the same thing:</p>
+<p>Now, proving entailment is an active area of research. It is a hard problem in the general case. But we don’t have the general case here, we have a very limited vocabulary and set of scenarios.  We can therefore just say that something entails something else as long as they both “is_a” the same thing:</p>
 
 <p>Let’s add a method to our <code class="language-plaintext highlighter-rouge">Concept</code> object to do that (the last method below):</p>
 
@@ -951,7 +953,7 @@ class FileSysem:
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo120ConceptsReferringExpressions.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo120ConceptsReferringExpressions.md">edit</a>]</p>
 
         
       </section>

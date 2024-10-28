@@ -72,7 +72,7 @@ But that is still a lot of typing and what if all of your nouns are just listed 
 ### `match_all` predications
 A more general approach is to implement a single function that matches all predications of a certain part-of-speech. Perplexity supports this by allowing you to specify a special predicate called `match_all_n`. It will be called for any noun predication that matches its arguments.  The "lemma" for the predicate will be passed in as an additional first argument ("file" is the *lemma* for `_file_n_of`).  Then, your code can dynamically determine if the binding is of that type.
 
-For the code below, there are two functions not shown:
+For the code below, there are two functions helperr functions shown:
 
 - `implemented_nouns()` just returns a list of all nouns the application supports
 - `sort_of(state, value, noun_type)` returns true if `value` is something of type `noun_type` (which would be a lemma like "file")
@@ -119,8 +119,6 @@ def match_all_n_instances(noun_type, context, state, x_binding):
                                            bound_variable,
                                            unbound_variable)                                        
 ```
-
-Note that building a `match_all_n` function requires building a helper function (like `understood_noun(state, noun_lemma)` above) which returns `True` if a lemma is implemented. 
 
 All the code above replaces the original code for `_file_n_of` and `_folder_n_of`. It then requires updating those helper functions as new words are added.  In a system that models objects in some kind of logical ontology, this could be a simple database lookup.
 
@@ -211,4 +209,4 @@ If you *only* want this new predication to run, then you'd also return `False` f
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo130OpenClassWords.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo130OpenClassWords.md)]{% endraw %}

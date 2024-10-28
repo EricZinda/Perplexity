@@ -16,7 +16,7 @@ class TreePredication(object):
 
 To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. `"_folder_n_of"`) to the function and module that implements the logic for it. 
 
-We'll start by building a `Vocabulary` class that will store all of the mappings. You add a mapping with `add_predication()` and find a mapping with `predication()`. Note that it is both the name and the arguments of a predicate that have to match to get a proper mapping:
+We'll start by building a `Vocabulary` class that will store all of the mappings. You add a mapping with `add_predication()` and find a mapping with `predication()`. Note that both the name and the arguments of a predicate that have to match to get a proper mapping:
 
 ```
 class Vocabulary(object):
@@ -35,7 +35,7 @@ class Vocabulary(object):
         return self.name_function_map.get(signature, None)
 ```
 
-Then we need to find a way to populate the mappings. We'll do this using a Python feature called "decorators". It isn't important to understand *how* it works (but if you want to: [read this section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators)). For our purposes, just understand that by writing these two small Python classes:
+Then we need to find a way to populate the mappings. We'll do this using a Python feature called "decorators". It isn't important to understand *how* it works (but if you want to: [read this section](https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators)). For our purposes, just understand that by writing the code below:
 
 ```
 def arg_types_from_names(args):
@@ -147,7 +147,7 @@ def Example2():
 {'x1': x1=(Folder(Documents),)}
 ```
 
-`Example2` calls `call_predication()` with the `vocabulary` object we've built and populated using the `Predication` decorator and a `State` object.  `call_predication` then does the mapping of the predication name `_folder_n_of` to the actual Python function we've written, and performs the "contract" on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.
+`Example2` calls `call_predication()` with the `vocabulary` object we've built and populated using the `Predication` decorator along with a `State` object.  `call_predication` then does the mapping of the predication name `_folder_n_of` to the actual Python function we've written, and performs the "contract" on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.
 
 The reason it prints out the two folders in our world is that we left all the arguments to `_folder_n_of` unbound. The contract says that, in that case, it should yield all the things in the world that "are a folder", thus the behavior.
 
@@ -155,4 +155,4 @@ With this in place, we can tackle more complicated groups of predications such a
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0040BuildSolver.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0040BuildSolver.md)]{% endraw %}

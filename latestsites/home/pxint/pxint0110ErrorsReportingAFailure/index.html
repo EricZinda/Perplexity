@@ -351,7 +351,7 @@
 <h2 id="reporting-a-failure-naively">Reporting a Failure Naively</h2>
 <p>In the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0105ErrorsChoosingWhichFailure">previous section</a> we updated our code to support reporting errors (via <code class="language-plaintext highlighter-rouge">ExecutionContext.report_error()</code>) and updated the <code class="language-plaintext highlighter-rouge">ExecutionContext.call()</code> method to record the index of our currently executing predication.  This allowed us to keep track of the “deepest” error.</p>
 
-<p>With that in place, we can now start reporting errors from predications. As outlined in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a>, “failure” is when the predication is not true for its arguments. So, let’s add ode at the end of <code class="language-plaintext highlighter-rouge">large_a_1</code> to record an error when there is a failure. We’ll call the new <code class="language-plaintext highlighter-rouge">report_error()</code> method and pass it what seems like the right error given the code:</p>
+<p>With that in place, we can now start reporting errors from predications. As outlined in the <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint0010PredicationContract">predication contract</a>, “failure” is when the predication is not true for its arguments. So, let’s add code at the end of <code class="language-plaintext highlighter-rouge">large_a_1</code> to record an error when there is a failure. We’ll call the new <code class="language-plaintext highlighter-rouge">report_error()</code> method and pass it what seems like the right error given the code:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary, name="_large_a_1")
 def large_a_1(state, e, x):
@@ -439,7 +439,7 @@ def large_a_1(state, e_introduced, x_target):
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0110ErrorsReportingAFailure.md">edit</a>]</p>
+<p>Last update: 2024-10-28 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0110ErrorsReportingAFailure.md">edit</a>]</p>
 
         
       </section>

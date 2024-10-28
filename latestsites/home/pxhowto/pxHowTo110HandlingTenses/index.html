@@ -348,7 +348,7 @@
       <section class="page__content e-content" itemprop="text">
         
         <h2 id="handling-tenses">Handling Tenses</h2>
-<p>In the previous section on <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning">Non-logical meaning</a>, we saw how, in implementing the predications to support “Do you have commands?” we accidentally supported phrases like:</p>
+<p>In the previous section on <a href="https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning">Non-logical Meaning</a>, we saw how, in implementing the predications to support “Do you have commands?” we accidentally supported phrases like:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? did you have a command?
 You can use the following commands: copy and go
@@ -429,7 +429,7 @@ I don't understand the way you are using: have
 <p>The system ignores the predication unless it matches the properties of the phrase. If it can’t find one that works, it gives an “I didn’t understand” message.</p>
 
 <h3 id="using-phrases-to-specify-properties">Using Phrases to Specify Properties</h3>
-<p>Collecting properties manually can get annoying, and they don’t provide good documentation for which phrases a predication is meant to support. So, Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the <code class="language-plaintext highlighter-rouge">properties</code> argument directly, you can provide phrases and Perplexity will help you work it out.</p>
+<p>Collecting properties manually can get annoying, and they don’t provide good documentation for which phrases a predication is meant to support. So, Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the <code class="language-plaintext highlighter-rouge">properties</code> argument directly, you can provide phrases and Perplexity will help you work out the properties.</p>
 
 <p>If we instead started with this code, which specifies the phrase we want to support but doesn’t supply any properties for it (i.e. specifies <code class="language-plaintext highlighter-rouge">None</code> where the properties should be):</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@Predication(vocabulary,
@@ -577,7 +577,7 @@ def _have_v_1_concept(context, state, e_introduced_binding, x_actor_binding, x_t
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo110HandlingTenses.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo110HandlingTenses.md">edit</a>]</p>
 
         
       </section>

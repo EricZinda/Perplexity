@@ -364,7 +364,7 @@
 
 <p>To convert this representation into a Python function and call it, we need a mapping from the string predication name (e.g. <code class="language-plaintext highlighter-rouge">"_folder_n_of"</code>) to the function and module that implements the logic for it.</p>
 
-<p>We’ll start by building a <code class="language-plaintext highlighter-rouge">Vocabulary</code> class that will store all of the mappings. You add a mapping with <code class="language-plaintext highlighter-rouge">add_predication()</code> and find a mapping with <code class="language-plaintext highlighter-rouge">predication()</code>. Note that it is both the name and the arguments of a predicate that have to match to get a proper mapping:</p>
+<p>We’ll start by building a <code class="language-plaintext highlighter-rouge">Vocabulary</code> class that will store all of the mappings. You add a mapping with <code class="language-plaintext highlighter-rouge">add_predication()</code> and find a mapping with <code class="language-plaintext highlighter-rouge">predication()</code>. Note that both the name and the arguments of a predicate that have to match to get a proper mapping:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class Vocabulary(object):
     def __init__(self):
@@ -382,7 +382,7 @@
         return self.name_function_map.get(signature, None)
 </code></pre></div></div>
 
-<p>Then we need to find a way to populate the mappings. We’ll do this using a Python feature called “decorators”. It isn’t important to understand <em>how</em> it works (but if you want to: <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators">read this section</a>). For our purposes, just understand that by writing these two small Python classes:</p>
+<p>Then we need to find a way to populate the mappings. We’ll do this using a Python feature called “decorators”. It isn’t important to understand <em>how</em> it works (but if you want to: <a href="https://blog.inductorsoftware.com/Perplexity/home/pxint/pxint03000PythonDecorators">read this section</a>). For our purposes, just understand that by writing the code below:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def arg_types_from_names(args):
     type_list = []
@@ -490,7 +490,7 @@ def Example2():
 {'x1': x1=(Folder(Documents),)}
 </code></pre></div></div>
 
-<p><code class="language-plaintext highlighter-rouge">Example2</code> calls <code class="language-plaintext highlighter-rouge">call_predication()</code> with the <code class="language-plaintext highlighter-rouge">vocabulary</code> object we’ve built and populated using the <code class="language-plaintext highlighter-rouge">Predication</code> decorator and a <code class="language-plaintext highlighter-rouge">State</code> object.  <code class="language-plaintext highlighter-rouge">call_predication</code> then does the mapping of the predication name <code class="language-plaintext highlighter-rouge">_folder_n_of</code> to the actual Python function we’ve written, and performs the “contract” on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.</p>
+<p><code class="language-plaintext highlighter-rouge">Example2</code> calls <code class="language-plaintext highlighter-rouge">call_predication()</code> with the <code class="language-plaintext highlighter-rouge">vocabulary</code> object we’ve built and populated using the <code class="language-plaintext highlighter-rouge">Predication</code> decorator along with a <code class="language-plaintext highlighter-rouge">State</code> object.  <code class="language-plaintext highlighter-rouge">call_predication</code> then does the mapping of the predication name <code class="language-plaintext highlighter-rouge">_folder_n_of</code> to the actual Python function we’ve written, and performs the “contract” on it.  I.e. calls it with the specified arguments and expects that it will yield values that are true.</p>
 
 <p>The reason it prints out the two folders in our world is that we left all the arguments to <code class="language-plaintext highlighter-rouge">_folder_n_of</code> unbound. The contract says that, in that case, it should yield all the things in the world that “are a folder”, thus the behavior.</p>
 
@@ -500,7 +500,7 @@ def Example2():
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0040BuildSolver.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxint/pxint0040BuildSolver.md">edit</a>]</p>
 
         
       </section>

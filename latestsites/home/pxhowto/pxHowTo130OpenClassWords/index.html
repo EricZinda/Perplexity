@@ -418,7 +418,7 @@ def file_n_of(context, state, x_binding, i_binding):
 <h3 id="match_all-predications"><code class="language-plaintext highlighter-rouge">match_all</code> predications</h3>
 <p>A more general approach is to implement a single function that matches all predications of a certain part-of-speech. Perplexity supports this by allowing you to specify a special predicate called <code class="language-plaintext highlighter-rouge">match_all_n</code>. It will be called for any noun predication that matches its arguments.  The “lemma” for the predicate will be passed in as an additional first argument (“file” is the <em>lemma</em> for <code class="language-plaintext highlighter-rouge">_file_n_of</code>).  Then, your code can dynamically determine if the binding is of that type.</p>
 
-<p>For the code below, there are two functions not shown:</p>
+<p>For the code below, there are two functions helperr functions shown:</p>
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">implemented_nouns()</code> just returns a list of all nouns the application supports</li>
@@ -466,8 +466,6 @@ def match_all_n_instances(noun_type, context, state, x_binding):
                                            bound_variable,
                                            unbound_variable)                                        
 </code></pre></div></div>
-
-<p>Note that building a <code class="language-plaintext highlighter-rouge">match_all_n</code> function requires building a helper function (like <code class="language-plaintext highlighter-rouge">understood_noun(state, noun_lemma)</code> above) which returns <code class="language-plaintext highlighter-rouge">True</code> if a lemma is implemented.</p>
 
 <p>All the code above replaces the original code for <code class="language-plaintext highlighter-rouge">_file_n_of</code> and <code class="language-plaintext highlighter-rouge">_folder_n_of</code>. It then requires updating those helper functions as new words are added.  In a system that models objects in some kind of logical ontology, this could be a simple database lookup.</p>
 
@@ -555,7 +553,7 @@ def _command_n_1(context, state, x_binding):
   <p>Comprehensive source for the completed tutorial is available <a href="https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world">here</a></p>
 </blockquote>
 
-<p>Last update: 2024-10-24 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo130OpenClassWords.md">edit</a>]</p>
+<p>Last update: 2024-10-25 by Eric Zinda [<a href="https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo130OpenClassWords.md">edit</a>]</p>
 
         
       </section>

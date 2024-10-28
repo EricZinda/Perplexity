@@ -1,5 +1,5 @@
 {% raw %}## Handling Tenses
-In the previous section on [Non-logical meaning](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning), we saw how, in implementing the predications to support "Do you have commands?" we accidentally supported phrases like:
+In the previous section on [Non-logical Meaning](https://blog.inductorsoftware.com/Perplexity/home/pxhowto/pxHowTo100NonlogicalMeaning), we saw how, in implementing the predications to support "Do you have commands?" we accidentally supported phrases like:
 
 ```
 ? did you have a command?
@@ -85,7 +85,7 @@ I don't understand the way you are using: have
 The system ignores the predication unless it matches the properties of the phrase. If it can't find one that works, it gives an "I didn't understand" message.
 
 ### Using Phrases to Specify Properties
-Collecting properties manually can get annoying, and they don't provide good documentation for which phrases a predication is meant to support. So, Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the `properties` argument directly, you can provide phrases and Perplexity will help you work it out.
+Collecting properties manually can get annoying, and they don't provide good documentation for which phrases a predication is meant to support. So, Perplexity provides an additional approach to you help you build these: Phrases.  Instead of populating the `properties` argument directly, you can provide phrases and Perplexity will help you work out the properties.
 
 If we instead started with this code, which specifies the phrase we want to support but doesn't supply any properties for it (i.e. specifies `None` where the properties should be):
 ```
@@ -240,4 +240,4 @@ To save space, you can compress the values permitted in the `properties` argumen
 
 > Comprehensive source for the completed tutorial is available [here](https://github.com/EricZinda/Perplexity/tree/main/samples/hello_world)
 
-Last update: 2024-10-24 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo110HandlingTenses.md)]{% endraw %}
+Last update: 2024-10-25 by Eric Zinda [[edit](https://github.com/EricZinda/Perplexity/edit/main/docs/pxHowTo/pxHowTo110HandlingTenses.md)]{% endraw %}
