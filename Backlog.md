@@ -66,6 +66,7 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
 # Bugs
     # Pri 1
         - FIX BROKEN TESTS (i.e. WRONG: tests)
+            -START HERE:
             - which chicken menu items do you have? --> pork
                     soup
                     salad
@@ -74,7 +75,19 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                     salmon
                     '_which_q(x5,udef_q(x10,udef_q(x16,_chicken_n_1(x16),[_menu_n_1(x10), compound(e15,x10,x16)]),[_thing_n_of-about(x5,i21), compound(e9,x5,x10)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))'
                     Theory: the problem is that one interpretation is "chicken menu" (items) and another is "chicken" (menu items), we want the later.  It may just take a long time to get there?
-
+                    Theory: The real problem is:
+                        - First: compound does not do any notion of "grouping", it just keeps adding criteria onto the concept.
+                            - So you end up with something like "object that is a chicken and is a menu and is an item" which isn't right
+                            - what we want is the ability to create a concept that has grouping like "chicken (menu item)"
+                                - So, come up with a new way to build the concept that orders the criteria
+                                    - this might be as simple as remembering the order things were built in and running that order. Try that first
+                                    - easiest way is to merge all the criteria into a single ordered list that runs in the order of the list
+                                        - Problem is that we need to dynamically change whether we are working with instances or types
+                                            and so a single criteria doesn't fix it
+            - Next bug: Once that is fixed, it still doesn't work because it says "items" so never gets there
+                - "item" works properly
+                - The problem is that it is a wh_question(), and it is "which items" which is [2,inf]
+                    so it tries to fill the maximal group
         - Bug: It looks like collective only checks for one value???
             - whole_group_unique_individuals.update(binding_value) never adds a set of individuals to the set
         - which dishes are specials -> veggie, meat

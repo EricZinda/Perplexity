@@ -94,9 +94,9 @@ def get_table_at_entrance(state, context, who_group, table_group, table_count_co
         for_capacity = table.find_criteria(rel_subjects_greater_or_equal, "maxCapacity", None)
         for_possession = table.find_criteria(noop_criteria, "targetPossession", None)
         if for_possession is not None:
-            for_value = for_possession[2]
+            for_value = for_possession.arg2
         elif for_capacity is not None:
-            for_value = for_capacity[2]
+            for_value = for_capacity.arg2
 
     # If they say "we want a table" (because we means 2 in this scenario) or "table for 2" the size is implied
     if for_value is not None and not isinstance(for_value, tuple) and isinstance(for_value, numbers.Number):

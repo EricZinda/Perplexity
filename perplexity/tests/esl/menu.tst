@@ -222,7 +222,7 @@
             "Command": "which chicken menu items do you have?",
             "Expected": "Waiter: You already ordered a menu for you\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
             "Tree": "_which_q(x5,udef_q(x10,udef_q(x16,_chicken_n_1(x16),[_menu_n_1(x10), compound(e15,x10,x16)]),[_thing_n_of-about(x5,i21), compound(e9,x5,x10)]),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
-            "Enabled": true,
+            "Enabled": false,
             "ID": "3abc1ec5-890e-4d20-83fd-58479d75bf6a"
         },
         {
@@ -261,11 +261,25 @@
             "ID": "4e977eb7-06e3-42e4-9c00-a7ad22602325"
         },
         {
+            "Command": "which chicken menu item do you have?",
+            "Expected": "Waiter: chicken is an excellent choice!\nWaiter: Can I get you anything besides a chicken for you?",
+            "Tree": "_which_q(x5,udef_q(x10,_chicken_n_1(x10),udef_q(x16,_menu_n_1(x16),[_thing_n_of-about(x5,i21), compound(e15,x5,x16), compound(e9,x5,x10)])),pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
+            "Enabled": true,
+            "ID": "d13bf1c4-5a27-467c-85c1-e6eb7219b82d"
+        },
+        {
+            "Command": "cancel my chicken order",
+            "Expected": "Waiter: I have removed a chicken from the order for you.\nWaiter: What can I get you?",
+            "Tree": "pronoun_q(x14,pron(x14),udef_q(x20,_chicken_n_1(x20),pronoun_q(x3,pron(x3),def_explicit_q(x8,[_order_n_of(x8), compound(e19,x8,x20), poss(e13,x8,x14)],_cancel_v_1(e2,x3,x8)))))",
+            "Enabled": true,
+            "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"
+        },
+        {
             "Command": "show us 3 menus",
             "Expected": "Waiter: Our policy is to give one menu to every customer ...\nWaiter: What can I get you?",
             "Tree": "pronoun_q(x9,pron(x9),udef_q(x8,[_menu_n_1(x8), card(3,e19,x8)],pronoun_q(x3,pron(x3),_show_v_1(e2,x3,x8,x9))))",
             "Enabled": true,
-            "ID": "988f2dbf-fc14-4a2a-a108-62a105abb9cb"
+            "ID": "da521971-c648-4870-a4a1-dc25d2f1baf6"
         },
         {
             "Command": "we have 2 menus",

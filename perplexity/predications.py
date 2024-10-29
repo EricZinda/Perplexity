@@ -31,22 +31,56 @@ def is_concept(o):
     return hasattr(o, "value_type") and o.value_type() == VariableValueType.concept
 
 
+class ConceptSortCriterion:
+    def __init__(self, sort):
+        self.sort = sort
+        self._hash = hash(sort)
+
+    def __hash__(self):
+        return self._hash
+
+    def __eq__(self, other):
+        if isinstance(other, ConceptSortCriterion) and self.sort == other.sort:
+            return True
+
+    def __repr__(self):
+        return f"Sort({self.sort})"
+
+
+class ConceptCriterion:
+    def __init__(self, function, arg1, arg2):
+        self.function = function
+        self.arg1 = arg1
+        self.arg2 = arg2
+        if not ((isinstance(arg1, (str, int)) or arg1 is None) and (isinstance(arg2, (str, int)) or arg2 is None)):
+            assert False, "must be strings for hash to work"
+        self._hash = hash((arg1, arg2, self.function.__name__))
+
+    def __hash__(self):
+        return self._hash
+
+    def __eq__(self, other):
+        if isinstance(other, ConceptCriterion) and self.function == other.function and self.arg1 == other.arg1 and self.arg2 == other.arg2:
+            return True
+
+    def __repr__(self):
+        return f"Criterion({self.function}({self.arg1} {self.arg2}))"
+
+
 class Concept(object):
     def __init__(self, sort_of):
-        # This is a set so it is more easily comparable since order doesn't matter
-        self._sort_of_criteria = set([sort_of]) if sort_of is not None else set()
+        self.criteria = [ConceptSortCriterion(sort_of)] if sort_of is not None else []
         self._hash = None
 
     def __repr__(self):
-        return f"Concept({','.join(self._sort_of_criteria)})"
+        return f"Concept({','.join(self.criteria)})"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
     # It must remain the same for the lifetime of the object
     def __hash__(self):
         if self._hash is None:
-            # TODO: Make this more efficient
-            self._hash = hash(tuple(self._sort_of_criteria))
+            self._hash = hash(tuple(self.criteria))
 
         return self._hash
 

@@ -4,7 +4,7 @@ import numbers
 import pickle
 import samples.esl.esl_planner
 import samples.esl.esl_planner_description
-from perplexity.predications import is_concept, Concept
+from perplexity.predications import is_concept, Concept, ConceptCriterion, ConceptSortCriterion
 from perplexity.response import RespondOperation, get_reprompt_operation
 from perplexity.set_utilities import DisjunctionValue
 from perplexity.sstring import s
@@ -516,41 +516,27 @@ class ResponseStateOp(object):
 class ESLConcept(Concept):
     def __init__(self, sort_of=None, mrs_variable=None):
         super().__init__(sort_of)
-        self.criteria = []
         self._hash = None
         self.mrs_variable = mrs_variable
 
     def __repr__(self):
-        return f"ESLConcept({','.join(self._sort_of_criteria)}: {[x for x in self.criteria]} )"
+        return f"ESLConcept({','.join([str(x) for x in self.criteria])})"
 
     # The only required property is that objects which compare equal have the same hash value
     # But: objects with the same hash aren't required to be equal
     # It must remain the same for the lifetime of the object
     def __hash__(self):
         if self._hash is None:
-            # TODO: Make this more efficient
-            self._hash = hash(tuple(self._sort_of_criteria))
+            self._hash = hash(tuple(self.criteria))
 
         return self._hash
 
     def __eq__(self, other):
         if isinstance(other, ESLConcept) and self.__hash__() == other.__hash__():
-            if self._sort_of_criteria != other._sort_of_criteria:
+            if self.criteria != other.criteria:
                 return False
 
-            elif len(self.criteria) != len(other.criteria):
-                return False
-
-            else:
-                for item in self._sort_of_criteria:
-                    if item not in other._sort_of_criteria:
-                        return False
-
-                for index in range(len(self.criteria)):
-                    if self.criteria[index] not in other.criteria:
-                        return False
-
-                return True
+            return True
 
     def render_english(self):
         # We have simplistic logic for converting concepts to english
@@ -560,67 +546,61 @@ class ESLConcept(Concept):
 
         else:
             words = []
-            for function_arg1_arg2 in self.criteria:
-                if function_arg1_arg2[0] == rel_subjects and function_arg1_arg2[1] == "isAdj":
-                    words.append(function_arg1_arg2[2])
-                else:
-                    # Kind of criteria we don't understand ... abort
-                    return "something"
-            if len(self._sort_of_criteria) == 0:
+            sort_count = 0
+            sort_words = []
+            for concept_criterion in self.criteria:
+                if isinstance(concept_criterion, ConceptCriterion):
+                    if concept_criterion.function == rel_subjects and concept_criterion.arg1 == "isAdj":
+                        words.append(concept_criterion.arg2)
+                    else:
+                        # Kind of criteria we don't understand ... abort
+                        return "something"
+                elif isinstance(concept_criterion, ConceptSortCriterion):
+                    sort_count += 1
+                    sort_words.append(concept_criterion.sort)
+
+            if sort_count == 0:
                 words.append("something")
             else:
-                words.append(next(iter(self._sort_of_criteria)))
+                words.append(sort_words[0])
 
             return " ".join(words)
 
     # Used to add another concept as a conjunction to this one by simply
     # combining their sort_of_criteria and criteria
     def add_conjunction(self, concept):
-        self_copy = self.add_sort_of_criteria_list(concept._sort_of_criteria)
-        return self_copy.add_criteria_list(concept.criteria)
+        return self.add_criteria_list(concept.criteria)
 
     def add_criteria(self, function, arg1, arg2):
-        return self.add_criteria_list([(function, arg1, arg2)])
+        return self.add_criteria_list([ConceptCriterion(function, arg1, arg2)])
 
     def add_criteria_list(self, function_arg1_arg2_triples):
         self_copy = copy.deepcopy(self)
-        self_copy.criteria += [tuple(x) for x in function_arg1_arg2_triples]
-        return self_copy
-
-    def add_sort_of_criteria_list(self, sort_of_criteria_list):
-        self_copy = copy.deepcopy(self)
-        self_copy._sort_of_criteria.update(sort_of_criteria_list)
-        # Needs to update the hash since it is based on sort_of_criteria of the object
-        self_copy._hash = None
+        self_copy.criteria += function_arg1_arg2_triples
         return self_copy
 
     # Pass None to any argument that should be ignored
     def find_criteria(self, function, arg1, arg2):
         for c in self.criteria:
-            if function is not None and function != c[0]:
-                continue
-            if arg1 is not None and arg1 != c[1]:
-                continue
-            if arg2 is not None and arg2 != c[2]:
-                continue
-            return c
-
-    # Build a list of criteria that can be executed from the sort_of list
-    def sort_to_criteria(self, criteria_function):
-        return [(criteria_function, None, sort) for sort in self._sort_of_criteria]
+            if isinstance(c, ConceptCriterion):
+                if function is not None and function != c.function:
+                    continue
+                if arg1 is not None and arg1 != c.arg1:
+                    continue
+                if arg2 is not None and arg2 != c.arg2:
+                    continue
+                return c
 
     # return any instances that meet all the criteria in self.criteria
     def instances(self, context, state, potential_instances=None):
-        return self._meets_criteria(context, state, self.sort_to_criteria(rel_all_instances) + self.criteria,
-                                    initial_instances=potential_instances)
+        return self._meets_criteria(context, state, rel_all_instances, initial_instances=potential_instances)
 
     def has_instance(self, context, state, instance):
-        return len(self._meets_criteria(context, state, [instance])) > 0
+        return len(self._meets_criteria(context, state, rel_all_instances, [instance])) > 0
 
     # get the actual identifiers of all concepts that meet all the criteria
     def concepts(self, context, state, potential_concepts=None):
-        raw_concepts = self._meets_criteria(context, state, self.sort_to_criteria(rel_all_specializations) +
-                                            self.criteria, initial_instances=potential_concepts)
+        raw_concepts = self._meets_criteria(context, state, rel_all_specializations, initial_instances=potential_concepts)
 
         if len(raw_concepts) == 0:
             # Since the concept generated might be different than what the user said,
@@ -690,9 +670,10 @@ class ESLConcept(Concept):
         larger_concept_sort = larger_concept.single_sort_name()
         if larger_concept_sort is not None:
             if not self._has_sort_negation():
-                for criteria in self._sort_of_criteria:
-                    if sort_of(state, criteria, larger_concept_sort):
-                        return True
+                for criteria in self.criteria:
+                    if isinstance(criteria, ConceptSortCriterion):
+                        if sort_of(state, criteria.sort, larger_concept_sort):
+                            return True
 
         instances, instances_by_concept = self.instances_of_concepts(context, state, [larger_concept])
         return len(instances_by_concept) == 1 and len(instances_by_concept[larger_concept]) == len(instances)
@@ -739,8 +720,10 @@ class ESLConcept(Concept):
     # There is one special case where we can get a "type name" or "concept name" from a concept
     # without resorting to entailment: when we can prove it is that sort and nothing more or less
     def single_sort_name(self):
-        if len(self._sort_of_criteria) == 1 and len(self.criteria) == 0:
-            return next(iter(self._sort_of_criteria))
+        sort_criteria = [criterion for criterion in self.criteria if isinstance(criterion, ConceptSortCriterion)]
+        other_criteria = [criterion for criterion in self.criteria if not isinstance(criterion, ConceptSortCriterion)]
+        if len(sort_criteria) == 1 and len(other_criteria) == 0:
+            return sort_criteria[0].sort
 
         else:
             return None
@@ -750,20 +733,30 @@ class ESLConcept(Concept):
         # No way to express this yet so easy answer
         return False
 
-    # Each of the criterion is a triple: (function, arg1, arg2)
+    # Each of the criterion is a quad: (function, arg1, arg2, order)
+    # `order` defines groups so that we have an order of filtering.  the lowest numbered groups go first
     # `function` is required to:
     #   - be of the signature: function(state, x, y).  x and y get passed in arg1 and arg2
     #   - yield values that are true of x and y given the criteria it implements
-    def _meets_criteria(self, context, state, final_criteria, initial_instances=None):
+    # sort_selector function determines if we are doing concepts or instances
+    def _meets_criteria(self, context, state, sort_selector_function, initial_instances=None):
         found_cumulative = None if initial_instances is None else initial_instances
-        for current_criteria in final_criteria:
+        for current_criteria in self.criteria:
             found = []
-
-            if current_criteria[0] == noop_criteria:
+            if isinstance(current_criteria, ConceptCriterion) and current_criteria.function == noop_criteria:
                 found = found_cumulative
 
             else:
-                for result in current_criteria[0](state, current_criteria[1], current_criteria[2]):
+                if isinstance(current_criteria, ConceptSortCriterion):
+                    criteria_function = sort_selector_function
+                    arg1 = None
+                    arg2 = current_criteria.sort
+                else:
+                    criteria_function = current_criteria.function
+                    arg1 = current_criteria.arg1
+                    arg2 = current_criteria.arg2
+
+                for result in criteria_function(state, arg1, arg2):
                     if found_cumulative is None or result in found_cumulative:
                         found.append(result)
 

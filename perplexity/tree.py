@@ -80,7 +80,7 @@ class MrsParser(object):
         current_index = 0
         for predication in mrs.predications:
             if split(predication.predicate)[1] == "q":
-                if predication.predicate not in ["udef_q", "pronoun_q", "proper_q", "_which_q", "which_q", "generic_q"]:
+                if predication.predicate not in ["udef", "pronoun_q", "proper_q", "_which_q", "which_q", "generic_q"]:
                     return False
                 else:
                     continue
@@ -348,8 +348,9 @@ def search_syntactic_head(handle, mrs):
                 # unknown words like "leving" as a full phrase, can generate multiple EPs in conjunction that don't reference
                 # each other like unknown(e2,i4), _leving/vbg_u_unknown(e5,i4,i6)
                 # special case this and choose unknown
+                # "show me 2 menus" puts appos(e6,x5,x7), _show_v_1(e2,i3,x4,x5) in the same label. In this case, chose the one marked as a verb
                 for item in final_eps:
-                    if item.predicate in ["unknown"]:
+                    if item.predicate in ["unknown"] or parse_predication_name(item.predicate)["Pos"] == "v":
                         ep = item
                         break
 
@@ -1058,3 +1059,12 @@ def split_predications_consuming_event(term, target_event):
 
 
 pipeline_logger = logging.getLogger('Pipeline')
+
+
+if __name__ == '__main__':
+    force_input = "which chicken menu items do you have?"
+    parser = MrsParser()
+    for mrs in parser.mrss_from_phrase(force_input):
+        print(f"MRS {mrs}")
+        for tree_orig in parser.trees_from_mrs(mrs):
+            print(tree_orig)

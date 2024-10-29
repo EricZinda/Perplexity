@@ -156,12 +156,12 @@ class UserInterface(object):
 
             output = self.user_output()
 
-    def has_timed_out(self):
+    def has_timed_out(self, where):
         if perplexity.utilities.running_under_debugger():
             return False
 
         if self.interaction_record is not None and time.perf_counter() - self.interaction_record["StartTime"] > self.timeout:
-            pipeline_logger.debug(f"Timed out.")
+            pipeline_logger.debug(f"Timed out: {where}.")
             return True
 
         else:
@@ -389,7 +389,7 @@ class UserInterface(object):
             self.interaction_record["Mrss"].append(mrs_record)
 
             tree_index = -1
-            if self.has_timed_out():
+            if self.has_timed_out("_interact_once, MRS Generation"):
                 break
 
             if len(mrs_record["UnknownWords"]) > 0:
@@ -405,7 +405,7 @@ class UserInterface(object):
                 tree_generated = False
                 try:
                     for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
-                        if self.has_timed_out():
+                        if self.has_timed_out("_interact_once, tree generation"):
                             break
 
                         heads = [x for x in syntactic_heads_characteristic_variables(mrs)]
@@ -418,7 +418,7 @@ class UserInterface(object):
 
                         # Now loop through any tree modifications that have been built for this application
                         for tree_info in self.vocabulary.alternate_trees(self.state, tree_info_orig, len(contingent) == 0, conjunct_index_list=next_conjuncts):
-                            if self.has_timed_out():
+                            if self.has_timed_out("_interact_once, alternate tree generation"):
                                 break
 
                             # At this point we have locked down which predications should be used and that won't change
@@ -456,7 +456,7 @@ class UserInterface(object):
                             # was: for frame_state in self.state.frames():
                             wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
                             for frame_state in [self.state]:
-                                if self.has_timed_out():
+                                if self.has_timed_out("_interact_once, frame state"):
                                     break
 
                                 pipeline_logger.debug(f"Evaluating against frame '{frame_state.frame_name}'")
@@ -601,9 +601,8 @@ class UserInterface(object):
                                         # This failed, remember it if it is the "best" failure
                                         # which we currently define as the first one
                                         self.evaluate_best_response(has_solution_group=False)
-
-                                    if self.has_timed_out():
-                                        break
+                                        if self.has_timed_out("_interact_once, failed tree_solution"):
+                                            break
 
                         alternate_tree_generated = tree_index > -1
                         if len(contingent) > 0 and not alternate_tree_generated:

@@ -63,6 +63,7 @@ def respond_to_mrs_tree(state, vocabulary, message_function, tree, solution_grou
             if solution_groups is not None:
                 # Build an error term that we can use to call generate_message
                 # to get the response
+                pipeline_logger.debug(f"Due to wh-question, generating the maximal solution group which may require iterating through all answers")
                 solution_group = next(solution_groups)
                 original_solution_group_list = list(solution_group.maximal_group_iterator())
 
@@ -130,6 +131,7 @@ def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group):
 
     else:
         return group
+
 
 def generate_message(state, tree_info, error_term):
     error_predicate_index = error_term[0]

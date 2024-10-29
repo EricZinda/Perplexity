@@ -71,12 +71,12 @@ class TreeSolver(object):
             self._last_solution_lineage = None
             self._variable_execution_data = {}
 
-        def has_timed_out(self):
+        def has_timed_out(self, where):
             if perplexity.utilities.running_under_debugger():
                 return False
 
             if self._timeout is not None and self._start_time is not None and time.perf_counter() - self._start_time > self._timeout:
-                pipeline_logger.debug(f"Timed out.")
+                pipeline_logger.debug(f"Timed out in {where}.")
                 return True
 
             else:
@@ -246,7 +246,7 @@ class TreeSolver(object):
             return self._variable_metadata.get(variable_name, {"ValueSize": perplexity.vocabulary.ValueSize.all})
 
         def call(self, state, term):
-            if self.has_timed_out():
+            if self.has_timed_out("call"):
                 raise TimeoutException
 
             # See if the term is actually a list
@@ -514,12 +514,12 @@ class TreeSolver(object):
             for solutions in lineage_generator:
                 yield interpretation_solver, solutions
 
-    def has_timed_out(self):
+    def has_timed_out(self, where):
         if perplexity.utilities.running_under_debugger():
             return False
 
         if self._timeout is not None and self._start_time is not None and time.perf_counter() - self._start_time > self._timeout:
-            pipeline_logger.debug(f"Timed out.")
+            pipeline_logger.debug(f"Timed out in {where}.")
             return True
 
         else:
@@ -706,7 +706,7 @@ class ExecutionContext(object):
     #     - yields a value (success)
     #         - A success clears the error
     #     - doesn't yield a value, which stops the generator (failure)
-    #         - If it fails, it can report: nothing, an normal error, or a formNotUnderstood error
+    #         - If it fails, it can report: nothing, a normal error, or a formNotUnderstood error
     #             - a forced error is always recorded, and the first error at deepest level is always recorded
     #                 - Record both the first instance of a regular error and the first instance of formNotUnderstood at the deepest point
     #     - When returning errors: if we only got formNotUnderstood, that is the error. Otherwise: the first real error is the error
