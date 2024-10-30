@@ -207,6 +207,11 @@ class GroupSet(object):
         self.final_set = final_set
 
 
+# Run solution_group code within all_plural_groups_stream2() so that failed solution groups cause the right alternative sets to be created
+# Problems:
+#     - SingleGroupGenerator assumes that, if it gets a new group with the same lineage, that there will be *more* records in it
+#         - and furthermore that the records that we already returned are still there
+#     - Neither is true anymore because the group handler can completely swap things out
 def all_plural_groups_stream(execution_context, solutions, var_criteria, variable_metadata, initial_stats_group, has_global_constraint,
                               handlers, optimized_criteria_list, index_predication):
     # Give a unique set_id to every group that gets created

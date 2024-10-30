@@ -32,7 +32,6 @@ def create_group_variable_values(context, state_list, variable_name):
 # Yields solutions in a single solution group
 # asks its solution_group_generator to give it more than the initial group
 # when it runs out of initial solutions
-# Assumes that
 class SingleMaximalGroupGenerator(object):
     def __init__(self, group_id, solution_group_generator, group_list, generate_maximal_group):
         self.group_id = group_id
