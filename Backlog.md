@@ -84,15 +84,32 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                                     - easiest way is to merge all the criteria into a single ordered list that runs in the order of the list
                                         - Problem is that we need to dynamically change whether we are working with instances or types
                                             and so a single criteria doesn't fix it
-            - Bugs:
-                - "table for one person" works now
-                    - because "unk"
-            - Next bug: Once that is fixed, it still doesn't work because it says "items" so never gets there
+            - Once item is fixed, it still doesn't work because it says "items" so never gets there
                 - "item" works properly
                 - The problem is that it is a wh_question(), and it is "which items" which is [2,inf]
                     so it tries to fill the maximal group
                     - It really does need to do this, so it probably needs to be updated to use a generator
                     - Design:
+                        - Commit 7fb135e describes the issue
+                        - we only have the current design which calls a solution group handler with every possible subset group because
+                            the merging logic needs to know when adding a solution to an existing group caused it to not be a solution anymore and quit merging
+                            and creating another set that *might* turn into a group. It needs to generate alternatives.
+                            - This happens when you have a concept, so you are responsible for evaluating criteria and you find a criteria that fails
+                            - OR if you have a "code only criteria" that fails.
+                                - In either case, the merging optimization should have stopped. But if you don't have code that does this, it will continue to merge
+                                - For "we want a table", the problem is that, even if we do a lift_style predication, we will often get two solutions, one for son one for user.
+                                  - AND we only get these solution groups, none are collective (i.e. only x3=('user', 'son1'))
+                                    -1)      x3=('user',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+                                    -2)      x3=('user',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+                                             x3=('son1',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+                                    -3)      x3=('user',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+                                             x3=('son1',), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+                                             x3=('user', 'son1'), x8=(ESLConcept(table: [] ),), tree_lineage=('.0',)
+                                    - we should get an alternative that is just (user, son1)
+                                    - but this can't happen unless something tells the merging algorithm
+                                    - question: isn't group #3 also a valid group?
+                                        - answer: No, cumulative and distributive requires every student to be in exactly one subgroup so it can't be anything
+                                        - In theory the system could have detected this case ...
                         _have_v_1_request_order_group solution group handler is called with a minimal solution group
                             - when it iterates over the group, why doesn't it get more?
                             - because the solution group handler is only being asked to check the minimal group and
