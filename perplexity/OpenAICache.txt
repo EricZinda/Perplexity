@@ -83,5 +83,6 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is thing thing either a food or a drink": "false",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is meat thing either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is dish thing either a food or a drink": "true",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is food thing either a food or a drink": "true"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is food thing either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is want either a food or a drink": "false"
 }

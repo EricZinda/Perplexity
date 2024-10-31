@@ -1,5 +1,7 @@
 import enum
+import itertools
 import logging
+from copy import copy
 from math import inf
 import perplexity.predications
 import perplexity.execution
@@ -518,7 +520,7 @@ class VariableStats(object):
 
         # Now we actually compare this variable to the previous value to see what kind of plural type this might be
         if not is_instance_solution:
-            # If this variable is not an instance, do the one sanity check we can do: if there are more concepts
+            # This variable is a concept: do the one sanity check we can do: if there are more concepts
             # than the criteria allows, it can't possibly work
 
             # Otherwise: we assume it meets the numeric criteria
@@ -540,37 +542,73 @@ class VariableStats(object):
                 prev_unique_value_count = len(self.prev_variable_stats.whole_group_unique_values)
 
             if prev_unique_value_count is not None and self.prev_variable_stats.variable_value_type != perplexity.predications.VariableValueType.instance:
-                # Not used for conceptual since all 3 modes might work
+                # Not used if the previous value is conceptual since all 3 modes might work
                 only_collective = None
 
-                # The *previous* variable is not an instance, so we will pretend it meets the criteria for anything. Thus:
-                # If this variable's values meets the criteria, it is collective or cuml
+                # The *previous* variable is a concept, so we will pretend it meets the criteria for anything. Thus:
+                # If this variable's values meets its own criteria, it could possibly be collective or cuml
                 self.cumulative_state = variable_criteria.meets_criteria(execution_context, self.whole_group_unique_individuals)
                 self.collective_state = self.cumulative_state
 
-                # If this variable's values could be divided such that it meets the criteria, evenly with no remainder, it is dist
+                # For distributive: Since the *previous* variable is a concept, we just need to prove there is *some number of previous values*
+                # that would allow the current variable's unique values to be broken up and match the distributive pattern. The groups it gets broken
+                # up into still have to meet this variables criteria, with no remainder.
+                #   *** Note that we have to use this variable's *unique_values*, and not unique_individuals, because the unique values can't be broken up
+                #       and assigned to different previous values since they are "together"
                 # The groups it is divided into must be between self.min_size and self.max_size
-                # So, if we divide by self.min_size, we have a count and a remainder.
-                # If the count is > 0 and the remainder is <= than:
-                # (the distance between min and max) * number of groups, it works
-                # then this is a valid distributive group
-                individual_count = len(self.whole_group_unique_individuals)
-                group_count = int(individual_count / variable_criteria.min_size)
-                if group_count > 0:
-                    if variable_criteria.max_size == float(inf):
-                        self.distributive_state = CriteriaResult.meets
-                    else:
-                        _, remainder = divmod(individual_count, variable_criteria.min_size)
-                        min_max_delta = variable_criteria.max_size - variable_criteria.min_size
-                        if remainder <= min_max_delta * group_count:
-                            # The remainder can be divided into the groups and keep them all under the max
+                # Since this variable has a min size, we know that every group we find must satisfy min_size for this variable.
+                # Furthermore, we need to count the *individuals* for a given group, not the unique values since this is distributive.
+                #
+                # Since the bins are all the same size, if the unique values are all size one, we can do this quickly.
+                #   If we divide this variable's unique_values by self.min_size, we have the min count that the previous variable must be
+                #   (given the values we have now) and a remainder.
+                #   If the min count is > 0 and the remainder is <= (the distance between min and max) * number of groups, it works
+                #   and this could be a valid distributive group assuming the concepts are interpreted with the value we came up with
+
+                # If there are unique values that are > 1 it becomes a variant of the online bin packing problem, where the
+                # bins have a lower bound AND an upper bound (usually).
+                #   Given that we don't care how many bins (i.e. previous variable unique values) are required to make this distributive,
+                #   just that it *can* be done, we can use a variant of the first fit online algorithm which is Θ(n log n). Basically: fit each item into
+                #   the first bin it fits in. Sort the items from largest to smallest and then fit all the items > 1 into their own bin, and then fill the remaining
+                #   with the items of size 1.
+                # Sample list of tuples
+                unique_value_count = len(self.whole_group_unique_values)
+                sorted_whole_group_unique_values = sorted(self.whole_group_unique_values, key=len, reverse=True)
+                if len(sorted_whole_group_unique_values[0]) == 1:
+                    # All unique values have only one element, this is the easy approach
+                    group_count = int(unique_value_count / variable_criteria.min_size)
+                    if group_count > 0:
+                        # It can at least be broken up such that it fills the min_size for each previous value,
+                        # if there are group_count previous values. Remember that we just have to find *any* solution that works
+                        # since the previous value is a concept
+                        if variable_criteria.max_size == float(inf):
+                            # Since every variable can contain any number of more unique values, it has to work
                             self.distributive_state = CriteriaResult.meets
                         else:
-                            # too much remainder, if we add more solutions it'll divide evenly so: contender
-                            self.distributive_state = CriteriaResult.contender
-
+                            _, remainder = divmod(unique_value_count, variable_criteria.min_size)
+                            min_max_delta = variable_criteria.max_size - variable_criteria.min_size
+                            if remainder <= min_max_delta * group_count:
+                                # The remainder can be divided into the groups and keep them all under the max
+                                self.distributive_state = CriteriaResult.meets
+                            else:
+                                # Too much remainder. If we add more solutions it'll divide evenly, as long as there
+                                # is some min_max_delta to absorb the extras. So: contender
+                                if min_max_delta > 0:
+                                    self.distributive_state = CriteriaResult.contender
+                                else:
+                                    self.distributive_state = CriteriaResult.fail_one
+                else:
+                    # at least one unique values has > 1 item, this is the harder approach:
+                    result = self.is_concept_distributive(self.whole_group_unique_values, variable_criteria.min_size, variable_criteria.max_size)
+                    if result is None:
+                        # This will never work since there are values that don't meet the criteria
+                        self.distributive_state = CriteriaResult.fail_one
+                    elif result is True:
+                        self.distributive_state = CriteriaResult.meets
+                    elif result is False:
+                        self.distributive_state = CriteriaResult.contender
             else:
-                # The *previous* variable is an instance
+                # This variable is an instance and the *previous* variable is an instance
                 only_collective = prev_unique_value_count is None or prev_unique_value_count == 1
                 if not only_collective:
                     # Collective fails from here on out because prev_unique_value_count > 1
@@ -626,6 +664,43 @@ class VariableStats(object):
                 self.current_state = CriteriaResult.fail_one
 
             return new_individuals, self.current_state
+
+    # Try all combinations of values in buckets by:
+    # - Create a new bucket
+    # - Try one way of filling it that makes it min <= size <= max
+    # - Recurse
+    # - if it didn't work, try the next way of filling it
+    # - it we run out of values, we succeed
+    # - if you did all combinations, we fail
+    # Note that we don't care what the buckets are, just that the items were able to be placed in them
+    # and meet the criteria
+    def is_concept_distributive(self, unique_values, min, max):
+        unique_value_sizes = []
+        for value in unique_values:
+            size = len(value)
+            if size > max:
+                return None
+            else:
+                unique_value_sizes.append(size)
+        return self.is_concept_distributive_impl(unique_value_sizes, min, max)
+
+    def is_concept_distributive_impl(self, unique_values_sizes, min, max):
+        if len(unique_values_sizes) == 0:
+            return True
+
+        # Given that each unique_item is at least 1 item, the most combinations
+        # we need to try is max (unless max == inf)
+        combinations = len(unique_values_sizes) + 1 if max is inf else max
+        for i in range(1, combinations):
+            for combo in itertools.combinations(unique_values_sizes, i):
+                if min <= sum(combo) <= max:
+                    new_values = copy(unique_values_sizes)
+                    for value in combo:
+                        new_values.remove(value)
+                    if self.is_concept_distributive_impl(new_values, min, max):
+                        return True
+
+        return False
 
 
 # Distributive needs to create groups by unique variable value

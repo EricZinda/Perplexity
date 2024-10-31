@@ -1327,6 +1327,7 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
                         size = found_constraint.min_size
                         break
 
+                # Use >= since people can always sit at a larger table
                 if found_constraint is None:
                     modified_values = [x_what_values[0].add_criteria(rel_subjects_greater_or_equal, "maxCapacity", len(x_for_list))]
 

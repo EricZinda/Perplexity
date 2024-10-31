@@ -52,8 +52,8 @@ class ConceptCriterion:
         self.function = function
         self.arg1 = arg1
         self.arg2 = arg2
-        if not ((isinstance(arg1, (str, int)) or arg1 is None) and (isinstance(arg2, (str, int)) or arg2 is None)):
-            assert False, "must be strings for hash to work"
+        # if not ((isinstance(arg1, (str, int)) or arg1 is None) and (isinstance(arg2, (str, int)) or arg2 is None)):
+        #     assert False, "must be strings for hash to work"
         self._hash = hash((arg1, arg2, self.function.__name__))
 
     def __hash__(self):

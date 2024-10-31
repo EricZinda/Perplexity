@@ -490,7 +490,7 @@ def satisfy_want_group_group(state, context, group_who, group_what, what_size_co
         # Note that "somebody" could be "my son and me", i.e. more than one person
         target_criteria = what.find_criteria(noop_criteria, "targetPossession", None)
         if target_criteria is not None:
-            who_list = target_criteria[2]
+            who_list = target_criteria.arg2
         else:
             who_list = group_who[index]
 
@@ -619,7 +619,7 @@ def cancel_group_group(state, context, group_who, group_what, what_size_constrai
         # Note that "somebody" could be "my son and me", i.e. more than one person
         target_criteria = what.find_criteria(noop_criteria, "targetPossession", None)
         if target_criteria is not None:
-            who_list = target_criteria[2]
+            who_list = target_criteria.arg2
         else:
             who_list = group_who[index]
 

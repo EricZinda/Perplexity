@@ -476,6 +476,10 @@ class UserInterface(object):
 
                                     solution_group_generator = tree_record["SolutionGroupGenerator"]
                                     if solution_group_generator is not None:
+                                        #         variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
+                                        #         handlers, index_predication = find_solution_group_handlers_with_name(execution_context, this_sentence_force, tree_info, "max_solution_group")
+                                        #         check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, group)
+
                                         # There were solutions, so this is our answer.
                                         # Return it and stop looking
                                         self.evaluate_best_response(has_solution_group=True)
@@ -626,7 +630,7 @@ class UserInterface(object):
         # If we got here, nothing worked: print out the best failure
         chosen_record = self.chosen_interpretation_record()
         if chosen_record is None:
-            error = ["tooComplicatedTimeout"] if self.has_timed_out() else ["noParse"]
+            error = ["tooComplicatedTimeout"] if self.has_timed_out("_interact_once too complicated") else ["noParse"]
             no_chosen_record_error = ExecutionContext.blank_error(predication_index=0, error=error)
             tree_record = TreeSolver.new_error_tree_record(error=no_chosen_record_error,
                                                            response_generator=self.response_function(self.state, self.vocabulary,
@@ -1100,7 +1104,10 @@ def command_load(ui, arg):
 
 
 def command_timeout(ui, arg):
-    if arg is None or arg == "":
+    if arg == "?":
+        print(f"Current timeout is: {ui.timeout}")
+        return True
+    elif arg is None or arg == "":
         ui.timeout = 9999
     else:
         ui.timeout = int(arg)
@@ -1267,8 +1274,8 @@ command_data = {
              "Description": "Loads the current world state from the ./data/default directory. If given a path, loads from that path instead.",
              "Example": "/load"},
     "timeout": {"Function": command_timeout, "Category": "General",
-                "Description": "Sets timeout time for a given phrase",
-                "Example": "/timeout or /timeout 20"},
+                "Description": "Prints current timeout or sets timeout time for a given session",
+                "Example": "/timeout ? (prints timeout) /timeout (sets to infinity) or /timeout 20 (sets to 20 seconds)"},
     "show": {"Function": command_show, "Category": "Parsing",
              "Description": "Shows tracing information from last command. Add 'all' to see all interpretations, 1 to see only first trees",
              "Example": "/show or /show all or /show all, 1"},

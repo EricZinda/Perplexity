@@ -84,10 +84,66 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                                     - easiest way is to merge all the criteria into a single ordered list that runs in the order of the list
                                         - Problem is that we need to dynamically change whether we are working with instances or types
                                             and so a single criteria doesn't fix it
+            - Bugs:
+                - "table for one person" works now
+                    - because "unk"
             - Next bug: Once that is fixed, it still doesn't work because it says "items" so never gets there
                 - "item" works properly
                 - The problem is that it is a wh_question(), and it is "which items" which is [2,inf]
                     so it tries to fill the maximal group
+                    - It really does need to do this, so it probably needs to be updated to use a generator
+                    - Design:
+                        _have_v_1_request_order_group solution group handler is called with a minimal solution group
+                            - when it iterates over the group, why doesn't it get more?
+                            - because the solution group handler is only being asked to check the minimal group and
+                                something limits it to that
+                                - it is the response that asks for maximal
+                                    - which will run the solution group handlers again for every possible group
+                                    - The ideal solution would:
+                                        - Option 1: somehow let the handler say: "I am the right one, but generate a maximal solution"
+                                            - Problem is that the maximal solution might be the wrong one
+                                        - Option 2: collect each iteration of the solution group that adds a new solution
+                                            after it has been run by the handler.
+                                                - ? when we time out, show the best? What if the responses change with each one? What if the best isn't good enough?
+                                        - (best?) Option 3: Let the solution group handler iterate over the maximal group with some kind of timeout
+                                            - Work on the normal case first: More items in the group will all still be successful and things are just being listed
+                                                - right now we generate static solution groups from all_plural_groups_stream(), these won't grow
+                                                    - all_plural_groups_stream() calls the solution group handlers with each group it finds
+                                                    - instead
+                                        - Option 4: Have two kinds of handlers:
+                                            - static get called with any valid solution group, and it won't grow
+                                            - dynamic can iterate to keep getting more items in the group (and might trigger
+                                                running every solution)
+                                            - the static ones are called by all_plural_groups_stream()
+                                                - if there are only static ones, the first one is used as the answer
+                                            - if there is a dynamic one, it will be called at a higher level than
+                                                the static one, and may trigger multiple statics to run. Then *that*
+                                                will be the answer. It can stop iterating whenever it wants.
+                                            - a plural wh-question will always want the ability to iterate and say "do you want more?"
+                                                - a plural "the" referring expression like "the files" or a phrase with "all"
+                                                    like "all files" will *require* all solutions and thus won't even call the static handler
+                                                    until it is complete
+                                            - So the logic is: if there is a dynamic handler, call it and let it iterate
+                                                through the solutions, which might trigger the static handler multiple times
+                                            - Design:
+                                                In a perfect world the dynamic handler would just iterate through groups
+                                                    until it succeeded or failed.
+                                                    - It would return Contender or Fail to indicate if that group should continue?
+                                                Split out the handlers into static and dynamic
+                                                Run the static ones in all_plural_groups_stream() just like we do now
+                                                If there is a dynamic one, run it (and any others in order) at the top level in a new stage of the pipeline
+                                                    - Because solution_groups() will return solutions that start minimal but can be iterated to be maximal, it should just work
+                                                        Looks like they really return SingleMaximalGroupGenerator() which only returns a minimal group and you have to ask
+                                                            for maximal with SingleMaximalGroupGenerator.maximal_group_iterator()
+                                                    - Because all_plural_groups_stream continues to track the original values, even if the static items return new ones, they will just be ignored
+                                                        If there is a dynamic handler
+                                                    - since getting the response (and the handling of the wh_phrase) is what triggers getting all of the answers,
+                                                        this should allow the dynamic handler to iterate if it wants to
+                                                    - If you have a dynamic one, you can choose to have a static one that just checks the constraints, or just check them at the top level
+                                                    - Note that the dynamic and static one will be run together as an interpretation so you don't have to worry about a different handler saying it was OK
+                                                - change wh_phrase handler to not require maximal anymore? But what if there are no handlers?
+                                            - Tactics
+                                                - Do it first just using the maximal group generator approach
         - Bug: It looks like collective only checks for one value???
             - whole_group_unique_individuals.update(binding_value) never adds a set of individuals to the set
         - which dishes are specials -> veggie, meat

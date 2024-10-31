@@ -4,7 +4,6 @@ import inspect
 import logging
 import sys
 import re
-
 # Constants that define indices for arguments added to predications
 # automatically by the system
 system_added_context_arg = 0

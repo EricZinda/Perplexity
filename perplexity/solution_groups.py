@@ -73,7 +73,6 @@ class SingleMaximalGroupGenerator(object):
         return SingleMaximalGroupGenerator(self.group_id, self.solution_group_generator, self.group_list, self.generate_maximal_group)
 
 
-
 # Yields a generator that yields solutions in a minimal solution group as quickly as it is found
 # but will continue returning solutions until it is maximal if requested. The idea is to make it easy
 # to see if there is at least one solution for yes/no questions and propositions (thus the quick minimal solution)

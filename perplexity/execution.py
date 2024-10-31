@@ -458,7 +458,7 @@ class TreeSolver(object):
             solution = next(self.solution_generator)
             tree_lineage_binding = solution.get_binding("tree_lineage")
             tree_lineage = "" if tree_lineage_binding.value is None else tree_lineage_binding.value[0]
-            pipeline_logger.debug(f"MrsTreeLineageGenerator got solution for lineage {tree_lineage}: {str(solution)}")
+            logger.debug(f"MrsTreeLineageGenerator got solution for lineage {tree_lineage}: {str(solution)}")
 
             if not self.lineage_failure_fifo.empty():
                 # There was at least one lineage failure during execution of next()
