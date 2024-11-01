@@ -32,8 +32,11 @@ def create_group_variable_values(context, state_list, variable_name):
 # Yields solutions in a single solution group
 # asks its solution_group_generator to give it more than the initial group
 # when it runs out of initial solutions
+# Setting group_id=None means that it won't ask to generate more groups
 class SingleMaximalGroupGenerator(object):
     def __init__(self, group_id, solution_group_generator, group_list, generate_maximal_group):
+        if group_id is None:
+            foo = 5
         self.group_id = group_id
         self.solution_group_generator = solution_group_generator
         self.group_list = group_list
@@ -49,7 +52,7 @@ class SingleMaximalGroupGenerator(object):
 
         if self.last_yielded_index >= len(self.group_list) - 1:
             if self.generate_maximal_group:
-                if not self.solution_group_generator.next_solution_in_group(self.group_id):
+                if self.solution_group_generator is None or not self.solution_group_generator.next_solution_in_group(self.group_id):
                     raise StopIteration
             else:
                 raise StopIteration
