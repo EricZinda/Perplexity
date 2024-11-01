@@ -65,6 +65,8 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
 
 # Bugs
     # Pri 1
+        - Bug running "Let's eat" twice
+            - Because the _eat_v_1_command_group handler only returns one item and SingleMaximalGroupGenerator() is trying to yield new records
         - (fixed) Looks like we don't have a timeout for phase 2
         - (fixed) Update solution_group.maximal_group_iterator() to actually iterate and raise a timeout exception when it fails
         - (fixed) Update SingleMaximalGroupGenerator to actually iterate the maximal group again and raise a timeout exception when it fails

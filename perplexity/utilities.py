@@ -20,7 +20,10 @@ class TimeoutException(Exception):
 
 
 def timeout_check(where, timeout_seconds, start_time):
-    if timeout_seconds is not None:
+    if running_under_debugger():
+        return False
+
+    elif timeout_seconds is not None:
         if start_time is not None and time.perf_counter() - start_time > timeout_seconds:
             raise TimeoutException
 
@@ -74,7 +77,6 @@ def output_interaction_records(interaction_records):
 
 
 def running_under_debugger():
-    return False
     # This is a hack to see if we're running under the debugger
     # https://stackoverflow.com/questions/38634988/check-if-program-runs-in-debug-mode
     gettrace = getattr(sys, 'gettrace', None)

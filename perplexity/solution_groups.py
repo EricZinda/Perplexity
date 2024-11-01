@@ -58,6 +58,10 @@ class SingleMaximalGroupGenerator(object):
                 raise StopIteration
 
         self.last_yielded_index += 1
+        if self.last_yielded_index > len(self.group_list) - 1:
+            # This can happen if the solution group handlers return less records
+            # than the original solution group had
+            raise StopIteration
         return self.group_list[self.last_yielded_index]
 
     # If the caller wants to guarantee they have the maximal solution group, they call this method
