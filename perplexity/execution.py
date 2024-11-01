@@ -6,7 +6,7 @@ import time
 import perplexity.tree
 import perplexity.solution_groups
 from perplexity.set_utilities import product_stream
-from perplexity.utilities import sentence_force, at_least_one_generator
+from perplexity.utilities import sentence_force, at_least_one_generator, TimeoutException
 import perplexity.vocabulary
 
 
@@ -19,11 +19,6 @@ class MessageException(Exception):
 
     def message_object(self):
         return [self.message_name] + self.message_args
-
-
-class TimeoutException(Exception):
-    def __init__(self):
-        pass
 
 
 def clear_error_when_yield_generator(context, generator):
@@ -563,7 +558,14 @@ class TreeSolver(object):
                 # solution_groups() should return an iterator that iterates *groups*
                 all_solution_groups = [] if find_all_solution_groups else None
                 tree_record["SolutionGroupGenerator"] = at_least_one_generator(
-                    perplexity.solution_groups.solution_groups(context, solutions, this_sentence_force, wh_phrase_variable, tree_info, all_solution_groups=all_solution_groups))
+                    perplexity.solution_groups.solution_groups(context,
+                                                               solutions,
+                                                               this_sentence_force,
+                                                               wh_phrase_variable,
+                                                               tree_info,
+                                                               all_solution_groups=all_solution_groups,
+                                                               start_time=self._start_time,
+                                                               timeout=self._timeout))
 
                 tree_record["SolutionGroups"] = all_solution_groups
                 tree_record["Interpretation"] = ", ".join([f"{x.module}.{x.function}" for x in context.interpretation().values()])

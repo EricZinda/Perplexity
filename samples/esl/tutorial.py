@@ -4612,7 +4612,7 @@ def _available_a_to_for(context, state, e_introduced_binding, x_object_binding, 
 @Predication(vocabulary,
              names=["solution_group_wh"],
              handles_negation=True)
-def wh_question(context, state_list, binding_list):
+def wh_question(context, state_list, binding_list, timed_out):
     current_state = do_task(state_list[0].world_state_frame(), [('describe', context, [x.value for x in binding_list])])
     if current_state is not None:
         # Make sure any operations that were created on solutions get passed on
@@ -4621,6 +4621,9 @@ def wh_question(context, state_list, binding_list):
             for operation in solution.get_operations():
                 all_operations.append(operation)
 
+        if timed_out:
+            print("did it")
+            all_operations.append(RespondOperation("(that's all I can think of at the moment)"))
         new_state = current_state.apply_operations(all_operations, True)
 
         # Include all of the solutions even though we only added operations to the first solution
@@ -4970,7 +4973,7 @@ if __name__ == '__main__':
     # ShowLogging("SString")
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
-    # ShowLogging("SolutionGroups")
+    ShowLogging("SolutionGroups")
     # ShowLogging("Transformer")
 
     hello_world()

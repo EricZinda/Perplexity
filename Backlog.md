@@ -65,6 +65,23 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
 
 # Bugs
     # Pri 1
+        - (fixed) Looks like we don't have a timeout for phase 2
+        - (fixed) Update solution_group.maximal_group_iterator() to actually iterate and raise a timeout exception when it fails
+        - (fixed) Update SingleMaximalGroupGenerator to actually iterate the maximal group again and raise a timeout exception when it fails
+        - (fixed) Update handling of wh_questions to:
+            iterate one by one through the list of things returned
+                record whether there was a timeout or not
+                allow the wh_handlers to get the list and iterate it telling them if there was a timeout
+                    they can handle the timeout and do whatever they want
+                if we do the handling print the answers and if we timeout say "finding more would take too long, sorry!"
+            Problem:
+            Currently we don't run wh_handlers if there are response operations in the solution group so we never get to that
+        - because we say "items", it looks for 2 and finds two actual instances of a chicken
+            - shouldn't we have set wh-questions to ignore plurality?
+        - Commit 50876bb added the rule that a solution group has to be sets of 1 or sets of > 1 but can't contain both
+            - this seems wrong, but might be right...Need to think it through
+            - the current rule is "Every student is in exactly one subgroup" which means it might be wrong but I need an example
+                where it can be mixed
         - FIX BROKEN TESTS (i.e. WRONG: tests)
             -START HERE:
             - which chicken menu items do you have? --> pork
@@ -86,11 +103,28 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                                             and so a single criteria doesn't fix it
             - Once item is fixed, it still doesn't work because it says "items" so never gets there
                 - "item" works properly
+                - Plan #1:
+                    First: Do a timeout for the wh_question handler
+                    Then:
+                - Conclusion?
+                    - If we update the base plurals logic to follow the rule "every student to be in exactly one subgroup" it would solve
+                        the problem of plurals merging answers that should really be alternatives
+                        - In reality, our rule of "must be all 1 item or all >1 item"  already solved it for some cases
+                            - really the "every student to be in exactly one subgroup" is relaxing this rule and might be more correct
+                        - To make sure:
+                            - The merge logic says "if we are just going to generate a bunch of alternative subgroups of the same solution group: merge"
+                                - Merge if the only variables that got updated had a criteria with an upper bound of inf
+                                    - Let's say we are in a solution group where this variable is sets > 1
+                                        - Doesn't every item that gets added need to also have an alternative solution group where it might be collective?
+                    - It is probably true that we can go back to the world where the solution group handler gets an initial minimal group and then can iterate to be maximal
+                        this would allow "which chicken menu items do you have?" to support a timeout?
+                        - Really we could just have the default handler for wh-questions support a timeout, right?
                 - The problem is that it is a wh_question(), and it is "which items" which is [2,inf]
                     so it tries to fill the maximal group
                     - It really does need to do this, so it probably needs to be updated to use a generator
                     - Design:
-                        - Commit 7fb135e describes the issue
+                        - Commit 50876bb added the rule that a solution group has to be sets of 1 or sets of > 1 but can't contain both
+                        - Commit 7fb135e describes the below issue
                         - we only have the current design which calls a solution group handler with every possible subset group because
                             the merging logic needs to know when adding a solution to an existing group caused it to not be a solution anymore and quit merging
                             and creating another set that *might* turn into a group. It needs to generate alternatives.
@@ -109,13 +143,16 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                                     - but this can't happen unless something tells the merging algorithm
                                     - question: isn't group #3 also a valid group?
                                         - answer: No, cumulative and distributive requires every student to be in exactly one subgroup so it can't be anything
-                                        - In theory the system could have detected this case ...
+                                        - (smoking gun?) In theory the system could have detected this case ...
+                                            - This might mean that the whole reason for doing this massive change was wrong??
+                                                - If we just change to make sure that every student to be in exactly one subgroup it would fix *this* case
+                                                - AND: The cases where this ambiguity happens for a concept are solved because the handler just has to pick values that make sense
                         _have_v_1_request_order_group solution group handler is called with a minimal solution group
                             - when it iterates over the group, why doesn't it get more?
                             - because the solution group handler is only being asked to check the minimal group and
                                 something limits it to that
                                 - it is the response that asks for maximal
-                                    - which will run the solution group handlers again for every possible group
+                                    - which will run the solution group handlers again for every possible group and that takes forever
                                     - The ideal solution would:
                                         - Option 1: somehow let the handler say: "I am the right one, but generate a maximal solution"
                                             - Problem is that the maximal solution might be the wrong one

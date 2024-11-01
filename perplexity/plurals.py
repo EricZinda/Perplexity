@@ -281,6 +281,8 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 # Decide whether to merge into the existing set or create a new one
                 # Merge if the only variables that got updated had a criteria with an upper bound of inf
                 # since alternatives won't be used anyway because the inf means that any set > lower bound is a solution
+                # and thus these sets will only get merged later anyway, they are all subsets of the same base solution group
+                # so generating alternatives will just cause more processing
                 # However, if the code criteria failed, it means that this particular set is not a solution group
                 # Thus it is either a contender or a failure.
                 # Leaving it as a contender is safest since the worst that will happen is we do some extra processing.

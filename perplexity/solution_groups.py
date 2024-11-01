@@ -4,7 +4,7 @@ import perplexity.tree
 import perplexity.execution
 from math import inf
 import perplexity.plurals
-from perplexity.utilities import at_least_one_generator, get_function, sentence_force
+from perplexity.utilities import at_least_one_generator, get_function, sentence_force, timeout_check
 
 
 def constraints_for_variable(context, state, variable_name):
@@ -48,11 +48,14 @@ class SingleMaximalGroupGenerator(object):
             groups_logger.debug(f"SingleGroupGenerator: Next solution requested for {self.group_id}, self.last_yielded_index={self.last_yielded_index}, len(self.group_list) - 1 = {len(self.group_list) - 1}")
 
         if self.last_yielded_index >= len(self.group_list) - 1:
-            raise StopIteration
+            if self.generate_maximal_group:
+                if not self.solution_group_generator.next_solution_in_group(self.group_id):
+                    raise StopIteration
+            else:
+                raise StopIteration
 
-        else:
-            self.last_yielded_index += 1
-            return self.group_list[self.last_yielded_index]
+        self.last_yielded_index += 1
+        return self.group_list[self.last_yielded_index]
 
     # If the caller wants to guarantee they have the maximal solution group, they call this method
     # and it returns a maximal group for this solution
@@ -64,13 +67,9 @@ class SingleMaximalGroupGenerator(object):
         # If it does have a between(N, inf) constraint, return them all
         # This is a performance optimization that really improves the performance of
         # "a few files are in a folder together"
-        if self.solution_group_generator:
-            if self.solution_group_generator.variable_has_inf_max and self.generate_maximal_group:
-                # Find all solutions
-                while self.solution_group_generator.next_solution_in_group(self.group_id):
-                    pass
-
-        return SingleMaximalGroupGenerator(self.group_id, self.solution_group_generator, self.group_list, self.generate_maximal_group)
+        # Find all solutions
+        self.generate_maximal_group = True
+        return self
 
 
 # Yields a generator that yields solutions in a minimal solution group as quickly as it is found
@@ -221,11 +220,21 @@ class SolutionMaximalGroupGenerator(object):
 #   if they return [], it means "skip this solution group" and we'll try the next one
 # yields an iterator that returns solution groups
 # TODO: Intelligently choosing the initial cardinal could greatly reduce the combinations processed...
-def solution_groups(execution_context, solutions_orig, this_sentence_force, wh_question_variable, tree_info, all_groups=False, all_solution_groups=None, criteria_list=None):
+def solution_groups(execution_context,
+                    solutions_orig,
+                    this_sentence_force,
+                    wh_question_variable,
+                    tree_info,
+                    all_groups=False,
+                    all_solution_groups=None,
+                    criteria_list=None,
+                    start_time=None,
+                    timeout=None):
     pipeline_logger.debug(f"Finding solution groups for {tree_info['Tree']}")
     solutions = at_least_one_generator(solutions_orig)
 
     if solutions is not None:
+        timeout_check("solution_groups", timeout, start_time)
         declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 

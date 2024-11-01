@@ -6,7 +6,7 @@ from perplexity.response import RespondOperation
 from perplexity.sstring import s, convert_complex_variable
 from perplexity.tree import predication_from_index, find_predication_from_introduced, find_predication, \
     find_index_predication
-from perplexity.utilities import parse_predication_name, sentence_force, get_function
+from perplexity.utilities import parse_predication_name, sentence_force, get_function, TimeoutException
 
 
 # Implements the response for a given tree
@@ -65,12 +65,18 @@ def respond_to_mrs_tree(state, vocabulary, message_function, tree, solution_grou
                 # to get the response
                 pipeline_logger.debug(f"Due to wh-question, generating the maximal solution group which may require iterating through all answers")
                 solution_group = next(solution_groups)
-                original_solution_group_list = list(solution_group.maximal_group_iterator())
+                original_solution_group_list = []
+                timed_out = False
+                try:
+                    for solution in solution_group.maximal_group_iterator():
+                        original_solution_group_list.append(solution)
+                except TimeoutException:
+                    timed_out = True
 
                 # Run the wh_handlers to give the developer a chance to handle lists of things
                 wh_variable = wh_predication.introduced_variable()
                 wh_handlers = find_wh_group_handlers(vocabulary, sentence_force_type)
-                solution_group_list = run_wh_group_handlers(vocabulary, wh_handlers, wh_variable, original_solution_group_list)
+                solution_group_list = run_wh_group_handlers(vocabulary, wh_handlers, wh_variable, original_solution_group_list, timed_out)
 
                 # If any solution in the group has a RespondOperation in it, assume that the response
                 # has been handled by that and just return an empty string
@@ -82,7 +88,7 @@ def respond_to_mrs_tree(state, vocabulary, message_function, tree, solution_grou
                             return
 
                 index_predication = find_predication_from_introduced(tree["Tree"], tree["Index"])
-                yield message_function(state, tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0]]]), solution_group_list
+                yield message_function(state, tree, [-1, ["answerWithList", index_predication, wh_variable, solution_group_list, solution_group_list[0], timed_out]]), solution_group_list
 
             else:
                 message = message_function(state, tree, error)
@@ -110,7 +116,7 @@ def find_wh_group_handlers(vocabulary, this_sentence_force):
 
 # Called only if we have a successful solution group
 # Same semantic as solution group handlers: First wh_group handler that yields, wins
-def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group):
+def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group, timed_out):
     # If there are responses in the group, don't run the handlers
     for solution in group:
         for operation in solution.get_operations():
@@ -122,7 +128,7 @@ def run_wh_group_handlers(vocabulary, wh_handlers, wh_question_variable, group):
         for function_module_functionname in wh_handlers:
             pipeline_logger.debug(f"Running {function_module_functionname[1]}.{function_module_functionname[2]} wh-solution group handler")
 
-            for resulting_group in function_module_functionname[0](ExecutionContext(vocabulary), group, value_binding_list):
+            for resulting_group in function_module_functionname[0](ExecutionContext(vocabulary), group, value_binding_list, timed_out):
                 if resulting_group is not None and len(resulting_group) > 0:
                     return resulting_group
 
@@ -141,6 +147,7 @@ def generate_message(state, tree_info, error_term):
     arg1 = error_arguments[1] if arg_length > 1 else None
     arg2 = error_arguments[2] if arg_length > 2 else None
     arg3 = error_arguments[3] if arg_length > 3 else None
+    arg4 = error_arguments[4] if arg_length > 4 else None
 
     if error_constant == "answerWithList":
         # This is the default for a wh_question: just print out the values
@@ -153,6 +160,7 @@ def generate_message(state, tree_info, error_term):
 
         wh_variable = arg2
         solution_group = arg3
+        timed_out = arg4
         response = ""
         answer_items = set()
         for solution in solution_group:
@@ -167,7 +175,8 @@ def generate_message(state, tree_info, error_term):
                 if binding.value not in answer_items:
                     answer_items.add(binding.value)
                     response +=  answer_variable_value([binding.value])
-
+        if timed_out:
+            response += "\nThat's all I have time to find for now."
         return response
 
     elif error_constant == "beMoreSpecific":

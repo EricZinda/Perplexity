@@ -4,12 +4,25 @@ import inspect
 import logging
 import sys
 import re
+import time
+
 # Constants that define indices for arguments added to predications
 # automatically by the system
 system_added_context_arg = 0
 system_added_state_arg = 1
 system_added_arg_count = 2
 system_added_group_arg_count = 2
+
+
+class TimeoutException(Exception):
+    def __init__(self):
+        pass
+
+
+def timeout_check(where, timeout_seconds, start_time):
+    if timeout_seconds is not None:
+        if start_time is not None and time.perf_counter() - start_time > timeout_seconds:
+            raise TimeoutException
 
 
 # A given interaction can span multiple phrases ("I want a sandwich. He wants a steak.") and potentially
@@ -61,6 +74,7 @@ def output_interaction_records(interaction_records):
 
 
 def running_under_debugger():
+    return False
     # This is a hack to see if we're running under the debugger
     # https://stackoverflow.com/questions/38634988/check-if-program-runs-in-debug-mode
     gettrace = getattr(sys, 'gettrace', None)
