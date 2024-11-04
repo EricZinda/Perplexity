@@ -46,7 +46,7 @@
         },
         {
             "Command": "what are the daily specials",
-            "Expected": "Host: There isn't such a daily special here\nWaiter: What can I get you?",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.\nWaiter: What can I get you?",
             "Tree": "which_q(x3,thing(x3),_the_q(x8,[_special_n_1(x8), _daily_a_1(e13,x8)],_be_v_id(e2,x3,x8)))",
             "Enabled": true,
             "ID": "6ecd843f-4675-4ed9-8e10-1e06055609b8"

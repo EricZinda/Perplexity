@@ -93,7 +93,7 @@
         },
         {
             "Command": "what vegetarian meats do you have?",
-            "Expected": "I'm sorry, I'm not sure if we have that.\nWaiter: What can I get you?",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.\nWaiter: What can I get you?",
             "Tree": "_which_q(x5,[_meat_n_1(x5), _vegetarian_a_1(e9,x5)],pronoun_q(x3,pron(x3),_have_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "ae7abcc5-6e6b-4d44-a0b4-897246bd70b6"
