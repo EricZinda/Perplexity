@@ -17,8 +17,10 @@ def determiner_from_binding(tree_info, binding):
     else:
         quantifier = perplexity.tree.find_quantifier_from_variable(tree_info["Tree"], binding.variable.name)
 
+        # If this is a wh_phrase, ignore the plurality contribution from "which_q" so that "which files are in this folder"
+        # can return "file1.txt" (a single file) instead of "there aren't multiple files in this folder"
         pl_value = plural_from_tree_info(tree_info, binding.variable.name)
-        if pl_value == "pl":
+        if pl_value == "pl" and quantifier.name not in ["which_q", "_which_q"]:
             # Plural determiner, mark this as coming from the quantifier for error reporting purposes
             return VariableCriteria(quantifier,
                                     binding.variable.name,

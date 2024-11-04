@@ -84,5 +84,14 @@
 "BooleanCompletionApproach(is_food_or_drink_predication): Is meat thing either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is dish thing either a food or a drink": "true",
 "BooleanCompletionApproach(is_food_or_drink_predication): Is food thing either a food or a drink": "true",
-"BooleanCompletionApproach(is_food_or_drink_predication): Is want either a food or a drink": "false"
+"BooleanCompletionApproach(is_food_or_drink_predication): Is want either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is girl either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is vegetarian food either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is green salad either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is now thing either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is table either a food or a drink": "false",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is order either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is vegetarian thing either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is daily special either a food or a drink": "true",
+"BooleanCompletionApproach(is_food_or_drink_predication): Is vegetarian dish either a food or a drink": "true"
 }

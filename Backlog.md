@@ -67,16 +67,12 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
     # Pri 1
         - Document!!!! For the solution handlers for conceptual stuff, they should not allow solutions through that are not ever going to work
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
-        - ChatGPT predicate doesn't work now
-            - Because valid_player_request() checks for instances and foods that we don't have don't have instances
-                - Plus: the expected error is returned in the planner, and we don't get there anymore since having no instances fails
-            - Do you have coke?
         - Making solution groups be at the top again
             - Ensure that they can truly stream the answers
             - if they yield, we only process responses with whatever they yielded
                 - so if they want to stream an answer they need to yield a generator?
                     - OR: they just have to go until timeout. Let's start there
-        - because we say "items", it looks for 2 and finds two actual instances of a chicken
+        - because we say "items", it looks for 2 and finds two actual instances of a chicken, wh_questions should ignore plurality contributed by the wh_quantifier
             - shouldn't we have set wh-questions to ignore plurality?
         - Commit 50876bb added the rule that a solution group has to be sets of 1 or sets of > 1 but can't contain both
             - this seems wrong, but might be right...Need to think it through
