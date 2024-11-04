@@ -1816,6 +1816,7 @@ def match_all_concepts_with_adjective_menu(type_name, context, state, x_binding,
 @Predication(vocabulary, names=["match_all_n"], matches_lemma_function=handles_noun)
 def match_all_n_concepts(noun_type, context, state, x_binding):
     record_new_food = False
+
     def bound_variable(value):
         if is_concept(value):
             return True
@@ -3657,7 +3658,7 @@ def _have_v_1_request_order(context, state, e_introduced_binding, x_actor_bindin
             # Because x_object is a concept (which is checked in the outer function),
             # This really is the function to handle it, none of the others are appropriate
             # and given that it isn't a valid thing to ask for
-            context.report_error(["dontHaveInstances"])
+            context.report_error(["doesntExist", x_object_binding.variable.name])
             return False
 
     def actor_from_object(x_object):
@@ -4654,13 +4655,24 @@ def generate_custom_message(state, tree_info, error_term):
 
     # Override these
     if error_constant == "doesntExist":
-        result = s("{bare arg1:sg}", tree_info)
-        if result == "thing":
+        english_word = s("{bare arg1:sg}", tree_info)
+        if english_word == "thing":
             return s("Host: Nothing.")
-        elif result == "person":
+        elif english_word == "person":
             return s("Host: Nobody.")
         else:
-            return s("Host: There isn't such {a *result} here", tree_info)
+            if "something" not in english_word:
+                # If we can render this concept as a real word (not just "something"), ask
+                # chatgpt if it is food
+                request_info = perplexity.OpenAI.StartOpenAIBooleanRequest("test",
+                                                                           "is_food_or_drink_predication",
+                                                                           f"Is {english_word} either a food or a drink?")
+                result = perplexity.OpenAI.CompleteOpenAIRequest(request_info, wait=5)
+                if result == "true":
+                    # It is, so report a nicer error than "I don't know that word"
+                    return s("Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.", tree_info)
+
+            return s("Host: There isn't such {a *english_word} here", tree_info)
 
     else:
         system_message = perplexity.messages.generate_message(state, tree_info, error_term)

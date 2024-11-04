@@ -94,7 +94,7 @@
         },
         {
             "Command": "Do you have a mouse?",
-            "Expected": "I'm sorry, I'm not sure if we have that.\nHost: How can I help you today?",
+            "Expected": "Host: There isn't such a mouse here\nHost: How can I help you today?",
             "Tree": "pronoun_q(x3,pron(x3),_a_q(x8,_mouse_n_1(x8),_have_v_1(e2,x3,x8)))",
             "Enabled": true,
             "ID": "ec808d20-3891-4440-aaa4-84ce92dfdc27"

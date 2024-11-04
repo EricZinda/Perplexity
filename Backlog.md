@@ -67,6 +67,10 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
     # Pri 1
         - Document!!!! For the solution handlers for conceptual stuff, they should not allow solutions through that are not ever going to work
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
+        - ChatGPT predicate doesn't work now
+            - Because valid_player_request() checks for instances and foods that we don't have don't have instances
+                - Plus: the expected error is returned in the planner, and we don't get there anymore since having no instances fails
+            - Do you have coke?
         - Making solution groups be at the top again
             - Ensure that they can truly stream the answers
             - if they yield, we only process responses with whatever they yielded
