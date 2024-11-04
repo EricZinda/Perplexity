@@ -12,8 +12,27 @@ from delphin.predicate import split
 
 from perplexity.erg import erg_file
 from perplexity.tree_algorithm_zinda2020 import valid_hole_assignments
-from perplexity.utilities import parse_predication_name, sentence_force
+from perplexity.utilities import parse_predication_name, sentence_force, get_function
 import perplexity.vocabulary
+
+
+# Returns predication_handlers, global_handlers
+# with just an array of functions in each
+def find_solution_group_handlers_with_name(vocabulary, this_sentence_force, tree_info, name):
+    handlers = []
+    index_predication = perplexity.tree.find_index_predication(tree_info)
+    if index_predication is None:
+        # The index was not in the tree, which means we are executing a subtree and this
+        # means the handlers would not have been run since the index predication is outside the tree
+        return handlers, None
+
+    for module_function in vocabulary.predications(name + "_" + index_predication.name, index_predication.argument_types(), this_sentence_force):
+        handlers.append([True, get_function(module_function), module_function])
+
+    for module_function in vocabulary.predications(name, [], this_sentence_force):
+        handlers.append([False, get_function(module_function), module_function])
+
+    return handlers, index_predication
 
 
 class MrsParser(object):

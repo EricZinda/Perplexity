@@ -8,7 +8,7 @@ from perplexity.utilities import at_least_one_generator, get_function, sentence_
 
 
 def constraints_for_variable(context, state, variable_name):
-    declared_criteria_list = [data for data in declared_determiner_infos(context, state)]
+    declared_criteria_list = [data for data in declared_determiner_infos(state.get_binding("tree").value[0], state)]
     tree_info = state.get_binding("tree").value[0]
     this_sentence_force = sentence_force(tree_info["Variables"])
     wh_question_variable = perplexity.tree.get_wh_question_variable(tree_info)
@@ -35,8 +35,6 @@ def create_group_variable_values(context, state_list, variable_name):
 # Setting group_id=None means that it won't ask to generate more groups
 class SingleMaximalGroupGenerator(object):
     def __init__(self, group_id, solution_group_generator, group_list, generate_maximal_group):
-        if group_id is None:
-            foo = 5
         self.group_id = group_id
         self.solution_group_generator = solution_group_generator
         self.group_list = group_list
@@ -242,7 +240,7 @@ def solution_groups(execution_context,
 
     if solutions is not None:
         timeout_check("solution_groups", timeout, start_time)
-        declared_criteria_list = [data for data in declared_determiner_infos(execution_context, solutions.first_item)]
+        declared_criteria_list = [data for data in declared_determiner_infos(solutions.first_item.get_binding("tree").value[0], solutions.first_item)]
         optimized_criteria_list = list(optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_question_variable))
 
         # variable_has_inf_max means at least one variable has (N, inf) which means we need to go all the way to the end to get the maximal
@@ -251,7 +249,7 @@ def solution_groups(execution_context,
 
         # We also set this if the user asks a wh_question so we ensure we get all of the values
         variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
-        handlers, index_predication = find_solution_group_handlers(execution_context, this_sentence_force, tree_info)
+        handlers, index_predication = perplexity.tree.find_solution_group_handlers_with_name(execution_context.vocabulary, this_sentence_force, tree_info, "solution_group")
         groups_stream = perplexity.plurals.all_plural_groups_stream(execution_context, solutions, optimized_criteria_list, variable_metadata,
                                                  initial_stats_group, has_global_constraint,
                                                  handlers, optimized_criteria_list, index_predication)
@@ -261,45 +259,34 @@ def solution_groups(execution_context,
             (this_sentence_force in ["prop-or-ques", "ques"] and wh_question_variable is None))
 
         group_generator = SolutionMaximalGroupGenerator(groups_stream, variable_has_inf_max, generate_maximal_group=get_maximal_solution_group)
-        if all_solution_groups is not None:
-            # We were asked to collect all the solution groups, so
-            # do that first
-            unprocessed_groups = []
-            for group in group_generator:
-                if get_maximal_solution_group:
-                    group = group.maximal_group_iterator()
-                unprocessed_groups.append(SingleMaximalGroupGenerator(None, None, [x for x in group], False))
-            group_generator = unprocessed_groups
-            all_solution_groups.append(unprocessed_groups)
 
-        yield from group_generator
+        handlers, index_predication = perplexity.tree.find_solution_group_handlers_with_name(execution_context.vocabulary,
+                                                                                             this_sentence_force,
+                                                                                             tree_info,
+                                                                                             "solution_group")
+        next_best_error_info = perplexity.execution.ExecutionContext.blank_error_info()
+        for solution_group in group_generator:
+            created_solution_group, next_best_error_info = perplexity.plurals.check_group_against_code_criteria(
+                execution_context,
+                handlers,
+                optimized_criteria_list,
+                index_predication,
+                solution_group)
+            if created_solution_group:
+                # Clear any errors that occurred trying to generate solution groups that didn't work
+                # so that the error that gets returned is whatever happens while *processing* the solution group
+                execution_context.clear_error()
+                yield created_solution_group
+
+        # Set the error to the last one that failed
+        execution_context.set_error_info(next_best_error_info)
 
     else:
         execution_context.set_error_info(solutions_orig.error_info)
 
 
-# Returns predication_handlers, global_handlers
-# with just an array of functions in each
-def find_solution_group_handlers(execution_context, this_sentence_force, tree_info):
-    handlers = []
-    index_predication = perplexity.tree.find_index_predication(tree_info)
-    if index_predication is None:
-        # The index was not in the tree, which means we are executing a subtree and this
-        # means the handlers would not have been run since the index predication is outside the tree
-        return handlers, None
-
-    for module_function in execution_context.vocabulary.predications("solution_group_" + index_predication.name, index_predication.argument_types(), this_sentence_force):
-        handlers.append([True, get_function(module_function), module_function])
-
-    for module_function in execution_context.vocabulary.predications("solution_group", [], this_sentence_force):
-        handlers.append([False, get_function(module_function), module_function])
-
-    return handlers, index_predication
-
-
 # Return the infos in the order they will be executed in
-def declared_determiner_infos(execution_context, state, variables=None):
-    tree_info = state.get_binding("tree").value[0]
+def declared_determiner_infos(tree_info, state, variables=None):
     if variables is None:
         variables = perplexity.tree.gather_quantifier_order(tree_info)
     for variable_name in variables:
@@ -307,7 +294,7 @@ def declared_determiner_infos(execution_context, state, variables=None):
             binding = state.get_binding(variable_name)
 
             # First get the determiner
-            determiner = perplexity.plurals.determiner_from_binding(state, binding)
+            determiner = perplexity.plurals.determiner_from_binding(tree_info, binding)
             if determiner is not None:
                 yield determiner
 

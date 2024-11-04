@@ -65,19 +65,13 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
 
 # Bugs
     # Pri 1
-        - Bug running "Let's eat" twice
-            - Because the _eat_v_1_command_group handler only returns one item and SingleMaximalGroupGenerator() is trying to yield new records
-        - (fixed) Looks like we don't have a timeout for phase 2
-        - (fixed) Update solution_group.maximal_group_iterator() to actually iterate and raise a timeout exception when it fails
-        - (fixed) Update SingleMaximalGroupGenerator to actually iterate the maximal group again and raise a timeout exception when it fails
-        - (fixed) Update handling of wh_questions to:
-            iterate one by one through the list of things returned
-                record whether there was a timeout or not
-                allow the wh_handlers to get the list and iterate it telling them if there was a timeout
-                    they can handle the timeout and do whatever they want
-                if we do the handling print the answers and if we timeout say "finding more would take too long, sorry!"
-            Problem:
-            Currently we don't run wh_handlers if there are response operations in the solution group so we never get to that
+        - Document!!!! For the solution handlers for conceptual stuff, they should not allow solutions through that are not ever going to work
+            - i.e. solution handlers should fail if the solution could never work in the solution group handler
+        - Making solution groups be at the top again
+            - Ensure that they can truly stream the answers
+            - if they yield, we only process responses with whatever they yielded
+                - so if they want to stream an answer they need to yield a generator?
+                    - OR: they just have to go until timeout. Let's start there
         - because we say "items", it looks for 2 and finds two actual instances of a chicken
             - shouldn't we have set wh-questions to ignore plurality?
         - Commit 50876bb added the rule that a solution group has to be sets of 1 or sets of > 1 but can't contain both
@@ -85,7 +79,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
             - the current rule is "Every student is in exactly one subgroup" which means it might be wrong but I need an example
                 where it can be mixed
         - FIX BROKEN TESTS (i.e. WRONG: tests)
-            -START HERE:
             - which chicken menu items do you have? --> pork
                     soup
                     salad
@@ -103,11 +96,8 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
                                     - easiest way is to merge all the criteria into a single ordered list that runs in the order of the list
                                         - Problem is that we need to dynamically change whether we are working with instances or types
                                             and so a single criteria doesn't fix it
-            - Once item is fixed, it still doesn't work because it says "items" so never gets there
+            - Once "item" is fixed, it still doesn't work because it says "items" so never gets there
                 - "item" works properly
-                - Plan #1:
-                    First: Do a timeout for the wh_question handler
-                    Then:
                 - Conclusion?
                     - If we update the base plurals logic to follow the rule "every student to be in exactly one subgroup" it would solve
                         the problem of plurals merging answers that should really be alternatives

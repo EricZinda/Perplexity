@@ -16,18 +16,19 @@ from perplexity.execution import MessageException, TreeSolver, ExecutionContext
 from perplexity.print_tree import create_draw_tree, TreeRenderer
 from perplexity.response import ResetOperation, ResponseLocation
 from perplexity.set_utilities import CachedIterable
+from perplexity.solution_groups import declared_determiner_infos, optimize_determiner_infos
 from perplexity.state import apply_solutions_to_state, LoadException
 from perplexity.test_manager import TestManager, TestIterator, TestFolderIterator
 from perplexity.transformer import TransformerMatch
 from perplexity.tree import find_predications, find_predications_with_arg_types, \
     MrsParser, tree_contains_predication, TreePredication, get_wh_question_variable, surface_word_from_mrs_predication, \
-    syntactic_heads_characteristic_variables
+    syntactic_heads_characteristic_variables, find_solution_group_handlers_with_name
 from perplexity.tree_algorithm_zinda2020 import TooComplicatedError
 from perplexity.user_state import GetStateDirectoryName
 from perplexity.utilities import sentence_force, module_name, import_function_from_names, at_least_one_generator, \
     split_into_sentences, output_interaction_records
 from perplexity.world_registry import world_information, LoadWorldOperation, ui_from_world_name
-
+import perplexity.plurals
 
 def default_error_priority(error):
     system_priority = perplexity.messages.error_priority(error)
@@ -374,6 +375,7 @@ class UserInterface(object):
         mrs_index = -1
         tree_index = -1
         mrs_record = None
+        response = None
         for mrs in mrs_generator:
             mrs_index += 1
             if self.run_mrs_index is not None and self.run_mrs_index != mrs_index:
@@ -402,14 +404,12 @@ class UserInterface(object):
 
             else:
                 # Loop through all the "official" DELPH-IN trees using the official predications
-                tree_generated = False
                 try:
                     for tree_orig in self.mrs_parser.trees_from_mrs(mrs):
                         if self.has_timed_out("_interact_once, tree generation"):
                             break
 
                         heads = [x for x in syntactic_heads_characteristic_variables(mrs)]
-                        tree_generated = True
                         tree_info_orig = {"Index": mrs.index,
                                           "SyntacticHeads": heads,
                                           "Variables": mrs.variables,
@@ -476,11 +476,7 @@ class UserInterface(object):
 
                                     solution_group_generator = tree_record["SolutionGroupGenerator"]
                                     if solution_group_generator is not None:
-                                        #         variable_has_inf_max = variable_has_inf_max if wh_question_variable is None else True
-                                        #         handlers, index_predication = find_solution_group_handlers_with_name(execution_context, this_sentence_force, tree_info, "max_solution_group")
-                                        #         check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, group)
-
-                                        # There were solutions, so this is our answer.
+                                        # There were solution groups, so this is our answer.
                                         # Return it and stop looking
                                         self.evaluate_best_response(has_solution_group=True)
 
@@ -491,14 +487,14 @@ class UserInterface(object):
                                             self.save_best_parses()
 
                                         # Go through all the responses in this solution group
-                                        had_operations = False
+                                        # The response generator may iterate one more solution group to see if it is there
+                                        # and it will yield it
+                                        tree_record["ResponseGenerator"] = self.response_function(tree_record["SolutionGroupGenerator"], self.vocabulary, self.message_function, tree_info, tree_record["SolutionGroupGenerator"], tree_record["Error"])
                                         response, solution_group = next(tree_record["ResponseGenerator"])
 
                                         # Because this worked, we need to apply any Operations that were added to
                                         # any solution to the current world state.
                                         try:
-                                            has_more_func = solution_group_generator.has_at_least_one_more
-
                                             def unique_wh_values_from_group(group):
                                                 unique_wh_values = set()
                                                 for solution in group:
@@ -515,8 +511,7 @@ class UserInterface(object):
                                                 else:
                                                     original_values = unique_wh_values_from_group(solution_group)
                                                     for next_solution_group in solution_group_generator:
-                                                        maximal_group = next_solution_group.maximal_group_iterator()
-                                                        next_original_values = unique_wh_values_from_group(maximal_group)
+                                                        next_original_values = unique_wh_values_from_group(next_solution_group)
                                                         if next_original_values != original_values:
                                                             return True
 
@@ -602,7 +597,11 @@ class UserInterface(object):
                                             return
 
                                     else:
-                                        # This failed, remember it if it is the "best" failure
+                                        # This failed
+                                        # Get a responsegenerator for the best error in case we need it
+                                        tree_record["ResponseMessage"] = self.message_function(self.state, tree_info, tree_record["Error"])
+
+                                        # remember it if it is the "best" failure
                                         # which we currently define as the first one
                                         self.evaluate_best_response(has_solution_group=False)
                                         if self.has_timed_out("_interact_once, failed tree_solution"):
@@ -646,14 +645,17 @@ class UserInterface(object):
             self.evaluate_best_response(has_solution_group=False)
             chosen_record = self.chosen_interpretation_record()
 
-        if isinstance(chosen_record["ResponseGenerator"], list) and len(chosen_record["ResponseGenerator"]) == 0:
-            response = None
-        else:
-            response, _ = next(chosen_record["ResponseGenerator"])
-
         if response is None:
-            response = "(no error specified)"
-        chosen_record["ResponseMessage"] += response
+            if chosen_record["ResponseMessage"] is not None:
+                if chosen_record["ResponseMessage"] == "" and chosen_record["ResponseGenerator"]:
+                    response = next(chosen_record["ResponseGenerator"])[0]
+                    chosen_record["ResponseMessage"] = response
+                else:
+                    response = chosen_record["ResponseMessage"]
+            else:
+                response = "(no error specified)"
+        else:
+            chosen_record["ResponseMessage"] += response
 
     def generate_more_message(self, tree, solution_groups):
         if solution_groups is None:

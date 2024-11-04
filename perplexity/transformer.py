@@ -395,7 +395,9 @@ class TransformerMatch(object):
         return False
 
     def arg_transformer(self, index):
-        if isinstance(self.args_pattern[index], (TransformerMatch, ConjunctionMatchTransformer)):
+        if len(self.args_pattern) -1 < index and self.args_pattern[-1] == "**":
+            return AllMatchTransformer()
+        elif isinstance(self.args_pattern[index], (TransformerMatch, ConjunctionMatchTransformer)):
             return self.args_pattern[index]
         else:
             return AllMatchTransformer()

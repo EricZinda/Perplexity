@@ -262,7 +262,7 @@
         },
         {
             "Command": "what did we order?",
-            "Expected": "Less than 2 people did that.\nWaiter: Can I get you anything besides a chicken and a salmon for you?",
+            "Expected": "Host: Nothing.\nWaiter: Can I get you anything besides a chicken and a salmon for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "fd743d50-17c2-4097-adef-8e252b58ebe6"
@@ -526,7 +526,9 @@
                 "menu\nwater\n2 soup\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "2 soup\nmenu\nsteak\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "water\nmenu\n2 soup\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
-                "steak\nmenu\n2 soup\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
+                "steak\nmenu\n2 soup\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "2 soup\nwater\nmenu\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "steak\nmenu\nwater\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -645,7 +647,7 @@
         },
         {
             "Command": "What did we order?",
-            "Expected": "Less than 2 people did that.\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
+            "Expected": "Host: Nothing.\nWaiter: Can I get you anything besides a menu and 2 steaks for you?",
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
             "ID": "6e8ad609-7795-4d5c-96cd-cca160cf9f4e"
@@ -1180,7 +1182,7 @@
         },
         {
             "Command": "soup and salad are vegetarian dishes",
-            "Expected": "Yes, that is true.\n(there are more)\nWaiter: What can I get you?",
+            "Expected": "Yes, that is true.\nWaiter: What can I get you?",
             "Tree": "udef_q(x13,_salad_n_1(x13),udef_q(x18,[_dish_n_of(x18,i24), _vegetarian_a_1(e23,x18)],udef_q(x3,udef_q(x8,_soup_n_1(x8),_and_c(x3,x8,x13)),_be_v_id(e2,x3,x18))))",
             "Enabled": true,
             "ID": "a294ee3b-dfbd-4801-a01f-1b5ad96f4ff3"

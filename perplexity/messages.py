@@ -68,7 +68,7 @@ def respond_to_mrs_tree(state, vocabulary, message_function, tree, solution_grou
                 original_solution_group_list = []
                 timed_out = False
                 try:
-                    for solution in solution_group.maximal_group_iterator():
+                    for solution in solution_group:
                         original_solution_group_list.append(solution)
                 except TimeoutException:
                     timed_out = True

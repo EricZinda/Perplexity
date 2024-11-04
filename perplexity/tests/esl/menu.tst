@@ -17,7 +17,7 @@
         },
         {
             "Command": "Could we have a vegetarian menu?",
-            "Expected": "Host: Sorry, I don't think we have that here.\nWaiter: What can I get you?",
+            "Expected": "Host: There isn't such a vegetarian menu here\nWaiter: What can I get you?",
             "Tree": "_a_q(x11,[_menu_n_1(x11), _vegetarian_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "bc1ce7b9-3611-48fa-9baf-5288edde5c55"

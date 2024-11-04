@@ -572,12 +572,6 @@ class TreeSolver(object):
 
                 # Collect any error that might have occurred from the first solution group
                 tree_record["Error"] = self._context.error()
-                if message_function is not None and response_function is not None:
-                    tree_record["ResponseGenerator"] = at_least_one_generator(
-                        response_function(state, self._context.vocabulary, message_function, tree_info, tree_record["SolutionGroupGenerator"], tree_record["Error"]))
-                else:
-                    tree_record["ResponseGenerator"] = None
-
                 tree_record["TreeIndex"] = current_tree_index_recorded
                 if pipeline_logger.level == logging.DEBUG:
                     pipeline_logger.debug(f"Returning tree_record for '{tree_info['Tree']}'")

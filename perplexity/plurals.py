@@ -10,14 +10,14 @@ import perplexity.tree
 from perplexity.utilities import plural_from_tree_info, parse_predication_name
 
 
-def determiner_from_binding(state, binding):
+def determiner_from_binding(tree_info, binding):
     if binding.variable.determiner is not None:
         return binding.variable.determiner
 
     else:
-        quantifier = perplexity.tree.find_quantifier_from_variable(state.get_binding("tree").value[0]["Tree"], binding.variable.name)
+        quantifier = perplexity.tree.find_quantifier_from_variable(tree_info["Tree"], binding.variable.name)
 
-        pl_value = plural_from_tree_info(state.get_binding("tree").value[0], binding.variable.name)
+        pl_value = plural_from_tree_info(tree_info, binding.variable.name)
         if pl_value == "pl":
             # Plural determiner, mark this as coming from the quantifier for error reporting purposes
             return VariableCriteria(quantifier,
@@ -234,11 +234,12 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
         if groups_logger.level == logging.DEBUG:
             groups_logger.debug(f"Processing solution: {next_solution}")
         new_sets = []
-        was_merged = False
+        next_solution_was_merged = False
         for existing_group_set in sets + [initial_empty_set()]:
-            if len(existing_group_set.raw_set) == 0 and was_merged:
-                # Don't create a brand-new set by merging with the final empty set if it was
-                # already merged into something. Because: it is already being tracked.
+            testing_initial_set = len(existing_group_set.raw_set) == 0
+            if testing_initial_set and next_solution_was_merged:
+                # Don't create a brand-new set by merging with the final empty set if this solution was
+                # already merged into another set. Because: this solution is already being tracked.
                 continue
 
             new_set_stats_group = existing_group_set.stats_group.copy()
@@ -268,15 +269,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                         groups_logger.debug(
                             f"Pre-code criteria Solution group raw (merged = {merge}): {state} \n     {nl.join(str(x) for x in raw_set)}")
 
-                    final_set, best_error_info = check_group_against_code_criteria(execution_context, handlers, optimized_criteria_list, index_predication, raw_set)
-                    if final_set:
-                        # Convert from whatever object to a real list
-                        final_set = [x for x in final_set]
-
-                    else:
-                        # It doesn't meet the criteria, but might if we combine with other solutions
-                        code_criteria_failed = True
-                        state = CriteriaResult.contender
+                    final_set = raw_set
 
                 # Decide whether to merge into the existing set or create a new one
                 # Merge if the only variables that got updated had a criteria with an upper bound of inf
@@ -291,8 +284,10 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
                 #   Whereas continuing to merge might miss some alternatives that should be generated
                 # So, because this failed, it means we stop this "merging optimization" and try the alternatives, even though it might be slower, so we
                 #   don't miss any cases
-                if merge and not code_criteria_failed:
-                    was_merged = True
+                # Also, don't ever "merge" into the intial set because it means that all other solutions will be tracked
+                # as a lineage since the initial set is the base for everything
+                if merge and not code_criteria_failed and not testing_initial_set:
+                    next_solution_was_merged = True
                     new_group_set = existing_group_set
                     if len(existing_group_set.raw_set) == 0:
                         new_sets.append(new_group_set)
@@ -308,7 +303,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
 
                 if groups_logger.level == logging.DEBUG:
                     nl = "\n     "
-                    groups_logger.debug(f"Solution group raw (merged: {was_merged}): {state} \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
+                    groups_logger.debug(f"Solution group raw (merged: {next_solution_was_merged}): {state} \n     {nl.join(str(x) for x in new_group_set.raw_set)}")
 
                 if state == CriteriaResult.meets:
                     # Clear any errors that occurred trying to generate solution groups that didn't work
@@ -343,10 +338,7 @@ def all_plural_groups_stream(execution_context, solutions, var_criteria, variabl
         execution_context.clear_error()
 
         for pending in pending_global_criteria:
-            raw_set = pending[0]
-            final_group, best_error_info = check_group_against_code_criteria(execution_context, handlers,
-                                                                             optimized_criteria_list, index_predication,
-                                                                             raw_set)
+            final_group = pending[0]
             if final_group:
                 # Convert from whatever object to a real list
                 final_group = [x for x in final_group]

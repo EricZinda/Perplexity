@@ -230,6 +230,7 @@ def at_least_one_generator(generator):
 
 class AtLeastOneIterator(object):
     def __init__(self, first_item, generator):
+        assert first_item is not None
         self.first_item = first_item
         self.generator = generator
 

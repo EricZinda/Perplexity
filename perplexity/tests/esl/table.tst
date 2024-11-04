@@ -101,7 +101,7 @@
         },
         {
             "Command": "table for one person",
-            "Expected": "There is more than 1 person\nHost: How can I help you today?",
+            "Expected": "Johnny: Hey! That's not enough seats!\nHost: How can I help you today?",
             "Tree": "udef_q(x10,[_person_n_1(x10), card(1,e16,x10)],udef_q(x4,[_table_n_1(x4), _for_p(e9,x4,x10)],unknown(e2,x4)))",
             "Enabled": true,
             "ID": "d606e7bf-0fc4-4278-a598-6249659f3de6"

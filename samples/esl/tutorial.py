@@ -147,6 +147,8 @@ def is_request_from_tree(tree_info):
         tree_info["Variables"][tree_info["Index"]]["TENSE"] == "fut"
 
 
+# It is a valid request if we *have* such a thing and if it entails the list
+# of valid_concepts
 def valid_player_request(context, state, x_objects, valid_concepts=None):
     # Things players can request
     if valid_concepts is None:
@@ -159,6 +161,9 @@ def valid_player_request(context, state, x_objects, valid_concepts=None):
                           ESLConcept("check")]
 
     for x_object in x_objects:
+        if is_concept(x_object) and len(x_object.instances(context, state)) == 0:
+            return False
+
         found = False
         for valid_concept in valid_concepts:
             if instance_of_or_entails(context, state, x_object, valid_concept):
@@ -241,7 +246,6 @@ def ready_for_to_want_transformer():
                              args_capture=["x_quantifier", "rstr_quantifier", None],
                              removed=["_ready_a_1", "_for_p"],
                              production=quantifier_production)
-
 
 
 # Convert "and <phrase>?" to "<phrase>"
@@ -925,8 +929,7 @@ def count(context, state, e_binding, x_total_count_binding, x_item_to_count_bind
             measurement_units = None
             for solution_group in tree_record["SolutionGroupGenerator"]:
                 solution_group_list = []
-                maximal_group = solution_group.maximal_group_iterator()
-                for solution_state in maximal_group:
+                for solution_state in solution_group:
                     solution_group_list.append(solution_state)
                     value = solution_state.get_binding(x_item_to_count_binding.variable.name).value
                     if is_concept(value[0]):
@@ -1311,7 +1314,7 @@ def for_update_state(context, solution, x_what_type, for_type, x_what_binding, x
                 tree_info = solution.get_binding("tree").value[0]
                 wh_phrase_variable = perplexity.tree.get_wh_question_variable(tree_info)
                 this_sentence_force = sentence_force(tree_info["Variables"])
-                declared_criteria_list = [data for data in declared_determiner_infos(context, solution)]
+                declared_criteria_list = [data for data in declared_determiner_infos(solution.get_binding("tree").value[0], solution)]
                 optimized_criteria_list = list(
                     optimize_determiner_infos(declared_criteria_list, this_sentence_force, wh_phrase_variable))
                 for_predication = find_predication_from_introduced(tree_info["Tree"], x_for_binding.variable.name)
@@ -2089,19 +2092,19 @@ class PastParticipleConcepts:
             new_state_x_target_binding = new_state.get_binding(x_target_binding.variable.name)
             if len(new_state_x_target_binding.value) == 1:
                 new_value = new_state_x_target_binding.value[0]
-
-                # Add extra criteria to the concept to represent the past participle
-                x_object = new_value.add_criteria(self.function, self.arg1, self.arg2)
-
                 if term_used_predicatively:
                     if self.only_attributive:
                         context.report_error(["formNotUnderstood"])
                         return
 
+                # Add extra criteria to the concept to represent the past participle
+                x_object = new_value.add_criteria(self.function, self.arg1, self.arg2)
+
+                if term_used_predicatively and len(x_object.instances(context, state)) == 0:
                     # "The salmon is smoked" interpreted as a concept requires that there is at least one instance of
-                    # "smoked salmom"
-                    if len(x_object.instances(context, state)) == 0:
-                        return
+                    # "smoked salmon"
+                    context.report_error(["not_adj", x_target_binding.variable.name, self.lemma])
+                    return
 
                 yield state.set_x(x_target_binding.variable.name, (x_object,))
 
@@ -4974,6 +4977,6 @@ if __name__ == '__main__':
     # ShowLogging("UserInterface")
     # ShowLogging("Determiners")
     ShowLogging("SolutionGroups")
-    # ShowLogging("Transformer")
+    ShowLogging("Transformer")
 
     hello_world()
