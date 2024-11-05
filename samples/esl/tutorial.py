@@ -1862,7 +1862,6 @@ def match_all_n_concepts(noun_type, context, state, x_binding):
                 state = state.apply_operations([operation])
 
             yield state.set_x(new_x_binding.variable.name, (x,))
-
         else:
             if record_new_food:
                 operation = AddRelOp((noun_type, "specializes", "food"))
@@ -4015,8 +4014,6 @@ def is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
     return False
 
 
-# Discussions about the customers order are about a *particular* order, and thus deal with order instances, not concepts
-# However: the items *in* the order must be concepts
 @Predication(vocabulary,
              names=["_be_v_id"],
              phrases={
@@ -4025,8 +4022,28 @@ def is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
                  "Chicken is my order": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
              },
              properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.all)])
-def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+             arguments=[("e",), ("x", ValueSize.all), ("x", ValueSize.exactly_one)])
+def _be_v_id_order_1(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    yield from _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding, x_object_binding)
+
+
+@Predication(vocabulary,
+             names=["_be_v_id"],
+             phrases={
+                 "What is my order?":   {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "My order is chicken": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+                 "Chicken is my order": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
+             },
+             properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
+             arguments=[("e",), ("x", ValueSize.exactly_one), ("x", ValueSize.all)])
+def _be_v_id_order_2(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
+    yield from _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding, x_object_binding)
+
+# There are two alternative _be_v_id_order implementations: _be_v_id_order_1 and _be_v_id_order_2 because the base
+# requires that one of the arguments is a singular order and this allows us to not generate a *ton* of alternatives
+# Discussions about the customers order are about a *particular* order, and thus deal with order instances, not concepts
+# However: the items *in* the order must be concepts
+def _be_v_id_order_base(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
     def criteria_bound(x_subject, x_object):
         # Either argument could be the order
         for order_item in [x_subject, x_object]:
@@ -4104,63 +4121,10 @@ def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_ob
         yield success_state
 
 
-# @Predication(vocabulary,
-#              names=["_be_v_id"],
-#              phrases={
-#                  "What is my order?":   {'SF': 'ques', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-#                  "My order is chicken": {'SF': 'prop', 'TENSE': 'pres', 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'}
-#              },
-#              properties={'SF': ['ques', 'prop'], 'TENSE': ['pres'], 'MOOD': 'indicative', 'PROG': '-', 'PERF': '-'},
-#              arguments=[("e",), ("x", ValueSize.exactly_one), ("x", ValueSize.all)])
-# def _be_v_id_order(context, state, e_introduced_binding, x_subject_binding, x_object_binding):
-#     def criteria_bound(x_subject, x_object):
-#         if len(x_subject) == 1 and not is_concept(x_subject[0]) and sort_of(state, x_subject[0], "order"):
-#             # "My order is X" --> See if the set of items in x_object entail what was ordered
-#             order = x_subject[0]
-#             order_foods = sorted([x for x in state.food_in_order(order)])
-#             if len(order_foods) > 0:
-#                 for food_concept in x_object:
-#                     if not is_concept(food_concept):
-#                         return False
-#                     entailed = food_concept.instances(context, state, order_foods)
-#                     found_type = len(entailed) > 0
-#                     if found_type:
-#                         for entailed_item in entailed:
-#                             order_foods.remove(entailed_item)
-#
-#                     else:
-#                         break
-#
-#                 if found_type and len(order_foods) == 0:
-#                     return True
-#
-#             else:
-#                 context.report_error(["errorText", "Nothing"])
-#
-#     def unbound(x_object):
-#         # The phrase "What is my order?" means "what are the things in my order"
-#         if len(x_object) == 1 and not is_concept(x_object[0]) and sort_of(state, x_object[0], "order"):
-#             order = x_object[0]
-#             order_foods = tuple([x for x in state.food_in_order(order)])
-#             if len(order_foods) > 0:
-#                 yield order_foods
-#             else:
-#                 context.report_error(["errorText", "Nothing"])
-#
-#     # Only use this interpretation if we are talking about an instance of OR concept of "order"
-#     if not is_be_v_id_order(context, state, x_subject_binding, x_object_binding):
-#         context.report_error(["formNotUnderstood"])
-#         return
-#
-#     # Use lift_style so that we get everything in the order as a single value, meaning "together"
-#     for success_state in lift_style_predication_2(context, state, x_subject_binding, x_object_binding, criteria_bound, unbound, unbound):
-#         yield success_state
-
-
 @Predication(vocabulary,
              names=["solution_group__be_v_id"],
-             properties_from=_be_v_id_order,
-             handles_interpretation=_be_v_id_order)
+             properties_from=_be_v_id_order_1,
+             handles_interpretation=_be_v_id_order_1)
 def _be_v_id_order_group(context, state_list, e_introduced_binding_list, x_subject_variable_group, x_object_variable_group):
     # Since one of the arguments holds concepts, constraints need to be checked
     # Figure out which argument it is
@@ -4286,7 +4250,6 @@ def _be_v_id_list(context, state, e_introduced_binding, x_subject_binding, x_obj
         return
 
     # Require that the any bound arguments are concepts
-    # Only need to check one value since there is never a mix of instances and concepts
     if (not subject_unbound and not is_concept(x_subject_binding.value[0])) or \
         (not object_unbound and not is_concept(x_object_binding.value[0])):
         context.report_error(["formNotUnderstood"])

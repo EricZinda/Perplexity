@@ -31,7 +31,7 @@
         },
         {
             "Command": "Can I have hot sauce",
-            "Expected": "Host: There isn't such a hot sauce here\nHost: How can I help you today?",
+            "Expected": "Host: I'm sorry, you can't order that here. Take a look at the menu to see what is available.\nHost: How can I help you today?",
             "Tree": "udef_q(x11,[_sauce_n_1(x11), _hot_a_1(e16,x11)],pronoun_q(x3,pron(x3),[event_replace(u99,e2,e10), _have_v_1_able(e2,x3,x11)]))",
             "Enabled": true,
             "ID": "757ef0fd-e385-4314-915e-0a4e4754d995"

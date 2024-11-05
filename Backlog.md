@@ -67,17 +67,6 @@ _which_q(x3,RSTR,BODY)         ┌─ udef_q(x12,RSTR,BODY)
     # Pri 1
         - Document!!!! For the solution handlers for conceptual stuff, they should not allow solutions through that are not ever going to work
             - i.e. solution handlers should fail if the solution could never work in the solution group handler
-        - Fix broken tests: i.e. WRONG:
-            - What isn't on the menu? --> pork\nsoup\nsalad\nsteak\nchicken\nsalmon
-            - what is on the menu?
-            - Broken probably because none of these work:
-                - what is on the menu?
-                - Chicken is on the menu.
-
-        - Bug: It looks like collective only checks for one value???
-            - whole_group_unique_individuals.update(binding_value) never adds a set of individuals to the set
-        - which dishes are specials -> veggie, meat
-            - _which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))
         - How much does the soup and the salad cost? --> I don't know the way you used: cost
             - Needs to be cost_v_1() but referencing and?
         - "Did I order a steak for my son?" -> I'm not sure what that means.

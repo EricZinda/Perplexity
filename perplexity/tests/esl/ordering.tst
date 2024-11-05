@@ -528,7 +528,8 @@
                 "water\nmenu\n2 soup\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "steak\nmenu\n2 soup\nwater\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
                 "2 soup\nwater\nmenu\nsteak\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
-                "steak\nmenu\nwater\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
+                "steak\nmenu\nwater\n2 soup\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?",
+                "steak\n2 soup\nwater\nmenu\nWaiter: Can I get you anything besides a water, a menu, a steak, and 2 soups for you and a water and a menu for Johnny?"
             ],
             "Tree": "which_q(x5,thing(x5),pronoun_q(x3,pron(x3),_order_v_1(e2,x3,x5)))",
             "Enabled": true,
@@ -842,18 +843,18 @@
             "ID": "d122cc5c-a482-4b45-9345-0681627b6589"
         },
         {
-            "Command": "/timeout",
-            "Expected": "",
-            "Tree": "",
-            "Enabled": true,
-            "ID": "02b1c558-1064-4bd4-9fa3-afb3828ff5f7"
-        },
-        {
             "Command": "Which dishes are specials?",
             "Expected": "Waiter: Oh, I forgot to give you the menu! I'll get you one right away.\nWaiter: Can I get you anything besides a menu for you?",
             "Tree": "_which_q(x5,_dish_n_of(x5,i9),udef_q(x3,_special_n_1(x3),_be_v_id(e2,x3,x5)))",
             "Enabled": true,
             "ID": "a8713a17-5c05-4028-8c03-1602d9c014f0"
+        },
+        {
+            "Command": "/timeout",
+            "Expected": "",
+            "Tree": "",
+            "Enabled": true,
+            "ID": "02b1c558-1064-4bd4-9fa3-afb3828ff5f7"
         },
         {
             "Command": "Which two dishes are specials?",
